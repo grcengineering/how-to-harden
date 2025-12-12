@@ -24,21 +24,33 @@ This is the defensive paradigm we're building:
 
 How to Harden is a community-driven, open source guide to **SaaS security hardening with emphasis on integration security and supply chain attack mitigation**.
 
-We provide three layers of guidance:
+### Vendor-Organized Comprehensive Guides
 
-### 1. Platform-Specific Hardening
-Individual SaaS platform security configurations (Salesforce, Microsoft 365, GitHub, etc.)—similar to CIS Benchmarks but free, vendor-neutral, and focused on integration controls.
+Like CIS Benchmarks, we organize hardening guidance by **vendor/product** (Salesforce, Microsoft 365, GitHub, etc.). Each guide is a comprehensive document covering multiple control categories:
 
-### 2. Defensive Patterns (Our Unique Contribution)
-**Relational security guidance** that shows how to configure Platform A to restrict Platform B's access when B is compromised. Examples:
-- IP allowlisting Salesforce API access for Gainsight
-- OAuth scope reduction for Slack apps accessing GitHub
-- Certificate-based authentication for CI/CD accessing cloud providers
+- **Authentication & Access Controls** (MFA, SSO, session management)
+- **Network Access Controls** (IP allowlisting, login restrictions)
+- **OAuth & Integration Security** (Connected Apps, API scoping)
+- **Data Security** (encryption, DLP, field-level controls)
+- **Monitoring & Detection** (event logs, anomaly detection)
+- **Third-Party Integration Security** (vendor-specific hardening)
 
-This relational layer doesn't exist in CIS Benchmarks, vendor documentation, or other hardening resources.
+### Our Unique Contribution: Integration-Focused Controls
 
-### 3. Supply Chain Incident Case Studies
-Analysis of real attacks (Drift, Gainsight, CircleCI, Okta support breach) mapped to the **specific preventive controls** that would have blocked or limited the attack.
+Within each vendor guide, we emphasize **how to configure that platform to restrict third-party integrations**. Examples:
+
+- **Salesforce guide** includes: "How to IP-allowlist Gainsight/Drift/HubSpot API access"
+- **GitHub guide** includes: "How to restrict third-party Actions workflows"
+- **Microsoft 365 guide** includes: "How to limit OAuth app permissions for Zoom/Slack"
+
+This relational approach—configuring Platform A to limit Platform B's access when B is compromised—doesn't exist in CIS Benchmarks or vendor documentation.
+
+### Supply Chain Attack Analysis
+
+Each guide references **real-world incidents** where controls would have prevented or limited attacks:
+- Salesforce guide → Drift/Gainsight breaches, Okta's successful defense
+- GitHub guide → CircleCI breach, CodeCov compromise
+- Microsoft 365 guide → OAuth token theft campaigns
 
 ## What We Are NOT
 

@@ -33,12 +33,12 @@ Like CIS Benchmarks, but free, vendor-neutral, and focused on integration contro
 - Covers authentication, authorization, API security, data protection
 - Both **ClickOps** (GUI) and **Code** (IaC/API) implementations
 
-### 2. Defensive Patterns (Our Unique Value)
-**Relational security guidance** showing how to configure Platform A to restrict Platform B's access when B is compromised.
+### 2. Integration-Focused Controls (Our Unique Value)
+Within each vendor guide, we emphasize **how to configure that platform to restrict third-party integrations**.
 
-Example: [How to restrict Gainsight's Salesforce access via IP allowlisting](content/defensive-patterns/ip-allowlisting/salesforce-restricting-gainsight.md)
+Example: [Salesforce Hardening Guide](content/salesforce/salesforce%20hardening%20guide.md) includes controls for IP-allowlisting Gainsight, Drift, and HubSpot.
 
-This cross-platform guidance doesn't exist in CIS Benchmarks, vendor docs, or other hardening resources.
+This integration security focus doesn't exist in CIS Benchmarks or vendor documentation.
 
 ### 3. Supply Chain Incident Case Studies
 Real-world attacks (Drift, Gainsight, CircleCI, Okta) mapped to specific preventive controls that would have blocked or limited the attack.
@@ -52,9 +52,10 @@ Real-world attacks (Drift, Gainsight, CircleCI, Okta) mapped to specific prevent
 **Scenario 1: You use Salesforce + Gainsight**
 ```bash
 # Option 1: Manual hardening (ClickOps)
-1. Read: content/defensive-patterns/ip-allowlisting/salesforce-restricting-gainsight.md
-2. Follow GUI steps to configure IP allowlisting in Salesforce
-3. Estimated time: 10 minutes
+1. Read: content/salesforce/salesforce hardening guide.md
+2. Navigate to Section 2.1.1: "IP Allowlisting: Restricting Gainsight"
+3. Follow GUI steps to configure IP allowlisting in Salesforce
+4. Estimated time: 10 minutes
 
 # Option 2: Automated hardening (Code)
 git clone https://github.com/yourproject/how-to-harden
@@ -89,26 +90,35 @@ We need your expertise! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 ```
 how-to-harden/
 ├── content/
-│   ├── platforms/              # Platform-specific guides
+│   ├── salesforce/
+│   │   └── salesforce hardening guide.md     # Comprehensive guide, all controls
+│   ├── microsoft/
+│   │   └── microsoft-365 hardening guide.md
+│   ├── github/
+│   │   └── github hardening guide.md
+│   ├── google/
+│   │   └── google-workspace hardening guide.md
+│   └── [vendor]/
+│       └── [product] hardening guide.md
+├── automation/
+│   ├── scripts/                              # Audit and remediation scripts
 │   │   ├── salesforce/
 │   │   ├── microsoft-365/
 │   │   └── github/
-│   ├── defensive-patterns/     # Cross-platform relational guides ⭐
-│   │   ├── ip-allowlisting/
-│   │   ├── oauth-scoping/
-│   │   └── behavioral-monitoring/
-│   └── supply-chain-incidents/ # Attack case studies
-│       ├── salesloft-drift-2025/
-│       └── gainsight-2025/
-├── automation/
-│   ├── scripts/                # Audit and remediation scripts
-│   └── terraform/              # IaC templates
+│   └── terraform/                            # IaC templates by vendor
+│       ├── salesforce/
+│       └── microsoft-365/
 ├── templates/
-│   └── recommendation-template.md
-├── PHILOSOPHY.md               # Scope, design principles, vision
-├── CONTRIBUTING.md             # How to contribute
-└── GOVERNANCE.md               # Decision-making, maintainer roles
+│   └── vendor-guide-template.md              # Template for new vendor guides
+├── PHILOSOPHY.md                             # Scope, design principles, vision
+├── CONTRIBUTING.md                           # How to contribute
+└── GOVERNANCE.md                             # Decision-making, maintainer roles
 ```
+
+**Structure Notes:**
+- Each vendor/product has ONE comprehensive hardening guide (like CIS Benchmarks)
+- Guides organized by control categories (Auth, Network, OAuth, Data, Monitoring)
+- Integration security controls (e.g., IP allowlisting specific vendors) are sections within guides
 
 ---
 
@@ -131,11 +141,11 @@ See [PHILOSOPHY.md](PHILOSOPHY.md) for full vision and scope definition.
 
 ## Principles
 
-### 1. Relational Over Isolated
-We show how controls across platforms work together, not just individual platform hardening.
+### 1. Integration-Focused Over Platform-Only
+We emphasize how to configure platforms to restrict third-party integrations, not just platform hardening in isolation.
 
-**Bad:** "Enable Salesforce IP allowlisting" (isolated, no context)
-**Good:** "Restrict Gainsight's Salesforce access via IP allowlisting" (relational, shows interaction)
+**Typical guide:** "Enable Salesforce IP allowlisting" (what, but not when or for whom)
+**Our approach:** "Restrict Gainsight's Salesforce access via IP allowlisting" (specific integration context, attack relevance)
 
 ### 2. Attack-Informed Over Compliance-Driven
 We prioritize controls based on **real attack patterns**, not just audit requirements.
