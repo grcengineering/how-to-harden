@@ -1,0 +1,57 @@
+---
+layout: default
+---
+<article class="guide">
+  <div class="guide-header">
+    <div class="breadcrumb">
+      <a href="{{ '/' | relative_url }}">Home</a>
+      <span class="separator">/</span>
+      <a href="{{ '/#guides' | relative_url }}">Guides</a>
+      <span class="separator">/</span>
+      <span class="current">{{ page.vendor }}</span>
+    </div>
+    <h1>{{ page.title }}</h1>
+    <div class="guide-meta">
+      <span class="tier tier-{{ page.tier | downcase }}">Tier {{ page.tier }}</span>
+      <span class="category">{{ page.category }}</span>
+      <span class="updated">Last updated: {{ page.last_updated }}</span>
+    </div>
+    {% if page.description %}
+    <p class="guide-description">{{ page.description }}</p>
+    {% endif %}
+  </div>
+
+  <div class="guide-content">
+    <aside class="guide-sidebar">
+      <nav class="toc">
+        <h3>On this page</h3>
+        <ul id="toc-list"></ul>
+      </nav>
+    </aside>
+
+    <div class="guide-body">
+      {{ content }}
+    </div>
+  </div>
+</article>
+
+<script>
+// Generate table of contents
+document.addEventListener('DOMContentLoaded', function() {
+  const headings = document.querySelectorAll('.guide-body h2, .guide-body h3');
+  const tocList = document.getElementById('toc-list');
+
+  headings.forEach(function(heading) {
+    if (!heading.id) {
+      heading.id = heading.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    }
+    const li = document.createElement('li');
+    li.className = heading.tagName.toLowerCase();
+    const a = document.createElement('a');
+    a.href = '#' + heading.id;
+    a.textContent = heading.textContent;
+    li.appendChild(a);
+    tocList.appendChild(li);
+  });
+});
+</script>
