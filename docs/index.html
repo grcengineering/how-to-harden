@@ -1,0 +1,655 @@
+---
+layout: default
+title: Home
+---
+
+<section class="hero">
+  <div class="container">
+    <h1>How to Harden</h1>
+    <p class="tagline">Open-source SaaS security hardening guides for supply chain defense. Protect your organization from third-party breaches.</p>
+
+    <div class="search-box">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input type="text" id="search" placeholder="Search guides (e.g., Okta, Snowflake, GitLab...)">
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-value">51</div>
+        <div class="stat-label">Hardening Guides</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">5</div>
+        <div class="stat-label">Risk Tiers</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">250+</div>
+        <div class="stat-label">Security Controls</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="guides-section" id="guides">
+  <div class="container">
+    <div class="section-header">
+      <h2>Hardening Guides</h2>
+    </div>
+
+    <div class="tier-filters">
+      <button class="tier-filter active" data-tier="all">All Guides</button>
+      <button class="tier-filter" data-tier="1">Tier 1 - Critical</button>
+      <button class="tier-filter" data-tier="2">Tier 2 - High</button>
+      <button class="tier-filter" data-tier="3">Tier 3 - Medium-High</button>
+      <button class="tier-filter" data-tier="4">Tier 4 - Medium</button>
+      <button class="tier-filter" data-tier="5">Tier 5 - Standard</button>
+    </div>
+
+    <div class="guides-grid" id="guides-grid">
+      <!-- Tier 1: Critical -->
+      <div class="guide-card" data-tier="1" data-category="identity" data-name="okta">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/okta/' | relative_url }}">Okta</a></h3>
+          <span class="tier tier-1">Tier 1</span>
+        </div>
+        <p class="guide-card-description">Identity Provider hardening for SSO, MFA policies, and API token security.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-identity">Identity</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="1" data-category="data" data-name="snowflake">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/snowflake/' | relative_url }}">Snowflake</a></h3>
+          <span class="tier tier-1">Tier 1</span>
+        </div>
+        <p class="guide-card-description">Data warehouse security including network policies, MFA enforcement, and access controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-data">Data Platform</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="1" data-category="security" data-name="servicenow">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/servicenow/' | relative_url }}">ServiceNow</a></h3>
+          <span class="tier tier-1">Tier 1</span>
+        </div>
+        <p class="guide-card-description">Enterprise IT platform security for workflows, integrations, and access control lists.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-security">Enterprise IT</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="1" data-category="security" data-name="cyberark">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/cyberark/' | relative_url }}">CyberArk</a></h3>
+          <span class="tier tier-1">Tier 1</span>
+        </div>
+        <p class="guide-card-description">Privileged access management hardening for vaults, PSM, and credential rotation.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-security">PAM</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="1" data-category="security" data-name="hashicorp-vault">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/hashicorp-vault/' | relative_url }}">HashiCorp Vault</a></h3>
+          <span class="tier tier-1">Tier 1</span>
+        </div>
+        <p class="guide-card-description">Secrets management security including auth methods, policies, and audit logging.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-security">Secrets</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="1" data-category="security" data-name="beyondtrust">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/beyondtrust/' | relative_url }}">BeyondTrust</a></h3>
+          <span class="tier tier-1">Tier 1</span>
+        </div>
+        <p class="guide-card-description">Remote access security for PRA, session monitoring, and credential injection.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-security">PAM</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="1" data-category="security" data-name="crowdstrike">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/crowdstrike/' | relative_url }}">CrowdStrike Falcon</a></h3>
+          <span class="tier tier-1">Tier 1</span>
+        </div>
+        <p class="guide-card-description">EDR platform hardening for API security, update policies, and RTR access.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-security">Security</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="1" data-category="identity" data-name="ping-identity">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/ping-identity/' | relative_url }}">Ping Identity</a></h3>
+          <span class="tier tier-1">Tier 1</span>
+        </div>
+        <p class="guide-card-description">Identity federation security for PingFederate, PingOne, and OAuth configurations.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-identity">Identity</span>
+        </div>
+      </div>
+
+      <!-- Tier 2: High -->
+      <div class="guide-card" data-tier="2" data-category="devops" data-name="gitlab">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/gitlab/' | relative_url }}">GitLab</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">DevOps platform security for CI/CD pipelines, repository access, and runners.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">DevOps</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="devops" data-name="circleci">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/circleci/' | relative_url }}">CircleCI</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">CI/CD pipeline security including contexts, secrets, and runner hardening.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">CI/CD</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="devops" data-name="azure-devops">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/azure-devops/' | relative_url }}">Azure DevOps</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">Microsoft DevOps security for pipelines, service connections, and artifact feeds.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">DevOps</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="devops" data-name="atlassian">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/atlassian/' | relative_url }}">Atlassian Cloud</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">Jira/Confluence security for organization policies, app controls, and data residency.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">Collaboration</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="hr" data-name="workday">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/workday/' | relative_url }}">Workday</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">HCM platform hardening for security groups, integration security, and domain policies.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-hr">HR/Finance</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="marketing" data-name="hubspot">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/hubspot/' | relative_url }}">HubSpot</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">CRM security for private apps, OAuth scopes, and data export controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-marketing">CRM</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="marketing" data-name="salesforce">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/salesforce/' | relative_url }}">Salesforce</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">CRM platform security for MFA enforcement, Connected Apps, and Shield Event Monitoring.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-marketing">CRM</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="productivity" data-name="zoom">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/zoom/' | relative_url }}">Zoom</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">Video conferencing security for meeting policies, recording controls, and app marketplace.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-productivity">Collaboration</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="hr" data-name="netsuite">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/netsuite/' | relative_url }}">NetSuite</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">ERP security for role-based access, SuiteScript controls, and integration hardening.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-hr">ERP</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="security" data-name="wiz">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/wiz/' | relative_url }}">Wiz</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">Cloud security platform hardening for connector security and RBAC controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-security">Security</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="devops" data-name="datadog">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/datadog/' | relative_url }}">Datadog</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">Observability platform security for API keys, log pipelines, and sensitive data.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">Observability</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="data" data-name="databricks">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/databricks/' | relative_url }}">Databricks</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">Data platform security for workspace access, Unity Catalog, and secrets management.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-data">Data Platform</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="2" data-category="devops" data-name="jfrog">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/jfrog/' | relative_url }}">JFrog</a></h3>
+          <span class="tier tier-2">Tier 2</span>
+        </div>
+        <p class="guide-card-description">Artifact management security for repository permissions, Xray policies, and access tokens.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">DevOps</span>
+        </div>
+      </div>
+
+      <!-- Tier 3: Medium-High -->
+      <div class="guide-card" data-tier="3" data-category="hr" data-name="adp">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/adp/' | relative_url }}">ADP</a></h3>
+          <span class="tier tier-3">Tier 3</span>
+        </div>
+        <p class="guide-card-description">Payroll platform security for API connections, SSO, and data access controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-hr">HR/Payroll</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="3" data-category="devops" data-name="dockerhub">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/dockerhub/' | relative_url }}">Docker Hub</a></h3>
+          <span class="tier tier-3">Tier 3</span>
+        </div>
+        <p class="guide-card-description">Container registry security for access tokens, image signing, and repository controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">Container</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="3" data-category="productivity" data-name="dropbox">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/dropbox/' | relative_url }}">Dropbox</a></h3>
+          <span class="tier tier-3">Tier 3</span>
+        </div>
+        <p class="guide-card-description">Cloud storage security for sharing policies, linked apps, and admin controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-productivity">Storage</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="3" data-category="identity" data-name="sailpoint">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/sailpoint/' | relative_url }}">SailPoint</a></h3>
+          <span class="tier tier-3">Tier 3</span>
+        </div>
+        <p class="guide-card-description">Identity governance security for certification campaigns, source configs, and API access.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-identity">IGA</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="3" data-category="security" data-name="splunk">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/splunk/' | relative_url }}">Splunk</a></h3>
+          <span class="tier tier-3">Tier 3</span>
+        </div>
+        <p class="guide-card-description">SIEM platform hardening for role-based access, HEC tokens, and search controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-security">SIEM</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="3" data-category="productivity" data-name="box">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/box/' | relative_url }}">Box</a></h3>
+          <span class="tier tier-3">Tier 3</span>
+        </div>
+        <p class="guide-card-description">Enterprise content security for sharing policies, app controls, and classification.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-productivity">Storage</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="3" data-category="devops" data-name="terraform-cloud">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/terraform-cloud/' | relative_url }}">Terraform Cloud</a></h3>
+          <span class="tier tier-3">Tier 3</span>
+        </div>
+        <p class="guide-card-description">IaC platform security for workspace variables, team access, and run triggers.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">IaC</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="3" data-category="hr" data-name="sap-successfactors">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/sap-successfactors/' | relative_url }}">SAP SuccessFactors</a></h3>
+          <span class="tier tier-3">Tier 3</span>
+        </div>
+        <p class="guide-card-description">HCM security for permission groups, integration center, and data protection.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-hr">HR</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="3" data-category="hr" data-name="oracle-hcm">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/oracle-hcm/' | relative_url }}">Oracle HCM Cloud</a></h3>
+          <span class="tier tier-3">Tier 3</span>
+        </div>
+        <p class="guide-card-description">Enterprise HR security for security profiles, HDL controls, and IDCS integration.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-hr">HR</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="3" data-category="marketing" data-name="marketo">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/marketo/' | relative_url }}">Adobe Marketo</a></h3>
+          <span class="tier tier-3">Tier 3</span>
+        </div>
+        <p class="guide-card-description">Marketing automation security for API users, LaunchPoint services, and lead database.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-marketing">Marketing</span>
+        </div>
+      </div>
+
+      <!-- Tier 4: Medium -->
+      <div class="guide-card" data-tier="4" data-category="productivity" data-name="zendesk">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/zendesk/' | relative_url }}">Zendesk</a></h3>
+          <span class="tier tier-4">Tier 4</span>
+        </div>
+        <p class="guide-card-description">Support platform security for API tokens, app marketplace, and ticket redaction.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-productivity">Support</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="4" data-category="devops" data-name="pagerduty">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/pagerduty/' | relative_url }}">PagerDuty</a></h3>
+          <span class="tier tier-4">Tier 4</span>
+        </div>
+        <p class="guide-card-description">Incident management security for API keys, event rules, and integration hardening.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">Incident</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="4" data-category="data" data-name="tableau">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/tableau/' | relative_url }}">Tableau</a></h3>
+          <span class="tier tier-4">Tier 4</span>
+        </div>
+        <p class="guide-card-description">BI platform security for site roles, data source credentials, and embed controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-data">Analytics</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="4" data-category="marketing" data-name="mailchimp">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/mailchimp/' | relative_url }}">Mailchimp</a></h3>
+          <span class="tier tier-4">Tier 4</span>
+        </div>
+        <p class="guide-card-description">Email marketing security for API keys, audience protection, and domain authentication.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-marketing">Marketing</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="4" data-category="productivity" data-name="notion">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/notion/' | relative_url }}">Notion</a></h3>
+          <span class="tier tier-4">Tier 4</span>
+        </div>
+        <p class="guide-card-description">Workspace security for sharing defaults, connection controls, and audit logging.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-productivity">Productivity</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="4" data-category="productivity" data-name="miro">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/miro/' | relative_url }}">Miro</a></h3>
+          <span class="tier tier-4">Tier 4</span>
+        </div>
+        <p class="guide-card-description">Visual collaboration security for board sharing, app controls, and export restrictions.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-productivity">Collaboration</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="4" data-category="devops" data-name="launchdarkly">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/launchdarkly/' | relative_url }}">LaunchDarkly</a></h3>
+          <span class="tier tier-4">Tier 4</span>
+        </div>
+        <p class="guide-card-description">Feature flag security for SDK keys, environment access, and approval workflows.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">DevOps</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="4" data-category="productivity" data-name="asana">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/asana/' | relative_url }}">Asana</a></h3>
+          <span class="tier tier-4">Tier 4</span>
+        </div>
+        <p class="guide-card-description">Project management security for guest access, app controls, and division settings.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-productivity">Productivity</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="4" data-category="productivity" data-name="monday">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/monday/' | relative_url }}">Monday.com</a></h3>
+          <span class="tier tier-4">Tier 4</span>
+        </div>
+        <p class="guide-card-description">Work OS security for board sharing, app restrictions, and API token controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-productivity">Productivity</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="4" data-category="marketing" data-name="klaviyo">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/klaviyo/' | relative_url }}">Klaviyo</a></h3>
+          <span class="tier tier-4">Tier 4</span>
+        </div>
+        <p class="guide-card-description">E-commerce marketing security for API keys, profile protection, and export controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-marketing">Marketing</span>
+        </div>
+      </div>
+
+      <!-- Tier 5: Standard -->
+      <div class="guide-card" data-tier="5" data-category="devops" data-name="new-relic">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/new-relic/' | relative_url }}">New Relic</a></h3>
+          <span class="tier tier-5">Tier 5</span>
+        </div>
+        <p class="guide-card-description">Observability security for API keys, license keys, and log obfuscation.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">Observability</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="5" data-category="data" data-name="power-bi">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/power-bi/' | relative_url }}">Power BI</a></h3>
+          <span class="tier tier-5">Tier 5</span>
+        </div>
+        <p class="guide-card-description">Microsoft BI security for tenant settings, gateway credentials, and embed controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-data">Analytics</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="5" data-category="data" data-name="looker">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/looker/' | relative_url }}">Looker</a></h3>
+          <span class="tier tier-5">Tier 5</span>
+        </div>
+        <p class="guide-card-description">Google BI security for model access, embed secrets, and database connections.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-data">Analytics</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="5" data-category="hr" data-name="bamboohr">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/bamboohr/' | relative_url }}">BambooHR</a></h3>
+          <span class="tier tier-5">Tier 5</span>
+        </div>
+        <p class="guide-card-description">HR platform security for API keys, access levels, and sensitive field protection.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-hr">HR</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="5" data-category="productivity" data-name="freshservice">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/freshservice/' | relative_url }}">Freshservice</a></h3>
+          <span class="tier tier-5">Tier 5</span>
+        </div>
+        <p class="guide-card-description">ITSM security for API tokens, CMDB access, and change management controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-productivity">ITSM</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="5" data-category="security" data-name="snyk">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/snyk/' | relative_url }}">Snyk</a></h3>
+          <span class="tier tier-5">Tier 5</span>
+        </div>
+        <p class="guide-card-description">AppSec platform security for service accounts, SCM integrations, and Broker configs.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-security">Security</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="5" data-category="devops" data-name="vercel">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/vercel/' | relative_url }}">Vercel</a></h3>
+          <span class="tier tier-5">Tier 5</span>
+        </div>
+        <p class="guide-card-description">Deployment platform security for access tokens, environment variables, and Git integration.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-devops">Hosting</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="5" data-category="hr" data-name="rippling">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/rippling/' | relative_url }}">Rippling</a></h3>
+          <span class="tier tier-5">Tier 5</span>
+        </div>
+        <p class="guide-card-description">Workforce platform security for app provisioning, device management, and SCIM controls.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-hr">HR/IT</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="5" data-category="hr" data-name="gusto">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/gusto/' | relative_url }}">Gusto</a></h3>
+          <span class="tier tier-5">Tier 5</span>
+        </div>
+        <p class="guide-card-description">Payroll security for admin controls, partner integrations, and bank account protection.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-hr">Payroll</span>
+        </div>
+      </div>
+
+      <div class="guide-card" data-tier="5" data-category="productivity" data-name="smartsheet">
+        <div class="guide-card-header">
+          <h3><a href="{{ '/guides/smartsheet/' | relative_url }}">Smartsheet</a></h3>
+          <span class="tier tier-5">Tier 5</span>
+        </div>
+        <p class="guide-card-description">Work management security for sharing defaults, connector controls, and activity logging.</p>
+        <div class="guide-card-meta">
+          <span class="category-tag category-productivity">Productivity</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// Filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('search');
+  const tierFilters = document.querySelectorAll('.tier-filter');
+  const guideCards = document.querySelectorAll('.guide-card');
+
+  function filterGuides() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const activeTier = document.querySelector('.tier-filter.active').dataset.tier;
+
+    guideCards.forEach(card => {
+      const name = card.dataset.name.toLowerCase();
+      const tier = card.dataset.tier;
+      const title = card.querySelector('h3').textContent.toLowerCase();
+      const desc = card.querySelector('.guide-card-description').textContent.toLowerCase();
+
+      const matchesSearch = !searchTerm || name.includes(searchTerm) || title.includes(searchTerm) || desc.includes(searchTerm);
+      const matchesTier = activeTier === 'all' || tier === activeTier;
+
+      card.style.display = matchesSearch && matchesTier ? 'flex' : 'none';
+    });
+  }
+
+  searchInput.addEventListener('input', filterGuides);
+
+  tierFilters.forEach(filter => {
+    filter.addEventListener('click', function() {
+      tierFilters.forEach(f => f.classList.remove('active'));
+      this.classList.add('active');
+      filterGuides();
+    });
+  });
+});
+</script>

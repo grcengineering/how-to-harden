@@ -1,0 +1,44 @@
+title: How to Harden
+description: Open-source SaaS security hardening guides for supply chain defense
+url: "https://howtoharden.com"
+baseurl: ""
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+
+# Theme
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Collections
+collections:
+  guides:
+    output: true
+    permalink: /guides/:name/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "guides"
+    values:
+      layout: "guide"
+
+# Exclude from build
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+
+# SEO
+author: How to Harden Community
+twitter:
+  card: summary
+social:
+  name: How to Harden
+  links:
+    - https://github.com/grcengineering/how-to-harden
