@@ -10,6 +10,31 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   {% seo %}
+  <script>
+    // Theme initialization - must run before page render to prevent flash
+    (function() {
+      const savedTheme = localStorage.getItem('theme-preference') || 'auto';
+
+      function getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+
+      function applyTheme(preference) {
+        const theme = preference === 'auto' ? getSystemTheme() : preference;
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+
+      applyTheme(savedTheme);
+
+      // Listen for system theme changes when in auto mode
+      window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function() {
+        const currentPreference = localStorage.getItem('theme-preference') || 'auto';
+        if (currentPreference === 'auto') {
+          applyTheme('auto');
+        }
+      });
+    })();
+  </script>
 </head>
 <body>
   {% include header.html %}
@@ -19,5 +44,46 @@
   </main>
 
   {% include footer.html %}
+
+  <script>
+    // Theme toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const themeToggle = document.getElementById('theme-toggle');
+      const toggleButtons = themeToggle.querySelectorAll('.theme-toggle-btn');
+      const savedTheme = localStorage.getItem('theme-preference') || 'auto';
+
+      function getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+
+      function applyTheme(preference) {
+        const theme = preference === 'auto' ? getSystemTheme() : preference;
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+
+      function updateActiveButton(preference) {
+        toggleButtons.forEach(btn => {
+          if (btn.dataset.theme === preference) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+
+      // Set initial active button
+      updateActiveButton(savedTheme);
+
+      // Handle button clicks
+      toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const preference = this.dataset.theme;
+          localStorage.setItem('theme-preference', preference);
+          applyTheme(preference);
+          updateActiveButton(preference);
+        });
+      });
+    });
+  </script>
 </body>
 </html>
