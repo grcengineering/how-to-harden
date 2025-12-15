@@ -3,7 +3,7 @@ layout: default
 title: About
 ---
 
-<div class="about-page">
+<div class="about-page" markdown="1">
 
 # About How to Harden
 
