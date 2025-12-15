@@ -61,6 +61,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -70,6 +71,8 @@ body {
   color: var(--color-text-primary);
   background-color: var(--color-bg-primary);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 a {
@@ -371,12 +374,15 @@ a:hover {
   max-width: var(--max-width);
   margin: 0 auto;
   padding: var(--space-xl) var(--space-lg);
+  overflow-x: hidden;
 }
 
 .guide-header {
   margin-bottom: var(--space-2xl);
   padding-bottom: var(--space-xl);
   border-bottom: 1px solid var(--color-border);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .breadcrumb {
@@ -401,6 +407,8 @@ a:hover {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: var(--space-md);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .guide-meta {
@@ -424,7 +432,9 @@ a:hover {
 .guide-description {
   font-size: 1.125rem;
   color: var(--color-text-secondary);
-  max-width: 800px;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .guide-content {
@@ -490,7 +500,10 @@ a:hover {
 
 /* Guide body content */
 .guide-body {
-  max-width: 800px;
+  max-width: 100%;
+  min-width: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .guide-body h2 {
@@ -500,6 +513,7 @@ a:hover {
   margin-bottom: var(--space-md);
   padding-bottom: var(--space-sm);
   border-bottom: 1px solid var(--color-border);
+  word-wrap: break-word;
 }
 
 .guide-body h3 {
@@ -507,6 +521,7 @@ a:hover {
   font-weight: 600;
   margin-top: var(--space-xl);
   margin-bottom: var(--space-md);
+  word-wrap: break-word;
 }
 
 .guide-body h4 {
@@ -514,11 +529,14 @@ a:hover {
   font-weight: 600;
   margin-top: var(--space-lg);
   margin-bottom: var(--space-sm);
+  word-wrap: break-word;
 }
 
 .guide-body p {
   margin-bottom: var(--space-md);
   color: var(--color-text-secondary);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .guide-body ul, .guide-body ol {
@@ -529,44 +547,59 @@ a:hover {
 
 .guide-body li {
   margin-bottom: var(--space-sm);
+  word-wrap: break-word;
 }
 
 .guide-body code {
   font-family: var(--font-mono);
-  font-size: 0.875em;
+  font-size: 0.8em;
   background: var(--color-bg-tertiary);
   padding: 0.125em 0.375em;
   border-radius: 4px;
   color: var(--color-accent);
+  word-break: break-word;
 }
 
 .guide-body pre {
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  padding: var(--space-lg);
+  padding: var(--space-md);
   overflow-x: auto;
   margin-bottom: var(--space-md);
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .guide-body pre code {
   background: none;
   padding: 0;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--color-text-primary);
+  word-break: normal;
+  white-space: pre;
+}
+
+/* Table wrapper for mobile scroll */
+.guide-body .table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: var(--space-md);
 }
 
 .guide-body table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: var(--space-md);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
+  min-width: 400px;
 }
 
 .guide-body th, .guide-body td {
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-sm);
   border: 1px solid var(--color-border);
   text-align: left;
+  word-wrap: break-word;
 }
 
 .guide-body th {
@@ -581,7 +614,7 @@ a:hover {
 
 .guide-body blockquote {
   border-left: 4px solid var(--color-accent);
-  padding-left: var(--space-lg);
+  padding-left: var(--space-md);
   margin: var(--space-lg) 0;
   color: var(--color-text-secondary);
   font-style: italic;
@@ -707,28 +740,170 @@ a:hover {
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
+  :root {
+    --space-lg: 1rem;
+    --space-xl: 1.5rem;
+    --space-2xl: 2rem;
+    --space-3xl: 2.5rem;
+  }
+
+  .container {
+    padding: 0 var(--space-md);
+  }
+
+  .hero {
+    padding: var(--space-xl) 0;
+  }
+
   .hero h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   .hero .tagline {
-    font-size: 1rem;
+    font-size: 0.9375rem;
+    padding: 0 var(--space-sm);
   }
 
   .hero-stats {
     flex-direction: column;
-    gap: var(--space-lg);
+    gap: var(--space-md);
   }
 
   .stat-value {
-    font-size: 2rem;
+    font-size: 1.75rem;
+  }
+
+  .search-box {
+    margin: var(--space-lg) var(--space-sm) 0;
+  }
+
+  .search-box input {
+    font-size: 0.9375rem;
+    padding: var(--space-sm) var(--space-md);
+    padding-left: 40px;
+  }
+
+  .tier-filters {
+    gap: var(--space-xs);
+  }
+
+  .tier-filter {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 0.75rem;
   }
 
   .guides-grid {
     grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+
+  .guide-card {
+    padding: var(--space-md);
+  }
+
+  /* Guide page mobile */
+  .guide {
+    padding: var(--space-md);
+  }
+
+  .guide-header {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
   }
 
   .guide-header h1 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  .guide-description {
+    font-size: 1rem;
+  }
+
+  .guide-meta {
+    gap: var(--space-sm);
+  }
+
+  .guide-body h2 {
+    font-size: 1.25rem;
+    margin-top: var(--space-xl);
+  }
+
+  .guide-body h3 {
+    font-size: 1.1rem;
+    margin-top: var(--space-lg);
+  }
+
+  .guide-body h4 {
+    font-size: 1rem;
+  }
+
+  .guide-body p,
+  .guide-body li {
+    font-size: 0.9375rem;
+  }
+
+  .guide-body ul,
+  .guide-body ol {
+    padding-left: var(--space-lg);
+  }
+
+  .guide-body pre {
+    padding: var(--space-sm);
+    border-radius: 6px;
+    font-size: 0.75rem;
+  }
+
+  .guide-body table {
+    font-size: 0.75rem;
+  }
+
+  .guide-body th,
+  .guide-body td {
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  /* Header mobile */
+  .site-header .container {
+    height: 56px;
+  }
+
+  .logo {
+    font-size: 1rem;
+  }
+
+  .logo svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .main-nav {
+    gap: var(--space-md);
+  }
+
+  .main-nav a {
+    font-size: 0.875rem;
+  }
+
+  /* Footer mobile */
+  .site-footer {
+    padding: var(--space-xl) 0 var(--space-md);
+    margin-top: var(--space-xl);
+  }
+
+  .footer-content {
+    gap: var(--space-lg);
+  }
+
+  .about-page {
+    padding: var(--space-xl) var(--space-md);
+  }
+
+  .about-page h1 {
     font-size: 1.75rem;
+  }
+
+  .about-page h2 {
+    font-size: 1.25rem;
   }
 }
