@@ -1,4 +1,14 @@
-# GitHub Hardening Guide
+---
+layout: guide
+title: "GitHub Hardening Guide"
+vendor: "GitHub"
+slug: "github"
+tier: "1"
+category: "Developer Tools"
+description: "Source control and CI/CD security hardening for GitHub organizations, Actions, and supply chain protection"
+last_updated: "2025-12-13"
+---
+
 
 **Version:** 1.0
 **Last Updated:** 2025-12-13
@@ -1468,7 +1478,7 @@ Found an issue or want to improve this guide?
 
 - **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
 - **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
-- **Submit improvements:** See [CONTRIBUTING.md](../../CONTRIBUTING.md)
+- **Submit improvements:** See [CONTRIBUTING.md](/CONTRIBUTING.md)
 
 ---
 
