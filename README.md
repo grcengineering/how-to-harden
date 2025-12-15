@@ -1,6 +1,6 @@
 # How to Harden: SaaS Security Hardening Guides
 
-> Community-developed, open source information security hardening guides. The initial set of guides are focused on hardenining cloud services, with an emphasis on **integration security and supply chain attack prevention**.
+> Community-developed, open source information security hardening guides. The initial set of HTH guides are focused on hardenining cloud services, with an emphasis on **integration security and supply chain attack prevention**.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
