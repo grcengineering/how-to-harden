@@ -4,7 +4,7 @@
 
 Community-driven, open source guides for hardening SaaS platforms with emphasis on **integration security and supply chain attack prevention**.
 
-[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Status: Alpha](https://img.shields.io/badge/Status-Alpha-yellow)](https://github.com/yourproject/how-to-harden/releases)
 
@@ -225,14 +225,9 @@ All contributors are recognized in:
 
 ## License
 
-This project is licensed under **AGPL-3.0** to ensure:
-- ✅ Free and open access to all hardening guides
-- ✅ Community contributions remain open source
-- ✅ Commercial tools that integrate our data must share improvements
+This project is licensed under the **MIT License** - see [LICENSE](LICENSE) for full text.
 
-See [LICENSE](LICENSE) for full text.
-
-**Why AGPL-3.0?** Following [howtorotate.com](https://howtorotate.com)'s model - strong copyleft ensures that if commercial security tools benefit from our work, their improvements flow back to the community.
+You are free to use, modify, and distribute this work for any purpose.
 
 ---
 
