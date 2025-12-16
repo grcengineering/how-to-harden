@@ -49,8 +49,7 @@
     // Theme toggle functionality
     document.addEventListener('DOMContentLoaded', function() {
       const themeToggle = document.getElementById('theme-toggle');
-      const toggleButtons = themeToggle.querySelectorAll('.theme-toggle-btn');
-      const savedTheme = localStorage.getItem('theme-preference') || 'auto';
+      const themes = ['light', 'dark', 'auto'];
 
       function getSystemTheme() {
         return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
@@ -61,27 +60,18 @@
         document.documentElement.setAttribute('data-theme', theme);
       }
 
-      function updateActiveButton(preference) {
-        toggleButtons.forEach(btn => {
-          if (btn.dataset.theme === preference) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
-        });
+      function getNextTheme(currentTheme) {
+        const currentIndex = themes.indexOf(currentTheme);
+        const nextIndex = (currentIndex + 1) % themes.length;
+        return themes[nextIndex];
       }
 
-      // Set initial active button
-      updateActiveButton(savedTheme);
-
-      // Handle button clicks
-      toggleButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          const preference = this.dataset.theme;
-          localStorage.setItem('theme-preference', preference);
-          applyTheme(preference);
-          updateActiveButton(preference);
-        });
+      // Handle button click - cycle through themes
+      themeToggle.addEventListener('click', function() {
+        const currentPreference = localStorage.getItem('theme-preference') || 'auto';
+        const nextPreference = getNextTheme(currentPreference);
+        localStorage.setItem('theme-preference', nextPreference);
+        applyTheme(nextPreference);
       });
     });
   </script>
