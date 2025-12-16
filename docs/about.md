@@ -35,17 +35,19 @@ We prioritize:
 - **Compliance mapping** - NIST 800-53, SOC 2, ISO 27001 control references
 - **Edition awareness** - Clear compatibility matrices for different product tiers
 
-## Risk Tiers
+## SaaS Categories
 
-Guides are organized by supply chain risk:
+Guides are organized by platform category:
 
-| Tier | Risk Level | Examples |
-|------|------------|----------|
-| **Tier 1** | Critical | Identity providers, secrets managers, EDR platforms |
-| **Tier 2** | High | DevOps platforms, CRM systems, data platforms |
-| **Tier 3** | Medium-High | HR systems, SIEM, container registries |
-| **Tier 4** | Medium | Productivity tools, marketing platforms |
-| **Tier 5** | Standard | Supporting tools, analytics platforms |
+| Category | Description | Examples |
+|----------|-------------|----------|
+| **Identity** | Identity and access management platforms | Okta, Ping Identity, SailPoint |
+| **Security** | Security tools and platforms | CrowdStrike, CyberArk, HashiCorp Vault |
+| **DevOps** | Development and operations platforms | GitLab, CircleCI, Datadog |
+| **Data** | Data platforms and analytics | Snowflake, Databricks, Tableau |
+| **Productivity** | Collaboration and productivity tools | Zoom, Notion, Asana |
+| **HR/Finance** | Human resources and finance platforms | Workday, ADP, NetSuite |
+| **Marketing** | Marketing and CRM platforms | Salesforce, HubSpot, Mailchimp |
 
 ## Contributing
 
