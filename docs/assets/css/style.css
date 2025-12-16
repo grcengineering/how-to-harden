@@ -1150,6 +1150,7 @@ body {
   /* Guide page mobile */
   .guide {
     padding: var(--space-md);
+    padding-top: calc(var(--space-xl) + 32px);
   }
 
   .guide-header {
