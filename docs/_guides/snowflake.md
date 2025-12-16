@@ -171,6 +171,7 @@ WHERE deleted_on IS NULL
 - **Quarterly:** Review authentication policies
 
 #### Operational Impact
+
 | Aspect | Impact Level | Details |
 |--------|-------------|----------|
 | **User Experience** | Low | Users enroll once, authenticate via app |
@@ -185,6 +186,7 @@ ALTER ACCOUNT UNSET AUTHENTICATION POLICY;
 ```
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |

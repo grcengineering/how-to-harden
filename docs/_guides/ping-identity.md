@@ -118,6 +118,7 @@ curl -X PUT "https://api.pingone.com/v1/environments/${ENV_ID}/groups/${ADMIN_GR
 ```
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |

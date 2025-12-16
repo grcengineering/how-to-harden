@@ -59,6 +59,7 @@ Miro is a visual collaboration platform for whiteboards, diagrams, and design se
 #### ClickOps Implementation
 
 **Step 1: Define Team Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Admin | Full team management |

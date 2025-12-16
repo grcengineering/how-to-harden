@@ -60,6 +60,7 @@ New Relic is an observability platform ingesting application performance, infras
 #### ClickOps Implementation
 
 **Step 1: Define Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Admin | Full account access |
@@ -90,6 +91,7 @@ Manage New Relic API keys securely.
 #### Implementation
 
 **Key Types:**
+
 | Key Type | Purpose | Risk |
 |----------|---------|------|
 | License Key | Data ingestion | Medium |

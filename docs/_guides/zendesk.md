@@ -60,6 +60,7 @@ Zendesk handles customer support data including tickets, chat transcripts, and c
 #### ClickOps Implementation
 
 **Step 1: Define Custom Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Admin | Full access (limited users) |

@@ -61,6 +61,7 @@ Terraform Cloud state files containing plaintext secrets, cloud provider credent
 #### ClickOps Implementation
 
 **Step 1: Define Teams**
+
 | Team | Permissions |
 |------|-------------|
 | owners | Full organization access |

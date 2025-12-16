@@ -110,6 +110,7 @@ curl -X PUT "https://api.atlassian.com/admin/v1/orgs/${ORG_ID}/policies/authenti
 ```
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |

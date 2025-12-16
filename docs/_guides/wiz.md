@@ -93,6 +93,7 @@ Configure Wiz roles with least-privilege access.
 #### ClickOps Implementation
 
 **Step 1: Define Role Strategy**
+
 | Role | Permissions |
 |------|-------------|
 | Admin | Full platform access (limit to 2-3) |
@@ -237,6 +238,7 @@ Secure Wiz API service accounts.
    - Automation (specific scopes)
 
 **Step 2: Configure Minimum Scopes**
+
 | Integration | Required Scopes |
 |-------------|----------------|
 | SIEM | `read:issues`, `read:vulnerabilities` |

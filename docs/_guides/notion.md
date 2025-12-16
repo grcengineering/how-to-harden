@@ -59,6 +59,7 @@ Notion serves as a collaborative workspace containing documentation, wikis, data
 #### ClickOps Implementation
 
 **Step 1: Configure Member Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Workspace Owner | Full admin access |

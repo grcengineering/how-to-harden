@@ -108,6 +108,7 @@ gitlab_rails['gitlab_signin_enabled'] = false
 ```
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
@@ -126,6 +127,7 @@ Configure project-level access controls using GitLab's role-based permissions.
 #### ClickOps Implementation
 
 **Step 1: Define Role Strategy**
+
 | Role | Permissions | Use Case |
 |------|-------------|----------|
 | Guest | View issues, wiki | External stakeholders |
@@ -171,6 +173,7 @@ Restrict personal access token (PAT) creation and enforce expiration policies.
 # GitLab API - List all personal access tokens (Admin)
 curl -H "PRIVATE-TOKEN: ${ADMIN_TOKEN}" \
   "https://gitlab.company.com/api/v4/personal_access_tokens?state=active" \
+
   | jq '.[] | {user: .user.username, name: .name, expires_at: .expires_at, scopes: .scopes}'
 ```
 

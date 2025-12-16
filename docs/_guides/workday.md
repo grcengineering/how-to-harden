@@ -207,6 +207,7 @@ Configure OAuth token policies for integration authentication.
    - **Token expiration:** 1 hour access token, 7 days refresh (L1) / 24h refresh (L2)
 
 **Step 2: Rotate Client Secrets**
+
 | Integration Type | Rotation Frequency |
 |-----------------|-------------------|
 | Payroll connectors | Quarterly |

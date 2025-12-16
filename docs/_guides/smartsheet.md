@@ -60,6 +60,7 @@ Smartsheet is a collaborative work management platform for projects, workflows, 
 #### ClickOps Implementation
 
 **Step 1: Define User Types**
+
 | Type | Permissions |
 |------|-------------|
 | System Admin | Full admin access |

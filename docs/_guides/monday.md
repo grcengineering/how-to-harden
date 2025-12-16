@@ -59,6 +59,7 @@ Monday.com is a work operating system managing projects, workflows, and team col
 #### ClickOps Implementation
 
 **Step 1: Define User Types**
+
 | Type | Permissions |
 |------|-------------|
 | Admin | Full account access |

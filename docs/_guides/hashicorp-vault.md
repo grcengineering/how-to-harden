@@ -215,6 +215,7 @@ vault read sys/internal/counters/tokens
 - **Quarterly:** Rotate AppRole SecretIDs
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |

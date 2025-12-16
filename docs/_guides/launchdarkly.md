@@ -60,6 +60,7 @@ LaunchDarkly manages feature flags controlling application behavior across envir
 #### ClickOps Implementation
 
 **Step 1: Define Custom Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Admin | Full access |
@@ -90,6 +91,7 @@ Protect LaunchDarkly SDK keys.
 #### Implementation
 
 **SDK Key Types:**
+
 | Key Type | Exposure Risk | Use Case |
 |----------|---------------|----------|
 | SDK Key | Server-side only | Backend services |

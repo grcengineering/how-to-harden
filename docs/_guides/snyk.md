@@ -59,6 +59,7 @@ Snyk provides developer security for vulnerability scanning across code, depende
 #### ClickOps Implementation
 
 **Step 1: Define Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Group Admin | Full organization access |

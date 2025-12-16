@@ -71,6 +71,7 @@ Require strong MFA for all SailPoint administrative access.
 #### ClickOps Implementation
 
 **Step 1: Define Admin Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Org Admin | Full platform access (2-3 users) |
@@ -98,6 +99,7 @@ Harden SCIM connector configurations.
 3. Document credentials and permissions
 
 **Step 2: Rotate SCIM Tokens**
+
 | Source Type | Rotation Frequency |
 |-------------|-------------------|
 | HR Systems | Quarterly |

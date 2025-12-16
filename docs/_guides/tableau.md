@@ -60,6 +60,7 @@ Tableau provides business intelligence and data visualization with connections t
 #### ClickOps Implementation
 
 **Step 1: Define Site Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Site Administrator Creator | Full site access |

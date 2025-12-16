@@ -60,6 +60,7 @@ Freshservice is an IT service management (ITSM) platform handling IT tickets, as
 #### ClickOps Implementation
 
 **Step 1: Define Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Admin | Full access |

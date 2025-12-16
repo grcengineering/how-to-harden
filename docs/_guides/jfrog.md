@@ -147,6 +147,7 @@ jf rt access-token-create \
 ```
 
 **Step 3: Rotate Tokens**
+
 | Token Type | Rotation Frequency |
 |------------|-------------------|
 | CI/CD tokens | Quarterly |

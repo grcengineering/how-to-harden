@@ -84,6 +84,7 @@ Require MFA for all Falcon console access. Console compromise provides access to
 3. Set: **Grace period:** 0 (immediate enforcement)
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
@@ -196,6 +197,7 @@ For each integration, create dedicated client with minimal scopes:
 - NO: Detections, Host actions
 
 **Step 3: Implement Client Rotation**
+
 | Client Type | Rotation Frequency |
 |-------------|-------------------|
 | SIEM/SOAR | Quarterly |

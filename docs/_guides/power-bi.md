@@ -61,6 +61,7 @@ Microsoft Power BI provides business intelligence with data connections across e
 #### ClickOps Implementation
 
 **Step 1: Define Workspace Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Admin | Full workspace control |
@@ -184,12 +185,14 @@ PATHCONTAINS("Finance", USERPRINCIPALNAME())
 ```kql
 // Detect report exports
 PowerBIActivity
+
 | where Activity == "ExportReport"
 | summarize count() by UserId
 | where count_ > 10
 
 // Detect embed token generation
 PowerBIActivity
+
 | where Activity == "GenerateEmbedToken"
 | project TimeGenerated, UserId, ReportId
 ```

@@ -113,6 +113,7 @@ curl -X POST "https://${BEYONDTRUST_HOST}/api/config/security-provider" \
 ```
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
@@ -243,6 +244,7 @@ Implement strict API key management including regular rotation, IP binding, and 
    - Assigned permissions
 
 **Step 2: Implement Key Rotation Schedule**
+
 | Key Type | Rotation Frequency | Maximum Age |
 |----------|-------------------|-------------|
 | Production integration | Quarterly | 90 days |

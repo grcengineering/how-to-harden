@@ -84,6 +84,7 @@ Configure Datadog roles with granular permissions.
 #### ClickOps Implementation
 
 **Step 1: Design Role Structure**
+
 | Role | Permissions |
 |------|-------------|
 | Admin | Full organization access (2-3 users) |
@@ -189,6 +190,7 @@ NEW_KEY=$(curl -X POST "https://api.datadoghq.com/api/v1/api_key" \
   -H "DD-APPLICATION-KEY: ${APP_KEY}" \
   -H "Content-Type: application/json" \
   -d '{"name": "prod-agents-'$(date +%Y%m%d)'"}' \
+
   | jq -r '.api_key.key')
 
 # Update agents with new key

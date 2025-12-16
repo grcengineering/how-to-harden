@@ -71,6 +71,7 @@ Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
 #### ClickOps Implementation
 
 **Step 1: Define Role Hierarchy**
+
 | Role | Permissions |
 |------|-------------|
 | IT Security Manager | Security configuration |

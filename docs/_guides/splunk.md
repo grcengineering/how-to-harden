@@ -70,6 +70,7 @@ Require SAML SSO with MFA for all Splunk access.
 #### ClickOps Implementation
 
 **Step 1: Define Roles**
+
 | Role | Permissions |
 |------|-------------|
 | admin | Full access (2-3 users) |
@@ -169,15 +170,18 @@ Index Strategy:
 ```spl
 # Detect unusual search activity
 index=_audit action=search
+
 | stats count by user, search
 | where count > 100
 
 # Detect configuration changes
 index=_audit action=edit_*
+
 | table _time user action object
 
 # Detect failed authentication
 index=_audit action=login status=failure
+
 | stats count by user, src
 | where count > 5
 ```

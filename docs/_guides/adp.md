@@ -82,6 +82,7 @@ Configure ADP roles with segregation of duties for payroll functions.
 #### ClickOps Implementation
 
 **Step 1: Define Role Structure**
+
 | Role | Permissions |
 |------|-------------|
 | Payroll Administrator | Full payroll access (limit to 2-3) |

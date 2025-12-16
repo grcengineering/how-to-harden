@@ -204,6 +204,7 @@ eventType eq "user.authentication.auth_via_mfa" AND debugContext.debugData.facto
 - **Annually:** Review authenticator hardware lifecycle (key expiration)
 
 #### Operational Impact
+
 | Aspect | Impact Level | Details |
 |--------|-------------|----------|
 | **User Experience** | Medium | Users must carry/use security keys |
@@ -221,6 +222,7 @@ eventType eq "user.authentication.auth_via_mfa" AND debugContext.debugData.facto
 3. Enable fallback MFA methods temporarily
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
@@ -295,6 +297,7 @@ curl -X POST "https://${OKTA_DOMAIN}/api/v1/iam/roles" \
 ```
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.2 | Role-based access |
@@ -489,6 +492,7 @@ Control which OAuth applications users can authorize and require admin approval 
 # List all OAuth app grants
 curl -X GET "https://${OKTA_DOMAIN}/api/v1/apps?filter=status%20eq%20%22ACTIVE%22" \
   -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
+
   | jq '.[] | {name: .name, signOnMode: .signOnMode, created: .created}'
 
 # Audit OAuth tokens

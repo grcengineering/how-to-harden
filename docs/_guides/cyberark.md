@@ -113,6 +113,7 @@ curl -X PUT "https://${PVWA_URL}/PasswordVault/API/Configuration/AuthenticationM
 4. [ ] Test PSM connection with MFA requirement
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
