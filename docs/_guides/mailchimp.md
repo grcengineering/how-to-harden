@@ -60,6 +60,7 @@ Mailchimp manages email marketing with audience data, campaign history, and cust
 #### ClickOps Implementation
 
 **Step 1: Define User Levels**
+
 | Level | Permissions |
 |-------|-------------|
 | Owner | Full access (1 user) |

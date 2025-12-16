@@ -60,6 +60,7 @@ SAP SuccessFactors is a global enterprise HCM with deep SAP ecosystem integratio
 #### ClickOps Implementation
 
 **Step 1: Define Permission Roles**
+
 | Role | Permissions |
 |------|-------------|
 | System Admin | Full access (limit users) |

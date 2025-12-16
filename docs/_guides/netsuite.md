@@ -172,6 +172,7 @@ Harden Token-Based Authentication (TBA) for API integrations.
 2. Assign minimal required permissions
 
 **Step 3: Implement Token Rotation**
+
 | Token Type | Rotation Frequency |
 |------------|-------------------|
 | Production integrations | Quarterly |

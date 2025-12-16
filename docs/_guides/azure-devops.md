@@ -86,6 +86,7 @@ Require Azure AD authentication with Conditional Access policies including MFA, 
    - **Allow public projects:** Disable
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
@@ -255,6 +256,7 @@ Audit service connections with stored credentials and implement rotation schedul
    - Generic (check for stored secrets)
 
 **Step 2: Document Rotation Schedule**
+
 | Connection Type | Rotation Frequency | Last Rotated |
 |-----------------|-------------------|--------------|
 | Azure (stored creds) | 90 days | [Date] |
@@ -627,17 +629,20 @@ do {
 
 // Detect service connection modifications
 AzureDevOpsAuditing
+
 | where OperationName contains "ServiceEndpoint"
 | where OperationName contains "Modified" or OperationName contains "Created"
 | project TimeGenerated, ActorUPN, OperationName, ProjectName, Data
 
 // Detect pipeline permission changes
 AzureDevOpsAuditing
+
 | where OperationName contains "Security" or OperationName contains "Permission"
 | project TimeGenerated, ActorUPN, OperationName, ProjectName, Data
 
 // Detect unusual build activity
 AzureDevOpsAuditing
+
 | where OperationName == "Build.QueueBuild"
 | summarize count() by ActorUPN, bin(TimeGenerated, 1h)
 | where count_ > 50

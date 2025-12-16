@@ -84,6 +84,7 @@ Require SAML SSO with MFA for all CircleCI access. The January 2023 breach demon
 3. Enable: **Restrict access to allowed IPs**
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
@@ -486,6 +487,7 @@ Configure and monitor CircleCI audit logs for security events.
 # CircleCI API - Export audit logs
 curl -X GET "https://circleci.com/api/v2/organization/${ORG_ID}/audit-log?start-time=${START}" \
   -H "Circle-Token: ${API_TOKEN}" \
+
   | jq '.items[]'
 ```
 

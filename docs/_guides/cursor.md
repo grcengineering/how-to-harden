@@ -112,6 +112,7 @@ Require all developers to authenticate with a Cursor account instead of using th
 **Expected result:** All Cursor features require authenticated account
 
 #### Operational Impact
+
 | Aspect | Impact Level | Details |
 |--------|-------------|----------|
 | **User Experience** | Low | One-time authentication flow |
@@ -120,6 +121,7 @@ Require all developers to authenticate with a Cursor account instead of using th
 | **Rollback Difficulty** | Easy | Sign out from account |
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | User identification and authentication |
@@ -172,6 +174,7 @@ Require MFA for Cursor account authentication to prevent account takeover via co
 **Expected result:** All logins require MFA verification
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Multi-factor authentication |
@@ -298,6 +301,7 @@ echo "✓ Privacy Mode enabled globally for Cursor"
 - **Quarterly:** Review Privacy Mode policy effectiveness
 
 #### Operational Impact
+
 | Aspect | Impact Level | Details |
 |--------|-------------|----------|
 | **Developer Productivity** | High | Cloud AI features (autocomplete, chat) disabled |
@@ -317,6 +321,7 @@ echo "✓ Privacy Mode enabled globally for Cursor"
 4. Restart Cursor
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.7 | Data transmission controls |
@@ -373,6 +378,7 @@ Restrict which AI providers Cursor can use. Allow only approved providers with a
 | **Local Models** | Local only | No | N/A | N/A | Highest security (L3) |
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC9.2 | Third-party vendor management |
@@ -456,6 +462,7 @@ ollama serve
 | **34B params** | 32 GB+ | Slow, high quality | Complex code generation |
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **NIST 800-53** | SC-4 | Information remnants |
@@ -561,6 +568,7 @@ security find-generic-password -a "$USER" -s "cursor-openai-key" -w
 - **Quarterly:** Audit environment variable security
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Secret management |
@@ -751,6 +759,7 @@ Use VSCode/Cursor Workspace Trust to prevent automatic execution of untrusted co
 | **Settings (workspace)** | Applied | Ignored |
 
 #### Operational Impact
+
 | Aspect | Impact Level | Details |
 |--------|-------------|----------|
 | **Developer Workflow** | Medium | Must trust repos to use full features |
@@ -758,6 +767,7 @@ Use VSCode/Cursor Workspace Trust to prevent automatic execution of untrusted co
 | **Maintenance Burden** | Low | One-time trust decision per workspace |
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **NIST 800-53** | CM-7 | Least functionality |

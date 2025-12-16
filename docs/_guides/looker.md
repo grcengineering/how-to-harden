@@ -60,6 +60,7 @@ Looker (Google Cloud) provides business intelligence with LookML modeling and da
 #### ClickOps Implementation
 
 **Step 1: Define Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Admin | Full access |

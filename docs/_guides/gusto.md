@@ -60,6 +60,7 @@ Gusto is a payroll and benefits platform for small-medium businesses. REST API a
 #### ClickOps Implementation
 
 **Step 1: Define Admin Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Primary Admin | Full access |

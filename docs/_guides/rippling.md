@@ -60,6 +60,7 @@ Rippling is a unified workforce platform managing HR, IT, payroll, and spend. RE
 #### ClickOps Implementation
 
 **Step 1: Define Permission Sets**
+
 | Role | Permissions |
 |------|-------------|
 | Super Admin | Full access |

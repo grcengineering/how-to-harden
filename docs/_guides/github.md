@@ -171,6 +171,7 @@ gh api /orgs/{org}/members?filter=2fa_disabled --jq 'length'
 - **Monthly:** Audit removed users (were they removed due to 2FA non-compliance?)
 
 #### Operational Impact
+
 | Aspect | Impact Level | Details |
 |--------|-------------|----------|
 | **User Experience** | Medium | Users must set up 2FA app/hardware key |
@@ -189,6 +190,7 @@ gh api /orgs/{org}/members?filter=2fa_disabled --jq 'length'
 3. Save (not recommended - only for emergency access recovery)
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access security - MFA |
@@ -425,6 +427,7 @@ WHERE action = 'protected_branch.policy_override'
 - **Quarterly:** Review and update required status checks
 
 #### Operational Impact
+
 | Aspect | Impact Level | Details |
 |--------|-------------|----------|
 | **Developer Workflow** | Medium | Must create PRs instead of direct push |
@@ -652,6 +655,7 @@ done
 ```
 
 #### Operational Impact
+
 | Aspect | Impact Level | Details |
 |--------|-------------|----------|
 | **Developer Workflow** | Medium | Must request approval for new Actions |
@@ -895,6 +899,7 @@ for app in apps:
 - Verify scope grants haven't increased
 
 #### Operational Impact
+
 | Aspect | Impact Level | Details |
 |--------|-------------|----------|
 | **Developer Workflow** | Low | Apps still work with scoped access |
@@ -1311,6 +1316,7 @@ gh api -X POST /orgs/{org}/audit-log/streams \
 **Splunk:**
 ```spl
 index=github action=org.add_member
+
 | stats count by actor, user
 | where count > 5
 ```
@@ -1318,6 +1324,7 @@ index=github action=org.add_member
 **Unusual repo cloning:**
 ```spl
 index=github action=git.clone
+
 | stats dc(repo) as unique_repos by actor
 | where unique_repos > 50
 ```
@@ -1325,6 +1332,7 @@ index=github action=git.clone
 **Secret scanning alert ignored:**
 ```spl
 index=github action=secret_scanning.dismiss_alert
+
 | table _time, actor, repo, alert_id
 ```
 

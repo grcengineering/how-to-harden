@@ -60,6 +60,7 @@ BambooHR is a cloud-based HR platform managing employee records, benefits, and p
 #### ClickOps Implementation
 
 **Step 1: Define Access Levels**
+
 | Level | Permissions |
 |-------|-------------|
 | Admin | Full access |

@@ -83,6 +83,7 @@ Use personal access tokens instead of passwords for automation.
    - **Read/Write:** For builds (specific repos)
 
 **Step 2: Rotate Tokens**
+
 | Token Type | Rotation |
 |------------|----------|
 | CI/CD pull | Quarterly |

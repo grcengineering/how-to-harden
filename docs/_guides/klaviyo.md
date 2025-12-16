@@ -60,6 +60,7 @@ Klaviyo is an e-commerce marketing platform managing customer data, email/SMS ca
 #### ClickOps Implementation
 
 **Step 1: Define User Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Owner | Full access (1 user) |
@@ -91,6 +92,7 @@ Manage Klaviyo API keys securely.
 #### Implementation
 
 **API Key Types:**
+
 | Key Type | Access Level | Exposure Risk |
 |----------|--------------|---------------|
 | Private API Key | Full read/write | High (never expose) |

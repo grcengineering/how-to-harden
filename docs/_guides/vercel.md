@@ -59,6 +59,7 @@ Vercel is a frontend cloud platform for deployment and hosting. REST API, deploy
 #### ClickOps Implementation
 
 **Step 1: Define Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Owner | Full team access |

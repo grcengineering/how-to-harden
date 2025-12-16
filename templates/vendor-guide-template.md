@@ -127,6 +127,7 @@ resource "vendor_resource_type" "name" {
 - **Annually:** [Deeper review]
 
 #### Operational Impact
+
 | Aspect | Impact Level | Details |
 |--------|-------------|----------|
 | **User Experience** | [None/Low/Medium/High] | [Description] |
@@ -141,6 +142,7 @@ resource "vendor_resource_type" "name" {
 [Quick steps to disable if needed]
 
 #### Compliance Mappings
+
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | [ID] | [Description] |
@@ -381,3 +383,36 @@ Found an issue or want to improve this guide?
 - [ ] Real-world incident examples included and sourced
 - [ ] Integration-specific controls include current vendor IPs/settings with verification date
 - [ ] At least 2 reviewers with hands-on product experience
+- [ ] All Markdown tables have blank lines before and after them (required for Jekyll rendering)
+
+**Markdown Formatting Requirements:**
+
+⚠️ **CRITICAL for Jekyll/Website Rendering:**
+
+**Tables:** MUST have a blank line before and after each table. Without this, tables will not render properly on the website.
+
+**Correct:**
+```markdown
+**Some text here**
+
+| Column 1 | Column 2 |
+|----------|----------|
+| Value 1  | Value 2  |
+
+Next paragraph here.
+```
+
+**Incorrect (will break on website):**
+```markdown
+**Some text here**
+| Column 1 | Column 2 |
+|----------|----------|
+| Value 1  | Value 2  |
+Next paragraph here.
+```
+
+**Other formatting guidelines:**
+- Use `**bold**` for emphasis, not `__bold__`
+- Use consistent heading levels (don't skip from ## to ####)
+- Code blocks must specify language for syntax highlighting
+- Use proper emoji syntax where applicable (✅ ❌ ⚠️)

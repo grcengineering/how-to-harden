@@ -60,6 +60,7 @@ PagerDuty orchestrates incident response with integrations across monitoring, ti
 #### ClickOps Implementation
 
 **Step 1: Define Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Account Owner | Full access (1 user) |

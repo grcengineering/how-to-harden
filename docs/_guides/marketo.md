@@ -71,6 +71,7 @@ Require SAML SSO with MFA for Marketo access.
 #### ClickOps Implementation
 
 **Step 1: Define Roles**
+
 | Role | Permissions |
 |------|-------------|
 | Admin | Full access (2-3 users) |
