@@ -421,6 +421,72 @@ body {
   gap: var(--space-md);
 }
 
+/* Review filter toggle */
+.review-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.review-filter-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.review-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.review-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.review-toggle-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.review-toggle-btn:hover {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+}
+
+/* AI Drafted toggle button */
+.review-toggle-btn[data-review="ai-drafted"].active {
+  background: rgba(234, 179, 8, 0.2);
+  color: #eab308;
+}
+
+/* Human Reviewed toggle button */
+.review-toggle-btn[data-review="human-reviewed"].active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+/* Human Verified toggle button */
+.review-toggle-btn[data-review="human-verified"].active {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
 .sort-control {
   display: flex;
   align-items: center;
@@ -548,14 +614,31 @@ body {
   letter-spacing: 0.05em;
   white-space: nowrap;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
+.status-badge svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* AI Drafted - Yellow with caution icon */
 .status-draft {
   background: rgba(234, 179, 8, 0.15);
   color: #eab308;
 }
 
+/* Human Reviewed - Blue with eye icon */
 .status-reviewed {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+/* Human Verified - Green with checkmark icon */
+.status-verified {
   background: rgba(34, 197, 94, 0.15);
   color: #22c55e;
 }
@@ -629,8 +712,8 @@ body {
   overflow-x: hidden;
 }
 
-/* Draft banner - full width, attached below header */
-.draft-banner {
+/* Status banners - full width, attached below header */
+.status-banner {
   position: fixed;
   top: 64px;
   left: 0;
@@ -641,40 +724,34 @@ body {
   justify-content: center;
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
-  background: rgba(245, 158, 11, 0.95);
-  border-bottom: 1px solid rgba(245, 158, 11, 0.5);
-  color: #1a1a1a;
   font-size: 0.875rem;
   font-weight: 500;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.draft-banner svg {
+.status-banner svg {
   flex-shrink: 0;
 }
 
-/* Human-verified version (for future use) */
+/* AI Drafted banner - Yellow with caution icon */
+.draft-banner {
+  background: rgba(234, 179, 8, 0.95);
+  border-bottom: 1px solid rgba(234, 179, 8, 0.5);
+  color: #1a1a1a;
+}
+
+/* Human Reviewed banner - Blue with eye icon */
+.reviewed-banner {
+  background: rgba(59, 130, 246, 0.95);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.5);
+  color: #ffffff;
+}
+
+/* Human Verified banner - Green with checkmark icon */
 .verified-banner {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  right: 0;
-  z-index: 99;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
   background: rgba(34, 197, 94, 0.95);
   border-bottom: 1px solid rgba(34, 197, 94, 0.5);
   color: #1a1a1a;
-  font-size: 0.875rem;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.verified-banner svg {
-  flex-shrink: 0;
 }
 
 /* Adjust guide content to account for status banner */
@@ -1053,11 +1130,21 @@ body {
   }
 
   /* Status banners on mobile - adjust for shorter header */
-  .draft-banner,
-  .verified-banner {
+  .status-banner {
     top: 56px;
     font-size: 0.75rem;
     padding: var(--space-xs) var(--space-sm);
+  }
+
+  /* Review filter toggle on mobile */
+  .review-toggle-btn {
+    padding: 4px 8px;
+    font-size: 0.6875rem;
+  }
+
+  .review-toggle-btn svg {
+    width: 12px;
+    height: 12px;
   }
 
   /* Adjust body padding for shorter mobile header */
