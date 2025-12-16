@@ -137,9 +137,16 @@ a:hover {
 .site-header {
   background: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border);
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
+}
+
+/* Offset for fixed header */
+body {
+  padding-top: 64px;
 }
 
 .site-header .container {
@@ -1051,6 +1058,11 @@ a:hover {
     top: 56px;
     font-size: 0.75rem;
     padding: var(--space-xs) var(--space-sm);
+  }
+
+  /* Adjust body padding for shorter mobile header */
+  body {
+    padding-top: 56px;
   }
 
   .guide {
