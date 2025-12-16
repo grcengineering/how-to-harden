@@ -49,16 +49,18 @@ Real-world attacks (Drift, Gainsight, CircleCI, Okta) mapped to specific prevent
 
 **Scenario 1: You use Salesforce + Gainsight**
 ```bash
-# Option 1: Manual hardening (ClickOps)
-1. Read: content/salesforce/salesforce hardening guide.md
-2. Navigate to Section 2.1.1: "IP Allowlisting: Restricting Gainsight"
-3. Follow GUI steps to configure IP allowlisting in Salesforce
-4. Estimated time: 10 minutes
+# Option 1: Browse guides online
+Visit: https://how-to-harden.dev
+Search for: Salesforce guide
+Navigate to: IP Allowlisting controls section
 
-# Option 2: Automated hardening (Code)
+# Option 2: View guides locally
 git clone https://github.com/yourproject/how-to-harden
-cd how-to-harden/automation/scripts/salesforce
-python configure-gainsight-ips.py --apply
+cd how-to-harden/docs/_guides
+# Read the relevant guide (e.g., salesforce.md)
+# Follow the ClickOps or automation instructions provided
+
+# Estimated time: 10-15 minutes per control
 ```
 
 **Scenario 2: Audit your current SaaS stack**
@@ -87,36 +89,40 @@ We need your expertise! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ```
 how-to-harden/
-├── content/
-│   ├── salesforce/
-│   │   └── salesforce hardening guide.md     # Comprehensive guide, all controls
-│   ├── microsoft/
-│   │   └── microsoft-365 hardening guide.md
-│   ├── github/
-│   │   └── github hardening guide.md
-│   ├── google/
-│   │   └── google-workspace hardening guide.md
-│   └── [vendor]/
-│       └── [product] hardening guide.md
-├── automation/
-│   ├── scripts/                              # Audit and remediation scripts
-│   │   ├── salesforce/
-│   │   ├── microsoft-365/
-│   │   └── github/
-│   └── terraform/                            # IaC templates by vendor
-│       ├── salesforce/
-│       └── microsoft-365/
+├── docs/                                 # Jekyll documentation site
+│   ├── _config.yml                       # Jekyll configuration
+│   ├── Gemfile                          # Ruby dependencies
+│   ├── CNAME                            # Custom domain configuration
+│   ├── index.html                       # Main landing page
+│   ├── about.md                         # About page
+│   ├── _guides/                         # Platform hardening guides (53 guides)
+│   │   ├── salesforce.md
+│   │   ├── github.md
+│   │   ├── okta.md
+│   │   ├── microsoft-365.md
+│   │   └── ... (50+ more platform guides)
+│   ├── _layouts/                        # Jekyll layouts
+│   │   ├── default.html
+│   │   └── guide.html
+│   ├── _includes/                       # Reusable Jekyll components
+│   │   ├── header.html
+│   │   └── footer.html
+│   └── assets/                          # CSS, images, and other static assets
+│       └── css/
 ├── templates/
-│   └── vendor-guide-template.md              # Template for new vendor guides
-├── PHILOSOPHY.md                             # Scope, design principles, vision
-├── CONTRIBUTING.md                           # How to contribute
-└── GOVERNANCE.md                             # Decision-making, maintainer roles
+│   └── vendor-guide-template.md         # Template for new vendor guides
+├── README.md                            # This file
+├── PHILOSOPHY.md                        # Project scope and design principles
+├── CONTRIBUTING.md                      # Contribution guidelines
+└── LICENSE                              # MIT License
 ```
 
 **Structure Notes:**
-- Each vendor/product has ONE comprehensive hardening guide (like CIS Benchmarks)
+- Built with Jekyll for easy GitHub Pages deployment
+- Each vendor/product has ONE comprehensive hardening guide in `docs/_guides/`
 - Guides organized by control categories (Auth, Network, OAuth, Data, Monitoring)
 - Integration security controls (e.g., IP allowlisting specific vendors) are sections within guides
+- All guides follow the template in `templates/vendor-guide-template.md`
 
 ---
 
