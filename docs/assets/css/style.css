@@ -600,23 +600,24 @@ a:hover {
   overflow-x: hidden;
 }
 
-/* Draft banner - floating fixed position */
+/* Draft banner - full width, attached below header */
 .draft-banner {
   position: fixed;
-  top: 80px;
-  right: var(--space-lg);
+  top: 64px;
+  left: 0;
+  right: 0;
   z-index: 99;
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
   background: rgba(245, 158, 11, 0.95);
-  border: 1px solid rgba(245, 158, 11, 0.5);
-  border-radius: 6px;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.5);
   color: #1a1a1a;
   font-size: 0.875rem;
   font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .draft-banner svg {
@@ -625,21 +626,31 @@ a:hover {
 
 /* Human-verified version (for future use) */
 .verified-banner {
-  display: inline-flex;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
-  background: rgba(34, 197, 94, 0.15);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  border-radius: 6px;
-  color: #22c55e;
+  background: rgba(34, 197, 94, 0.95);
+  border-bottom: 1px solid rgba(34, 197, 94, 0.5);
+  color: #1a1a1a;
   font-size: 0.875rem;
   font-weight: 500;
-  margin-bottom: var(--space-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .verified-banner svg {
   flex-shrink: 0;
+}
+
+/* Adjust guide content to account for status banner */
+.guide {
+  padding-top: calc(var(--space-xl) + 40px);
 }
 
 .guide-header {
@@ -724,7 +735,7 @@ a:hover {
 
 .toc {
   position: sticky;
-  top: 88px;
+  top: 120px;
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -1010,6 +1021,18 @@ a:hover {
     --space-xl: 1.5rem;
     --space-2xl: 2rem;
     --space-3xl: 2.5rem;
+  }
+
+  /* Status banners on mobile - adjust for shorter header */
+  .draft-banner,
+  .verified-banner {
+    top: 56px;
+    font-size: 0.75rem;
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .guide {
+    padding-top: calc(var(--space-xl) + 32px);
   }
 
   .container {
