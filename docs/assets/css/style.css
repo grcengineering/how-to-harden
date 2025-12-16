@@ -39,14 +39,14 @@
   --color-tier-4: #22c55e;
   --color-tier-5: #1b95c1;
 
-  /* Category colors */
-  --color-identity: #1b95c1;
-  --color-devops: #1b95c1;
-  --color-data: #22c55e;
-  --color-security: #ef4444;
-  --color-productivity: #ffa84f;
-  --color-hr: #ec4899;
-  --color-marketing: #ffa84f;
+  /* Category colors - distinct palette */
+  --color-identity: #3b82f6;    /* Blue */
+  --color-security: #ef4444;    /* Red */
+  --color-devops: #8b5cf6;      /* Purple */
+  --color-data: #22c55e;        /* Green */
+  --color-productivity: #f59e0b; /* Amber */
+  --color-hr: #ec4899;          /* Pink */
+  --color-marketing: #06b6d4;   /* Cyan */
 
   /* Typography - SF Pro Display / system fonts */
   --font-sans: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
@@ -213,10 +213,10 @@ a:hover {
   position: absolute;
 }
 
-/* Show only the active icon based on data-theme attribute */
-[data-theme="light"] .theme-icon-light,
-[data-theme="dark"] .theme-icon-dark,
-[data-theme="auto"] .theme-icon-auto {
+/* Show only the active icon based on data-theme-preference attribute */
+[data-theme-preference="light"] .theme-icon-light,
+[data-theme-preference="dark"] .theme-icon-dark,
+[data-theme-preference="auto"] .theme-icon-auto {
   display: block;
 }
 
@@ -328,15 +328,24 @@ a:hover {
   font-weight: 600;
 }
 
-/* Tier filters */
-.tier-filters {
+/* Guides controls */
+.guides-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+/* Category filters */
+.category-filters {
   display: flex;
   gap: var(--space-sm);
   flex-wrap: wrap;
-  margin-bottom: var(--space-xl);
 }
 
-.tier-filter {
+.category-filter {
   padding: var(--space-sm) var(--space-md);
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border);
@@ -348,8 +357,115 @@ a:hover {
   transition: all 0.2s;
 }
 
-.tier-filter:hover,
-.tier-filter.active {
+.category-filter:hover,
+.category-filter.active {
+  background: var(--color-primary-muted);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Category filter colors when active */
+.category-filter[data-category="identity"].active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: var(--color-identity);
+  color: var(--color-identity);
+}
+
+.category-filter[data-category="security"].active {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--color-security);
+  color: var(--color-security);
+}
+
+.category-filter[data-category="devops"].active {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: var(--color-devops);
+  color: var(--color-devops);
+}
+
+.category-filter[data-category="data"].active {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: var(--color-data);
+  color: var(--color-data);
+}
+
+.category-filter[data-category="productivity"].active {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: var(--color-productivity);
+  color: var(--color-productivity);
+}
+
+.category-filter[data-category="hr"].active {
+  background: rgba(236, 72, 153, 0.15);
+  border-color: var(--color-hr);
+  color: var(--color-hr);
+}
+
+.category-filter[data-category="marketing"].active {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: var(--color-marketing);
+  color: var(--color-marketing);
+}
+
+/* View controls */
+.view-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.sort-control label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.sort-control select {
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.sort-control select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.view-toggle {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-btn:hover {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.view-btn.active {
   background: var(--color-primary-muted);
   border-color: var(--color-primary);
   color: var(--color-primary);
@@ -429,6 +545,37 @@ a:hover {
   flex-wrap: wrap;
 }
 
+/* List view */
+.guides-grid.list-view {
+  grid-template-columns: 1fr;
+  gap: var(--space-sm);
+}
+
+.guides-grid.list-view .guide-card {
+  flex-direction: row;
+  align-items: center;
+  padding: var(--space-md) var(--space-lg);
+  gap: var(--space-lg);
+}
+
+.guides-grid.list-view .guide-card-header {
+  margin-bottom: 0;
+  min-width: 200px;
+}
+
+.guides-grid.list-view .guide-card-description {
+  flex-grow: 1;
+  margin-bottom: 0;
+}
+
+.guides-grid.list-view .guide-card-meta {
+  flex-shrink: 0;
+}
+
+.guides-grid.list-view .guide-card:hover {
+  transform: none;
+}
+
 .category-tag {
   font-size: 0.75rem;
   padding: var(--space-xs) var(--space-sm);
@@ -437,13 +584,13 @@ a:hover {
   color: var(--color-text-muted);
 }
 
-.category-identity { color: var(--color-primary); background: rgba(27, 149, 193, 0.15); }
-.category-devops { color: var(--color-primary); background: rgba(27, 149, 193, 0.15); }
-.category-data { color: var(--color-data); background: rgba(34, 197, 94, 0.15); }
+.category-identity { color: var(--color-identity); background: rgba(59, 130, 246, 0.15); }
 .category-security { color: var(--color-security); background: rgba(239, 68, 68, 0.15); }
-.category-productivity { color: var(--color-accent); background: rgba(255, 168, 79, 0.15); }
+.category-devops { color: var(--color-devops); background: rgba(139, 92, 246, 0.15); }
+.category-data { color: var(--color-data); background: rgba(34, 197, 94, 0.15); }
+.category-productivity { color: var(--color-productivity); background: rgba(245, 158, 11, 0.15); }
 .category-hr { color: var(--color-hr); background: rgba(236, 72, 153, 0.15); }
-.category-marketing { color: var(--color-accent); background: rgba(255, 168, 79, 0.15); }
+.category-marketing { color: var(--color-marketing); background: rgba(6, 182, 212, 0.15); }
 
 /* Guide page */
 .guide {
@@ -451,6 +598,44 @@ a:hover {
   margin: 0 auto;
   padding: var(--space-xl) var(--space-lg);
   overflow-x: hidden;
+}
+
+/* Draft banner */
+.draft-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 6px;
+  color: #f59e0b;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: var(--space-md);
+}
+
+.draft-banner svg {
+  flex-shrink: 0;
+}
+
+/* Human-verified version (for future use) */
+.verified-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 6px;
+  color: #22c55e;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: var(--space-md);
+}
+
+.verified-banner svg {
+  flex-shrink: 0;
 }
 
 .guide-header {
@@ -859,13 +1044,37 @@ a:hover {
     padding-left: 40px;
   }
 
-  .tier-filters {
+  .guides-controls {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .category-filters {
     gap: var(--space-xs);
   }
 
-  .tier-filter {
+  .category-filter {
     padding: var(--space-xs) var(--space-sm);
     font-size: 0.75rem;
+  }
+
+  .view-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* List view on mobile */
+  .guides-grid.list-view .guide-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .guides-grid.list-view .guide-card-header {
+    min-width: auto;
+  }
+
+  .guides-grid.list-view .guide-card-description {
+    margin-bottom: var(--space-sm);
   }
 
   .guides-grid {

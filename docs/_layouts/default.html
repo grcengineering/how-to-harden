@@ -22,6 +22,7 @@
       function applyTheme(preference) {
         const theme = preference === 'auto' ? getSystemTheme() : preference;
         document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-theme-preference', preference);
       }
 
       applyTheme(savedTheme);
@@ -58,6 +59,7 @@
       function applyTheme(preference) {
         const theme = preference === 'auto' ? getSystemTheme() : preference;
         document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-theme-preference', preference);
       }
 
       function getNextTheme(currentTheme) {

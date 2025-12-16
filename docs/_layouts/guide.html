@@ -3,6 +3,14 @@ layout: default
 ---
 <article class="guide">
   <div class="guide-header">
+    <div class="draft-banner">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>AI-generated Draft</span>
+    </div>
     <div class="breadcrumb">
       <a href="{{ '/' | relative_url }}">Home</a>
       <span class="separator">/</span>
@@ -12,8 +20,7 @@ layout: default
     </div>
     <h1>{{ page.title }}</h1>
     <div class="guide-meta">
-      <span class="tier tier-{{ page.tier | downcase }}">Tier {{ page.tier }}</span>
-      <span class="category">{{ page.category }}</span>
+      <span class="category category-tag category-{{ page.category | downcase }}">{{ page.category }}</span>
       <span class="updated">Last updated: {{ page.last_updated }}</span>
     </div>
     {% if page.description %}
