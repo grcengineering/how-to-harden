@@ -1218,6 +1218,21 @@ body {
   .view-controls {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .review-filter {
+    width: 100%;
+  }
+
+  .sort-control {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .view-toggle {
+    flex-shrink: 0;
   }
 
   /* List view on mobile */
