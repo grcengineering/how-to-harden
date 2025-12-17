@@ -560,6 +560,7 @@ body {
   transition: all 0.2s;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 }
 
 .guide-card:hover {

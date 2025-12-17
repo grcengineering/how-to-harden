@@ -1125,5 +1125,21 @@ document.addEventListener('DOMContentLoaded', function() {
       setView(this.dataset.view);
     });
   });
+
+  // Make entire guide card clickable
+  guideCards.forEach(card => {
+    card.addEventListener('click', function(e) {
+      // Don't trigger if clicking on the link itself (let it handle naturally)
+      if (e.target.tagName === 'A' || e.target.closest('a')) {
+        return;
+      }
+
+      // Find the link within this card and navigate to it
+      const link = this.querySelector('h3 a');
+      if (link) {
+        link.click();
+      }
+    });
+  });
 });
 </script>
