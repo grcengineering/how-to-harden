@@ -39,7 +39,6 @@ This guide covers Okta-specific security configurations including authentication
 5. [Monitoring & Detection](#5-monitoring--detection)
 6. [Third-Party Integration Security](#6-third-party-integration-security)
 7. [Compliance Quick Reference](#7-compliance-quick-reference)
-8. [DISA STIG Compliance](#8-disa-stig-compliance)
 
 ---
 
@@ -48,9 +47,12 @@ This guide covers Okta-specific security configurations including authentication
 ### 1.1 Enforce Phishing-Resistant MFA (FIDO2/WebAuthn)
 
 **Profile Level:** L1 (Baseline)
-**CIS Controls:** 6.3, 6.5
-**NIST 800-53:** IA-2(1), IA-2(6)
-**DISA STIG:** V-273190, V-273191, V-273193, V-273194
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3, 6.5 |
+| NIST 800-53 | IA-2(1), IA-2(6) |
+| DISA STIG | V-273190, V-273191, V-273193 (HIGH), V-273194 (HIGH) |
 
 #### Description
 Require phishing-resistant authenticators (FIDO2 security keys or platform authenticators) for all users, especially administrators. This eliminates vulnerabilities to real-time phishing proxies that bypass TOTP and push-based MFA.
@@ -97,8 +99,8 @@ Require phishing-resistant authenticators (FIDO2 security keys or platform authe
 2. Create rule for Admin Console access requiring FIDO2
 3. Apply to Admin groups
 
-**Step 4: Configure Phishing-Resistant Authentication Policies (DISA STIG)**
-For DOD compliance, configure both Okta Dashboard and Admin Console policies:
+**Step 4: Configure Authentication Policy Requirements**
+Configure both Okta Dashboard and Admin Console policies:
 
 1. Navigate to: **Security → Authentication Policies**
 2. Click the **Okta Dashboard** policy
@@ -107,9 +109,10 @@ For DOD compliance, configure both Okta Dashboard and Admin Console policies:
 5. In "Possession factor constraints are" section, check **Phishing resistant**
 6. Repeat for the **Okta Admin Console** policy
 
-> **DISA STIG Requirement (V-273190, V-273191):** Both Okta Dashboard and Admin Console must be configured to allow authentication only via non-phishable authenticators (Phishing resistant box checked).
-
-> **DISA STIG Requirement (V-273193, V-273194 - HIGH):** Both Admin Console and Dashboard must require multifactor authentication with "Password/IdP + Another factor" or "Any 2 factor types".
+| Specification | Requirement |
+|---------------|-------------|
+| DISA STIG V-273190, V-273191 | Phishing resistant box must be checked for Dashboard and Admin Console |
+| DISA STIG V-273193, V-273194 (HIGH) | MFA required: "Password/IdP + Another factor" or "Any 2 factor types" |
 
 **Time to Complete:** ~30 minutes (policy) + user enrollment time
 
@@ -237,22 +240,16 @@ eventType eq "user.authentication.auth_via_mfa" AND debugContext.debugData.facto
 2. Disable or lower priority of FIDO2 requirement rule
 3. Enable fallback MFA methods temporarily
 
-#### Compliance Mappings
-
-| Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **SOC 2** | CC6.1 | Logical access controls |
-| **NIST 800-53** | IA-2(6) | Access to privileged accounts |
-| **ISO 27001** | A.9.4.2 | Secure log-on procedures |
-| **PCI DSS** | 8.3.1 | MFA for administrative access |
-
 ---
 
 ### 1.2 Implement Admin Role Separation
 
 **Profile Level:** L1 (Baseline)
-**CIS Controls:** 5.4, 6.8
-**NIST 800-53:** AC-5, AC-6(1)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4, 6.8 |
+| NIST 800-53 | AC-5, AC-6(1) |
 
 #### Description
 Separate administrative privileges using Okta's custom admin roles instead of granting Super Admin access. Create role-specific permissions for Help Desk, Application Admins, and Read-Only Auditors.
@@ -312,20 +309,15 @@ curl -X POST "https://${OKTA_DOMAIN}/api/v1/iam/roles" \
   }'
 ```
 
-#### Compliance Mappings
-
-| Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **SOC 2** | CC6.2 | Role-based access |
-| **NIST 800-53** | AC-6(1) | Least privilege |
-| **ISO 27001** | A.9.2.3 | Management of privileged access |
-
 ---
 
 ### 1.3 Enable Hardware-Bound Session Tokens
 
 **Profile Level:** L2 (Hardened)
-**NIST 800-53:** SC-23, IA-11
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | SC-23, IA-11 |
 
 #### Description
 Configure Okta to bind session tokens to specific devices using device trust and Okta FastPass, preventing session token theft and replay attacks.
@@ -365,13 +357,312 @@ Configure Okta to bind session tokens to specific devices using device trust and
 
 ---
 
+### 1.4 Configure Password Policy
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | IA-5(1) |
+| DISA STIG | V-273195, V-273196, V-273197, V-273198, V-273199, V-273200, V-273201, V-273208, V-273209 |
+
+#### Description
+Configure comprehensive password policies with appropriate complexity, age, and history requirements. These controls protect against weak passwords, password reuse, and rapid password cycling.
+
+#### Prerequisites
+- [ ] Super Admin access
+- [ ] Okta-mastered users (not applicable if using external directory services)
+
+#### Specification Requirements
+
+| Requirement | L1 (Baseline) | L2/L3 (DISA STIG) |
+|------------|---------------|-------------------|
+| Minimum length | 12 characters | 15 characters |
+| Uppercase required | Yes | Yes |
+| Lowercase required | Yes | Yes |
+| Number required | Yes | Yes |
+| Special character required | Yes | Yes |
+| Minimum password age | — | 24 hours |
+| Maximum password age | 90 days | 60 days |
+| Common password check | Recommended | Required |
+| Password history | 4 generations | 5 generations |
+
+#### ClickOps Implementation
+
+**Step 1: Access Password Authenticator Settings**
+1. Navigate to: **Security → Authenticators**
+2. Click the **Actions** button next to **Password**
+3. Select **Edit**
+
+**Step 2: Configure Each Password Policy**
+For each listed Password Policy, click **Edit** and configure:
+
+**Complexity Requirements:**
+- **Minimum Length:** Set to at least **15** characters (L2/L3) or **12** (L1)
+- **Upper case letter:** ☑ Checked
+- **Lower case letter:** ☑ Checked
+- **Number (0-9):** ☑ Checked
+- **Symbol (e.g., !@#$%^&*):** ☑ Checked
+
+**Password Age Settings:**
+- **Minimum password age is XX hours:** Set to at least **24** (prevents rapid cycling)
+- **Password expires after XX days:** Set to **60** (L2/L3) or **90** (L1)
+
+**Password History:**
+- **Enforce password history for last XX passwords:** Set to **5**
+
+**Step 3: Enable Common Password Check**
+1. Under **Password Settings** section
+2. Check **Common Password Check**
+3. Click **Save**
+
+#### Code Implementation
+
+```bash
+# Update password policy via API
+curl -X PUT "https://${OKTA_DOMAIN}/api/v1/policies/${POLICY_ID}" \
+  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "settings": {
+      "password": {
+        "complexity": {
+          "minLength": 15,
+          "minLowerCase": 1,
+          "minUpperCase": 1,
+          "minNumber": 1,
+          "minSymbol": 1
+        },
+        "age": {
+          "maxAgeDays": 60,
+          "minAgeMinutes": 1440,
+          "historyCount": 5
+        }
+      }
+    }
+  }'
+```
+
+#### Validation
+1. Navigate to: **Security → Authenticators → Password → Edit**
+2. For each policy, verify all settings match the requirements table above
+
+> **Note:** If Okta relies on external directory services for user sourcing, password policy is managed by the connected directory service.
+
+---
+
+### 1.5 Configure Account Lockout
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-7 |
+| DISA STIG | V-273189 |
+
+#### Description
+Enforce account lockout after consecutive invalid login attempts to protect against brute-force password attacks. This control significantly reduces the risk of unauthorized access via password guessing.
+
+#### Specification Requirements
+
+| Requirement | L1 (Baseline) | L2/L3 (DISA STIG) |
+|------------|---------------|-------------------|
+| Lockout threshold | 5 attempts | 3 attempts |
+| Lockout duration | 30 minutes | Until admin unlock |
+
+#### ClickOps Implementation
+
+**Step 1: Configure Password Authenticator Lockout**
+1. Navigate to: **Security → Authenticators**
+2. Click the **Actions** button next to **Password**
+3. Select **Edit**
+
+**Step 2: Configure Each Password Policy**
+For each listed Password Policy:
+1. Click **Edit** on the policy
+2. Locate the **Lock Out** section
+3. Check **Lock out after X unsuccessful attempts**
+4. Set the value to **3** (L2/L3) or **5** (L1)
+5. Click **Save**
+
+#### Validation
+1. Navigate to: **Security → Authenticators → Password → Edit**
+2. For each policy, verify lockout settings are configured
+
+> **Note:** If Okta relies on external directory services for user sourcing, account lockout is managed by the connected directory service.
+
+---
+
+### 1.6 Configure Account Lifecycle Management
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-2(3) |
+| DISA STIG | V-273188 |
+
+#### Description
+Automatically disable user accounts after a period of inactivity to reduce the risk of dormant account compromise. Attackers targeting inactive accounts may maintain undetected access since account owners won't notice unauthorized activity.
+
+#### Specification Requirements
+
+| Requirement | L1 (Baseline) | L2/L3 (DISA STIG) |
+|------------|---------------|-------------------|
+| Inactivity threshold | 90 days | 35 days |
+| Action | Suspend | Suspend |
+
+#### Prerequisites
+- [ ] Okta Workflows license (required for Automations)
+- [ ] Super Admin or Org Admin access
+
+#### ClickOps Implementation
+
+**Step 1: Create Inactivity Automation**
+1. Navigate to: **Workflow → Automations**
+2. Click **Add Automation**
+3. Enter a name (e.g., "User Inactivity - Auto Suspension")
+
+**Step 2: Configure Trigger Condition**
+1. Click **Add Condition**
+2. Select **User Inactivity in Okta**
+3. Set duration to **35 days** (L2/L3) or **90 days** (L1)
+4. Click **Save**
+
+**Step 3: Configure Schedule**
+1. Click the edit button next to **Select Schedule**
+2. Set **Schedule** field to **Run Daily**
+3. Set **Time** field to an appropriate time (e.g., 2:00 AM local time)
+4. Click **Save**
+
+**Step 4: Configure Scope**
+1. Click the edit button next to **Select group membership**
+2. In the **Applies to** field, select **Everyone**
+3. Click **Save**
+
+**Step 5: Configure Action**
+1. Click **Add Action**
+2. Select **Change User lifecycle state in Okta**
+3. In **Change user state to**, select **Suspended**
+4. Click **Save**
+
+**Step 6: Activate Automation**
+1. Click the **Inactive** button near the top of the screen
+2. Select **Activate**
+
+#### Validation
+1. Navigate to: **Workflow → Automations**
+2. Verify the automation is listed and shows **Active** status
+3. Review the automation history after the first scheduled run
+
+> **Note:** If Okta relies on external directory services (e.g., Active Directory) for user sourcing, this automation may not be applicable. The connected directory service must perform this function instead.
+
+---
+
+### 1.7 Configure PIV/CAC Smart Card Authentication
+
+**Profile Level:** L3 (Maximum Security)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | IA-2(12) |
+| DISA STIG | V-273204, V-273207 |
+
+#### Description
+Configure Okta to accept Personal Identity Verification (PIV) credentials and Common Access Cards (CAC) for authentication. This enables hardware-based multifactor authentication using approved certificate authorities.
+
+#### Prerequisites
+- [ ] Super Admin access
+- [ ] Approved certificate chain (root and intermediate CA certificates)
+- [ ] Smart Card IdP capability in your Okta edition
+
+#### ClickOps Implementation
+
+**Step 1: Add Smart Card Authenticator**
+1. Navigate to: **Security → Authenticators**
+2. In the **Setup** tab, click **Add authenticator**
+3. Select the configured **Smart Card Identity Provider**
+4. Complete the configuration and click **Add**
+
+**Step 2: Configure Smart Card Identity Provider**
+1. Navigate to: **Security → Identity Providers**
+2. Click **Add identity provider**
+3. Select **Smart Card IdP** and click **Next**
+4. Enter a name for the identity provider (e.g., "CAC Authentication")
+
+**Step 3: Build Certificate Chain**
+1. Click **Browse** to select your root CA certificate file
+2. Click **Add Another** to add intermediate CA certificates
+3. Continue until the complete certificate chain is uploaded
+4. Click **Build certificate chain**
+5. Verify the chain builds successfully with all certificates shown
+6. If errors occur, verify certificate order and format
+
+**Step 4: Configure User Matching**
+1. In **IdP username**, select **idpuser.subjectAltNameUpn**
+   - This attribute stores identifiers like the Electronic Data Interchange Personnel Identifier (EDIPI)
+2. In **Match Against**, select the Okta Profile Attribute where the identifier is stored
+3. Click **Save**
+
+**Step 5: Activate the Identity Provider**
+1. Verify the IdP status shows **Active**
+2. If inactive, click **Activate**
+
+#### Validation
+1. Navigate to: **Security → Identity Providers**
+2. Verify Smart Card IdP is listed with **Type** as "Smart Card"
+3. Verify **Status** is "Active"
+4. Click **Actions → Configure** and verify certificate chain is from approved CA
+
+---
+
+### 1.8 Configure FIPS-Compliant Authenticators
+
+**Profile Level:** L3 (Maximum Security)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | SC-13 |
+| DISA STIG | V-273205 |
+
+#### Description
+Configure Okta Verify to only connect with FIPS-compliant devices. This ensures that authentication uses FIPS 140-2 validated cryptographic modules.
+
+#### Prerequisites
+- [ ] Super Admin access
+- [ ] Okta Verify authenticator enabled
+- [ ] Users with FIPS-compliant devices (devices that support FIPS 140-2 mode)
+
+#### ClickOps Implementation
+
+**Step 1: Edit Okta Verify Settings**
+1. Navigate to: **Security → Authenticators**
+2. In the **Setup** tab, click **Edit** next to **Okta Verify**
+
+**Step 2: Enable FIPS Compliance**
+1. Locate the **FIPS Compliance** field
+2. Select **FIPS-compliant devices only**
+3. Click **Save**
+
+#### Validation
+1. Navigate to: **Security → Authenticators**
+2. From the **Setup** tab, select **Edit Okta Verify**
+3. Verify **FIPS Compliance** is set to "FIPS-compliant devices only"
+
+> **Note:** Enabling FIPS-compliant devices only will prevent users with non-FIPS compliant devices from enrolling in Okta Verify. Ensure users have compatible devices before enabling this setting.
+
+---
+
 ## 2. Network Access Controls
 
 ### 2.1 Configure IP Zones and Network Policies
 
 **Profile Level:** L1 (Baseline)
-**CIS Controls:** 13.3
-**NIST 800-53:** AC-3, SC-7
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 13.3 |
+| NIST 800-53 | AC-3, SC-7 |
 
 #### Description
 Define network zones (corporate, VPN, known bad) and enforce authentication policies based on network location. Block or require step-up authentication from untrusted networks.
@@ -444,7 +735,10 @@ curl -X POST "https://${OKTA_DOMAIN}/api/v1/zones" \
 ### 2.2 Restrict Admin Console Access by IP
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** AC-3(7)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-3(7) |
 
 #### Description
 Limit access to the Okta Admin Console to specific IP ranges (corporate network, VPN, security team IPs).
@@ -466,8 +760,11 @@ Limit access to the Okta Admin Console to specific IP ranges (corporate network,
 ### 3.1 Implement OAuth App Consent Policies
 
 **Profile Level:** L1 (Baseline)
-**CIS Controls:** 6.2
-**NIST 800-53:** AC-6, CM-7
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.2 |
+| NIST 800-53 | AC-6, CM-7 |
 
 #### Description
 Control which OAuth applications users can authorize and require admin approval for new app integrations. Prevent shadow IT through unconsented OAuth grants.
@@ -521,7 +818,10 @@ curl -X GET "https://${OKTA_DOMAIN}/api/v1/authorizationServers/default/clients"
 ### 3.2 Harden SCIM Provisioning Connectors
 
 **Profile Level:** L2 (Hardened)
-**NIST 800-53:** AC-2, IA-4
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-2, IA-4 |
 
 #### Description
 Secure SCIM (System for Cross-domain Identity Management) connectors that provision/deprovision users to downstream applications. SCIM tokens enable identity manipulation across connected apps.
@@ -562,11 +862,14 @@ eventType eq "system.scim.user.create" OR eventType eq "system.scim.user.update"
 
 ## 4. Session Management
 
-### 4.1 Configure Aggressive Session Timeouts
+### 4.1 Configure Session Timeouts
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** AC-12, SC-10
-**DISA STIG:** V-273186, V-273187, V-273203
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-12, SC-10 |
+| DISA STIG | V-273186, V-273187, V-273203 |
 
 #### Description
 Set session timeouts appropriate to risk level. Reduce maximum session lifetime and enforce re-authentication for sensitive applications.
@@ -577,28 +880,28 @@ Set session timeouts appropriate to risk level. Reduce maximum session lifetime 
 - October 2023 breach exploited long-lived session cookies
 - Idle timeouts reduce exposure from abandoned sessions
 
+#### Specification Requirements
+
+| Setting | L1 (Baseline) | L2 (Hardened) | L3/DISA STIG |
+|---------|---------------|---------------|--------------|
+| Max session lifetime | 12 hours | 8 hours | 18 hours |
+| Max idle time | 1 hour | 30 minutes | 15 minutes |
+| Admin Console idle time | 30 minutes | 15 minutes | 15 minutes |
+| Persistent sessions | Optional | Disabled | Disabled |
+
 #### ClickOps Implementation
 
 **Step 1: Configure Global Session Policy**
 1. Navigate to: **Security → Global Session Policy**
 2. Select the **Default Policy**
 3. Click **Add rule** (create a custom rule at Priority 1, not the "Default Rule")
-4. Set:
-   - **Max session lifetime:** 12 hours (L1) / 8 hours (L2) / 4 hours (L3)
-   - **Max idle time:** 1 hour (L1) / 30 minutes (L2) / 15 minutes (L3)
-   - **Persistent sessions:** Disabled for high-security
-
-> **DISA STIG Requirement (V-273186, V-273203):** For DOD compliance, set:
-> - **Maximum Okta global session idle time:** 15 minutes
-> - **Maximum Okta global session lifetime:** 18 hours
+4. Configure settings per the specification requirements table above
 
 **Step 2: Configure Admin Console Session Timeout**
 1. Navigate to: **Applications → Applications → Okta Admin Console**
 2. Click the **Sign On** tab
 3. Under "Okta Admin Console session", set:
-   - **Maximum app session idle time:** 15 minutes
-
-> **DISA STIG Requirement (V-273187):** Admin Console must log out after 15-minute idle period.
+   - **Maximum app session idle time:** 15 minutes (L2/L3)
 
 **Step 3: Create App-Specific Session Policies**
 For sensitive apps (PAM, admin consoles, financial systems):
@@ -609,11 +912,14 @@ For sensitive apps (PAM, admin consoles, financial systems):
 
 ---
 
-### 4.2 Disable Legacy Session Persistence
+### 4.2 Disable Session Persistence
 
 **Profile Level:** L2 (Hardened)
-**NIST 800-53:** SC-23
-**DISA STIG:** V-273206
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | SC-23 |
+| DISA STIG | V-273206 |
 
 #### Description
 Disable "Remember Me" and persistent session features that increase session hijacking risk. Persistent global session cookies allow sessions to survive browser restarts, which extends the window for session hijacking.
@@ -630,8 +936,6 @@ Disable "Remember Me" and persistent session features that increase session hija
 5. Navigate to: **Customizations → Other**
 6. Disable: **Allow users to remain signed in**
 
-> **DISA STIG Requirement (V-273206):** Set "Okta global session cookies persist across browser sessions" to **Disabled** to prevent cached authentication information from persisting.
-
 ---
 
 ## 5. Monitoring & Detection
@@ -639,11 +943,14 @@ Disable "Remember Me" and persistent session features that increase session hija
 ### 5.1 Enable Comprehensive System Logging
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** AU-2, AU-3, AU-6
-**DISA STIG:** V-273202 (HIGH Severity)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AU-2, AU-3, AU-6 |
+| DISA STIG | V-273202 (HIGH) |
 
 #### Description
-Configure Okta System Log forwarding to SIEM with comprehensive event capture for security monitoring and incident response. DISA STIG requires off-loading audit records to a central log server to protect against data loss and ensure audit integrity.
+Configure Okta System Log forwarding to SIEM with comprehensive event capture for security monitoring and incident response.
 
 #### ClickOps Implementation
 
@@ -656,15 +963,13 @@ Configure Okta System Log forwarding to SIEM with comprehensive event capture fo
 4. Complete the required configuration fields
 5. Click **Save** and verify the connection is **Active**
 
-> **DISA STIG Requirement (V-273202 - HIGH):** Okta must off-load audit records to a central log server. If Log Streaming is unavailable for your SIEM, use the Okta Log API to export system logs in real time.
-
 **Step 2: Alternative - Okta Log API Integration**
 If your SIEM is not directly supported:
 1. Navigate to: **Security → API → Tokens**
 2. Create an API token with read-only System Log permissions
 3. Configure your SIEM to pull logs via the System Log API endpoint
 
-**Step 2: Create Alert Rules (via SIEM)**
+**Step 3: Create Alert Rules (via SIEM)**
 ```sql
 -- Detect impossible travel
 SELECT user, sourceIp, geo_country, timestamp
@@ -744,7 +1049,7 @@ Enable Okta ThreatInsight to automatically block authentication from known-malic
 
 ## 7. Compliance Quick Reference
 
-### SOC 2 Trust Services Criteria Mapping
+### SOC 2 Trust Services Criteria
 
 | Control ID | Okta Control | Guide Section |
 |-----------|------------------|---------------|
@@ -753,172 +1058,62 @@ Enable Okta ThreatInsight to automatically block authentication from known-malic
 | CC6.6 | Network zone policies | 2.1 |
 | CC7.2 | System log monitoring | 5.1 |
 
-### NIST 800-53 Rev 5 Mapping
+### NIST 800-53 Rev 5
 
 | Control | Okta Control | Guide Section |
 |---------|------------------|---------------|
 | IA-2(1) | MFA enforcement | 1.1 |
 | IA-2(6) | FIDO2 for admins | 1.1 |
+| IA-2(12) | PIV/CAC authentication | 1.7 |
+| IA-5(1) | Password policy | 1.4 |
+| AC-2(3) | Account lifecycle | 1.6 |
 | AC-6(1) | Custom admin roles | 1.2 |
+| AC-7 | Account lockout | 1.5 |
+| AC-12 | Session timeouts | 4.1 |
 | AU-2 | System log | 5.1 |
+| SC-13 | FIPS compliance | 1.8 |
+| SC-23 | Session persistence | 4.2 |
 
-### DISA STIG Okta IDaaS V1R1 Mapping
+### DISA STIG Okta IDaaS V1R1
 
-| STIG ID | Control | Guide Section |
-|---------|---------|---------------|
-| V-273186, V-273187, V-273203 | Session timeouts | 4.1 |
-| V-273188 | Account inactivity auto-disable | 8.1 |
-| V-273189 | Account lockout | 8.2 |
-| V-273190, V-273191 | Phishing-resistant authentication | 1.1 |
-| V-273192 | DOD warning banner | 8.3 |
-| V-273193, V-273194 | MFA requirements (HIGH) | 1.1 |
-| V-273195-V-273201, V-273208-V-273209 | Password policy | 8.4 |
-| V-273202 | Centralized logging (HIGH) | 5.1 |
-| V-273204, V-273207 | PIV/CAC authentication | 8.5 |
-| V-273205 | FIPS compliance | 8.6 |
-| V-273206 | Persistent session cookies | 4.2 |
-
----
-
-## 8. DISA STIG Compliance
-
-This section provides comprehensive implementation guidance for the DISA Security Technical Implementation Guide (STIG) for Okta Identity as a Service (IDaaS), Version 1, Release 1 (April 2025). These controls are mandatory for DOD systems and represent security best practices for all organizations.
-
-### DISA STIG Control Summary
-
-| STIG ID | Title | Severity | Section |
-|---------|-------|----------|---------|
-| V-273186 | Global session 15-min idle timeout | Medium | 4.1 |
-| V-273187 | Admin Console 15-min idle timeout | Medium | 4.1 |
-| V-273188 | Disable accounts after 35-day inactivity | Medium | 8.1 |
-| V-273189 | Limit 3 invalid login attempts | Medium | 8.2 |
-| V-273190 | Dashboard phishing-resistant MFA | Medium | 1.1 |
-| V-273191 | Admin Console phishing-resistant MFA | Medium | 1.1 |
-| V-273192 | DOD Warning Banner | Medium | 8.3 |
-| V-273193 | Admin Console MFA required | **HIGH** | 1.1 |
-| V-273194 | Dashboard MFA required | **HIGH** | 1.1 |
-| V-273195 | 15-character minimum password | Medium | 8.4 |
-| V-273196 | Uppercase character required | Medium | 8.4 |
-| V-273197 | Lowercase character required | Medium | 8.4 |
-| V-273198 | Numeric character required | Medium | 8.4 |
-| V-273199 | Special character required | Medium | 8.4 |
-| V-273200 | 24-hour minimum password age | Medium | 8.4 |
-| V-273201 | 60-day maximum password lifetime | Medium | 8.4 |
-| V-273202 | Off-load audit records to SIEM | **HIGH** | 5.1 |
-| V-273203 | 18-hour global session lifetime | Medium | 4.1 |
-| V-273204 | PIV/CAC credential acceptance | Medium | 8.5 |
-| V-273205 | FIPS-compliant Okta Verify | Medium | 8.6 |
-| V-273206 | Disable persistent session cookies | Medium | 4.2 |
-| V-273207 | DOD-approved CA certificates | Medium | 8.5 |
-| V-273208 | Common password check | Medium | 8.4 |
-| V-273209 | 5 password history generations | Medium | 8.4 |
+| STIG ID | Severity | Control | Guide Section |
+|---------|----------|---------|---------------|
+| V-273186 | Medium | Global session idle timeout (15 min) | 4.1 |
+| V-273187 | Medium | Admin Console idle timeout (15 min) | 4.1 |
+| V-273188 | Medium | Account inactivity auto-disable (35 days) | 1.6 |
+| V-273189 | Medium | Account lockout (3 attempts) | 1.5 |
+| V-273190 | Medium | Dashboard phishing-resistant auth | 1.1 |
+| V-273191 | Medium | Admin Console phishing-resistant auth | 1.1 |
+| V-273192 | Medium | DOD warning banner | 7.1 |
+| V-273193 | **HIGH** | Admin Console MFA required | 1.1 |
+| V-273194 | **HIGH** | Dashboard MFA required | 1.1 |
+| V-273195 | Medium | Password min length (15 chars) | 1.4 |
+| V-273196 | Medium | Uppercase required | 1.4 |
+| V-273197 | Medium | Lowercase required | 1.4 |
+| V-273198 | Medium | Number required | 1.4 |
+| V-273199 | Medium | Special character required | 1.4 |
+| V-273200 | Medium | Min password age (24 hours) | 1.4 |
+| V-273201 | Medium | Max password age (60 days) | 1.4 |
+| V-273202 | **HIGH** | Centralized audit logging | 5.1 |
+| V-273203 | Medium | Global session lifetime (18 hours) | 4.1 |
+| V-273204 | Medium | PIV/CAC credential acceptance | 1.7 |
+| V-273205 | Medium | FIPS-compliant Okta Verify | 1.8 |
+| V-273206 | Medium | Disable persistent session cookies | 4.2 |
+| V-273207 | Medium | Approved CA certificates | 1.7 |
+| V-273208 | Medium | Common password check | 1.4 |
+| V-273209 | Medium | Password history (5 generations) | 1.4 |
 
 ---
 
-### 8.1 Configure Account Inactivity Auto-Disable
+### 7.1 Environment-Specific Requirements
 
-**DISA STIG:** V-273188
-**Severity:** Medium
-**NIST 800-53:** AC-2(3)
+#### DOD Warning Banner (DISA STIG V-273192)
 
-#### Description
-Automatically disable user accounts after 35 days of inactivity to reduce the risk of dormant account compromise. Attackers targeting inactive accounts may maintain undetected access since account owners won't notice unauthorized activity.
+For U.S. Government systems, display the Standard Mandatory DOD Notice and Consent Banner before granting access. Implementation requires customizing the Okta Sign-In Widget—refer to the "Okta DOD Warning Banner Configuration Guide" in the STIG package.
 
-#### Prerequisites
-- [ ] Okta Workflows license (required for Automations)
-- [ ] Super Admin or Org Admin access
+<details>
+<summary>DOD Banner Text (1300 characters)</summary>
 
-#### ClickOps Implementation
-
-**Step 1: Create Inactivity Automation**
-1. Navigate to: **Workflow → Automations**
-2. Click **Add Automation**
-3. Enter a name (e.g., "User Inactivity - 35 Day Suspension")
-
-**Step 2: Configure Trigger Condition**
-1. Click **Add Condition**
-2. Select **User Inactivity in Okta**
-3. Set duration to **35 days**
-4. Click **Save**
-
-**Step 3: Configure Schedule**
-1. Click the edit button next to **Select Schedule**
-2. Set **Schedule** field to **Run Daily**
-3. Set **Time** field to an appropriate time (e.g., 2:00 AM local time)
-4. Click **Save**
-
-**Step 4: Configure Scope**
-1. Click the edit button next to **Select group membership**
-2. In the **Applies to** field, select **Everyone**
-3. Click **Save**
-
-**Step 5: Configure Action**
-1. Click **Add Action**
-2. Select **Change User lifecycle state in Okta**
-3. In **Change user state to**, select **Suspended**
-4. Click **Save**
-
-**Step 6: Activate Automation**
-1. Click the **Inactive** button near the top of the screen
-2. Select **Activate**
-
-> **Note:** If Okta relies on external directory services (e.g., Active Directory) for user sourcing, this automation may not be applicable. The connected directory service must perform this function instead.
-
-#### Validation
-1. Navigate to: **Workflow → Automations**
-2. Verify the automation is listed and shows **Active** status
-3. Review the automation history after the first scheduled run
-
----
-
-### 8.2 Configure Account Lockout Policy
-
-**DISA STIG:** V-273189
-**Severity:** Medium
-**NIST 800-53:** AC-7
-
-#### Description
-Enforce account lockout after three consecutive invalid login attempts to protect against brute-force password attacks. This control significantly reduces the risk of unauthorized access via password guessing.
-
-#### Prerequisites
-- [ ] Super Admin access
-- [ ] Okta-mastered users (not applicable if using external directory services)
-
-#### ClickOps Implementation
-
-**Step 1: Configure Password Authenticator Lockout**
-1. Navigate to: **Security → Authenticators**
-2. Click the **Actions** button next to **Password**
-3. Select **Edit**
-
-**Step 2: Configure Each Password Policy**
-For each listed Password Policy:
-1. Click **Edit** on the policy
-2. Locate the **Lock Out** section
-3. Check **Lock out after 3 unsuccessful attempts**
-4. Set the value to **3**
-5. Click **Save**
-
-#### Validation
-1. Navigate to: **Security → Authenticators → Password → Edit**
-2. For each policy, verify:
-   - "Lock out after 3 unsuccessful attempts" is checked
-   - Value is set to "3"
-
-> **Note:** If Okta relies on external directory services for user sourcing, this control is not applicable. The connected directory service must enforce account lockout.
-
----
-
-### 8.3 Configure DOD Warning Banner
-
-**DISA STIG:** V-273192
-**Severity:** Medium
-**NIST 800-53:** AC-8
-
-#### Description
-Display the Standard Mandatory DOD Notice and Consent Banner before granting access to the Okta tenant. This ensures users acknowledge that the system is for authorized use only and that their activity is subject to monitoring.
-
-#### DOD Banner Text (1300 characters)
 ```
 You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.
 
@@ -935,244 +1130,36 @@ By using this IS (which includes any device attached to this IS), you consent to
 -Notwithstanding the above, using this IS does not constitute consent to PM, LE or CI investigative searching or monitoring of the content of privileged communications, or work product, related to personal representation or services by attorneys, psychotherapists, or clergy, and their assistants. Such communications and work product are private and confidential. See User Agreement for details.
 ```
 
-#### Short Banner (for character-limited displays)
-```
-I've read & consent to terms in IS user agreem't.
-```
-
-#### ClickOps Implementation
-
-> **Note:** Follow the supplemental instructions in the "Okta DOD Warning Banner Configuration Guide" provided with the DISA STIG package for detailed implementation steps. The banner implementation typically involves customizing the Okta Sign-In Widget or using Okta's customization options.
-
-**General Steps:**
-1. Navigate to: **Customizations → Branding**
-2. Access sign-in page customization options
-3. Add the DOD warning banner text before the login form
-4. Configure acknowledgment mechanism (checkbox or button)
-5. Test banner display at login
-
-#### Validation
-1. Open an incognito/private browser window
-2. Navigate to your Okta tenant login URL
-3. Verify the DOD warning banner is displayed in full
-4. Verify users must acknowledge the banner before proceeding
+</details>
 
 ---
 
-### 8.4 Configure Password Policy Settings
+### 7.2 Compliance Checklist
 
-**DISA STIG:** V-273195, V-273196, V-273197, V-273198, V-273199, V-273200, V-273201, V-273208, V-273209
-**Severity:** Medium
-**NIST 800-53:** IA-5(1)
+Use this checklist to verify controls are implemented for your compliance requirements.
 
-#### Description
-Configure comprehensive password policies that meet DOD requirements for password complexity, age, and history. These controls protect against weak passwords, password reuse, and rapid password cycling.
+#### HIGH Priority Controls
+- [ ] MFA required for Admin Console (DISA STIG V-273193)
+- [ ] MFA required for Dashboard (DISA STIG V-273194)
+- [ ] Audit logs forwarded to SIEM (DISA STIG V-273202)
 
-#### Prerequisites
-- [ ] Super Admin access
-- [ ] Okta-mastered users (not applicable if using external directory services)
-
-#### STIG Password Requirements Summary
-
-| Requirement | STIG ID | Value |
-|------------|---------|-------|
-| Minimum length | V-273195 | 15 characters |
-| Uppercase required | V-273196 | Yes |
-| Lowercase required | V-273197 | Yes |
-| Number required | V-273198 | Yes |
-| Special character required | V-273199 | Yes |
-| Minimum password age | V-273200 | 24 hours |
-| Maximum password age | V-273201 | 60 days |
-| Common password check | V-273208 | Enabled |
-| Password history | V-273209 | 5 generations |
-
-#### ClickOps Implementation
-
-**Step 1: Access Password Authenticator Settings**
-1. Navigate to: **Security → Authenticators**
-2. Click the **Actions** button next to **Password**
-3. Select **Edit**
-
-**Step 2: Configure Each Password Policy**
-For each listed Password Policy, click **Edit** and configure:
-
-**Complexity Requirements:**
-- **Minimum Length:** Set to at least **15** characters
-- **Upper case letter:** ☑ Checked
-- **Lower case letter:** ☑ Checked
-- **Number (0-9):** ☑ Checked
-- **Symbol (e.g., !@#$%^&*):** ☑ Checked
-
-**Password Age Settings:**
-- **Minimum password age is XX hours:** Set to at least **24**
-- **Password expires after XX days:** Set to **60**
-
-**Password History:**
-- **Enforce password history for last XX passwords:** Set to **5**
-
-**Step 3: Enable Common Password Check**
-1. Under **Password Settings** section
-2. Check **Common Password Check**
-3. Click **Save**
-
-#### Code Implementation
-
-```bash
-# Update password policy via API
-curl -X PUT "https://${OKTA_DOMAIN}/api/v1/policies/${POLICY_ID}" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "settings": {
-      "password": {
-        "complexity": {
-          "minLength": 15,
-          "minLowerCase": 1,
-          "minUpperCase": 1,
-          "minNumber": 1,
-          "minSymbol": 1
-        },
-        "age": {
-          "maxAgeDays": 60,
-          "minAgeMinutes": 1440,
-          "historyCount": 5
-        }
-      }
-    }
-  }'
-```
-
-#### Validation
-1. Navigate to: **Security → Authenticators → Password → Edit**
-2. For each policy, verify all settings match the requirements table above
-
----
-
-### 8.5 Configure PIV/CAC Smart Card Authentication
-
-**DISA STIG:** V-273204, V-273207
-**Severity:** Medium
-**NIST 800-53:** IA-2(12)
-
-#### Description
-Configure Okta to accept Personal Identity Verification (PIV) credentials and DOD Common Access Cards (CAC) for authentication. This enables hardware-based multifactor authentication using DOD-approved certificate authorities.
-
-#### Prerequisites
-- [ ] Super Admin access
-- [ ] DOD-approved certificate chain (root and intermediate CA certificates)
-- [ ] Smart Card IdP capability in your Okta edition
-
-#### ClickOps Implementation
-
-**Step 1: Add Smart Card Authenticator**
-1. Navigate to: **Security → Authenticators**
-2. In the **Setup** tab, click **Add authenticator**
-3. Select the configured **Smart Card Identity Provider**
-4. Complete the configuration and click **Add**
-
-**Step 2: Configure Smart Card Identity Provider**
-1. Navigate to: **Security → Identity Providers**
-2. Click **Add identity provider**
-3. Select **Smart Card IdP** and click **Next**
-4. Enter a name for the identity provider (e.g., "DOD CAC Authentication")
-
-**Step 3: Build Certificate Chain**
-1. Click **Browse** to select your root CA certificate file
-2. Click **Add Another** to add intermediate CA certificates
-3. Continue until the complete DOD certificate chain is uploaded
-4. Click **Build certificate chain**
-5. Verify the chain builds successfully with all certificates shown
-6. If errors occur, verify certificate order and format
-
-**Step 4: Configure User Matching**
-1. In **IdP username**, select **idpuser.subjectAltNameUpn**
-   - This attribute stores the Electronic Data Interchange Personnel Identifier (EDIPI) on the CAC
-2. In **Match Against**, select the Okta Profile Attribute where EDIPI is stored
-3. Click **Save**
-
-**Step 5: Activate the Identity Provider**
-1. Verify the IdP status shows **Active**
-2. If inactive, click **Activate**
-
-#### Validation
-1. Navigate to: **Security → Identity Providers**
-2. Verify Smart Card IdP is listed with **Type** as "Smart Card"
-3. Verify **Status** is "Active"
-4. Click **Actions → Configure** and verify certificate chain is from DOD-approved CA
-
----
-
-### 8.6 Configure FIPS-Compliant Okta Verify
-
-**DISA STIG:** V-273205
-**Severity:** Medium
-**NIST 800-53:** SC-13
-
-#### Description
-Configure Okta Verify to only connect with FIPS-compliant devices. This ensures that authentication uses FIPS 140-2 validated cryptographic modules, which is required for DOD systems.
-
-#### Prerequisites
-- [ ] Super Admin access
-- [ ] Okta Verify authenticator enabled
-- [ ] Users with FIPS-compliant devices (devices that support FIPS 140-2 mode)
-
-#### ClickOps Implementation
-
-**Step 1: Edit Okta Verify Settings**
-1. Navigate to: **Security → Authenticators**
-2. In the **Setup** tab, click **Edit** next to **Okta Verify**
-
-**Step 2: Enable FIPS Compliance**
-1. Locate the **FIPS Compliance** field
-2. Select **FIPS-compliant devices only**
-3. Click **Save**
-
-#### Validation
-1. Navigate to: **Security → Authenticators**
-2. From the **Setup** tab, select **Edit Okta Verify**
-3. Verify **FIPS Compliance** is set to "FIPS-compliant devices only"
-
-> **Note:** Enabling FIPS-compliant devices only will prevent users with non-FIPS compliant devices from enrolling in Okta Verify. Ensure users have compatible devices before enabling this setting.
-
----
-
-### 8.7 DISA STIG Compliance Checklist
-
-Use this checklist to verify all DISA STIG controls are implemented:
-
-#### HIGH Severity Controls (Implement First)
-- [ ] **V-273193:** Admin Console requires MFA (Password/IdP + Another factor or Any 2 factor types)
-- [ ] **V-273194:** Dashboard requires MFA (Password/IdP + Another factor or Any 2 factor types)
-- [ ] **V-273202:** Audit logs off-loaded to central SIEM (Log Streaming or API integration active)
+#### Authentication Controls
+- [ ] Phishing-resistant authentication enabled
+- [ ] Password policy configured per requirements
+- [ ] Account lockout configured
+- [ ] Account inactivity automation active
+- [ ] PIV/CAC Smart Card configured (if applicable)
+- [ ] FIPS compliance enabled (if applicable)
 
 #### Session Management
-- [ ] **V-273186:** Global session idle timeout set to 15 minutes
-- [ ] **V-273187:** Admin Console session idle timeout set to 15 minutes
-- [ ] **V-273203:** Global session lifetime limited to 18 hours
-- [ ] **V-273206:** Persistent session cookies disabled
+- [ ] Global session idle timeout configured
+- [ ] Admin Console session timeout configured
+- [ ] Global session lifetime limited
+- [ ] Persistent session cookies disabled
 
-#### Authentication
-- [ ] **V-273189:** Account lockout after 3 failed attempts configured
-- [ ] **V-273190:** Okta Dashboard requires phishing-resistant authentication
-- [ ] **V-273191:** Admin Console requires phishing-resistant authentication
-- [ ] **V-273204:** Smart Card Authenticator active for PIV/CAC
-- [ ] **V-273205:** Okta Verify FIPS compliance enabled
-- [ ] **V-273207:** Smart Card IdP uses DOD-approved CA certificates
-
-#### Password Policy
-- [ ] **V-273195:** Minimum password length 15 characters
-- [ ] **V-273196:** Uppercase character required
-- [ ] **V-273197:** Lowercase character required
-- [ ] **V-273198:** Numeric character required
-- [ ] **V-273199:** Special character required
-- [ ] **V-273200:** Minimum password age 24 hours
-- [ ] **V-273201:** Maximum password age 60 days
-- [ ] **V-273208:** Common password check enabled
-- [ ] **V-273209:** Password history 5 generations
-
-#### Account Management
-- [ ] **V-273188:** Inactive accounts auto-disabled after 35 days
-- [ ] **V-273192:** DOD warning banner displayed at login
+#### Monitoring
+- [ ] Log streaming or API integration active
+- [ ] ThreatInsight enabled
 
 ---
 
@@ -1187,6 +1174,7 @@ Use this checklist to verify all DISA STIG controls are implemented:
 | FastPass | ❌ | ❌ | ✅ | ✅ |
 | Custom Admin Roles | ✅ | ✅ | ✅ | ✅ |
 | Log Streaming | Add-on | Add-on | ✅ | ✅ |
+| Workflows/Automations | Add-on | Add-on | ✅ | ✅ |
 
 ---
 
@@ -1197,9 +1185,10 @@ Use this checklist to verify all DISA STIG controls are implemented:
 - [Admin Role Permissions](https://help.okta.com/en-us/Content/Topics/Security/administrators-admin-comparison.htm)
 - [System Log API](https://developer.okta.com/docs/reference/api/system-log/)
 
-**DISA STIG Documentation:**
-- [DISA STIG Library](https://public.cyber.mil/stigs/)
-- Okta IDaaS STIG V1R1 (April 2025) - U_Okta_IDaaS_STIG_V1R1_Manual-xccdf.xml
+**Compliance Frameworks:**
+- [DISA STIG Library](https://public.cyber.mil/stigs/) - Okta IDaaS STIG V1R1
+- [CIS Controls v8](https://www.cisecurity.org/controls)
+- [NIST 800-53 Rev 5](https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final)
 
 **Supply Chain Incident Reports:**
 - [Okta October 2023 Security Incident](https://sec.okta.com/articles/2023/10/tracking-unauthorized-access-oktas-support-system)
@@ -1211,7 +1200,7 @@ Use this checklist to verify all DISA STIG controls are implemented:
 
 | Date | Version | Changes | Author |
 |------|---------|---------|--------|
-| 2025-12-26 | 1.1 | Added DISA STIG Okta IDaaS V1R1 compliance section with all 24 controls | How to Harden Community |
+| 2025-12-26 | 1.1 | Integrated DISA STIG Okta IDaaS V1R1 controls into functional sections | How to Harden Community |
 | 2025-12-14 | 1.0 | Initial Okta hardening guide | How to Harden Community |
 
 ---
