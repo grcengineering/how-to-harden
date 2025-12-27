@@ -6,6 +6,8 @@ slug: "marketo"
 tier: "3"
 category: "Marketing"
 description: "Marketing automation security for API users, LaunchPoint services, and lead database"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -73,7 +75,7 @@ Require SAML SSO with MFA for Marketo access.
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Admin | Full access (2-3 users) |
 | Marketing User | Create/edit campaigns |
 | Designer | Email/landing page design |
@@ -289,6 +291,6 @@ WHERE asset_type = 'EMAIL'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Adobe Marketo hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Adobe Marketo hardening guide | Claude Code (Opus 4.5) |

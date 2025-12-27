@@ -6,14 +6,13 @@ slug: "github"
 tier: "1"
 category: "Developer Tools"
 description: "Source control and CI/CD security hardening for GitHub organizations, Actions, and supply chain protection"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-13"
 ---
 
 
-**Version:** 1.0
-**Last Updated:** 2025-12-13
 **GitHub Editions Covered:** GitHub.com (Free, Team, Enterprise Cloud), GitHub Enterprise Server
-**Authors:** How to Harden Community
 
 ---
 
@@ -173,7 +172,7 @@ gh api /orgs/{org}/members?filter=2fa_disabled --jq 'length'
 #### Operational Impact
 
 | Aspect | Impact Level | Details |
-|--------|-------------|----------|
+||------|---------|----------|---------|--------|-------------|----------|
 | **User Experience** | Medium | Users must set up 2FA app/hardware key |
 | **Onboarding** | Low | New members guided through 2FA setup |
 | **Maintenance** | Low | Automated enforcement, no ongoing admin work |
@@ -1474,9 +1473,9 @@ Check CircleCI documentation for current static IPs for webhook allowlisting.
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-13 | 1.0 | Initial GitHub hardening guide with supply chain security focus | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-13 | 0.1.0 | draft | Initial GitHub hardening guide with supply chain security focus | Claude Code (Opus 4.5) |
 
 ---
 

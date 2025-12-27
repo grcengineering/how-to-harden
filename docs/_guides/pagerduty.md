@@ -6,6 +6,8 @@ slug: "pagerduty"
 tier: "4"
 category: "Incident"
 description: "Incident management security for API keys, event rules, and integration hardening"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ PagerDuty orchestrates incident response with integrations across monitoring, ti
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Account Owner | Full access (1 user) |
 | Admin | User/team management |
 | Manager | Team configuration |
@@ -209,6 +211,6 @@ HAVING COUNT(*) > 500;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial PagerDuty hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial PagerDuty hardening guide | Claude Code (Opus 4.5) |

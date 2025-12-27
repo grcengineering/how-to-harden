@@ -6,6 +6,8 @@ slug: "box"
 tier: "3"
 category: "Storage"
 description: "Enterprise content security for sharing policies, app controls, and classification"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -59,7 +61,7 @@ Box serves **115,000+ customers including 70% of Fortune 500**. Box Platform API
 #### ClickOps Implementation
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Co-Admin | Full admin (limited users) |
 | Group Admin | Manage specific groups |
 | Content Manager | Manage content, no users |
@@ -167,6 +169,6 @@ HAVING COUNT(*) > 50;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Box hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Box hardening guide | Claude Code (Opus 4.5) |

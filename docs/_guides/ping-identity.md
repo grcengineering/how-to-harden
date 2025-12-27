@@ -6,6 +6,8 @@ slug: "ping-identity"
 tier: "1"
 category: "Identity"
 description: "Identity federation security for PingFederate, PingOne, and OAuth configurations"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -120,7 +122,7 @@ curl -X PUT "https://api.pingone.com/v1/environments/${ENV_ID}/groups/${ADMIN_GR
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
+||------|---------|----------|---------|--------|--|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(6) | MFA for privileged accounts |
 | **PCI DSS** | 8.3.1 | MFA for administrative access |
@@ -630,6 +632,6 @@ Harden Service Provider (SP) connections in federation.
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Ping Identity hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Ping Identity hardening guide | Claude Code (Opus 4.5) |

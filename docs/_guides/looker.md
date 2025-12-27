@@ -6,6 +6,8 @@ slug: "looker"
 tier: "5"
 category: "Analytics"
 description: "Google BI security for model access, embed secrets, and database connections"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ Looker (Google Cloud) provides business intelligence with LookML modeling and da
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Admin | Full access |
 | Developer | Model development |
 | User | Explore and save |
@@ -209,6 +211,6 @@ WHERE source = 'api'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Looker hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Looker hardening guide | Claude Code (Opus 4.5) |

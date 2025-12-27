@@ -6,6 +6,8 @@ slug: "klaviyo"
 tier: "4"
 category: "Marketing"
 description: "E-commerce marketing security for API keys, profile protection, and export controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ Klaviyo is an e-commerce marketing platform managing customer data, email/SMS ca
 **Step 1: Define User Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Owner | Full access (1 user) |
 | Admin | Manage account settings |
 | Manager | Create campaigns |
@@ -213,6 +215,6 @@ HAVING COUNT(*) > 5000;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Klaviyo hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Klaviyo hardening guide | Claude Code (Opus 4.5) |

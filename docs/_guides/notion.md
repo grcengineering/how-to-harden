@@ -6,6 +6,8 @@ slug: "notion"
 tier: "4"
 category: "Productivity"
 description: "Workspace security for sharing defaults, connection controls, and audit logging"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -61,7 +63,7 @@ Notion serves as a collaborative workspace containing documentation, wikis, data
 **Step 1: Configure Member Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Workspace Owner | Full admin access |
 | Admin | Manage settings/members |
 | Member | Full content access |
@@ -205,6 +207,6 @@ WHERE action = 'share_page_public'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Notion hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Notion hardening guide | Claude Code (Opus 4.5) |

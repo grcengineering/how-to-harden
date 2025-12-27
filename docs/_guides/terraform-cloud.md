@@ -6,6 +6,8 @@ slug: "terraform-cloud"
 tier: "3"
 category: "IaC"
 description: "IaC platform security for workspace variables, team access, and run triggers"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -63,7 +65,7 @@ Terraform Cloud state files containing plaintext secrets, cloud provider credent
 **Step 1: Define Teams**
 
 | Team | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | owners | Full organization access |
 | platform | Manage workspaces |
 | developers | Plan only (no apply) |
@@ -294,6 +296,6 @@ WHERE action LIKE '%variable%'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Terraform Cloud hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Terraform Cloud hardening guide | Claude Code (Opus 4.5) |

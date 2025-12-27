@@ -6,6 +6,8 @@ slug: "gitlab"
 tier: "2"
 category: "DevOps"
 description: "DevOps platform security for CI/CD pipelines, repository access, and runners"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -110,7 +112,7 @@ gitlab_rails['gitlab_signin_enabled'] = false
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
+||------|---------|----------|---------|--------|--|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1) | MFA for network access |
 
@@ -594,6 +596,6 @@ WHERE entity_type = 'Ci::Variable'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial GitLab hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial GitLab hardening guide | Claude Code (Opus 4.5) |

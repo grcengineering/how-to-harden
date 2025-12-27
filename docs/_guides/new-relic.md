@@ -6,6 +6,8 @@ slug: "new-relic"
 tier: "5"
 category: "Observability"
 description: "Observability security for API keys, license keys, and log obfuscation"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ New Relic is an observability platform ingesting application performance, infras
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Admin | Full account access |
 | User | Standard access |
 | Restricted User | Limited data access |
@@ -207,6 +209,6 @@ SINCE 7 days ago
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial New Relic hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial New Relic hardening guide | Claude Code (Opus 4.5) |

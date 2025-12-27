@@ -6,6 +6,8 @@ slug: "dockerhub"
 tier: "3"
 category: "Container"
 description: "Container registry security for access tokens, image signing, and repository controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -85,7 +87,7 @@ Use personal access tokens instead of passwords for automation.
 **Step 2: Rotate Tokens**
 
 | Token Type | Rotation |
-|------------|----------|
+||------|---------|----------|---------|--------|---|----------|
 | CI/CD pull | Quarterly |
 | Build/push | Monthly |
 
@@ -199,6 +201,6 @@ For high-security environments, consider:
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Docker Hub hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Docker Hub hardening guide | Claude Code (Opus 4.5) |

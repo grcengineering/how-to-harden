@@ -6,6 +6,8 @@ slug: "oracle-hcm"
 tier: "3"
 category: "HR"
 description: "Enterprise HR security for security profiles, HDL controls, and IDCS integration"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -73,7 +75,7 @@ Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
 **Step 1: Define Role Hierarchy**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | IT Security Manager | Security configuration |
 | Application Administrator | Full HCM admin |
 | HR Analyst | Read HR data |
@@ -277,6 +279,6 @@ WHERE EXTRACT(HOUR FROM timestamp) NOT BETWEEN 8 AND 18;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Oracle HCM Cloud hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Oracle HCM Cloud hardening guide | Claude Code (Opus 4.5) |

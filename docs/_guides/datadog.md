@@ -6,6 +6,8 @@ slug: "datadog"
 tier: "2"
 category: "Observability"
 description: "Observability platform security for API keys, log pipelines, and sensitive data"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -86,7 +88,7 @@ Configure Datadog roles with granular permissions.
 **Step 1: Design Role Structure**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Admin | Full organization access (2-3 users) |
 | Standard | View all data, create dashboards |
 | Read-Only | View only, no modifications |
@@ -439,6 +441,6 @@ Enable and monitor Datadog audit trail.
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Datadog hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Datadog hardening guide | Claude Code (Opus 4.5) |

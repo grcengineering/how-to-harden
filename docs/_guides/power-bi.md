@@ -6,6 +6,8 @@ slug: "power-bi"
 tier: "5"
 category: "Analytics"
 description: "Microsoft BI security for tenant settings, gateway credentials, and embed controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -63,7 +65,7 @@ Microsoft Power BI provides business intelligence with data connections across e
 **Step 1: Define Workspace Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Admin | Full workspace control |
 | Member | Edit and publish |
 | Contributor | Edit only |
@@ -212,6 +214,6 @@ PowerBIActivity
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Power BI hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Power BI hardening guide | Claude Code (Opus 4.5) |

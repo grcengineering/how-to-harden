@@ -6,6 +6,8 @@ slug: "zendesk"
 tier: "4"
 category: "Support"
 description: "Support platform security for API tokens, app marketplace, and ticket redaction"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ Zendesk handles customer support data including tickets, chat transcripts, and c
 **Step 1: Define Custom Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Admin | Full access (limited users) |
 | Team Lead | Manage team, view reports |
 | Agent | Handle tickets only |
@@ -223,6 +225,6 @@ HAVING COUNT(*) > 1000;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Zendesk hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Zendesk hardening guide | Claude Code (Opus 4.5) |

@@ -1,7 +1,8 @@
 # [Vendor Name] [Product Name] Hardening Guide
 
-**Version:** 1.0
+**Version:** v0.1.0-draft
 **Last Updated:** YYYY-MM-DD
+**Maturity:** Draft (AI-generated, pending human review)
 **Product Editions Covered:** [List supported tiers/editions]
 **Authors:** How to Harden Community
 
@@ -318,10 +319,20 @@ Table showing how to assess third-party integration risk:
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| YYYY-MM-DD | 1.0 | Initial guide | [@username] |
-| YYYY-MM-DD | 1.1 | Added [section] | [@username] |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| YYYY-MM-DD | 0.1.0 | draft | Initial guide | [Author - see guidelines below] |
+
+### Author Attribution Guidelines
+
+Use the appropriate format for the Author column:
+
+| Author Type | Format | Example |
+|-------------|--------|---------|
+| Human contributor | GitHub handle or name | `@username`, `Jane Doe` |
+| Claude Code | `Claude Code ({model})` | `Claude Code (Opus 4.5)` |
+| Other AI tools | `{Tool Name} ({model})` | `GitHub Copilot (GPT-4)` |
+| Community (legacy) | `How to Harden Community` | For pre-versioning entries |
 
 ---
 
@@ -374,6 +385,36 @@ Found an issue or want to improve this guide?
   - Third-party tool integrations
   - Detailed troubleshooting
 
+**Versioning Requirements:**
+
+HTH uses Extended SemVer with Maturity Qualifiers, aligned with [CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks). See [VERSIONS.md](../VERSIONS.md) for full documentation.
+
+- **YAML Front Matter:** Include `version` and `maturity` fields:
+  ```yaml
+  ---
+  layout: guide
+  title: "[Vendor] Hardening Guide"
+  vendor: "[Vendor]"
+  version: "0.1.0"
+  maturity: "draft"  # draft | reviewed | verified
+  last_updated: "YYYY-MM-DD"
+  ---
+  ```
+
+- **Version Increments:**
+  - MAJOR: Scope expansion (net-new product, major feature area, first verified release)
+  - MINOR: Incremental improvements (new controls, new sections)
+  - PATCH: Editorial (typos, URL fixes, vendor UI changes)
+
+- **Changelog Tags:** Use `[SECURITY]` for critical additions, `[BREAKING]` for disruptive changes
+
+- **Maturity Levels:**
+  - `draft`: AI-generated or unreviewed
+  - `reviewed`: SME-validated content
+  - `verified`: Production-tested controls
+
+- **Changelog Entry:** Every version change requires a changelog entry with proper author attribution
+
 **Quality Checklist:**
 
 - [ ] Tested all ClickOps steps in real product environment
@@ -384,6 +425,8 @@ Found an issue or want to improve this guide?
 - [ ] Integration-specific controls include current vendor IPs/settings with verification date
 - [ ] At least 2 reviewers with hands-on product experience
 - [ ] All Markdown tables have blank lines before and after them (required for Jekyll rendering)
+- [ ] Version number updated in YAML front matter and changelog
+- [ ] VERSIONS.md registry updated with new version
 
 **Markdown Formatting Requirements:**
 

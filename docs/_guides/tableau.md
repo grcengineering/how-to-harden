@@ -6,6 +6,8 @@ slug: "tableau"
 tier: "4"
 category: "Analytics"
 description: "BI platform security for site roles, data source credentials, and embed controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ Tableau provides business intelligence and data visualization with connections t
 **Step 1: Define Site Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Site Administrator Creator | Full site access |
 | Site Administrator Explorer | Admin without publish |
 | Creator | Create/publish content |
@@ -214,6 +216,6 @@ HAVING view_count > 100;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Tableau hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Tableau hardening guide | Claude Code (Opus 4.5) |

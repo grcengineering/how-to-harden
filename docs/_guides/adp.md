@@ -6,6 +6,8 @@ slug: "adp"
 tier: "3"
 category: "HR/Payroll"
 description: "Payroll platform security for API connections, SSO, and data access controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -84,7 +86,7 @@ Configure ADP roles with segregation of duties for payroll functions.
 **Step 1: Define Role Structure**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Payroll Administrator | Full payroll access (limit to 2-3) |
 | Payroll Processor | Run payroll, NO tax changes |
 | HR Administrator | Employee data, NO payroll |
@@ -180,6 +182,6 @@ HAVING COUNT(*) > 10;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial ADP hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial ADP hardening guide | Claude Code (Opus 4.5) |

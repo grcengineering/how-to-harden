@@ -6,6 +6,7 @@ Thank you for your interest in contributing to How to Harden! This document prov
 
 - [Project README](README.md)
 - [Guide Template](templates/vendor-guide-template.md)
+- [Version Registry](VERSIONS.md)
 - [Report Issues](https://github.com/grcengineering/how-to-harden/issues)
 
 ## Ways to Contribute
@@ -70,6 +71,64 @@ Thank you for your interest in contributing to How to Harden! This document prov
 
 - **Lists:** Use consistent list markers (all `-` or all `*`, not mixed)
 
+## Versioning
+
+HTH uses **Extended SemVer with Maturity Qualifiers**, aligned with [CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks) versioning practices. See [VERSIONS.md](VERSIONS.md) for full documentation.
+
+### Version Format
+
+```
+v{MAJOR}.{MINOR}.{PATCH}-{maturity}
+
+Examples:
+  v0.1.0-draft      # Initial AI-drafted guide
+  v0.1.1-draft      # Typo fixes (PATCH)
+  v0.2.0-draft      # New control added (MINOR)
+  v1.0.0-verified   # First verified release (MAJOR milestone)
+  v2.0.0-verified   # Net-new product added (MAJOR scope expansion)
+```
+
+### When to Increment Versions
+
+| Bump | Signals | Triggers |
+|------|---------|----------|
+| **MAJOR** | Scope expansion or milestone | Net-new product, major feature area, first verified release, structural overhaul |
+| **MINOR** | Incremental improvements | New controls, new sections, compliance mappings |
+| **PATCH** | Editorial/maintenance | Typos, URL fixes, vendor UI changes, clarifications |
+
+### Changelog Tags
+
+Use tags to signal special circumstances (version bump follows normal rules):
+
+| Tag | When to Use | Example |
+|-----|-------------|---------|
+| `[SECURITY]` | Addresses active/prevalent threat | `[SECURITY] Add L1: Phishing-resistant MFA` |
+| `[BREAKING]` | May disrupt existing implementations | `[BREAKING] Remove deprecated OAuth control` |
+
+### Maturity Levels
+
+| Level | Meaning | Who Can Set |
+|-------|---------|-------------|
+| `draft` | AI-generated or unreviewed | Any contributor |
+| `reviewed` | Expert validated | Maintainers only |
+| `verified` | Production tested | Maintainers only |
+
+### Author Attribution in Changelog
+
+**Properly attribute all contributions:**
+
+| Author Type | Format | Example |
+|-------------|--------|---------|
+| Human contributor | GitHub handle or name | `@username`, `Jane Doe` |
+| Claude Code | `Claude Code ({model})` | `Claude Code (Opus 4.5)` |
+| Other AI tools | `{Tool Name} ({model})` | `GitHub Copilot (GPT-4)` |
+
+### Required Updates for Version Changes
+
+1. **YAML front matter:** Update `version` field
+2. **Changelog table:** Add new row with date, version, maturity, changes, author
+3. **VERSIONS.md:** Update the central registry
+
 ## Creating a New Guide
 
 ### 1. Choose a Platform
@@ -99,11 +158,19 @@ See the [template usage notes](templates/vendor-guide-template.md#template-usage
 - [ ] Check all external links
 - [ ] Verify table formatting (blank lines before/after)
 
-### 5. Submit a Pull Request
+### 5. Set Version and Maturity
 
-- Create a descriptive PR title: `Add [Vendor] hardening guide` or `Update [Vendor] guide: [what changed]`
+For new guides:
+- Set `version: "0.1.0"` in YAML front matter
+- Set `maturity: "draft"` in YAML front matter
+- Add initial changelog entry with proper author attribution
+- Add guide to VERSIONS.md registry
+
+### 6. Submit a Pull Request
+
+- Create a descriptive PR title: `Add [Vendor] hardening guide v0.1.0` or `Update [Vendor] guide to v0.2.0: [what changed]`
 - Reference any related issues
-- Add yourself to the guide's changelog
+- Ensure changelog entry is added with proper author attribution
 
 ## Pull Request Process
 

@@ -6,6 +6,8 @@ slug: "miro"
 tier: "4"
 category: "Collaboration"
 description: "Visual collaboration security for board sharing, app controls, and export restrictions"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -61,7 +63,7 @@ Miro is a visual collaboration platform for whiteboards, diagrams, and design se
 **Step 1: Define Team Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Admin | Full team management |
 | Member | Create/edit boards |
 | Guest | Board-specific access |
@@ -202,6 +204,6 @@ HAVING export_count > 10;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Miro hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Miro hardening guide | Claude Code (Opus 4.5) |

@@ -6,6 +6,8 @@ slug: "asana"
 tier: "4"
 category: "Productivity"
 description: "Project management security for guest access, app controls, and division settings"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -190,7 +192,7 @@ WHERE action = 'guest_added'
 ## Appendix A: Edition Compatibility
 
 | Control | Premium | Business | Enterprise |
-|---------|---------|----------|------------|
+||------|---------|----------|---------|--------||---------|----------|------------|
 | SAML SSO | ❌ | ❌ | ✅ |
 | SCIM | ❌ | ❌ | ✅ |
 | Audit Logs | ❌ | ❌ | ✅ |
@@ -200,6 +202,6 @@ WHERE action = 'guest_added'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Asana hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Asana hardening guide | Claude Code (Opus 4.5) |
