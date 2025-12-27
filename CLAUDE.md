@@ -53,62 +53,15 @@ Never use bare ` ``` ` without a language.
 cp templates/vendor-guide-template.md docs/_guides/[vendor-name].md
 ```
 
-## Front Matter Template
+## For Everything Else
 
-```yaml
----
-layout: guide
-title: "[Vendor] Hardening Guide"
-vendor: "Vendor Name"
-slug: "vendor-name"
-tier: "1"
-category: "Identity|Security|DevOps|Data|Productivity|HR/Finance|CRM/Marketing"
-description: "Brief description"
-last_updated: "YYYY-MM-DD"
----
-```
-
-## Control Structure (Abbreviated)
-
-```markdown
-### X.Y Control Title
-
-**Profile Level:** L1 | L2 | L3
-**CIS Controls:** [IDs]
-**NIST 800-53:** [IDs]
-
-#### Description
-#### Rationale
-#### Prerequisites
-#### ClickOps Implementation
-#### Code Implementation
-#### Validation & Testing
-#### Monitoring & Maintenance
-#### Operational Impact
-#### Compliance Mappings
-```
-
-## Compliance Frameworks (in order)
-
-1. CIS Controls
-2. NIST 800-53
-3. SOC 2
-4. ISO 27001
-5. PCI DSS
-6. DISA STIG (when applicable)
-
-## Profile Levels
-
-- **L1 (Baseline)** - Essential, all organizations
-- **L2 (Hardened)** - Security-sensitive environments
-- **L3 (Maximum)** - Regulated industries
-
-## Out of Scope
-
-- Infrastructure hardening (use CIS Benchmarks)
-- Secret rotation (use howtorotate.com)
-- Penetration testing
-- Physical security
+| Topic | Source File |
+|-------|-------------|
+| Guide/control structure | `templates/vendor-guide-template.md` |
+| Formatting rules | `CONTRIBUTING.md` |
+| Scope (in/out) | `PHILOSOPHY.md` |
+| AI task procedures | `AGENTS.md` |
+| Categories | `docs/about.md` |
 
 ## Quality Checks Before Commit
 
