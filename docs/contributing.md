@@ -4,7 +4,7 @@ title: Contributing
 permalink: /contributing/
 ---
 
-<div class="contributing-page" markdown="1">
+<div class="about-page" markdown="1">
 
 # Contributing to How to Harden
 
