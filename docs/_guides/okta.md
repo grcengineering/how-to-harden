@@ -1209,4 +1209,4 @@ Use this checklist to verify controls are implemented for your compliance requir
 
 **Questions or Improvements?**
 - Open an issue: [GitHub Issues](https://github.com/grcengineering/how-to-harden/issues)
-- Contribute: [CONTRIBUTING.md](../../CONTRIBUTING.md)
+- Contribute: [Contributing Guide](/contributing/)

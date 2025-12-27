@@ -57,7 +57,7 @@ How to Harden is open source and welcomes contributions. You can:
 - **Improve existing guides** - Add controls, fix errors, or update for new features
 - **Report issues** - Found a problem? Open an issue on GitHub
 
-Visit our [GitHub repository](https://github.com/grcengineering/how-to-harden) to get started.
+See our [Contributing Guide](/contributing/) or visit our [GitHub repository](https://github.com/grcengineering/how-to-harden) to get started.
 
 ## Philosophy
 

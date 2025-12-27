@@ -342,7 +342,7 @@ Found an issue or want to improve this guide?
 
 - **Report outdated information:** [Open an issue](https://github.com/yourproject/how-to-harden/issues) with tag `content-outdated`
 - **Propose new controls:** [Open an issue](https://github.com/yourproject/how-to-harden/issues) with tag `new-control`
-- **Submit improvements:** See [CONTRIBUTING.md](../../CONTRIBUTING.md)
+- **Submit improvements:** See [Contributing Guide](/contributing/)
 
 ---
 
