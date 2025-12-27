@@ -387,7 +387,7 @@ Found an issue or want to improve this guide?
 
 **Versioning Requirements:**
 
-HTH uses Extended SemVer with Maturity Qualifiers. See [VERSIONS.md](../VERSIONS.md) for full documentation.
+HTH uses Extended SemVer with Maturity Qualifiers, aligned with [CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks). See [VERSIONS.md](../VERSIONS.md) for full documentation.
 
 - **YAML Front Matter:** Include `version` and `maturity` fields:
   ```yaml
@@ -402,9 +402,11 @@ HTH uses Extended SemVer with Maturity Qualifiers. See [VERSIONS.md](../VERSIONS
   ```
 
 - **Version Increments:**
-  - PATCH (0.1.0 → 0.1.1): Typos, clarifications, URL fixes
-  - MINOR (0.1.1 → 0.2.0): New controls, new sections
-  - MAJOR (0.2.0 → 1.0.0): Breaking changes, removed controls, restructuring
+  - MAJOR: Scope expansion (net-new product, major feature area, first verified release)
+  - MINOR: Incremental improvements (new controls, new sections)
+  - PATCH: Editorial (typos, URL fixes, vendor UI changes)
+
+- **Changelog Tags:** Use `[SECURITY]` for critical additions, `[BREAKING]` for disruptive changes
 
 - **Maturity Levels:**
   - `draft`: AI-generated or unreviewed

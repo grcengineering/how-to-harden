@@ -4,7 +4,7 @@ This document provides a central registry of all How to Harden (HTH) guides with
 
 ## Versioning Model
 
-HTH uses **Extended SemVer with Maturity Qualifier**:
+HTH uses **Extended SemVer with Maturity Qualifier**, aligned with [CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks) versioning practices:
 
 ```
 v{MAJOR}.{MINOR}.{PATCH}-{maturity}
@@ -12,11 +12,49 @@ v{MAJOR}.{MINOR}.{PATCH}-{maturity}
 
 ### Semantic Version Components
 
-| Component | Increment When... | Examples |
-|-----------|-------------------|----------|
-| **MAJOR** | Breaking changes, removed controls, major restructuring | Control removed, guide reorganized |
-| **MINOR** | New controls, new sections, significant enhancements | New L1/L2/L3 control added |
-| **PATCH** | Fixes, clarifications, typos, minor updates | Typo fix, URL update, wording clarification |
+| Component | Signals | Triggers |
+|-----------|---------|----------|
+| **MAJOR** | Scope expansion or coverage milestone | Net-new product added, major feature area expansion, structural overhaul, first verified release |
+| **MINOR** | Incremental improvements within scope | New controls, new sections, compliance mappings added |
+| **PATCH** | Editorial/maintenance changes | Typos, URL fixes, vendor UI path changes, clarifications |
+
+#### MAJOR Version Triggers (Detailed)
+
+| Trigger | Example |
+|---------|---------|
+| Net-new product added | Okta WIC guide → Okta WIC + CIC guide |
+| Major feature area expansion | SSO hardening → SSO + SCIM + API security |
+| First verified release | v0.x.x-draft → v1.0.0-verified milestone |
+| Structural overhaul | Complete rewrite with new control taxonomy |
+
+#### What About Breaking Changes?
+
+Removals, reversals, and other disruptive changes use **changelog tags** rather than forcing MAJOR bumps:
+
+| Change Type | Version Bump | Changelog Tag |
+|-------------|--------------|---------------|
+| Single control removed | MINOR | `[BREAKING]` |
+| Recommendation reversed | MINOR | `[BREAKING]` |
+| Critical security addition | MINOR | `[SECURITY]` |
+| Entire section removed | MAJOR | `[BREAKING]` |
+| Product dropped from scope | MAJOR | `[BREAKING]` |
+
+This approach keeps version numbers meaningful for **scope/completeness** while clearly signaling disruptive or urgent changes.
+
+### Changelog Tags
+
+Use these tags in changelog entries to signal special circumstances:
+
+| Tag | Meaning | When to Use |
+|-----|---------|-------------|
+| `[SECURITY]` | Addresses active/prevalent threat | New control for emerging attack vector, critical gap filled |
+| `[BREAKING]` | May disrupt existing implementations | Control removed, recommendation reversed, API changed |
+
+Example changelog entries:
+```
+| 2025-12-27 | 0.3.0 | draft | [SECURITY] Add L1: Phishing-resistant MFA | @contributor |
+| 2025-12-28 | 0.4.0 | draft | [BREAKING] Remove deprecated SSO control | @contributor |
+```
 
 ### Maturity Qualifiers
 
@@ -29,9 +67,11 @@ v{MAJOR}.{MINOR}.{PATCH}-{maturity}
 ### Version Examples
 
 - `v0.1.0-draft` - Initial AI-drafted guide
-- `v0.1.1-draft` - AI-drafted with typo fixes
-- `v0.2.0-reviewed` - Human-reviewed with new control added
-- `v1.0.0-verified` - First verified release, production-tested
+- `v0.1.1-draft` - Typo fixes (PATCH)
+- `v0.2.0-draft` - New control added (MINOR)
+- `v0.2.0-reviewed` - Same content, now expert-validated (maturity change only)
+- `v1.0.0-verified` - First verified release (MAJOR milestone)
+- `v2.0.0-verified` - Net-new product added (MAJOR scope expansion)
 
 ### Author Attribution
 
@@ -149,3 +189,5 @@ Last updated: 2025-12-27
 - **Pre-1.0 versions**: All guides start at `v0.x.x` during the alpha phase. Version `v1.0.0` is reserved for guides that have achieved `verified` maturity status.
 - **Maturity progression**: A guide can advance in maturity without content changes (e.g., `v0.1.0-draft` → `v0.1.0-reviewed`), or content can change while maintaining maturity level (e.g., `v0.1.0-reviewed` → `v0.2.0-reviewed`).
 - **Registry updates**: This file should be updated whenever a guide version changes.
+- **CIS alignment**: This versioning model is inspired by [CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks), which use semantic versioning where MAJOR versions signal significant platform changes or restructuring, and version numbers don't reflect minor editorial changes that don't change the security posture.
+- **DISA STIG comparison**: Unlike [DISA STIGs](https://public.cyber.mil/stigs/) which use Version/Release (VxRy) notation with quarterly release cycles, HTH uses semantic versioning for broader accessibility outside DoD contexts.

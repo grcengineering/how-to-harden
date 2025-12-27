@@ -73,7 +73,7 @@ Thank you for your interest in contributing to How to Harden! This document prov
 
 ## Versioning
 
-HTH uses **Extended SemVer with Maturity Qualifiers** for all guides. See [VERSIONS.md](VERSIONS.md) for full documentation.
+HTH uses **Extended SemVer with Maturity Qualifiers**, aligned with [CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks) versioning practices. See [VERSIONS.md](VERSIONS.md) for full documentation.
 
 ### Version Format
 
@@ -82,21 +82,28 @@ v{MAJOR}.{MINOR}.{PATCH}-{maturity}
 
 Examples:
   v0.1.0-draft      # Initial AI-drafted guide
-  v0.1.1-draft      # Typo fixes
-  v0.2.0-reviewed   # Human-reviewed with new control
-  v1.0.0-verified   # First verified release
+  v0.1.1-draft      # Typo fixes (PATCH)
+  v0.2.0-draft      # New control added (MINOR)
+  v1.0.0-verified   # First verified release (MAJOR milestone)
+  v2.0.0-verified   # Net-new product added (MAJOR scope expansion)
 ```
 
 ### When to Increment Versions
 
-| Change Type | Version Bump | Example |
-|-------------|--------------|---------|
-| Typo, grammar, URL fix | PATCH | v0.1.0 → v0.1.1 |
-| Clarification, wording | PATCH | v0.1.1 → v0.1.2 |
-| New control added | MINOR | v0.1.2 → v0.2.0 |
-| New section added | MINOR | v0.2.0 → v0.3.0 |
-| Control removed | MAJOR | v0.3.0 → v1.0.0 |
-| Major restructure | MAJOR | v1.0.0 → v2.0.0 |
+| Bump | Signals | Triggers |
+|------|---------|----------|
+| **MAJOR** | Scope expansion or milestone | Net-new product, major feature area, first verified release, structural overhaul |
+| **MINOR** | Incremental improvements | New controls, new sections, compliance mappings |
+| **PATCH** | Editorial/maintenance | Typos, URL fixes, vendor UI changes, clarifications |
+
+### Changelog Tags
+
+Use tags to signal special circumstances (version bump follows normal rules):
+
+| Tag | When to Use | Example |
+|-----|-------------|---------|
+| `[SECURITY]` | Addresses active/prevalent threat | `[SECURITY] Add L1: Phishing-resistant MFA` |
+| `[BREAKING]` | May disrupt existing implementations | `[BREAKING] Remove deprecated OAuth control` |
 
 ### Maturity Levels
 
