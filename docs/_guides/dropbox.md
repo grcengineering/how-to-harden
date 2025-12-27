@@ -6,6 +6,8 @@ slug: "dropbox"
 tier: "3"
 category: "Storage"
 description: "Cloud storage security for sharing policies, linked apps, and admin controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -164,7 +166,7 @@ WHERE action = 'share_link_create'
 ## Appendix A: Edition Compatibility
 
 | Control | Standard | Advanced | Enterprise |
-|---------|----------|----------|------------|
+||------|---------|----------|---------|--------||----------|----------|------------|
 | SSO (SAML) | ❌ | ✅ | ✅ |
 | Audit Log | Basic | ✅ | ✅ |
 | Device Approval | ❌ | ✅ | ✅ |
@@ -174,6 +176,6 @@ WHERE action = 'share_link_create'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Dropbox hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Dropbox hardening guide | Claude Code (Opus 4.5) |

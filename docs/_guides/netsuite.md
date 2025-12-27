@@ -6,6 +6,8 @@ slug: "netsuite"
 tier: "2"
 category: "ERP"
 description: "ERP security for role-based access, SuiteScript controls, and integration hardening"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -174,7 +176,7 @@ Harden Token-Based Authentication (TBA) for API integrations.
 **Step 3: Implement Token Rotation**
 
 | Token Type | Rotation Frequency |
-|------------|-------------------|
+||------|---------|----------|---------|--------|---|-------------------|
 | Production integrations | Quarterly |
 | Development tokens | Monthly |
 | One-time exports | Immediately after use |
@@ -406,6 +408,6 @@ HAVING COUNT(*) > 1000;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial NetSuite hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial NetSuite hardening guide | Claude Code (Opus 4.5) |

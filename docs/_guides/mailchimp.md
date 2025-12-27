@@ -6,6 +6,8 @@ slug: "mailchimp"
 tier: "4"
 category: "Marketing"
 description: "Email marketing security for API keys, audience protection, and domain authentication"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ Mailchimp manages email marketing with audience data, campaign history, and cust
 **Step 1: Define User Levels**
 
 | Level | Permissions |
-|-------|-------------|
+|-------||------|---------|----------|---------|--------|----|
 | Owner | Full access (1 user) |
 | Admin | Manage users, full features |
 | Manager | Create campaigns, manage audiences |
@@ -208,6 +210,6 @@ WHERE created_at > NOW() - INTERVAL '24 hours'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Mailchimp hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Mailchimp hardening guide | Claude Code (Opus 4.5) |

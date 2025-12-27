@@ -6,6 +6,8 @@ slug: "gusto"
 tier: "5"
 category: "Payroll"
 description: "Payroll security for admin controls, partner integrations, and bank account protection"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ Gusto is a payroll and benefits platform for small-medium businesses. REST API a
 **Step 1: Define Admin Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Primary Admin | Full access |
 | Full Admin | Most admin functions |
 | Limited Admin | Specific access |
@@ -183,6 +185,6 @@ HAVING COUNT(*) > 50;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Gusto hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Gusto hardening guide | Claude Code (Opus 4.5) |

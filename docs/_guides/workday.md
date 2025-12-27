@@ -6,6 +6,8 @@ slug: "workday"
 tier: "2"
 category: "HR/Finance"
 description: "HCM platform hardening for security groups, integration security, and domain policies"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -209,7 +211,7 @@ Configure OAuth token policies for integration authentication.
 **Step 2: Rotate Client Secrets**
 
 | Integration Type | Rotation Frequency |
-|-----------------|-------------------|
+||------|---------|----------|---------|--------|--------|-------------------|
 | Payroll connectors | Quarterly |
 | Benefits integrations | Quarterly |
 | Reporting tools | Semi-annually |
@@ -424,6 +426,6 @@ WHERE field_name IN ('SSN', 'Bank_Account', 'Salary')
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Workday hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Workday hardening guide | Claude Code (Opus 4.5) |

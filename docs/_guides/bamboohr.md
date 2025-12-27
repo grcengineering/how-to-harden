@@ -6,6 +6,8 @@ slug: "bamboohr"
 tier: "5"
 category: "HR"
 description: "HR platform security for API keys, access levels, and sensitive field protection"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ BambooHR is a cloud-based HR platform managing employee records, benefits, and p
 **Step 1: Define Access Levels**
 
 | Level | Permissions |
-|-------|-------------|
+|-------||------|---------|----------|---------|--------|----|
 | Admin | Full access |
 | HR Manager | HR functions |
 | Manager | Team access |
@@ -203,6 +205,6 @@ HAVING COUNT(*) > 500;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial BambooHR hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial BambooHR hardening guide | Claude Code (Opus 4.5) |

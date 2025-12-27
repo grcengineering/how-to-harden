@@ -6,6 +6,8 @@ slug: "rippling"
 tier: "5"
 category: "HR/IT"
 description: "Workforce platform security for app provisioning, device management, and SCIM controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ Rippling is a unified workforce platform managing HR, IT, payroll, and spend. RE
 **Step 1: Define Permission Sets**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Super Admin | Full access |
 | HR Admin | HR/payroll functions |
 | IT Admin | Device/app management |
@@ -200,6 +202,6 @@ WHERE action IN ('app.add_user', 'app.remove_user')
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Rippling hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Rippling hardening guide | Claude Code (Opus 4.5) |

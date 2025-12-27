@@ -6,6 +6,8 @@ slug: "okta"
 tier: "1"
 category: "Identity"
 description: "Identity Provider hardening for SSO, MFA policies, and API token security"
+version: "0.2.0"
+maturity: "draft"
 last_updated: "2025-12-26"
 ---
 
@@ -49,7 +51,7 @@ This guide covers Okta-specific security configurations including authentication
 **Profile Level:** L1 (Baseline)
 
 | Framework | Control |
-|-----------|---------|
+||------|---------|----------|---------|--------|--|---------|
 | CIS Controls | 6.3, 6.5 |
 | NIST 800-53 | IA-2(1), IA-2(6) |
 | DISA STIG | V-273190, V-273191, V-273193 (HIGH), V-273194 (HIGH) |
@@ -1198,10 +1200,10 @@ Use this checklist to verify controls are implemented for your compliance requir
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-26 | 1.1 | Integrated DISA STIG Okta IDaaS V1R1 controls into functional sections | How to Harden Community |
-| 2025-12-14 | 1.0 | Initial Okta hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-26 | 0.2.0 | draft | Integrated DISA STIG Okta IDaaS V1R1 controls into functional sections | Claude Code (Opus 4.5) |
+| 2025-12-14 | 0.1.0 | draft | Initial Okta hardening guide | Claude Code (Opus 4.5) |
 
 ---
 

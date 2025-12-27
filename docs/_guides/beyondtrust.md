@@ -6,6 +6,8 @@ slug: "beyondtrust"
 tier: "1"
 category: "PAM"
 description: "Remote access security for PRA, session monitoring, and credential injection"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -115,7 +117,7 @@ curl -X POST "https://${BEYONDTRUST_HOST}/api/config/security-provider" \
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
+||------|---------|----------|---------|--------|--|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1), IA-2(6) | MFA for privileged access |
 | **PCI DSS** | 8.3.1 | MFA for administrative access |
@@ -646,6 +648,6 @@ Following the December 2024 incident:
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial guide with Treasury breach lessons | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial guide with Treasury breach lessons | Claude Code (Opus 4.5) |

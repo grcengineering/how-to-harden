@@ -6,6 +6,8 @@ slug: "wiz"
 tier: "2"
 category: "Security"
 description: "Cloud security platform hardening for connector security and RBAC controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -95,7 +97,7 @@ Configure Wiz roles with least-privilege access.
 **Step 1: Define Role Strategy**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Admin | Full platform access (limit to 2-3) |
 | Security Analyst | View issues, run queries, NO settings |
 | Developer | View assigned projects only |
@@ -377,6 +379,6 @@ GROUP BY service_account, source_ip;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Wiz hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Wiz hardening guide | Claude Code (Opus 4.5) |

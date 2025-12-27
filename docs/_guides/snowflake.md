@@ -6,6 +6,8 @@ slug: "snowflake"
 tier: "1"
 category: "Data Platform"
 description: "Data warehouse security including network policies, MFA enforcement, and access controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -173,7 +175,7 @@ WHERE deleted_on IS NULL
 #### Operational Impact
 
 | Aspect | Impact Level | Details |
-|--------|-------------|----------|
+||------|---------|----------|---------|--------|-------------|----------|
 | **User Experience** | Low | Users enroll once, authenticate via app |
 | **System Performance** | None | No performance impact |
 | **Maintenance Burden** | Low | Self-service enrollment |
@@ -767,6 +769,6 @@ ALTER USER svc_tableau SET NETWORK_POLICY = tableau_only;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Snowflake hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Snowflake hardening guide | Claude Code (Opus 4.5) |

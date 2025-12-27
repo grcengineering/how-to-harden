@@ -6,6 +6,8 @@ slug: "splunk"
 tier: "3"
 category: "SIEM"
 description: "SIEM platform hardening for role-based access, HEC tokens, and search controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -72,7 +74,7 @@ Require SAML SSO with MFA for all Splunk access.
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | admin | Full access (2-3 users) |
 | sc_admin | Splunk Cloud specific |
 | power | Search all data, create knowledge objects |
@@ -201,6 +203,6 @@ index=_audit action=login status=failure
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Splunk hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Splunk hardening guide | Claude Code (Opus 4.5) |

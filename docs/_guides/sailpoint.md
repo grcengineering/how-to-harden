@@ -6,6 +6,8 @@ slug: "sailpoint"
 tier: "3"
 category: "IGA"
 description: "Identity governance security for certification campaigns, source configs, and API access"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -73,7 +75,7 @@ Require strong MFA for all SailPoint administrative access.
 **Step 1: Define Admin Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Org Admin | Full platform access (2-3 users) |
 | Source Admin | Manage specific sources |
 | Cert Admin | Manage access certifications |
@@ -158,6 +160,6 @@ WHERE action IN ('APPROVE_ALL', 'CERTIFICATION_MODIFY')
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial SailPoint hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial SailPoint hardening guide | Claude Code (Opus 4.5) |

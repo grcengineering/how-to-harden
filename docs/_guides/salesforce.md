@@ -6,14 +6,13 @@ slug: "salesforce"
 tier: "2"
 category: "CRM"
 description: "CRM platform security for MFA enforcement, Connected Apps, and Shield Event Monitoring"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-12"
 ---
 
 
-**Version:** 1.0
-**Last Updated:** 2025-12-12
 **Salesforce Editions Covered:** Enterprise, Unlimited, Performance (some controls require Shield add-on)
-**Authors:** How to Harden Community
 
 ---
 
@@ -366,7 +365,7 @@ For each over-permissioned app:
 #### Recommended Scope Restrictions by Integration Type
 
 | Integration Type | Recommended Scopes | Avoid |
-|-----------------|-------------------|-------|
+||------|---------|----------|---------|--------|--------|-------------------|-------|
 | **Customer Success (Gainsight)** | `api`, `custom_permissions`, specific objects | `full`, `refresh_token` with long expiry |
 | **Marketing (HubSpot, Drift)** | `api`, `chatter_api`, limited objects | `full`, `manage_users` |
 | **Support (Zendesk, Intercom)** | `api`, `chatter_api`, Case object only | `full`, access to all objects |
@@ -627,9 +626,9 @@ Before allowing any third-party integration, assess risk:
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-12 | 1.0 | Initial Salesforce hardening guide with focus on integration security | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-12 | 0.1.0 | draft | Initial Salesforce hardening guide with focus on integration security | Claude Code (Opus 4.5) |
 
 ---
 

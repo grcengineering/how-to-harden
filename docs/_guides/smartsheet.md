@@ -6,6 +6,8 @@ slug: "smartsheet"
 tier: "5"
 category: "Productivity"
 description: "Work management security for sharing defaults, connector controls, and activity logging"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ Smartsheet is a collaborative work management platform for projects, workflows, 
 **Step 1: Define User Types**
 
 | Type | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | System Admin | Full admin access |
 | Group Admin | Manage specific groups |
 | Licensed User | Create and share |
@@ -200,6 +202,6 @@ HAVING export_count > 20;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Smartsheet hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Smartsheet hardening guide | Claude Code (Opus 4.5) |

@@ -6,6 +6,8 @@ slug: "snyk"
 tier: "5"
 category: "Security"
 description: "AppSec platform security for service accounts, SCM integrations, and Broker configs"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -61,7 +63,7 @@ Snyk provides developer security for vulnerability scanning across code, depende
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Group Admin | Full organization access |
 | Org Admin | Organization management |
 | Org Collaborator | View and test projects |
@@ -202,6 +204,6 @@ WHERE action = 'service_account.create'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Snyk hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Snyk hardening guide | Claude Code (Opus 4.5) |

@@ -6,6 +6,8 @@ slug: "sap-successfactors"
 tier: "3"
 category: "HR"
 description: "HCM security for permission groups, integration center, and data protection"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ SAP SuccessFactors is a global enterprise HCM with deep SAP ecosystem integratio
 **Step 1: Define Permission Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | System Admin | Full access (limit users) |
 | HR Admin | Employee data management |
 | Manager | Team access only |
@@ -169,6 +171,6 @@ HAVING COUNT(*) > 100;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial SAP SuccessFactors hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial SAP SuccessFactors hardening guide | Claude Code (Opus 4.5) |

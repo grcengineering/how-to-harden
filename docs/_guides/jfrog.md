@@ -6,6 +6,8 @@ slug: "jfrog"
 tier: "2"
 category: "DevOps"
 description: "Artifact management security for repository permissions, Xray policies, and access tokens"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -149,7 +151,7 @@ jf rt access-token-create \
 **Step 3: Rotate Tokens**
 
 | Token Type | Rotation Frequency |
-|------------|-------------------|
+||------|---------|----------|---------|--------|---|-------------------|
 | CI/CD tokens | Quarterly |
 | User API keys | Semi-annually |
 | Admin tokens | Quarterly |
@@ -462,6 +464,6 @@ HAVING COUNT(*) > 10;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial JFrog Artifactory hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial JFrog Artifactory hardening guide | Claude Code (Opus 4.5) |

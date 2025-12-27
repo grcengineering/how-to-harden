@@ -6,6 +6,8 @@ slug: "monday"
 tier: "4"
 category: "Productivity"
 description: "Work OS security for board sharing, app restrictions, and API token controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -61,7 +63,7 @@ Monday.com is a work operating system managing projects, workflows, and team col
 **Step 1: Define User Types**
 
 | Type | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Admin | Full account access |
 | Member | Create/edit boards |
 | Viewer | View only |
@@ -204,6 +206,6 @@ WHERE action = 'guest_invited'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Monday.com hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Monday.com hardening guide | Claude Code (Opus 4.5) |

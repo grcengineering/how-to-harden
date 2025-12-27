@@ -6,6 +6,8 @@ slug: "crowdstrike"
 tier: "1"
 category: "Security"
 description: "EDR platform hardening for API security, update policies, and RTR access"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -86,7 +88,7 @@ Require MFA for all Falcon console access. Console compromise provides access to
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
+||------|---------|----------|---------|--------|--|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1) | MFA for network access |
 | **PCI DSS** | 8.3.1 | MFA for administrative access |
@@ -653,6 +655,6 @@ def stream_to_siem():
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial guide with July 2024 lessons | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial guide with July 2024 lessons | Claude Code (Opus 4.5) |

@@ -6,6 +6,8 @@ slug: "zoom"
 tier: "2"
 category: "Collaboration"
 description: "Video conferencing security for meeting policies, recording controls, and app marketplace"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -89,7 +91,7 @@ Implement role-based access and user provisioning.
 2. Create/modify roles:
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Member | Host meetings, basic features |
 | Admin | Manage users, settings |
 | Owner | Full account control (1 user only) |
@@ -361,6 +363,6 @@ WHERE user_id NOT IN (SELECT host_id FROM meetings WHERE id = recording_id);
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Zoom hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Zoom hardening guide | Claude Code (Opus 4.5) |

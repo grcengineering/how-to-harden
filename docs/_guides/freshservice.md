@@ -6,6 +6,8 @@ slug: "freshservice"
 tier: "5"
 category: "ITSM"
 description: "ITSM security for API tokens, CMDB access, and change management controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ Freshservice is an IT service management (ITSM) platform handling IT tickets, as
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Admin | Full access |
 | SD Agent | Service desk functions |
 | Asset Manager | CMDB access |
@@ -199,6 +201,6 @@ HAVING COUNT(*) > 500;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Freshservice hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Freshservice hardening guide | Claude Code (Opus 4.5) |

@@ -6,6 +6,8 @@ slug: "launchdarkly"
 tier: "4"
 category: "DevOps"
 description: "Feature flag security for SDK keys, environment access, and approval workflows"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -62,7 +64,7 @@ LaunchDarkly manages feature flags controlling application behavior across envir
 **Step 1: Define Custom Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Admin | Full access |
 | Writer | Create/modify flags |
 | Reader | View only |
@@ -214,6 +216,6 @@ HAVING COUNT(*) > 10;
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial LaunchDarkly hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial LaunchDarkly hardening guide | Claude Code (Opus 4.5) |

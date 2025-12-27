@@ -6,6 +6,8 @@ slug: "vercel"
 tier: "5"
 category: "Hosting"
 description: "Deployment platform security for access tokens, environment variables, and Git integration"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -61,7 +63,7 @@ Vercel is a frontend cloud platform for deployment and hosting. REST API, deploy
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|-------------|
+|------|---------|----------|---------|--------|----|
 | Owner | Full team access |
 | Member | Deploy and manage |
 | Developer | Deploy only |
@@ -201,6 +203,6 @@ WHERE action LIKE '%environment_variable%'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Vercel hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Vercel hardening guide | Claude Code (Opus 4.5) |

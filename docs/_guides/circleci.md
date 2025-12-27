@@ -6,6 +6,8 @@ slug: "circleci"
 tier: "2"
 category: "CI/CD"
 description: "CI/CD pipeline security including contexts, secrets, and runner hardening"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -86,7 +88,7 @@ Require SAML SSO with MFA for all CircleCI access. The January 2023 breach demon
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
+||------|---------|----------|---------|--------|--|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1) | MFA for network access |
 
@@ -594,6 +596,6 @@ If you suspect CircleCI compromise:
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial CircleCI hardening guide with 2023 breach lessons | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial CircleCI hardening guide with 2023 breach lessons | Claude Code (Opus 4.5) |

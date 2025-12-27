@@ -6,14 +6,13 @@ slug: "cursor"
 tier: "1"
 category: "Developer Tools"
 description: "AI code editor security hardening for code privacy, API key management, and workspace trust"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-15"
 ---
 
 
-**Version:** 1.0
-**Last Updated:** 2025-12-15
 **Product Editions Covered:** Cursor Free, Cursor Pro, Cursor Business
-**Authors:** How to Harden Community
 
 ---
 
@@ -114,7 +113,7 @@ Require all developers to authenticate with a Cursor account instead of using th
 #### Operational Impact
 
 | Aspect | Impact Level | Details |
-|--------|-------------|----------|
+||------|---------|----------|---------|--------|-------------|----------|
 | **User Experience** | Low | One-time authentication flow |
 | **Development Workflow** | None | No workflow changes after authentication |
 | **Maintenance Burden** | Low | Occasional re-authentication required |
@@ -1089,9 +1088,9 @@ Deploy via MDM (Jamf, Intune, etc.) to all developer machines.
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-15 | 1.0 | Initial Cursor hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-15 | 0.1.0 | draft | Initial Cursor hardening guide | Claude Code (Opus 4.5) |
 
 ---
 

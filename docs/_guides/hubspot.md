@@ -6,6 +6,8 @@ slug: "hubspot"
 tier: "2"
 category: "CRM"
 description: "CRM security for private apps, OAuth scopes, and data export controls"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -217,7 +219,7 @@ Design integrations with HubSpot's rate limits in mind.
 #### Rate Limits
 
 | App Type | Rate Limit |
-|----------|-----------|
+||------|---------|----------|---------|--------|-|-----------|
 | Private Apps | 100 requests / 10 seconds |
 | OAuth Apps | 100 requests / 10 seconds per portal |
 | Burst | 150 requests / 10 seconds |
@@ -356,6 +358,6 @@ WHERE action LIKE '%permission%'
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial HubSpot hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial HubSpot hardening guide | Claude Code (Opus 4.5) |

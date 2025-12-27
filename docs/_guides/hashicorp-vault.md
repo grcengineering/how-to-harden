@@ -6,6 +6,8 @@ slug: "hashicorp-vault"
 tier: "1"
 category: "Secrets"
 description: "Secrets management security including auth methods, policies, and audit logging"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -217,7 +219,7 @@ vault read sys/internal/counters/tokens
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
+||------|---------|----------|---------|--------|--|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2, IA-5 | Authentication and token management |
 | **ISO 27001** | A.9.2.1 | User registration and de-registration |
@@ -874,6 +876,6 @@ vault write -f sys/replication/dr/primary/enable
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial HashiCorp Vault hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial HashiCorp Vault hardening guide | Claude Code (Opus 4.5) |

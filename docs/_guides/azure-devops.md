@@ -6,6 +6,8 @@ slug: "azure-devops"
 tier: "2"
 category: "DevOps"
 description: "Microsoft DevOps security for pipelines, service connections, and artifact feeds"
+version: "0.1.0"
+maturity: "draft"
 last_updated: "2025-12-14"
 ---
 
@@ -88,7 +90,7 @@ Require Azure AD authentication with Conditional Access policies including MFA, 
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
+||------|---------|----------|---------|--------|--|-----------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1) | MFA for network access |
 
@@ -694,6 +696,6 @@ AzureDevOpsAuditing
 
 ## Changelog
 
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-12-14 | 1.0 | Initial Azure DevOps hardening guide | How to Harden Community |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2025-12-14 | 0.1.0 | draft | Initial Azure DevOps hardening guide | Claude Code (Opus 4.5) |

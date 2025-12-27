@@ -1,22 +1,25 @@
 ---
 layout: default
 ---
-{% assign review_status = page.review_status | default: "ai-drafted" %}
+{% assign maturity = page.maturity | default: "draft" %}
+{% assign version = page.version | default: "0.1.0" %}
 
-{% if review_status == "human-verified" %}
+{% if maturity == "verified" %}
 <div class="status-banner verified-banner">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
     <polyline points="20 6 9 17 4 12"></polyline>
   </svg>
-  <span>Human Verified</span>
+  <span>v{{ version }}-verified</span>
+  <span class="status-label">Human Verified</span>
 </div>
-{% elsif review_status == "human-reviewed" %}
+{% elsif maturity == "reviewed" %}
 <div class="status-banner reviewed-banner">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
     <circle cx="12" cy="12" r="3"></circle>
   </svg>
-  <span>Human Reviewed</span>
+  <span>v{{ version }}-reviewed</span>
+  <span class="status-label">Human Reviewed</span>
 </div>
 {% else %}
 <div class="status-banner draft-banner">
@@ -25,7 +28,8 @@ layout: default
     <line x1="12" y1="9" x2="12" y2="14"></line>
     <circle cx="12" cy="17" r="0.6" fill="currentColor"></circle>
   </svg>
-  <span>AI Drafted</span>
+  <span>v{{ version }}-draft</span>
+  <span class="status-label">AI Drafted</span>
 </div>
 {% endif %}
 
