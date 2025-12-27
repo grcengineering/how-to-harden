@@ -641,4 +641,4 @@ Before allowing any third-party integration, assess risk:
 
 **Questions or Improvements?**
 - Open an issue: [GitHub Issues](https://github.com/yourproject/how-to-harden/issues)
-- Contribute: [CONTRIBUTING.md](../../CONTRIBUTING.md)
+- Contribute: [Contributing Guide](/contributing/)
