@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Contributing
+permalink: /contributing/
 ---
 
 <div class="contributing-page" markdown="1">
