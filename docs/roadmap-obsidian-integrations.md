@@ -2,13 +2,13 @@
 layout: page
 title: "HTH Guides Roadmap: Obsidian Security Integrations"
 permalink: /roadmap/obsidian-integrations/
-description: "Roadmap for creating How to Harden guides covering SaaS products in Obsidian Security's integrations ecosystem"
+description: "Roadmap for creating How to Harden guides covering 175+ SaaS products in Obsidian Security's integrations ecosystem"
 last_updated: "2026-02-04"
 ---
 
 # HTH Guides Roadmap: Obsidian Security Integrations
 
-**Version:** 1.0.0
+**Version:** 2.0.0
 **Last Updated:** 2026-02-04
 **Status:** Active
 **Authors:** Claude Code (Opus 4.5)
@@ -17,414 +17,244 @@ last_updated: "2026-02-04"
 
 ## Executive Summary
 
-This roadmap defines the plan for creating comprehensive How to Harden (HTH) guides for SaaS products covered by [Obsidian Security's integrations ecosystem](https://www.obsidiansecurity.com/obsidian-integrations-hub). Obsidian Security provides SaaS Security Posture Management (SSPM) for hundreds of applications, making their integration list an authoritative reference for high-value hardening targets.
+This roadmap defines the systematic approach to developing How to Harden (HTH) guides for each SaaS product listed on [Obsidian Security's integrations hub](https://www.obsidiansecurity.com/obsidian-integrations-hub). The initiative covers research, analysis, and documentation phases for **175+ products** across **12 categories**.
 
-**Scope:** This roadmap covers research, development, and maintenance phases for creating new HTH guides and enhancing existing ones to align with Obsidian Security's coverage.
+**Key Statistics:**
+
+| Metric | Count |
+|--------|-------|
+| Total Obsidian Integration Products | 175+ |
+| Existing HTH Guides | 53 |
+| New Guides Required | **122+** |
+| Guides Requiring Enhancement | 53 |
+| Estimated Total Effort | ~2,625 hours |
 
 ---
 
 ## Table of Contents
 
-1. [Obsidian Security Integration Categories](#1-obsidian-security-integration-categories)
-2. [Gap Analysis: Existing HTH Guides vs. Obsidian Integrations](#2-gap-analysis-existing-hth-guides-vs-obsidian-integrations)
-3. [New Guides Required](#3-new-guides-required)
-4. [Research Phase Requirements](#4-research-phase-requirements)
-5. [Development Phase Workflow](#5-development-phase-workflow)
-6. [Prioritization Framework](#6-prioritization-framework)
-7. [Timeline and Milestones](#7-timeline-and-milestones)
-8. [Quality Gates](#8-quality-gates)
+1. [Phase 0: Project Infrastructure](#phase-0-project-infrastructure)
+2. [Phase 1: Product Triage & Prioritization](#phase-1-product-triage--prioritization)
+3. [Phase 2: Research Methodology](#phase-2-research-methodology)
+4. [Phase 3: Guide Development Workflow](#phase-3-guide-development-workflow)
+5. [Phase 4: Execution Timeline](#phase-4-execution-timeline)
+6. [Phase 5: Quality Assurance Framework](#phase-5-quality-assurance-framework)
+7. [Complete Product Inventory](#complete-product-inventory)
+8. [Research Resource Library](#research-resource-library)
+9. [Appendices](#appendices)
 
 ---
 
-## 1. Obsidian Security Integration Categories
+## Phase 0: Project Infrastructure
 
-Obsidian Security organizes their integrations into the following categories. HTH guides should be created or enhanced for products in each category.
+### 0.1 Template & Standards Development
 
-### 1.1 Identity & Access Management
+- [x] Create HTH guide template with consistent structure (`templates/vendor-guide-template.md`)
+- [x] Define minimum viable content requirements per guide
+- [x] Establish quality criteria and review checklists
+- [x] Create metadata schema for tracking guide status (YAML front matter)
+- [x] Define versioning strategy for guide updates (`VERSIONS.md`)
 
-| Product | HTH Guide Status | Priority |
-|---------|-----------------|----------|
-| Okta | Exists (v0.2.0-draft) | Tier 1 |
-| Microsoft Entra ID (Azure AD) | **NEW REQUIRED** | Tier 1 |
-| Cisco Duo | **NEW REQUIRED** | Tier 2 |
-| Auth0 | **NEW REQUIRED** | Tier 2 |
-| JumpCloud | **NEW REQUIRED** | Tier 2 |
-| Ping Identity | Exists (v0.1.0-draft) | Tier 2 |
-| CyberArk | Exists (v0.1.0-draft) | Tier 2 |
-| SailPoint | Exists (v0.1.0-draft) | Tier 2 |
-| BeyondTrust | Exists (v0.1.0-draft) | Tier 3 |
+### 0.2 Tooling & Automation Setup
 
-### 1.2 Collaboration & Productivity
+- [ ] Configure CI/CD for guide publishing (GitHub Actions)
+- [ ] Create scripts for automated link checking
+- [ ] Build tracking dashboard for guide completion status
+- [ ] Set up RSS/webhook monitors for vendor changelog tracking
+- [ ] Create CVE monitoring automation for product list
 
-| Product | HTH Guide Status | Priority |
-|---------|-----------------|----------|
-| Microsoft 365 | **NEW REQUIRED** | Tier 1 |
-| Google Workspace | **NEW REQUIRED** | Tier 1 |
-| Slack | **NEW REQUIRED** | Tier 1 |
-| Zoom | Exists (v0.1.0-draft) | Tier 1 |
-| Atlassian (Jira/Confluence) | Exists (v0.1.0-draft) | Tier 1 |
-| Asana | Exists (v0.1.0-draft) | Tier 2 |
-| Monday.com | Exists (v0.1.0-draft) | Tier 2 |
-| Notion | Exists (v0.1.0-draft) | Tier 2 |
-| Miro | Exists (v0.1.0-draft) | Tier 3 |
-| Smartsheet | Exists (v0.1.0-draft) | Tier 3 |
+### 0.3 Research Source Inventory
 
-### 1.3 Files & Content Management
-
-| Product | HTH Guide Status | Priority |
-|---------|-----------------|----------|
-| Box | Exists (v0.1.0-draft) | Tier 2 |
-| Dropbox | Exists (v0.1.0-draft) | Tier 2 |
-| SharePoint (via M365) | **NEW REQUIRED** | Tier 1 |
-| OneDrive (via M365) | **NEW REQUIRED** | Tier 2 |
-| Google Drive (via Workspace) | **NEW REQUIRED** | Tier 1 |
-
-### 1.4 Business Applications (CRM/ERP/HCM)
-
-| Product | HTH Guide Status | Priority |
-|---------|-----------------|----------|
-| Salesforce | Exists (v0.1.0-draft) | Tier 1 |
-| Workday | Exists (v0.1.0-draft) | Tier 1 |
-| ServiceNow | Exists (v0.1.0-draft) | Tier 1 |
-| NetSuite | Exists (v0.1.0-draft) | Tier 2 |
-| SAP SuccessFactors | Exists (v0.1.0-draft) | Tier 2 |
-| SAP S/4HANA | **NEW REQUIRED** | Tier 2 |
-| SAP Ariba | **NEW REQUIRED** | Tier 3 |
-| SAP Fieldglass | **NEW REQUIRED** | Tier 3 |
-| Oracle HCM | Exists (v0.1.0-draft) | Tier 2 |
-| HubSpot | Exists (v0.1.0-draft) | Tier 2 |
-| Zendesk | Exists (v0.1.0-draft) | Tier 2 |
-| Freshservice | Exists (v0.1.0-draft) | Tier 3 |
-| Zuora | **NEW REQUIRED** | Tier 3 |
-
-### 1.5 Data & Analytics
-
-| Product | HTH Guide Status | Priority |
-|---------|-----------------|----------|
-| Snowflake | Exists (v0.1.0-draft) | Tier 1 |
-| Databricks | Exists (v0.1.0-draft) | Tier 1 |
-| Tableau | Exists (v0.1.0-draft) | Tier 2 |
-| Looker | Exists (v0.1.0-draft) | Tier 2 |
-| Power BI | Exists (v0.1.0-draft) | Tier 2 |
-
-### 1.6 DevOps & Engineering
-
-| Product | HTH Guide Status | Priority |
-|---------|-----------------|----------|
-| GitHub | Exists (v0.1.0-draft) | Tier 1 |
-| GitLab | Exists (v0.1.0-draft) | Tier 2 |
-| Azure DevOps | Exists (v0.1.0-draft) | Tier 2 |
-| CircleCI | Exists (v0.1.0-draft) | Tier 2 |
-| JFrog Artifactory | Exists (v0.1.0-draft) | Tier 2 |
-| Docker Hub | Exists (v0.1.0-draft) | Tier 2 |
-| Terraform Cloud | Exists (v0.1.0-draft) | Tier 2 |
-| Vercel | Exists (v0.1.0-draft) | Tier 3 |
-| Snyk | Exists (v0.1.0-draft) | Tier 2 |
-| LaunchDarkly | Exists (v0.1.0-draft) | Tier 3 |
-| Fastly | **NEW REQUIRED** | Tier 3 |
-
-### 1.7 Security & Compliance
-
-| Product | HTH Guide Status | Priority |
-|---------|-----------------|----------|
-| CrowdStrike | Exists (v0.1.0-draft) | Tier 1 |
-| Datadog | Exists (v0.1.0-draft) | Tier 1 |
-| Splunk | Exists (v0.1.0-draft) | Tier 2 |
-| New Relic | Exists (v0.1.0-draft) | Tier 2 |
-| PagerDuty | Exists (v0.1.0-draft) | Tier 2 |
-| Wiz | Exists (v0.1.0-draft) | Tier 2 |
-| HashiCorp Vault | Exists (v0.1.0-draft) | Tier 2 |
-| Logz.io | **NEW REQUIRED** | Tier 3 |
-
-### 1.8 Marketing & Communications
-
-| Product | HTH Guide Status | Priority |
-|---------|-----------------|----------|
-| Marketo | Exists (v0.1.0-draft) | Tier 3 |
-| Mailchimp | Exists (v0.1.0-draft) | Tier 3 |
-| Klaviyo | Exists (v0.1.0-draft) | Tier 3 |
-| SendGrid | **NEW REQUIRED** | Tier 3 |
-
-### 1.9 AI & Automation Platforms
-
-| Product | HTH Guide Status | Priority |
-|---------|-----------------|----------|
-| ChatGPT Enterprise | **NEW REQUIRED** | Tier 1 |
-| Microsoft Copilot | **NEW REQUIRED** | Tier 1 |
-| Salesforce Agentforce | **NEW REQUIRED** | Tier 2 |
-| n8n | **NEW REQUIRED** | Tier 3 |
-| Cursor | Exists (v0.1.0-draft) | Tier 2 |
-
-### 1.10 HR & Payroll
-
-| Product | HTH Guide Status | Priority |
-|---------|-----------------|----------|
-| ADP | Exists (v0.1.0-draft) | Tier 2 |
-| BambooHR | Exists (v0.1.0-draft) | Tier 3 |
-| Gusto | Exists (v0.1.0-draft) | Tier 3 |
-| Rippling | Exists (v0.1.0-draft) | Tier 3 |
+- [ ] Compile master list of security research databases (MITRE ATT&CK, CISA KEV, etc.)
+- [ ] Inventory breach notification databases (HaveIBeenPwned, breach trackers)
+- [ ] List security conference archives (DEF CON, Black Hat, BSides)
+- [ ] Catalog security researcher blogs and feeds
+- [ ] Identify vendor security advisory pages for each product
 
 ---
 
-## 2. Gap Analysis: Existing HTH Guides vs. Obsidian Integrations
+## Phase 1: Product Triage & Prioritization
 
-### 2.1 Summary Statistics
+### 1.1 Category Overview
 
-| Metric | Count |
-|--------|-------|
-| Total Obsidian Integration Products Identified | 72 |
-| Existing HTH Guides | 53 |
-| Guides Requiring Creation | **19** |
-| Guides Requiring Enhancement | 53 |
+| Category | Product Count | Priority Tier |
+|----------|---------------|---------------|
+| Identity & Access Management | ~20 | Tier 1 (Critical) |
+| Collaboration & Productivity | ~25 | Tier 1 (Critical) |
+| DevOps & Engineering | ~20 | Tier 1 (Critical) |
+| Security & Compliance | ~30 | Tier 2 (High) |
+| Data & Analytics | ~15 | Tier 2 (High) |
+| Business Applications | ~25 | Tier 2 (High) |
+| Files & Content Management | ~10 | Tier 3 (Standard) |
+| IT Infrastructure & Networking | ~15 | Tier 3 (Standard) |
+| AI & Automation Platforms | ~10 | Tier 1 (Critical) |
+| Backup & Recovery | ~5 | Tier 2 (High) |
+| HR & Payroll | ~10 | Tier 3 (Standard) |
+| Financial & Specialized | ~10 | Tier 4 (As-needed) |
 
-### 2.2 Existing Guides (53)
+### 1.2 Priority Scoring Matrix
 
-The following HTH guides already exist and should be enhanced with additional controls based on Obsidian Security's posture management capabilities:
+Score each product (1-5) on:
 
-- adp, asana, atlassian, azure-devops, bamboohr, beyondtrust, box, circleci, crowdstrike, cursor, cyberark, databricks, datadog, dockerhub, dropbox, freshservice, github, gitlab, gusto, hashicorp-vault, hubspot, jfrog, klaviyo, launchdarkly, looker, mailchimp, marketo, miro, monday, netsuite, new-relic, notion, okta, oracle-hcm, pagerduty, ping-identity, power-bi, rippling, sailpoint, salesforce, sap-successfactors, servicenow, smartsheet, snowflake, snyk, splunk, tableau, terraform-cloud, vercel, wiz, workday, zendesk, zoom
+| Criterion | Weight | Description |
+|-----------|--------|-------------|
+| Market penetration / user base | 25% | Fortune 500 adoption rate |
+| Sensitivity of data handled | 25% | PII, credentials, financial data |
+| Attack surface complexity | 20% | API exposure, integrations, permissions |
+| Known historical incidents | 15% | CVEs, breaches, supply chain attacks |
+| Regulatory relevance | 10% | SOC 2, HIPAA, PCI-DSS, FedRAMP |
+| API/automation depth | 5% | IaC support, API coverage |
 
-### 2.3 New Guides Required (19)
+### 1.3 Tier Definitions
 
-| Product | Category | Priority | Complexity |
-|---------|----------|----------|------------|
-| Microsoft 365 | Collaboration | Tier 1 | High |
-| Google Workspace | Collaboration | Tier 1 | High |
-| Slack | Collaboration | Tier 1 | Medium |
-| Microsoft Entra ID | Identity | Tier 1 | High |
-| ChatGPT Enterprise | AI | Tier 1 | Medium |
-| Microsoft Copilot | AI | Tier 1 | Medium |
-| Cisco Duo | Identity | Tier 2 | Medium |
-| Auth0 | Identity | Tier 2 | Medium |
-| JumpCloud | Identity | Tier 2 | Medium |
-| SAP S/4HANA | Business | Tier 2 | High |
-| Salesforce Agentforce | AI | Tier 2 | Medium |
-| SharePoint | Files | Tier 1 | Medium |
-| OneDrive | Files | Tier 2 | Low |
-| Google Drive | Files | Tier 1 | Medium |
-| SAP Ariba | Business | Tier 3 | Medium |
-| SAP Fieldglass | Business | Tier 3 | Medium |
-| Zuora | Business | Tier 3 | Medium |
-| Fastly | DevOps | Tier 3 | Medium |
-| Logz.io | Security | Tier 3 | Low |
-| SendGrid | Marketing | Tier 3 | Low |
-| n8n | Automation | Tier 3 | Low |
+| Tier | Criteria | Target Maturity | CIS Benchmark Available |
+|------|----------|-----------------|-------------------------|
+| **Tier 1** | Critical infrastructure, identity, major productivity suites | verified | Often yes |
+| **Tier 2** | Significant enterprise adoption, handles sensitive data | reviewed | Sometimes |
+| **Tier 3** | Specialized use cases, moderate adoption | draft | Rarely |
+| **Tier 4** | Niche products, as-needed basis | draft | No |
 
----
+### 1.4 Tier 1 Products (Immediate Priority)
 
-## 3. New Guides Required
+**Identity & Access:**
+- Okta, Microsoft Entra, Auth0, OneLogin, Ping Identity, JumpCloud, Duo, CyberArk, SailPoint, 1Password, LastPass, Keeper
 
-### 3.1 Tier 1 Priority (High Business Impact)
+**Collaboration:**
+- Google Workspace, Microsoft 365, Slack, Slack Enterprise, Zoom, Webex, Microsoft Teams (via M365)
 
-These guides should be developed first due to their widespread enterprise adoption and security criticality.
+**DevOps:**
+- GitHub, GitHub Enterprise, GitLab, Azure DevOps, Atlassian (Jira/Confluence/Bitbucket), Jenkins, CircleCI, Terraform Cloud
 
-#### 3.1.1 Microsoft 365
+**Data Platforms:**
+- Snowflake, Databricks, MongoDB Atlas
 
-**Justification:** Ubiquitous enterprise productivity suite with extensive attack surface including Exchange Online, SharePoint, OneDrive, Teams, and Azure AD integration.
+**CRM/Business Critical:**
+- Salesforce, ServiceNow, Workday
 
-**Key Hardening Areas:**
-- Conditional Access Policies
-- Data Loss Prevention (DLP)
-- Information Protection Labels
-- External Sharing Controls
-- OAuth App Governance
-- Mail Flow Rules Security
-- Teams Guest Access
-- Admin Role Management
-
-#### 3.1.2 Google Workspace
-
-**Justification:** Major enterprise collaboration platform with Gmail, Drive, Meet, and identity services requiring comprehensive hardening.
-
-**Key Hardening Areas:**
-- Admin Console Security Settings
-- 2-Step Verification Enforcement
-- Drive Sharing Restrictions
-- OAuth App Allowlisting
-- Alert Center Configuration
-- Context-Aware Access
-- DLP Rules
-- Mobile Device Management
-
-#### 3.1.3 Slack
-
-**Justification:** Critical communication platform with OAuth integrations, file sharing, and extensive third-party app ecosystem.
-
-**Key Hardening Areas:**
-- Enterprise Grid Security Controls
-- Slack Connect External Collaboration
-- App Management and OAuth Scopes
-- Data Retention Policies
-- Session Management
-- IP Allowlisting (Enterprise)
-- Channel Management
-- DLP Integration
-
-#### 3.1.4 Microsoft Entra ID (Azure AD)
-
-**Justification:** Core identity provider for enterprise environments with SSO, conditional access, and privileged identity management.
-
-**Key Hardening Areas:**
-- Conditional Access Policies
-- Privileged Identity Management (PIM)
-- Identity Protection Risk Policies
-- App Registration Security
-- External Identity Management
-- Entitlement Management
-- Access Reviews
-- Legacy Authentication Blocking
-
-#### 3.1.5 ChatGPT Enterprise / OpenAI
-
-**Justification:** Rapidly adopted AI platform with data privacy implications and integration risks.
-
-**Key Hardening Areas:**
-- Data Retention Settings
-- SSO/SCIM Configuration
-- Workspace Access Controls
-- Custom GPT Governance
-- API Key Management
-- Usage Monitoring
-- Data Export Controls
-- Plugin/Action Restrictions
-
-#### 3.1.6 Microsoft Copilot
-
-**Justification:** AI assistant integrated with Microsoft 365 with access to enterprise data.
-
-**Key Hardening Areas:**
-- Copilot Access Policies
-- Data Sensitivity Labels
-- Plugin Management
-- Usage Analytics
-- Compliance Controls
-- Information Barriers
-- External Data Access
-
-### 3.2 Tier 2 Priority (Significant Security Impact)
-
-#### Cisco Duo, Auth0, JumpCloud, SAP S/4HANA, Salesforce Agentforce, SharePoint (standalone), OneDrive (standalone)
-
-### 3.3 Tier 3 Priority (Specialized or Lower Adoption)
-
-#### SAP Ariba, SAP Fieldglass, Zuora, Fastly, Logz.io, SendGrid, n8n
+**AI Platforms:**
+- OpenAI/ChatGPT Enterprise, Microsoft Copilot
 
 ---
 
-## 4. Research Phase Requirements
+## Phase 2: Research Methodology
 
-Each new HTH guide requires comprehensive research across multiple source categories before development begins.
+### 2.1 First-Party Documentation Research
 
-### 4.1 First-Party Documentation Research
+#### 2.1.1 Documentation Sources
 
-**Objective:** Identify all security-relevant settings, configurations, and APIs from official vendor sources.
+For each product, systematically locate and analyze:
 
-#### 4.1.1 Documentation Types to Review
+| Source Type | Typical URL Pattern | Priority |
+|-------------|---------------------|----------|
+| Security Center/Trust Center | `trust.[vendor].com` or `security.[vendor].com` | Critical |
+| Admin Console Documentation | `help.[vendor].com/admin` or `docs.[vendor].com` | Critical |
+| API Documentation | `developer.[vendor].com` or `api.[vendor].com` | Critical |
+| Release Notes / Changelog | `[vendor].com/releases` or `changelog.[vendor].com` | High |
+| Compliance Documentation | `compliance.[vendor].com` | High |
+| Security Whitepapers | Trust center downloads | Medium |
+| Architecture Diagrams | Technical docs | Medium |
 
-| Documentation Type | Research Focus | Priority |
-|--------------------|----------------|----------|
-| **Security/Trust Center** | Security architecture, compliance certifications, shared responsibility model | Critical |
-| **Admin/Configuration Guide** | All configurable security settings, default values | Critical |
-| **API Reference** | Security-relevant API endpoints, authentication methods, rate limits | Critical |
-| **Best Practices Guide** | Vendor-recommended security configurations | High |
-| **Release Notes** | New security features, deprecated settings, breaking changes | High |
-| **Compliance Documentation** | SOC 2 reports, ISO certifications, penetration test summaries | High |
-| **Identity/SSO Guide** | SAML, OIDC, SCIM configuration options | Critical |
-| **Audit Log Reference** | Available log events, retention, export options | High |
-| **API Changelog** | API version changes, deprecated endpoints | Medium |
-| **Developer Documentation** | OAuth scopes, webhook security, integration patterns | Medium |
-
-#### 4.1.2 Research Checklist
+#### 2.1.2 Documentation Extraction Checklist
 
 For each SaaS product, document:
 
 - [ ] Official security documentation URL
 - [ ] Admin console security settings location
-- [ ] Available authentication methods (SSO, MFA, etc.)
-- [ ] Role-based access control model
-- [ ] API authentication methods and scopes
-- [ ] Audit logging capabilities and retention
-- [ ] Data encryption options (at-rest, in-transit)
-- [ ] IP allowlisting/network restrictions availability
-- [ ] Session management options
-- [ ] Third-party integration/OAuth app controls
-- [ ] Data export and backup capabilities
+- [ ] Available authentication methods (SAML, OIDC, MFA methods)
+- [ ] Authorization models (RBAC, ABAC, custom)
+- [ ] API authentication methods (OAuth, API keys, service accounts)
+- [ ] Audit logging capabilities and retention options
+- [ ] Data encryption options (at-rest, in-transit, customer-managed keys)
+- [ ] Network security controls (IP allowlisting, private connectivity)
+- [ ] Integration/OAuth app management settings
+- [ ] Session management controls
+- [ ] Data loss prevention (DLP) features
 - [ ] Compliance certifications held
 - [ ] Edition/tier feature restrictions
 
-#### 4.1.3 Documentation Sources by Product
+#### 2.1.3 API Documentation Analysis
 
-| Product | Primary Security Docs | Admin Guide | API Docs |
-|---------|----------------------|-------------|----------|
-| Microsoft 365 | [Microsoft Security](https://security.microsoft.com), [Trust Center](https://www.microsoft.com/trust-center) | [Admin Center](https://admin.microsoft.com) | [Graph API](https://docs.microsoft.com/graph) |
-| Google Workspace | [Security Center](https://admin.google.com/security), [Trust](https://workspace.google.com/security/) | [Admin Help](https://support.google.com/a) | [Admin SDK](https://developers.google.com/admin-sdk) |
-| Slack | [Security at Slack](https://slack.com/trust/security), [Enterprise Grid](https://slack.com/enterprise) | [Help Center](https://slack.com/help) | [Web API](https://api.slack.com) |
-| Entra ID | [Entra Documentation](https://learn.microsoft.com/entra) | [Entra Admin](https://entra.microsoft.com) | [Graph API](https://docs.microsoft.com/graph) |
-| ChatGPT Enterprise | [Enterprise Security](https://openai.com/enterprise-privacy) | [Help Center](https://help.openai.com) | [API Reference](https://platform.openai.com/docs) |
+- [ ] Enumerate all security-relevant API endpoints
+- [ ] Document API rate limits and abuse prevention
+- [ ] Identify programmatic access to security settings
+- [ ] Map API scopes and permission models
+- [ ] Document webhook/event subscription capabilities
+- [ ] Identify bulk operations for security automation
 
-### 4.2 Third-Party Security Research
+#### 2.1.4 Config-as-Code Research
 
-**Objective:** Identify real-world attack patterns, vulnerabilities, and community-sourced hardening recommendations.
+| IaC Tool | Research Focus |
+|----------|----------------|
+| **Terraform** | Official provider, community providers, security resource coverage |
+| **Pulumi** | Provider availability, TypeScript/Python examples |
+| **CloudFormation** | AWS-integrated SaaS configuration |
+| **Ansible** | Modules for SaaS configuration |
+| **Crossplane** | Kubernetes-native SaaS management |
+| **Vendor-native** | e.g., Salesforce DX, Okta Terraform |
 
-#### 4.2.1 Research Categories
+### 2.2 Third-Party Security Research
 
-| Category | Sources | Research Focus |
-|----------|---------|----------------|
-| **Security Incidents** | News, vendor disclosures, breach databases | Past breaches, root causes, applicable controls |
-| **Vulnerability Research** | CVE databases, security advisories | Known vulnerabilities, mitigations |
-| **Penetration Testing** | Published reports, bug bounties | Common attack vectors, exploitation techniques |
-| **Security Blogs** | Vendor blogs, security researchers | Configuration weaknesses, hardening tips |
-| **Academic Research** | Papers, conference presentations | Advanced attack techniques, defense strategies |
-| **Community Forums** | Reddit, Stack Overflow, vendor forums | Real-world implementation challenges |
-| **Compliance Frameworks** | CIS Benchmarks, NIST, vendor-specific | Baseline configuration requirements |
-
-#### 4.2.2 Incident Research Sources
+#### 2.2.1 Incident & Breach Research
 
 | Source | URL | Use Case |
 |--------|-----|----------|
+| CISA KEV | https://www.cisa.gov/known-exploited-vulnerabilities-catalog | Known exploited vulnerabilities |
 | CISA Alerts | https://www.cisa.gov/news-events/cybersecurity-advisories | Critical vulnerabilities |
+| NVD | https://nvd.nist.gov/ | CVE details and scoring |
+| CVE Details | https://www.cvedetails.com/ | Product-specific CVEs |
 | HaveIBeenPwned | https://haveibeenpwned.com | Historical breach data |
-| Obsidian Security Blog | https://www.obsidiansecurity.com/blog | SaaS-specific threats |
-| Unit 42 | https://unit42.paloaltonetworks.com | Threat intelligence |
-| Mandiant | https://www.mandiant.com/resources | Incident reports |
-| KrebsOnSecurity | https://krebsonsecurity.com | Breach coverage |
-| BleepingComputer | https://www.bleepingcomputer.com | Security news |
-| The Record | https://therecord.media | Cyber incident reporting |
-| CVE Database | https://cve.mitre.org | Vulnerability tracking |
-| NVD | https://nvd.nist.gov | Vulnerability details |
+| Privacy Rights Clearinghouse | https://privacyrights.org/data-breaches | Breach database |
+| Obsidian Incident Watch | https://www.obsidiansecurity.com/incident-watch | SaaS-specific incidents |
+| Exploit-DB | https://www.exploit-db.com/ | Public exploits |
 
-#### 4.2.3 Security Research Blogs & Resources
+#### 2.2.2 Security Research & Conference Content
+
+| Source | URL | Focus |
+|--------|-----|-------|
+| DEF CON Archives | https://media.defcon.org/ | Conference presentations |
+| Black Hat Archives | https://www.blackhat.com/html/archives.html | Research papers |
+| SANS Reading Room | https://www.sans.org/white-papers/ | Security whitepapers |
+| arXiv Security | https://arxiv.org/list/cs.CR/recent | Academic research |
+
+#### 2.2.3 Security Research Blogs
 
 | Resource | Focus Area |
 |----------|------------|
-| SpecterOps Blog | Identity attacks, Azure AD |
+| SpecterOps Blog | Identity attacks, Azure AD, BloodHound |
 | PushSecurity Blog | SaaS phishing, identity threats |
-| Resmo Blog | SaaS security posture |
-| AppOmni Blog | SaaS security research |
-| Netskope Threat Labs | Cloud and SaaS threats |
-| Varonis Blog | Data security, insider threats |
+| Mandiant | Incident response, threat intelligence |
+| Unit 42 | Threat research, malware analysis |
+| CrowdStrike Blog | Adversary tracking, TTPs |
 | Wiz Research | Cloud misconfigurations |
+| Netskope Threat Labs | Cloud and SaaS threats |
+| AppOmni Blog | SaaS security research |
+| Varonis Blog | Data security, insider threats |
 | Datadog Security Labs | Observability security |
 
-#### 4.2.4 Incident Research Checklist
+#### 2.2.4 Industry Guidance Research
 
-For each SaaS product, research and document:
+- [ ] Check CIS Benchmarks availability
+- [ ] Review NIST guidance if applicable
+- [ ] Check vendor-specific hardening guides from third parties
+- [ ] Review cloud provider security best practices
+- [ ] Check compliance framework mappings (SOC 2, ISO 27001, NIST CSF)
 
-- [ ] Major security incidents affecting the product (last 5 years)
-- [ ] Root cause analysis of each incident
-- [ ] Controls that would have prevented/detected the incident
-- [ ] Vendor response and remediation actions
-- [ ] Published CVEs and security advisories
-- [ ] Known attack techniques (MITRE ATT&CK mapping)
-- [ ] Common misconfiguration issues
-- [ ] Third-party security assessments or audits
+#### 2.2.5 Attack Technique Research
 
-#### 4.2.5 Example Incident Research Template
+- [ ] Map product to MITRE ATT&CK techniques
+- [ ] Research SaaS-specific attack patterns
+- [ ] Document known attack chains involving the product
+- [ ] Identify detection opportunities for common attacks
+- [ ] Research privilege escalation paths
+
+### 2.3 Incident Research Template
 
 ```markdown
 ### Incident: [Incident Name]
 
 **Date:** YYYY-MM-DD
 **Product:** [Affected SaaS Product]
+**Severity:** Critical / High / Medium / Low
 **Impact:** [Data exposure, service disruption, etc.]
 
 **Summary:**
@@ -448,67 +278,31 @@ For each SaaS product, research and document:
 - [Link to vendor disclosure]
 ```
 
-### 4.3 API and Automation Research
+### 2.4 Analysis & Synthesis
 
-**Objective:** Identify programmatic methods for implementing and validating hardening controls.
+#### 2.4.1 Security Setting Classification
 
-#### 4.3.1 API Research Checklist
+| Dimension | Options |
+|-----------|---------|
+| Risk Level | Critical / High / Medium / Low |
+| Default State | Secure by Default / Insecure by Default / N/A |
+| Implementation Method | GUI / API / CLI / Config-as-Code / Multiple |
+| Prerequisite Requirements | License tier, feature flags, dependencies |
+| Monitoring Capability | Native logging / SIEM integration / Custom |
 
-For each SaaS product, document:
+#### 2.4.2 Gap Analysis Tasks
 
-- [ ] API authentication methods (OAuth, API keys, service accounts)
-- [ ] API endpoints for security configuration
-- [ ] API endpoints for audit log retrieval
-- [ ] Rate limiting and quotas
-- [ ] API versioning strategy
-- [ ] Webhook availability for real-time monitoring
-- [ ] SCIM provisioning support
-- [ ] GraphQL vs REST availability
-- [ ] SDK availability (Python, Go, etc.)
-- [ ] CLI tool availability
-
-#### 4.3.2 Infrastructure-as-Code Research
-
-| IaC Tool | Research Focus |
-|----------|----------------|
-| **Terraform** | Official provider, community providers, security resource coverage |
-| **Pulumi** | Provider availability, TypeScript/Python examples |
-| **CloudFormation** | AWS-integrated SaaS configuration |
-| **Ansible** | Modules for SaaS configuration |
-| **Crossplane** | Kubernetes-native SaaS management |
-
-#### 4.3.3 Automation Research Template
-
-```markdown
-### [Product] Automation Capabilities
-
-**API Authentication:**
-- Primary Method: [OAuth 2.0 / API Key / etc.]
-- Service Account Support: [Yes/No]
-- Token Expiration: [Duration]
-
-**Security Configuration APIs:**
-| Setting | API Endpoint | Method | Notes |
-|---------|-------------|--------|-------|
-| MFA Policy | `/api/v1/policies/mfa` | PUT | Requires admin scope |
-| IP Allowlist | `/api/v1/security/ip` | POST | Enterprise only |
-
-**Terraform Provider:**
-- Provider: [Official/Community]
-- Registry: [Link]
-- Security Resources: [List of security-related resources]
-
-**CLI Tool:**
-- Name: [CLI name]
-- Installation: [Command]
-- Security Commands: [List]
-```
+- [ ] Compare vendor documentation to known attack vectors
+- [ ] Identify undocumented security features
+- [ ] Note settings with poor defaults
+- [ ] Document missing security controls
+- [ ] Identify areas requiring compensating controls
 
 ---
 
-## 5. Development Phase Workflow
+## Phase 3: Guide Development Workflow
 
-### 5.1 Guide Development Process
+### 3.1 Development Process
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
@@ -517,6 +311,8 @@ For each SaaS product, document:
 │ - First-party   │     │ - Structure     │     │ - ClickOps      │
 │ - Third-party   │     │ - Controls      │     │ - Code/API      │
 │ - API/IaC       │     │ - Compliance    │     │ - Terraform     │
+│                 │     │                 │     │                 │
+│ Est: 6-10 hrs   │     │ Est: 4-8 hrs    │     │ Est: 4-6 hrs    │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
          │                      │                       │
          ▼                      ▼                       ▼
@@ -526,20 +322,14 @@ For each SaaS product, document:
 │ - Test controls │     │ - SME review    │     │ - Merge PR      │
 │ - Verify steps  │     │ - Security scan │     │ - Update index  │
 │ - Check links   │     │ - Community     │     │ - Announce      │
+│                 │     │                 │     │                 │
+│ Est: 2-4 hrs    │     │ Est: 2-4 hrs    │     │ Est: 1 hr       │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
-### 5.2 Phase 1: Research (Per Guide)
+**Total Time per Guide: 12-22 hours (average ~15 hours)**
 
-**Duration Estimate:** Variable by product complexity
-
-**Deliverables:**
-1. Research notes document (`/research/[vendor]-research.md`)
-2. Incident summary document
-3. API capabilities matrix
-4. Control inventory spreadsheet
-
-**Research Tasks:**
+### 3.2 Research Phase Tasks
 
 | Task | Description | Output |
 |------|-------------|--------|
@@ -552,14 +342,7 @@ For each SaaS product, document:
 | R7 | Research IaC provider availability | Terraform/Pulumi resources |
 | R8 | Identify edition/tier restrictions | Feature availability matrix |
 
-### 5.3 Phase 2: Draft (Per Guide)
-
-**Deliverables:**
-1. Guide markdown file following template structure
-2. YAML front matter with metadata
-3. All 7 standard sections populated
-
-**Drafting Tasks:**
+### 3.3 Drafting Phase Tasks
 
 | Task | Description |
 |------|-------------|
@@ -575,17 +358,13 @@ For each SaaS product, document:
 | D10 | Complete Compliance Quick Reference (Section 7) |
 | D11 | Complete Edition/Tier Compatibility table |
 | D12 | Add References appendix |
+| D13 | Add CVE History appendix |
+| D14 | Add Known Attack Techniques appendix |
 
-### 5.4 Phase 3: Implement (Per Control)
-
-**Deliverables:**
-1. ClickOps steps verified in real environment
-2. Code implementations (CLI, API, Terraform)
-3. Validation steps documented
-
-**Implementation Requirements:**
+### 3.4 Implementation Requirements
 
 For each control:
+
 - [ ] ClickOps steps written with exact navigation paths
 - [ ] At least one code implementation (API or CLI)
 - [ ] Terraform configuration if provider supports it
@@ -593,107 +372,59 @@ For each control:
 - [ ] Operational impact table completed
 - [ ] Rollback procedure documented
 
-### 5.5 Phase 4: Validate
+### 3.5 Maintenance Phase (Ongoing)
 
-**Validation Checklist:**
-
-- [ ] All ClickOps steps tested in real product environment
-- [ ] All API/CLI commands tested and working
-- [ ] Terraform configurations validated with `terraform plan`
-- [ ] All documentation links verified (not broken)
-- [ ] Compliance mappings cross-referenced with framework documents
-- [ ] Screenshots match current product UI (if included)
-- [ ] Version/edition requirements verified
-
-### 5.6 Phase 5: Review
-
-**Review Requirements:**
-
-| Review Type | Requirement |
-|-------------|-------------|
-| Technical Review | 1+ reviewer with hands-on product experience |
-| Security Review | 1+ reviewer with security background |
-| Community Review | Open PR for community feedback (minimum 48 hours) |
-| Automated Checks | Markdown linting, link validation, spelling |
-
-### 5.7 Phase 6: Publish
-
-**Publication Checklist:**
-
-- [ ] Merge PR to main branch
-- [ ] Update VERSIONS.md registry
-- [ ] Verify guide renders correctly on website
-- [ ] Add to category index pages
-- [ ] Announce in community channels (if applicable)
+| Trigger | Action |
+|---------|--------|
+| Vendor major version update | Full guide review |
+| New CVE published | Update CVE appendix, add mitigating controls |
+| Significant breach/incident | Add to incident database, review controls |
+| CIS Benchmark updated | Align with new benchmark |
+| Quarterly scheduled review | Verify links, check for UI changes |
 
 ---
 
-## 6. Prioritization Framework
+## Phase 4: Execution Timeline
 
-### 6.1 Prioritization Criteria
+### 4.1 Sprint Structure (2-week sprints)
 
-| Criterion | Weight | Description |
-|-----------|--------|-------------|
-| **Enterprise Adoption** | 30% | Number of Fortune 500 companies using the product |
-| **Security Criticality** | 25% | Sensitivity of data/access the product handles |
-| **Attack Surface** | 20% | Complexity and exposure of the product |
-| **Community Demand** | 15% | Requests from HTH community |
-| **Existing Coverage** | 10% | Gap vs. other security benchmarks |
+| Sprint | Focus | Products | Deliverables |
+|--------|-------|----------|--------------|
+| 1-2 | Infrastructure + Tier 1 IAM | Okta, Microsoft Entra, Auth0 | Templates, 3 guides |
+| 3-4 | Tier 1 IAM + Collaboration | OneLogin, Ping, Google Workspace, M365 | 4 guides |
+| 5-6 | Tier 1 DevOps | GitHub, GitLab, Azure DevOps, Atlassian | 4 guides |
+| 7-8 | Tier 1 Data + Business | Snowflake, Databricks, Salesforce, ServiceNow | 4 guides |
+| 9-10 | Tier 1 AI + Collaboration | ChatGPT Enterprise, Copilot, Slack, Zoom | 4 guides |
+| 11-14 | Tier 2 Security Tools | CrowdStrike, SentinelOne, Wiz, Zscaler, etc. | 8 guides |
+| 15-18 | Tier 2 Business Apps | Workday, HubSpot, Zendesk, SAP, etc. | 8 guides |
+| 19-26 | Tier 3 Products | Standard priority products | 16 guides |
+| 27-32 | Tier 4 + Existing Enhancement | Remaining + quality sweep | 20+ guides |
 
-### 6.2 Tier Definitions
+### 4.2 Resource Estimation
 
-| Tier | Criteria | Target Maturity |
-|------|----------|-----------------|
-| **Tier 1** | Critical infrastructure, identity, major productivity suites | verified |
-| **Tier 2** | Significant enterprise adoption, handles sensitive data | reviewed |
-| **Tier 3** | Specialized use cases, lower adoption | draft |
+| Activity | Time per Product | Notes |
+|----------|------------------|-------|
+| Research (comprehensive) | 6-10 hours | Varies by API complexity |
+| Drafting | 4-8 hours | Template reduces variance |
+| Implementation | 4-6 hours | Including code testing |
+| Review | 2-4 hours | Including code testing |
+| **Total per Guide** | **12-22 hours** | ~15 hour average |
 
-### 6.3 Development Order
+**Total Project Estimate:** ~2,625 hours (175 products × 15 hours average)
 
-**Phase 1: Tier 1 New Guides**
-1. Microsoft 365
-2. Google Workspace
-3. Microsoft Entra ID
-4. Slack
-5. ChatGPT Enterprise
-6. Microsoft Copilot
+### 4.3 Milestone Targets
 
-**Phase 2: Tier 1 Existing Guide Enhancement**
-7. Okta (v0.2.0 → v1.0.0-reviewed)
-8. Salesforce (v0.1.0 → v0.2.0-draft)
-9. GitHub (v0.1.0 → v0.2.0-draft)
-10. Snowflake (v0.1.0 → v0.2.0-draft)
+| Milestone | Target | Products Complete |
+|-----------|--------|-------------------|
+| M1: Proof of Concept | Sprint 2 | 3 guides (IAM focus) |
+| M2: Tier 1 Complete | Sprint 10 | 30 guides |
+| M3: 50% Coverage | Sprint 18 | 87 guides |
+| M4: Tier 1-3 Complete | Sprint 26 | 150 guides |
+| M5: Full Coverage | Sprint 32 | 175+ guides |
 
-**Phase 3: Tier 2 New Guides**
-11. Cisco Duo
-12. Auth0
-13. JumpCloud
-14. SAP S/4HANA
-15. Salesforce Agentforce
+### 4.4 Progress Tracking Labels
 
-**Phase 4: Tier 2 Existing Guide Enhancement**
-- Batch enhancement of remaining Tier 2 guides
-
-**Phase 5: Tier 3 Guides**
-- New guides and enhancements as capacity allows
-
----
-
-## 7. Timeline and Milestones
-
-### 7.1 Milestone Definitions
-
-| Milestone | Definition |
-|-----------|------------|
-| **M1: Research Complete** | All research phases finished for target guides |
-| **M2: Draft Complete** | Initial draft guides created |
-| **M3: Implementation Complete** | All controls have ClickOps + Code implementations |
-| **M4: Review Complete** | SME review passed |
-| **M5: Published** | Guide merged and live on website |
-
-### 7.2 Progress Tracking
-
-Progress should be tracked in GitHub Issues with the following labels:
+GitHub Issues should use these labels:
 
 - `guide:new` - New guide creation
 - `guide:enhance` - Existing guide enhancement
@@ -701,13 +432,17 @@ Progress should be tracked in GitHub Issues with the following labels:
 - `phase:draft` - Draft phase
 - `phase:implement` - Implementation phase
 - `phase:review` - Review phase
-- `tier:1` / `tier:2` / `tier:3` - Priority tier
+- `tier:1` / `tier:2` / `tier:3` / `tier:4` - Priority tier
+- `cis:available` - CIS Benchmark exists
+- `has:terraform` - Terraform provider available
 
 ---
 
-## 8. Quality Gates
+## Phase 5: Quality Assurance Framework
 
-### 8.1 Research Quality Gate
+### 5.1 Quality Gates
+
+#### Research Quality Gate
 
 Before proceeding to drafting:
 
@@ -716,18 +451,19 @@ Before proceeding to drafting:
 - [ ] Incident history documented (or confirmed no significant incidents)
 - [ ] API documentation reviewed for automation capabilities
 - [ ] Edition/tier restrictions identified
+- [ ] CVE search completed within last 30 days
 
-### 8.2 Draft Quality Gate
+#### Draft Quality Gate
 
 Before proceeding to implementation:
 
-- [ ] All 7 standard sections populated
+- [ ] All 7+ standard sections populated
 - [ ] Minimum 5 controls per guide
 - [ ] Compliance mappings to at least SOC 2 and NIST 800-53
 - [ ] Edition/tier compatibility table completed
 - [ ] Prerequisites documented for each control
 
-### 8.3 Implementation Quality Gate
+#### Implementation Quality Gate
 
 Before proceeding to review:
 
@@ -737,7 +473,7 @@ Before proceeding to review:
 - [ ] Validation steps documented for each control
 - [ ] All code tested in real environment
 
-### 8.4 Publication Quality Gate
+#### Publication Quality Gate
 
 Before merging:
 
@@ -746,61 +482,503 @@ Before merging:
 - [ ] Markdown formatting validated for Jekyll
 - [ ] VERSIONS.md updated
 - [ ] Changelog entry added
+- [ ] Screenshots current and accurate (if included)
+
+### 5.2 Review Checklist
+
+**Technical Accuracy:**
+
+- [ ] All settings verified against current product version
+- [ ] API examples tested and functional
+- [ ] IaC code validated (`terraform validate`, etc.)
+
+**Completeness:**
+
+- [ ] All template sections addressed
+- [ ] CVE history researched within last 30 days
+- [ ] Compliance mappings verified
+- [ ] References accessible and current
+
+**Usability:**
+
+- [ ] Implementation steps clear and actionable
+- [ ] Rationale provided for each recommendation
+- [ ] Operational impact documented
+- [ ] Rollback procedures included
+
+### 5.3 Update Triggers
+
+| Trigger | Response Time | Action |
+|---------|---------------|--------|
+| Critical CVE | 24-48 hours | Emergency update |
+| Major breach involving product | 1 week | Add incident, review controls |
+| Vendor major release | 2 weeks | Full guide review |
+| CIS Benchmark update | 2 weeks | Align controls |
+| Quarterly review | Scheduled | Link check, UI verification |
 
 ---
 
-## Appendix A: Research Resources by Category
+## Complete Product Inventory
 
-### Identity & Access Management
+### Identity & Access Management (~20 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| Okta | Exists (v0.2.0-draft) | Tier 1 | High | Yes |
+| Microsoft Entra ID | **NEW REQUIRED** | Tier 1 | High | Yes |
+| Auth0 | **NEW REQUIRED** | Tier 1 | Medium | No |
+| OneLogin | **NEW REQUIRED** | Tier 1 | Medium | No |
+| Ping Identity | Exists (v0.1.0-draft) | Tier 1 | Medium | No |
+| Ping Federate | **NEW REQUIRED** | Tier 2 | Medium | No |
+| JumpCloud | **NEW REQUIRED** | Tier 1 | Medium | No |
+| Cisco Duo | **NEW REQUIRED** | Tier 1 | Medium | No |
+| CyberArk | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
+| SailPoint | Exists (v0.1.0-draft) | Tier 1 | High | No |
+| BeyondTrust | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| 1Password | **NEW REQUIRED** | Tier 2 | Low | No |
+| LastPass | **NEW REQUIRED** | Tier 2 | Low | No |
+| Keeper | **NEW REQUIRED** | Tier 2 | Low | No |
+| Opal Security | **NEW REQUIRED** | Tier 3 | Low | No |
+
+### Collaboration & Productivity (~25 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| Google Workspace | **NEW REQUIRED** | Tier 1 | High | Yes |
+| Microsoft 365 | **NEW REQUIRED** | Tier 1 | High | Yes |
+| Slack | **NEW REQUIRED** | Tier 1 | Medium | No |
+| Slack Enterprise Grid | **NEW REQUIRED** | Tier 1 | High | No |
+| Zoom | Exists (v0.1.0-draft) | Tier 1 | Medium | Yes |
+| Webex | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Atlassian (Jira/Confluence) | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
+| Notion | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| Asana | Exists (v0.1.0-draft) | Tier 2 | Low | No |
+| Monday.com | Exists (v0.1.0-draft) | Tier 2 | Low | No |
+| ClickUp | **NEW REQUIRED** | Tier 3 | Low | No |
+| Smartsheet | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| Miro | Exists (v0.1.0-draft) | Tier 3 | Low | No |
+| Mural | **NEW REQUIRED** | Tier 3 | Low | No |
+| Lucid | **NEW REQUIRED** | Tier 3 | Low | No |
+| Airtable | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Coda | **NEW REQUIRED** | Tier 3 | Low | No |
+| Clockify | **NEW REQUIRED** | Tier 4 | Low | No |
+| Figma | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Grammarly | **NEW REQUIRED** | Tier 3 | Low | No |
+| Dialpad | **NEW REQUIRED** | Tier 3 | Low | No |
+| Trello | **NEW REQUIRED** | Tier 3 | Low | No |
+
+### DevOps & Engineering (~20 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| GitHub | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
+| GitHub Enterprise | **NEW REQUIRED** | Tier 1 | High | Yes |
+| GitLab | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
+| Azure DevOps | Exists (v0.1.0-draft) | Tier 1 | High | No |
+| Bitbucket | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Jenkins | **NEW REQUIRED** | Tier 2 | High | Yes |
+| CircleCI | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| Terraform Cloud | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| JFrog Artifactory | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| Docker Hub | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| Postman | **NEW REQUIRED** | Tier 2 | Medium | No |
+| LaunchDarkly | Exists (v0.1.0-draft) | Tier 2 | Low | No |
+| Sentry | **NEW REQUIRED** | Tier 3 | Low | No |
+| Snyk | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| GitGuardian | **NEW REQUIRED** | Tier 2 | Low | No |
+| Vercel | Exists (v0.1.0-draft) | Tier 3 | Medium | No |
+| Fastly | **NEW REQUIRED** | Tier 2 | Medium | No |
+| n8n | **NEW REQUIRED** | Tier 3 | Medium | No |
+
+### Security & Compliance (~30 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| CrowdStrike | Exists (v0.1.0-draft) | Tier 1 | High | No |
+| SentinelOne | **NEW REQUIRED** | Tier 1 | High | No |
+| Wiz | Exists (v0.1.0-draft) | Tier 1 | High | No |
+| Zscaler | **NEW REQUIRED** | Tier 1 | High | No |
+| Zscaler Private Access | **NEW REQUIRED** | Tier 1 | High | No |
+| Netskope | **NEW REQUIRED** | Tier 1 | High | No |
+| Cloudflare | **NEW REQUIRED** | Tier 1 | High | No |
+| Mimecast | **NEW REQUIRED** | Tier 2 | Medium | No |
+| KnowBe4 | **NEW REQUIRED** | Tier 2 | Low | No |
+| Qualys | **NEW REQUIRED** | Tier 2 | High | No |
+| Tenable | **NEW REQUIRED** | Tier 2 | High | No |
+| Rapid7 | **NEW REQUIRED** | Tier 2 | High | No |
+| Tanium | **NEW REQUIRED** | Tier 2 | High | No |
+| Drata | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Vanta | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Auditboard | **NEW REQUIRED** | Tier 3 | Medium | No |
+| HackerOne | **NEW REQUIRED** | Tier 3 | Low | No |
+| Invicti (Netsparker) | **NEW REQUIRED** | Tier 3 | Medium | No |
+| Secure Code Warrior | **NEW REQUIRED** | Tier 3 | Low | No |
+| IriusRisk | **NEW REQUIRED** | Tier 3 | Medium | No |
+| Abnormal AI | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Checkpoint | **NEW REQUIRED** | Tier 2 | High | Yes |
+| Exabeam | **NEW REQUIRED** | Tier 2 | High | No |
+| Google Security Operations | **NEW REQUIRED** | Tier 2 | High | No |
+| iboss | **NEW REQUIRED** | Tier 3 | Medium | No |
+| HashiCorp Vault | Exists (v0.1.0-draft) | Tier 2 | High | No |
+| Splunk | Exists (v0.1.0-draft) | Tier 2 | High | No |
+| Datadog | Exists (v0.1.0-draft) | Tier 1 | High | No |
+| New Relic | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| PagerDuty | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| Logz.io | **NEW REQUIRED** | Tier 3 | Medium | No |
+
+### Data & Analytics (~15 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| Snowflake | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
+| Databricks | Exists (v0.1.0-draft) | Tier 1 | High | No |
+| MongoDB Atlas | **NEW REQUIRED** | Tier 1 | High | Yes |
+| Tableau | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| Looker | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| Power BI | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| Sigma Computing | **NEW REQUIRED** | Tier 3 | Medium | No |
+| Fivetran | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Cribl | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Teradata | **NEW REQUIRED** | Tier 3 | High | No |
+| Confluent Cloud | **NEW REQUIRED** | Tier 2 | High | No |
+| Informatica | **NEW REQUIRED** | Tier 3 | High | No |
+
+### Business Applications (~25 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| Salesforce | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
+| Salesforce Agentforce | **NEW REQUIRED** | Tier 1 | Medium | No |
+| Salesforce Commerce Cloud | **NEW REQUIRED** | Tier 2 | High | No |
+| Salesforce Marketing Cloud | **NEW REQUIRED** | Tier 2 | High | No |
+| ServiceNow | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
+| Workday | Exists (v0.1.0-draft) | Tier 1 | High | No |
+| HubSpot | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| Zendesk | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| Freshdesk | **NEW REQUIRED** | Tier 3 | Low | No |
+| Freshsales | **NEW REQUIRED** | Tier 3 | Low | No |
+| Freshservice | Exists (v0.1.0-draft) | Tier 3 | Low | No |
+| Zoho CRM | **NEW REQUIRED** | Tier 3 | Medium | No |
+| SAP S/4HANA | **NEW REQUIRED** | Tier 2 | High | Yes |
+| SAP Ariba | **NEW REQUIRED** | Tier 2 | High | No |
+| SAP Fieldglass | **NEW REQUIRED** | Tier 3 | Medium | No |
+| SAP Cloud Identity Services | **NEW REQUIRED** | Tier 2 | High | No |
+| SAP SuccessFactors | Exists (v0.1.0-draft) | Tier 2 | High | No |
+| Oracle Fusion Apps | **NEW REQUIRED** | Tier 2 | High | No |
+| Oracle Fusion HCM | **NEW REQUIRED** | Tier 2 | High | No |
+| Oracle NetSuite | Exists (v0.1.0-draft) | Tier 2 | High | No |
+| Coupa | **NEW REQUIRED** | Tier 3 | Medium | No |
+| Gong | **NEW REQUIRED** | Tier 3 | Low | No |
+| DocuSign | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Adobe Sign | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Adobe Marketo Engage | **NEW REQUIRED** | Tier 3 | Medium | No |
+| Greenhouse | **NEW REQUIRED** | Tier 3 | Low | No |
+| Veeva | **NEW REQUIRED** | Tier 3 | High | No |
+
+### Files & Content Management (~10 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| Box | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
+| Dropbox | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| ShareFile | **NEW REQUIRED** | Tier 2 | Medium | No |
+| iManage | **NEW REQUIRED** | Tier 2 | High | No |
+| Relativity | **NEW REQUIRED** | Tier 3 | High | No |
+| SharePoint (standalone) | **NEW REQUIRED** | Tier 1 | Medium | Yes |
+| OneDrive (standalone) | **NEW REQUIRED** | Tier 2 | Low | No |
+| Google Drive (standalone) | **NEW REQUIRED** | Tier 1 | Medium | Yes |
+
+### IT Infrastructure & Networking (~15 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| Jamf | **NEW REQUIRED** | Tier 1 | High | Yes |
+| Meraki | **NEW REQUIRED** | Tier 2 | High | No |
+| Arista | **NEW REQUIRED** | Tier 2 | High | No |
+| Juniper Mist | **NEW REQUIRED** | Tier 2 | High | No |
+| Cradlepoint | **NEW REQUIRED** | Tier 3 | Medium | No |
+| Versa Concerto | **NEW REQUIRED** | Tier 3 | Medium | No |
+| Akamai | **NEW REQUIRED** | Tier 2 | High | No |
+
+### AI & Automation Platforms (~10 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| OpenAI Platform | **NEW REQUIRED** | Tier 1 | High | No |
+| ChatGPT Enterprise | **NEW REQUIRED** | Tier 1 | High | No |
+| Microsoft Copilot | **NEW REQUIRED** | Tier 1 | High | No |
+| Glean | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Moveworks | **NEW REQUIRED** | Tier 3 | Medium | No |
+| Workato | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Tines | **NEW REQUIRED** | Tier 2 | Medium | No |
+| MuleSoft | **NEW REQUIRED** | Tier 2 | High | No |
+| Fabric | **NEW REQUIRED** | Tier 3 | Medium | No |
+| Cursor | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+
+### Backup & Recovery (~5 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| Rubrik | **NEW REQUIRED** | Tier 2 | High | No |
+| Cohesity | **NEW REQUIRED** | Tier 2 | High | No |
+| Druva | **NEW REQUIRED** | Tier 2 | Medium | No |
+| Commvault | **NEW REQUIRED** | Tier 2 | High | No |
+
+### HR & Payroll (~10 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| ADP | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
+| BambooHR | Exists (v0.1.0-draft) | Tier 3 | Low | No |
+| Gusto | Exists (v0.1.0-draft) | Tier 3 | Low | No |
+| Rippling | Exists (v0.1.0-draft) | Tier 3 | Medium | No |
+| Oracle HCM | Exists (v0.1.0-draft) | Tier 2 | High | No |
+
+### Marketing & Communications (~5 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| Marketo | Exists (v0.1.0-draft) | Tier 3 | Medium | No |
+| Mailchimp | Exists (v0.1.0-draft) | Tier 3 | Low | No |
+| Klaviyo | Exists (v0.1.0-draft) | Tier 3 | Low | No |
+| SendGrid | **NEW REQUIRED** | Tier 3 | Low | No |
+
+### Financial & Specialized (~10 products)
+
+| Product | HTH Status | Priority | Complexity | CIS Available |
+|---------|------------|----------|------------|---------------|
+| Fireblocks | **NEW REQUIRED** | Tier 3 | High | No |
+| Expensify | **NEW REQUIRED** | Tier 4 | Low | No |
+| Zuora | **NEW REQUIRED** | Tier 3 | Medium | No |
+| Dealcloud | **NEW REQUIRED** | Tier 4 | Medium | No |
+| Insightly | **NEW REQUIRED** | Tier 4 | Low | No |
+
+---
+
+## Research Resource Library
+
+### Primary Research Sources
+
+#### Vulnerability & Incident Databases
+
+| Source | URL | Use Case |
+|--------|-----|----------|
+| NIST NVD | https://nvd.nist.gov/ | CVE details and CVSS scores |
+| CISA KEV | https://www.cisa.gov/known-exploited-vulnerabilities-catalog | Actively exploited vulnerabilities |
+| CVE Details | https://www.cvedetails.com/ | Product-specific CVE search |
+| Exploit-DB | https://www.exploit-db.com/ | Public exploits and PoCs |
+| Obsidian Incident Watch | https://www.obsidiansecurity.com/incident-watch | SaaS-specific incidents |
+
+#### Security Research Archives
+
+| Source | URL | Use Case |
+|--------|-----|----------|
+| DEF CON Media Server | https://media.defcon.org/ | Conference presentations |
+| Black Hat Archives | https://www.blackhat.com/html/archives.html | Research papers |
+| SANS Reading Room | https://www.sans.org/white-papers/ | Security whitepapers |
+| arXiv Security Papers | https://arxiv.org/list/cs.CR/recent | Academic research |
+
+#### Industry Benchmarks & Standards
+
+| Source | URL | Use Case |
+|--------|-----|----------|
+| CIS Benchmarks | https://www.cisecurity.org/cis-benchmarks | Configuration baselines |
+| NIST 800-53 | https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final | Security controls |
+| MITRE ATT&CK | https://attack.mitre.org/ | Adversary tactics and techniques |
+
+### Vendor Documentation URL Patterns
+
+```
+Common Trust Center URLs:
+- trust.[vendor].com
+- security.[vendor].com
+- www.[vendor].com/trust
+- www.[vendor].com/security
+
+Common API Documentation URLs:
+- developer.[vendor].com
+- api.[vendor].com
+- docs.[vendor].com/api
+- www.[vendor].com/developers
+
+Common Admin Documentation URLs:
+- help.[vendor].com
+- support.[vendor].com
+- docs.[vendor].com
+- admin.[vendor].com/help
+```
+
+### Documentation Sources by Tier 1 Products
 
 | Product | Security Docs | Admin Guide | API Docs |
 |---------|--------------|-------------|----------|
 | Okta | [Okta Security](https://www.okta.com/security/) | [Admin Docs](https://help.okta.com/en-us/Content/Topics/Security/Security.htm) | [API Reference](https://developer.okta.com/docs/reference/) |
-| Entra ID | [Entra Security](https://learn.microsoft.com/entra/fundamentals/security-operations-introduction) | [Entra Admin](https://learn.microsoft.com/entra/identity/) | [Graph API](https://learn.microsoft.com/graph/api/resources/azure-ad-overview) |
-| Duo | [Duo Security](https://duo.com/docs/security) | [Admin Guide](https://duo.com/docs) | [Admin API](https://duo.com/docs/adminapi) |
-| Auth0 | [Auth0 Security](https://auth0.com/security) | [Manage Users](https://auth0.com/docs/manage-users) | [Management API](https://auth0.com/docs/api/management/v2) |
-| JumpCloud | [JumpCloud Security](https://jumpcloud.com/security) | [Admin Guide](https://support.jumpcloud.com/s/) | [API Docs](https://docs.jumpcloud.com/api/) |
-
-### Collaboration & Productivity
-
-| Product | Security Docs | Admin Guide | API Docs |
-|---------|--------------|-------------|----------|
-| M365 | [M365 Security](https://learn.microsoft.com/microsoft-365/security/) | [Admin Center](https://learn.microsoft.com/microsoft-365/admin/) | [Graph API](https://learn.microsoft.com/graph/) |
+| Microsoft Entra | [Entra Security](https://learn.microsoft.com/entra/fundamentals/security-operations-introduction) | [Entra Admin](https://learn.microsoft.com/entra/identity/) | [Graph API](https://learn.microsoft.com/graph/api/resources/azure-ad-overview) |
 | Google Workspace | [Security Center](https://support.google.com/a/answer/7492330) | [Admin Help](https://support.google.com/a/) | [Admin SDK](https://developers.google.com/admin-sdk) |
+| Microsoft 365 | [M365 Security](https://learn.microsoft.com/microsoft-365/security/) | [Admin Center](https://learn.microsoft.com/microsoft-365/admin/) | [Graph API](https://learn.microsoft.com/graph/) |
 | Slack | [Slack Security](https://slack.com/trust/security) | [Admin Guide](https://slack.com/help/categories/360000049063) | [Web API](https://api.slack.com/) |
-| Zoom | [Zoom Security](https://explore.zoom.us/en/trust/security/) | [Admin Guide](https://support.zoom.com/hc/en/admin) | [API Docs](https://developers.zoom.us/docs/api/) |
-
-### AI Platforms
-
-| Product | Security Docs | Admin Guide | API Docs |
-|---------|--------------|-------------|----------|
+| GitHub | [GitHub Security](https://github.com/security) | [Enterprise Docs](https://docs.github.com/en/enterprise-cloud@latest/admin) | [REST API](https://docs.github.com/en/rest) |
+| Salesforce | [Salesforce Trust](https://trust.salesforce.com/) | [Security Guide](https://help.salesforce.com/s/articleView?id=sf.security_overview.htm) | [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/) |
+| Snowflake | [Snowflake Security](https://www.snowflake.com/en/why-snowflake/security/) | [Security Docs](https://docs.snowflake.com/en/user-guide/security) | [SQL API](https://docs.snowflake.com/en/developer-guide/sql-api/index) |
 | ChatGPT Enterprise | [Enterprise Privacy](https://openai.com/enterprise-privacy) | [Help Center](https://help.openai.com/en/collections/5688201-chatgpt-enterprise) | [API Reference](https://platform.openai.com/docs/api-reference) |
 | Microsoft Copilot | [Copilot Security](https://learn.microsoft.com/copilot/security) | [Admin Controls](https://learn.microsoft.com/copilot/microsoft-365/microsoft-365-copilot-admin) | Via Graph API |
 
 ---
 
-## Appendix B: Incident Database Template
+## Appendices
 
-Track researched incidents in a structured format:
+### Appendix A: Automation Opportunities
 
-```markdown
-# [Product Name] Security Incident Database
+#### CVE Monitoring Automation
 
-## Incident Index
+```python
+# Example: Daily CVE monitoring for product list
+# Set up daily checks against NVD API for all products
+# Trigger guide review workflow on new CVE detection
 
-| Date | Incident Name | Severity | HTH Controls |
-|------|--------------|----------|--------------|
-| YYYY-MM-DD | [Name] | Critical/High/Medium/Low | [Control IDs] |
+import requests
+from datetime import datetime, timedelta
 
-## Detailed Incident Records
-
-### INC-001: [Incident Name]
-[Full incident details using template from Section 4.2.5]
+def check_nvd_for_product(product_name):
+    """Query NVD for recent CVEs affecting a product."""
+    base_url = "https://services.nvd.nist.gov/rest/json/cves/2.0"
+    params = {
+        "keywordSearch": product_name,
+        "pubStartDate": (datetime.now() - timedelta(days=30)).isoformat(),
+        "pubEndDate": datetime.now().isoformat()
+    }
+    response = requests.get(base_url, params=params)
+    return response.json()
 ```
 
----
+#### Documentation Change Detection
 
-## Appendix C: Related Resources
+```python
+# Example: Monitor vendor documentation for changes
+# Use web archive diffs or vendor changelog RSS
+# Flag guides needing updates
+
+import feedparser
+
+def monitor_changelog(rss_url):
+    """Parse vendor changelog RSS feed for updates."""
+    feed = feedparser.parse(rss_url)
+    return [entry for entry in feed.entries
+            if 'security' in entry.title.lower()]
+```
+
+#### Terraform Provider Registry Monitoring
+
+```bash
+# Track new/updated Terraform providers
+# https://registry.terraform.io/search/providers
+# Trigger IaC section updates
+
+curl -s "https://registry.terraform.io/v2/providers?filter[tier]=official" \
+  | jq '.data[].attributes.name'
+```
+
+### Appendix B: Success Metrics
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Guide Coverage | 100% of integrations | Guides published / Total products |
+| Time to Publish | < 3 weeks from start | Research start → Publication date |
+| Update Freshness | < 90 days stale | Days since last review |
+| Technical Accuracy | > 95% | Review pass rate |
+| Code Functionality | 100% | Automated test pass rate |
+| CIS Alignment | Where available | Mapping completion |
+| Community Engagement | Growing | Stars, forks, contributions |
+
+### Appendix C: Risk Register
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Vendor documentation gaps | High | Medium | Supplement with reverse engineering, community research |
+| API breaking changes | Medium | High | Version pin examples, automated testing |
+| Researcher capacity constraints | Medium | High | Prioritization framework, external contributors |
+| Vendor cooperation issues | Low | Medium | Rely on public documentation, responsible disclosure |
+| Guide obsolescence | High | Medium | Automated monitoring, quarterly reviews |
+| Security vulnerability in guide code | Low | High | Code review, automated security scanning |
+
+### Appendix D: Guide Structure Template
+
+```markdown
+# How to Harden: [Product Name]
+
+## Metadata
+- Version:
+- Last Updated:
+- Product Version Tested:
+- License Tier Required:
+- Estimated Implementation Time:
+
+## Executive Summary
+
+## Quick Wins (< 15 minutes each)
+
+## 1. Authentication & Access Controls
+### 1.1 Identity Provider Integration (SSO)
+### 1.2 Multi-Factor Authentication
+### 1.3 Password Policies
+### 1.4 Session Management
+
+## 2. Authorization & Access Control
+### 2.1 Role-Based Access Control
+### 2.2 Least Privilege Implementation
+### 2.3 Service Account Management
+### 2.4 API Permission Scopes
+
+## 3. Data Protection
+### 3.1 Encryption Configuration
+### 3.2 Data Classification
+### 3.3 Data Loss Prevention
+### 3.4 Backup & Recovery Security
+
+## 4. Network Security
+### 4.1 IP Allowlisting
+### 4.2 Private Connectivity Options
+### 4.3 TLS Configuration
+
+## 5. Logging & Monitoring
+### 5.1 Audit Log Configuration
+### 5.2 Log Retention
+### 5.3 SIEM Integration
+### 5.4 Alerting Rules
+
+## 6. Integration Security
+### 6.1 OAuth App Management
+### 6.2 Third-Party Integration Review
+### 6.3 Webhook Security
+
+## 7. API Security
+### 7.1 API Authentication
+### 7.2 Rate Limiting
+### 7.3 API Key Management
+
+## 8. Compliance Considerations
+### 8.1 SOC 2 Mapping
+### 8.2 ISO 27001 Mapping
+### 8.3 NIST 800-53 Mapping
+### 8.4 PCI DSS Mapping (if applicable)
+
+## 9. Implementation as Code
+### 9.1 Terraform Examples
+### 9.2 API Scripts
+### 9.3 Verification Scripts
+
+## 10. Incident Response Preparation
+### 10.1 Forensic Data Sources
+### 10.2 Containment Procedures
+### 10.3 Recovery Procedures
+
+## Appendix A: CVE History
+## Appendix B: Known Attack Techniques
+## Appendix C: References
+## Appendix D: Changelog
+```
+
+### Appendix E: Related Resources
 
 - [HTH Contributing Guide](/contributing/)
 - [HTH Versioning Guide](/versions/)
@@ -808,6 +986,7 @@ Track researched incidents in a structured format:
 - [Obsidian Security Integrations Hub](https://www.obsidiansecurity.com/obsidian-integrations-hub)
 - [Obsidian Security Blog](https://www.obsidiansecurity.com/blog/)
 - [CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks)
+- [MITRE ATT&CK for Enterprise](https://attack.mitre.org/matrices/enterprise/)
 
 ---
 
@@ -815,4 +994,5 @@ Track researched incidents in a structured format:
 
 | Date | Version | Changes | Author |
 |------|---------|---------|--------|
+| 2026-02-04 | 2.0.0 | Reconciled roadmap with comprehensive 175+ product inventory, added Phase 0 infrastructure, automation appendices, success metrics, risk register | Claude Code (Opus 4.5) |
 | 2026-02-04 | 1.0.0 | Initial roadmap creation | Claude Code (Opus 4.5) |
