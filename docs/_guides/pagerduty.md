@@ -3,209 +3,324 @@ layout: guide
 title: "PagerDuty Hardening Guide"
 vendor: "PagerDuty"
 slug: "pagerduty"
-tier: "4"
-category: "Incident"
-description: "Incident management security for API keys, event rules, and integration hardening"
+tier: "2"
+category: "IT Operations"
+description: "Incident management platform hardening for PagerDuty including SSO configuration, user provisioning, and access controls"
 version: "0.1.0"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2025-02-05"
 ---
-
 
 ## Overview
 
-PagerDuty orchestrates incident response with integrations across monitoring, ticketing, and communication tools. REST API access, webhooks, and 700+ integrations create extensive attack surface. Compromised access reveals incident patterns, on-call schedules, and can suppress or manipulate alerts during active attacks.
+PagerDuty is a leading incident management platform used by **thousands of organizations** for on-call management, incident response, and operational intelligence. As a critical tool for incident response and system alerting, PagerDuty security configurations directly impact operational resilience.
 
 ### Intended Audience
-- Security engineers managing incident response
-- SRE/DevOps administrators
-- GRC professionals assessing operations security
-- Third-party risk managers evaluating alerting integrations
+- Security engineers managing incident platforms
+- IT administrators configuring PagerDuty
+- DevOps/SRE teams securing on-call workflows
+- GRC professionals assessing operational security
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+### Scope
+This guide covers PagerDuty security including SAML SSO, user provisioning, role-based access, and account security.
 
 ---
 
 ## Table of Contents
 
-1. [Authentication & Access Controls](#1-authentication--access-controls)
-2. [API & Integration Security](#2-api--integration-security)
-3. [Incident Security](#3-incident-security)
-4. [Monitoring & Detection](#4-monitoring--detection)
+1. [Authentication & SSO](#1-authentication--sso)
+2. [User Management](#2-user-management)
+3. [Access Controls](#3-access-controls)
+4. [Monitoring & Security](#4-monitoring--security)
+5. [Compliance Quick Reference](#5-compliance-quick-reference)
 
 ---
 
-## 1. Authentication & Access Controls
+## 1. Authentication & SSO
 
-### 1.1 Enforce SSO with MFA
-
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** IA-2(1)
-
-#### ClickOps Implementation
-
-**Step 1: Configure SAML SSO**
-1. Navigate to: **Account Settings → Single Sign-On**
-2. Configure SAML IdP
-3. Enable: **Require SSO**
-
-**Step 2: Configure User Provisioning**
-1. Enable SCIM provisioning
-2. Configure JIT provisioning
-3. Disable password authentication
-
----
-
-### 1.2 Implement Role-Based Access
+### 1.1 Configure SAML Single Sign-On
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** AC-3, AC-6
 
-#### ClickOps Implementation
-
-**Step 1: Define Roles**
-
-| Role | Permissions |
-|------|---------|----------|---------|--------|----|
-| Account Owner | Full access (1 user) |
-| Admin | User/team management |
-| Manager | Team configuration |
-| Responder | Incident response |
-| Observer | Read-only |
-
-**Step 2: Configure Team Permissions**
-1. Navigate to: **People → Teams**
-2. Configure team-specific permissions
-3. Limit cross-team visibility
-
----
-
-## 2. API & Integration Security
-
-### 2.1 Secure API Keys
-
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** IA-5
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3, 12.5 |
+| NIST 800-53 | IA-2, IA-8 |
 
 #### Description
-Manage PagerDuty API keys securely.
+Configure SAML SSO to centralize authentication for PagerDuty users.
 
 #### Rationale
-**Attack Scenario:** Compromised API key suppresses alerts during attack; on-call schedule manipulation delays incident response.
+**Why This Matters:**
+- Eliminates need for separate PagerDuty credentials
+- Enables on-demand user provisioning
+- Simplifies access revocation
+
+#### Prerequisites
+- [ ] PagerDuty Professional, Business, or Enterprise plan
+- [ ] SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 
-**Step 1: Audit API Keys**
-1. Navigate to: **Integrations → API Access Keys**
-2. Review all keys
-3. Remove unused keys
+**Step 1: Access SSO Settings**
+1. Navigate to: **Account Settings** → **Single Sign-On**
+2. Click **Configure SSO**
 
-**Step 2: Create Scoped Keys**
-1. Use read-only keys where possible
-2. Create service-specific keys
-3. Document key purposes
+**Step 2: Configure Identity Provider**
+1. PagerDuty supports:
+   - Microsoft ADFS
+   - Okta
+   - OneLogin
+   - Ping Identity
+   - SecureAuth
+2. Create SAML application in IdP
+
+**Step 3: Enter IdP Settings**
+1. Enter IdP SSO URL
+2. Upload IdP certificate
+3. Configure attribute mappings
+
+**Step 4: Test and Enable**
+1. Test SSO authentication
+2. Verify user provisioning
+3. Enable SSO for account
+
+**Time to Complete:** ~1 hour
 
 ---
 
-### 2.2 Integration Security
+### 1.2 Manage SSO Certificate Rotation
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** CM-7
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.11 |
+| NIST 800-53 | SC-12 |
+
+#### Description
+Maintain SAML certificate validity.
+
+#### Rationale
+**Why This Matters:**
+- PagerDuty rotates SAML certificates annually
+- Expired certificates break SSO authentication
 
 #### ClickOps Implementation
 
-**Step 1: Review Integrations**
-1. Navigate to: **Services → Service Directory**
-2. Audit all service integrations
-3. Remove unused integrations
+**Step 1: Monitor Certificate Expiration**
+1. PagerDuty sends communications about rotation
+2. Note certificate expiration dates
 
-**Step 2: Secure Webhook Endpoints**
-1. Use HTTPS only
-2. Validate webhook signatures
-3. Implement IP allowlisting
+**Step 2: Update Certificates**
+1. Download new PagerDuty certificate
+2. Update IdP configuration
+3. Test SSO after update
 
 ---
 
-## 3. Incident Security
-
-### 3.1 Protect Incident Data
+### 1.3 Configure Account Owner Fallback
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** SC-28
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-6 |
+
+#### Description
+Understand and protect Account Owner fallback access.
 
 #### ClickOps Implementation
 
-**Step 1: Configure Incident Visibility**
-1. Limit incident details in notifications
-2. Avoid sensitive data in alerts
-3. Use secure channels for details
+**Step 1: Protect Account Owner Credentials**
+1. Account Owners retain email/password login (cannot be disabled)
+2. Use strong password (20+ characters)
+3. Store in password vault
 
-**Step 2: Secure Runbooks**
-1. Protect runbook credentials
-2. Use secret references (not plaintext)
-3. Audit runbook access
+**Step 2: Document Recovery Procedure**
+1. Account Owner can log in during SSO outage
+2. Can temporarily enable password login for all users
 
 ---
 
-### 3.2 Event Rules Security
+## 2. User Management
+
+### 2.1 Configure User Provisioning
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.3 |
+| NIST 800-53 | AC-2 |
+
+#### Description
+Configure automatic user provisioning via SSO.
+
+#### ClickOps Implementation
+
+**Step 1: Enable On-Demand Provisioning**
+1. With SSO enabled, users created on first login
+2. Access granted via IdP assignment
+
+**Step 2: Configure SAML Attributes**
+1. Configure IdP to send email, name, role
+2. Note: Attributes only used at initial creation
+3. Changes in IdP don't sync to PagerDuty
+
+---
+
+### 2.2 Configure SCIM Provisioning
 
 **Profile Level:** L2 (Hardened)
-**NIST 800-53:** SI-4
 
-#### Implementation
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.3 |
+| NIST 800-53 | AC-2 |
 
-**Step 1: Protect Event Rules**
-1. Navigate to: **Automation → Event Rules**
-2. Audit suppression rules
-3. Alert on rule modifications
+#### Description
+Configure SCIM for automated user lifecycle management.
 
-**Step 2: Monitor Rule Changes**
-1. Track who modifies rules
-2. Require approval for suppression rules
-3. Audit rule effectiveness
+#### ClickOps Implementation
+
+**Step 1: Enable SCIM**
+1. Navigate to: **Account Settings** → **SCIM**
+2. Generate SCIM API token
+3. Copy SCIM base URL
+
+**Step 2: Configure IdP SCIM**
+1. Add PagerDuty SCIM integration
+2. Enable deprovisioning
 
 ---
 
-## 4. Monitoring & Detection
+## 3. Access Controls
 
-### 4.1 Audit Logs
+### 3.1 Configure Role-Based Access
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** AU-2, AU-3
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-6 |
+
+#### Description
+Implement least privilege using PagerDuty roles.
+
+#### ClickOps Implementation
+
+**Step 1: Review Available Roles**
+1. Review role options:
+   - **Account Owner:** Full control (1 per account)
+   - **Admin:** Account administration
+   - **Manager:** Team management
+   - **Responder:** Incident response
+   - **Observer:** View-only (Business/Enterprise)
+   - **Limited User:** Restricted access
+
+**Step 2: Assign Appropriate Roles**
+1. Limit Admin to essential personnel (2-3)
+2. Use Manager for team leads
+3. Use Responder for on-call engineers
+
+---
+
+### 3.2 Limit Admin Access
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-6(1) |
+
+#### Description
+Minimize and protect administrator accounts.
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Admin Users**
+1. Navigate to: **People** → **Users**
+2. Filter by Admin role
+3. Document all administrators
+
+**Step 2: Apply Least Privilege**
+1. Reduce admins to minimum (2-3)
+2. Use Manager role for team administration
+
+---
+
+## 4. Monitoring & Security
+
+### 4.1 Configure Audit Logging
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 8.2 |
+| NIST 800-53 | AU-2 |
+
+#### Description
+Monitor administrative and security events.
 
 #### ClickOps Implementation
 
 **Step 1: Access Audit Records**
-1. Navigate to: **Analytics → Audit Records**
-2. Review login events
-3. Monitor configuration changes
+1. Navigate to: **Account Settings** → **Audit Records**
+2. Review logged events
 
-#### Detection Focus
-
-```sql
--- Detect alert suppression manipulation
-SELECT user_email, action, target
-FROM pagerduty_audit_log
-WHERE action LIKE '%suppress%'
-  OR action LIKE '%rule%'
-  AND timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect unusual API activity
-SELECT api_key, endpoint, COUNT(*) as requests
-FROM api_log
-WHERE timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY api_key, endpoint
-HAVING COUNT(*) > 500;
-```
+**Step 2: Export Logs**
+1. Export audit records for analysis
+2. Integrate with SIEM
 
 ---
 
-## Appendix A: Edition Compatibility
+## 5. Compliance Quick Reference
 
-| Control | Professional | Business | Digital Operations |
-|---------|--------------|----------|-------------------|
-| SAML SSO | ✅ | ✅ | ✅ |
-| SCIM | ❌ | ✅ | ✅ |
-| Audit Records | Limited | ✅ | ✅ |
-| Custom Roles | ❌ | ✅ | ✅ |
+### SOC 2 Trust Services Criteria Mapping
+
+| Control ID | PagerDuty Control | Guide Section |
+|-----------|-------------------|---------------|
+| CC6.1 | SSO/SAML | [1.1](#11-configure-saml-single-sign-on) |
+| CC6.2 | RBAC | [3.1](#31-configure-role-based-access) |
+| CC7.2 | Audit logging | [4.1](#41-configure-audit-logging) |
+
+### NIST 800-53 Rev 5 Mapping
+
+| Control | PagerDuty Control | Guide Section |
+|---------|-------------------|---------------|
+| IA-2 | SSO | [1.1](#11-configure-saml-single-sign-on) |
+| AC-2 | User provisioning | [2.1](#21-configure-user-provisioning) |
+| AC-6 | Least privilege | [3.1](#31-configure-role-based-access) |
+| AU-2 | Audit logging | [4.1](#41-configure-audit-logging) |
+
+---
+
+## Appendix A: Plan Compatibility
+
+| Feature | Free | Professional | Business | Enterprise |
+|---------|------|--------------|----------|------------|
+| SSO/SAML | ❌ | ✅ | ✅ | ✅ |
+| SCIM | ❌ | ❌ | ✅ | ✅ |
+| Teams | ❌ | ❌ | ✅ | ✅ |
+| Observer Role | ❌ | ❌ | ✅ | ✅ |
+
+---
+
+## Appendix B: References
+
+**Official PagerDuty Documentation:**
+- [Single Sign-On (SSO)](https://support.pagerduty.com/main/docs/sso)
+- [Okta SSO Configuration](https://saml-doc.okta.com/SAML_Docs/How-to-Configure-SAML-2.0-for-PagerDuty.html)
 
 ---
 
@@ -213,4 +328,14 @@ HAVING COUNT(*) > 500;
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2025-12-14 | 0.1.0 | draft | Initial PagerDuty hardening guide | Claude Code (Opus 4.5) |
+| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, user management, and access controls | Claude Code (Opus 4.5) |
+
+---
+
+## Contributing
+
+Found an issue or want to improve this guide?
+
+- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
+- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
+- **Submit improvements:** See [Contributing Guide](/contributing/)
