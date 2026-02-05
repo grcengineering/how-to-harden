@@ -3,205 +3,420 @@ layout: guide
 title: "Notion Hardening Guide"
 vendor: "Notion"
 slug: "notion"
-tier: "4"
-category: "Productivity"
-description: "Workspace security for sharing defaults, connection controls, and audit logging"
+tier: "2"
+category: "Collaboration & Productivity"
+description: "Collaboration platform hardening for Notion including SAML SSO, workspace security, and data protection controls"
 version: "0.1.0"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2025-02-05"
 ---
-
 
 ## Overview
 
-Notion serves as a collaborative workspace containing documentation, wikis, databases, and project management. Public API, OAuth integrations, and public page sharing create data exposure risks. Compromised access exposes internal documentation, product roadmaps, and sensitive business processes.
+Notion is a leading collaboration and productivity platform used by **millions of users** for documentation, project management, and knowledge sharing. As a repository for organizational knowledge and sensitive business information, Notion security configurations directly impact data protection and information governance.
 
 ### Intended Audience
-- Security engineers managing collaboration tools
-- Notion workspace administrators
-- GRC professionals assessing documentation security
-- Third-party risk managers evaluating productivity integrations
+- Security engineers managing collaboration platforms
+- IT administrators configuring Notion Enterprise
+- GRC professionals assessing collaboration security
+- Workspace administrators managing access controls
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+### Scope
+This guide covers Notion workspace and organization security including SAML SSO, SCIM provisioning, data protection, and workspace permissions.
 
 ---
 
 ## Table of Contents
 
-1. [Authentication & Access Controls](#1-authentication--access-controls)
-2. [Sharing & Permissions](#2-sharing--permissions)
-3. [Integration Security](#3-integration-security)
-4. [Monitoring & Detection](#4-monitoring--detection)
+1. [Authentication & SSO](#1-authentication--sso)
+2. [Organization Security](#2-organization-security)
+3. [Data Protection](#3-data-protection)
+4. [Monitoring & Compliance](#4-monitoring--compliance)
+5. [Compliance Quick Reference](#5-compliance-quick-reference)
 
 ---
 
-## 1. Authentication & Access Controls
+## 1. Authentication & SSO
 
-### 1.1 Enforce SSO with MFA
-
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** IA-2(1)
-
-#### ClickOps Implementation
-
-**Step 1: Configure SAML SSO (Enterprise)**
-1. Navigate to: **Settings → Security & identity → SAML single sign-on**
-2. Configure SAML IdP
-3. Enable: **Enforce SAML**
-
-**Step 2: Enable 2FA (Non-SSO)**
-1. Navigate to: **Settings → My settings → Password & security**
-2. Enable: **Two-step verification**
-
----
-
-### 1.2 Workspace Access Controls
+### 1.1 Configure SAML Single Sign-On
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** AC-3, AC-6
 
-#### ClickOps Implementation
-
-**Step 1: Configure Member Roles**
-
-| Role | Permissions |
-|------|---------|----------|---------|--------|----|
-| Workspace Owner | Full admin access |
-| Admin | Manage settings/members |
-| Member | Full content access |
-| Guest | Specific pages only |
-
-**Step 2: Configure Teamspace Permissions**
-1. Create teamspaces for departments
-2. Set default access levels
-3. Restrict sensitive content
-
----
-
-## 2. Sharing & Permissions
-
-### 2.1 Configure Sharing Defaults
-
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** AC-21
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3, 12.5 |
+| NIST 800-53 | IA-2, IA-8 |
 
 #### Description
-Control sharing to prevent unintended data exposure.
+Configure SAML SSO to centralize authentication for Notion users.
 
-#### Rationale
-**Attack Scenario:** Accidentally public pages indexed by search engines; internal documentation exposed to competitors or attackers.
+#### Prerequisites
+- [ ] Notion Business or Enterprise plan
+- [ ] At least one verified domain
+- [ ] SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 
-**Step 1: Disable Public Sharing**
-1. Navigate to: **Settings → Security & identity → Security**
-2. Disable: **Allow members to share pages publicly**
-3. Review existing public pages
+**Step 1: Verify Domain**
+1. Navigate to: **Settings** → **Identity** (Business) or **Organization Settings** → **General** (Enterprise)
+2. Add and verify your organization's domain
+3. Domain verification required before SSO setup
 
-**Step 2: Configure Guest Access**
-1. Navigate to: **Settings → Security & identity → Security**
-2. Configure: **Guest sharing settings**
-3. Limit guest invitations
+**Step 2: Access SSO Configuration**
+1. For Business: Navigate to **Settings** → **Identity**
+2. For Enterprise: Navigate to **Organization Settings** → **General** → **SAML Single sign-on (SSO)**
+
+**Step 3: Configure SAML Settings**
+1. Copy the **Assertion Consumer Service (ACS) URL**
+2. Enter in your IdP portal
+3. Configure IdP with:
+   - ACS URL from Notion
+   - Entity ID
+4. Supported IdPs: Azure, Google, Gusto, Okta, OneLogin, Rippling
+
+**Step 4: Enter IdP Details**
+1. Provide either IdP URL or IdP metadata XML
+2. Complete configuration
+3. Test SSO authentication
+
+**Time to Complete:** ~1 hour
 
 ---
 
-### 2.2 External Collaboration Security
+### 1.2 Enforce SAML SSO
 
 **Profile Level:** L2 (Hardened)
-**NIST 800-53:** AC-21
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3 |
+| NIST 800-53 | IA-2 |
+
+#### Description
+Require SAML authentication for all workspace members.
 
 #### ClickOps Implementation
 
-**Step 1: Domain Restrictions**
-1. Configure allowed email domains
-2. Restrict guest domains
-3. Audit external collaborators
+**Step 1: Configure Login Method**
+1. Navigate to SSO settings
+2. Default login method is **Any method**
+3. Change to **Only SAML SSO**
 
-**Step 2: Link Sharing Controls**
-1. Disable anonymous link access
-2. Require authentication
-3. Set link expiration
+**Step 2: Understand Exceptions**
+1. Workspace owners can still log in with email
+2. This allows recovery if SSO fails
+3. Can change configuration to re-enable other methods
+
+**Step 3: Guest Access**
+1. Note: Guests cannot use SAML SSO
+2. Guests must use username/password or social login
+3. Consider this for external collaboration
 
 ---
 
-## 3. Integration Security
+### 1.3 Configure SCIM Provisioning
 
-### 3.1 Manage Connections
+**Profile Level:** L2 (Hardened)
 
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** CM-7
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.3 |
+| NIST 800-53 | AC-2 |
+
+#### Description
+Configure SCIM for automated user lifecycle management.
 
 #### ClickOps Implementation
 
-**Step 1: Audit Integrations**
-1. Navigate to: **Settings → Connections**
-2. Review all connected apps
-3. Remove unused integrations
+**Step 1: Enable SCIM**
+1. Navigate to organization settings
+2. Access SCIM provisioning section
+3. Generate SCIM API token
 
-**Step 2: Restrict Integration Installation**
-1. Navigate to: **Settings → Security & identity → Security**
-2. Configure: **Connection settings**
-3. Require admin approval
+**Step 2: Configure IdP SCIM**
+1. Add Notion SCIM integration in IdP
+2. Enter SCIM endpoint URL
+3. Enter API token
 
----
-
-### 3.2 API Token Security
-
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** IA-5
-
-#### Implementation
-
-**Step 1: Manage Internal Integrations**
-1. Navigate to: **Settings → Connections → Develop or manage integrations**
-2. Audit integration permissions
-3. Limit content access scope
-
-**Step 2: Token Best Practices**
-1. Use internal integrations (not personal tokens)
-2. Limit to specific pages/databases
-3. Rotate tokens periodically
+**Step 3: Configure Provisioning Settings**
+1. Turn on **Suppress invite emails from SCIM provisioning**
+2. Control internal rollout communication
+3. Test user synchronization
 
 ---
 
-## 4. Monitoring & Detection
+## 2. Organization Security
 
-### 4.1 Audit Log (Enterprise)
+### 2.1 Configure Workspace Access
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** AU-2, AU-3
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-6 |
+
+#### Description
+Control who can access workspaces and create accounts.
 
 #### ClickOps Implementation
 
-**Step 1: Access Audit Log**
-1. Navigate to: **Settings → Security & identity → Audit log**
-2. Review activity events
-3. Export for SIEM integration
+**Step 1: Configure Allowed Email Domains**
+1. Navigate to: **Settings** → **General**
+2. Configure **Allowed email domains**
+3. Restrict to corporate domains only
 
-#### Detection Focus
+**Step 2: Disable Automatic Account Creation**
+1. Turn off **Automatic account creation**
+2. Prevents users from creating accounts through SSO
+3. Requires explicit provisioning
 
-```sql
--- Detect bulk exports
-SELECT user_email, page_count
-FROM notion_audit_log
-WHERE action = 'export_workspace'
-  AND timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect public page creation
-SELECT user_email, page_title, visibility
-FROM notion_audit_log
-WHERE action = 'share_page_public'
-  AND timestamp > NOW() - INTERVAL '7 days';
-```
+**Step 3: Configure Membership**
+1. Review workspace membership
+2. Remove unauthorized users
+3. Apply least privilege
 
 ---
 
-## Appendix A: Edition Compatibility
+### 2.2 Configure Team Spaces
 
-| Control | Plus | Business | Enterprise |
-|---------|------|----------|------------|
-| SAML SSO | ❌ | ❌ | ✅ |
-| SCIM | ❌ | ❌ | ✅ |
-| Audit Log | ❌ | ❌ | ✅ |
-| Guest Restrictions | ✅ | ✅ | ✅ |
+**Profile Level:** L2 (Hardened)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-6 |
+
+#### Description
+Organize content using team spaces for access control.
+
+#### ClickOps Implementation
+
+**Step 1: Create Team Spaces**
+1. Organize by team or function
+2. Configure team space permissions
+3. Limit membership appropriately
+
+**Step 2: Configure Team Space Security**
+1. Enable security settings per team space
+2. Configure sharing restrictions
+3. Apply export controls selectively
+
+---
+
+### 2.3 Limit Admin Access
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-6(1) |
+
+#### Description
+Minimize and protect workspace owner accounts.
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Workspace Owners**
+1. Navigate to: **Settings** → **People**
+2. Review workspace owners
+3. Document all administrators
+
+**Step 2: Apply Least Privilege**
+1. Limit workspace owners to 2-3 users
+2. Use member roles for regular users
+3. Remove unnecessary admin access
+
+---
+
+## 3. Data Protection
+
+### 3.1 Configure Sharing Controls
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.3 |
+| NIST 800-53 | AC-3 |
+
+#### Description
+Control how content can be shared internally and externally.
+
+#### ClickOps Implementation
+
+**Step 1: Configure Guest Access**
+1. Navigate to: **Settings** → **Members**
+2. Configure guest permissions
+3. Limit guest capabilities
+
+**Step 2: Configure Public Pages**
+1. Control who can publish pages publicly
+2. Audit existing public pages
+3. Disable if not needed
+
+**Step 3: Configure Link Sharing**
+1. Set default sharing permissions
+2. Restrict "Anyone with link" access
+3. Require explicit permissions
+
+---
+
+### 3.2 Disable Content Duplication
+
+**Profile Level:** L2 (Hardened)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.1 |
+| NIST 800-53 | AC-3 |
+
+#### Description
+Prevent members from copying pages to other workspaces.
+
+#### ClickOps Implementation
+
+**Step 1: Enable Duplication Controls**
+1. Navigate to: **Settings** → **Security**
+2. Turn on **Disable duplicating pages**
+3. Prevents copying content externally
+
+**Step 2: Review Exceptions**
+1. Document any business need for duplication
+2. Consider enabling per team space if needed
+3. Monitor for policy violations
+
+---
+
+### 3.3 Configure Export Controls
+
+**Profile Level:** L2 (Hardened)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.1 |
+| NIST 800-53 | AC-3 |
+
+#### Description
+Control ability to export content from Notion.
+
+#### ClickOps Implementation
+
+**Step 1: Configure Export Settings**
+1. Navigate to: **Settings** → **Security**
+2. Turn on **Disable export**
+3. Enable only in team spaces that need it
+
+**Step 2: Audit Export Activity**
+1. Review export logs
+2. Monitor for unusual patterns
+3. Investigate bulk exports
+
+---
+
+## 4. Monitoring & Compliance
+
+### 4.1 Configure Audit Logging
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 8.2 |
+| NIST 800-53 | AU-2 |
+
+#### Description
+Monitor user activity through audit logs (Enterprise).
+
+#### ClickOps Implementation
+
+**Step 1: Access Audit Logs**
+1. Navigate to: **Organization Settings** → **Analytics**
+2. Review audit events
+3. Export for analysis
+
+**Step 2: Monitor Key Events**
+1. User provisioning/deprovisioning
+2. Permission changes
+3. Content exports
+4. SSO configuration changes
+
+---
+
+### 4.2 Configure Analytics
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 8.2 |
+| NIST 800-53 | CA-7 |
+
+#### Description
+Use analytics to monitor workspace activity.
+
+#### ClickOps Implementation
+
+**Step 1: Access Analytics**
+1. Navigate to organization analytics
+2. Review workspace usage
+3. Monitor member activity
+
+**Step 2: Review Security Metrics**
+1. Track guest access patterns
+2. Monitor sharing activity
+3. Identify unusual behavior
+
+---
+
+## 5. Compliance Quick Reference
+
+### SOC 2 Trust Services Criteria Mapping
+
+| Control ID | Notion Control | Guide Section |
+|-----------|----------------|---------------|
+| CC6.1 | SSO/SAML | [1.1](#11-configure-saml-single-sign-on) |
+| CC6.2 | Workspace permissions | [2.3](#23-limit-admin-access) |
+| CC6.6 | Access controls | [2.1](#21-configure-workspace-access) |
+| CC6.7 | Export controls | [3.3](#33-configure-export-controls) |
+| CC7.2 | Audit logging | [4.1](#41-configure-audit-logging) |
+
+### NIST 800-53 Rev 5 Mapping
+
+| Control | Notion Control | Guide Section |
+|---------|----------------|---------------|
+| IA-2 | SSO | [1.1](#11-configure-saml-single-sign-on) |
+| AC-2 | SCIM provisioning | [1.3](#13-configure-scim-provisioning) |
+| AC-3 | Sharing controls | [3.1](#31-configure-sharing-controls) |
+| AC-6 | Least privilege | [2.3](#23-limit-admin-access) |
+| AU-2 | Audit logging | [4.1](#41-configure-audit-logging) |
+
+---
+
+## Appendix A: Plan Compatibility
+
+| Feature | Free | Plus | Business | Enterprise |
+|---------|------|------|----------|------------|
+| SAML SSO | ❌ | ❌ | ✅ | ✅ |
+| SCIM | ❌ | ❌ | ❌ | ✅ |
+| Domain Verification | ❌ | ❌ | ✅ | ✅ |
+| Audit Logs | ❌ | ❌ | ❌ | ✅ |
+| Export Controls | ❌ | ❌ | ✅ | ✅ |
+
+---
+
+## Appendix B: References
+
+**Official Notion Documentation:**
+- [SAML SSO Configuration](https://www.notion.com/help/saml-sso-configuration)
+- [Set up Identity Provider for SAML SSO](https://www.notion.com/help/set-up-identity-provider-for-saml-sso)
+- [Managing Organization in Notion](https://www.notion.com/help/guides/everything-about-setting-up-and-managing-an-organization-in-notion)
 
 ---
 
@@ -209,4 +424,14 @@ WHERE action = 'share_page_public'
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2025-12-14 | 0.1.0 | draft | Initial Notion hardening guide | Claude Code (Opus 4.5) |
+| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, organization security, and data protection | Claude Code (Opus 4.5) |
+
+---
+
+## Contributing
+
+Found an issue or want to improve this guide?
+
+- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
+- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
+- **Submit improvements:** See [Contributing Guide](/contributing/)
