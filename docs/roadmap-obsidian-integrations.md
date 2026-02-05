@@ -3,13 +3,13 @@ layout: page
 title: "HTH Guides Roadmap: Obsidian Security Integrations"
 permalink: /roadmap/obsidian-integrations/
 description: "Roadmap for creating How to Harden guides covering 175+ SaaS products in Obsidian Security's integrations ecosystem"
-last_updated: "2026-02-04"
+last_updated: "2026-02-05"
 ---
 
 # HTH Guides Roadmap: Obsidian Security Integrations
 
 **Version:** 2.0.0
-**Last Updated:** 2026-02-04
+**Last Updated:** 2026-02-05
 **Status:** Active
 **Authors:** Claude Code (Opus 4.5)
 
@@ -25,9 +25,20 @@ This roadmap defines the systematic approach to developing How to Harden (HTH) g
 |--------|-------|
 | Total Obsidian Integration Products | 175+ |
 | Existing HTH Guides | 53 |
-| New Guides Required | **122+** |
+| New Guides Created (Phase 4 Execution) | **15** |
+| New Guides Remaining | **107+** |
 | Guides Requiring Enhancement | 53 |
+| **Current Total Guides** | **68** |
 | Estimated Total Effort | ~2,625 hours |
+
+### Execution Progress (Phase 4)
+
+| Batch | Guides Created | Status |
+|-------|----------------|--------|
+| Batch 1 (Tier 1 Core) | Microsoft 365, Google Workspace, Microsoft Entra ID, Slack, ChatGPT Enterprise, Zscaler, Cloudflare, Auth0, Duo | ✅ Complete |
+| Batch 2 (Tier 1-2 Security) | JumpCloud, Netskope, SentinelOne | ✅ Complete |
+| Batch 3 (Tier 1-2 Data/MDM) | MongoDB Atlas, 1Password, Jamf | ✅ Complete |
+| Batch 4+ | In Progress | 🔄 Active |
 
 ---
 
@@ -525,17 +536,17 @@ Before merging:
 | Product | HTH Status | Priority | Complexity | CIS Available |
 |---------|------------|----------|------------|---------------|
 | Okta | Exists (v0.2.0-draft) | Tier 1 | High | Yes |
-| Microsoft Entra ID | **NEW REQUIRED** | Tier 1 | High | Yes |
-| Auth0 | **NEW REQUIRED** | Tier 1 | Medium | No |
+| Microsoft Entra ID | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
+| Auth0 | Exists (v0.1.0-draft) | Tier 1 | Medium | No |
 | OneLogin | **NEW REQUIRED** | Tier 1 | Medium | No |
 | Ping Identity | Exists (v0.1.0-draft) | Tier 1 | Medium | No |
 | Ping Federate | **NEW REQUIRED** | Tier 2 | Medium | No |
-| JumpCloud | **NEW REQUIRED** | Tier 1 | Medium | No |
-| Cisco Duo | **NEW REQUIRED** | Tier 1 | Medium | No |
+| JumpCloud | Exists (v0.1.0-draft) | Tier 1 | Medium | No |
+| Cisco Duo | Exists (v0.1.0-draft) | Tier 1 | Medium | No |
 | CyberArk | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
 | SailPoint | Exists (v0.1.0-draft) | Tier 1 | High | No |
 | BeyondTrust | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
-| 1Password | **NEW REQUIRED** | Tier 2 | Low | No |
+| 1Password | Exists (v0.1.0-draft) | Tier 2 | Low | No |
 | LastPass | **NEW REQUIRED** | Tier 2 | Low | No |
 | Keeper | **NEW REQUIRED** | Tier 2 | Low | No |
 | Opal Security | **NEW REQUIRED** | Tier 3 | Low | No |
@@ -544,9 +555,9 @@ Before merging:
 
 | Product | HTH Status | Priority | Complexity | CIS Available |
 |---------|------------|----------|------------|---------------|
-| Google Workspace | **NEW REQUIRED** | Tier 1 | High | Yes |
-| Microsoft 365 | **NEW REQUIRED** | Tier 1 | High | Yes |
-| Slack | **NEW REQUIRED** | Tier 1 | Medium | No |
+| Google Workspace | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
+| Microsoft 365 | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
+| Slack | Exists (v0.1.0-draft) | Tier 1 | Medium | No |
 | Slack Enterprise Grid | **NEW REQUIRED** | Tier 1 | High | No |
 | Zoom | Exists (v0.1.0-draft) | Tier 1 | Medium | Yes |
 | Webex | **NEW REQUIRED** | Tier 2 | Medium | No |
@@ -595,12 +606,12 @@ Before merging:
 | Product | HTH Status | Priority | Complexity | CIS Available |
 |---------|------------|----------|------------|---------------|
 | CrowdStrike | Exists (v0.1.0-draft) | Tier 1 | High | No |
-| SentinelOne | **NEW REQUIRED** | Tier 1 | High | No |
+| SentinelOne | Exists (v0.1.0-draft) | Tier 1 | High | No |
 | Wiz | Exists (v0.1.0-draft) | Tier 1 | High | No |
-| Zscaler | **NEW REQUIRED** | Tier 1 | High | No |
+| Zscaler | Exists (v0.1.0-draft) | Tier 1 | High | No |
 | Zscaler Private Access | **NEW REQUIRED** | Tier 1 | High | No |
-| Netskope | **NEW REQUIRED** | Tier 1 | High | No |
-| Cloudflare | **NEW REQUIRED** | Tier 1 | High | No |
+| Netskope | Exists (v0.1.0-draft) | Tier 1 | High | No |
+| Cloudflare | Exists (v0.1.0-draft) | Tier 1 | High | No |
 | Mimecast | **NEW REQUIRED** | Tier 2 | Medium | No |
 | KnowBe4 | **NEW REQUIRED** | Tier 2 | Low | No |
 | Qualys | **NEW REQUIRED** | Tier 2 | High | No |
@@ -632,7 +643,7 @@ Before merging:
 |---------|------------|----------|------------|---------------|
 | Snowflake | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
 | Databricks | Exists (v0.1.0-draft) | Tier 1 | High | No |
-| MongoDB Atlas | **NEW REQUIRED** | Tier 1 | High | Yes |
+| MongoDB Atlas | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
 | Tableau | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
 | Looker | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
 | Power BI | Exists (v0.1.0-draft) | Tier 2 | Medium | No |
@@ -692,7 +703,7 @@ Before merging:
 
 | Product | HTH Status | Priority | Complexity | CIS Available |
 |---------|------------|----------|------------|---------------|
-| Jamf | **NEW REQUIRED** | Tier 1 | High | Yes |
+| Jamf | Exists (v0.1.0-draft) | Tier 1 | High | Yes |
 | Meraki | **NEW REQUIRED** | Tier 2 | High | No |
 | Arista | **NEW REQUIRED** | Tier 2 | High | No |
 | Juniper Mist | **NEW REQUIRED** | Tier 2 | High | No |
@@ -705,7 +716,7 @@ Before merging:
 | Product | HTH Status | Priority | Complexity | CIS Available |
 |---------|------------|----------|------------|---------------|
 | OpenAI Platform | **NEW REQUIRED** | Tier 1 | High | No |
-| ChatGPT Enterprise | **NEW REQUIRED** | Tier 1 | High | No |
+| ChatGPT Enterprise | Exists (v0.1.0-draft) | Tier 1 | High | No |
 | Microsoft Copilot | **NEW REQUIRED** | Tier 1 | High | No |
 | Glean | **NEW REQUIRED** | Tier 2 | Medium | No |
 | Moveworks | **NEW REQUIRED** | Tier 3 | Medium | No |
@@ -994,5 +1005,6 @@ curl -s "https://registry.terraform.io/v2/providers?filter[tier]=official" \
 
 | Date | Version | Changes | Author |
 |------|---------|---------|--------|
+| 2026-02-05 | 2.1.0 | Execution progress: Created 15 new guides (M365, Google Workspace, Entra ID, Slack, ChatGPT Enterprise, Zscaler, Cloudflare, Auth0, Duo, JumpCloud, Netskope, SentinelOne, MongoDB Atlas, 1Password, Jamf). Total guides now 68. | Claude Code (Opus 4.5) |
 | 2026-02-04 | 2.0.0 | Reconciled roadmap with comprehensive 175+ product inventory, added Phase 0 infrastructure, automation appendices, success metrics, risk register | Claude Code (Opus 4.5) |
 | 2026-02-04 | 1.0.0 | Initial roadmap creation | Claude Code (Opus 4.5) |
