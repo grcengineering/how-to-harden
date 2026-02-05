@@ -25,10 +25,10 @@ This roadmap defines the systematic approach to developing How to Harden (HTH) g
 |--------|-------|
 | Total Obsidian Integration Products | 175+ |
 | Starting HTH Guides | 53 |
-| New Guides Created (Phase 4 Execution) | **36** |
-| New Guides Remaining | **86+** |
+| New Guides Created (Phase 4 Execution) | **48** |
+| New Guides Remaining | **74+** |
 | Guides Requiring Enhancement | 53 |
-| **Current Total Guides** | **89** |
+| **Current Total Guides** | **101** |
 | Estimated Total Effort | ~2,625 hours |
 
 ### Execution Progress (Phase 4)
@@ -45,6 +45,9 @@ This roadmap defines the systematic approach to developing How to Harden (HTH) g
 | Batch 8 (Platforms) | Rapid7, Fivetran, SendGrid, Workato | ✅ Complete |
 | Batch 9 (Infrastructure) | Datadog, PagerDuty, Splunk, ServiceNow | ✅ Complete |
 | Batch 10 (Collaboration) | Notion, Asana, Monday.com, Jira Cloud | ✅ Complete |
+| Batch 11 (HR/Finance) | Paylocity, UKG Pro, Coupa, SAP Concur | ✅ Complete |
+| Batch 12 (Marketing/Analytics) | Braze, Intercom, Segment, Amplitude | ✅ Complete |
+| Batch 13 (Developer) | Harness, Buildkite, Sentry, Linear | ✅ Complete |
 
 ---
 
