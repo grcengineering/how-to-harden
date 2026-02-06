@@ -801,7 +801,12 @@ WHERE event_name = 'change_user_access'
 **Official Google Documentation:**
 - [Google Workspace Admin Help](https://support.google.com/a)
 - [Security best practices](https://support.google.com/a/answer/7587183)
+- [Google Cloud MFA Requirement](https://docs.cloud.google.com/docs/authentication/mfa-requirement)
 - [Admin SDK API Reference](https://developers.google.com/admin-sdk)
+
+**Third-Party Security Guides:**
+- [CISA Google Common Controls](https://www.cisa.gov/resources-tools/services/gws-commoncontrols)
+- [2025 Google Workspace Security Settings](https://www.nudgesecurity.com/post/top-5-google-workspace-security-settings-and-misconfigurations)
 
 **Community Resources:**
 - [GAM - Google Workspace Admin CLI](https://github.com/GAM-team/GAM)

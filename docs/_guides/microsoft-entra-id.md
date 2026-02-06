@@ -890,8 +890,10 @@ SigninLogs
 ## Appendix B: References
 
 **Official Microsoft Documentation:**
-- [Microsoft Entra ID documentation](https://learn.microsoft.com/en-us/entra/identity/)
-- [Conditional Access documentation](https://learn.microsoft.com/en-us/entra/identity/conditional-access/)
+- [Best Practices to Secure with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/architecture/secure-best-practices)
+- [Require MFA for All Users with Conditional Access](https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-all-users-mfa-strength)
+- [Plan Conditional Access Deployment](https://learn.microsoft.com/en-us/entra/identity/conditional-access/plan-conditional-access)
+- [Conditional Access - Zero Trust Policy Engine](https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview)
 - [Privileged Identity Management](https://learn.microsoft.com/en-us/entra/id-governance/privileged-identity-management/)
 - [Microsoft Graph API reference](https://learn.microsoft.com/en-us/graph/api/overview)
 

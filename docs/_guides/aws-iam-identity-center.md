@@ -354,8 +354,10 @@ Use IAM Access Analyzer for policy validation.
 ## Appendix A: References
 
 **Official AWS Documentation:**
+- [Security Best Practices in IAM](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html)
 - [IAM Identity Center User Guide](https://docs.aws.amazon.com/singlesignon/latest/userguide/)
-- [Best Practices](https://docs.aws.amazon.com/singlesignon/latest/userguide/best-practices.html)
+- [Security Reference Architecture - IAM Identity Center](https://docs.aws.amazon.com/prescriptive-guidance/latest/security-reference-architecture/workplace-iam-identity-center.html)
+- [AWS IAM Best Practices](https://aws.amazon.com/iam/resources/best-practices/)
 
 ---
 
