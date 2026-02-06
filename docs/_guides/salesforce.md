@@ -609,6 +609,8 @@ Before allowing any third-party integration, assess risk:
 ## Appendix B: References
 
 **Official Salesforce Documentation:**
+- [Salesforce Security Best Practices](https://security.salesforce.com/security-best-practices)
+- [Salesforce Security Guide](https://resources.docs.salesforce.com/latest/latest/en-us/sfdc/pdf/salesforce_security_impl_guide.pdf)
 - [Network Access (IP Allowlisting)](https://help.salesforce.com/articleView?id=admin_loginipranges.htm)
 - [Connected Apps and OAuth](https://help.salesforce.com/articleView?id=connected_app_overview.htm)
 - [Event Monitoring](https://help.salesforce.com/articleView?id=event_monitoring.htm)

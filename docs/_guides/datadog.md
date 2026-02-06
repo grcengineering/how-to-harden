@@ -331,7 +331,9 @@ Monitor administrative and security events.
 
 **Official Datadog Documentation:**
 - [Single Sign On With SAML](https://docs.datadoghq.com/account_management/saml/)
-- [Organization Settings](https://docs.datadoghq.com/account_management/org_settings/)
+- [Access Control (RBAC)](https://docs.datadoghq.com/account_management/rbac/)
+- [How to Set Up RBAC for Logs](https://docs.datadoghq.com/logs/guide/logs-rbac/)
+- [Datadog Security](https://docs.datadoghq.com/security/)
 - [Role Permissions](https://docs.datadoghq.com/account_management/rbac/permissions/)
 
 ---

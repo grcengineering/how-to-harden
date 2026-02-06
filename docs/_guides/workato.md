@@ -592,7 +592,9 @@ Secure multi-workspace Automation HQ environments.
 - [Security](https://docs.workato.com/security.html)
 - [Enable Single Sign-On](https://docs.workato.com/user-accounts-and-teams/single-sign-on.html)
 - [SAML Role Sync](https://docs.workato.com/user-accounts-and-teams/saml-role-sync.html)
-- [Configure SSO for AHQ Workspaces](https://docs.workato.com/en/ahq-sso.html)
+- [SAML Role Sync in Microsoft Entra ID](https://docs.workato.com/saml-role-sync-azure.html)
+- [SAML Role Sync in Okta](https://docs.workato.com/saml-role-sync-okta.html)
+- [Troubleshoot Single Sign-On](https://docs.workato.com/en/user-accounts-and-teams/troubleshoot-sso.html)
 
 ---
 

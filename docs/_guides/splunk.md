@@ -277,6 +277,9 @@ Monitor administrative and security events.
 ## Appendix A: References
 
 **Official Splunk Documentation:**
+- [Best Practices for SAML SSO](https://help.splunk.com/en/splunk-enterprise/administer/manage-users-and-security/9.0/perform-advanced-configuration-of-saml-authentication-in-splunk-enterprise/best-practices-for-using-saml-as-an-authentication-scheme-for-single-sign-on)
+- [How to Secure and Harden Splunk](https://help.splunk.com/en/splunk-enterprise/administer/manage-users-and-security/9.2/introduction-to-securing-the-splunk-platform/how-to-secure-and-harden-your-splunk-platform-instance)
+- [Securing the Splunk Cloud Platform](https://lantern.splunk.com/Manage_Performance_and_Health/Securing_the_Splunk_Cloud_Platform)
 - [Configure SSO with SAML](https://docs.splunk.com/Documentation/SplunkCloud/latest/Security/HowSAMLSSOworks)
 - [Configure Okta SSO](https://saml-doc.okta.com/SAML_Docs/How-to-Configure-SAML-2.0-for-Splunk-Cloud.html)
 

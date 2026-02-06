@@ -310,6 +310,8 @@ Enable and monitor audit logs for security events.
 
 **Official ServiceNow Documentation:**
 - [ServiceNow Security Best Practices Guide](https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/doc-type/resource-center/white-paper/instance-security-best-practice.pdf)
+- [Security Center Hardening](https://www.servicenow.com/community/developer-blog/servicenow-security-hardening-security-center/ba-p/2982684)
+- [Instance Security Hardening Reference](https://www.servicenow.com/docs/bundle/vancouver-platform-security/page/administer/security/reference/security-best-practices-instance-security-hardening.html)
 - [SAML 2.0 Configuration](https://www.servicenow.com/docs/r/washingtondc/platform-security/authentication/t_CreateASAML2Upd1SSOConfigMultiSSO.html)
 
 ---

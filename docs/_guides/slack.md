@@ -799,6 +799,8 @@ index=slack sourcetype=slack:audit action="app_installed"
 
 **Official Slack Documentation:**
 - [Slack Security Documentation](https://slack.com/trust/security)
+- [Manage Single Sign-On Settings](https://slack.com/help/articles/220403548-Manage-single-sign-on-settings)
+- [Introduction to Enterprise Grid](https://slack.com/resources/why-use-slack/slack-enterprise-grid)
 - [Enterprise Grid Admin Guide](https://slack.com/help/articles/360004150931)
 - [Slack API Documentation](https://api.slack.com/)
 - [Audit Logs API](https://api.slack.com/admins/audit-logs)

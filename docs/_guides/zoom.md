@@ -361,6 +361,19 @@ WHERE user_id NOT IN (SELECT host_id FROM meetings WHERE id = recording_id);
 
 ---
 
+## Appendix B: References
+
+**Official Zoom Documentation:**
+- [Zoom Meeting Security Guide](https://www.zoom.com/en/products/virtual-meetings/resources/securing-your-meetings/)
+- [Zoom Security White Paper](https://explore.zoom.us/docs/doc/Zoom-Security-White-Paper.pdf)
+- [Changing Security Settings in a Meeting](https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0061231)
+
+**Third-Party Guides:**
+- [Zoom Service Hardening Guide](https://socprime.com/blog/zoom-service-hardening-guide/)
+- [Zoom Security Best Practices](https://www.reco.ai/hub/zoom-security-best-practices)
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |
