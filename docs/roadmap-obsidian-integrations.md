@@ -559,10 +559,15 @@ For each guide, perform web searches and document findings for:
 
 | Batch | Guides | Validation Status |
 |-------|--------|-------------------|
-| Batch 4-10 | GitHub Enterprise, Bitbucket, Jenkins, Postman, OneLogin, LastPass, Keeper, Mimecast, Drata, Vanta, Qualys, Tenable, DocuSign, Webex, Figma, Airtable, Rapid7, Fivetran, SendGrid, Workato, Datadog, PagerDuty, Splunk, ServiceNow, Notion, Asana, Monday, Jira Cloud | 🔄 Pending Review |
-| Batch 11-13 | Paylocity, UKG, Coupa, Concur, Braze, Intercom, Segment, Amplitude, Harness, Buildkite, Sentry, Linear | 🔄 Pending Review |
-| Batch 14-15 | Mixpanel, Heap, Fullstory, Pendo, Shopify, Stripe, Square, Twilio | 🔄 Pending Review |
-| Batch 16-17 | Proofpoint, KnowBe4, Abnormal, Orca, AWS IAM Identity Center, Gong, Outreach, Clari | ✅ Partially Validated |
+| Batch 4 | GitHub Enterprise, Bitbucket, Jenkins, Postman | ✅ Validated |
+| Batch 5 | OneLogin, LastPass, Keeper, Mimecast | ✅ Validated |
+| Batch 6 | Drata, Vanta, Qualys, Tenable | ✅ Validated |
+| Batch 7 | ServiceNow, Workato, Salesforce, Zoom, Slack, Snowflake, Datadog, Splunk | ✅ Validated |
+| Batch 8 | Okta, Microsoft Entra ID, Google Workspace, AWS IAM Identity Center | ✅ Validated |
+| Batch 9 | Workday, Jira Cloud, GitHub, CrowdStrike | ✅ Validated |
+| Batch 10 | HubSpot, BambooHR, Zendesk, HashiCorp Vault | ✅ Validated |
+| Batch 11 | Monday.com, Notion, DocuSign | ✅ Validated |
+| Remaining | Other guides from batches 11-17 requiring validation | 🔄 Pending |
 
 #### Standard Research Process
 
