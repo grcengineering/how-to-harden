@@ -203,6 +203,15 @@ HAVING COUNT(*) > 500;
 
 ---
 
+## Appendix B: References
+
+**Official BambooHR Documentation:**
+- [Third-Party SAML](https://help.bamboohr.com/s/article/587788)
+- [BambooHR SAML SSO with Okta](https://saml-doc.okta.com/SAML_Docs/How-to-Configure-SAML-2.0-for-BambooHR.html)
+- [BambooHR SSO with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/saas-apps/bamboo-hr-tutorial)
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

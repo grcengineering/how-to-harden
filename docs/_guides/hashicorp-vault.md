@@ -865,7 +865,9 @@ vault write -f sys/replication/dr/primary/enable
 ## Appendix B: References
 
 **Official HashiCorp Documentation:**
-- [Security Best Practices](https://developer.hashicorp.com/vault/tutorials/operations/production-hardening)
+- [Production Hardening](https://developer.hashicorp.com/vault/docs/concepts/production-hardening)
+- [Security Model](https://developer.hashicorp.com/vault/docs/internals/security)
+- [Kubernetes Security Considerations](https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-security-concerns)
 - [Auth Methods](https://developer.hashicorp.com/vault/docs/auth)
 - [Audit Devices](https://developer.hashicorp.com/vault/docs/audit)
 
