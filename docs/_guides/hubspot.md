@@ -356,6 +356,15 @@ WHERE action LIKE '%permission%'
 
 ---
 
+## Appendix B: References
+
+**Official HubSpot Documentation:**
+- [Set Up Single Sign-On (SSO)](https://knowledge.hubspot.com/account-security/set-up-single-sign-on-sso)
+- [Account Security and Passwords](https://knowledge.hubspot.com/account-security/account-security-and-passwords)
+- [HubSpot Security Program](https://legal.hubspot.com/security)
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

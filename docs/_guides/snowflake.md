@@ -756,8 +756,10 @@ ALTER USER svc_tableau SET NETWORK_POLICY = tableau_only;
 ## Appendix B: References
 
 **Official Snowflake Documentation:**
-- [Security Best Practices](https://docs.snowflake.com/en/user-guide/security-best-practices)
+- [Securing Snowflake](https://docs.snowflake.com/en/guides-overview-secure)
+- [Security Overview and Best Practices](https://community.snowflake.com/s/article/Snowflake-Security-Overview-and-Best-Practices)
 - [Network Policies](https://docs.snowflake.com/en/user-guide/network-policies)
+- [MFA Migration Best Practices](https://docs.snowflake.com/en/user-guide/security-mfa-migration-best-practices)
 - [OAuth Overview](https://docs.snowflake.com/en/user-guide/oauth-snowflake-overview)
 
 **2024 Breach Analysis:**

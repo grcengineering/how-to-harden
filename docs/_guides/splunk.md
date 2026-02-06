@@ -1,203 +1,287 @@
 ---
 layout: guide
-title: "Splunk Hardening Guide"
+title: "Splunk Cloud Hardening Guide"
 vendor: "Splunk"
 slug: "splunk"
-tier: "3"
-category: "SIEM"
-description: "SIEM platform hardening for role-based access, HEC tokens, and search controls"
+tier: "1"
+category: "Security & Compliance"
+description: "SIEM platform hardening for Splunk Cloud including SAML SSO, role-based access control, and data security"
 version: "0.1.0"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2025-02-05"
 ---
-
 
 ## Overview
 
-Splunk is the core SOC platform with **800+ Splunkbase integrations** aggregating security logs from entire enterprises. API key compromise enables access to detection rules, threat intelligence, and incident response data—providing attackers complete visibility into defensive capabilities. SOAR playbook manipulation can disable automated response.
+Splunk is a leading SIEM and observability platform used by **thousands of organizations** for security monitoring, log analysis, and operational intelligence. As a platform that aggregates sensitive security and operational data, Splunk security configurations directly impact data protection.
 
 ### Intended Audience
 - Security engineers managing SIEM platforms
-- SOC administrators configuring Splunk
-- GRC professionals assessing security monitoring
-- Third-party risk managers evaluating SIEM integrations
+- IT administrators configuring Splunk Cloud
+- SOC analysts securing log infrastructure
+- GRC professionals assessing SIEM security
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+### Scope
+This guide covers Splunk Cloud Platform security including SAML SSO, role-based access control, data security, and search security.
 
 ---
 
 ## Table of Contents
 
-1. [Authentication & Access Controls](#1-authentication--access-controls)
-2. [API & App Security](#2-api--app-security)
+1. [Authentication & SSO](#1-authentication--sso)
+2. [Access Controls](#2-access-controls)
 3. [Data Security](#3-data-security)
-4. [Monitoring & Detection](#4-monitoring--detection)
+4. [Monitoring & Compliance](#4-monitoring--compliance)
+5. [Compliance Quick Reference](#5-compliance-quick-reference)
 
 ---
 
-## 1. Authentication & Access Controls
+## 1. Authentication & SSO
 
-### 1.1 Enforce SAML SSO with MFA
+### 1.1 Configure SAML Single Sign-On
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** IA-2(1)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3, 12.5 |
+| NIST 800-53 | IA-2, IA-8 |
 
 #### Description
-Require SAML SSO with MFA for all Splunk access.
+Configure SAML SSO to centralize authentication for Splunk Cloud users.
 
-#### Rationale
-**Why This Matters:**
-- Splunk contains all security telemetry
-- Compromised access reveals defensive capabilities
-- Detection rules and playbooks are high-value intel
-
-**Attack Scenario:** Compromised API credentials export detection rules; SOAR playbook manipulation disables automated response.
+#### Prerequisites
+- [ ] Administrator access with change_authentication capability
+- [ ] SAML 2.0 compliant IdP with SHA-256 signatures
+- [ ] Contact Splunk Cloud Support to enable SAML
 
 #### ClickOps Implementation
 
-**Step 1: Configure SAML SSO**
-1. Navigate to: **Settings → Access controls → Authentication method**
-2. Select: **SAML**
-3. Configure IdP settings
+**Step 1: Request SAML Enablement**
+1. Contact Splunk Cloud Support
+2. Request SAML 2.0 enablement
+3. Once enabled, access SP metadata at: [yourSiteUrl]/saml/spmetadata
 
-**Step 2: Map Roles**
-1. Configure SAML attribute mapping
-2. Map IdP groups to Splunk roles
+**Step 2: Access SAML Configuration**
+1. Navigate to: **Settings** → **Authentication Methods**
+2. Under External, click **SAML**
+3. Click **Configure Splunk to use SAML**
 
----
+**Step 3: Configure SAML Settings**
+1. Enter IdP settings:
+   - **Single Sign-on URL**
+   - **IdP Certificate Chain** (in order: root → intermediate → leaf)
+   - **Issuer ID**
+   - **Entity ID**
+2. Supported IdPs: PingIdentity, Okta, Microsoft Azure, ADFS, OneLogin
 
-### 1.2 Implement Role-Based Access
+**Step 4: Configure IdP**
+1. IdP must provide: role, realName, mail attributes
 
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** AC-3, AC-6
-
-#### ClickOps Implementation
-
-**Step 1: Define Roles**
-
-| Role | Permissions |
-|------|---------|----------|---------|--------|----|
-| admin | Full access (2-3 users) |
-| sc_admin | Splunk Cloud specific |
-| power | Search all data, create knowledge objects |
-| user | Search assigned indexes only |
-| analyst | SOC functions, no admin |
-
-**Step 2: Configure Index Access**
-1. Navigate to: **Settings → Access controls → Roles**
-2. For each role, configure:
-   - Allowed indexes
-   - Search restrictions
-   - App access
+**Time to Complete:** ~2 hours
 
 ---
 
-## 2. API & App Security
-
-### 2.1 Secure API Tokens
+### 1.2 Configure Local Admin Fallback
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** IA-5
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-6 |
 
 #### Description
-Manage Splunk API tokens securely.
+Maintain local admin access for emergency recovery.
 
 #### ClickOps Implementation
 
-**Step 1: Audit Existing Tokens**
-```bash
-# List authentication tokens
-curl -k -u admin:password \
-  https://splunk:8089/services/authentication/tokens
-```
+**Step 1: Create Local Admin**
+1. Create locally defined account with admin role
+2. This provides recovery option if SAML fails
 
-**Step 2: Create Scoped Tokens**
-1. Create tokens with minimum permissions
-2. Set expiration (90 days max)
-3. Bind to specific IP addresses
+**Step 2: Document Local Login URL**
+1. Local login: [yourSiteUrl]/en-US/account/login?loginType=splunk
+2. Document for emergency procedures
+
+**Step 3: Protect Local Credentials**
+1. Use strong password (20+ characters)
+2. Store in password vault
 
 ---
 
-### 2.2 Splunkbase App Security
+## 2. Access Controls
+
+### 2.1 Configure Role-Based Access Control
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** CM-7
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-6 |
+
+#### Description
+Implement least privilege using Splunk's role model.
 
 #### ClickOps Implementation
 
-**Step 1: Review Installed Apps**
-1. Navigate to: **Apps → Manage Apps**
-2. Review all installed apps
-3. Remove unused apps
+**Step 1: Review Default Roles**
+1. Navigate to: **Settings** → **Access Controls** → **Roles**
+2. Review built-in roles:
+   - **admin:** Full administrative access
+   - **power:** Advanced search and alerting
+   - **user:** Standard search access
 
-**Step 2: Configure App Installation Policy**
-1. Restrict app installation to admins
-2. Require security review for new apps
-3. Update apps regularly
+**Step 2: Create Custom Roles**
+1. Click **New Role**
+2. Configure capabilities and index access
+3. Apply minimum necessary permissions
+
+**Step 3: Assign Roles**
+1. Assign through SAML mapping (preferred)
+2. Limit admin role to 2-3 users
+
+---
+
+### 2.2 Configure Index Access
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.3 |
+| NIST 800-53 | AC-3 |
+
+#### Description
+Restrict access to indexes based on role.
+
+#### ClickOps Implementation
+
+**Step 1: Review Index Permissions**
+1. Edit each role
+2. Configure **Indexes searched by default**
+
+**Step 2: Restrict Sensitive Indexes**
+1. Security logs in restricted index
+2. Grant access only to security team
 
 ---
 
 ## 3. Data Security
 
-### 3.1 Configure Index Access Controls
+### 3.1 Configure Search Security
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** AC-3
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.3 |
+| NIST 800-53 | AC-3 |
+
+#### Description
+Control what data users can search.
 
 #### ClickOps Implementation
 
-**Step 1: Segment Indexes**
-```
-Index Strategy:
-├── security (SOC access only)
-├── network (network team + SOC)
-├── application (app teams)
-└── audit (compliance + security)
-```
+**Step 1: Configure Search Restrictions**
+1. Use role-based index restrictions
+2. Configure allowed sourcetypes
 
-**Step 2: Configure Role-Index Mapping**
-1. Navigate to: **Settings → Access controls → Roles**
-2. Configure: **Indexes searched by default**
-3. Restrict sensitive indexes
+**Step 2: Configure Search Quotas**
+1. Configure search job quotas per role
+2. Prevent resource abuse
 
 ---
 
-## 4. Monitoring & Detection
-
-### 4.1 Monitor Splunk Itself
+### 3.2 Configure Encryption
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** AU-6
 
-#### Detection Queries
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.11 |
+| NIST 800-53 | SC-8, SC-28 |
 
-```spl
-# Detect unusual search activity
-index=_audit action=search
+#### Description
+Ensure data encryption in transit and at rest.
 
-| stats count by user, search
-| where count > 100
+#### ClickOps Implementation
 
-# Detect configuration changes
-index=_audit action=edit_*
+**Step 1: Verify Transit Encryption**
+1. Splunk Cloud uses TLS by default
 
-| table _time user action object
-
-# Detect failed authentication
-index=_audit action=login status=failure
-
-| stats count by user, src
-| where count > 5
-```
+**Step 2: Verify Storage Encryption**
+1. Splunk Cloud encrypts data at rest
+2. Customer-managed keys available
 
 ---
 
-## Appendix A: Edition Compatibility
+## 4. Monitoring & Compliance
 
-| Control | Enterprise | Cloud |
-|---------|------------|-------|
-| SAML SSO | ✅ | ✅ |
-| Role-Based Access | ✅ | ✅ |
-| API Tokens | ✅ | ✅ |
-| Audit Logging | ✅ | ✅ |
+### 4.1 Configure Audit Logging
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 8.2 |
+| NIST 800-53 | AU-2 |
+
+#### Description
+Monitor administrative and security events.
+
+#### ClickOps Implementation
+
+**Step 1: Access Audit Logs**
+1. Search index=_audit
+2. Review authentication, configuration, and search events
+
+**Step 2: Create Audit Dashboards**
+1. Build dashboard for audit events
+2. Monitor admin activities
+
+**Step 3: Configure Audit Alerts**
+1. Alert on admin role changes
+2. Alert on failed authentications
+
+---
+
+## 5. Compliance Quick Reference
+
+### SOC 2 Trust Services Criteria Mapping
+
+| Control ID | Splunk Control | Guide Section |
+|-----------|----------------|---------------|
+| CC6.1 | SSO/SAML | [1.1](#11-configure-saml-single-sign-on) |
+| CC6.2 | RBAC | [2.1](#21-configure-role-based-access-control) |
+| CC6.7 | Encryption | [3.2](#32-configure-encryption) |
+| CC7.2 | Audit logging | [4.1](#41-configure-audit-logging) |
+
+### NIST 800-53 Rev 5 Mapping
+
+| Control | Splunk Control | Guide Section |
+|---------|----------------|---------------|
+| IA-2 | SSO | [1.1](#11-configure-saml-single-sign-on) |
+| AC-3 | Index access | [2.2](#22-configure-index-access) |
+| AC-6 | Least privilege | [2.1](#21-configure-role-based-access-control) |
+| AU-2 | Audit logging | [4.1](#41-configure-audit-logging) |
+
+---
+
+## Appendix A: References
+
+**Official Splunk Documentation:**
+- [Best Practices for SAML SSO](https://help.splunk.com/en/splunk-enterprise/administer/manage-users-and-security/9.0/perform-advanced-configuration-of-saml-authentication-in-splunk-enterprise/best-practices-for-using-saml-as-an-authentication-scheme-for-single-sign-on)
+- [How to Secure and Harden Splunk](https://help.splunk.com/en/splunk-enterprise/administer/manage-users-and-security/9.2/introduction-to-securing-the-splunk-platform/how-to-secure-and-harden-your-splunk-platform-instance)
+- [Securing the Splunk Cloud Platform](https://lantern.splunk.com/Manage_Performance_and_Health/Securing_the_Splunk_Cloud_Platform)
+- [Configure SSO with SAML](https://docs.splunk.com/Documentation/SplunkCloud/latest/Security/HowSAMLSSOworks)
+- [Configure Okta SSO](https://saml-doc.okta.com/SAML_Docs/How-to-Configure-SAML-2.0-for-Splunk-Cloud.html)
 
 ---
 
@@ -205,4 +289,14 @@ index=_audit action=login status=failure
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2025-12-14 | 0.1.0 | draft | Initial Splunk hardening guide | Claude Code (Opus 4.5) |
+| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and data security | Claude Code (Opus 4.5) |
+
+---
+
+## Contributing
+
+Found an issue or want to improve this guide?
+
+- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
+- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
+- **Submit improvements:** See [Contributing Guide](/contributing/)

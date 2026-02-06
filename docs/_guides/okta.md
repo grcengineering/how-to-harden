@@ -1183,7 +1183,9 @@ Use this checklist to verify controls are implemented for your compliance requir
 ## Appendix B: References
 
 **Official Okta Documentation:**
-- [Security Best Practices](https://help.okta.com/en-us/Content/Topics/Security/security-best-practices.htm)
+- [9 Admin Best Practices](https://www.okta.com/blog/2019/10/9-admin-best-practices-to-keep-your-org-secure/)
+- [Securing Admin Accounts](https://support.okta.com/help/s/article/best-practices-for-securing-okta-workforce-identity-cloud-admin-accounts)
+- [Secure Identity Commitment Whitepaper](https://www.okta.com/sites/default/files/2025-03/Secure-Identity-Commitment-Whitepaper-March-2025.pdf)
 - [Admin Role Permissions](https://help.okta.com/en-us/Content/Topics/Security/administrators-admin-comparison.htm)
 - [System Log API](https://developer.okta.com/docs/reference/api/system-log/)
 

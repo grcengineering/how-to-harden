@@ -223,6 +223,16 @@ HAVING COUNT(*) > 1000;
 
 ---
 
+## Appendix B: References
+
+**Official Zendesk Documentation:**
+- [Zendesk Suite Actionable Security Guide](https://support.zendesk.com/hc/en-us/articles/5001315170074-Zendesk-Suite-Actionable-Security-Guide)
+- [Managing SSO Configurations](https://support.zendesk.com/hc/en-us/articles/4408882188570-Managing-single-sign-on-SSO-configurations)
+- [Managing Security Settings in Admin Center](https://support.zendesk.com/hc/en-us/articles/4408846853274-Managing-security-settings-in-Admin-Center)
+- [General Security Best Practices](https://support.zendesk.com/hc/en-us/articles/4408888782618-General-security-best-practices)
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

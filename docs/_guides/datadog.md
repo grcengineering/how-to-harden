@@ -3,24 +3,23 @@ layout: guide
 title: "Datadog Hardening Guide"
 vendor: "Datadog"
 slug: "datadog"
-tier: "2"
-category: "Observability"
-description: "Observability platform security for API keys, log pipelines, and sensitive data"
+tier: "1"
+category: "Security & Compliance"
+description: "Observability platform hardening for Datadog including SAML SSO, role-based access control, and organization security settings"
 version: "0.1.0"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2025-02-05"
 ---
-
 
 ## Overview
 
-Datadog serves **28,000+ customers** with **800+ integrations** collecting application metrics, security signals, and log data enterprise-wide. API keys and OAuth tokens (security_monitoring scopes) provide broad access to operational telemetry. Datadog proactively monitors GitHub for leaked keys, but organizations must implement their own controls for API key lifecycle management.
+Datadog is a leading observability and security platform used by **thousands of organizations** for infrastructure monitoring, APM, log management, and security monitoring. As a platform with access to sensitive operational data and infrastructure metrics, Datadog security configurations directly impact data protection and operational security.
 
 ### Intended Audience
 - Security engineers managing observability platforms
-- SRE/DevOps teams configuring Datadog
-- GRC professionals assessing monitoring compliance
-- Third-party risk managers evaluating telemetry integrations
+- IT administrators configuring Datadog
+- DevOps teams securing monitoring infrastructure
+- GRC professionals assessing observability security
 
 ### How to Use This Guide
 - **L1 (Baseline):** Essential controls for all organizations
@@ -28,414 +27,314 @@ Datadog serves **28,000+ customers** with **800+ integrations** collecting appli
 - **L3 (Maximum Security):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Datadog security configurations including authentication, API key management, agent security, and log/APM data protection.
+This guide covers Datadog organization security including SAML SSO, role-based access control, API key management, and session security.
 
 ---
 
 ## Table of Contents
 
-1. [Authentication & Access Controls](#1-authentication--access-controls)
-2. [API Key Management](#2-api-key-management)
-3. [Agent Security](#3-agent-security)
-4. [Data Security](#4-data-security)
-5. [Monitoring & Detection](#5-monitoring--detection)
-6. [Compliance Quick Reference](#6-compliance-quick-reference)
+1. [Authentication & SSO](#1-authentication--sso)
+2. [Access Controls](#2-access-controls)
+3. [API & Key Security](#3-api--key-security)
+4. [Monitoring & Compliance](#4-monitoring--compliance)
+5. [Compliance Quick Reference](#5-compliance-quick-reference)
 
 ---
 
-## 1. Authentication & Access Controls
+## 1. Authentication & SSO
 
-### 1.1 Enforce SAML SSO with MFA
-
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** IA-2(1)
-
-#### Description
-Require SAML SSO with MFA for all Datadog access.
-
-#### ClickOps Implementation
-
-**Step 1: Configure SAML SSO**
-1. Navigate to: **Organization Settings → SAML Login**
-2. Configure:
-   - **Identity Provider:** Your IdP (Okta, Azure AD, etc.)
-   - **Entity ID:** Datadog entity ID
-   - **SSO URL:** IdP login endpoint
-   - **Certificate:** Upload IdP certificate
-
-**Step 2: Enforce SAML**
-1. Enable: **Require SAML**
-2. Configure: **Default role for new users**
-3. Disable: **Allow password login**
-
-**Step 3: Configure Just-In-Time Provisioning**
-1. Enable: **JIT provisioning**
-2. Map SAML attributes to Datadog roles
-3. Configure team assignments
-
----
-
-### 1.2 Implement Role-Based Access Control
+### 1.1 Configure SAML Single Sign-On
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** AC-3, AC-6
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3, 12.5 |
+| NIST 800-53 | IA-2, IA-8 |
 
 #### Description
-Configure Datadog roles with granular permissions.
-
-#### ClickOps Implementation
-
-**Step 1: Design Role Structure**
-
-| Role | Permissions |
-|------|---------|----------|---------|--------|----|
-| Admin | Full organization access (2-3 users) |
-| Standard | View all data, create dashboards |
-| Read-Only | View only, no modifications |
-| Security Analyst | Security Monitoring, logs |
-| APM Developer | APM data, traces |
-
-**Step 2: Create Custom Roles**
-1. Navigate to: **Organization Settings → Roles**
-2. Create roles with specific permissions:
-   - Dashboards: Read/Write
-   - Monitors: Read/Write
-   - Logs: Read (specific indexes)
-   - APM: Read
-
-**Step 3: Configure Teams**
-1. Navigate to: **Organization Settings → Teams**
-2. Create teams by function
-3. Assign appropriate roles to teams
-
----
-
-## 2. API Key Management
-
-### 2.1 Implement API Key Best Practices
-
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** IA-5
-
-#### Description
-Secure Datadog API keys with proper lifecycle management.
+Configure SAML SSO to centralize authentication for Datadog users.
 
 #### Rationale
 **Why This Matters:**
-- API keys provide write access to metrics/logs
-- Application keys enable full API access
-- Leaked keys enable data exfiltration or manipulation
+- Centralizes identity management
+- Enables enforcement of organizational MFA policies
+- Simplifies user lifecycle management
+- Required for SAML strict mode
 
-**Hardening Priority:** One-Time Read (OTR) mode for application keys; IP-based access controls.
+#### Prerequisites
+- [ ] Datadog Administrator access
+- [ ] SAML 2.0 compatible identity provider
+- [ ] IdP admin credentials
 
 #### ClickOps Implementation
 
-**Step 1: Audit Existing Keys**
-1. Navigate to: **Organization Settings → API Keys**
-2. Document all keys:
-   - Creation date
-   - Purpose/integration
-   - Owner
-3. Navigate to: **Organization Settings → Application Keys**
-4. Repeat audit for app keys
+**Step 1: Access SAML Configuration**
+1. Navigate to: **Organization Settings** → **Login Methods**
+2. Click on **SAML** settings
+3. Enable SAML configuration
 
-**Step 2: Implement Key Separation**
-```
-Key Strategy:
-├── API Keys (one per agent deployment)
-│   ├── prod-us-east-agents
-│   ├── prod-us-west-agents
-│   └── staging-agents
-└── Application Keys (one per integration)
-    ├── terraform-readonly
-    ├── ci-cd-pipeline
-    └── security-automation
-```
+**Step 2: Configure Identity Provider**
+1. Create SAML application in IdP:
+   - Active Directory
+   - Auth0
+   - Google
+   - LastPass
+   - Microsoft Entra ID
+   - Okta
+   - SafeNet
+2. Configure required attributes
 
-**Step 3: Enable One-Time Read (OTR)**
-1. For new application keys, key value is shown only once
-2. Store in secrets manager immediately
-3. Document key purpose before creation
+**Step 3: Upload IdP Metadata**
+1. Download IdP metadata XML
+2. Upload to Datadog SAML settings
+3. Verify configuration
 
-**Step 4: Configure Key Scopes (Application Keys)**
-1. Navigate to: **Organization Settings → Application Keys**
-2. For each key, configure scopes:
-   - `dashboards_read` (for BI tools)
-   - `monitors_read` (for alerting)
-   - Avoid broad scopes unless required
+**Step 4: Configure Datadog Settings**
+1. Datadog supports HTTP-POST binding
+2. NameIDPolicy format: emailAddress
+3. Assertions must be signed
+
+**Time to Complete:** ~1 hour
 
 ---
 
-### 2.2 API Key Rotation
-
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** IA-5(1)
-
-#### Description
-Implement regular API key rotation.
-
-#### Implementation
-
-| Key Type | Rotation Frequency |
-|----------|-------------------|
-| API Keys (agents) | Semi-annually |
-| Application Keys | Quarterly |
-| Compromised keys | Immediately |
-
-```bash
-#!/bin/bash
-# Key rotation script
-
-# Create new API key
-NEW_KEY=$(curl -X POST "https://api.datadoghq.com/api/v1/api_key" \
-  -H "DD-API-KEY: ${CURRENT_API_KEY}" \
-  -H "DD-APPLICATION-KEY: ${APP_KEY}" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "prod-agents-'$(date +%Y%m%d)'"}' \
-
-  | jq -r '.api_key.key')
-
-# Update agents with new key
-# Deploy configuration with new key
-
-# Verify metrics flowing with new key
-
-# Revoke old key
-curl -X DELETE "https://api.datadoghq.com/api/v1/api_key/${OLD_KEY_ID}" \
-  -H "DD-API-KEY: ${NEW_KEY}" \
-  -H "DD-APPLICATION-KEY: ${APP_KEY}"
-```
-
----
-
-### 2.3 Configure IP Allowlisting for API
+### 1.2 Enable SAML Strict Mode
 
 **Profile Level:** L2 (Hardened)
-**NIST 800-53:** AC-3(7)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3 |
+| NIST 800-53 | IA-2 |
 
 #### Description
-Restrict API access to known IP ranges.
+Require SAML authentication for all users.
 
 #### ClickOps Implementation
 
-1. Navigate to: **Organization Settings → Access → Login Methods**
-2. Configure: **IP Allowlist** for UI access
-3. For API: Use network policies/firewalls to restrict source IPs
+**Step 1: Navigate to Login Methods**
+1. Navigate to: **Organization Settings** → **Login Methods**
+2. Review enabled authentication methods
+
+**Step 2: Configure Strict Mode**
+1. Set Password login: **Disabled**
+2. Set Google login: **Disabled**
+3. Set SAML login: **Enabled by Default**
+
+**Step 3: Configure User Overrides**
+1. Allow per-user overrides if needed
+2. Configure individual exceptions carefully
 
 ---
 
-## 3. Agent Security
-
-### 3.1 Secure Agent Configuration
+### 1.3 Configure Session Security
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** CM-7
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.2 |
+| NIST 800-53 | AC-12 |
 
 #### Description
-Harden Datadog Agent deployment.
-
-#### Implementation
-
-```yaml
-# datadog.yaml - Security hardened configuration
-
-# API key from environment variable (not hardcoded)
-api_key: ${DD_API_KEY}
-
-# Restrict local listening
-bind_host: localhost
-cmd_port: 5001
-
-# Disable unnecessary features
-apm_config:
-  enabled: false  # Enable only if using APM
-
-# Log collection (if enabled)
-logs_enabled: true
-logs_config:
-  # Mask sensitive data
-  processing_rules:
-    - type: mask_sequences
-      name: mask_credit_cards
-      pattern: '\b(?:\d{4}[-\s]?){3}\d{4}\b'
-      replace_placeholder: "[MASKED_CC]"
-    - type: mask_sequences
-      name: mask_ssn
-      pattern: '\b\d{3}-\d{2}-\d{4}\b'
-      replace_placeholder: "[MASKED_SSN]"
-
-# Security settings
-security_config:
-  runtime_security_config:
-    enabled: false  # Enable for CWS
-```
-
-**Step 2: Secure Agent Credentials**
-1. Use secrets management for API keys
-2. Never commit keys to version control
-3. Use environment variables or secret stores
-
----
-
-### 3.2 Network Policy for Agents
-
-**Profile Level:** L2 (Hardened)
-**NIST 800-53:** SC-7
-
-#### Description
-Restrict agent network communications.
-
-#### Kubernetes NetworkPolicy
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: datadog-agent-egress
-spec:
-  podSelector:
-    matchLabels:
-      app: datadog-agent
-  policyTypes:
-    - Egress
-  egress:
-    # Allow Datadog intake endpoints
-    - to:
-        - ipBlock:
-            cidr: 0.0.0.0/0
-      ports:
-        - protocol: TCP
-          port: 443
-```
-
----
-
-## 4. Data Security
-
-### 4.1 Configure Log Data Masking
-
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** SC-28
-
-#### Description
-Mask sensitive data in logs before ingestion.
+Configure session timeout and security settings.
 
 #### ClickOps Implementation
 
-**Step 1: Configure Pipeline Processors**
-1. Navigate to: **Logs → Configuration → Pipelines**
-2. Create processor for sensitive data:
-   - **Type:** Grok Parser + Remapper
-   - **Pattern:** Match sensitive fields
-   - **Action:** Mask or remove
+**Step 1: Configure Session Duration**
+1. Navigate to: **Organization Settings** → **Security**
+2. Set **Maximum session duration**
+3. Applies to all new web sessions
 
-**Step 2: Configure Sensitive Data Scanner**
-1. Navigate to: **Compliance → Sensitive Data Scanner**
-2. Enable rules for:
-   - Credit card numbers
-   - Social Security Numbers
-   - API keys/passwords
-3. Action: Mask or redact
+**Step 2: Configure Idle Timeout**
+1. Enable **Idle time session timeout**
+2. Users signed out after 30 minutes inactivity
 
 ---
 
-### 4.2 Log Retention and Access
+## 2. Access Controls
+
+### 2.1 Configure Role-Based Access Control
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** SI-12
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-6 |
 
 #### Description
-Configure appropriate log retention and access controls.
+Implement least privilege using Datadog's RBAC model.
 
 #### ClickOps Implementation
 
-**Step 1: Configure Log Indexes**
-1. Navigate to: **Logs → Configuration → Indexes**
-2. Create separate indexes:
-   - `security-logs` (longer retention)
-   - `application-logs` (standard retention)
-   - `debug-logs` (short retention)
+**Step 1: Review Managed Roles**
+1. Navigate to: **Organization Settings** → **Roles**
+2. Review default managed roles:
+   - **Admin:** Full access
+   - **Standard:** Read/write on assets
+   - **Read Only:** Read data only
 
-**Step 2: Configure Index Permissions**
-1. Navigate to: **Organization Settings → Roles**
-2. Configure role permissions for log indexes
-3. Restrict sensitive indexes to security team
+**Step 2: Create Custom Roles**
+1. Click **Create Role**
+2. Configure specific permissions
+3. Pay attention to sensitive permissions
+
+**Step 3: Review Sensitive Permissions**
+1. Sensitive permissions are flagged in UI
+2. Review carefully before assigning
 
 ---
 
-## 5. Monitoring & Detection
-
-### 5.1 Security Monitoring
+### 2.2 Limit Admin Access
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** SI-4
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-6(1) |
 
 #### Description
-Configure Datadog Security Monitoring for threat detection.
+Minimize and protect administrator accounts.
 
 #### ClickOps Implementation
 
-**Step 1: Enable Cloud SIEM**
-1. Navigate to: **Security → Security Monitoring**
-2. Enable: **Cloud SIEM**
-3. Configure log sources
+**Step 1: Inventory Admin Users**
+1. Navigate to: **Organization Settings** → **Users**
+2. Filter by Admin role
+3. Document all admin accounts
 
-**Step 2: Enable Detection Rules**
-1. Navigate to: **Security → Detection Rules**
-2. Enable relevant rules:
-   - AWS CloudTrail
-   - GCP Audit Logs
-   - Azure Activity Logs
-
-**Step 3: Configure Security Signals**
-1. Create monitors for high-severity signals
-2. Configure notification channels
-3. Set up automated response (if using Workflow Automation)
+**Step 2: Apply Least Privilege**
+1. Limit Admin to 2-3 users
+2. Remove unnecessary admin access
+3. Use custom roles for specific needs
 
 ---
 
-### 5.2 Audit Trail
+## 3. API & Key Security
+
+### 3.1 Secure API Keys
 
 **Profile Level:** L1 (Baseline)
-**NIST 800-53:** AU-2, AU-3
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.11 |
+| NIST 800-53 | SC-12 |
 
 #### Description
-Enable and monitor Datadog audit trail.
+Secure Datadog API keys used for data ingestion.
+
+#### ClickOps Implementation
+
+**Step 1: Review API Keys**
+1. Navigate to: **Organization Settings** → **API Keys**
+2. Review all existing keys
+3. Identify purpose of each key
+
+**Step 2: Implement Key Management**
+1. Create purpose-specific keys
+2. Name keys descriptively
+3. Remove unused keys
+
+**Step 3: Secure Key Storage**
+1. Store keys in secret manager
+2. Use environment variables
+3. Never commit to code
+
+---
+
+### 3.2 Secure Application Keys
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.11 |
+| NIST 800-53 | SC-12 |
+
+#### Description
+Secure application keys used for API access.
+
+#### ClickOps Implementation
+
+**Step 1: Review Application Keys**
+1. Navigate to: **Organization Settings** → **Application Keys**
+2. Application keys inherit user permissions
+
+**Step 2: Configure Key Scopes**
+1. Create keys with limited scopes
+2. Grant minimum required permissions
+
+**Step 3: Rotate Keys Regularly**
+1. Establish rotation schedule (90 days)
+2. Update integrations before deleting
+
+---
+
+## 4. Monitoring & Compliance
+
+### 4.1 Configure Audit Logs
+
+**Profile Level:** L1 (Baseline)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 8.2 |
+| NIST 800-53 | AU-2 |
+
+#### Description
+Monitor administrative and security events.
 
 #### ClickOps Implementation
 
 **Step 1: Access Audit Trail**
-1. Navigate to: **Organization Settings → Audit Trail**
-2. Review events:
-   - Authentication
-   - Configuration changes
-   - API key operations
+1. Navigate to: **Organization Settings** → **Audit Trail**
+2. Review logged events
 
-**Step 2: Export to SIEM**
-1. Enable: **Audit Trail Logs**
-2. Forward to log index for retention
-3. Create monitors for critical events
+**Step 2: Configure Alerts**
+1. Create monitors for audit events
+2. Alert on sensitive operations
+
+**Step 3: Export Logs**
+1. Export audit logs for retention
+2. Integrate with SIEM
 
 ---
 
-## 6. Compliance Quick Reference
+## 5. Compliance Quick Reference
 
-### SOC 2 Mapping
+### SOC 2 Trust Services Criteria Mapping
 
 | Control ID | Datadog Control | Guide Section |
-|-----------|------------------|---------------|
-| CC6.1 | SSO enforcement | 1.1 |
-| CC6.2 | RBAC | 1.2 |
-| CC7.2 | Audit trail | 5.2 |
+|-----------|-----------------|---------------|
+| CC6.1 | SSO/SAML | [1.1](#11-configure-saml-single-sign-on) |
+| CC6.2 | RBAC | [2.1](#21-configure-role-based-access-control) |
+| CC6.6 | Session security | [1.3](#13-configure-session-security) |
+| CC6.7 | Key security | [3.1](#31-secure-api-keys) |
+| CC7.2 | Audit logging | [4.1](#41-configure-audit-logs) |
+
+### NIST 800-53 Rev 5 Mapping
+
+| Control | Datadog Control | Guide Section |
+|---------|-----------------|---------------|
+| IA-2 | SSO | [1.1](#11-configure-saml-single-sign-on) |
+| AC-6 | Least privilege | [2.1](#21-configure-role-based-access-control) |
+| SC-12 | Key management | [3.1](#31-secure-api-keys) |
+| AU-2 | Audit logging | [4.1](#41-configure-audit-logs) |
 
 ---
 
 ## Appendix A: References
 
 **Official Datadog Documentation:**
-- [Security Best Practices](https://docs.datadoghq.com/security/)
-- [API Key Management](https://docs.datadoghq.com/account_management/api-app-keys/)
-- [Sensitive Data Scanner](https://docs.datadoghq.com/sensitive_data_scanner/)
+- [Single Sign On With SAML](https://docs.datadoghq.com/account_management/saml/)
+- [Access Control (RBAC)](https://docs.datadoghq.com/account_management/rbac/)
+- [How to Set Up RBAC for Logs](https://docs.datadoghq.com/logs/guide/logs-rbac/)
+- [Datadog Security](https://docs.datadoghq.com/security/)
+- [Role Permissions](https://docs.datadoghq.com/account_management/rbac/permissions/)
 
 ---
 
@@ -443,4 +342,14 @@ Enable and monitor Datadog audit trail.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2025-12-14 | 0.1.0 | draft | Initial Datadog hardening guide | Claude Code (Opus 4.5) |
+| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and key security | Claude Code (Opus 4.5) |
+
+---
+
+## Contributing
+
+Found an issue or want to improve this guide?
+
+- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
+- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
+- **Submit improvements:** See [Contributing Guide](/contributing/)
