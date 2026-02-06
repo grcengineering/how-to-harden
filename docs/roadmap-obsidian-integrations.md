@@ -540,6 +540,40 @@ Before merging:
 | CIS Benchmark update | 2 weeks | Align controls |
 | Quarterly review | Scheduled | Link check, UI verification |
 
+### 5.4 Research Validation for New Guides
+
+**CRITICAL:** All newly created guides MUST be validated with proper documentation research before being marked as complete.
+
+#### Research Validation Checklist
+
+For each guide, perform web searches and document findings for:
+
+- [ ] **Official Security Documentation** - Vendor's security center, admin guides, trust pages
+- [ ] **SSO/SAML Configuration** - Official IdP integration guides (Okta, Azure, etc.)
+- [ ] **Admin Console Navigation** - Verified menu paths and settings locations
+- [ ] **Feature Availability by Plan** - Enterprise vs. Pro vs. Free tier restrictions
+- [ ] **API/SCIM Support** - Provisioning capabilities and limitations
+- [ ] **Recent Security Updates** - Any 2024-2025 changes to security features
+
+#### Guides Requiring Research Validation (Phase 4 Batches)
+
+| Batch | Guides | Validation Status |
+|-------|--------|-------------------|
+| Batch 4-10 | GitHub Enterprise, Bitbucket, Jenkins, Postman, OneLogin, LastPass, Keeper, Mimecast, Drata, Vanta, Qualys, Tenable, DocuSign, Webex, Figma, Airtable, Rapid7, Fivetran, SendGrid, Workato, Datadog, PagerDuty, Splunk, ServiceNow, Notion, Asana, Monday, Jira Cloud | 🔄 Pending Review |
+| Batch 11-13 | Paylocity, UKG, Coupa, Concur, Braze, Intercom, Segment, Amplitude, Harness, Buildkite, Sentry, Linear | 🔄 Pending Review |
+| Batch 14-15 | Mixpanel, Heap, Fullstory, Pendo, Shopify, Stripe, Square, Twilio | 🔄 Pending Review |
+| Batch 16-17 | Proofpoint, KnowBe4, Abnormal, Orca, AWS IAM Identity Center, Gong, Outreach, Clari | ✅ Partially Validated |
+
+#### Standard Research Process
+
+For each guide creation going forward:
+
+1. **Before Writing:** Search for `[Product] security documentation SSO SAML admin settings [current year]`
+2. **Verify Navigation:** Confirm admin console menu paths from official docs
+3. **Check Plan Restrictions:** Search for `[Product] SSO enterprise plan requirements`
+4. **Document Sources:** Include official documentation links in References section
+5. **Note Limitations:** Document any SCIM, automation, or feature limitations discovered
+
 ---
 
 ## Complete Product Inventory
