@@ -414,8 +414,11 @@ Use analytics to monitor workspace activity.
 ## Appendix B: References
 
 **Official Notion Documentation:**
+- [Notion Security & Compliance](https://www.notion.com/security)
 - [SAML SSO Configuration](https://www.notion.com/help/saml-sso-configuration)
-- [Set up Identity Provider for SAML SSO](https://www.notion.com/help/set-up-identity-provider-for-saml-sso)
+- [Provision Users with SCIM](https://www.notion.com/help/provision-users-and-groups-with-scim)
+- [Security Practices](https://www.notion.com/help/security-and-privacy)
+- [Enterprise Security Provisions](https://www.notion.com/help/guides/notion-enterprise-security-provisions)
 - [Managing Organization in Notion](https://www.notion.com/help/guides/everything-about-setting-up-and-managing-an-organization-in-notion)
 
 ---

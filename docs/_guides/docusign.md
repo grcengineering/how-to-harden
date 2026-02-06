@@ -448,8 +448,10 @@ Enable compliance-specific features for regulated industries.
 
 **Official DocuSign Documentation:**
 - [Security Settings Guide](https://support.docusign.com/guides/ndse-admin-guide-security-settings)
-- [SSO Configuration Guide](https://support.docusign.com/s/document-item?bundleId=rrf1583359212854&topicId=ozd1583359139126.html)
-- [Security Recommendations](https://support.docusign.com/s/document-item?bundleId=ieh1606952453299&topicId=swt1606952443828.html)
+- [Product Security](https://www.docusign.com/trust/security/product-security)
+- [Security for DocuSign eSignature](https://www.docusign.com/trust/security/esignature)
+- [Security Recommendations and Best Practices](https://support.docusign.com/s/document-item?bundleId=ieh1606952453299&topicId=swt1606952443828.html)
+- [DocuSign Trust and Security Overview](https://assets.ctfassets.net/3fcisxc3a6xz/7bSlNiSrqO1ASXINKpYkze/4a8c7ebdcaa5674a35e448783e4b67a3/DocuSign_Trust_and_Security_Overview.pdf)
 
 ---
 

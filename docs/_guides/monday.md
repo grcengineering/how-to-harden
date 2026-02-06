@@ -420,8 +420,10 @@ Control ability to export data from Monday.com.
 
 **Official Monday.com Documentation:**
 - [SAML Single Sign-on](https://support.monday.com/hc/en-us/articles/360000460605-SAML-Single-Sign-on)
-- [Restrict Who Can Join](https://support.monday.com/hc/en-us/articles/115005319589-Restrict-who-can-join-your-account)
 - [Custom SAML 2.0](https://support.monday.com/hc/en-us/articles/360000461565-Custom-SAML-2-0)
+- [SAML Entra (Azure)](https://support.monday.com/hc/en-us/articles/360001550260-SAML-Entra-previously-known-as-SAML-Azure)
+- [Restrict Who Can Join](https://support.monday.com/hc/en-us/articles/115005319589-Restrict-who-can-join-your-account)
+- [Monday.com SSO with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/saas-apps/mondaycom-tutorial)
 
 ---
 
