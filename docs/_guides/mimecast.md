@@ -611,9 +611,11 @@ Actively monitor threat dashboard for emerging threats.
 ## Appendix B: References
 
 **Official Mimecast Documentation:**
-- [Email Security Cloud Gateway - Security Best Practice](https://community.mimecast.com/s/article/email-security-cloud-gateway-security-best-practice)
 - [Targeted Threat Protection Optimization](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000726395155-Targeted-Threat-Protection-Optimization)
-- [Policy Out-of-Box Settings](https://community.mimecast.com/s/article/email-security-cloud-gateway-policies-out-of-the-box-settings)
+- [TTP Impersonation Protect Guide](https://community.mimecast.com/s/article/email-security-cloud-gateway-ttp-impersonation-protection-guides)
+- [Impersonation Protect Configuration](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000675918227-Targeted-Threat-Protection-Impersonation-Protect-Configuration)
+- [Impersonation Protect First Policy](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000724095507-Targeted-Threat-Protection-Impersonation-Protect-First-Policy)
+- [Email Security Tips](https://www.mimecast.com/content/email-security-tips/)
 
 ---
 

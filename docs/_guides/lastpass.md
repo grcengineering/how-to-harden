@@ -528,9 +528,11 @@ Following the 2022 LastPass security incidents, consider:
 ## Appendix C: References
 
 **Official LastPass Documentation:**
-- [Admin Policies Guide](https://blog.lastpass.com/2023/06/three-lastpass-admin-policies-to-enable-today/)
-- [MFA Configuration](https://support.lastpass.com/help/enterprise-admin-management-of-multifactor-authentication-options-lp010026)
-- [Enforce Password Policies](https://blog.lastpass.com/posts/how-to-enforce-strong-password-policies)
+- [Three Admin Policies to Enable Today](https://blog.lastpass.com/posts/three-lastpass-admin-policies-to-enable-today)
+- [How to Enforce Strong Password Policies](https://blog.lastpass.com/posts/how-to-enforce-strong-password-policies)
+- [How to Set Up Multi-Factor Authentication](https://blog.lastpass.com/posts/how-to-set-up-multi-factor-authentication-to-protect-your-business)
+- [Enable MFA for Admins](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/Enable_Multifactor_Authentication_Admins.html)
+- [Unified Admin Controls for User Management](https://www.lastpass.com/features/user-management)
 
 ---
 

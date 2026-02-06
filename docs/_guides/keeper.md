@@ -562,7 +562,9 @@ Enable BreachWatch to detect compromised credentials.
 **Official Keeper Documentation:**
 - [Security Benchmarks and Recommended Settings](https://docs.keeper.io/en/enterprise-guide/recommended-security-settings)
 - [Enforcement Policies](https://docs.keeper.io/en/enterprise-guide/roles/enforcement-policies)
-- [SSO Integration Guide](https://docs.keeper.io/en/enterprise-guide/sso-saml-integration)
+- [Keeper SSO Connect](https://www.keepersecurity.com/keeper-sso-connect.html)
+- [Admin Console Configuration (SSO Connect)](https://docs.keeper.io/en/sso-connect-on-prem/installation-and-setup/admin-console-configuration)
+- [Enterprise Password Management](https://www.keepersecurity.com/enterprise.html)
 
 ---
 

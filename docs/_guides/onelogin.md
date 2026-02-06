@@ -560,8 +560,10 @@ Configure alerts for security-relevant events.
 
 **Official OneLogin Documentation:**
 - [OneLogin User Policies](https://onelogin.service-now.com/kb_view_customer.do?sysparm_article=KB0010420)
-- [Password and Security FAQ](https://onelogin.service-now.com/support?id=kb_article&sys_id=ddf7039bdbec1414d5505eea4b961969)
-- [SSO Security Best Practices](https://www.onelogin.com/blog/securing-single-sign-on-balancing-user-convenience-and-enterprise-protection)
+- [Best Practices for Advanced Authentication](https://www.onelogin.com/blog/best-practices-when-deploying-advanced-authentication)
+- [SAML SSO Best Practices and FAQs](https://developers.onelogin.com/saml/best-practices-and-faqs)
+- [How to Authenticate Users](https://developers.onelogin.com/quickstart/authentication)
+- [Rethinking MFA: Smarter Security](https://www.onelogin.com/blog/rethinking-mfa-smarter-security-for-smarter-threats)
 
 ---
 
