@@ -428,9 +428,11 @@ Configure alerts for security events.
 ## Appendix B: References
 
 **Official Atlassian Documentation:**
+- [How to Keep Your Organization Secure](https://support.atlassian.com/security-and-access-policies/docs/how-to-keep-my-organization-secure/)
+- [Understand Atlassian Guard](https://support.atlassian.com/security-and-access-policies/docs/understand-atlassian-guard/)
+- [Manage API Tokens](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
 - [Configure SAML SSO](https://support.atlassian.com/security-and-access-policies/docs/configure-saml-single-sign-on-with-an-identity-provider/)
-- [User Provisioning and SAML SSO](https://support.atlassian.com/atlassian-cloud/kb/user-provisioning-and-saml-single-sign-on-for-jira-service-management-customers/)
-- [Atlassian Guard](https://www.atlassian.com/software/access)
+- [Security Overview](https://developer.atlassian.com/cloud/jira/platform/security-overview/)
 
 ---
 

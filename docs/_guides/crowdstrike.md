@@ -646,7 +646,8 @@ def stream_to_siem():
 **Official CrowdStrike Documentation:**
 - [Falcon Administration Guide](https://falcon.crowdstrike.com/documentation)
 - [API Documentation](https://falcon.crowdstrike.com/documentation/api)
-- [Best Practices](https://www.crowdstrike.com/resources)
+- [CrowdStrike Guides and Resources](https://www.crowdstrike.com/en-us/resources/guides/)
+- [Falcon SSO with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/saas-apps/crowdstrike-falcon-platform-tutorial)
 
 **Incident Analysis:**
 - [July 2024 Outage Technical Details](https://www.crowdstrike.com/blog/technical-details-on-todays-outage)

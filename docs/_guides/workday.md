@@ -416,8 +416,12 @@ WHERE field_name IN ('SSN', 'Bank_Account', 'Salary')
 ## Appendix A: References
 
 **Official Workday Documentation:**
-- [Security Administration Guide](https://doc.workday.com/reader/3tLmLg9E8qTxwPoBnzcqIw/~BLT~6~R)
-- [Integration Security](https://doc.workday.com/reader/wsiU0cnNjCc_k7shLNxLEA)
+- [Workday Security and Privacy](https://www.workday.com/en-us/why-workday/trust/security.html)
+- [Workday SAML SSO with Okta](https://saml-doc.okta.com/SAML_Docs/How-to-Configure-SAML-2.0-for-Workday.html)
+- [Workday SSO with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/saas-apps/workday-tutorial)
+
+**Third-Party Security Guides:**
+- [Mastering Workday Security](https://www.valencesecurity.com/saas-security-terms/mastering-workday-security-a-practical-guide-for-effective-management)
 
 **Incident Reference:**
 - 2024 Broadcom/BSH partner breach affected employee data through Workday/ADP integrations

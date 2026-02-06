@@ -1450,9 +1450,11 @@ Check CircleCI documentation for current static IPs for webhook allowlisting.
 ## Appendix B: References
 
 **Official GitHub Documentation:**
+- [Best Practices for Securing Accounts](https://docs.github.com/en/enterprise-cloud@latest/code-security/tutorials/implement-supply-chain-best-practices/securing-accounts)
+- [Configuring SAML SSO for Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/using-saml-for-enterprise-iam/configuring-saml-single-sign-on-for-your-enterprise)
+- [SAML SSO for Enterprise Managed Users](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/configuring-authentication-for-enterprise-managed-users/configuring-saml-single-sign-on-for-enterprise-managed-users)
 - [Hardening security for your enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/configuring-settings/hardening-security-for-your-enterprise)
 - [Security hardening for GitHub Actions](https://docs.github.com/en/enterprise-cloud@latest/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions)
-- [GitHub-recommended security configuration](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-code-security/securing-your-enterprise/applying-the-github-recommended-security-configuration-to-your-enterprise)
 
 **Supply Chain Security Frameworks:**
 - [SLSA Framework](https://slsa.dev/)
