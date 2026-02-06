@@ -503,7 +503,9 @@ Regularly monitor compliance dashboard for drift and issues.
 
 **Official Drata Documentation:**
 - [Drata Help Center](https://help.drata.com)
-- [Internal Security and Compliance](https://drata.com/security)
+- [System Access Control Policy Guidance](https://help.drata.com/en/articles/7211097-system-access-control-policy-guidance)
+- [Platform Overview](https://drata.com/platform)
+- [Drata Security](https://drata.com/security)
 - [CIS v8.1 Framework Overview](https://help.drata.com/en/articles/11145651-cis-v8-1-framework-overview)
 
 ---

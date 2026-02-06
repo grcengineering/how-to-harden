@@ -495,7 +495,9 @@ Configure Trust Center for secure compliance documentation sharing.
 **Official Vanta Documentation:**
 - [Vanta Help Center](https://help.vanta.com)
 - [Security Compliance Guide](https://www.vanta.com/collection/grc/security-compliance)
-- [Essential Eight Guide](https://www.vanta.com/resources/essential-eight)
+- [Automated Compliance](https://www.vanta.com/products/automated-compliance)
+- [Security Resources](https://www.vanta.com/all-categories/security)
+- [New in Vanta - May 2025](https://www.vanta.com/resources/new-in-vanta-may-2025)
 
 ---
 

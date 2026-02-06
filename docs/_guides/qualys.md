@@ -521,8 +521,10 @@ Configure approval workflows for automated remediation.
 ## Appendix A: References
 
 **Official Qualys Documentation:**
-- [Qualys Documentation Portal](https://www.qualys.com/documentation)
-- [Security Configuration Assessment Guide](https://www.qualys.com/docs/sca-datasheet.pdf)
+- [Get Started with VM/VMDR](https://docs.qualys.com/en/vm/latest/welcome_to_vm.htm)
+- [Scanning Basics](https://docs.qualys.com/en/vm/latest/scans/scanning_basics.htm)
+- [VMDR Datasheet](https://www.qualys.com/docs/vmdr-datasheet.pdf)
+- [VMDR Complete Advantage Blog](https://blog.qualys.com/product-tech/2025/02/24/from-vulnerability-scanning-to-risk-management-the-complete-vmdr-advantage)
 - [Policy Compliance Datasheet](https://cdn2.qualys.com/docs/mktg/policy-compliance-datasheet.pdf)
 
 ---

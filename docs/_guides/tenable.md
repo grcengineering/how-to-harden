@@ -494,8 +494,10 @@ Use dashboards to monitor hardening compliance posture.
 
 **Official Tenable Documentation:**
 - [Tenable Vulnerability Management Security Best Practices Guide](https://docs.tenable.com/vulnerability-management/best-practices/security/Content/PDF/Tenable_Vulnerability_Management_Security_Best_Practices_Guide.pdf)
+- [SAML Single Sign-On](https://docs.tenable.com/vulnerability-management/best-practices/security/Content/SingleSignOn.htm)
+- [Add a SAML Configuration](https://docs.tenable.com/vulnerability-management/Content/Settings/SAML/AddSAMLConfiguration.htm)
+- [SAML Settings](https://docs.tenable.com/vulnerability-management/Content/Settings/SAML/SAML.htm)
 - [Tenable Security Center Best Practices Guide](https://docs.tenable.com/security-center/best-practices/product/Content/PDF/Tenable_Security_Center_Best_Practices_Guide.pdf)
-- [Tenable User Guide](https://docs.tenable.com/vulnerability-management/Content/PDF/Tenable_Vulnerability_Management-User_Guide.pdf)
 
 ---
 
