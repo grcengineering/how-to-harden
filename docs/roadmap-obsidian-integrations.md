@@ -25,10 +25,10 @@ This roadmap defines the systematic approach to developing How to Harden (HTH) g
 |--------|-------|
 | Total Obsidian Integration Products | 175+ |
 | Starting HTH Guides | 53 |
-| New Guides Created (Phase 4 Execution) | **56** |
-| New Guides Remaining | **66+** |
+| New Guides Created (Phase 4 Execution) | **64** |
+| New Guides Remaining | **58+** |
 | Guides Requiring Enhancement | 53 |
-| **Current Total Guides** | **109** |
+| **Current Total Guides** | **117** |
 | Estimated Total Effort | ~2,625 hours |
 
 ### Execution Progress (Phase 4)
@@ -50,6 +50,8 @@ This roadmap defines the systematic approach to developing How to Harden (HTH) g
 | Batch 13 (Developer) | Harness, Buildkite, Sentry, Linear | ✅ Complete |
 | Batch 14 (Analytics) | Mixpanel, Heap, Fullstory, Pendo | ✅ Complete |
 | Batch 15 (Commerce/Comms) | Shopify, Stripe, Square, Twilio | ✅ Complete |
+| Batch 16 (Security) | Proofpoint, KnowBe4, Abnormal, Orca | ✅ Complete |
+| Batch 17 (Cloud/Sales) | AWS IAM Identity Center, Gong, Outreach, Clari | ✅ Complete |
 
 ---
 
