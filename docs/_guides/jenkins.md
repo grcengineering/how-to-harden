@@ -757,6 +757,9 @@ Keep Jenkins and all plugins updated with security patches.
 **Official Jenkins Documentation:**
 - [Managing Security](https://www.jenkins.io/doc/book/security/managing-security/)
 - [Securing Jenkins](https://www.jenkins.io/doc/book/security/securing-jenkins/)
+- [SAML Plugin](https://plugins.jenkins.io/saml/)
+- [Role-Based Authorization Strategy](https://plugins.jenkins.io/role-strategy/)
+- [Microsoft Entra ID Plugin](https://plugins.jenkins.io/azure-ad/)
 - [Jenkins Security Advisories](https://www.jenkins.io/security/advisories/)
 
 **Third-Party Resources:**

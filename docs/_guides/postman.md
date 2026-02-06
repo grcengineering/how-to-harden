@@ -592,6 +592,9 @@ Implement data governance policies for collections and workspaces.
 **Official Postman Documentation:**
 - [Postman Enterprise Overview](https://learning.postman.com/docs/administration/enterprise/enterprise-overview)
 - [Configure SSO](https://learning.postman.com/docs/administration/sso/admin-sso/)
+- [Intro to SSO](https://learning.postman.com/docs/administration/sso/intro-sso)
+- [Team Security](https://learning.postman.com/docs/administration/security/team-security/)
+- [Sign in to SSO](https://learning.postman.com/docs/administration/sso/user-sso)
 - [How to Securely Deploy Postman at Scale](https://blog.postman.com/how-to-securely-deploy-postman-at-scale-user-management/)
 
 **Security Resources:**
