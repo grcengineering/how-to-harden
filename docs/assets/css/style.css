@@ -972,6 +972,90 @@ body {
   white-space: pre;
 }
 
+/* Monaco Editor code blocks */
+.monaco-code-wrapper {
+  position: relative;
+  margin-bottom: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.monaco-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: var(--color-bg-elevated);
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.monaco-code-lang {
+  user-select: none;
+}
+
+.monaco-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.15s ease;
+}
+
+.monaco-copy-btn:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-light);
+  background: var(--color-bg-tertiary);
+}
+
+.monaco-copy-btn.copied {
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.monaco-copy-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.monaco-code-container {
+  min-height: 40px;
+}
+
+/* Hide original pre when Monaco has replaced it */
+.guide-body pre.monaco-replaced {
+  display: none;
+}
+
+/* Override Monaco's default styles to fit site design */
+.monaco-code-wrapper .monaco-editor,
+.monaco-code-wrapper .monaco-editor .overflow-guard {
+  border-radius: 0 0 8px 8px;
+}
+
+.monaco-code-wrapper .monaco-editor .margin {
+  background: transparent !important;
+}
+
+/* Ensure Monaco editors don't get a scrollbar for short blocks */
+.monaco-code-wrapper .monaco-editor .monaco-scrollable-element {
+  overflow: hidden !important;
+}
+
 /* Table wrapper for mobile scroll */
 .guide-body .table-wrapper {
   overflow-x: auto;
@@ -1321,6 +1405,15 @@ body {
     padding: var(--space-sm);
     border-radius: 6px;
     font-size: 0.75rem;
+  }
+
+  .monaco-code-wrapper {
+    border-radius: 6px;
+  }
+
+  .monaco-code-header {
+    padding: 4px 8px;
+    font-size: 0.65rem;
   }
 
   .guide-body table {

@@ -69,20 +69,378 @@ layout: default
 <script>
 // Generate table of contents
 document.addEventListener('DOMContentLoaded', function() {
-  const headings = document.querySelectorAll('.guide-body h2, .guide-body h3');
-  const tocList = document.getElementById('toc-list');
+  var headings = document.querySelectorAll('.guide-body h2, .guide-body h3');
+  var tocList = document.getElementById('toc-list');
 
   headings.forEach(function(heading) {
     if (!heading.id) {
       heading.id = heading.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     }
-    const li = document.createElement('li');
+    var li = document.createElement('li');
     li.className = heading.tagName.toLowerCase();
-    const a = document.createElement('a');
+    var a = document.createElement('a');
     a.href = '#' + heading.id;
     a.textContent = heading.textContent;
     li.appendChild(a);
     tocList.appendChild(li);
   });
 });
+</script>
+
+<script>
+// Monaco Editor — read-only code block rendering
+// Loads lazily from jsDelivr CDN when first code block nears viewport
+(function() {
+  'use strict';
+
+  var MONACO_VERSION = '0.52.0';
+  var MONACO_CDN = 'https://cdn.jsdelivr.net/npm/monaco-editor@' + MONACO_VERSION + '/min/vs';
+
+  // Language mapping: kramdown class → Monaco language ID
+  var LANG_MAP = {
+    bash: 'shell', sh: 'shell', shell: 'shell', zsh: 'shell',
+    json: 'json',
+    yaml: 'yaml', yml: 'yaml',
+    hcl: 'hcl', terraform: 'hcl', tf: 'hcl',
+    python: 'python', py: 'python',
+    powershell: 'powershell', ps1: 'powershell',
+    sql: 'sql',
+    xml: 'xml', html: 'html',
+    javascript: 'javascript', js: 'javascript',
+    typescript: 'typescript', ts: 'typescript',
+    ini: 'ini', conf: 'ini',
+    groovy: 'groovy',
+    dockerfile: 'dockerfile',
+    ruby: 'ruby', rb: 'ruby',
+    go: 'go',
+    java: 'java',
+    csharp: 'csharp', cs: 'csharp',
+    css: 'css',
+    markdown: 'markdown', md: 'markdown',
+    plaintext: 'plaintext', text: 'plaintext'
+  };
+
+  // Display names for language labels
+  var LANG_LABELS = {
+    shell: 'bash', json: 'json', yaml: 'yaml', hcl: 'hcl',
+    python: 'python', powershell: 'powershell', sql: 'sql',
+    xml: 'xml', html: 'html', javascript: 'js', typescript: 'ts',
+    ini: 'ini', groovy: 'groovy', dockerfile: 'dockerfile',
+    ruby: 'ruby', go: 'go', java: 'java', csharp: 'c#',
+    css: 'css', markdown: 'markdown', plaintext: 'text'
+  };
+
+  // SVG icons
+  var COPY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+  var CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+  var monacoPromise = null;
+  var editors = [];
+
+  // Detect the language from a code block's class hierarchy
+  // Rouge outputs: <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+  // kramdown outputs: <pre><code class="language-bash">
+  function detectLanguage(preEl) {
+    // Check <code> element first (kramdown style)
+    var codeEl = preEl.querySelector('code');
+    if (codeEl) {
+      var match = (codeEl.className || '').match(/language-(\S+)/);
+      if (match) return LANG_MAP[match[1].toLowerCase()] || 'plaintext';
+    }
+    // Check <pre> element itself
+    var preMatch = (preEl.className || '').match(/language-(\S+)/);
+    if (preMatch) return LANG_MAP[preMatch[1].toLowerCase()] || 'plaintext';
+    // Walk up to parent divs (Rouge wrapping)
+    var parent = preEl.parentElement;
+    while (parent && parent !== document.body) {
+      var parentMatch = (parent.className || '').match(/language-(\S+)/);
+      if (parentMatch) return LANG_MAP[parentMatch[1].toLowerCase()] || 'plaintext';
+      parent = parent.parentElement;
+    }
+    return 'plaintext';
+  }
+
+  // Get the current site theme
+  function getCurrentTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'light' ? 'grc-light' : 'grc-dark';
+  }
+
+  // Load Monaco from CDN (once)
+  function loadMonaco() {
+    if (monacoPromise) return monacoPromise;
+
+    monacoPromise = new Promise(function(resolve) {
+      var script = document.createElement('script');
+      script.src = MONACO_CDN + '/loader.min.js';
+      script.onload = function() {
+        require.config({ paths: { vs: MONACO_CDN } });
+
+        // Disable web workers — not needed for read-only
+        window.MonacoEnvironment = {
+          getWorker: function() { return undefined; }
+        };
+
+        require(['vs/editor/editor.main'], function() {
+          var m = window.monaco;
+
+          // Define GRC Engineering dark theme
+          m.editor.defineTheme('grc-dark', {
+            base: 'vs-dark',
+            inherit: true,
+            rules: [
+              { token: '',                foreground: 'e0e0e0' },
+              { token: 'comment',         foreground: '6a737d', fontStyle: 'italic' },
+              { token: 'keyword',         foreground: '60a5fa' },
+              { token: 'keyword.flow',    foreground: '60a5fa' },
+              { token: 'string',          foreground: '34d399' },
+              { token: 'string.key.json', foreground: '93c5fd' },
+              { token: 'number',          foreground: 'fbbf24' },
+              { token: 'type',            foreground: 'c084fc' },
+              { token: 'type.identifier', foreground: 'c084fc' },
+              { token: 'function',        foreground: 'f472b6' },
+              { token: 'variable',        foreground: '22d3ee' },
+              { token: 'variable.predefined', foreground: '22d3ee' },
+              { token: 'operator',        foreground: 'e0e0e0' },
+              { token: 'delimiter',       foreground: '9ca3af' },
+              { token: 'delimiter.bracket', foreground: '9ca3af' },
+              { token: 'tag',             foreground: 'f87171' },
+              { token: 'attribute.name',  foreground: '60a5fa' },
+              { token: 'attribute.value', foreground: '34d399' },
+              { token: 'metatag',         foreground: '6a737d' },
+              { token: 'annotation',      foreground: 'fbbf24' },
+              { token: 'constant',        foreground: 'fbbf24' }
+            ],
+            colors: {
+              'editor.background':            '#0d1117',
+              'editor.foreground':            '#e0e0e0',
+              'editor.lineHighlightBackground': '#0d1117',
+              'editorLineNumber.foreground':  '#4a5568',
+              'editorLineNumber.activeForeground': '#718096',
+              'editor.selectionBackground':   '#264f78',
+              'editorGutter.background':      '#0d1117'
+            }
+          });
+
+          // Define GRC Engineering light theme
+          m.editor.defineTheme('grc-light', {
+            base: 'vs',
+            inherit: true,
+            rules: [
+              { token: '',                foreground: '1a1a1a' },
+              { token: 'comment',         foreground: '6b7280', fontStyle: 'italic' },
+              { token: 'keyword',         foreground: '1e40af' },
+              { token: 'keyword.flow',    foreground: '1e40af' },
+              { token: 'string',          foreground: '059669' },
+              { token: 'string.key.json', foreground: '1e40af' },
+              { token: 'number',          foreground: 'd97706' },
+              { token: 'type',            foreground: '7c3aed' },
+              { token: 'type.identifier', foreground: '7c3aed' },
+              { token: 'function',        foreground: 'be185d' },
+              { token: 'variable',        foreground: '0891b2' },
+              { token: 'variable.predefined', foreground: '0891b2' },
+              { token: 'operator',        foreground: '374151' },
+              { token: 'delimiter',       foreground: '6b7280' },
+              { token: 'delimiter.bracket', foreground: '6b7280' },
+              { token: 'tag',             foreground: 'dc2626' },
+              { token: 'attribute.name',  foreground: '1e40af' },
+              { token: 'attribute.value', foreground: '059669' },
+              { token: 'metatag',         foreground: '6b7280' },
+              { token: 'annotation',      foreground: 'd97706' },
+              { token: 'constant',        foreground: 'd97706' }
+            ],
+            colors: {
+              'editor.background':            '#f6f8fa',
+              'editor.foreground':            '#1a1a1a',
+              'editor.lineHighlightBackground': '#f6f8fa',
+              'editorLineNumber.foreground':  '#9ca3af',
+              'editorLineNumber.activeForeground': '#6b7280',
+              'editor.selectionBackground':   '#b4d5fe',
+              'editorGutter.background':      '#f6f8fa'
+            }
+          });
+
+          m.editor.setTheme(getCurrentTheme());
+          resolve(m);
+        });
+      };
+      document.head.appendChild(script);
+    });
+
+    return monacoPromise;
+  }
+
+  // Create a Monaco editor for a code block
+  function createMonacoBlock(preEl) {
+    var codeEl = preEl.querySelector('code');
+    if (!codeEl) return;
+
+    var language = detectLanguage(preEl);
+    var codeText = codeEl.textContent.replace(/^\n+|\n+$/g, '');
+    var lineCount = codeText.split('\n').length;
+    var displayLabel = LANG_LABELS[language] || language;
+
+    // Build wrapper
+    var wrapper = document.createElement('div');
+    wrapper.className = 'monaco-code-wrapper';
+
+    // Header with language label and copy button
+    var header = document.createElement('div');
+    header.className = 'monaco-code-header';
+
+    var langLabel = document.createElement('span');
+    langLabel.className = 'monaco-code-lang';
+    langLabel.textContent = displayLabel;
+
+    var copyBtn = document.createElement('button');
+    copyBtn.className = 'monaco-copy-btn';
+    copyBtn.innerHTML = COPY_ICON + ' Copy';
+    copyBtn.setAttribute('aria-label', 'Copy code to clipboard');
+    copyBtn.addEventListener('click', function() {
+      navigator.clipboard.writeText(codeText).then(function() {
+        copyBtn.innerHTML = CHECK_ICON + ' Copied';
+        copyBtn.classList.add('copied');
+        setTimeout(function() {
+          copyBtn.innerHTML = COPY_ICON + ' Copy';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+
+    header.appendChild(langLabel);
+    header.appendChild(copyBtn);
+    wrapper.appendChild(header);
+
+    // Monaco container
+    var container = document.createElement('div');
+    container.className = 'monaco-code-container';
+    // Calculate height: line height ~19px + padding 16px
+    var height = Math.max(lineCount * 19 + 16, 40);
+    container.style.height = height + 'px';
+    wrapper.appendChild(container);
+
+    // Replace the <pre> block (or its Rouge wrapper div if present)
+    var replaceTarget = preEl;
+    // Rouge wraps in: <div class="highlighter-rouge"><div class="highlight"><pre>
+    var highlightDiv = preEl.parentElement;
+    if (highlightDiv && highlightDiv.classList.contains('highlight')) {
+      var rougeDiv = highlightDiv.parentElement;
+      if (rougeDiv && rougeDiv.classList.contains('highlighter-rouge')) {
+        replaceTarget = rougeDiv;
+      } else {
+        replaceTarget = highlightDiv;
+      }
+    }
+    replaceTarget.parentNode.insertBefore(wrapper, replaceTarget);
+    replaceTarget.style.display = 'none';
+
+    // Create the editor
+    loadMonaco().then(function(monaco) {
+      var editor = monaco.editor.create(container, {
+        value: codeText,
+        language: language,
+        readOnly: true,
+        minimap: { enabled: false },
+        fontSize: 13,
+        fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace",
+        lineNumbers: 'on',
+        lineNumbersMinChars: 3,
+        folding: false,
+        wordWrap: 'on',
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+        renderLineHighlight: 'none',
+        padding: { top: 8, bottom: 8 },
+        domReadOnly: true,
+        cursorStyle: 'line',
+        contextmenu: false,
+        hideCursorInOverviewRuler: true,
+        overviewRulerLanes: 0,
+        scrollbar: {
+          vertical: 'hidden',
+          horizontal: 'auto',
+          useShadows: false
+        },
+        guides: {
+          indentation: false,
+          bracketPairs: false
+        },
+        renderWhitespace: 'none',
+        matchBrackets: 'never'
+      });
+
+      editors.push(editor);
+
+      // Auto-size height after content is laid out
+      requestAnimationFrame(function() {
+        var contentHeight = editor.getContentHeight();
+        container.style.height = contentHeight + 'px';
+        editor.layout();
+      });
+    });
+  }
+
+  // Watch for theme changes and update all Monaco editors
+  var themeObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.attributeName === 'data-theme' && window.monaco) {
+        window.monaco.editor.setTheme(getCurrentTheme());
+      }
+    });
+  });
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // Initialize: find all code blocks and upgrade them with IntersectionObserver
+  document.addEventListener('DOMContentLoaded', function() {
+    // Collect all <pre> blocks that contain <code> (from kramdown/Rouge)
+    var preBlocks = document.querySelectorAll('.guide-body pre');
+    if (preBlocks.length === 0) return;
+
+    // Use IntersectionObserver to lazy-load Monaco when first block nears viewport
+    var monacoTriggered = false;
+    var pendingBlocks = [];
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          observer.unobserve(entry.target);
+          if (!monacoTriggered) {
+            monacoTriggered = true;
+            // Process this block and all pending blocks
+            pendingBlocks.push(entry.target);
+            processPendingBlocks();
+          } else {
+            pendingBlocks.push(entry.target);
+            processPendingBlocks();
+          }
+        }
+      });
+    }, {
+      rootMargin: '300px 0px'
+    });
+
+    function processPendingBlocks() {
+      var toProcess = pendingBlocks.slice();
+      pendingBlocks = [];
+
+      function processNext(index) {
+        if (index >= toProcess.length) return;
+        createMonacoBlock(toProcess[index]);
+        // Yield to browser between blocks to avoid jank
+        if (index < toProcess.length - 1) {
+          if (window.requestIdleCallback) {
+            requestIdleCallback(function() { processNext(index + 1); });
+          } else {
+            setTimeout(function() { processNext(index + 1); }, 16);
+          }
+        }
+      }
+
+      processNext(0);
+    }
+
+    preBlocks.forEach(function(pre) {
+      observer.observe(pre);
+    });
+  });
+})();
 </script>
