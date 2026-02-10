@@ -559,11 +559,22 @@ Configure alerts for security-relevant events.
 ## Appendix B: References
 
 **Official OneLogin Documentation:**
+- [Compliance & Certifications](https://www.onelogin.com/compliance)
+- [Support Portal](https://support.onelogin.com/)
 - [OneLogin User Policies](https://onelogin.service-now.com/kb_view_customer.do?sysparm_article=KB0010420)
 - [Best Practices for Advanced Authentication](https://www.onelogin.com/blog/best-practices-when-deploying-advanced-authentication)
 - [SAML SSO Best Practices and FAQs](https://developers.onelogin.com/saml/best-practices-and-faqs)
 - [How to Authenticate Users](https://developers.onelogin.com/quickstart/authentication)
 - [Rethinking MFA: Smarter Security](https://www.onelogin.com/blog/rethinking-mfa-smarter-security-for-smarter-threats)
+
+**API Documentation:**
+- [OneLogin Developer Portal](https://developers.onelogin.com/)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, HIPAA, GDPR, Privacy Shield — via [OneLogin Compliance](https://www.onelogin.com/compliance)
+
+**Security Incidents:**
+- **May 2017:** Threat actor used a stolen AWS key to access OneLogin's U.S. data center infrastructure for approximately seven hours, compromising database tables containing user data, app configurations, and encryption keys. OneLogin could not rule out the attacker's ability to decrypt customer data. — [Krebs on Security Report](https://krebsonsecurity.com/2017/06/onelogin-breach-exposed-ability-to-decrypt-data/)
 
 ---
 

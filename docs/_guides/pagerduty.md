@@ -319,8 +319,21 @@ Monitor administrative and security events.
 ## Appendix B: References
 
 **Official PagerDuty Documentation:**
+- [Security at PagerDuty](https://www.pagerduty.com/security/)
+- [Support Center](https://support.pagerduty.com/)
 - [Single Sign-On (SSO)](https://support.pagerduty.com/main/docs/sso)
+- [Security Hygiene for Current Cyber Threats](https://support.pagerduty.com/main/docs/security-hygiene-for-the-current-cyber-threat-landscape)
 - [Okta SSO Configuration](https://saml-doc.okta.com/SAML_Docs/How-to-Configure-SAML-2.0-for-PagerDuty.html)
+
+**API Documentation:**
+- [PagerDuty API Reference](https://developer.pagerduty.com/api-reference)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, PCI DSS, FedRAMP (compliant offering available) — via [PagerDuty Security](https://www.pagerduty.com/security/)
+
+**Security Incidents:**
+- **August 2025:** Attackers exploited a vulnerability in Drift's OAuth integration with Salesforce (via Salesloft), potentially gaining unauthorized access to PagerDuty's Salesforce account. No PagerDuty credentials were exposed and no evidence of access to PagerDuty's core platform or internal systems. — [SecurityWeek Report](https://www.securityweek.com/pagerduty-warns-customers-data-breach/)
+- **April 2024:** Vendor compromise at Sisense; PagerDuty reset credentials per CISA guidance as a precaution, but found no impact on PagerDuty or its customers. — [PagerDuty Advisory](https://support.pagerduty.com/main/docs/sisense-compromise)
 
 ---
 

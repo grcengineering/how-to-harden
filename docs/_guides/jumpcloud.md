@@ -458,10 +458,21 @@ Enable JumpCloud Directory Insights for comprehensive audit logging and security
 ## Appendix B: References
 
 **Official JumpCloud Documentation:**
+- [JumpCloud Security Practices](https://jumpcloud.com/security)
 - [JumpCloud Support](https://jumpcloud.com/support)
+- [Best Practices: Secure Your Organization](https://jumpcloud.com/support/best-practices-secure-your-organization)
 - [MFA for Admins](https://jumpcloud.com/support/mfa-for-admins)
 - [Conditional Access](https://jumpcloud.com/support/configure-a-conditional-access-policy)
-- [Best Practices: Secure Your Organization](https://jumpcloud.com/support/best-practices-secure-your-organization)
+
+**API & Developer Resources:**
+- [JumpCloud API Documentation](https://docs.jumpcloud.com/)
+- [JumpCloud PowerShell Module](https://github.com/TheJumpCloud/support/wiki)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001 -- via [JumpCloud Security](https://jumpcloud.com/security)
+
+**Security Incidents:**
+- **July 2023:** JumpCloud disclosed a security incident involving a nation-state threat actor who compromised JumpCloud's internal systems, targeting a small set of customers. JumpCloud invalidated all admin API keys and notified affected customers. The incident was attributed to a North Korean state-sponsored group.
 
 ---
 

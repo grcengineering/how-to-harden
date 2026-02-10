@@ -453,12 +453,23 @@ HAVING COUNT(*) > 10;
 ## Appendix B: References
 
 **Official JFrog Documentation:**
+- [JFrog Trust Center](https://jfrog.com/trust/)
+- [JFrog Help Center](https://jfrog.com/help/)
 - [Security Best Practices](https://jfrog.com/help/r/jfrog-artifactory-documentation/security-best-practices)
+- [Security Configuration](https://jfrog.com/help/r/jfrog-platform-administration-documentation/security-configuration)
 - [Access Control](https://jfrog.com/help/r/jfrog-artifactory-documentation/managing-permissions)
-- [Xray](https://jfrog.com/help/r/jfrog-xray-documentation)
+- [Xray Documentation](https://jfrog.com/help/r/jfrog-xray-documentation)
+- [JFrog Security Advisories](https://jfrog.com/help/r/jfrog-release-information/jfrog-security-advisories)
 
-**Vulnerability Reference:**
-- CVE-2024-6915 (CVSS 9.3): Cache corruption vulnerability
+**API & Developer Resources:**
+- [JFrog REST APIs](https://jfrog.com/help/r/jfrog-rest-apis/jfrog-rest-apis)
+- [JFrog CLI](https://jfrog.com/help/r/jfrog-cli)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27701 -- via [JFrog Trust Center](https://jfrog.com/trust/certificate-program/)
+
+**Security Incidents:**
+- **CVE-2024-6915 (CVSS 9.3):** Cache poisoning vulnerability in JFrog Artifactory allowing attackers to corrupt cached artifacts in the software supply chain. Affects versions below 7.90.6 and corresponding LTS releases. Cloud environments were patched automatically; on-premise instances require manual upgrade.
 
 ---
 

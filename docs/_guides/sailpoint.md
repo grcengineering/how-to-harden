@@ -158,6 +158,25 @@ WHERE action IN ('APPROVE_ALL', 'CERTIFICATION_MODIFY')
 
 ---
 
+## Appendix B: References
+
+**Official SailPoint Documentation:**
+- [SailPoint Documentation](https://documentation.sailpoint.com/)
+- [Trust Center](https://www.sailpoint.com/why-us/trust)
+- [Cybersecurity Trust Center](https://www.sailpoint.com/why-us/trust/cybersecurity)
+- [Security Advisories](https://www.sailpoint.com/security-advisories)
+
+**API & Developer Resources:**
+- [SailPoint Developer Portal](https://developer.sailpoint.com/docs/api/v3/)
+
+**Compliance & Certifications:**
+- SOC 1 Type II, SOC 2 Type II, SOC 3, ISO 27001, ISO 15408, FedRAMP -- via [SailPoint Trust Center](https://www.sailpoint.com/why-us/trust/cybersecurity)
+
+**Security Incidents:**
+- **CVE-2024-10905 -- IdentityIQ Directory Traversal (December 2024):** A critical vulnerability (CVSS 10.0) in SailPoint IdentityIQ allowed unauthorized access to content stored within the application directory. Affected versions up to patch levels 8.4p2, 8.3p5, and 8.2p8. SailPoint released e-fixes for all impacted versions. No reports of exploitation in the wild at time of disclosure.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

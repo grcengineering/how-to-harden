@@ -617,14 +617,28 @@ Configure Duo's session protection features to defend against session hijacking 
 ## Appendix B: References
 
 **Official Cisco Duo Documentation:**
+- [Cisco Trust Portal](https://trustportal.cisco.com/c/r/ctp/home.html)
+- [Duo Security & Reliability](https://duo.com/support/security-and-reliability)
+- [Duo Compliance](https://duo.com/support/security-and-reliability/compliance)
 - [Duo Documentation](https://duo.com/docs)
 - [Policy & Control](https://duo.com/docs/policy)
-- [Admin API](https://duo.com/docs/adminapi)
 - [Windows Logon & RDP](https://duo.com/docs/rdp)
+
+**API & Developer Documentation:**
+- [Admin API](https://duo.com/docs/adminapi)
+- [Auth API](https://duo.com/docs/authapi)
 
 **Best Practices:**
 - [MFA Enrollment Best Practices](https://duo.com/blog/best-practices-for-enrolling-users-in-mfa)
 - [Phishing-Resistant MFA](https://duo.com/learn/phishing-resistant-mfa)
+
+**Compliance Frameworks:**
+- SOC 2, ISO 27001, ISO 27017, ISO 27018, PCI DSS — via [Duo Compliance](https://duo.com/support/security-and-reliability/compliance)
+- Data centers in 9 countries with 99.999% availability target
+- Regular independent third-party audits of infrastructure and operations
+
+**Security Incidents:**
+- **April 2024 Telephony Provider Breach:** An unnamed provider handling Duo SMS and VoIP MFA messages was compromised via phishing. The attacker accessed SMS/VoIP message logs (phone numbers, carriers, metadata) for approximately 1% of Duo customers between March 1-31, 2024. No message content was exposed.
 
 ---
 

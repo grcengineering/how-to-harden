@@ -320,9 +320,22 @@ Enable and monitor activity logs.
 ## Appendix A: References
 
 **Official Linear Documentation:**
+- [Linear Trust Center](https://trust.linear.app/)
 - [Linear Security](https://linear.app/security)
+- [Linear Documentation](https://linear.app/docs)
 - [SSO Configuration](https://linear.app/docs/saml-sso)
 - [Team Management](https://linear.app/docs/teams)
+
+**API & Developer Resources:**
+- [Linear API Documentation](https://developers.linear.app/docs)
+- [Linear GraphQL API](https://developers.linear.app/docs/graphql/working-with-the-graphql-api)
+- [Linear SDKs](https://developers.linear.app/docs/sdk/getting-started)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, GDPR, HIPAA (Enterprise plan with BAA) -- via [Linear Trust Center](https://trust.linear.app/)
+
+**Security Incidents:**
+- No major public security breaches identified as of this writing.
 
 ---
 

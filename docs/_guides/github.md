@@ -1450,11 +1450,20 @@ Check CircleCI documentation for current static IPs for webhook allowlisting.
 ## Appendix B: References
 
 **Official GitHub Documentation:**
+- [GitHub Enterprise Cloud Trust Center](https://ghec.github.trust.page/)
+- [GitHub Copilot Trust Center](https://copilot.github.trust.page/)
+- [GitHub Docs](https://docs.github.com/en)
 - [Best Practices for Securing Accounts](https://docs.github.com/en/enterprise-cloud@latest/code-security/tutorials/implement-supply-chain-best-practices/securing-accounts)
 - [Configuring SAML SSO for Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/using-saml-for-enterprise-iam/configuring-saml-single-sign-on-for-your-enterprise)
 - [SAML SSO for Enterprise Managed Users](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/configuring-authentication-for-enterprise-managed-users/configuring-saml-single-sign-on-for-enterprise-managed-users)
 - [Hardening security for your enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/configuring-settings/hardening-security-for-your-enterprise)
 - [Security hardening for GitHub Actions](https://docs.github.com/en/enterprise-cloud@latest/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions)
+- [Accessing Compliance Reports](https://docs.github.com/en/enterprise-cloud@latest/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/accessing-compliance-reports-for-your-organization)
+
+**API & Developer Documentation:**
+- [REST API Reference](https://docs.github.com/en/rest)
+- [GraphQL API](https://docs.github.com/en/graphql)
+- [GitHub CLI (gh)](https://cli.github.com/)
 
 **Supply Chain Security Frameworks:**
 - [SLSA Framework](https://slsa.dev/)
@@ -1462,10 +1471,17 @@ Check CircleCI documentation for current static IPs for webhook allowlisting.
 - [OpenSSF Supply Chain Integrity WG](https://github.com/ossf/wg-supply-chain-integrity)
 - [Achieving SLSA 3 with GitHub Actions](https://github.blog/security/supply-chain-security/slsa-3-compliance-with-github-actions/)
 
-**Supply Chain Incident Reports:**
-- [CircleCI Security Incident (January 2023)](https://circleci.com/blog/january-4-2023-security-alert/)
-- [Codecov Bash Uploader Compromise (April 2021)](https://about.codecov.io/security-update/)
-- [Heroku/Travis CI GitHub OAuth Token Leak (April 2022)](https://github.blog/2022-04-15-security-alert-stolen-oauth-user-tokens/)
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001:2022, CSA CAIQ Level 1, CSA STAR Level 2 — via [Trust Center](https://ghec.github.trust.page/)
+- GitHub Copilot included in SOC 2 Type 1 and ISO 27001 certification scope (June 2024)
+
+**Security Incidents:**
+- **March 2025 tj-actions/changed-files Compromise:** Supply chain attack modified the popular GitHub Action (23,000+ repositories), retroactively repointing version tags to a malicious commit that exfiltrated CI/CD secrets from workflow logs.
+- **March-June 2025 Salesloft/Drift Breach (UNC6395):** Threat actor accessed Salesloft GitHub account, downloaded repository content, and established workflows — affecting 700+ organizations including Cloudflare, Zscaler, and Palo Alto Networks.
+- **November 2025 Service Outage:** Expired internal TLS certificate caused failures on all Git operations.
+- [CircleCI Security Incident (January 2023)](https://circleci.com/blog/january-4-2023-security-alert/) — OAuth tokens stolen, used to access customer GitHub repositories.
+- [Codecov Bash Uploader Compromise (April 2021)](https://about.codecov.io/security-update/) — Modified uploader exfiltrated environment variables from CI/CD pipelines.
+- [Heroku/Travis CI GitHub OAuth Token Leak (April 2022)](https://github.blog/2022-04-15-security-alert-stolen-oauth-user-tokens/) — Stolen OAuth tokens used for unauthorized repository access.
 
 **Community Resources:**
 - [GitHub Hardening Guide by iAnonymous3000](https://github.com/iAnonymous3000/GitHub-Hardening-Guide)

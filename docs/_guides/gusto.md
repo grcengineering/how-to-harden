@@ -183,6 +183,27 @@ HAVING COUNT(*) > 50;
 
 ---
 
+## Appendix B: References
+
+**Official Gusto Documentation:**
+- [Trust Center](https://trust.gusto.com/resources)
+- [Gusto Security](https://gusto.com/security)
+- [Help Center](https://support.gusto.com/)
+- [Prevent Fraud on Your Gusto Account](https://support.gusto.com/article/106621992100000/Prevent-fraud-on-your-Gusto-account)
+
+**API & Developer Tools:**
+- [Gusto API Documentation](https://docs.gusto.com/)
+- [Security Review for App Integrations](https://docs.gusto.com/app-integrations/docs/security-review)
+
+**Compliance Frameworks:**
+- SOC 1, SOC 2, HIPAA -- via [Trust Center](https://trust.gusto.com/resources) (NDA required for report access)
+- [Request Access to SOC Reports and Bridge Letters](https://support.gusto.com/article/105983845100000/Request-access-to-SOC-reports-and-bridge-letters)
+
+**Security Incidents:**
+- No major public security incidents identified as of February 2026.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

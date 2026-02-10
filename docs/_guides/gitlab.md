@@ -594,6 +594,32 @@ WHERE entity_type = 'Ci::Variable'
 
 ---
 
+## Appendix B: References
+
+**Official GitLab Documentation:**
+- [Trust Center](https://trust.gitlab.com/)
+- [GitLab Documentation](https://docs.gitlab.com/)
+- [Security Hardening](https://docs.gitlab.com/security/hardening/)
+- [GitLab Security](https://about.gitlab.com/security/)
+
+**API & Developer Tools:**
+- [REST API Reference](https://docs.gitlab.com/api/rest/)
+- [GraphQL API](https://docs.gitlab.com/api/graphql/)
+- [GitLab CLI (`glab`)](https://gitlab.com/gitlab-org/cli)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO/IEC 27001:2022, ISO 27017, ISO 27018, PCI DSS (SAQ D) -- via [Trust Center](https://trust.gitlab.com/)
+- [External Audits, Certifications, and Attestations](https://handbook.gitlab.com/handbook/security/security-assurance/security-compliance/certifications/)
+
+**Security Incidents:**
+- **CVE-2023-7028 (Jan 2024):** Critical account takeover vulnerability (CVSS 10.0) via password reset emails to unverified addresses; actively exploited in the wild. Patched in GitLab 16.7.2+.
+- **Red Hat Consulting GitLab Instance Breach (Sep 2025):** Attacker accessed Red Hat's self-managed GitLab CE instance, exposing consulting data for organizations such as Bank of America, T-Mobile, and U.S. government agencies. GitLab confirmed no breach of its managed SaaS infrastructure.
+
+**Community Resources:**
+- [CIS Software Supply Chain Security Benchmark](https://www.cisecurity.org/benchmark/software_supply_chain_security)
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

@@ -495,9 +495,25 @@ Configure Pro Pack for advanced security controls.
 ## Appendix A: References
 
 **Official Cisco Documentation:**
+- [Cisco Trust Portal](https://trustportal.cisco.com/c/r/ctp/home.html)
+- [Webex Trusted Platform](https://www.cisco.com/c/en/us/about/trust-center/webex.html)
+- [Webex Help Center](https://help.webex.com/)
+- [Webex Compliance and Certifications](https://help.webex.com/en-us/article/pdz31w/Webex-Compliance-and-Certifications)
 - [Best Practices for Secure Meetings: Site Administration](https://help.webex.com/en-us/article/v5rgi1/Cisco-Webex-Best-Practices-for-Secure-Meetings-Site-Administration)
 - [Best Practices for Secure Meetings: Control Hub](https://help.webex.com/en-us/article/ov50hy/Webex-best-practices-for-secure-meetings:-Control-Hub)
 - [Webex Security White Paper](https://www.cisco.com/c/en/us/products/collateral/conferencing/webex-meeting-center/white-paper-c11-737588.html)
+- [Webex Hardening Guide](https://www.cisco.com/c/en/us/td/docs/voice_ip_comm/cloudCollaboration/wbxt/hardening-guide/webex-hardening-guide.html)
+
+**API Documentation:**
+- [Webex Developer Portal](https://developer.webex.com/docs/getting-started)
+- [Webex REST API Reference](https://developer.webex.com/docs/api/getting-started)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO 27001:2013, ISO 27017:2015, ISO 27018:2019, ISO 27701:2019, EU Cloud Code of Conduct (Level 3) -- via [Cisco Trust Portal](https://trustportal.cisco.com/c/r/ctp/home.html)
+
+**Security Incidents:**
+- **May 2024 -- German Government Meeting Metadata Exposure:** An IDOR vulnerability in Cisco Webex allowed threat actors to access meeting metadata (topics, hosts, dates) by incrementing meeting URL numbers. Sensitive meetings of German government officials and European defense/tech companies were exposed. Meeting passwords and participant lists were not accessible. The flaw was fully patched by May 28, 2024.
+- **March 2024 -- German Military Meeting Eavesdropping:** Russia-linked actors intercepted a German military Webex meeting discussing Ukraine support, attributed to participants joining via unsecured phone lines rather than a Webex platform vulnerability.
 
 ---
 

@@ -201,6 +201,29 @@ WHERE action LIKE '%environment_variable%'
 
 ---
 
+## Appendix B: References
+
+**Official Vercel Documentation:**
+- [Vercel Trust Center](https://security.vercel.com/)
+- [Vercel Documentation](https://vercel.com/docs)
+- [Vercel Security Overview](https://vercel.com/security)
+- [Security & Compliance Measures](https://vercel.com/docs/security/compliance)
+- [Security Bulletins](https://vercel.com/kb/bulletin)
+
+**API Documentation:**
+- [REST API Reference](https://vercel.com/docs/rest-api)
+- [Vercel SDK (@vercel/sdk)](https://github.com/vercel/sdk)
+- [Vercel CLI](https://www.npmjs.com/package/vercel)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (Security, Confidentiality, Availability), ISO 27001:2022, PCI DSS v4.0 (SAQ-D AOC for Service Providers, SAQ-A AOC for Merchants) -- via [Vercel Trust Center](https://security.vercel.com/)
+
+**Security Incidents:**
+- **2025 -- Next.js Middleware Authorization Bypass (CVE-2025-29927):** A vulnerability allowed malicious actors to bypass authorization in Next.js Middleware via the x-middleware-subrequest header. Vercel WAF was updated to proactively protect hosted projects.
+- **2025 -- React Server Components Vulnerabilities (CVE-2025-55182, CVE-2025-55184, CVE-2025-55183):** Critical-severity vulnerabilities in React Server Components affecting React 19 and Next.js. Vercel deployed WAF rules and urged framework upgrades. No breach of Vercel infrastructure or customer data was reported.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

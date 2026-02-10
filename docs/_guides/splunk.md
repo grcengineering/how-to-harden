@@ -277,11 +277,26 @@ Monitor administrative and security events.
 ## Appendix A: References
 
 **Official Splunk Documentation:**
+- [Splunk Protects (Trust Center)](https://www.splunk.com/en_us/about-splunk/splunk-data-security-and-privacy.html)
+- [Splunk Trust Center (Conveyor)](https://customertrust.splunk.com/)
+- [Splunk Documentation](https://docs.splunk.com/)
+- [How to Secure and Harden Splunk](https://docs.splunk.com/Documentation/Splunk/latest/Security/Hardeningstandards)
 - [Best Practices for SAML SSO](https://help.splunk.com/en/splunk-enterprise/administer/manage-users-and-security/9.0/perform-advanced-configuration-of-saml-authentication-in-splunk-enterprise/best-practices-for-using-saml-as-an-authentication-scheme-for-single-sign-on)
-- [How to Secure and Harden Splunk](https://help.splunk.com/en/splunk-enterprise/administer/manage-users-and-security/9.2/introduction-to-securing-the-splunk-platform/how-to-secure-and-harden-your-splunk-platform-instance)
 - [Securing the Splunk Cloud Platform](https://lantern.splunk.com/Manage_Performance_and_Health/Securing_the_Splunk_Cloud_Platform)
 - [Configure SSO with SAML](https://docs.splunk.com/Documentation/SplunkCloud/latest/Security/HowSAMLSSOworks)
-- [Configure Okta SSO](https://saml-doc.okta.com/SAML_Docs/How-to-Configure-SAML-2.0-for-Splunk-Cloud.html)
+
+**API & Developer Tools:**
+- [REST API Reference](https://dev.splunk.com/enterprise/reference)
+- [Splunk Developer Program](https://dev.splunk.com/)
+- [Developer Tools Overview](https://dev.splunk.com/enterprise/docs/devtools)
+- SDKs available for Python, Java, and JavaScript -- via [Developer Portal](https://dev.splunk.com/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, ISO 9001, CSA STAR Level 2 -- via [Compliance at Splunk](https://www.splunk.com/en_us/about-splunk/splunk-data-security-and-privacy/compliance-at-splunk.html)
+- HIPAA, PCI DSS, FedRAMP (as applicable to Splunk Cloud) -- via [Splunk Cloud Security Addendum](https://www.splunk.com/en_us/legal/splunk-cloud-security-addendum.html)
+
+**Security Incidents:**
+- No major Splunk platform data breach publicly reported. In 2025, multiple Splunk Enterprise vulnerabilities were disclosed (CVE-2025-20371 SSRF, CVE-2025-20366 improper access control) requiring patches to versions 10.0.1+. These were product vulnerabilities, not breaches of Splunk's hosted service.
 
 ---
 

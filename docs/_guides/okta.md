@@ -1183,20 +1183,27 @@ Use this checklist to verify controls are implemented for your compliance requir
 ## Appendix B: References
 
 **Official Okta Documentation:**
+- [Trust Center](https://trust.okta.com/)
+- [Security Trust Center (SafeBase)](https://security.okta.com/)
+- [Help Center](https://help.okta.com/en-us/content/index.htm)
 - [9 Admin Best Practices](https://www.okta.com/blog/2019/10/9-admin-best-practices-to-keep-your-org-secure/)
 - [Securing Admin Accounts](https://support.okta.com/help/s/article/best-practices-for-securing-okta-workforce-identity-cloud-admin-accounts)
 - [Secure Identity Commitment Whitepaper](https://www.okta.com/sites/default/files/2025-03/Secure-Identity-Commitment-Whitepaper-March-2025.pdf)
 - [Admin Role Permissions](https://help.okta.com/en-us/Content/Topics/Security/administrators-admin-comparison.htm)
+
+**API Documentation:**
+- [Okta API Reference](https://developer.okta.com/docs/api/)
 - [System Log API](https://developer.okta.com/docs/reference/api/system-log/)
 
 **Compliance Frameworks:**
-- [DISA STIG Library](https://public.cyber.mil/stigs/) - Okta IDaaS STIG V1R1
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, FedRAMP High, FedRAMP Moderate, FIPS 140-2, HIPAA, PCI DSS v4.0, CSA STAR, NIST 800-53 Rev 5 — via [Okta Compliance](https://trust.okta.com/compliance/)
+- [DISA STIG Library](https://public.cyber.mil/stigs/) — Okta IDaaS STIG V1R1
 - [CIS Controls v8](https://www.cisecurity.org/controls)
 - [NIST 800-53 Rev 5](https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final)
 
-**Supply Chain Incident Reports:**
-- [Okta October 2023 Security Incident](https://sec.okta.com/articles/2023/10/tracking-unauthorized-access-oktas-support-system)
-- [LAPSUS$ March 2022 Incident](https://www.okta.com/blog/2022/03/updated-okta-statement-on-lapsus/)
+**Security Incidents:**
+- **October 2023:** Unauthorized access to Okta support system; HAR files containing session cookies exfiltrated, affecting all 18,400 customers — [Okta Disclosure](https://sec.okta.com/articles/2023/10/tracking-unauthorized-access-oktas-support-system)
+- **January 2022:** LAPSUS$ group compromised a third-party support engineer, gaining limited access to Okta tenant data — [Okta Statement](https://www.okta.com/blog/2022/03/updated-okta-statement-on-lapsus/)
 
 ---
 

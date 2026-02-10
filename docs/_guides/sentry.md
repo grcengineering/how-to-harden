@@ -333,9 +333,20 @@ Enable and monitor audit logs.
 ## Appendix A: References
 
 **Official Sentry Documentation:**
+- [Sentry Documentation](https://docs.sentry.io/)
 - [Sentry Security](https://sentry.io/security/)
 - [SSO Configuration](https://docs.sentry.io/product/accounts/sso/)
 - [Data Scrubbing](https://docs.sentry.io/product/data-management-settings/scrubbing/)
+
+**API & Developer Resources:**
+- [Sentry API Documentation](https://docs.sentry.io/api/)
+
+**Trust & Compliance:**
+- [Sentry Trust Center](https://sentry.io/trust/)
+- SOC 2 Type II, ISO 27001, HIPAA -- via [Sentry SOC2 & ISO 27001 Documentation](https://docs.sentry.io/security-legal-pii/security/soc2/)
+
+**Security Incidents:**
+- No major public security breaches of Sentry's platform infrastructure have been identified.
 
 ---
 

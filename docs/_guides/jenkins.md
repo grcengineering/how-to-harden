@@ -755,12 +755,28 @@ Keep Jenkins and all plugins updated with security patches.
 ## Appendix B: References
 
 **Official Jenkins Documentation:**
+- [Jenkins Documentation](https://www.jenkins.io/doc/)
 - [Managing Security](https://www.jenkins.io/doc/book/security/managing-security/)
 - [Securing Jenkins](https://www.jenkins.io/doc/book/security/securing-jenkins/)
+- [Jenkins Security Advisories](https://www.jenkins.io/security/advisories/)
+- [Jenkins Security Page](https://www.jenkins.io/security/)
+
+**API & Developer Resources:**
+- [Remote Access API](https://www.jenkins.io/doc/book/using/remote-access-api/)
+- [Jenkins CLI](https://www.jenkins.io/doc/book/managing/cli/)
+
+**Plugins:**
 - [SAML Plugin](https://plugins.jenkins.io/saml/)
 - [Role-Based Authorization Strategy](https://plugins.jenkins.io/role-strategy/)
 - [Microsoft Entra ID Plugin](https://plugins.jenkins.io/azure-ad/)
-- [Jenkins Security Advisories](https://www.jenkins.io/security/advisories/)
+- [Audit Trail Plugin](https://plugins.jenkins.io/audit-trail/)
+
+**Compliance Frameworks:**
+- Jenkins is an open-source project and does not hold SOC 2, ISO 27001, or similar certifications as a product. Organizations self-hosting Jenkins are responsible for their own compliance posture. CloudBees, the commercial Jenkins vendor, maintains its own compliance certifications for CloudBees CI.
+
+**Security Incidents:**
+- **CVE-2024-23897 (CVSS 9.8):** Critical path traversal flaw in Jenkins CLI allowing unauthenticated arbitrary file read; actively exploited in ransomware attacks and added to CISA KEV catalog. Fixed in Jenkins 2.442 and LTS 2.426.3.
+- Jenkins regularly publishes security advisories at [jenkins.io/security/advisories](https://www.jenkins.io/security/advisories/) covering core and plugin vulnerabilities.
 
 **Third-Party Resources:**
 - [Jenkins Security Best Practices - Wiz](https://www.wiz.io/lp/jenkins-security-best-practices-cheat-sheet)

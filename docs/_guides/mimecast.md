@@ -611,11 +611,21 @@ Actively monitor threat dashboard for emerging threats.
 ## Appendix B: References
 
 **Official Mimecast Documentation:**
+- [Mimecast Trust Center](https://www.mimecast.com/company/mimecast-trust-center/)
+- [Mimecast Product Documentation](https://docs.mimecast.com/)
 - [Targeted Threat Protection Optimization](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000726395155-Targeted-Threat-Protection-Optimization)
 - [TTP Impersonation Protect Guide](https://community.mimecast.com/s/article/email-security-cloud-gateway-ttp-impersonation-protection-guides)
-- [Impersonation Protect Configuration](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000675918227-Targeted-Threat-Protection-Impersonation-Protect-Configuration)
-- [Impersonation Protect First Policy](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000724095507-Targeted-Threat-Protection-Impersonation-Protect-First-Policy)
-- [Email Security Tips](https://www.mimecast.com/content/email-security-tips/)
+- [Email Security Cloud Gateway Best Practices](https://community.mimecast.com/s/article/email-security-cloud-gateway-security-best-practice)
+
+**API Documentation:**
+- [Mimecast Developer Portal](https://developer.services.mimecast.com/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO/IEC 27001:2022, ISO/IEC 27701:2019, ISO 22301:2019, ISO/IEC 42001:2023, Cyber Essentials Plus — via [Mimecast Certification and Attestation](https://www.mimecast.com/company/mimecast-trust-center/certification-and-attestation/)
+- [Mimecast Trust Center (SafeBase)](https://trust.mimecast.com/)
+
+**Security Incidents:**
+- **SolarWinds Supply Chain Attack (January 2021):** Mimecast confirmed that a certificate used for Microsoft 365 Exchange Web Services authentication was compromised by the same nation-state actors (APT29) behind the SolarWinds attack. Approximately 10% of customers (~3,900) used the affected connection type, and fewer than 10 were specifically targeted. Attackers potentially exfiltrated encrypted service account credentials and accessed some source code. — [Mimecast Certificate Compromise (TechTarget)](https://www.techtarget.com/searchsecurity/news/252495395/Mimecast-certificate-compromised-by-SolarWinds-hackers)
 
 ---
 

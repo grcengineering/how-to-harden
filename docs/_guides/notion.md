@@ -414,12 +414,24 @@ Use analytics to monitor workspace activity.
 ## Appendix B: References
 
 **Official Notion Documentation:**
-- [Notion Security & Compliance](https://www.notion.com/security)
-- [SAML SSO Configuration](https://www.notion.com/help/saml-sso-configuration)
-- [Provision Users with SCIM](https://www.notion.com/help/provision-users-and-groups-with-scim)
+- [Trust Center](https://trustcenter.notion.com/)
+- [Security & Compliance Overview](https://www.notion.com/security)
+- [Help Center](https://www.notion.com/help)
 - [Security Practices](https://www.notion.com/help/security-and-privacy)
 - [Enterprise Security Provisions](https://www.notion.com/help/guides/notion-enterprise-security-provisions)
+- [SAML SSO Configuration](https://www.notion.com/help/saml-sso-configuration)
+- [Provision Users with SCIM](https://www.notion.com/help/provision-users-and-groups-with-scim)
 - [Managing Organization in Notion](https://www.notion.com/help/guides/everything-about-setting-up-and-managing-an-organization-in-notion)
+
+**API Documentation:**
+- [Notion API Reference](https://developers.notion.com/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27701, ISO 27017, ISO 27018 — via [Trust Center](https://trustcenter.notion.com/)
+- HIPAA (with Enterprise plan and BAA) — via [Security & Compliance](https://www.notion.com/security)
+
+**Security Incidents:**
+- No major breaches of Notion infrastructure identified. In 2025, security researchers disclosed prompt injection risks in Notion AI agents that could enable data exfiltration via crafted workspace content (CVE-2024-23745 also affected Notion Web Clipper 1.0.3). These are configuration and feature-level risks, not infrastructure compromises.
 
 ---
 

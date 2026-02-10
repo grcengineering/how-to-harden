@@ -735,12 +735,28 @@ Apply GitHub's recommended security configuration to all repositories in the ent
 ## Appendix B: References
 
 **Official GitHub Documentation:**
+- [Trust Center](https://ghec.github.trust.page/)
+- [Enterprise Cloud Documentation](https://docs.github.com/en/enterprise-cloud@latest)
 - [Hardening Security for Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/configuring-settings/hardening-security-for-your-enterprise)
 - [Configuring SAML SSO for Enterprise Managed Users](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/configuring-authentication-for-enterprise-managed-users/configuring-saml-single-sign-on-for-enterprise-managed-users)
 - [Configuring SAML SSO for Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/using-saml-for-enterprise-iam/configuring-saml-single-sign-on-for-your-enterprise)
 - [SAML Configuration Reference](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/iam-configuration-reference/saml-configuration-reference)
 - [Security Hardening for GitHub Actions](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions)
 - [GitHub Advanced Security](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security)
+
+**API & Developer Tools:**
+- [REST API Reference](https://docs.github.com/en/enterprise-cloud@latest/rest)
+- [GraphQL API](https://docs.github.com/en/enterprise-cloud@latest/graphql)
+- [GitHub CLI (`gh`)](https://cli.github.com/)
+- [Accessing Compliance Reports for Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/overview/accessing-compliance-reports-for-your-enterprise)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II, ISO/IEC 27001:2013, CSA STAR -- via [Trust Center](https://ghec.github.trust.page/)
+
+**Security Incidents:**
+- **Code Signing Certificate Theft (Jan 2023):** Attacker used a compromised PAT to access GitHub repositories and steal encrypted code-signing certificates for GitHub Desktop and Atom. Certificates were revoked February 2, 2023.
+- **Fake Dependabot Commits (Jul 2023):** Stolen GitHub PATs used to inject malicious commits disguised as Dependabot contributions across hundreds of public and private repositories.
+- **tj-actions/changed-files Compromise (Mar 2025):** Supply chain attack injected malicious code into a widely-used GitHub Action, risking CI/CD secret exposure for 23,000+ repositories.
 
 **Community Resources:**
 - [GitHub Hardening Guide](https://github.com/iAnonymous3000/GitHub-Hardening-Guide)

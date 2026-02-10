@@ -609,11 +609,19 @@ Before allowing any third-party integration, assess risk:
 ## Appendix B: References
 
 **Official Salesforce Documentation:**
+- [Salesforce Help Center](https://help.salesforce.com/)
 - [Salesforce Security Best Practices](https://security.salesforce.com/security-best-practices)
-- [Salesforce Security Guide](https://resources.docs.salesforce.com/latest/latest/en-us/sfdc/pdf/salesforce_security_impl_guide.pdf)
+- [Salesforce Security Guide (PDF)](https://resources.docs.salesforce.com/latest/latest/en-us/sfdc/pdf/salesforce_security_impl_guide.pdf)
 - [Network Access (IP Allowlisting)](https://help.salesforce.com/articleView?id=admin_loginipranges.htm)
 - [Connected Apps and OAuth](https://help.salesforce.com/articleView?id=connected_app_overview.htm)
 - [Event Monitoring](https://help.salesforce.com/articleView?id=event_monitoring.htm)
+
+**API & Developer Resources:**
+- [Salesforce Developer APIs](https://developer.salesforce.com/docs/apis)
+
+**Trust & Compliance:**
+- [Salesforce Compliance Site](https://compliance.salesforce.com/en)
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018 -- via [Salesforce Compliance Documents](https://compliance.salesforce.com/en/documents)
 
 **Integration Vendor IP Documentation:**
 - [Gainsight IP Addresses](https://support.gainsight.com/Gainsight_NXT/Integrations/IP_Addresses)
@@ -623,6 +631,9 @@ Before allowing any third-party integration, assess risk:
 **Supply Chain Incident Reports:**
 - [Okta: Salesloft Incident Response](https://www.okta.com/newsroom/articles/the-salesloft-incident--a-wake-up-call-for-saas-security-and-ips/)
 - [Mandiant: UNC6395 Campaign Analysis](https://www.mandiant.com/resources/blog/unc6395-supply-chain-compromise)
+
+**Security Incidents:**
+- **Salesloft/Drift OAuth Supply Chain Attack (August-September 2025):** Attackers compromised Salesloft/Drift infrastructure and exfiltrated OAuth tokens, affecting 700+ Salesforce orgs. Gainsight breach separately impacted 200+ orgs via stolen OAuth tokens (November 2025). IP allowlisting proved effective -- Okta was targeted but protected because they had IP restrictions configured.
 
 ---
 

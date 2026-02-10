@@ -890,18 +890,29 @@ SigninLogs
 ## Appendix B: References
 
 **Official Microsoft Documentation:**
+- [Microsoft Trust Center](https://www.microsoft.com/en-us/trust-center)
+- [Microsoft Entra ID Product Documentation](https://learn.microsoft.com/en-us/entra/)
 - [Best Practices to Secure with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/architecture/secure-best-practices)
 - [Require MFA for All Users with Conditional Access](https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-all-users-mfa-strength)
 - [Plan Conditional Access Deployment](https://learn.microsoft.com/en-us/entra/identity/conditional-access/plan-conditional-access)
 - [Conditional Access - Zero Trust Policy Engine](https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview)
 - [Privileged Identity Management](https://learn.microsoft.com/en-us/entra/id-governance/privileged-identity-management/)
-- [Microsoft Graph API reference](https://learn.microsoft.com/en-us/graph/api/overview)
 
-**Security Incident Reports:**
-- [Midnight Blizzard attack guidance](https://www.microsoft.com/en-us/security/blog/2024/01/25/midnight-blizzard-guidance-for-responders-on-nation-state-attack/)
+**API Documentation:**
+- [Microsoft Graph Identity and Network Access Overview](https://learn.microsoft.com/en-us/graph/identity-network-access-overview)
+- [Microsoft Graph API Reference](https://learn.microsoft.com/en-us/graph/api/overview)
+- [Microsoft Graph PowerShell SDK](https://learn.microsoft.com/en-us/powershell/microsoftgraph/)
 
-**CIS Benchmarks:**
+**Compliance Frameworks:**
+- SOC 1, SOC 2, SOC 3, ISO 27001, ISO 27017, ISO 27018, ISO 27701, FedRAMP — via [Microsoft Service Trust Portal](https://servicetrust.microsoft.com/)
+- [Microsoft Entra Identity Standards Overview](https://learn.microsoft.com/en-us/entra/standards/standards-overview)
+
+**Hardening Benchmarks:**
 - [CIS Microsoft Azure Foundations Benchmark](https://www.cisecurity.org/benchmark/azure)
+
+**Security Incidents:**
+- [Midnight Blizzard Attack Guidance (January 2024)](https://www.microsoft.com/en-us/security/blog/2024/01/25/midnight-blizzard-guidance-for-responders-on-nation-state-attack/) — Test account without MFA led to corporate email compromise via password spray
+- **CVE-2025-55241:** Critical Entra ID privilege escalation vulnerability (CVSS 10.0) potentially impacting any tenant
 
 ---
 

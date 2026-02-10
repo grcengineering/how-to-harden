@@ -640,14 +640,28 @@ Configure comprehensive logging and integrate with SIEM for security monitoring 
 ## Appendix B: References
 
 **Official Zscaler Documentation:**
+- [Zscaler Compliance Center](https://compliance.zscaler.com/)
+- [Zscaler Compliance Overview](https://www.zscaler.com/compliance/overview)
+- [Zscaler Trust Security Advisories](https://trust.zscaler.com/security-advisories)
 - [ZIA Help Portal](https://help.zscaler.com/zia)
 - [ZPA Help Portal](https://help.zscaler.com/zpa)
 - [Client Connector Help](https://help.zscaler.com/zscaler-client-connector)
 - [ZIA Policy Best Practices Guide](https://help.zscaler.com/zscaler-deployments-operations/zia-policy-leading-practices-guide)
+- [ZIA Security Policy Best Practices](https://help.zscaler.com/zia/best-practices-security-policy)
+
+**API Documentation:**
+- [ZIA API Getting Started](https://help.zscaler.com/zia/getting-started-zia-api)
+- [ZPA API Documentation](https://help.zscaler.com/zpa)
 
 **Deployment Guides:**
 - [Step-by-Step Configuration Guide for ZIA](https://help.zscaler.com/zia/step-step-configuration-guide-zia)
 - [Step-by-Step Configuration Guide for ZPA](https://help.zscaler.com/zpa/step-step-configuration-guide-zpa)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, ISO 27701, FedRAMP (product-dependent) -- via [Zscaler Compliance Center](https://compliance.zscaler.com/)
+
+**Security Incidents:**
+- **August 2025 -- Salesloft Drift Supply-Chain Breach:** Threat actor UNC6395 exploited compromised Salesloft Drift OAuth tokens to access Zscaler's Salesforce instance, exfiltrating contact metadata (names, emails, job titles), product licensing configurations, and plain-text support case content. Part of a broader campaign affecting 700+ organizations. No Zscaler products, services, or infrastructure were compromised. Detected August 28, disclosed August 31, 2025. All affected OAuth tokens were revoked.
 
 ---
 

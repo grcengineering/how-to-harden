@@ -199,6 +199,33 @@ For high-security environments, consider:
 
 ---
 
+## Appendix B: References
+
+**Official Docker Documentation:**
+- [Docker Trust Center](https://www.docker.com/trust/)
+- [Docker Security](https://www.docker.com/trust/security/)
+- [Docker Compliance](https://www.docker.com/trust/compliance/)
+- [Docker Hub Documentation](https://docs.docker.com/docker-hub/)
+- [Docker Engine Security](https://docs.docker.com/engine/security/)
+- [Security Announcements](https://docs.docker.com/security/security-announcements/)
+
+**API & Developer Documentation:**
+- [Docker Hub API Reference](https://docs.docker.com/reference/api/hub/latest/)
+- [Docker Scout](https://docs.docker.com/scout/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001 — via [Docker Compliance](https://www.docker.com/trust/compliance/)
+- Annual penetration testing of Docker Hub, Desktop, Scout, and Build Cloud
+- GDPR and CCPA compliant
+
+**Security Incidents:**
+- **2019 Docker Hub Breach:** Unauthorized access exposed usernames, hashed passwords, and GitHub/Bitbucket tokens for approximately 190,000 accounts.
+- **2024 Secret Exposure Research:** Flare discovered 10,456 Docker Hub images exposing secrets including API keys, cloud credentials, and CI/CD tokens.
+- **2025 Desktop Vulnerabilities:** CVE-2025-13743 (expired Hub PATs in diagnostics logs) and CVE-2025-9164 (Windows installer DLL hijacking for local privilege escalation).
+- **TeamTNT Campaigns (2021-2022):** Compromised Docker Hub accounts used to distribute cryptomining malware with 150,000+ malicious image pulls.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

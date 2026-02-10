@@ -800,16 +800,26 @@ WHERE event_name = 'change_user_access'
 
 **Official Google Documentation:**
 - [Google Workspace Admin Help](https://support.google.com/a)
-- [Security best practices](https://support.google.com/a/answer/7587183)
+- [Security Best Practices](https://support.google.com/a/answer/7587183)
 - [Google Cloud MFA Requirement](https://docs.cloud.google.com/docs/authentication/mfa-requirement)
+- [Data Protection and Compliance](https://business.safety.google/compliance/)
+- [Compliance Reports Manager](https://cloud.google.com/security/compliance/compliance-reports-manager)
+
+**API & Developer Tools:**
+- [Google Workspace Developer Hub](https://developers.google.com/workspace)
 - [Admin SDK API Reference](https://developers.google.com/admin-sdk)
+- [GAM - Google Workspace Admin CLI](https://github.com/GAM-team/GAM)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO/IEC 27001:2022, ISO 27017, ISO 27018, ISO 27701, FedRAMP (High), BSI C5, MTCS -- via [Compliance Reports Manager](https://cloud.google.com/security/compliance/compliance-reports-manager)
+- [ISO/IEC 27001 Compliance](https://cloud.google.com/security/compliance/iso-27001)
+- [SOC 2 Compliance](https://cloud.google.com/security/compliance/soc-2)
+
+**Security Incidents:**
+- Google Workspace has not had a major platform-level breach. Notable ecosystem incidents include the **Google Docs OAuth Phishing Attack (2017)**, where a fake "Google Docs" app tricked users into granting email access via OAuth consent.
 
 **Third-Party Security Guides:**
 - [CISA Google Common Controls](https://www.cisa.gov/resources-tools/services/gws-commoncontrols)
-- [2025 Google Workspace Security Settings](https://www.nudgesecurity.com/post/top-5-google-workspace-security-settings-and-misconfigurations)
-
-**Community Resources:**
-- [GAM - Google Workspace Admin CLI](https://github.com/GAM-team/GAM)
 - [CIS Google Workspace Benchmark](https://www.cisecurity.org/benchmark/google_workspace)
 
 ---

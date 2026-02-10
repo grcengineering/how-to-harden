@@ -428,9 +428,29 @@ Continuously monitor security posture.
 ## Appendix B: References
 
 **Official Asana Documentation:**
+- [Trust Center](https://security.asana.com/) (powered by SafeBase)
+- [Trust at Asana](https://asana.com/trust)
+- [Data Security Standards](https://asana.com/terms/security-standards)
+- [Asana Help Center](https://help.asana.com/s/)
+- [Admin & Security Features](https://asana.com/features/admin-security)
 - [Authentication and Access Management](https://help.asana.com/hc/en-us/articles/14075208738587-Authentication-and-access-management-options-for-paid-plans)
-- [Admin Console Features](https://asana.com/features/admin-security/admin-console)
-- [Security and Control](https://asana.com/inside-asana/more-security-and-control)
+- [Asana Privacy](https://asana.com/privacy)
+
+**API & Developer Tools:**
+- [Asana Developer Portal](https://developers.asana.com/)
+- [API Reference](https://developers.asana.com/docs)
+- [Node.js SDK](https://github.com/Asana/node-asana)
+- [Python SDK](https://github.com/Asana/python-asana)
+- [Java SDK](https://github.com/Asana/java-asana)
+- [GitHub Organization](https://github.com/Asana)
+
+**Compliance Frameworks:**
+- SOC 2 Type II + HIPAA Assessment (most recent period: February 2024 - January 2025); SOC 3 report publicly available — via [Trust Center](https://security.asana.com/)
+- ISO 27001:2022, ISO 27017, ISO 27018:2019, ISO 27701:2019 (publicly downloadable) — via [Trust Center](https://security.asana.com/)
+- GDPR compliance — via [Asana Privacy](https://asana.com/privacy)
+
+**Security Incidents:**
+- **June 2025 — MCP Server Data Exposure Bug:** A logic bug in Asana's Model Context Protocol (MCP) server allowed approximately 1,000 customers to potentially see project names, task descriptions, and metadata from other Asana organizations between June 5-17, 2025. This was an internal logic flaw, not an external breach. ([UpGuard Report](https://www.upguard.com/blog/asana-discloses-data-exposure-bug-in-mcp-server))
 
 ---
 

@@ -207,6 +207,28 @@ SINCE 7 days ago
 
 ---
 
+## Appendix B: References
+
+**Official New Relic Documentation:**
+- [New Relic Security Overview](https://newrelic.com/security)
+- [New Relic Product Documentation](https://docs.newrelic.com/)
+- [Security and Privacy Documentation](https://docs.newrelic.com/docs/security/overview/)
+- [Compliance and Certifications](https://newrelic.com/security/compliance-certifications)
+
+**API Documentation:**
+- [New Relic APIs Introduction](https://docs.newrelic.com/docs/apis/intro-apis/introduction-new-relic-apis/)
+- [NerdGraph (GraphQL) API](https://docs.newrelic.com/docs/apis/nerdgraph/get-started/introduction-new-relic-nerdgraph/)
+- [New Relic SDKs and Agents](https://docs.newrelic.com/docs/new-relic-solutions/new-relic-one/install-configure/install-new-relic/)
+
+**Compliance Frameworks:**
+- SOC 1, SOC 2, ISO 27001, ISO 42001, FedRAMP, HIPAA, PCI DSS, TISAX — via [New Relic Compliance and Certifications](https://newrelic.com/security/compliance-certifications)
+- [New Relic Regulatory Audits Documentation](https://docs.newrelic.com/docs/security/security-privacy/compliance/regulatory-audits-new-relic-services/)
+
+**Security Incidents:**
+- No major public security incidents identified for New Relic. Monitor [New Relic Security](https://newrelic.com/security) for current advisories.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

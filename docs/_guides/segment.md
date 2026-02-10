@@ -365,9 +365,21 @@ Configure alerts for security events.
 ## Appendix A: References
 
 **Official Segment Documentation:**
+- [Twilio Segment Documentation](https://www.twilio.com/docs/segment)
 - [Segment Security](https://segment.com/security/)
 - [SSO Configuration](https://segment.com/docs/segment-app/iam/sso/)
 - [Access Management](https://segment.com/docs/segment-app/iam/)
+
+**API & Developer Resources:**
+- [Segment Public API](https://docs.segmentapis.com/)
+
+**Trust & Compliance:**
+- [Segment Trust Center](https://security.segment.com/)
+- [Twilio Trust Center](https://www.twilio.com/en-us/trust-center)
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018 -- via [Twilio Compliance Documents](https://www.twilio.com/en-us/trust-center/compliance-documents)
+
+**Security Incidents:**
+- No major public security breaches specific to Segment have been identified. Parent company Twilio experienced a phishing attack in August 2022 that exposed limited customer data, but Segment's infrastructure was not directly impacted.
 
 ---
 

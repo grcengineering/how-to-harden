@@ -199,6 +199,29 @@ HAVING COUNT(*) > 500;
 
 ---
 
+## Appendix B: References
+
+**Official Freshservice/Freshworks Documentation:**
+- [Freshworks Trust Center (SafeBase)](https://trust.freshworks.com/)
+- [Freshworks Security](https://www.freshworks.com/security/)
+- [Freshworks Security Resources](https://www.freshworks.com/security/resources/)
+- [Freshservice Support Solutions](https://support.freshservice.com/support/solutions)
+
+**API & Developer Documentation:**
+- [Freshservice API Reference](https://api.freshservice.com/)
+- [Freshworks Developer Portal](https://developers.freshworks.com/)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II, ISO 27001, ISO 27701 — via [Trust Center](https://trust.freshworks.com/)
+- Annual independent audits by external firms
+- Annual VAPT (Vulnerability Assessment and Penetration Testing)
+- GDPR compliant
+
+**Security Incidents:**
+- No major public security incidents identified affecting the Freshservice platform directly.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

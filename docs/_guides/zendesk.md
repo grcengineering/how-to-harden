@@ -226,10 +226,27 @@ HAVING COUNT(*) > 1000;
 ## Appendix B: References
 
 **Official Zendesk Documentation:**
+- [Zendesk Trust Center](https://www.zendesk.com/trust-center/)
+- [Zendesk Help Center](https://support.zendesk.com/hc/en-us)
 - [Zendesk Suite Actionable Security Guide](https://support.zendesk.com/hc/en-us/articles/5001315170074-Zendesk-Suite-Actionable-Security-Guide)
+- [Account Security Best Practices](https://support.zendesk.com/hc/en-us/articles/4408883094554-Best-practices-for-Zendesk-account-security)
 - [Managing SSO Configurations](https://support.zendesk.com/hc/en-us/articles/4408882188570-Managing-single-sign-on-SSO-configurations)
 - [Managing Security Settings in Admin Center](https://support.zendesk.com/hc/en-us/articles/4408846853274-Managing-security-settings-in-Admin-Center)
 - [General Security Best Practices](https://support.zendesk.com/hc/en-us/articles/4408888782618-General-security-best-practices)
+- [Zendesk Secure-by-Design Cloud Solution](https://support.zendesk.com/hc/en-us/articles/4408837948698-Zendesk-s-secure-by-design-cloud-solution)
+
+**API Documentation:**
+- [Zendesk Developer API Reference](https://developer.zendesk.com/api-reference/)
+- [Zendesk SDKs and Integrations](https://developer.zendesk.com/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27018, ISO 27701, ISO 42001 (AI Governance) -- via [Zendesk Trust Center](https://www.zendesk.com/trust-center/)
+
+**Security Incidents:**
+- **October 2024 -- Email Spoofing Vulnerability:** A security researcher demonstrated that Zendesk's email handling could be exploited to spoof support emails, enabling access to support tickets and downstream SSO abuse (e.g., Slack via "Login with Apple"). Zendesk initially dismissed the report as ineligible for their bug bounty.
+- **Late 2024 / Early 2025 -- Email Bomb Campaign Exploitation:** Attackers leveraged Zendesk's default anonymous ticket submission combined with lax email validation to launch email bomb campaigns against Zendesk instances worldwide.
+- **September 2025 -- Discord Zendesk Support Breach:** Threat actors accessed Discord's Zendesk instance for 58 hours via a compromised BPO support agent account, exfiltrating 1.6 TB of support ticket data affecting 5.5 million users. Attributed to compromised outsourced credentials, not a Zendesk platform vulnerability.
+- **October 2024 -- Internet Archive Zendesk Breach:** Threat actors used a stolen Zendesk access token to email Internet Archive users from the organization's support address.
 
 ---
 

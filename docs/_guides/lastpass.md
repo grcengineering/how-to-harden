@@ -528,11 +528,26 @@ Following the 2022 LastPass security incidents, consider:
 ## Appendix C: References
 
 **Official LastPass Documentation:**
+- [LastPass Trust Center](https://www.lastpass.com/trust-center)
+- [LastPass Support](https://support.lastpass.com/)
+- [Admin Best Practices](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/admin_best_practices.html)
 - [Three Admin Policies to Enable Today](https://blog.lastpass.com/posts/three-lastpass-admin-policies-to-enable-today)
 - [How to Enforce Strong Password Policies](https://blog.lastpass.com/posts/how-to-enforce-strong-password-policies)
 - [How to Set Up Multi-Factor Authentication](https://blog.lastpass.com/posts/how-to-set-up-multi-factor-authentication-to-protect-your-business)
 - [Enable MFA for Admins](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/Enable_Multifactor_Authentication_Admins.html)
+
+**API & Developer Resources:**
+- [LastPass Enterprise API](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/api_enterprise.html)
 - [Unified Admin Controls for User Management](https://www.lastpass.com/features/user-management)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO 27001, ISO 27701, BSI C5, FIDO2 Server Certified -- via [LastPass Trust Center](https://www.lastpass.com/trust-center) and [LastPass Compliance Center](https://compliance.lastpass.com/)
+
+**Security Incidents:**
+- **August 2022:** Threat actor compromised a developer's laptop, gaining access to LastPass's development environment and stealing source code and internal system secrets.
+- **November-December 2022:** Using information from the first breach, the attacker targeted a DevOps engineer's home computer via a third-party media software vulnerability, installed a keylogger, captured credentials, and exfiltrated encrypted customer vault backups along with unencrypted metadata (website URLs, email addresses, billing info). See [Appendix B](#appendix-b-post-breach-considerations) for remediation guidance.
+- **March 2023:** Investigation confirmed no threat actor activity since October 2022. LastPass increased PBKDF2 iterations and implemented additional security controls.
+- **2025:** Federal investigators linked approximately $150M in cryptocurrency theft to credentials stolen in the 2022 LastPass breach.
 
 ---
 

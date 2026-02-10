@@ -214,6 +214,27 @@ HAVING view_count > 100;
 
 ---
 
+## Appendix B: References
+
+**Official Tableau Documentation:**
+- [Tableau Help](https://help.tableau.com/)
+- [Tableau Server Security Hardening Checklist](https://help.tableau.com/current/server/en-us/security_harden.htm)
+- [Salesforce Compliance Site -- Tableau Cloud](https://compliance.salesforce.com/en/services/tableau-cloud)
+
+**API & Developer Tools:**
+- [REST API Reference](https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api.htm)
+- [Tableau Security Bulletins](https://community.tableau.com/s/security-bulletins)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001:2022, ISO 27017, ISO 27018 -- via [Salesforce Compliance Site](https://compliance.salesforce.com/en)
+- Tableau Cloud is covered under Salesforce's umbrella certifications including SOC reports, ISO certifications, and FedRAMP (Government Cloud)
+
+**Security Incidents:**
+- (2025) Multiple critical Tableau Server vulnerabilities disclosed, including CVE-2025-26496 (CVSS 9.6) allowing remote code execution and CVE-2025-52446 (CVSS 8.0) enabling arbitrary SQL execution. Patched in Tableau Server versions 2025.1.4, 2024.2.13, and 2023.3.20.
+- (2018-2023) Brigham and Women's Hospital research data inadvertently exposed via a publicly accessible Tableau link, disclosing patient PII and health information. Accessible from February 2018 to June 2023.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

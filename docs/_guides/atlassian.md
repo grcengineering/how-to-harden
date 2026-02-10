@@ -529,9 +529,31 @@ Recent critical vulnerabilities require immediate attention.
 ## Appendix B: References
 
 **Official Atlassian Documentation:**
+- [Trust Center](https://www.atlassian.com/trust) | [Customer Trust Center](https://customertrust.atlassian.com/) (powered by Conveyor)
+- [Atlassian Support](https://support.atlassian.com/)
 - [Security Best Practices](https://support.atlassian.com/security-and-access-policies/)
-- [API Security](https://developer.atlassian.com/cloud/jira/platform/security/)
+- [Security Practices](https://www.atlassian.com/trust/security/security-practices)
+- [Security Measures](https://www.atlassian.com/legal/security-measures)
+- [Vulnerability Disclosure](https://www.atlassian.com/trust/data-protection/vulnerabilities)
 - [Security Advisories](https://www.atlassian.com/trust/security/advisories)
+
+**API & Developer Tools:**
+- [Atlassian Developer Portal](https://developer.atlassian.com/)
+- [Jira Cloud REST API](https://developer.atlassian.com/cloud/jira/platform/rest/)
+- [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/)
+- [Forge App Framework](https://developer.atlassian.com/platform/forge/) (SOC 2 and ISO 27001 compliant)
+- [API Security Guide](https://developer.atlassian.com/cloud/jira/platform/security/)
+- [GitHub Organization](https://github.com/atlassian)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (individual product audits on a regular basis) — via [SOC 2 Compliance](https://www.atlassian.com/trust/compliance/resources/soc2)
+- ISO/IEC 27001:2022 (Atlassian Trust Management System) — via [ISO 27001 Compliance](https://www.atlassian.com/trust/compliance/resources/iso27001)
+- SOX compliance, PCI DSS
+- [Compliance Resource Center](https://www.atlassian.com/trust/compliance/resources) | [Compliance FAQ](https://www.atlassian.com/trust/compliance/compliance-faq)
+
+**Security Incidents:**
+- **2023 — Critical Confluence CVEs:** CVE-2023-22515 (CVSS 10.0) and CVE-2023-22518 (CVSS 9.8) affected Confluence Data Center/Server with broken access control and auth bypass vulnerabilities. Actively exploited in the wild. Cloud instances were not affected. ([Security Advisories](https://www.atlassian.com/trust/security/advisories))
+- **February 2023 — Employee Data Leak via Envoy:** Hackers leaked Atlassian employee records and office floorplans obtained through a breach of third-party workplace platform Envoy. No customer data was affected. ([SecurityWeek Report](https://www.securityweek.com/atlassian-investigating-security-breach-after-hackers-leak-data/))
 
 ---
 

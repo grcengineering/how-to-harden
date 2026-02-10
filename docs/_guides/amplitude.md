@@ -333,9 +333,32 @@ Enable and monitor activity logs.
 ## Appendix A: References
 
 **Official Amplitude Documentation:**
-- [Amplitude Security](https://amplitude.com/security)
-- [SSO Configuration](https://help.amplitude.com/hc/en-us/articles/360002548571-SAML-single-sign-on-SSO-)
-- [Access Management](https://help.amplitude.com/hc/en-us/articles/360002548331-Manage-users-in-your-organization)
+- [Trust Center](https://trust.amplitude.com/) (powered by Wolfia)
+- [Trust, Security and Privacy](https://amplitude.com/security-and-privacy)
+- [Amplitude Documentation](https://amplitude.com/docs)
+- [Security and Privacy FAQ](https://amplitude.com/docs/faq/security-and-privacy)
+- [Data Governance](https://amplitude.com/blog/tackle-data-governance)
+- [Data Access Controls](https://amplitude.com/blog/data-access-controls)
+
+**API & Developer Tools:**
+- [Analytics APIs](https://www.docs.developers.amplitude.com/analytics/apis/)
+- [TypeScript SDK](https://github.com/amplitude/Amplitude-TypeScript)
+- [Python SDK](https://github.com/amplitude/Amplitude-Python)
+- [Go SDK](https://github.com/amplitude/analytics-go)
+- [Node.js SDK](https://github.com/amplitude/Amplitude-Node)
+- [iOS SDK](https://github.com/amplitude/Amplitude-iOS)
+- [Android SDK](https://github.com/amplitude/Amplitude-Android)
+- [GitHub Organization](https://github.com/amplitude)
+
+**Compliance Frameworks:**
+- SOC 2 Type II — via [Trust Center](https://trust.amplitude.com/)
+- ISO 27001, ISO 27017, ISO 27018 — via [Trust Center](https://trust.amplitude.com/)
+- GDPR, CCPA, HIPAA compliance
+- Annual third-party penetration testing; private Bug Bounty program
+
+**Security Incidents:**
+- **August 2024 — Data Harvesting Lawsuit (DoorDash):** A lawsuit alleged Amplitude's tracking code embedded in the DoorDash app collected geolocation and sensitive user data without consent, sharing it with marketing platforms. In September 2025, a federal judge ruled users could proceed with claims but were bound by DoorDash's arbitration agreement. Amplitude itself was not breached. ([Bloomberg Law Report](https://news.bloomberglaw.com/privacy-and-data-security/amplitude-snares-private-data-of-millions-via-apps-suit-says))
+- No major direct platform security breaches identified as of early 2026.
 
 ---
 

@@ -493,11 +493,22 @@ Configure Trust Center for secure compliance documentation sharing.
 ## Appendix A: References
 
 **Official Vanta Documentation:**
+- [Vanta Security Page](https://vanta.com/security)
 - [Vanta Help Center](https://help.vanta.com)
+- [Vanta API Reference](https://developer.vanta.com/reference/)
 - [Security Compliance Guide](https://www.vanta.com/collection/grc/security-compliance)
 - [Automated Compliance](https://www.vanta.com/products/automated-compliance)
 - [Security Resources](https://www.vanta.com/all-categories/security)
-- [New in Vanta - May 2025](https://www.vanta.com/resources/new-in-vanta-may-2025)
+- [Vanta Control Set (GitHub)](https://github.com/VantaInc/vanta-control-set)
+
+**API Documentation:**
+- [REST API Reference](https://developer.vanta.com/reference/)
+
+**Compliance Frameworks:**
+- Vanta automates compliance for 35+ frameworks including SOC 2, ISO 27001, HIPAA, PCI DSS, and GDPR. Vanta itself maintains SOC 2 Type II compliance for its own platform.
+
+**Security Incidents:**
+- **May 2025 -- Cross-Customer Data Exposure:** A code update removed a safety filter that separates customer data, causing a subset of data from fewer than 20% of third-party integrations to be exposed to other Vanta customers. Fewer than 4% of customers (out of 10,000+) were affected. No API keys, credentials, or external intrusion were involved. The issue was identified May 26 and remediated by June 4, 2025.
 
 ---
 

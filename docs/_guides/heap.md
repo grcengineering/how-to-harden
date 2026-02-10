@@ -232,8 +232,20 @@ Implement data governance controls.
 ## Appendix A: References
 
 **Official Heap Documentation:**
-- [Heap Security](https://heap.io/security)
+- [Trust Center](https://heap.io/trust-center)
+- [Heap Security & Privacy](https://www.heap.io/platform/security)
+- [Help Center](https://help.heap.io/hc/en-us)
 - [SSO Configuration](https://help.heap.io/administration/account-management/sso/)
+
+**API & Developer Tools:**
+- [Heap Developer Documentation](https://developers.heap.io/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, ISO 27701 -- via [Trust Center](https://heap.io/trust-center)
+- Contentsquare (parent company) Trust Portal: [trust.contentsquare.com](https://trust.contentsquare.com/)
+
+**Security Incidents:**
+- No major public security incidents identified as of February 2026.
 
 ---
 

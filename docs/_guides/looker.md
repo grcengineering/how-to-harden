@@ -209,6 +209,26 @@ WHERE source = 'api'
 
 ---
 
+## Appendix B: References
+
+**Official Looker / Google Cloud Documentation:**
+- [Google Cloud Trust Center](https://cloud.google.com/security)
+- [Looker Documentation](https://docs.cloud.google.com/looker/docs)
+- [How to Keep Looker Secure](https://cloud.google.com/looker/docs/best-practices/how-to-keep-looker-secure)
+- [Google Cloud Compliance Reports Manager](https://cloud.google.com/security/compliance/compliance-reports-manager)
+
+**API & Developer Resources:**
+- [Looker REST API Reference](https://docs.cloud.google.com/looker/docs/reference/looker-api/latest)
+- [Looker SDK](https://cloud.google.com/looker/docs/api-sdk)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO 27001 (as part of Google Cloud Platform) -- via [Google Cloud Compliance](https://cloud.google.com/security/compliance). Looker (Google Cloud) inherits GCP compliance certifications including SOC 2, ISO 27001, ISO 27017, ISO 27018, FedRAMP, and HIPAA.
+
+**Security Incidents:**
+- No major Looker-specific public security breaches identified. Looker inherits the security posture of Google Cloud Platform. Google Cloud publishes security bulletins at [cloud.google.com/support/bulletins](https://cloud.google.com/support/bulletins).
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

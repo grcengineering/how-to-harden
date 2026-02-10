@@ -320,9 +320,24 @@ Enable and monitor activity logs.
 ## Appendix A: References
 
 **Official Intercom Documentation:**
+- [Trust Center](https://trust.intercom.com/)
 - [Intercom Security](https://www.intercom.com/security)
+- [Help Center](https://www.intercom.com/help/en/)
+- [Security & Privacy Collection](https://www.intercom.com/help/en/collections/384-security-privacy)
 - [SAML SSO Setup](https://www.intercom.com/help/en/articles/2729674-set-up-saml-sso)
 - [Team Management](https://www.intercom.com/help/en/collections/3181-teammates-and-permissions)
+- [Security Policy](https://www.intercom.com/legal/security-policy)
+
+**API & Developer Tools:**
+- [Intercom Developer Hub](https://developers.intercom.com/)
+- [Intercom REST API Reference](https://developers.intercom.com/docs/references/rest-api/api.intercom.io/Articles/article/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001:2022, ISO 27018, ISO 27701, ISO/IEC 42001:2023 (AI), HIPAA, GDPR, CCPA -- via [Trust Center](https://trust.intercom.com/)
+- [Accessing Security and Compliance Documents](https://www.intercom.com/help/en/articles/7053674-accessing-security-and-compliance-documents)
+
+**Security Incidents:**
+- No major public security incidents identified as of February 2026.
 
 ---
 

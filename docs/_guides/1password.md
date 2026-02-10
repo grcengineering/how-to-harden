@@ -442,9 +442,29 @@ Monitor the security dashboard for insights and recommendations.
 ## Appendix B: References
 
 **Official 1Password Documentation:**
+- [Trust Center](https://trust.1password.io/) (powered by SafeBase)
 - [1Password Support](https://support.1password.com)
+- [Business Security Practices](https://support.1password.com/business-security-practices/)
 - [Team Policies](https://support.1password.com/team-policies/)
 - [Admin Policies Guide](https://blog.1password.com/admin-policies-introduction-guide/)
+- [Security Audits & Assessments](https://support.1password.com/security-assessments/)
+- [Legal Center](https://1password.com/legal-center)
+
+**API & Developer Tools:**
+- [1Password Developer Portal](https://developer.1password.com/)
+- [1Password CLI](https://developer.1password.com/docs/cli/)
+- [1Password SDKs (Go, JavaScript, Python)](https://developer.1password.com/docs/sdks/)
+- [Events API](https://developer.1password.com/docs/events-api/)
+- [GitHub Organization](https://github.com/1Password)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (unqualified opinions since 2018) — via [SOC 2 Certification Page](https://1password.com/soc/)
+- ISO 27001:2022, ISO 27017:2015, ISO 27018:2019, ISO 27701:2019 — via [ISO Certification Announcement](https://blog.1password.com/1password-iso-27001-certified/)
+- HIPAA, GDPR, DORA compliance — via [Compliance Overview](https://1password.com/solutions/cybersecurity-compliance)
+
+**Security Incidents:**
+- **October 2023 — Okta Support System Breach:** An attacker accessed 1Password's Okta tenant using a compromised Okta support session. Activity was immediately detected and terminated; no 1Password user data or vault data was compromised. ([1Password Incident Report](https://blog.1password.com/okta-incident/))
+- **2024 — macOS Vulnerability (Patched):** Researchers disclosed a vulnerability in the 1Password macOS app ahead of DEF CON 2024; 1Password patched it before public disclosure with no evidence of exploitation.
 
 ---
 

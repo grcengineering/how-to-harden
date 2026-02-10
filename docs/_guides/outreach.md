@@ -220,8 +220,20 @@ Secure third-party integrations.
 ## Appendix A: References
 
 **Official Outreach Documentation:**
-- [Outreach Security](https://www.outreach.io/security)
+- [Trust & Safety Center](https://www.outreach.io/platform/trust)
+- [Enterprise Data Security](https://www.outreach.io/platform/security)
+- [Help Center](https://support.outreach.io/hc/en-us)
 - [SSO Configuration](https://support.outreach.io/hc/en-us/articles/360013377553-SAML-Single-Sign-On-SSO-)
+- [Security, Privacy & Data Protection Certifications](https://support.outreach.io/hc/en-us/articles/20211805996187-Outreach-s-latest-Security-Privacy-and-Data-Protection-certifications-and-documentation)
+
+**API Documentation:**
+- [Outreach API Reference](https://developers.outreach.io/api/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27701, ISO 42001 (Responsible AI), TRUSTe, GDPR, Privacy Shield — via [Trust & Safety](https://www.outreach.io/platform/trust)
+
+**Security Incidents:**
+- No major public security incidents identified. Outreach runs a private bug bounty program through Bugcrowd and conducts annual penetration testing.
 
 ---
 

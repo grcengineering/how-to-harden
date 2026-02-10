@@ -447,11 +447,26 @@ Enable compliance-specific features for regulated industries.
 ## Appendix B: References
 
 **Official DocuSign Documentation:**
+- [Trust Center](https://www.docusign.com/trust)
+- [Support Center](https://support.docusign.com/s/?language=en_US)
 - [Security Settings Guide](https://support.docusign.com/guides/ndse-admin-guide-security-settings)
 - [Product Security](https://www.docusign.com/trust/security/product-security)
 - [Security for DocuSign eSignature](https://www.docusign.com/trust/security/esignature)
 - [Security Recommendations and Best Practices](https://support.docusign.com/s/document-item?bundleId=ieh1606952453299&topicId=swt1606952443828.html)
-- [DocuSign Trust and Security Overview](https://assets.ctfassets.net/3fcisxc3a6xz/7bSlNiSrqO1ASXINKpYkze/4a8c7ebdcaa5674a35e448783e4b67a3/DocuSign_Trust_and_Security_Overview.pdf)
+- [DocuSign Trust and Security Overview (PDF)](https://assets.ctfassets.net/3fcisxc3a6xz/7bSlNiSrqO1ASXINKpYkze/4a8c7ebdcaa5674a35e448783e4b67a3/DocuSign_Trust_and_Security_Overview.pdf)
+
+**API & Developer Documentation:**
+- [eSignature REST API Reference](https://developers.docusign.com/docs/esign-rest-api/reference/)
+- [DocuSign Developer Center](https://developers.docusign.com/)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II, ISO 27001:2022, ISO 27017, ISO 27018 — via [Certifications](https://www.docusign.com/trust/compliance/certifications)
+- PCI DSS v4.0 compliant
+- Annual business continuity and disaster recovery testing per ISO 27001 controls
+- [Compliance Overview](https://www.docusign.com/trust/compliance)
+
+**Security Incidents:**
+- No major public security incidents identified affecting the DocuSign platform directly. DocuSign has been a frequent target of phishing campaigns impersonating the service, but these are social engineering attacks against end users rather than platform compromises.
 
 ---
 

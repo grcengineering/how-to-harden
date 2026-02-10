@@ -589,12 +589,25 @@ Secure multi-workspace Automation HQ environments.
 ## Appendix A: References
 
 **Official Workato Documentation:**
-- [Security](https://docs.workato.com/security.html)
+- [Workato Security Page](https://www.workato.com/security)
+- [Workato Documentation Portal](https://docs.workato.com/)
+- [Security Overview](https://docs.workato.com/security.html)
+- [Security Compliance](https://docs.workato.com/security/security-compliance.html)
+- [Automation Governance and Data Security](https://www.workato.com/platform/security)
 - [Enable Single Sign-On](https://docs.workato.com/user-accounts-and-teams/single-sign-on.html)
 - [SAML Role Sync](https://docs.workato.com/user-accounts-and-teams/saml-role-sync.html)
 - [SAML Role Sync in Microsoft Entra ID](https://docs.workato.com/saml-role-sync-azure.html)
 - [SAML Role Sync in Okta](https://docs.workato.com/saml-role-sync-okta.html)
 - [Troubleshoot Single Sign-On](https://docs.workato.com/en/user-accounts-and-teams/troubleshoot-sso.html)
+
+**API Documentation:**
+- [OEM API Reference](https://docs.workato.com/oem/oem-api.html)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II (including Privacy Trust Principle), SOC 3, ISO 27001, ISO 27701:2019, PCI DSS Level 1 (v4.0), HIPAA (BAA available), IRAP (Australian ISM PROTECTED level) -- via [Workato Security Page](https://www.workato.com/security)
+
+**Security Incidents:**
+- No major public security incidents identified as of early 2026. Workato maintains a bug bounty program through HackerOne.
 
 ---
 

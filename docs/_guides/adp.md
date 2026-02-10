@@ -180,6 +180,33 @@ HAVING COUNT(*) > 10;
 
 ---
 
+## Appendix B: References
+
+**Official ADP Documentation:**
+- [ADP Data Security](https://www.adp.com/about-adp/data-security.aspx)
+- [Data Security Best Practices](https://www.adp.com/about-adp/data-security/best-practices.aspx)
+- [Security Alerts](https://www.adp.com/about-adp/data-security/alerts.aspx)
+- [Data Security Client Resources](https://www.adp.com/about-adp/data-security/client-resources.aspx)
+- [ADP Support](https://support.adp.com/)
+
+**API & Developer Tools:**
+- [ADP Developer Resources](https://developers.adp.com/)
+- [ADP Marketplace](https://apps.adp.com/)
+- [ADP API Central](https://www.adp.com/what-we-offer/integrations/api-central.aspx)
+- [Workforce Now API Catalog](https://developers.adp.com/articles/guides/adp-workforce-now-api-catalog)
+
+**Compliance Frameworks:**
+- SOC 1 Type II and SOC 2 Type II reports (available to customers under NDA) — via [Data Security](https://www.adp.com/about-adp/data-security.aspx)
+- ISO 9001, ISO/IEC 27001, ISO/IEC 27701 (select services and locations)
+- PCI DSS, Sarbanes-Oxley compliance
+- OpenID Connect and OAuth 2.0 for API authentication
+
+**Security Incidents:**
+- **2016 — Flowjacking / W-2 Tax Fraud:** Attackers used stolen credentials and publicly available registration codes to access employee W-2 data at multiple ADP customer companies for tax fraud. ADP itself was not breached; the attack exploited the self-service registration workflow. ([Norton Rose Fulbright Analysis](https://www.nortonrosefulbright.com/en-us/knowledge/publications/52719313/security-issue-could-impact-adp-customers))
+- **September 2024 — BSH Partner Ransomware (Broadcom):** El Dorado ransomware group compromised Business Systems House (BSH), a Middle Eastern ADP partner, exposing Broadcom employee payroll data. ADP stated only "a small subset" of clients in certain Middle Eastern countries were affected. ([The Register Report](https://www.theregister.com/2025/05/16/broadcom_employee_data_stolen_by/))
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

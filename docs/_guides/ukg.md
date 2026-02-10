@@ -374,9 +374,20 @@ Enable and monitor audit logs.
 ## Appendix A: References
 
 **Official UKG Documentation:**
+- [UKG Trust Center](https://trustcenter.ukg.com/)
+- [UKG Community Portal](https://community.ukg.com/)
+- [UKG Developer Hub](https://developer.ukg.com/)
+- [UKG Cybersecurity (ESG)](https://www.ukg.com/company/esg/cybersecurity)
+- [UKG Privacy and Data Protection](https://www.ukg.com/about-us/esg/privacy-and-data-protection)
 - Contact: UFSSO@ukg.com for SSO configuration
 - [UKG Pro SSO Documentation](https://library.ukg.com/a/183581)
 - [Microsoft Entra Integration](https://learn.microsoft.com/en-us/entra/identity/saas-apps/ultipro-tutorial)
+
+**Compliance Frameworks:**
+- SOC 1, SOC 2 (Security, Confidentiality, Availability), ISO 27001, ISO 27017, ISO 27018 -- via [UKG Trust Center](https://trustcenter.ukg.com/)
+
+**Security Incidents:**
+- **December 2021 -- Kronos Private Cloud Ransomware Attack:** UKG suffered a ransomware attack on its Kronos Private Cloud (KPC) platform, disrupting payroll and workforce management services for over 8,000 organizations including hospitals and Fortune 500 companies (MGM Resorts, PepsiCo, Tesla). The outage lasted several weeks. UKG agreed to a $6 million class action settlement and committed to expanded scanning, monitoring, and cold storage backup improvements.
 
 ---
 

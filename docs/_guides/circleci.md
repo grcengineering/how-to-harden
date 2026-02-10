@@ -585,12 +585,22 @@ If you suspect CircleCI compromise:
 ## Appendix B: References
 
 **Official CircleCI Documentation:**
-- [Security Best Practices](https://circleci.com/docs/security-recommendations/)
+- [CircleCI Trust Center](https://trust.circleci.com/)
+- [CircleCI Security](https://circleci.com/security/)
+- [CircleCI Documentation](https://circleci.com/docs/)
+- [Security Recommendations](https://circleci.com/docs/guides/security/security-recommendations/)
 - [OIDC Token Authentication](https://circleci.com/docs/openid-connect-tokens/)
 - [Context Security](https://circleci.com/docs/contexts/)
 
-**Incident Reports:**
-- [January 2023 Security Incident](https://circleci.com/blog/january-4-2023-security-alert/)
+**API Documentation:**
+- [CircleCI API v2 Reference](https://circleci.com/docs/api/v2/index.html)
+- [CircleCI CLI](https://circleci.com/docs/local-cli/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, FedRAMP Authorized (first CI/CD tool to achieve FedRAMP authorization) — via [CircleCI Trust Center](https://trust.circleci.com/)
+
+**Security Incidents:**
+- **January 2023 — Session cookie theft led to customer secrets exfiltration.** Infostealer malware on an engineer's laptop captured an SSO session cookie, bypassing MFA. Attackers accessed production systems and exfiltrated customer OAuth tokens, SSH keys, and environment variables stored in CircleCI contexts. All customers were advised to immediately rotate all secrets. ([CircleCI Incident Report](https://circleci.com/blog/january-4-2023-security-alert/))
 
 ---
 

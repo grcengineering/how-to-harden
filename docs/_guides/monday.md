@@ -419,11 +419,24 @@ Control ability to export data from Monday.com.
 ## Appendix B: References
 
 **Official Monday.com Documentation:**
+- [Monday.com Trust Center](https://monday.com/trustcenter)
+- [Monday.com Help Center](https://support.monday.com/hc/en-us)
+- [Security and Privacy FAQs](https://monday.com/trustcenter/faqs)
 - [SAML Single Sign-on](https://support.monday.com/hc/en-us/articles/360000460605-SAML-Single-Sign-on)
 - [Custom SAML 2.0](https://support.monday.com/hc/en-us/articles/360000461565-Custom-SAML-2-0)
-- [SAML Entra (Azure)](https://support.monday.com/hc/en-us/articles/360001550260-SAML-Entra-previously-known-as-SAML-Azure)
 - [Restrict Who Can Join](https://support.monday.com/hc/en-us/articles/115005319589-Restrict-who-can-join-your-account)
-- [Monday.com SSO with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/saas-apps/mondaycom-tutorial)
+
+**API Documentation:**
+- [Monday.com API Reference](https://developer.monday.com/api-reference/)
+- [Monday.com Developer Documentation](https://developer.monday.com/)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II, SOC 3, ISO 27001, ISO 27017, ISO 27018, ISO 27032, ISO 27701, HIPAA, GDPR — via [Monday.com Trust Center](https://monday.com/trustcenter)
+- [Monday.com Frameworks, Standards and Certifications](https://support.monday.com/hc/en-us/articles/360000769869-monday-com-Frameworks-Standards-and-Certifications)
+- [Monday.com Security Compliance Hub (SafeBase)](https://trust.monday.com/)
+
+**Security Incidents:**
+- No major public security incidents identified for Monday.com. The platform maintains a managed private bug bounty program. Monitor the [Monday.com Trust Center](https://monday.com/trustcenter) for current advisories.
 
 ---
 

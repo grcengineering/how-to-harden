@@ -259,8 +259,25 @@ Secure Square API access.
 ## Appendix A: References
 
 **Official Square Documentation:**
-- [Square Security](https://squareup.com/security)
+- [Square Security](https://squareup.com/us/en/security)
+- [Help Center](https://squareup.com/help/us/en)
+- [Privacy and Security Measures](https://squareup.com/help/us/en/article/3796-privacy-and-security)
+- [Secure Payments](https://squareup.com/us/en/payments/secure)
 - [Team Management](https://squareup.com/help/us/en/article/5068-manage-team-members-in-your-square-account)
+
+**API & Developer Tools:**
+- [Square API Reference](https://developer.squareup.com/reference/square)
+- [Square Developer Portal](https://developer.squareup.com/)
+- SDKs available for multiple languages -- via [Developer Portal](https://developer.squareup.com/)
+
+**Compliance Frameworks:**
+- PCI DSS Level 1 (Service Provider), ISO 27001 -- via [Square Security](https://squareup.com/us/en/security)
+- Square sits on the PCI Board of Advisors and helped evolve PCI Data Security Standards
+- [ISO 27001 Certification Announcement](https://squareup.com/us/en/press/iso-27001-certification)
+
+**Security Incidents:**
+- (2021-12) A former Block (Square) employee accessed Cash App Investing reports after employment ended, exposing full names, brokerage account numbers, and portfolio data for approximately 8.2 million current and former customers. Disclosed April 2022.
+- (2023-09) Multi-hour system outage affected merchants; forensic analysis ruled out cyberattack -- no data breach confirmed.
 
 ---
 

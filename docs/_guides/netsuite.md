@@ -401,8 +401,21 @@ HAVING COUNT(*) > 1000;
 ## Appendix A: References
 
 **Official NetSuite Documentation:**
+- [NetSuite Operational Security](https://www.netsuite.com/portal/platform/infrastructure/operational-security.shtml)
+- [NetSuite Product Documentation](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/index.html)
 - [Security Best Practices](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_N285366.html)
 - [Token-Based Authentication](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4247337262.html)
+
+**API Documentation:**
+- [SuiteTalk REST Web Services](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_1559132836.html)
+- [SuiteScript 2.x API Reference](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/set_1502135122.html)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II, ISO 27001, ISO 27018, PCI DSS, PA-DSS, TX-RAMP — via [NetSuite Operational Security](https://www.netsuite.com/portal/platform/infrastructure/operational-security.shtml)
+- [NetSuite Compliance-Ready Audited Reports (PDF)](https://www.netsuite.com/portal/assets/pdf/wp-compliance-ready-ns-third-party-audited-reports.pdf)
+
+**Security Incidents:**
+- No major public security incidents specific to Oracle NetSuite identified. NetSuite operates within Oracle's broader security infrastructure. Monitor Oracle's [Security Alerts](https://www.oracle.com/security-alerts/) for current advisories.
 
 ---
 

@@ -206,9 +206,30 @@ HAVING COUNT(*) > 500;
 ## Appendix B: References
 
 **Official BambooHR Documentation:**
+- [Trust Center](https://trust.bamboohr.com/) (powered by SafeBase)
+- [Security](https://www.bamboohr.com/legal/security)
+- [BambooHR Help Center](https://help.bamboohr.com/s/)
 - [Third-Party SAML](https://help.bamboohr.com/s/article/587788)
 - [BambooHR SAML SSO with Okta](https://saml-doc.okta.com/SAML_Docs/How-to-Configure-SAML-2.0-for-BambooHR.html)
 - [BambooHR SSO with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/saas-apps/bamboo-hr-tutorial)
+- [Data Processing Agreement](https://www.bamboohr.com/legal/data-processing-agreement)
+
+**API & Developer Tools:**
+- [API Getting Started](https://documentation.bamboohr.com/docs/getting-started)
+- [API Documentation](https://documentation.bamboohr.com/)
+- [Official PHP SDK](https://github.com/BambooHR/bhr-api-php) (MIT license)
+- [Official SDKs Overview](https://documentation.bamboohr.com/docs/sdks)
+- [GitHub Organization](https://github.com/BambooHR)
+
+**Compliance Frameworks:**
+- SOC 1 and SOC 2 Type II (annual third-party audits) — via [Trust Center](https://trust.bamboohr.com/)
+- Records maintained in accordance with ISO 27001 standards — via [Security Page](https://www.bamboohr.com/legal/security)
+- Third-party penetration testing; Defense in Depth and Zero Trust security models
+- Industry-standard encryption for data at rest and in transit
+
+**Security Incidents:**
+- **February 2019 — TRAXPayroll Breach:** An unauthorized third party accessed TRAXPayroll (a BambooHR-related payroll service) between February 5-13, 2019, exposing employee names, SSNs, states of residence, wage types, and tax codes. The attacker attempted to redirect payroll deposits. The BambooHR core platform was not breached. ([DataBreaches.net Report](https://databreaches.net/bamboohr-discloses-breach-involving-traxpayroll/))
+- No major public security incidents identified for the BambooHR core platform in the 2023-2025 timeframe.
 
 ---
 

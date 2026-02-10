@@ -466,10 +466,32 @@ Use IdP conditional access for enhanced security.
 ## Appendix B: References
 
 **Official Airtable Documentation:**
+- [Trust & Security](https://www.airtable.com/company/trust-and-security)
+- [Airtable Support](https://support.airtable.com/)
+- [Security Practices](https://support.airtable.com/docs/airtable-security-practices)
 - [Admin Panel Overview](https://support.airtable.com/docs/overview-of-the-admin-panel)
 - [Configuring SSO in Admin Panel](https://support.airtable.com/docs/configuring-sso-in-the-admin-panel)
 - [Enterprise SSO](https://support.airtable.com/docs/enterprise-sso)
 - [Domain Federation and Verification](https://support.airtable.com/docs/airtable-domain-federation-and-verification)
+- [HIPAA and FERPA Compliance](https://support.airtable.com/docs/hipaa-and-ferpa-compliance)
+- [DORA Compliance](https://support.airtable.com/docs/dora-compliance)
+- [Enterprise Governance](https://www.airtable.com/platform/governance)
+
+**API & Developer Tools:**
+- [Airtable Web API Introduction](https://airtable.com/developers/web/api/introduction)
+- [Airtable Developers Portal](https://airtable.com/developers)
+- [airtable.js (JavaScript Client)](https://github.com/Airtable/airtable.js)
+- [GitHub Organization](https://github.com/airtable)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (annual audit) — available via account manager or sales@airtable.com
+- ISO/IEC 27001:2022, ISO/IEC 27701:2019 (annual audits) — via [Trust & Security](https://www.airtable.com/company/trust-and-security)
+- TX-RAMP Level 2 certified
+- GDPR, UK GDPR, CCPA/CPRA compliance
+- 256-bit AES encryption at rest, 256-bit SSL/TLS in transit
+
+**Security Incidents:**
+- No major public security incidents identified as of early 2026.
 
 ---
 

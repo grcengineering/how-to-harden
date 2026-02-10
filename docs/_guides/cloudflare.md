@@ -740,14 +740,25 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 ## Appendix B: References
 
 **Official Cloudflare Documentation:**
+- [Cloudflare Trust Hub](https://www.cloudflare.com/trust-hub/)
+- [Cloudflare Developer Docs](https://developers.cloudflare.com/)
+- [Security Best Practices](https://developers.cloudflare.com/fundamentals/security/)
 - [Zero Trust Documentation](https://developers.cloudflare.com/cloudflare-one/)
 - [Access Documentation](https://developers.cloudflare.com/cloudflare-one/policies/access/)
 - [Gateway Documentation](https://developers.cloudflare.com/cloudflare-one/policies/gateway/)
 - [WARP Client Documentation](https://developers.cloudflare.com/cloudflare-one/connections/connect-devices/warp/)
 
-**Best Practice Guides:**
-- [Zero Trust Architecture](https://www.cloudflare.com/zero-trust/products/)
-- [Identity-based policies](https://developers.cloudflare.com/cloudflare-one/traffic-policies/identity-selectors/)
+**API Documentation:**
+- [Cloudflare API Reference](https://developers.cloudflare.com/api/)
+- [Terraform Provider](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs)
+- [Cloudflare SDKs](https://developers.cloudflare.com/fundamentals/api/reference/sdks/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (Security, Confidentiality, Availability), ISO 27001:2022, ISO 27018, ISO 27701, PCI DSS Level 1 (Merchant and Service Provider), FedRAMP (In Process, Moderate Baseline) — via [Cloudflare Trust Hub](https://www.cloudflare.com/trust-hub/compliance-resources/)
+
+**Security Incidents:**
+- **November 2023 — Nation-state actor accessed internal Atlassian systems.** Using credentials stolen during the October 2023 Okta breach that Cloudflare failed to rotate, attackers accessed Cloudflare's self-hosted Atlassian Confluence, Jira, and Bitbucket between November 14-24, 2023. No customer data or systems were impacted. Cloudflare rotated over 5,000 production credentials, reimaged all machines across its global network, and physically segmented test/staging systems. ([Cloudflare Blog](https://blog.cloudflare.com/thanksgiving-2023-security-incident/))
+- **March 2025 — Third-party vendor breaches (Salesloft/Drift) exposed limited customer data.** Attackers compromised Cloudflare's marketing vendors, gaining indirect access to a subset of customer information. Cloudflare's core infrastructure was not affected. ([The Register](https://www.theregister.com/2024/02/02/cloudflare_okta_atlassian/))
 
 ---
 

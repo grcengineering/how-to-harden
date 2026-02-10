@@ -354,10 +354,30 @@ Use IAM Access Analyzer for policy validation.
 ## Appendix A: References
 
 **Official AWS Documentation:**
+- [IAM Identity Center User Guide](https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html)
+- [IAM Identity Center Security](https://docs.aws.amazon.com/singlesignon/latest/userguide/security.html)
 - [Security Best Practices in IAM](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html)
-- [IAM Identity Center User Guide](https://docs.aws.amazon.com/singlesignon/latest/userguide/)
 - [Security Reference Architecture - IAM Identity Center](https://docs.aws.amazon.com/prescriptive-guidance/latest/security-reference-architecture/workplace-iam-identity-center.html)
 - [AWS IAM Best Practices](https://aws.amazon.com/iam/resources/best-practices/)
+
+**API & Developer Tools:**
+- [IAM Identity Center API Reference](https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html)
+- [AWS CLI - SSO Admin Commands](https://docs.aws.amazon.com/cli/latest/reference/sso-admin/)
+- [AWS SDKs](https://aws.amazon.com/tools/) (Boto3, JavaScript, Go, Java, .NET, etc.)
+- [AWS CloudFormation IAM Identity Center Resources](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/AWS_SSO.html)
+- [GitHub Organization (aws)](https://github.com/aws)
+
+**Compliance Frameworks:**
+- SOC 1/2/3 Type II (12-month audit periods) — via [AWS Artifact](https://aws.amazon.com/artifact/)
+- ISO/IEC 27001:2022, ISO 27017:2015, ISO 27018:2019 — via [AWS ISO Certified](https://aws.amazon.com/compliance/iso-certified/)
+- FedRAMP (High, Moderate baselines) — via [AWS Compliance Programs](https://aws.amazon.com/compliance/programs/)
+- PCI DSS Level 1, HIPAA, HITRUST, DoD SRG, CSA STAR
+- [Full Compliance Programs List](https://aws.amazon.com/compliance/programs/)
+
+**Security Incidents:**
+- **2025 — IAM Eventual Consistency Exploitation Research:** Researchers disclosed that AWS IAM's eventual consistency model creates a 3-4 second window where deleted access keys remain functional, enabling persistence techniques. AWS applied development fixes and documentation updates in April 2025. ([GBHackers Report](https://gbhackers.com/attackers-abuse-aws-iams/))
+- **November 2025 — Compromised IAM Credentials Mining Campaign:** Attackers used compromised IAM user credentials with admin-like privileges to conduct large-scale crypto mining across EC2 instances, detected by GuardDuty. ([The Hacker News Report](https://thehackernews.com/2025/12/compromised-iam-credentials-power-large.html))
+- Note: These are AWS-wide IAM incidents, not specific to IAM Identity Center itself. AWS manages infrastructure patching for Identity Center as a managed service.
 
 ---
 

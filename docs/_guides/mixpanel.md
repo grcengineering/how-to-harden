@@ -324,9 +324,22 @@ Enable and monitor activity logs.
 ## Appendix A: References
 
 **Official Mixpanel Documentation:**
-- [Mixpanel Security](https://mixpanel.com/security)
+- [Mixpanel Security Overview](https://mixpanel.com/legal/security-overview/)
+- [Mixpanel Product Documentation](https://docs.mixpanel.com/)
+- [Access Security Configuration](https://docs.mixpanel.com/docs/access-security)
 - [SSO Configuration](https://docs.mixpanel.com/docs/orgs-and-projects/sso)
 - [Access Management](https://docs.mixpanel.com/docs/orgs-and-projects/members-and-roles)
+
+**API Documentation:**
+- [Mixpanel API Reference](https://developer.mixpanel.com/reference/overview)
+- [Mixpanel SDKs](https://docs.mixpanel.com/docs/tracking-methods/sdks/javascript)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27701 — via [Mixpanel Security](https://mixpanel.com/legal/security-overview/)
+- Annual third-party security audit, penetration testing, and HackerOne bug bounty program
+
+**Security Incidents:**
+- No major public security incidents identified for Mixpanel. Monitor [Mixpanel Security](https://mixpanel.com/legal/security-overview/) for current advisories.
 
 ---
 

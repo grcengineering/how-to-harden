@@ -428,11 +428,27 @@ Configure alerts for security events.
 ## Appendix B: References
 
 **Official Atlassian Documentation:**
+- [Atlassian Trust Center](https://www.atlassian.com/trust)
+- [Jira Software Cloud Support](https://support.atlassian.com/jira-software-cloud/)
 - [How to Keep Your Organization Secure](https://support.atlassian.com/security-and-access-policies/docs/how-to-keep-my-organization-secure/)
+- [Security Best Practices for Jira](https://support.atlassian.com/jira/kb/how-to-configure-jira-applications-for-security-best-practices/)
 - [Understand Atlassian Guard](https://support.atlassian.com/security-and-access-policies/docs/understand-atlassian-guard/)
-- [Manage API Tokens](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
 - [Configure SAML SSO](https://support.atlassian.com/security-and-access-policies/docs/configure-saml-single-sign-on-with-an-identity-provider/)
-- [Security Overview](https://developer.atlassian.com/cloud/jira/platform/security-overview/)
+- [Manage API Tokens](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
+- [Atlassian Security Advisories](https://www.atlassian.com/trust/security/advisories)
+
+**API & Developer Resources:**
+- [Jira Cloud REST API v3](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/)
+- [Security Overview (Developer)](https://developer.atlassian.com/cloud/jira/platform/security-overview/)
+- [Atlassian Developer Documentation](https://developer.atlassian.com/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27018 -- via [Atlassian Compliance Resource Center](https://www.atlassian.com/trust/compliance/resources)
+
+**Security Incidents:**
+- **CVE-2023-22523 (CVSS 9.8):** Remote code execution in Assets Discovery for Jira Service Management (2023).
+- **Credential-stuffing campaigns (2024):** Multiple organizations experienced Jira account takeovers via compromised credentials, with attackers using integrated tools to scrape data. Six public breaches were reported in five months across various Jira customers.
+- Atlassian publishes security advisories at [atlassian.com/trust/security/advisories](https://www.atlassian.com/trust/security/advisories).
 
 ---
 

@@ -962,18 +962,28 @@ Enable Microsoft Defender for Office 365 and configure alert policies for suspic
 ## Appendix B: References
 
 **Official Microsoft Documentation:**
-- [Microsoft 365 security documentation](https://learn.microsoft.com/en-us/microsoft-365/security/)
+- [Microsoft Trust Center](https://www.microsoft.com/en-us/trust-center)
+- [Microsoft 365 Product Documentation](https://learn.microsoft.com/en-us/microsoft-365/)
+- [Microsoft 365 Security Documentation](https://learn.microsoft.com/en-us/microsoft-365/security/)
 - [Entra ID Conditional Access](https://learn.microsoft.com/en-us/entra/identity/conditional-access/)
-- [Microsoft Graph API reference](https://learn.microsoft.com/en-us/graph/api/overview)
-- [Zero Trust identity and device access policies](https://learn.microsoft.com/en-us/security/zero-trust/zero-trust-identity-device-access-policies-common)
+- [Zero Trust Identity and Device Access Policies](https://learn.microsoft.com/en-us/security/zero-trust/zero-trust-identity-device-access-policies-common)
 
-**Security Incident Reports:**
-- [Midnight Blizzard breach disclosure (January 2024)](https://www.microsoft.com/en-us/msrc/blog/2024/01/microsoft-actions-following-attack-by-nation-state-actor-midnight-blizzard)
-- [Midnight Blizzard update (March 2024)](https://www.microsoft.com/en-us/msrc/blog/2024/03/update-on-microsoft-actions-following-attack-by-nation-state-actor-midnight-blizzard)
+**API Documentation:**
+- [Microsoft Graph API Reference](https://developer.microsoft.com/en-us/graph)
+- [Microsoft Graph REST API v1.0](https://learn.microsoft.com/en-us/graph/api/overview)
+- [Microsoft Graph PowerShell SDK](https://learn.microsoft.com/en-us/powershell/microsoftgraph/)
 
-**CIS Benchmarks:**
+**Compliance Frameworks:**
+- SOC 1, SOC 2, SOC 3, ISO 27001, ISO 27017, ISO 27018, ISO 27701 — via [Microsoft Service Trust Portal](https://servicetrust.microsoft.com/)
+- [Microsoft Compliance Offerings](https://learn.microsoft.com/en-us/compliance/regulatory/offering-home)
+
+**Hardening Benchmarks:**
 - [CIS Microsoft 365 Foundations Benchmark](https://www.cisecurity.org/benchmark/microsoft_365)
 - [NIST NCP Checklist](https://ncp.nist.gov/checklist/1140)
+
+**Security Incidents:**
+- [Midnight Blizzard Breach Disclosure (January 2024)](https://www.microsoft.com/en-us/msrc/blog/2024/01/microsoft-actions-following-attack-by-nation-state-actor-midnight-blizzard) — Russian APT29 compromised Microsoft corporate email via password spray on a test tenant without MFA
+- [Midnight Blizzard Update (March 2024)](https://www.microsoft.com/en-us/msrc/blog/2024/03/update-on-microsoft-actions-following-attack-by-nation-state-actor-midnight-blizzard) — Attackers leveraged exfiltrated data to access source code repositories
 
 ---
 

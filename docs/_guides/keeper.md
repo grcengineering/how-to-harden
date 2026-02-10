@@ -560,11 +560,27 @@ Enable BreachWatch to detect compromised credentials.
 ## Appendix B: References
 
 **Official Keeper Documentation:**
+- [Keeper Trust Center](https://trust.keeper.io/)
+- [Keeper Documentation](https://docs.keeper.io/en)
+- [Keeper Security Architecture](https://www.keepersecurity.com/security.html)
 - [Security Benchmarks and Recommended Settings](https://docs.keeper.io/en/enterprise-guide/recommended-security-settings)
 - [Enforcement Policies](https://docs.keeper.io/en/enterprise-guide/roles/enforcement-policies)
-- [Keeper SSO Connect](https://www.keepersecurity.com/keeper-sso-connect.html)
-- [Admin Console Configuration (SSO Connect)](https://docs.keeper.io/en/sso-connect-on-prem/installation-and-setup/admin-console-configuration)
 - [Enterprise Password Management](https://www.keepersecurity.com/enterprise.html)
+
+**API & Developer Resources:**
+- [Developer Tools](https://docs.keeper.io/en/enterprise-guide/developer-tools)
+- [Keeper Commander CLI](https://docs.keeper.io/en/keeper-commander/overview)
+- [Keeper Secrets Manager](https://docs.keeper.io/en/secrets-manager/overview)
+
+**SSO Integration:**
+- [Keeper SSO Connect Cloud](https://www.keepersecurity.com/keeper-sso-connect.html)
+- [Admin Console Configuration (SSO Connect)](https://docs.keeper.io/en/sso-connect-on-prem/installation-and-setup/admin-console-configuration)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO 27001, ISO 27017, ISO 27018, FedRAMP Authorized, GovRAMP Authorized, PCI DSS, HIPAA -- via [Keeper Trust Center](https://trust.keeper.io/)
+
+**Security Incidents:**
+- No major public security breaches identified. Keeper's zero-knowledge architecture means the company cannot access customer vault data.
 
 ---
 

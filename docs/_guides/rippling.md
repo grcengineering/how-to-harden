@@ -200,6 +200,25 @@ WHERE action IN ('app.add_user', 'app.remove_user')
 
 ---
 
+## Appendix B: References
+
+**Official Rippling Documentation:**
+- [Help Center](https://help.rippling.com/)
+- [Security & Trust](https://www.rippling.com/security)
+- [Trust Center](https://trust.rippling.com/)
+- [7 Steps to Secure Your Rippling Tenant](https://www.rippling.com/blog/seven-powerful-simple-steps-to-secure-your-rippling-tenant)
+
+**API & Developer Resources:**
+- [REST API Documentation](https://developer.rippling.com/documentation/rest-api)
+
+**Compliance & Certifications:**
+- SOC 1 Type II, SOC 2 Type II, ISO 27001, ISO 27018, ISO 42001, CSA STAR Level 2 -- via [Rippling Trust Center](https://trust.rippling.com/)
+
+**Security Incidents:**
+- **Deel Corporate Espionage Incident (March 2025):** Rippling filed a lawsuit against competitor Deel alleging a planted insider (spy) who accessed proprietary sales data, customer information, and competitive intelligence via Slack over several months. This was not a platform breach -- it was an insider threat from a Deel-affiliated employee. Rippling detected the scheme using a honeypot trap.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

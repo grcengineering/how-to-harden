@@ -502,11 +502,24 @@ Regularly monitor compliance dashboard for drift and issues.
 ## Appendix A: References
 
 **Official Drata Documentation:**
-- [Drata Help Center](https://help.drata.com)
+- [Trust Center (SafeBase)](https://trust.drata.com/)
+- [Drata Security](https://drata.com/security)
+- [Drata Help Center](https://help.drata.com/en/)
 - [System Access Control Policy Guidance](https://help.drata.com/en/articles/7211097-system-access-control-policy-guidance)
 - [Platform Overview](https://drata.com/platform)
-- [Drata Security](https://drata.com/security)
 - [CIS v8.1 Framework Overview](https://help.drata.com/en/articles/11145651-cis-v8-1-framework-overview)
+
+**API & Developer Documentation:**
+- [Drata API Documentation](https://developers.drata.com/api-docs/)
+
+**Compliance Frameworks:**
+- SOC 3, ISO 27001:2022, ISO 27017, ISO 27018, ISO 42001:2023 — via [Trust Center](https://trust.drata.com/)
+- HIPAA, CCPA, GDPR compliant
+- CISA Secure-by-Design Pledge holder
+- AWS Qualified Software and AWS Security Software Competency Partner
+
+**Security Incidents:**
+- No major public security incidents identified affecting the Drata platform.
 
 ---
 

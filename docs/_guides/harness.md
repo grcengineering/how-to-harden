@@ -358,9 +358,21 @@ Enable and monitor audit logs.
 ## Appendix A: References
 
 **Official Harness Documentation:**
+- [Trust Center](https://trust.harness.io/)
 - [Harness Security](https://www.harness.io/security)
+- [Developer Hub](https://developer.harness.io/docs/)
+- [Security Hardening for CI](https://developer.harness.io/docs/continuous-integration/secure-ci/security-hardening/)
 - [SAML SSO Configuration](https://developer.harness.io/docs/platform/authentication/single-sign-on-saml/)
 - [RBAC Documentation](https://developer.harness.io/docs/platform/role-based-access-control/)
+
+**API & Developer Tools:**
+- [Harness API Documentation](https://apidocs.harness.io/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018 -- via [Trust Center](https://trust.harness.io/)
+
+**Security Incidents:**
+- No major public security incidents identified as of February 2026.
 
 ---
 

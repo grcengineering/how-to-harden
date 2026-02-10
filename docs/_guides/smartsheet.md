@@ -200,6 +200,29 @@ HAVING export_count > 20;
 
 ---
 
+## Appendix B: References
+
+**Official Smartsheet Documentation:**
+- [Trust Center](https://www.smartsheet.com/trust)
+- [Security](https://www.smartsheet.com/trust/security)
+- [Help Center](https://help.smartsheet.com/)
+- [Security Practices](https://www.smartsheet.com/legal/security)
+
+**API & Developer Tools:**
+- [Developer Portal](https://developers.smartsheet.com/)
+- [API Introduction](https://developers.smartsheet.com/api/smartsheet/introduction)
+- SDKs available for C#, Java, Node.js, and Python -- via [Developer Portal](https://developers.smartsheet.com/)
+
+**Compliance Frameworks:**
+- SOC 1, SOC 2 Type II, SOC 3, ISO 27001:2022, ISO 27018:2019, ISO 27701:2019 -- via [Trust Center / Compliance](https://www.smartsheet.com/trust/compliance)
+- [SOC Reports](https://www.smartsheet.com/trust/compliance/soc)
+- [ISO Certification](https://www.smartsheet.com/trust/compliance/iso)
+
+**Security Incidents:**
+- No major direct Smartsheet data breach publicly reported. In the October 2023 Okta support system compromise, a Smartsheet service account credential was stolen and later used by threat actors to access Cloudflare's Atlassian environment (not a Smartsheet platform breach). Separately, Smartsheet patched an account-hijacking vulnerability before any known exploitation.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

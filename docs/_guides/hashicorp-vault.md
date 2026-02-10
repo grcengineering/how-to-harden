@@ -865,14 +865,25 @@ vault write -f sys/replication/dr/primary/enable
 ## Appendix B: References
 
 **Official HashiCorp Documentation:**
+- [HashiCorp Security](https://www.hashicorp.com/security)
+- [Compliance Overview](https://www.hashicorp.com/en/trust/compliance)
+- [Vault Documentation](https://developer.hashicorp.com/vault/docs)
 - [Production Hardening](https://developer.hashicorp.com/vault/docs/concepts/production-hardening)
 - [Security Model](https://developer.hashicorp.com/vault/docs/internals/security)
-- [Kubernetes Security Considerations](https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-security-concerns)
 - [Auth Methods](https://developer.hashicorp.com/vault/docs/auth)
 - [Audit Devices](https://developer.hashicorp.com/vault/docs/audit)
+- [Kubernetes Security Considerations](https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-security-concerns)
 
-**Supply Chain Incident:**
-- Codecov breach (2021) exposed HashiCorp's GPG signing key via compromised CI environment
+**API & Developer Tools:**
+- [Vault API Documentation](https://developer.hashicorp.com/vault/api-docs)
+- [Vault CLI Reference](https://developer.hashicorp.com/vault/docs/commands)
+- [Terraform Vault Provider](https://registry.terraform.io/providers/hashicorp/vault/latest/docs)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018 (for HCP Vault) -- reports available under NDA via [Compliance Overview](https://www.hashicorp.com/en/trust/compliance)
+
+**Security Incidents:**
+- **Codecov Supply Chain Attack (Apr 2021):** Compromised CI environment at Codecov was used to exfiltrate environment variables from CI builds. HashiCorp's GPG signing key was exposed, forcing rotation of all signing keys and validation of all published software releases.
 
 ---
 

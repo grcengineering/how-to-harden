@@ -468,9 +468,25 @@ Manage all accounts using company domains.
 ## Appendix B: References
 
 **Official Figma Documentation:**
+- [Trust Center (Conveyor)](https://compliance.figma.com/)
+- [Figma Security](https://www.figma.com/security/)
+- [Help Center](https://help.figma.com/hc/en-us)
 - [Guide to SAML SSO](https://help.figma.com/hc/en-us/articles/360040532333-Guide-to-SAML-SSO)
 - [Privacy and Security in Organizations](https://help.figma.com/hc/en-us/articles/360040056294-Privacy-and-security-in-organizations)
 - [Governance+ for Figma Enterprise](https://help.figma.com/hc/en-us/articles/31825370509591-Governance-for-Figma-Enterprise)
+
+**API & Developer Documentation:**
+- [REST API Reference](https://developers.figma.com/docs/rest-api/)
+- [Figma Developer Platform](https://developers.figma.com/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO 27001:2022, ISO 27018 — via [Trust Center](https://compliance.figma.com/)
+- EU Cloud Code of Conduct Level 2 compliant
+- Annual CSA Consensus Assessments Initiative Questionnaire (CAIQ) completion
+- Annual independent external audits against SOC 2 and ISO 27001
+
+**Security Incidents:**
+- No major public security incidents identified affecting the Figma platform.
 
 ---
 

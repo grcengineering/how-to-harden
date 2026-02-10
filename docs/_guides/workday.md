@@ -416,15 +416,27 @@ WHERE field_name IN ('SSN', 'Bank_Account', 'Salary')
 ## Appendix A: References
 
 **Official Workday Documentation:**
-- [Workday Security and Privacy](https://www.workday.com/en-us/why-workday/trust/security.html)
+- [Workday Trust -- Security](https://www.workday.com/en-us/why-workday/trust/security.html)
+- [Workday Trust -- Compliance](https://www.workday.com/en-us/why-workday/trust/compliance.html)
+- [Workday Trust -- Privacy](https://www.workday.com/en-us/why-workday/trust/privacy.html)
+- [Workday Documentation Portal](https://doc.workday.com/)
+- [Workday Community API Reference](https://community.workday.com/api)
 - [Workday SAML SSO with Okta](https://saml-doc.okta.com/SAML_Docs/How-to-Configure-SAML-2.0-for-Workday.html)
 - [Workday SSO with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/saas-apps/workday-tutorial)
+
+**API Documentation:**
+- [Workday REST API](https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html)
+- [Workday Community API](https://community.workday.com/api)
+
+**Compliance Frameworks:**
+- SOC 1, SOC 2 (all five Trust Services Criteria plus NIST CSF and NIST 800-171 via SOC 2+), ISO 27001 (continuously certified since 2010), ISO 27017, ISO 27701 -- via [Workday Compliance](https://www.workday.com/en-us/why-workday/trust/compliance.html)
 
 **Third-Party Security Guides:**
 - [Mastering Workday Security](https://www.valencesecurity.com/saas-security-terms/mastering-workday-security-a-practical-guide-for-effective-management)
 
-**Incident Reference:**
-- 2024 Broadcom/BSH partner breach affected employee data through Workday/ADP integrations
+**Security Incidents:**
+- **2024 -- Broadcom/BSH Partner Breach:** Partner Business Systems House (BSH) was compromised via ransomware, exposing employee data from ADP/Workday integrations. Demonstrates third-party ecosystem vulnerability rather than a direct Workday platform compromise.
+- **August 2025 -- CRM Social Engineering Campaign:** Threat actors accessed Workday's third-party CRM platform (Salesforce) as part of a broader social engineering campaign, stealing primarily business contact information. No access to customer Workday tenants or tenant data was reported. Discovered August 6, disclosed August 15, 2025.
 
 ---
 

@@ -169,6 +169,24 @@ HAVING COUNT(*) > 100;
 
 ---
 
+## Appendix B: References
+
+**Official SAP SuccessFactors Documentation:**
+- [SAP SuccessFactors Platform Documentation](https://help.sap.com/docs/SAP_SUCCESSFACTORS_PLATFORM)
+- [SAP SuccessFactors Security Recommendations](https://help.sap.com/docs/successfactors-platform/implementing-security-features-for-sap-successfactors/sap-successfactors-security-recommendations)
+- [SAP Trust Center](https://www.sap.com/sea/about/trust-center/certification-compliance.html)
+
+**API & Developer Resources:**
+- [SAP SuccessFactors APIs](https://api.sap.com/products/SAPSuccessFactors/apis/all)
+
+**Compliance & Certifications:**
+- SOC 1 Type II, SOC 2 Type II, ISO 27001, ISO 22301, BS 10012 -- via [SAP Trust Center Compliance Finder](https://www.sap.com/sea/about/trust-center/certification-compliance/compliance-finder.html)
+
+**Security Incidents:**
+- No major public security breaches specific to SAP SuccessFactors have been identified. SAP was designated a Critical ICT Third-Party Service Provider (CTPP) by European Supervisory Authorities in November 2025, reflecting its systemic importance to financial sector digital infrastructure.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

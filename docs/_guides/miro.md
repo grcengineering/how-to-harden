@@ -202,6 +202,27 @@ HAVING export_count > 10;
 
 ---
 
+## Appendix B: References
+
+**Official Miro Documentation:**
+- [Miro Trust Center](https://trust.miro.com/)
+- [Miro Help Center](https://help.miro.com/hc/en-us)
+- [Miro Enterprise Security](https://miro.com/enterprise-security/)
+- [Enterprise Guard Deployment Guide](https://help.miro.com/hc/en-us/articles/17120515162386-Enterprise-Guard-Deployment-Guide-Introduction)
+
+**API Documentation:**
+- [Miro Developer Portal](https://developers.miro.com/)
+- [Miro REST API Reference](https://developers.miro.com/reference)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO/IEC 27001, ISO 42001 — via [Miro Trust Center](https://trust.miro.com/)
+- [Miro Security Policy (PDF)](https://miro.com/legal/documents/Miro-Security-Policy.pdf)
+
+**Security Incidents:**
+- No major public security incidents identified for Miro. Monitor the [Miro Trust Center](https://trust.miro.com/) for current advisories.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

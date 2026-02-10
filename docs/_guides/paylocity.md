@@ -387,9 +387,22 @@ Configure controls for regulatory compliance.
 ## Appendix A: References
 
 **Official Paylocity Documentation:**
+- [Trust Center](https://trust.paylocity.com/)
+- [Protecting Our Clients](https://www.paylocity.com/company/protecting-our-clients/)
+- [Client Support](https://www.paylocity.com/contact/client-support/)
 - [Identity and Access Management Guide](https://www.paylocity.com/resources/learn/articles/identity-access-management/)
 - [SSO Integration](https://www.paylocity.com/resources/glossary/sso/)
+- [Trust Center Controls](https://trust.paylocity.com/controls)
 - Contact: service@paylocity.com for SSO enablement
+
+**API Documentation:**
+- [Paylocity Developer Portal](https://developer.paylocity.com/)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II, ISO 27001:2022 — via [Trust Center](https://trust.paylocity.com/)
+
+**Security Incidents:**
+- **November 2018:** A misconfiguration incident temporarily exposed personal information (names, SSNs, addresses) of employees from one client to the administrator of another Paylocity client. No evidence of external attacker involvement. No major breaches of Paylocity infrastructure have been publicly reported since.
 
 ---
 

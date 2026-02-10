@@ -590,16 +590,28 @@ Implement data governance policies for collections and workspaces.
 ## Appendix B: References
 
 **Official Postman Documentation:**
+- [Trust Center (Compliance)](https://www.postman.com/trust/compliance/)
+- [Customer Trust Portal](https://security.postman.com/)
+- [Postman Security Features](https://www.postman.com/trust/postman-security-features/)
+- [Learning Center](https://learning.postman.com/docs/introduction/overview/)
 - [Postman Enterprise Overview](https://learning.postman.com/docs/administration/enterprise/enterprise-overview)
 - [Configure SSO](https://learning.postman.com/docs/administration/sso/admin-sso/)
 - [Intro to SSO](https://learning.postman.com/docs/administration/sso/intro-sso)
 - [Team Security](https://learning.postman.com/docs/administration/security/team-security/)
-- [Sign in to SSO](https://learning.postman.com/docs/administration/sso/user-sso)
 - [How to Securely Deploy Postman at Scale](https://blog.postman.com/how-to-securely-deploy-postman-at-scale-user-management/)
+
+**API Documentation:**
+- [Postman API Reference](https://learning.postman.com/docs/developer/postman-api/intro-api)
 
 **Security Resources:**
 - [Securely Manage Team API Keys](https://blog.postman.com/securely-manage-your-teams-postman-api-keys/)
 - [How to Use API Keys Securely](https://blog.postman.com/how-to-use-api-keys/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO 27001, PCI DSS, CSA STAR, GDPR — via [Compliance Page](https://www.postman.com/trust/compliance/)
+
+**Security Incidents:**
+- **December 2024:** CloudSEK researchers discovered over 30,000 publicly accessible Postman workspaces leaking API keys, access tokens, and refresh tokens across organizations in healthcare, finance, and other industries. The root cause was user misconfiguration (improper workspace visibility settings), not a platform vulnerability. Postman responded by introducing secret-protection policies to prevent public workspaces from exposing sensitive information. — [CloudSEK Report](https://www.cloudsek.com/blog/postman-data-leaks-the-hidden-risks-lurking-in-your-workspaces)
 
 ---
 

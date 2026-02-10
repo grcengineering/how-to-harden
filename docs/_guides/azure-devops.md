@@ -688,9 +688,29 @@ AzureDevOpsAuditing
 ## Appendix B: References
 
 **Official Microsoft Documentation:**
-- [Azure DevOps Security Best Practices](https://docs.microsoft.com/azure/devops/organizations/security/security-best-practices)
-- [Workload Identity Federation](https://docs.microsoft.com/azure/devops/pipelines/library/connect-to-azure)
-- [Audit Logging](https://docs.microsoft.com/azure/devops/organizations/audit/azure-devops-auditing)
+- [Microsoft Service Trust Portal](https://servicetrust.microsoft.com/) (SOC reports, compliance documentation)
+- [Azure DevOps Documentation](https://learn.microsoft.com/en-us/azure/devops/)
+- [Security Best Practices](https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-best-practices)
+- [Workload Identity Federation](https://learn.microsoft.com/en-us/azure/devops/pipelines/library/connect-to-azure)
+- [Audit Logging](https://learn.microsoft.com/en-us/azure/devops/organizations/audit/azure-devops-auditing)
+- [Azure Compliance Documentation](https://learn.microsoft.com/en-us/azure/compliance/)
+
+**API & Developer Tools:**
+- [Azure DevOps REST API](https://learn.microsoft.com/en-us/rest/api/azure/devops/)
+- [Azure DevOps CLI Extension](https://learn.microsoft.com/en-us/azure/devops/cli/)
+- [Azure DevOps SDKs (.NET, Python, Node.js)](https://learn.microsoft.com/en-us/azure/devops/integrate/)
+- [GitHub Organization (Microsoft)](https://github.com/microsoft)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (Azure DevOps specific attestation report available separately) — via [Service Trust Portal](https://servicetrust.microsoft.com/)
+- ISO/IEC 27001:2022 — via [Azure ISO 27001](https://learn.microsoft.com/en-us/azure/compliance/offerings/offering-iso-27001)
+- SOC 1 Type II, ISO 27017, ISO 27018, CSA STAR, FedRAMP (High and Moderate)
+- PCI DSS, HIPAA, HITRUST
+
+**Security Incidents:**
+- **2025 — Critical SSRF and CRLF Injection Vulnerabilities:** Multiple critical vulnerabilities in Azure DevOps endpointproxy and Service Hooks components enabled DNS rebinding attacks and unauthorized access to internal services. Microsoft released patches and awarded a $15,000 bug bounty. ([Legit Security Report](https://www.legitsecurity.com/blog/azure-devops-zero-click-ci/cd-vulnerability))
+- **May 2025 — CVE with CVSS 10.0 in Azure DevOps Server:** Microsoft patched a maximum-severity vulnerability affecting Azure DevOps Server. ([The Hacker News Report](https://thehackernews.com/2025/05/microsoft-fixes-78-flaws-5-zero-days.html))
+- **H1 2025 — 74 Service Incidents:** Azure DevOps experienced 74 unique incidents from January-June 2025, including a 159-hour global Pipelines degradation in January. ([GitProtect Report](https://gitprotect.io/blog/devops-threats-unwrapped-mid-year-report-2025/))
 
 ---
 

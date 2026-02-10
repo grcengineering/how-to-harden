@@ -213,6 +213,27 @@ HAVING COUNT(*) > 5000;
 
 ---
 
+## Appendix B: References
+
+**Official Klaviyo Documentation:**
+- [Klaviyo Trust Center](https://www.klaviyo.com/trust)
+- [Klaviyo Help Center](https://help.klaviyo.com/hc/en-us)
+- [Account Security Best Practices](https://help.klaviyo.com/hc/en-us/articles/360052448451)
+- [Klaviyo Compliance](https://help.klaviyo.com/hc/en-us/sections/14506459013147)
+
+**API & Developer Resources:**
+- [Klaviyo Developer Portal](https://developers.klaviyo.com/en)
+- [Klaviyo REST API Reference](https://developers.klaviyo.com/en/reference/api-overview)
+- [Klaviyo SDKs](https://developers.klaviyo.com/en/docs/sdk-overview)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27017, PCI DSS -- via [Klaviyo Trust](https://www.klaviyo.com/trust). Reports available upon request through Klaviyo support.
+
+**Security Incidents:**
+- **August 2022:** Klaviyo disclosed a phishing attack that compromised an employee's credentials, granting access to internal support tools. Attackers downloaded marketing lists for 38 cryptocurrency-related customer accounts. No passwords, payment data, or credit card numbers were exposed.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

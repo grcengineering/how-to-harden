@@ -756,16 +756,26 @@ ALTER USER svc_tableau SET NETWORK_POLICY = tableau_only;
 ## Appendix B: References
 
 **Official Snowflake Documentation:**
+- [Trust Center](https://trust.snowflake.com/)
+- [Snowflake Documentation](https://docs.snowflake.com/)
 - [Securing Snowflake](https://docs.snowflake.com/en/guides-overview-secure)
 - [Security Overview and Best Practices](https://community.snowflake.com/s/article/Snowflake-Security-Overview-and-Best-Practices)
 - [Network Policies](https://docs.snowflake.com/en/user-guide/network-policies)
 - [MFA Migration Best Practices](https://docs.snowflake.com/en/user-guide/security-mfa-migration-best-practices)
 - [OAuth Overview](https://docs.snowflake.com/en/user-guide/oauth-snowflake-overview)
+- [CIS Benchmark for Snowflake](https://www.cisecurity.org/benchmark/snowflake)
 
-**2024 Breach Analysis:**
-- Mandiant: UNC5537 threat actor campaign
-- Multiple victims: AT&T, Ticketmaster, Santander, LendingTree
-- Root cause: Credential stuffing against accounts without MFA
+**API & Developer Tools:**
+- [REST API Reference](https://docs.snowflake.com/en/developer-guide/snowflake-rest-api/reference)
+- [Python Connector](https://docs.snowflake.com/en/developer-guide/python-connector/python-connector)
+- [Native SDK for Connectors](https://docs.snowflake.com/en/developer-guide/native-apps/connector-sdk/about-connector-sdk)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II, ISO 27001:2022, ISO 27017, ISO 27018, FedRAMP Moderate (SnowGov), FedRAMP High (by request), PCI DSS, HITRUST CSF, IRAP, C5, DoD IL5 -- via [Regulatory Compliance Docs](https://docs.snowflake.com/en/user-guide/intro-compliance)
+- [Security & Compliance Reports](https://www.snowflake.com/en/legal/snowflakes-security-and-compliance-reports/)
+
+**Security Incidents:**
+- (2024) UNC5537 threat actor campaign used credential stuffing against Snowflake customer accounts lacking MFA. 165+ organizations affected including AT&T, Ticketmaster, Santander, and LendingTree. Over 500 million individuals had data exposed. AT&T paid $370,000 ransom. Root cause: customer accounts without MFA -- not a Snowflake platform breach.
 
 ---
 

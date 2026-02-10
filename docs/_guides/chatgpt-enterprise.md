@@ -612,13 +612,24 @@ Establish regular audit trail reviews to detect policy violations, unusual usage
 ## Appendix B: References
 
 **Official OpenAI Documentation:**
-- [ChatGPT Enterprise Privacy](https://openai.com/enterprise-privacy/)
-- [Business Data Privacy](https://openai.com/business-data/)
-- [Admin Controls Help Center](https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-in-apps-enterprise-edu-and-business)
+- [OpenAI Trust Portal](https://trust.openai.com/)
+- [Security and Privacy at OpenAI](https://openai.com/security-and-privacy/)
+- [Business Data Privacy, Security, and Compliance](https://openai.com/business-data/)
+- [ChatGPT Enterprise Help Center](https://help.openai.com/en/collections/5688074-chatgpt-enterprise)
+- [Admin Controls: Security and Compliance](https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-in-apps-enterprise-edu-and-business)
 
-**Compliance Resources:**
-- [OpenAI Security Portal](https://openai.com/security/)
-- [SOC 2 Type II Report](https://openai.com/security/) (available on request)
+**API Documentation:**
+- [OpenAI API Reference](https://platform.openai.com/docs/api-reference/introduction)
+- [Official Python SDK](https://github.com/openai/openai-python)
+- [Official Node.js/TypeScript SDK](https://platform.openai.com/docs/libraries)
+- [Agents SDK](https://platform.openai.com/docs/guides/agents-sdk)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (Security, Availability, Confidentiality, Privacy), ISO 27001:2022, ISO 27017, ISO 27018, ISO 27701 — via [OpenAI Trust Portal](https://trust.openai.com/)
+
+**Security Incidents:**
+- **March 2023 — Redis library bug exposed chat titles and payment info.** A bug in the open-source Redis client library allowed some users to see other users' chat history titles and first messages. Payment information of approximately 1.2% of ChatGPT Plus subscribers was also briefly exposed. ([OpenAI Disclosure](https://openai.com/index/march-20-chatgpt-outage/))
+- **November 2025 — Vendor (Mixpanel) breach exposed limited business customer data.** Attackers breached OpenAI's third-party analytics vendor Mixpanel, stealing names, emails, locations, and technical system details of business customers. No chat data, API keys, credentials, or payment details were compromised. OpenAI suspended the relationship with Mixpanel and initiated broader vendor security reviews. ([OpenAI Disclosure](https://openai.com/index/mixpanel-incident/))
 
 ---
 

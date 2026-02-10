@@ -636,13 +636,24 @@ Following the December 2024 incident:
 ## Appendix A: References
 
 **Official BeyondTrust Documentation:**
-- [Security Best Practices](https://www.beyondtrust.com/docs/security)
-- [API Reference](https://www.beyondtrust.com/docs/api)
-- [CVE-2024-12356 Advisory](https://www.beyondtrust.com/security-advisories)
+- [Trust Center — Corporate Security](https://www.beyondtrust.com/trust-center/security)
+- [Industry Certifications](https://www.beyondtrust.com/trust-center/industry-certifications)
+- [Cloud Security Policies](https://www.beyondtrust.com/trust-center/cloud-security)
+- [BeyondTrust Documentation](https://www.beyondtrust.com/docs)
+- [Appliance Hardening Guide](https://www.beyondtrust.com/docs/beyondinsight-password-safe/appliance/hardening/index.htm)
 
-**Incident Reports:**
-- [CISA Alert: BeyondTrust Vulnerabilities](https://www.cisa.gov/news-events/alerts)
-- [Treasury Department Breach Analysis](https://www.reuters.com/technology/cybersecurity)
+**API & Developer Tools:**
+- [PRA API Guide](https://docs.beyondtrust.com/pra/reference/api-guide)
+- [Remote Support API Documentation](https://www.beyondtrust.com/docs/remote-support/how-to/integrations/api/index.htm)
+- [BeyondInsight API](https://www.beyondtrust.com/docs/beyondinsight-password-safe/api/index.htm)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (annual audits of corporate practices, product portfolio, and cloud environments) — via [Industry Certifications](https://www.beyondtrust.com/trust-center/industry-certifications)
+- ISO/IEC 27001:2022, ISO/IEC 27701 (PIMS) — via [ISO Certification Announcement](https://www.beyondtrust.com/press/iso-270012022-certification)
+- PCI DSS, HIPAA, CISA BOD 22-01 compliance support
+
+**Security Incidents:**
+- **December 2024 — U.S. Treasury Department Breach (CVE-2024-12356, CVSS 9.8):** Chinese APT group Silk Typhoon (APT27) compromised a BeyondTrust Remote Support SaaS API key, gaining access to Treasury Department workstations and unclassified documents. BeyondTrust detected the compromise on December 5, immediately revoked the API key, and notified affected customers. 17 Remote Support SaaS customers were impacted. CVE-2024-12686 (CVSS 6.6, authentication bypass) was also exploited. ([The Hacker News Report](https://thehackernews.com/2024/12/chinese-apt-exploits-beyondtrust-api.html)) ([CyberArk Analysis](https://www.cyberark.com/resources/blog/the-us-treasury-attack-key-events-and-security-implications))
 
 ---
 

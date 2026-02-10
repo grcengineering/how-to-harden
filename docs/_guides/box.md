@@ -167,6 +167,25 @@ HAVING COUNT(*) > 50;
 
 ---
 
+## Appendix B: References
+
+**Official Box Documentation:**
+- [Box Trust Center](https://www.box.com/trust)
+- [Box Support](https://support.box.com/hc/en-us)
+- [Best Practice: Choosing Security Settings](https://support.box.com/hc/en-us/articles/360044193273-Best-Practice-Choosing-Security-Settings)
+
+**API Documentation:**
+- [Box Developer Platform](https://developer.box.com/)
+- [Box SDKs & Tools](https://developer.box.com/sdks-and-tools/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO 27001, ISO 27018, FedRAMP, FIPS 140-2, PCI DSS Level 1, HIPAA/HITECH — via [Box Trust Center](https://www.box.com/trust)
+
+**Security Incidents:**
+- **2019 — Misconfigured shared links exposed enterprise data.** Security researchers at Adversis discovered hundreds of thousands of documents across hundreds of Box customers were publicly accessible due to misconfigured custom shared link URLs. Exposed data included passport photos, SSNs, financial records, and internal network diagrams from companies including Apple, Amadeus, Discovery, and Herbalife. This was not a platform vulnerability but a user misconfiguration of an intended sharing feature. Box responded by disabling the default public custom-sharing URL setting. ([TechCrunch](https://techcrunch.com/2019/03/11/data-leak-box-accounts/))
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

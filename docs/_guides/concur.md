@@ -383,8 +383,21 @@ Configure compliance reports.
 ## Appendix A: References
 
 **Official SAP Concur Documentation:**
-- [SAP Concur Admin Help](https://www.concurtraining.com/customers/admin)
-- [SAP Concur Security](https://www.concur.com/security)
+- [SAP Trust Center](https://www.sap.com/about/trust-center/certification-compliance.html)
+- [SAP Concur Help Center](https://help.sap.com/docs/SAP_CONCUR)
+- [SAP Concur Data Security](https://www.concur.com/en-us/data-security)
+- [SAP Concur Security Best Practices](https://help.sap.com/docs/SAP_CONCUR_SECURITY/b92b8c7fc75a4c8faf62a6584077b022/9c81735f180a4fe380d05549f6d32d12.html)
+
+**API Documentation:**
+- [SAP Concur Developer Center](https://developer.concur.com)
+- [Concur API Reference](https://developer.concur.com/api-reference/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (semi-annual audits since 2017; Security, Availability, Confidentiality, Privacy), SOC 1, ISO 27001 (certified since 2004 as BS 7799) — via [SAP Trust Center Compliance Finder](https://www.sap.com/about/trust-center/certification-compliance/compliance-finder.html)
+
+**Security Incidents:**
+- **2020 — SAP cloud product security standards gap.** SAP disclosed that some cloud products, including SAP Concur, did not meet certain contractually agreed IT security standards. Approximately 40,000 customers were potentially impacted. No customer data was believed compromised, and remediation patches were applied in Q2 2020.
+- No major public data breaches specific to SAP Concur have been identified. The platform is a common target for credential phishing impersonation campaigns.
 
 ---
 

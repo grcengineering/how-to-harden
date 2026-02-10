@@ -294,6 +294,28 @@ WHERE action LIKE '%variable%'
 
 ---
 
+## Appendix B: References
+
+**Official HashiCorp Documentation:**
+- [Security at HashiCorp](https://www.hashicorp.com/en/trust/security)
+- [Terraform Cloud Documentation](https://developer.hashicorp.com/terraform/cloud-docs)
+- [Recommended Practices](https://developer.hashicorp.com/terraform/cloud-docs/recommended-practices)
+
+**API & Developer Tools:**
+- [Terraform Cloud API Documentation](https://developer.hashicorp.com/terraform/cloud-docs/api-docs)
+- [Terraform CLI](https://developer.hashicorp.com/terraform/cli)
+- [Terraform Registry](https://registry.terraform.io/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018 -- via [HashiCorp Compliance Overview](https://www.hashicorp.com/en/trust/compliance)
+- Audit reports available to customers/prospects under NDA (contact customertrust@hashicorp.com)
+
+**Security Incidents:**
+- (2021) HashiCorp's GPG private key used for signing product download hashes was exposed in the Codecov supply-chain attack (January-April 2021). The key was revoked and replaced.
+- (2025) Terraform Enterprise access control vulnerability (HCSEC-2025-34) allowed users with insufficient permissions to create state versions. Fixed in versions 1.1.1 and 1.0.3. No data breach reported.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

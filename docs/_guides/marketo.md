@@ -289,6 +289,25 @@ WHERE asset_type = 'EMAIL'
 
 ---
 
+## Appendix B: References
+
+**Official Adobe Marketo Documentation:**
+- [Adobe Trust Center](https://www.adobe.com/trust.html)
+- [Marketo Engage Product Documentation](https://experienceleague.adobe.com/en/docs/marketo/using/home)
+- [Marketo Engage Security Overview (PDF)](https://www.adobe.com/content/dam/cc/en/trust-center/ungated/whitepapers/experience-cloud/adobe_marketo_data_protection_overview.pdf)
+
+**API Documentation:**
+- [Marketo REST API Reference](https://developer.adobe.com/marketo-apis/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, HIPAA readiness — via [Adobe Trust Center Compliance](https://www.adobe.com/trust/compliance.html)
+- [Adobe Compliance List by Product](https://www.adobe.com/trust/compliance/compliance-list.html)
+
+**Security Incidents:**
+- No major public security incidents specific to Adobe Marketo Engage identified. Adobe experienced a large-scale data breach in 2013 affecting Adobe Creative Cloud accounts (not Marketo). Organizations should monitor the [Adobe Trust Center](https://www.adobe.com/trust.html) for current advisories.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

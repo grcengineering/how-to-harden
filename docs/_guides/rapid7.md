@@ -493,10 +493,23 @@ Integrate InsightVM with InsightIDR for security monitoring.
 ## Appendix A: References
 
 **Official Rapid7 Documentation:**
+- [Rapid7 Documentation](https://docs.rapid7.com/)
 - [Configure SSO access to InsightVM Security Console](https://docs.rapid7.com/insightvm/configuring-sso/)
 - [Configure SSO for Command Platform](https://docs.rapid7.com/insight/single-sign-on/)
 - [Configure Azure as SAML source](https://docs.rapid7.com/insightvm/azure-saml-config/)
 - [Troubleshooting SAML SSO](https://docs.rapid7.com/insightvm/troubleshooting-sso/)
+- [Security Console Best Practices](https://docs.rapid7.com/insightvm/security-console-best-practices/)
+
+**API & Developer Resources:**
+- [Insight Platform API Overview](https://docs.rapid7.com/insight/api-overview/)
+
+**Trust & Compliance:**
+- [Rapid7 Trust Center](https://www.rapid7.com/trust/security/)
+- [Rapid7 Compliance](https://www.rapid7.com/trust/compliance/)
+- SOC 2 Type II, ISO 27001 -- via [Rapid7 Trust Center](https://www.rapid7.com/trust/compliance/)
+
+**Security Incidents:**
+- **Codecov Supply Chain Breach (2021):** Attackers accessed a small subset of Rapid7 source code repositories via a compromised Codecov Bash Uploader. Some internal credentials and alert-related data for a subset of MDR customers were exposed. No direct breach of Rapid7 infrastructure in 2024-2025 has been publicly reported.
 
 ---
 

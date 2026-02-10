@@ -589,9 +589,16 @@ Keep SentinelOne agents updated to ensure latest protection capabilities.
 ## Appendix B: References
 
 **Official SentinelOne Documentation:**
-- [SentinelOne Knowledge Base](https://support.sentinelone.com)
+- [SentinelOne Community / Knowledge Base](https://community.sentinelone.com/s/)
 - [Endpoint Security Best Practices](https://www.sentinelone.com/cybersecurity-101/endpoint-security/endpoint-security-best-practices/)
 - [Policy Configuration Guide](https://support.sentinelone.com) (requires login)
+
+**Trust & Compliance:**
+- [SentinelOne Trust Center](https://trust.sentinelone.com/)
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018 -- via [SentinelOne Trust Center](https://trust.sentinelone.com/)
+
+**Security Incidents:**
+- **China-Linked Attack Attempt (2024-2025):** Chinese state-sponsored threat actors (APT41/PurpleHaze) attempted a supply chain attack against SentinelOne by targeting an IT services vendor working with the company. SentinelOne confirmed no compromise was detected on its software or hardware. The campaign was part of a broader operation targeting 70+ organizations globally between June 2024 and March 2025.
 
 ---
 

@@ -798,17 +798,29 @@ index=slack sourcetype=slack:audit action="app_installed"
 ## Appendix B: References
 
 **Official Slack Documentation:**
-- [Slack Security Documentation](https://slack.com/trust/security)
+- [Trust Center / Security](https://slack.com/trust/security)
+- [Help Center](https://slack.com/help)
+- [Security Tips to Protect Your Workspace](https://slack.com/help/articles/115004155306-Security-tips-to-protect-your-workspace)
+- [Security Practices](https://slack.com/security-practices)
 - [Manage Single Sign-On Settings](https://slack.com/help/articles/220403548-Manage-single-sign-on-settings)
 - [Introduction to Enterprise Grid](https://slack.com/resources/why-use-slack/slack-enterprise-grid)
 - [Enterprise Grid Admin Guide](https://slack.com/help/articles/360004150931)
-- [Slack API Documentation](https://api.slack.com/)
+
+**API & Developer Tools:**
+- [Slack API Documentation](https://docs.slack.dev/apis/)
+- [Legacy API Reference](https://api.slack.com/)
 - [Audit Logs API](https://api.slack.com/admins/audit-logs)
 
-**Compliance Resources:**
-- [Slack Compliance Information](https://slack.com/trust/compliance)
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO 27001, ISO 27017, ISO 27018, APEC PRP, APEC CBPR -- via [Trust Center / Compliance](https://slack.com/trust/compliance)
 - [HIPAA Compliance on Slack](https://slack.com/trust/compliance/hipaa)
-- [FedRAMP Authorization](https://slack.com/trust/compliance/fedramp)
+- [FedRAMP Moderate (Slack), FedRAMP High JAB (GovSlack)](https://slack.com/trust/compliance/fedramp)
+- GDPR, CCPA/CPRA, FINRA compliant -- via [Compliance Resources](https://slack.com/trust/compliance)
+
+**Security Incidents:**
+- (2022-12) Stolen Slack employee tokens used to access externally hosted GitHub repositories. No customer data affected.
+- (2022-07) A vulnerability transmitted hashed user passwords to other workspace members; approximately 0.5% of users required password resets.
+- (2024-07) Credential-stuffing attack using leaked credentials granted unauthorized access to employee accounts and sensitive corporate data. Disclosed July 12, 2024.
 
 ---
 

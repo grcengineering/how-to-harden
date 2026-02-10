@@ -208,6 +208,29 @@ WHERE created_at > NOW() - INTERVAL '24 hours'
 
 ---
 
+## Appendix B: References
+
+**Official Mailchimp Documentation:**
+- [Mailchimp Security](https://mailchimp.com/about/security/)
+- [Mailchimp Help Center](https://mailchimp.com/help/)
+- [Account Security Best Practices](https://mailchimp.com/help/best-practices-for-account-security/)
+- [Intuit Compliance & Security](https://www.intuit.com/compliance/)
+
+**API & Developer Resources:**
+- [Mailchimp Developer Portal](https://mailchimp.com/developer/)
+- [Mailchimp Marketing API](https://mailchimp.com/developer/marketing/)
+- [Mailchimp Transactional API](https://mailchimp.com/developer/transactional/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO 27001, PCI DSS (as part of Intuit) -- SOC 2 report available via [NDA request](https://mailchimp.com/about/security/soc-request/)
+
+**Security Incidents:**
+- **March 2022:** Social engineering attack compromised employee credentials; 319 accounts were viewed and audience data was exported from 102 accounts, primarily targeting cryptocurrency and finance customers.
+- **August 2022:** Employees fell victim to an Okta phishing campaign (0ktapus); 214 Mailchimp accounts were accessed, again focused on cryptocurrency-related customers.
+- **January 2023:** Third social engineering breach in under 12 months; unauthorized access to customer support and admin tools via phished employee credentials, affecting 133 customer accounts.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

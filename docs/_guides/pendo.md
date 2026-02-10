@@ -257,8 +257,20 @@ Configure data privacy controls.
 ## Appendix A: References
 
 **Official Pendo Documentation:**
-- [Pendo Security](https://www.pendo.io/security/)
+- [Trust Center](https://trust.pendo.io/)
+- [Data Privacy & Security](https://www.pendo.io/data-privacy-security/)
+- [Help Center](https://support.pendo.io/hc/en-us)
+- [Security and Privacy in Pendo](https://support.pendo.io/hc/en-us/articles/360031862372-Security-and-privacy-in-Pendo)
 - [SSO Configuration](https://support.pendo.io/hc/en-us/articles/360032201631-Single-Sign-On-SSO-)
+
+**API Documentation:**
+- [Pendo Developer Portal](https://developers.pendo.io/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 42001, HIPAA, GDPR, CCPA — via [Trust Center](https://trust.pendo.io/)
+
+**Security Incidents:**
+- No major public security incidents identified. Pendo conducts annual third-party security audits and penetration testing twice per year.
 
 ---
 

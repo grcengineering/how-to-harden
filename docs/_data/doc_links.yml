@@ -156,7 +156,7 @@ drata:
 dropbox:
   product_docs: "https://help.dropbox.com/"
   api_docs: "https://www.dropbox.com/developers/documentation/http/overview"
-  hardening_docs: "https://aem.dropbox.com/cms/content/dam/dropbox/www/en-us/business/trust/dropbox-security-whitepaper.pdf"
+  hardening_docs: "https://assets.dropbox.com/www/en-us/business/solutions/solutions/dfb_security_whitepaper.pdf"
 
 duo:
   product_docs: "https://duo.com/docs"
@@ -526,7 +526,7 @@ tableau:
 tenable:
   product_docs: "https://docs.tenable.com/"
   api_docs: "https://developer.tenable.com/"
-  hardening_docs: "https://docs.tenable.com/nessus/Content/HardenNessus.htm"
+  hardening_docs: "https://docs.tenable.com/nessus/Content/SettingsAdvanced.htm"
 
 terraform-cloud:
   product_docs: "https://developer.hashicorp.com/terraform/cloud-docs"
@@ -556,7 +556,7 @@ vercel:
 webex:
   product_docs: "https://help.webex.com/"
   api_docs: "https://developer.webex.com/docs/getting-started"
-  hardening_docs: "https://www.cisco.com/c/en/us/td/docs/voice_ip_comm/cloudCollaboration/wbxt/hardening-guide/webex-hardening-guide.html"
+  hardening_docs: "https://help.webex.com/en-us/article/v5rgi1/Cisco-Webex-Best-Practices-for-Secure-Meetings-Site-Administration"
 
 wiz:
   product_docs: "https://docs.wiz.io/"
@@ -576,7 +576,7 @@ workday:
 zendesk:
   product_docs: "https://support.zendesk.com/hc/en-us"
   api_docs: "https://developer.zendesk.com/api-reference/"
-  hardening_docs: "https://support.zendesk.com/hc/en-us/articles/4408883094554-Best-practices-for-Zendesk-account-security"
+  hardening_docs: "https://support.zendesk.com/hc/en-us/articles/4408888782618-General-security-best-practices"
 
 zoom:
   product_docs: "https://support.zoom.com/"

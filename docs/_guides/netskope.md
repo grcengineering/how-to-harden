@@ -559,9 +559,19 @@ Configure comprehensive logging and alerting for security monitoring.
 ## Appendix B: References
 
 **Official Netskope Documentation:**
-- [Netskope Docs](https://docs.netskope.com)
+- [Netskope Security, Compliance and Assurance](https://www.netskope.com/company/security-compliance-and-assurance)
+- [Netskope Product Documentation](https://docs.netskope.com/)
 - [Secure Tenant Configuration and Hardening](https://docs.netskope.com/en/secure-tenant-configuration-and-hardening/)
 - [Threat Protection Best Practices](https://docs.netskope.com/en/netskope-help/data-security/real-time-protection/best-practices-for-real-time-protection-policies/best-practices-for-threat-protection-policies)
+
+**API Documentation:**
+- [Netskope REST API Documentation](https://docs.netskope.com/en/rest-api/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO/IEC 27001:2022, ISO/IEC 27017, ISO/IEC 27018, CSA STAR Level II, PCI DSS v4.0.1, FedRAMP High, C5, Cyber Essentials — via [Netskope Compliance Center](https://compliance.netskope.com/)
+
+**Security Incidents:**
+- No major public security incidents identified for Netskope. Monitor [Netskope Security, Compliance and Assurance](https://www.netskope.com/company/security-compliance-and-assurance) for current advisories.
 
 ---
 

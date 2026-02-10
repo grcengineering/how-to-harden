@@ -370,8 +370,19 @@ Configure compliance and audit reports.
 ## Appendix A: References
 
 **Official Coupa Documentation:**
-- [Coupa Security Center](https://www.coupa.com/security)
-- [Coupa Support Portal](https://success.coupa.com/)
+- [Coupa Trust Center](https://compass.coupa.com/en-us/trust)
+- [Coupa Compliance & Security](https://www.coupa.com/compliance-security/)
+- [Coupa Product Documentation](https://compass.coupa.com/en-us/products/product-documentation)
+- [MFA FAQ & Security Best Practices](https://compass.coupa.com/en-us/products/product-documentation/supplier-resources/for-suppliers/core-supplier-onboarding/announcements-and-general-info/mfa-faq-and-security-best-practices)
+
+**API Documentation:**
+- [Coupa Core API](https://compass.coupa.com/en-us/products/product-documentation/integration-technical-documentation/the-coupa-core-api)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II (Security, Availability, Confidentiality), ISO 27001:2022, ISO 27701:2019, PCI DSS, HIPAA — via [Coupa Compliance & Security](https://www.coupa.com/compliance-security/)
+
+**Security Incidents:**
+- **2017 — W-2 phishing attack exposed employee data.** A social engineering attack impersonating Coupa's CEO tricked HR into releasing employee W-2 forms containing names, SSNs, wages, and tax details. Only 2016 employee data was affected; no customer data was compromised. Coupa reported the incident to the FBI and IRS. ([BankInfoSecurity](https://www.bankinfosecurity.com/silicon-valley-firm-coupa-hit-by-w-2-fraudsters-a-9788))
 
 ---
 

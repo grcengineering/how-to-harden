@@ -624,9 +624,22 @@ Harden Service Provider (SP) connections in federation.
 ## Appendix B: References
 
 **Official Ping Identity Documentation:**
+- [Trust Center](https://www.pingidentity.com/en/legal/trust-center.html)
+- [Security Exhibits](https://www.pingidentity.com/en/legal/security-exhibit.html)
+- [Documentation Portal](https://docs.pingidentity.com/)
 - [PingOne Security Guide](https://docs.pingidentity.com/pingone)
 - [PingFederate Administration](https://docs.pingidentity.com/pingfederate)
-- [API Reference](https://apidocs.pingidentity.com)
+- [Security Best Practices](https://docs.pingidentity.com/pingoneforenterprise/pingone_for_enterprise/p14e_security_best_practices.html)
+
+**API Documentation:**
+- [PingOne API Reference](https://apidocs.pingidentity.com/pingone/main/v1/api/)
+- [API Documentation Portal](https://apidocs.pingidentity.com)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27018, CSA STAR Level 2 — via [Trust Center](https://www.pingidentity.com/en/legal/trust-center.html)
+
+**Security Incidents:**
+- No major public security incidents involving Ping Identity infrastructure have been identified. Ping Identity operates a bug bounty program through HackerOne.
 
 ---
 

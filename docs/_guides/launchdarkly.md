@@ -214,6 +214,25 @@ HAVING COUNT(*) > 10;
 
 ---
 
+## Appendix B: References
+
+**Official LaunchDarkly Documentation:**
+- [LaunchDarkly Security](https://launchdarkly.com/security/)
+- [LaunchDarkly Documentation](https://launchdarkly.com/docs/home)
+- [Security Program Addendum](https://launchdarkly.com/policies/security-program-addendum/)
+
+**API & Developer Resources:**
+- [LaunchDarkly REST API](https://apidocs.launchdarkly.com/)
+- [LaunchDarkly SDKs](https://launchdarkly.com/docs/sdk)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27701, FedRAMP Moderate ATO, HIPAA -- compliance reports available upon request via [LaunchDarkly Support](https://support.launchdarkly.com/hc/en-us/articles/37200551039515-How-to-request-LaunchDarkly-s-SOC-2-ISO-27001-and-penetration-testing-reports)
+
+**Security Incidents:**
+- No major public security breaches identified as of this writing.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

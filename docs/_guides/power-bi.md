@@ -212,6 +212,26 @@ PowerBIActivity
 
 ---
 
+## Appendix B: References
+
+**Official Microsoft Documentation:**
+- [Microsoft Trust Center](https://www.microsoft.com/en-us/trust-center)
+- [Power BI Security](https://powerbi.microsoft.com/en-us/security/)
+- [Power BI Documentation](https://learn.microsoft.com/en-us/power-bi/)
+- [Power BI Security Whitepaper](https://learn.microsoft.com/en-us/power-bi/guidance/white-paper-powerbi-security)
+- [Compliance and Data Privacy](https://learn.microsoft.com/en-us/power-platform/admin/wp-compliance-data-privacy)
+
+**API Documentation:**
+- [Power BI REST API Reference](https://learn.microsoft.com/en-us/rest/api/power-bi/)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II, ISO 27001, ISO 27018, FedRAMP, HIPAA BAA, PCI DSS, FINRA, IL6, EU Model Clauses, UK G-Cloud, and 100+ additional standards — via [Microsoft Trust Center](https://www.microsoft.com/en-us/trust-center)
+
+**Security Incidents:**
+- No major public security incidents specific to Power BI have been identified. Power BI security is managed as part of the broader Microsoft 365 / Azure ecosystem. Refer to the [Microsoft Security Response Center](https://msrc.microsoft.com/) for Microsoft-wide security advisories.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

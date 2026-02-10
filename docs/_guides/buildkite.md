@@ -333,9 +333,24 @@ Enable and monitor audit logs.
 ## Appendix A: References
 
 **Official Buildkite Documentation:**
-- [Buildkite Security](https://buildkite.com/security)
+- [Buildkite Trust Center](https://trust.buildkite.com/)
+- [Buildkite Security](https://buildkite.com/about/security/)
+- [Buildkite Documentation](https://buildkite.com/docs)
+- [Security Controls Best Practices](https://buildkite.com/docs/pipelines/best-practices/security-controls)
 - [SSO Configuration](https://buildkite.com/docs/integrations/sso)
 - [Team Permissions](https://buildkite.com/docs/team-management/permissions)
+- [Securing Your Agent](https://buildkite.com/docs/agent/v3/securing)
+
+**API Documentation:**
+- [Buildkite APIs](https://buildkite.com/docs/apis)
+- [REST API Reference](https://buildkite.com/docs/apis/rest-api)
+- [GraphQL API](https://buildkite.com/docs/apis/graphql-api)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (annual audit covering Pipelines, Package Registries, and Test Engine) — via [Buildkite Trust Center](https://trust.buildkite.com/)
+
+**Security Incidents:**
+- No major public security breaches identified. Buildkite maintains annual third-party penetration testing and a private HackerOne bug bounty program.
 
 ---
 

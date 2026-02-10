@@ -255,8 +255,21 @@ Secure third-party integrations.
 ## Appendix A: References
 
 **Official Gong Documentation:**
+- [Trust Center](https://trust.gong.io/)
 - [Gong Security](https://www.gong.io/security/)
-- [SSO Configuration](https://help.gong.io/hc/en-us/articles/360020282252-SAML-SSO-setup)
+- [Help Center](https://help.gong.io/)
+- [Summary of Security Features](https://help.gong.io/docs/summary-of-security-features)
+- [Security, Privacy and Compliance FAQ](https://help.gong.io/docs/faqs-for-security-privacy-and-compliance)
+
+**API & Developer Tools:**
+- [Gong API Documentation](https://gong.app.gong.io/settings/api/documentation)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, ISO 27701, ISO/IEC 42001:2023, PCI DSS (SAQ D), CSA STAR -- via [Trust Center](https://trust.gong.io/)
+- [Compliance at Gong](https://www.gong.io/trust-center/compliance/)
+
+**Security Incidents:**
+- No major public security incidents identified as of February 2026.
 
 ---
 

@@ -280,9 +280,26 @@ Configure secure checkout settings.
 ## Appendix A: References
 
 **Official Shopify Documentation:**
-- [Shopify Plus Security](https://www.shopify.com/plus/security)
+- [Shopify Security](https://www.shopify.com/security)
+- [Help Center](https://help.shopify.com/en/)
+- [Account Security Best Practices](https://help.shopify.com/en/manual/privacy-and-security/account-security/account-security-best-practices)
 - [SAML Configuration](https://help.shopify.com/en/manual/shopify-plus/saml)
 - [Staff Permissions](https://help.shopify.com/en/manual/your-account/staff-accounts)
+
+**API & Developer Tools:**
+- [Shopify Dev Docs](https://shopify.dev/docs)
+- [Admin API Reference](https://shopify.dev/docs/api)
+- [Shopify CLI](https://shopify.dev/docs/api/shopify-cli)
+- [App Developer Tools & SDKs](https://shopify.dev/docs/apps/tools)
+
+**Compliance Frameworks:**
+- PCI DSS Level 1 (Service Provider), SOC 2 Type II, SOC 3 -- via [Compliance Reports](https://www.shopify.com/legal/compliance/reports)
+- [Viewing Shopify's Compliance Reports](https://help.shopify.com/en/manual/privacy-and-security/account-security/compliance-reports)
+
+**Security Incidents:**
+- (2020) Two rogue support team members accessed data from approximately 200 merchants.
+- (2024) Third-party app vendor (Saara) exposed 25 GB of data from 1,800+ Shopify stores via a misconfigured MongoDB database. Separately, a threat actor claimed to have 179,873 rows of user data.
+- (2025-01) Critical vulnerability in the Consentik Shopify app exposed 4,180+ stores to code injection and account takeover.
 
 ---
 

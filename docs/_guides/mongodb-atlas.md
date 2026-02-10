@@ -484,9 +484,26 @@ Monitor Atlas Activity Feed for administrative and security events.
 ## Appendix B: References
 
 **Official MongoDB Documentation:**
+- [MongoDB Atlas Trust Center](https://www.mongodb.com/products/platform/trust)
+- [MongoDB Atlas Product Documentation](https://www.mongodb.com/docs/atlas/)
 - [Atlas Security Features](https://www.mongodb.com/docs/atlas/setup-cluster-security/)
 - [Network Security Guidance](https://www.mongodb.com/docs/atlas/architecture/current/network-security/)
 - [Security Checklist](https://www.mongodb.com/docs/manual/administration/security-checklist/)
+
+**API Documentation:**
+- [MongoDB Atlas Administration API](https://www.mongodb.com/docs/atlas/api/)
+- [MongoDB Drivers and SDKs](https://www.mongodb.com/docs/drivers/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO/IEC 27001:2022, ISO 27017, ISO 27018, ISO 9001, PCI DSS v4.0, CSA STAR Level 2 — via [MongoDB Atlas Trust Center](https://www.mongodb.com/products/platform/trust)
+- [Request Compliance Reports](https://www.mongodb.com/products/platform/trust/request-compliance-documentation)
+- [MongoDB Atlas Compliance Features](https://www.mongodb.com/docs/atlas/architecture/current/compliance/)
+
+**Hardening Benchmarks:**
+- [CIS MongoDB Benchmark](https://www.cisecurity.org/benchmark/mongodb)
+
+**Security Incidents:**
+- **Corporate Systems Breach (December 2023):** MongoDB detected unauthorized access to corporate systems on December 13, 2023 via a phishing attack. Customer names, phone numbers, email addresses, and account metadata were exposed. One customer's system logs were accessed. MongoDB Atlas cluster data was NOT affected — the attackers never accessed Atlas clusters or the Atlas authentication system. — [MongoDB Security Incident Update](https://www.mongodb.com/company/blog/news/mongodb-security-incident-update-december-20-2023)
 
 ---
 

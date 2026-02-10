@@ -1068,21 +1068,28 @@ Deploy via MDM (Jamf, Intune, etc.) to all developer machines.
 ## Appendix B: References
 
 **Official Cursor Documentation:**
-- [Cursor Privacy Policy](https://cursor.sh/privacy)
-- [Cursor Security](https://cursor.sh/security)
-- [API Key Management](https://cursor.sh/docs/api-keys)
+- [Cursor Trust Center](https://trust.cursor.com/)
+- [Cursor Security](https://cursor.com/security)
+- [Cursor Documentation](https://cursor.com/docs)
+- [Cursor Enterprise](https://cursor.com/enterprise)
 
 **VSCode Security (Cursor inherits):**
 - [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust)
 - [Extension Security](https://code.visualstudio.com/api/references/extension-manifest)
 
-**AI Code Security Research:**
-- OWASP LLM Top 10: https://owasp.org/www-project-top-10-for-large-language-model-applications/
-- AI Code Assistant Security Best Practices: https://github.com/OWASP/www-project-ai-security-and-privacy-guide
-
 **Compliance Frameworks:**
-- NIST AI Risk Management Framework: https://www.nist.gov/itl/ai-risk-management-framework
-- SOC 2 AI Controls Guidance
+- SOC 2 Type II, GDPR, CCPA — via [Cursor Trust Center](https://trust.cursor.com/)
+- Annual third-party penetration testing
+
+**AI Code Security Research:**
+- [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+- [OWASP AI Security and Privacy Guide](https://github.com/OWASP/www-project-ai-security-and-privacy-guide)
+- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)
+
+**Security Incidents:**
+- **August 2025 — CurXecute (CVE-2025-54135) and MCPoison (CVE-2025-54136) vulnerabilities disclosed.** CurXecute allowed prompt injection via MCP-connected Slack to modify global MCP configuration and execute arbitrary commands. MCPoison enabled persistent code execution by silently swapping trusted MCP configuration files in shared GitHub repositories. Both vulnerabilities were patched. ([The Hacker News](https://thehackernews.com/2025/08/cursor-ai-code-editor-vulnerability.html))
+- **September 2025 — Workspace Trust bypass via autorun.** Cursor shipped with Workspace Trust disabled by default, allowing hidden autorun instructions in projects to execute tasks without user consent when opening a folder. ([Help Net Security](https://www.helpnetsecurity.com/2025/09/11/cursor-ai-editor-vulnerability/))
+- No confirmed data breaches affecting user data have been disclosed.
 
 ---
 

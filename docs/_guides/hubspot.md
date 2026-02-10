@@ -359,9 +359,24 @@ WHERE action LIKE '%permission%'
 ## Appendix B: References
 
 **Official HubSpot Documentation:**
+- [Trust Center](https://trust.hubspot.com/)
+- [HubSpot Security Program](https://legal.hubspot.com/security)
+- [Knowledge Base](https://knowledge.hubspot.com/)
 - [Set Up Single Sign-On (SSO)](https://knowledge.hubspot.com/account-security/set-up-single-sign-on-sso)
 - [Account Security and Passwords](https://knowledge.hubspot.com/account-security/account-security-and-passwords)
-- [HubSpot Security Program](https://legal.hubspot.com/security)
+- [Manage Your Account Security (Security Health)](https://knowledge.hubspot.com/account-security/manage-your-account-security-using-hubspost-security-health)
+
+**API & Developer Tools:**
+- [HubSpot Developer Documentation](https://developers.hubspot.com/docs)
+- [HubSpot API Reference](https://developers.hubspot.com/docs/api/overview)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3 -- via [Trust Center](https://trust.hubspot.com/)
+- HubSpot infrastructure hosted on AWS (which maintains ISO 27001, SOC 2 Type II)
+
+**Security Incidents:**
+- **Employee Account Compromise (Mar 2022):** A compromised employee account was used to export contact data from a small number of HubSpot accounts. Cryptocurrency companies including BlockFi, Swan, and NYDIG were targeted; customer names, emails, and phone numbers were exfiltrated.
+- **Customer Account Targeting (Jun 2024):** Bad actors targeted a limited number of HubSpot customers, gaining unauthorized access to fewer than 30 customer portals. Incident was contained within five days.
 
 ---
 

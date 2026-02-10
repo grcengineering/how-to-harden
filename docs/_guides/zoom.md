@@ -364,13 +364,29 @@ WHERE user_id NOT IN (SELECT host_id FROM meetings WHERE id = recording_id);
 ## Appendix B: References
 
 **Official Zoom Documentation:**
+- [Zoom Trust Center](https://trust.zoom.com/)
+- [Zoom Support](https://support.zoom.com/)
+- [Zoom Compliance Page](https://www.zoom.com/en/trust/legal-compliance/)
 - [Zoom Meeting Security Guide](https://www.zoom.com/en/products/virtual-meetings/resources/securing-your-meetings/)
 - [Zoom Security White Paper](https://explore.zoom.us/docs/doc/Zoom-Security-White-Paper.pdf)
+- [Zoom Security Bulletins](https://www.zoom.com/en/trust/security-bulletin/)
 - [Changing Security Settings in a Meeting](https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0061231)
+- [Security Best Practices](https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0060720)
+
+**API Documentation:**
+- [Zoom Developer API Reference](https://developers.zoom.us/docs/api/)
+- [Zoom SDKs](https://developers.zoom.us/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (Security, Availability, Confidentiality, Privacy), SOC 2 + HITRUST, ISO 27001:2013, ISO 27017, ISO 27018, ISO 27701 -- via [Zoom Trust Center](https://trust.zoom.com/)
 
 **Third-Party Guides:**
 - [Zoom Service Hardening Guide](https://socprime.com/blog/zoom-service-hardening-guide/)
 - [Zoom Security Best Practices](https://www.reco.ai/hub/zoom-security-best-practices)
+
+**Security Incidents:**
+- **2020 -- Credential Stuffing / Account Sales:** Over 500,000 Zoom user accounts were compromised via credential stuffing and their details posted for sale on the dark web. This prompted significant security improvements to the platform.
+- **2025 -- DLL Hijacking Vulnerability (CVE-2025-49457, CVSS 9.6):** A critical vulnerability in how the Zoom Windows client loads DLLs allowed attackers to position a malicious DLL for execution. Patched via client update. Zoom disclosed 30 vulnerabilities in 2025 (average CVSS 6.3) and 36 in 2024.
 
 ---
 

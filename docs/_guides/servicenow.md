@@ -309,10 +309,23 @@ Enable and monitor audit logs for security events.
 ## Appendix A: References
 
 **Official ServiceNow Documentation:**
+- [ServiceNow Documentation](https://docs.servicenow.com/)
 - [ServiceNow Security Best Practices Guide](https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/doc-type/resource-center/white-paper/instance-security-best-practice.pdf)
 - [Security Center Hardening](https://www.servicenow.com/community/developer-blog/servicenow-security-hardening-security-center/ba-p/2982684)
-- [Instance Security Hardening Reference](https://www.servicenow.com/docs/bundle/vancouver-platform-security/page/administer/security/reference/security-best-practices-instance-security-hardening.html)
+- [Instance Security Hardening Reference](https://www.servicenow.com/docs/bundle/washingtondc-platform-security/page/administer/security/reference/security-best-practices-instance-security-hardening.html)
 - [SAML 2.0 Configuration](https://www.servicenow.com/docs/r/washingtondc/platform-security/authentication/t_CreateASAML2Upd1SSOConfigMultiSSO.html)
+
+**API & Developer Resources:**
+- [ServiceNow Developer Reference](https://developer.servicenow.com/dev.do#!/reference)
+
+**Trust & Compliance:**
+- [ServiceNow Trust and Compliance Center](https://www.servicenow.com/company/trust.html)
+- [ServiceNow TrustShare Certifications](https://trust.servicenow.com/certifications)
+- SOC 1 Type II, SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, ISO 27701, ISO 9001, ISO 22301, ISO 42001 -- via [ServiceNow Compliance](https://www.servicenow.com/company/trust/compliance.html)
+
+**Security Incidents:**
+- **BodySnatcher / CVE-2025-12420 (October 2025):** A critical vulnerability in the ServiceNow Virtual Agent API and Now Assist AI Agents allowed unauthenticated attackers to impersonate any user (including admins) using only an email address, bypassing MFA and SSO. Patched by ServiceNow on October 30, 2025. No evidence of exploitation in the wild.
+- **Template Injection CVEs (May 2024):** Three vulnerabilities (CVE-2024-4879, CVE-2024-5178, CVE-2024-5217) were patched same day of disclosure but saw in-the-wild exploitation attempts across 6,000+ sites before patching was complete, primarily targeting financial services.
 
 ---
 

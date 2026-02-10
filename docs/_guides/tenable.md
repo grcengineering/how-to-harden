@@ -493,11 +493,25 @@ Use dashboards to monitor hardening compliance posture.
 ## Appendix A: References
 
 **Official Tenable Documentation:**
+- [Trust and Assurance](https://www.tenable.com/trust/assurance)
+- [Tenable Documentation](https://docs.tenable.com/)
+- [Harden Nessus](https://docs.tenable.com/nessus/Content/HardenNessus.htm)
 - [Tenable Vulnerability Management Security Best Practices Guide](https://docs.tenable.com/vulnerability-management/best-practices/security/Content/PDF/Tenable_Vulnerability_Management_Security_Best_Practices_Guide.pdf)
 - [SAML Single Sign-On](https://docs.tenable.com/vulnerability-management/best-practices/security/Content/SingleSignOn.htm)
 - [Add a SAML Configuration](https://docs.tenable.com/vulnerability-management/Content/Settings/SAML/AddSAMLConfiguration.htm)
-- [SAML Settings](https://docs.tenable.com/vulnerability-management/Content/Settings/SAML/SAML.htm)
 - [Tenable Security Center Best Practices Guide](https://docs.tenable.com/security-center/best-practices/product/Content/PDF/Tenable_Security_Center_Best_Practices_Guide.pdf)
+
+**API & Developer Tools:**
+- [Tenable Developer Portal](https://developer.tenable.com/)
+- [Tenable.io API Documentation](https://developer.tenable.com/)
+- [Security Center API Reference](https://docs.tenable.com/security-center/Content/API.htm)
+
+**Compliance Frameworks:**
+- ISO 27001, SOC 2 Type II, FedRAMP (authorized products), CSA STAR -- via [Trust and Assurance](https://www.tenable.com/trust/assurance)
+- Tenable supports customer compliance with CIS Controls, NIST, PCI DSS, HIPAA, and DISA STIG through its audit capabilities
+
+**Security Incidents:**
+- (2025-09) Tenable confirmed a data breach exposing customer contact details and support case information. Unauthorized actors accessed data in Tenable's Salesforce CRM via a compromised integration with the Salesloft Drift marketing application. Core vulnerability assessment products and the Tenable One platform were not affected. Tenable revoked credentials, rotated tokens, and removed the Drift integration.
 
 ---
 

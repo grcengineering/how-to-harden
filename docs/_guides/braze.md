@@ -364,9 +364,23 @@ Configure data retention policies.
 ## Appendix A: References
 
 **Official Braze Documentation:**
-- [Braze Security Documentation](https://www.braze.com/docs/security/)
+- [Braze Trust & Security](https://www.braze.com/product/trust)
+- [Braze User Guide](https://www.braze.com/docs/user_guide/introduction)
+- [Security Settings](https://www.braze.com/docs/user_guide/administrative/app_settings/company_settings/security_settings)
+- [Security Qualifications](https://www.braze.com/docs/developer_guide/disclosures/security_qualifications)
 - [SAML SSO Setup](https://www.braze.com/docs/user_guide/administrative/access_braze/single_sign_on/)
 - [Permission Sets](https://www.braze.com/docs/user_guide/administrative/manage_your_braze_users/user_permissions/)
+
+**API Documentation:**
+- [Braze REST API Reference](https://www.braze.com/docs/api/home)
+- [Security & Vulnerability Disclosure](https://www.braze.com/docs/developer_guide/disclosures/security_and_vulnerability_disclosure)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (Security & Availability), ISO 27001 (renewed August 2025, expires December 2027), HIPAA — via [Security Qualifications](https://www.braze.com/docs/developer_guide/disclosures/security_qualifications)
+
+**Security Incidents:**
+- **2024 — Major platform outage (April 29).** Braze US clusters experienced a near-total outage lasting approximately 11 hours caused by a malfunctioning network switch triggering a spanning tree switching loop. This was described as the first incident of this magnitude in Braze's 13-year history. Dashboard access, data processing, and message sends were all impacted. ([Braze Post-Incident Report](https://www.braze.com/resources/articles/april-29-braze-outage-causes-and-response))
+- No major public data breaches identified.
 
 ---
 

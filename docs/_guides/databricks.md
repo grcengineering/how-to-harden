@@ -465,6 +465,29 @@ GROUP BY user_identity.email, source_ip_address;
 
 ---
 
+## Appendix B: References
+
+**Official Databricks Documentation:**
+- [Databricks Trust Center](https://www.databricks.com/trust)
+- [Databricks Trust & Compliance](https://www.databricks.com/trust/compliance)
+- [Databricks Documentation (AWS)](https://docs.databricks.com/aws/en/)
+- [Security Best Practices](https://docs.databricks.com/aws/en/lakehouse-architecture/security-compliance-and-privacy/best-practices)
+- [Security and Trust Center Report](https://www.databricks.com/trust/report)
+
+**API Documentation:**
+- [Databricks REST API](https://docs.databricks.com/api/workspace/introduction)
+- [Databricks CLI](https://docs.databricks.com/dev-tools/cli/index.html)
+- [Databricks SDKs](https://docs.databricks.com/dev-tools/sdks/index.html) (Python, Java, Go)
+- [Terraform Provider](https://registry.terraform.io/providers/databricks/databricks/latest/docs)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001:2022, HIPAA, PCI DSS, FedRAMP Moderate (AWS SQL Serverless), HITRUST CSF (Azure) — via [Databricks Compliance](https://www.databricks.com/trust/compliance)
+
+**Security Incidents:**
+- No major public data breaches affecting Databricks customers have been identified. A platform vulnerability discovered by Orca Security in April 2023 was promptly remediated. Databricks maintains annual third-party penetration testing and a documented security incident response program.
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

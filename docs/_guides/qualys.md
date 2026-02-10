@@ -521,11 +521,23 @@ Configure approval workflows for automated remediation.
 ## Appendix A: References
 
 **Official Qualys Documentation:**
+- [Qualys Documentation](https://www.qualys.com/documentation/)
 - [Get Started with VM/VMDR](https://docs.qualys.com/en/vm/latest/welcome_to_vm.htm)
 - [Scanning Basics](https://docs.qualys.com/en/vm/latest/scans/scanning_basics.htm)
 - [VMDR Datasheet](https://www.qualys.com/docs/vmdr-datasheet.pdf)
 - [VMDR Complete Advantage Blog](https://blog.qualys.com/product-tech/2025/02/24/from-vulnerability-scanning-to-risk-management-the-complete-vmdr-advantage)
 - [Policy Compliance Datasheet](https://cdn2.qualys.com/docs/mktg/policy-compliance-datasheet.pdf)
+- [Security Configuration Assessment Guide (PDF)](https://www.qualys.com/docs/qualys-security-configuration-assessment-guide.pdf)
+
+**API & Developer Resources:**
+- [Qualys API Documentation](https://www.qualys.com/documentation/)
+
+**Compliance & Certifications:**
+- SOC 2 Type II, ISO 27001, CSA STAR Level 2 -- via [Qualys Certifications](https://success.qualys.com/support/s/standards)
+
+**Security Incidents:**
+- **Accellion FTA Breach (2021):** Qualys confirmed data was accessed via a zero-day vulnerability in the Accellion FTA file transfer appliance used by Qualys. Production environments and customer data on the Qualys Cloud Platform were not affected.
+- **Salesloft/Drift Supply Chain Attack (September 2025):** Attackers exfiltrated OAuth tokens from breached Salesloft/Drift infrastructure and accessed some data in Qualys's Salesforce environment (leads and contacts). No impact to Qualys production environments, codebase, or customer platform data. Mandiant was engaged for investigation.
 
 ---
 

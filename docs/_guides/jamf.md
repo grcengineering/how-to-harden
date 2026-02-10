@@ -450,13 +450,28 @@ Enable comprehensive audit logging for Jamf Pro activities.
 ## Appendix B: References
 
 **Official Jamf Documentation:**
+- [Trust Center - Compliance](https://www.jamf.com/trust-center/compliance/)
+- [Security Portal](https://security.jamf.com/)
+- [Information Security](https://www.jamf.com/trust-center/information-security/)
+- [Product Documentation](https://www.jamf.com/resources/product-documentation/)
 - [Jamf Pro Documentation](https://learn.jamf.com)
 - [Jamf Pro Security Recommendations](https://learn.jamf.com/en-US/bundle/technical-articles/page/Jamf_Pro_Security_Recommendations.html)
-- [macOS Security Checklist for CIS](https://resources.jamf.com/documents/white-papers/macos-security-checklist-for-cis-benchmark.pdf)
+- [Third-Party Audits](https://learn.jamf.com/en-US/bundle/jamf-pro-security-overview/page/Third-Party_Audits.html)
+
+**API & Developer Tools:**
+- [Jamf Developer Portal](https://developer.jamf.com/)
+- [Jamf Pro API Reference](https://developer.jamf.com/jamf-pro/reference/classic-api)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27701 -- via [Trust Center](https://www.jamf.com/trust-center/compliance/) and [Security Portal](https://security.jamf.com/)
+
+**Security Incidents:**
+- No major public security incidents affecting Jamf's hosted infrastructure identified as of February 2026. Product-level CVEs (e.g., broken access control in Jamf Pro Server before 10.46.1) have been patched through standard release cycles.
 
 **Community Resources:**
 - [Jamf Compliance Editor (GitHub)](https://github.com/jamf/Jamf-Compliance-Editor)
 - [CIS macOS Benchmark](https://www.cisecurity.org/benchmark/apple_os)
+- [macOS Security Checklist for CIS](https://resources.jamf.com/documents/white-papers/macos-security-checklist-for-cis-benchmark.pdf)
 
 ---
 

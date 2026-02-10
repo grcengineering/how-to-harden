@@ -601,10 +601,23 @@ Detect and respond to account compromise.
 ## Appendix B: References
 
 **Official Twilio SendGrid Documentation:**
+- [SendGrid Documentation](https://www.twilio.com/docs/sendgrid)
 - [Two-Factor Authentication](https://sendgrid.com/docs/ui/account-and-settings/two-factor-authentication/)
 - [Single Sign-On](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/sso)
 - [API Key Management](https://docs.sendgrid.com/for-developers/sending-email/upgrade-your-authentication-method-to-api-keys)
 - [Secure Your Account](https://www.twilio.com/docs/sendgrid/concepts/security/secure-account)
+- [7 Best Practices to Protect Your SendGrid Account](https://sendgrid.com/en-us/blog/7-best-practices-to-protect-your-twilo-sendgrid-account-and-sending-reputation)
+
+**API & Developer Resources:**
+- [SendGrid API Reference](https://www.twilio.com/docs/sendgrid/api-reference)
+
+**Trust & Compliance:**
+- [SendGrid Security](https://sendgrid.com/en-us/policies/security)
+- [Twilio Trust Center](https://www.twilio.com/en-us/trust-center)
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, PCI DSS -- via [Twilio Compliance Documents](https://www.twilio.com/en-us/trust-center/compliance-documents)
+
+**Security Incidents:**
+- No major public security breaches specific to SendGrid's infrastructure have been identified in recent years. Parent company Twilio experienced a phishing attack in August 2022 that exposed limited customer data. SendGrid accounts are frequently targeted by credential stuffing and account takeover attacks, which is why 2FA has been mandatory since Q4 2020.
 
 ---
 

@@ -277,6 +277,25 @@ WHERE EXTRACT(HOUR FROM timestamp) NOT BETWEEN 8 AND 18;
 
 ---
 
+## Appendix B: References
+
+**Official Oracle Documentation:**
+- [Oracle Cloud Compliance](https://www.oracle.com/corporate/cloud-compliance/)
+- [Oracle Corporate Security Practices](https://www.oracle.com/corporate/security-practices/corporate/governance/)
+- [Oracle HCM Cloud Documentation](https://docs.oracle.com/en/cloud/saas/human-resources/)
+- [Best Practices for HCM Data Roles and Security Profiles](https://docs.oracle.com/en/cloud/saas/human-resources/24d/ochus/best-practices-for-hcm-data-roles-and-security-profiles.html)
+
+**API Documentation:**
+- [HCM REST API Reference](https://docs.oracle.com/en/cloud/saas/human-resources/24d/farws/index.html)
+
+**Compliance Frameworks:**
+- SOC 1 Type II, SOC 2 Type II, SOC 3, ISO 27001, FedRAMP High (U.S. Government Regions), PCI DSS, HIPAA, CSA STAR — via [Oracle Cloud Compliance](https://www.oracle.com/corporate/cloud-compliance/)
+
+**Security Incidents:**
+- **March 2025:** Threat actor "rose87168" exploited CVE-2021-35587 (unpatched Java vulnerability in Oracle Fusion Middleware) on legacy Oracle Cloud Classic (Gen 1) servers, exfiltrating approximately 6 million SSO/LDAP records including encrypted passwords and key files affecting over 140,000 tenants. Oracle initially denied the breach but later privately confirmed it to affected customers. Multiple class-action lawsuits followed. — [CloudSEK Report](https://www.cloudsek.com/blog/the-biggest-supply-chain-hack-of-2025-6m-records-for-sale-exfiltrated-from-oracle-cloud-affecting-over-140k-tenants)
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

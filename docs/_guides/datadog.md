@@ -330,11 +330,28 @@ Monitor administrative and security events.
 ## Appendix A: References
 
 **Official Datadog Documentation:**
+- [Trust Hub](https://www.datadoghq.com/trust/)
+- [Trust Center (SafeBase)](https://trust.datadoghq.com/)
+- [Safety Center / Hardening](https://docs.datadoghq.com/account_management/safety_center/)
 - [Single Sign On With SAML](https://docs.datadoghq.com/account_management/saml/)
 - [Access Control (RBAC)](https://docs.datadoghq.com/account_management/rbac/)
 - [How to Set Up RBAC for Logs](https://docs.datadoghq.com/logs/guide/logs-rbac/)
 - [Datadog Security](https://docs.datadoghq.com/security/)
 - [Role Permissions](https://docs.datadoghq.com/account_management/rbac/permissions/)
+- [Privacy at Datadog](https://www.datadoghq.com/privacy/)
+
+**API & Developer Documentation:**
+- [REST API Reference](https://docs.datadoghq.com/api/latest/)
+- [Product Documentation](https://docs.datadoghq.com/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, ISO 27701 — via [Trust Center](https://trust.datadoghq.com/)
+- HIPAA-compliant Log Management available
+- CSA Security, Trust & Assurance Registry (STAR) registered
+- Annual penetration testing by NCC Group
+
+**Security Incidents:**
+- No major public security incidents identified affecting the Datadog platform directly.
 
 ---
 

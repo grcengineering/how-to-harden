@@ -275,9 +275,29 @@ Secure webhook callbacks.
 ## Appendix A: References
 
 **Official Twilio Documentation:**
-- [Twilio Security](https://www.twilio.com/docs/usage/security)
+- [Trust Center](https://www.twilio.com/en-us/trust-center)
+- [Twilio Security](https://www.twilio.com/en-us/security)
+- [Security Overview](https://www.twilio.com/en-us/legal/security-overview)
+- [Twilio Docs](https://www.twilio.com/docs)
+- [Security Best Practices](https://www.twilio.com/docs/usage/security)
 - [SSO Configuration](https://www.twilio.com/docs/iam/sso)
 - [API Keys](https://www.twilio.com/docs/iam/api-keys)
+
+**API & Developer Tools:**
+- [API Reference](https://www.twilio.com/docs/usage/api)
+- [Twilio CLI](https://www.twilio.com/docs/twilio-cli)
+- [Helper Libraries / SDKs](https://www.twilio.com/docs/libraries) (Node.js, Python, Java, C#, PHP, Ruby, Go)
+
+**Compliance Frameworks:**
+- SOC 2 Type I, ISO 27001, ISO 27017, ISO 27018, PCI DSS -- via [Trust Center](https://www.twilio.com/en-us/trust-center)
+- [Trust and Security Documents](https://www.twilio.com/en-us/trust-center/compliance-documents)
+- [ISO/IEC Certification Details](https://www.twilio.com/docs/usage/security/iso-iec-certification)
+- GDPR compliant -- via [Twilio GDPR Program](https://www.twilio.com/en-us/gdpr)
+
+**Security Incidents:**
+- (2022-06) Voice phishing attack on a Twilio employee led to unauthorized access to customer contact information. Part of the broader "0ktapus" campaign.
+- (2022-08) SMS phishing ("smishing") campaign targeted Twilio employees, compromising credentials and accessing data for 209 customers and 93 Authy end users. Also part of the "0ktapus" campaign affecting 130+ organizations.
+- (2024-07) Unauthenticated Authy API endpoint exploited to enumerate 33 million phone numbers linked to Authy accounts. Disclosed after threat actor ShinyHunters posted the data on a dark web forum.
 
 ---
 

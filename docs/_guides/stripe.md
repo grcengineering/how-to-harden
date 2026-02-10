@@ -295,9 +295,25 @@ Use restricted API keys for specific functions.
 ## Appendix A: References
 
 **Official Stripe Documentation:**
-- [Stripe Security](https://stripe.com/docs/security)
-- [Team Management](https://stripe.com/docs/account/team)
-- [API Keys](https://stripe.com/docs/keys)
+- [Security at Stripe](https://docs.stripe.com/security)
+- [Support Center](https://support.stripe.com/)
+- [Team Management](https://docs.stripe.com/account/team)
+- [API Keys](https://docs.stripe.com/keys)
+
+**API & Developer Tools:**
+- [API Reference](https://docs.stripe.com/api)
+- [Stripe CLI](https://docs.stripe.com/stripe-cli)
+- [Stripe.js & SDKs](https://docs.stripe.com/development)
+- [Webhook Security](https://docs.stripe.com/webhooks/signatures)
+
+**Compliance Frameworks:**
+- PCI DSS Level 1 (Service Provider -- most stringent level), SOC 1 Type II, SOC 2 Type II, SOC 3 -- via [Security at Stripe](https://docs.stripe.com/security)
+- EMVCo Level 1 & 2 (Stripe Terminal), PCI PA-DSS (Terminal)
+- [Payments Security and Compliance Guide](https://stripe.com/guides/payments-security-and-compliance)
+
+**Security Incidents:**
+- (2024) Evolve Bank & Trust (a Stripe banking partner) was breached by LockBit ransomware. Customer data from Stripe and other fintechs may have been exposed, including names, SSNs, and bank account numbers. This was not a direct Stripe platform breach.
+- (2024-2025) Web skimming campaign exploited legacy Stripe API endpoints to validate stolen credit card data across approximately 49 merchant sites. Stripe infrastructure was not compromised.
 
 ---
 

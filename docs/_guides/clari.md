@@ -279,7 +279,17 @@ Enable and monitor audit logs (Enterprise tier).
 
 **Official Clari Documentation:**
 - [Clari Security](https://www.clari.com/security/)
-- [Application Security](https://www.clari.com/product/application-security)
+- [Clari Community](https://community.clari.com/)
+- [Vulnerability Disclosure Policy](https://www.clari.com/vulnerability-disclosure-policy/)
+
+**API Documentation:**
+- [Clari Developer Portal](https://developer.clari.com/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (zero exemptions, audited by A-LIGN), ISO 27001 (certified by BSI Group with zero adverse findings) — via [Clari Security](https://www.clari.com/security/)
+
+**Security Incidents:**
+- No major public data breaches identified. Clari has experienced operational incidents (delayed data processing, module loading issues) but none involving customer data compromise.
 
 ---
 

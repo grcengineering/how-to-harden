@@ -641,9 +641,29 @@ Conduct regular security reviews of workspace configuration and access.
 ## Appendix B: References
 
 **Official Atlassian Documentation:**
-- [Bitbucket Cloud Security](https://bitbucket.org/product/cloud-security)
-- [Maintain Security in Bitbucket](https://confluence.atlassian.com/display/SECURITY/Maintain+security+in+Bitbucket)
+- [Atlassian Trust Center](https://www.atlassian.com/trust) | [Customer Trust Center](https://customertrust.atlassian.com/) (powered by Conveyor)
+- [Bitbucket Cloud Support](https://support.atlassian.com/bitbucket-cloud/)
+- [Bitbucket Cloud Security](https://support.atlassian.com/bitbucket-cloud/docs/security/)
 - [Atlassian Guard Documentation](https://support.atlassian.com/security-and-access-policies/)
+- [Security Advisories](https://www.atlassian.com/trust/security/advisories)
+- [Bitbucket Server Security Advisories](https://confluence.atlassian.com/bitbucketserver/bitbucket-server-security-advisories-776640597.html)
+
+**API & Developer Tools:**
+- [Bitbucket Cloud REST API](https://developer.atlassian.com/cloud/bitbucket/rest/)
+- [Integrating with Bitbucket Cloud](https://developer.atlassian.com/cloud/bitbucket/)
+- [Bitbucket Data Center REST API](https://developer.atlassian.com/server/bitbucket/rest/v1000/)
+- [Atlassian Developer Portal](https://developer.atlassian.com/)
+- [GitHub Organization (Atlassian)](https://github.com/atlassian)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO/IEC 27001:2022 (as part of Atlassian Cloud platform) — via [Atlassian Compliance Resources](https://www.atlassian.com/trust/compliance/resources)
+- SOX, PCI DSS compliance
+- [Compliance FAQ](https://www.atlassian.com/trust/compliance/compliance-faq)
+
+**Security Incidents:**
+- **May 2024 — Plaintext Secrets Leak in Pipeline Artifacts:** Mandiant discovered that Bitbucket Cloud pipeline artifacts could unintentionally expose plaintext authentication secrets (including AWS credentials) stored in "Secured Variables." Attackers exploited this to attempt AWS account compromise. ([Vorlon Report](https://vorlon.io/saas-security-blog/bitbucket-springs-a-secrets-leak))
+- **2024 — Bitbucket Data Center Vulnerabilities:** 20 high-severity vulnerabilities (CVSS > 7.4) patched across Bitbucket Data Center/Server, including CVE-2024-38819 (CVSS 7.5, path traversal). ([Stack.Watch Tracker](https://stack.watch/product/atlassian/bitbucket/))
+- **2024 — Infrastructure Reliability:** 38 service incidents recorded with over 207 hours of total downtime; approximately half classified as major or critical impact. ([GitProtect Report](https://gitprotect.io/blog/the-state-of-atlassian-threat-landscape-2024-in-review/))
 
 **Third-Party Resources:**
 - [Bitbucket Security Best Practices - Snyk](https://snyk.io/blog/cheat-sheet-10-bitbucket-security-best-practices/)

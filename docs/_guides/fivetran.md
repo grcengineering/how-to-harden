@@ -542,10 +542,25 @@ Implement data governance controls for sensitive data.
 ## Appendix B: References
 
 **Official Fivetran Documentation:**
+- [Trust Center (SafeBase)](https://trust.fivetran.com/)
+- [Fivetran Security](https://www.fivetran.com/security)
+- [Fivetran Security Documentation](https://fivetran.com/docs/security)
+- [Getting Started](https://fivetran.com/docs/getting-started)
 - [Single Sign-On](https://fivetran.com/docs/using-fivetran/fivetran-dashboard/account-settings/sso)
 - [Account Settings](https://fivetran.com/docs/using-fivetran/fivetran-dashboard/account-settings)
 - [SSO with Okta](https://fivetran.com/docs/using-fivetran/fivetran-dashboard/account-settings/sso/okta-saml-sso)
 - [SSO with Microsoft Entra ID](https://fivetran.com/docs/getting-started/account/azure-saml-sso)
+
+**API & Developer Documentation:**
+- [REST API Reference](https://fivetran.com/docs/rest-api/api-reference)
+- [Compliance Standards](https://fivetran.com/docs/trust/compliance)
+
+**Compliance Frameworks:**
+- SOC 1, SOC 2 Type II, ISO 27001, PCI DSS, HITRUST i1, CyberEssentials — via [Trust Center](https://trust.fivetran.com/)
+- [Fivetran Security Whitepaper](https://resources.fivetran.com/datasheets/fivetran-security-whitepaper)
+
+**Security Incidents:**
+- No major public security incidents identified affecting the Fivetran platform.
 
 ---
 

@@ -232,8 +232,23 @@ Configure data retention policies.
 ## Appendix A: References
 
 **Official Fullstory Documentation:**
+- [Trust Center (SafeBase)](https://trust.fullstory.com/)
 - [Fullstory Security](https://www.fullstory.com/security/)
+- [Help Center](https://help.fullstory.com/hc/en-us)
+- [Comprehensive Compliance Program](https://help.fullstory.com/hc/en-us/articles/360020624254-Fullstory-s-Comprehensive-Compliance-Program)
+- [Security and Privacy Documentation Overview](https://help.fullstory.com/hc/en-us/articles/360020624254-Security-and-Privacy-Documentation-Overview)
 - [SSO Configuration](https://help.fullstory.com/hc/en-us/articles/360020624174-Configure-SAML-based-SSO)
+
+**API & Developer Documentation:**
+- [Fullstory Developer Portal](https://developer.fullstory.com/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO 27001:2022, ISO 27017, ISO 27018, ISO 27701, ISO 42001 — via [Trust Center](https://trust.fullstory.com/)
+- First in its industry to achieve ISO 42001 (AI Management System) certification
+- Annual comprehensive internal and independent external audits
+
+**Security Incidents:**
+- No major public security incidents identified affecting the Fullstory platform.
 
 ---
 

@@ -174,6 +174,30 @@ WHERE action = 'share_link_create'
 
 ---
 
+## Appendix B: References
+
+**Official Dropbox Documentation:**
+- [Trust Center](https://trust.dropbox.com/)
+- [Help Center](https://help.dropbox.com/)
+- [Certifications & Compliance](https://www.dropbox.com/business/trust/compliance/certifications-compliance)
+- [Security Whitepaper (PDF)](https://aem.dropbox.com/cms/content/dam/dropbox/www/en-us/business/trust/dropbox-security-whitepaper.pdf)
+
+**API & Developer Documentation:**
+- [Dropbox HTTP API Overview](https://www.dropbox.com/developers/documentation/http/overview)
+- [Dropbox Developer Center](https://www.dropbox.com/developers)
+
+**Compliance Frameworks:**
+- SOC 2 Type II (Ernst & Young LLP audited), ISO 27001, ISO 27017, ISO 27018, ISO 22301, ISO 27701 — via [Trust Center](https://trust.dropbox.com/)
+- CSA STAR Level 2 Certification and Attestation
+- GDPR, HIPAA compliant
+
+**Security Incidents:**
+- **2024 Dropbox Sign Breach:** Compromised service account exposed OAuth tokens, API keys, hashed passwords, and MFA data for Dropbox Sign (formerly HelloSign) users.
+- **2022 GitHub Repository Breach:** Phishing attack against Dropbox employees resulted in 130 private code repositories being accessed and copied.
+- **2012 Password Breach:** Credentials stolen from a third-party site used to access a Dropbox employee account, leading to exposure of approximately 68 million user email addresses and hashed passwords (disclosed publicly in 2016).
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |
