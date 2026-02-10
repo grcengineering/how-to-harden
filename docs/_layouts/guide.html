@@ -111,13 +111,14 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
-// Monaco Editor — read-only code block rendering
-// Loads lazily from jsDelivr CDN when first code block nears viewport
+// Code block enhancement — two-tier progressive approach
+// Tier 1: Instant styled wrappers with language label + copy button
+// Tier 2: Monaco Editor upgrade from self-hosted files
 (function() {
   'use strict';
 
-  var MONACO_VERSION = '0.52.0';
-  var MONACO_CDN = 'https://cdn.jsdelivr.net/npm/monaco-editor@' + MONACO_VERSION + '/min/vs';
+  var MONACO_BASE = '{{ "/assets/monaco/vs" | relative_url }}';
+  var MONACO_TIMEOUT = 10000; // 10s timeout for loading
 
   // Language mapping: kramdown class → Monaco language ID
   var LANG_MAP = {
@@ -164,16 +165,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // Rouge outputs: <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
   // kramdown outputs: <pre><code class="language-bash">
   function detectLanguage(preEl) {
-    // Check <code> element first (kramdown style)
     var codeEl = preEl.querySelector('code');
     if (codeEl) {
       var match = (codeEl.className || '').match(/language-(\S+)/);
       if (match) return LANG_MAP[match[1].toLowerCase()] || 'plaintext';
     }
-    // Check <pre> element itself
     var preMatch = (preEl.className || '').match(/language-(\S+)/);
     if (preMatch) return LANG_MAP[preMatch[1].toLowerCase()] || 'plaintext';
-    // Walk up to parent divs (Rouge wrapping)
     var parent = preEl.parentElement;
     while (parent && parent !== document.body) {
       var parentMatch = (parent.className || '').match(/language-(\S+)/);
@@ -183,31 +181,106 @@ document.addEventListener('DOMContentLoaded', function() {
     return 'plaintext';
   }
 
-  // Get the current site theme
   function getCurrentTheme() {
     return document.documentElement.getAttribute('data-theme') === 'light' ? 'grc-light' : 'grc-dark';
   }
 
-  // Load Monaco from CDN (once)
+  // Find the outermost wrapper to replace (handles Rouge div wrapping)
+  function findReplaceTarget(preEl) {
+    var highlightDiv = preEl.parentElement;
+    if (highlightDiv && highlightDiv.classList.contains('highlight')) {
+      var rougeDiv = highlightDiv.parentElement;
+      if (rougeDiv && rougeDiv.classList.contains('highlighter-rouge')) {
+        return rougeDiv;
+      }
+      return highlightDiv;
+    }
+    return preEl;
+  }
+
+  // ─── TIER 1: Instant styled wrappers (no CDN needed) ───────────────
+  // Wraps every code block in a styled container with language label + copy button.
+  // The original <pre> (with Rouge syntax highlighting) is preserved inside.
+  function wrapCodeBlock(preEl) {
+    var codeEl = preEl.querySelector('code');
+    if (!codeEl) return null;
+
+    var language = detectLanguage(preEl);
+    var codeText = codeEl.textContent.replace(/^\n+|\n+$/g, '');
+    var displayLabel = LANG_LABELS[language] || language;
+
+    // Build wrapper
+    var wrapper = document.createElement('div');
+    wrapper.className = 'monaco-code-wrapper';
+
+    // Header with language label and copy button
+    var header = document.createElement('div');
+    header.className = 'monaco-code-header';
+
+    var langLabel = document.createElement('span');
+    langLabel.className = 'monaco-code-lang';
+    langLabel.textContent = displayLabel;
+
+    var copyBtn = document.createElement('button');
+    copyBtn.className = 'monaco-copy-btn';
+    copyBtn.innerHTML = COPY_ICON + ' Copy';
+    copyBtn.setAttribute('aria-label', 'Copy code to clipboard');
+    copyBtn.addEventListener('click', function() {
+      navigator.clipboard.writeText(codeText).then(function() {
+        copyBtn.innerHTML = CHECK_ICON + ' Copied';
+        copyBtn.classList.add('copied');
+        setTimeout(function() {
+          copyBtn.innerHTML = COPY_ICON + ' Copy';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+
+    header.appendChild(langLabel);
+    header.appendChild(copyBtn);
+    wrapper.appendChild(header);
+
+    // Move the original <pre> block (or Rouge wrapper) inside
+    var replaceTarget = findReplaceTarget(preEl);
+    replaceTarget.parentNode.insertBefore(wrapper, replaceTarget);
+    wrapper.appendChild(replaceTarget);
+
+    // Style the embedded pre to fit inside the wrapper
+    preEl.style.margin = '0';
+    preEl.style.borderRadius = '0 0 8px 8px';
+    preEl.style.border = 'none';
+
+    return { wrapper: wrapper, preEl: preEl, codeEl: codeEl, language: language, codeText: codeText };
+  }
+
+  // ─── TIER 2: Monaco Editor upgrade (self-hosted) ────────────────────
   function loadMonaco() {
     if (monacoPromise) return monacoPromise;
 
     monacoPromise = new Promise(function(resolve, reject) {
-      var script = document.createElement('script');
-      script.src = MONACO_CDN + '/loader.min.js';
-      script.onerror = function() {
+      // Timeout guard — reject if loading takes too long
+      var timer = setTimeout(function() {
         monacoPromise = null;
-        reject(new Error('Monaco CDN failed to load'));
+        reject(new Error('Monaco load timed out'));
+      }, MONACO_TIMEOUT);
+
+      var script = document.createElement('script');
+      script.src = MONACO_BASE + '/loader.js';
+      script.onerror = function() {
+        clearTimeout(timer);
+        monacoPromise = null;
+        reject(new Error('Monaco failed to load'));
       };
       script.onload = function() {
-        require.config({ paths: { vs: MONACO_CDN } });
+        require.config({ paths: { vs: MONACO_BASE } });
 
-        // Disable web workers — not needed for read-only
         window.MonacoEnvironment = {
           getWorker: function() { return undefined; }
         };
 
+        // AMD require with error callback
         require(['vs/editor/editor.main'], function() {
+          clearTimeout(timer);
           var m = window.monaco;
 
           // Define GRC Engineering dark theme
@@ -288,6 +361,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
           m.editor.setTheme(getCurrentTheme());
           resolve(m);
+        }, function(err) {
+          // AMD require error callback — handles submodule load failures
+          clearTimeout(timer);
+          monacoPromise = null;
+          reject(err || new Error('Monaco modules failed to load'));
         });
       };
       document.head.appendChild(script);
@@ -296,73 +374,27 @@ document.addEventListener('DOMContentLoaded', function() {
     return monacoPromise;
   }
 
-  // Create a Monaco editor for a code block
-  function createMonacoBlock(preEl) {
-    var codeEl = preEl.querySelector('code');
-    if (!codeEl) return;
+  // Upgrade a wrapped code block to a full Monaco editor
+  function upgradeToMonaco(blockInfo) {
+    var wrapper = blockInfo.wrapper;
+    var preEl = blockInfo.preEl;
+    var codeText = blockInfo.codeText;
+    var language = blockInfo.language;
 
-    var language = detectLanguage(preEl);
-    var codeText = codeEl.textContent.replace(/^\n+|\n+$/g, '');
     var lineCount = codeText.split('\n').length;
-    var displayLabel = LANG_LABELS[language] || language;
 
-    // Build wrapper
-    var wrapper = document.createElement('div');
-    wrapper.className = 'monaco-code-wrapper';
-
-    // Header with language label and copy button
-    var header = document.createElement('div');
-    header.className = 'monaco-code-header';
-
-    var langLabel = document.createElement('span');
-    langLabel.className = 'monaco-code-lang';
-    langLabel.textContent = displayLabel;
-
-    var copyBtn = document.createElement('button');
-    copyBtn.className = 'monaco-copy-btn';
-    copyBtn.innerHTML = COPY_ICON + ' Copy';
-    copyBtn.setAttribute('aria-label', 'Copy code to clipboard');
-    copyBtn.addEventListener('click', function() {
-      navigator.clipboard.writeText(codeText).then(function() {
-        copyBtn.innerHTML = CHECK_ICON + ' Copied';
-        copyBtn.classList.add('copied');
-        setTimeout(function() {
-          copyBtn.innerHTML = COPY_ICON + ' Copy';
-          copyBtn.classList.remove('copied');
-        }, 2000);
-      });
-    });
-
-    header.appendChild(langLabel);
-    header.appendChild(copyBtn);
-    wrapper.appendChild(header);
-
-    // Monaco container
+    // Create Monaco container
     var container = document.createElement('div');
     container.className = 'monaco-code-container';
-    // Calculate height: line height ~19px + padding 16px
     var height = Math.max(lineCount * 19 + 16, 40);
     container.style.height = height + 'px';
-    wrapper.appendChild(container);
 
-    // Replace the <pre> block (or its Rouge wrapper div if present)
-    var replaceTarget = preEl;
-    // Rouge wraps in: <div class="highlighter-rouge"><div class="highlight"><pre>
-    var highlightDiv = preEl.parentElement;
-    if (highlightDiv && highlightDiv.classList.contains('highlight')) {
-      var rougeDiv = highlightDiv.parentElement;
-      if (rougeDiv && rougeDiv.classList.contains('highlighter-rouge')) {
-        replaceTarget = rougeDiv;
-      } else {
-        replaceTarget = highlightDiv;
-      }
-    }
-    // Insert wrapper but keep it hidden until Monaco renders
-    wrapper.style.display = 'none';
-    replaceTarget.parentNode.insertBefore(wrapper, replaceTarget);
-
-    // Create the editor — only swap visibility on success
     loadMonaco().then(function(monaco) {
+      // Hide the original pre, insert Monaco container
+      var replaceTarget = findReplaceTarget(preEl);
+      replaceTarget.style.display = 'none';
+      wrapper.appendChild(container);
+
       var editor = monaco.editor.create(container, {
         value: codeText,
         language: language,
@@ -399,10 +431,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
       editors.push(editor);
 
-      // Show Monaco wrapper, hide original code block
-      wrapper.style.display = '';
-      replaceTarget.style.display = 'none';
-
       // Auto-size height after content is laid out
       requestAnimationFrame(function() {
         var contentHeight = editor.getContentHeight();
@@ -410,8 +438,10 @@ document.addEventListener('DOMContentLoaded', function() {
         editor.layout();
       });
     }).catch(function() {
-      // Monaco failed — remove empty wrapper, keep original code visible
-      wrapper.remove();
+      // Monaco failed — remove container, original pre stays visible inside wrapper
+      container.remove();
+      var replaceTarget = findReplaceTarget(preEl);
+      replaceTarget.style.display = '';
     });
   }
 
@@ -425,28 +455,31 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-  // Initialize: find all code blocks and upgrade them with IntersectionObserver
+  // ─── Initialize ────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function() {
-    // Collect all <pre> blocks that contain <code> (from kramdown/Rouge)
     var preBlocks = document.querySelectorAll('.guide-body pre');
     if (preBlocks.length === 0) return;
 
-    // Use IntersectionObserver to lazy-load Monaco when first block nears viewport
-    var monacoTriggered = false;
-    var pendingBlocks = [];
+    // TIER 1: Immediately wrap all code blocks with styled containers
+    var wrappedBlocks = [];
+    preBlocks.forEach(function(pre) {
+      var info = wrapCodeBlock(pre);
+      if (info) wrappedBlocks.push(info);
+    });
 
+    // TIER 2: Progressively upgrade to Monaco via IntersectionObserver
     var observer = new IntersectionObserver(function(entries) {
       entries.forEach(function(entry) {
         if (entry.isIntersecting) {
           observer.unobserve(entry.target);
-          if (!monacoTriggered) {
-            monacoTriggered = true;
-            // Process this block and all pending blocks
-            pendingBlocks.push(entry.target);
-            processPendingBlocks();
-          } else {
-            pendingBlocks.push(entry.target);
-            processPendingBlocks();
+          // Find the block info for this wrapper
+          var info = wrappedBlocks.find(function(b) { return b.wrapper === entry.target; });
+          if (info) {
+            if (window.requestIdleCallback) {
+              requestIdleCallback(function() { upgradeToMonaco(info); });
+            } else {
+              setTimeout(function() { upgradeToMonaco(info); }, 16);
+            }
           }
         }
       });
@@ -454,28 +487,8 @@ document.addEventListener('DOMContentLoaded', function() {
       rootMargin: '300px 0px'
     });
 
-    function processPendingBlocks() {
-      var toProcess = pendingBlocks.slice();
-      pendingBlocks = [];
-
-      function processNext(index) {
-        if (index >= toProcess.length) return;
-        createMonacoBlock(toProcess[index]);
-        // Yield to browser between blocks to avoid jank
-        if (index < toProcess.length - 1) {
-          if (window.requestIdleCallback) {
-            requestIdleCallback(function() { processNext(index + 1); });
-          } else {
-            setTimeout(function() { processNext(index + 1); }, 16);
-          }
-        }
-      }
-
-      processNext(0);
-    }
-
-    preBlocks.forEach(function(pre) {
-      observer.observe(pre);
+    wrappedBlocks.forEach(function(info) {
+      observer.observe(info.wrapper);
     });
   });
 })();

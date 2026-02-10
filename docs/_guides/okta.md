@@ -216,7 +216,7 @@ resource "okta_policy_rule_signon" "require_fido2" {
 - Monitor for users bypassing policy via legacy sessions
 
 **Log query:**
-```
+```plaintext
 eventType eq "user.authentication.auth_via_mfa" AND debugContext.debugData.factor eq "FIDO2_WEBAUTHN"
 ```
 
@@ -821,7 +821,7 @@ resource "okta_app_signon_policy_rule" "app_assignment" {
 #### Monitoring & Maintenance
 
 **Log query -- detect authentications hitting the Default Policy:**
-```
+```plaintext
 eventType eq "policy.evaluate_sign_on" AND debugContext.debugData.policyType eq "ACCESS_POLICY" AND target.displayName eq "Default Policy"
 ```
 
@@ -1068,7 +1068,7 @@ resource "okta_policy_password" "hardened_recovery" {
 #### Monitoring & Maintenance
 
 **Log query -- detect recovery attempts from untrusted networks:**
-```
+```plaintext
 eventType eq "user.account.reset_password" AND securityContext.isProxy eq true
 ```
 
@@ -1284,12 +1284,12 @@ resource "null_resource" "enable_end_user_notifications" {
 #### Monitoring & Maintenance
 
 **Log query -- suspicious activity reports from end users:**
-```
+```plaintext
 eventType eq "user.account.report_suspicious_activity_by_enduser"
 ```
 
 **Log query -- authenticator changes (correlate with user reports):**
-```
+```plaintext
 eventType sw "user.mfa.factor" OR eventType eq "user.account.update_password"
 ```
 
@@ -1541,7 +1541,7 @@ resource "okta_network_zone" "block_countries" {
 
 #### Monitoring & Maintenance
 **Log query:**
-```
+```plaintext
 eventType eq "security.threat.detected" AND debugContext.debugData.threatSuspected eq "ANONYMIZER"
 ```
 
@@ -1650,7 +1650,7 @@ Secure SCIM (System for Cross-domain Identity Management) connectors that provis
 3. Enable "Group Push" only for necessary groups
 
 #### Monitoring
-```
+```plaintext
 eventType eq "system.scim.user.create" OR eventType eq "system.scim.user.update"
 ```
 
@@ -1733,7 +1733,7 @@ curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/authorizationServers/default/clien
 
 #### Monitoring & Maintenance
 **Log query:**
-```
+```plaintext
 eventType eq "app.oauth2.consent.grant" OR eventType eq "app.oauth2.as.consent.grant"
 ```
 
@@ -1910,7 +1910,7 @@ resource "okta_app_oauth_api_scope" "users_read" {
 
 #### Monitoring & Maintenance
 **Log query:**
-```
+```plaintext
 eventType eq "system.api_token.create" OR eventType eq "system.api_token.revoke" OR eventType eq "app.oauth2.token.grant"
 ```
 
@@ -2088,12 +2088,12 @@ curl -X PUT "https://${OKTA_DOMAIN}/api/v1/org/settings" \
 
 #### Monitoring & Maintenance
 **Log query:**
-```
+```plaintext
 eventType eq "user.session.invalidate" AND debugContext.debugData.reason eq "ADMIN_SESSION_BINDING"
 ```
 
 **Log query for Protected Actions:**
-```
+```plaintext
 eventType eq "system.protected_action.challenge" OR eventType eq "system.protected_action.success"
 ```
 
@@ -2237,7 +2237,7 @@ Enable Identity Threat Protection with Okta AI for continuous post-authenticatio
 
 #### Monitoring & Maintenance
 **Log query:**
-```
+```plaintext
 eventType eq "security.threat.detected" OR eventType eq "security.session.risk_change"
 ```
 
@@ -2332,7 +2332,7 @@ curl -X POST "https://${OKTA_DOMAIN}/api/v1/behaviors" \
 
 #### Monitoring & Maintenance
 **Log query:**
-```
+```plaintext
 eventType eq "security.behavior_detection.triggered"
 ```
 
@@ -3027,7 +3027,7 @@ For U.S. Government systems, display the Standard Mandatory DOD Notice and Conse
 <details>
 <summary>DOD Banner Text (1300 characters)</summary>
 
-```
+```plaintext
 You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.
 
 By using this IS (which includes any device attached to this IS), you consent to the following conditions:
