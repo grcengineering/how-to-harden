@@ -257,11 +257,21 @@ Secure Orca API access.
 
 ---
 
-## Appendix A: References
+## Appendix B: References
 
-**Official Orca Documentation:**
-- [Orca Security](https://orca.security/)
-- [Documentation](https://docs.orcasecurity.io/)
+**Official Orca Security Documentation:**
+- [Trust Center (SafeBase)](https://trustcenter.orca.security/)
+- [Knowledge Base](https://docs.orcasecurity.io/)
+- [Resource Library](https://orca.security/resources/)
+- [API Security Datasheet](https://orca.security/resources/literature/api-security-datasheet/)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, ISO 27701, PCI DSS v4.0.1, FedRAMP Moderate, StateRAMP — via [Trust Center](https://trustcenter.orca.security/)
+- [FedRAMP Authorization Announcement](https://orca.security/resources/blog/orca-security-earns-fedramp-authorization/)
+- [StateRAMP Authorization Announcement](https://orca.security/resources/press-releases/orca-security-achieves-stateramp-authorization/)
+
+**Security Incidents:**
+- No major public incidents identified
 
 ---
 

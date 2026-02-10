@@ -202,9 +202,26 @@ Secure email platform integrations.
 
 ## Appendix A: References
 
-**Official Abnormal Documentation:**
-- [Abnormal Security](https://abnormalsecurity.com/)
-- [Documentation](https://help.abnormalsecurity.com/)
+## Appendix B: References
+
+**Official Abnormal Security Documentation:**
+- [Trust Center](https://abnormal.ai/trust-center)
+- [Security Hub (NDA-gated)](https://security.abnormal.ai/)
+- [Information Security Policy](https://legal.abnormalsecurity.com/legal-hub/abnormal-security-information-security-policy-19ee8b0f)
+- [Legal Hub](https://legal.abnormalsecurity.com/)
+- [Knowledge Base (Customer Portal)](https://abnormalsecurity.my.site.com/knowledgebase/s/)
+
+**API Documentation:**
+- [Abnormal Security REST API v1.4.1 (SwaggerHub)](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.1)
+- [API Version Index (SwaggerHub)](https://app.swaggerhub.com/apis/abnormal-security/abx)
+- [REST API Integration Guide](https://abnormalsecurity.my.site.com/knowledgebase/s/article/Abnormal-REST-API-Integration)
+
+**Compliance Frameworks:**
+- SOC 2 Type 2, ISO 27001, ISO 27701, ISO 42001 — reports available via [Trust Center](https://abnormal.ai/trust-center)
+- [ISO 42001 Certification Announcement](https://abnormal.ai/blog/iso-42001-ai-certification)
+
+**Threat Research:**
+- [Threat Reports Library](https://abnormal.ai/resources/category/threat-reports)
 
 ---
 

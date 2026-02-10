@@ -260,11 +260,26 @@ Enable and monitor admin audit logs.
 
 ---
 
-## Appendix A: References
+## Appendix B: References
 
 **Official Proofpoint Documentation:**
-- [Proofpoint Administration](https://help.proofpoint.com/)
-- [SSO Configuration](https://help.proofpoint.com/Proofpoint_Essentials/Admin_console_help/Account_management/SSO)
+- [Trust Center](https://www.proofpoint.com/us/legal/trust)
+- [Data Privacy and Security Information Sheets](https://www.proofpoint.com/us/legal/trust/data-privacy-and-security-information-sheets)
+- [Security Advisories](https://www.proofpoint.com/us/security/security-advisories)
+- [Help Center](https://help.proofpoint.com/)
+
+**API Documentation:**
+- [Threat Insight API Documentation](https://help.proofpoint.com/Threat_Insight_Dashboard/API_Documentation)
+- [SIEM API](https://help.proofpoint.com/Threat_Insight_Dashboard/API_Documentation/SIEM_API)
+- [Threats API](https://help.proofpoint.com/Threat_Insight_Dashboard/API_Documentation/Threat_API)
+
+**Compliance Frameworks:**
+- [Product Certifications (ISO 27001, SOC 2, FedRAMP)](https://www.proofpoint.com/us/legal/trust/product-certifications)
+- [CVE Details — Proofpoint](https://www.cvedetails.com/vulnerability-list/vendor_id-2500/Proofpoint.html)
+
+**Security Incidents:**
+- [EchoSpoofing: Email Routing Exploitation (Guardio Labs, 2024)](https://guard.io/labs/echospoofing-a-massive-phishing-campaign-exploiting-proofpoints-email-protection-to-dispatch)
+- [Proofpoint Email Routing Flaw (The Hacker News)](https://thehackernews.com/2024/07/proofpoint-email-routing-flaw-exploited.html)
 
 ---
 

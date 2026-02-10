@@ -1,0 +1,589 @@
+# How to Harden - Official Documentation Links
+# Generated: 2026-02-09
+# For each platform: product_docs, api_docs, hardening_docs
+# Used by guide.html layout to render doc link buttons
+
+1password:
+  product_docs: "https://support.1password.com/"
+  api_docs: "https://developer.1password.com/"
+  hardening_docs: "https://support.1password.com/business-security-practices/"
+
+abnormal:
+  product_docs: "https://abnormalsecurity.my.site.com/knowledgebase/s/"
+  api_docs: "https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.1.0"
+  hardening_docs: "https://security.abnormal.ai/"
+
+adp:
+  product_docs: "https://support.adp.com/"
+  api_docs: "https://developers.adp.com/"
+  hardening_docs: "https://www.adp.com/about-adp/data-security/best-practices.aspx"
+
+airtable:
+  product_docs: "https://support.airtable.com/"
+  api_docs: "https://airtable.com/developers/web/api/introduction"
+  hardening_docs: "https://support.airtable.com/docs/airtable-security-practices"
+
+amplitude:
+  product_docs: "https://amplitude.com/docs"
+  api_docs: "https://www.docs.developers.amplitude.com/analytics/apis/"
+  hardening_docs: "https://amplitude.com/security-and-privacy"
+
+asana:
+  product_docs: "https://help.asana.com/s/"
+  api_docs: "https://developers.asana.com/"
+  hardening_docs: "https://asana.com/features/admin-security"
+
+atlassian:
+  product_docs: "https://support.atlassian.com/"
+  api_docs: "https://developer.atlassian.com/"
+  hardening_docs: "https://support.atlassian.com/jira/kb/how-to-configure-jira-applications-for-security-best-practices/"
+
+auth0:
+  product_docs: "https://auth0.com/docs"
+  api_docs: "https://auth0.com/docs/api"
+  hardening_docs: "https://auth0.com/docs/best-practices"
+
+aws-iam-identity-center:
+  product_docs: "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html"
+  api_docs: "https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html"
+  hardening_docs: "https://docs.aws.amazon.com/singlesignon/latest/userguide/security.html"
+
+azure-devops:
+  product_docs: "https://learn.microsoft.com/en-us/azure/devops/"
+  api_docs: "https://learn.microsoft.com/en-us/rest/api/azure/devops/"
+  hardening_docs: "https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-best-practices"
+
+bamboohr:
+  product_docs: "https://help.bamboohr.com/s/"
+  api_docs: "https://documentation.bamboohr.com/docs/getting-started"
+  hardening_docs: "https://trust.bamboohr.com/"
+
+beyondtrust:
+  product_docs: "https://www.beyondtrust.com/docs"
+  api_docs: "https://docs.beyondtrust.com/pra/reference/api-guide"
+  hardening_docs: "https://www.beyondtrust.com/docs/beyondinsight-password-safe/appliance/hardening/index.htm"
+
+bitbucket:
+  product_docs: "https://support.atlassian.com/bitbucket-cloud/"
+  api_docs: "https://developer.atlassian.com/cloud/bitbucket/rest/"
+  hardening_docs: "https://support.atlassian.com/bitbucket-cloud/docs/security/"
+
+box:
+  product_docs: "https://support.box.com/hc/en-us"
+  api_docs: "https://developer.box.com/"
+  hardening_docs: "https://support.box.com/hc/en-us/articles/360044193273-Best-Practice-Choosing-Security-Settings"
+
+braze:
+  product_docs: "https://www.braze.com/docs/user_guide/introduction"
+  api_docs: "https://www.braze.com/docs/api/home"
+  hardening_docs: "https://www.braze.com/docs/user_guide/administrative/app_settings/company_settings/security_settings"
+
+buildkite:
+  product_docs: "https://buildkite.com/docs"
+  api_docs: "https://buildkite.com/docs/apis"
+  hardening_docs: "https://buildkite.com/docs/pipelines/best-practices/security-controls"
+
+chatgpt-enterprise:
+  product_docs: "https://help.openai.com/en/collections/5688074-chatgpt-enterprise"
+  api_docs: "https://platform.openai.com/docs/api-reference/introduction"
+  hardening_docs: "https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-in-apps-enterprise-edu-and-business"
+
+circleci:
+  product_docs: "https://circleci.com/docs/"
+  api_docs: "https://circleci.com/docs/api/v2/index.html"
+  hardening_docs: "https://circleci.com/docs/guides/security/security-recommendations/"
+
+clari:
+  product_docs: "https://community.clari.com/"
+  api_docs: "https://developer.clari.com/"
+  hardening_docs: "https://www.clari.com/security/"
+
+cloudflare:
+  product_docs: "https://developers.cloudflare.com/"
+  api_docs: "https://developers.cloudflare.com/api/"
+  hardening_docs: "https://developers.cloudflare.com/fundamentals/security/"
+
+concur:
+  product_docs: "https://help.sap.com/docs/SAP_CONCUR"
+  api_docs: "https://developer.concur.com"
+  hardening_docs: "https://help.sap.com/docs/SAP_CONCUR_SECURITY/b92b8c7fc75a4c8faf62a6584077b022/9c81735f180a4fe380d05549f6d32d12.html"
+
+coupa:
+  product_docs: "https://compass.coupa.com/en-us/products/product-documentation"
+  api_docs: "https://compass.coupa.com/en-us/products/product-documentation/integration-technical-documentation/the-coupa-core-api"
+  hardening_docs: "https://compass.coupa.com/en-us/products/product-documentation/supplier-resources/for-suppliers/core-supplier-onboarding/announcements-and-general-info/mfa-faq-and-security-best-practices"
+
+crowdstrike:
+  product_docs: "https://falcon.crowdstrike.com/documentation/"
+  api_docs: "https://developer.crowdstrike.com/docs/openapi/"
+  hardening_docs: "https://www.crowdstrike.com/en-us/resources/guides/"
+
+cursor:
+  product_docs: "https://cursor.com/docs"
+  api_docs: ""
+  hardening_docs: "https://cursor.com/security"
+
+cyberark:
+  product_docs: "https://docs.cyberark.com"
+  api_docs: "https://docs.cyberark.com/pam-self-hosted/latest/en/content/webservices/implementing%20privileged%20account%20security%20web%20services%20.htm"
+  hardening_docs: "https://docs.cyberark.com/pam-self-hosted/latest/en/content/security/psm-hardening-configuration.htm"
+
+databricks:
+  product_docs: "https://docs.databricks.com/aws/en/"
+  api_docs: "https://docs.databricks.com/api/workspace/introduction"
+  hardening_docs: "https://docs.databricks.com/aws/en/lakehouse-architecture/security-compliance-and-privacy/best-practices"
+
+datadog:
+  product_docs: "https://docs.datadoghq.com/"
+  api_docs: "https://docs.datadoghq.com/api/latest/"
+  hardening_docs: "https://docs.datadoghq.com/account_management/safety_center/"
+
+dockerhub:
+  product_docs: "https://docs.docker.com/docker-hub/"
+  api_docs: "https://docs.docker.com/reference/api/hub/latest/"
+  hardening_docs: "https://docs.docker.com/engine/security/"
+
+docusign:
+  product_docs: "https://support.docusign.com/s/?language=en_US"
+  api_docs: "https://developers.docusign.com/docs/esign-rest-api/reference/"
+  hardening_docs: "https://support.docusign.com/s/document-item?language=en_US&bundleId=ieh1606952453299&topicId=swt1606952443828.html&_LANG=enus"
+
+drata:
+  product_docs: "https://help.drata.com/en/"
+  api_docs: "https://developers.drata.com/api-docs/"
+  hardening_docs: "https://drata.com/security"
+
+dropbox:
+  product_docs: "https://help.dropbox.com/"
+  api_docs: "https://www.dropbox.com/developers/documentation/http/overview"
+  hardening_docs: "https://aem.dropbox.com/cms/content/dam/dropbox/www/en-us/business/trust/dropbox-security-whitepaper.pdf"
+
+duo:
+  product_docs: "https://duo.com/docs"
+  api_docs: "https://duo.com/docs/adminapi"
+  hardening_docs: "https://duo.com/docs/policy"
+
+figma:
+  product_docs: "https://help.figma.com/hc/en-us"
+  api_docs: "https://developers.figma.com/docs/rest-api/"
+  hardening_docs: "https://help.figma.com/hc/en-us/articles/360040056294-Privacy-and-security-in-organizations"
+
+fivetran:
+  product_docs: "https://fivetran.com/docs/getting-started"
+  api_docs: "https://fivetran.com/docs/rest-api/api-reference"
+  hardening_docs: "https://fivetran.com/docs/security"
+
+freshservice:
+  product_docs: "https://support.freshservice.com/support/solutions"
+  api_docs: "https://api.freshservice.com/"
+  hardening_docs: "https://www.freshworks.com/security/"
+
+fullstory:
+  product_docs: "https://help.fullstory.com/hc/en-us"
+  api_docs: "https://developer.fullstory.com/"
+  hardening_docs: "https://help.fullstory.com/hc/en-us/articles/360020624254-Security-and-Privacy-Documentation-Overview"
+
+github:
+  product_docs: "https://docs.github.com/en"
+  api_docs: "https://docs.github.com/en/rest"
+  hardening_docs: "https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions"
+
+github-enterprise:
+  product_docs: "https://docs.github.com/en/enterprise-cloud@latest"
+  api_docs: "https://docs.github.com/en/enterprise-cloud@latest/rest"
+  hardening_docs: "https://docs.github.com/en/enterprise-cloud@latest/admin/configuring-settings/hardening-security-for-your-enterprise"
+
+gitlab:
+  product_docs: "https://docs.gitlab.com/"
+  api_docs: "https://docs.gitlab.com/api/rest/"
+  hardening_docs: "https://docs.gitlab.com/security/hardening/"
+
+gong:
+  product_docs: "https://help.gong.io/"
+  api_docs: "https://gong.app.gong.io/settings/api/documentation"
+  hardening_docs: "https://help.gong.io/docs/summary-of-security-features"
+
+google-workspace:
+  product_docs: "https://support.google.com/a/"
+  api_docs: "https://developers.google.com/workspace"
+  hardening_docs: "https://support.google.com/a/answer/7587183"
+
+gusto:
+  product_docs: "https://support.gusto.com/"
+  api_docs: "https://docs.gusto.com/"
+  hardening_docs: "https://gusto.com/security"
+
+harness:
+  product_docs: "https://developer.harness.io/docs/"
+  api_docs: "https://apidocs.harness.io/"
+  hardening_docs: "https://developer.harness.io/docs/continuous-integration/secure-ci/security-hardening/"
+
+hashicorp-vault:
+  product_docs: "https://developer.hashicorp.com/vault/docs"
+  api_docs: "https://developer.hashicorp.com/vault/api-docs"
+  hardening_docs: "https://developer.hashicorp.com/vault/docs/concepts/production-hardening"
+
+heap:
+  product_docs: "https://help.heap.io/hc/en-us"
+  api_docs: "https://developers.heap.io/"
+  hardening_docs: "https://www.heap.io/platform/security"
+
+hubspot:
+  product_docs: "https://knowledge.hubspot.com/"
+  api_docs: "https://developers.hubspot.com/docs"
+  hardening_docs: "https://knowledge.hubspot.com/account-security/manage-your-account-security-using-hubspost-security-health"
+
+intercom:
+  product_docs: "https://www.intercom.com/help/en/"
+  api_docs: "https://developers.intercom.com/"
+  hardening_docs: "https://www.intercom.com/help/en/collections/384-security-privacy"
+
+jamf:
+  product_docs: "https://www.jamf.com/resources/product-documentation/"
+  api_docs: "https://developer.jamf.com/"
+  hardening_docs: "https://learn.jamf.com/en-US/bundle/technical-articles/page/Jamf_Pro_Security_Recommendations.html"
+
+jenkins:
+  product_docs: "https://www.jenkins.io/doc/"
+  api_docs: "https://www.jenkins.io/doc/book/using/remote-access-api/"
+  hardening_docs: "https://www.jenkins.io/doc/book/security/securing-jenkins/"
+
+jfrog:
+  product_docs: "https://jfrog.com/help/"
+  api_docs: "https://jfrog.com/help/r/jfrog-rest-apis/jfrog-rest-apis"
+  hardening_docs: "https://jfrog.com/help/r/jfrog-platform-administration-documentation/security-configuration"
+
+jira-cloud:
+  product_docs: "https://support.atlassian.com/jira-software-cloud/"
+  api_docs: "https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/"
+  hardening_docs: "https://support.atlassian.com/jira/kb/how-to-configure-jira-applications-for-security-best-practices/"
+
+jumpcloud:
+  product_docs: "https://jumpcloud.com/support"
+  api_docs: "https://docs.jumpcloud.com/"
+  hardening_docs: "https://jumpcloud.com/support/best-practices-secure-your-organization"
+
+keeper:
+  product_docs: "https://docs.keeper.io/en"
+  api_docs: "https://docs.keeper.io/en/enterprise-guide/developer-tools"
+  hardening_docs: "https://docs.keeper.io/en/enterprise-guide/recommended-security-settings"
+
+klaviyo:
+  product_docs: "https://help.klaviyo.com/hc/en-us"
+  api_docs: "https://developers.klaviyo.com/en"
+  hardening_docs: "https://help.klaviyo.com/hc/en-us/articles/360052448451"
+
+knowbe4:
+  product_docs: "https://support.knowbe4.com/hc/en-us"
+  api_docs: "https://developer.knowbe4.com/"
+  hardening_docs: "https://support.knowbe4.com/hc/en-us/sections/20033755383827-Best-Practices"
+
+lastpass:
+  product_docs: "https://support.lastpass.com/"
+  api_docs: "https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/api_enterprise.html"
+  hardening_docs: "https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/admin_best_practices.html"
+
+launchdarkly:
+  product_docs: "https://launchdarkly.com/docs/home"
+  api_docs: "https://apidocs.launchdarkly.com/"
+  hardening_docs: "https://launchdarkly.com/security/"
+
+linear:
+  product_docs: "https://linear.app/docs"
+  api_docs: "https://developers.linear.app/docs"
+  hardening_docs: "https://linear.app/security"
+
+looker:
+  product_docs: "https://docs.cloud.google.com/looker/docs"
+  api_docs: "https://docs.cloud.google.com/looker/docs/reference/looker-api/latest"
+  hardening_docs: "https://cloud.google.com/looker/docs/best-practices/how-to-keep-looker-secure"
+
+mailchimp:
+  product_docs: "https://mailchimp.com/help/"
+  api_docs: "https://mailchimp.com/developer/"
+  hardening_docs: "https://mailchimp.com/help/best-practices-for-account-security/"
+
+marketo:
+  product_docs: "https://experienceleague.adobe.com/en/docs/marketo/using/home"
+  api_docs: "https://developer.adobe.com/marketo-apis/"
+  hardening_docs: "https://www.adobe.com/content/dam/cc/en/trust-center/ungated/whitepapers/experience-cloud/adobe_marketo_data_protection_overview.pdf"
+
+microsoft-365:
+  product_docs: "https://learn.microsoft.com/en-us/microsoft-365/"
+  api_docs: "https://developer.microsoft.com/en-us/graph"
+  hardening_docs: "https://www.cisecurity.org/benchmark/microsoft_365"
+
+microsoft-entra-id:
+  product_docs: "https://learn.microsoft.com/en-us/entra/"
+  api_docs: "https://learn.microsoft.com/en-us/graph/identity-network-access-overview"
+  hardening_docs: "https://learn.microsoft.com/en-us/entra/architecture/secure-best-practices"
+
+mimecast:
+  product_docs: "https://docs.mimecast.com/"
+  api_docs: "https://developer.services.mimecast.com/"
+  hardening_docs: "https://community.mimecast.com/s/article/email-security-cloud-gateway-security-best-practice"
+
+miro:
+  product_docs: "https://help.miro.com/hc/en-us"
+  api_docs: "https://developers.miro.com/"
+  hardening_docs: "https://help.miro.com/hc/en-us/articles/17120515162386-Enterprise-Guard-Deployment-Guide-Introduction"
+
+mixpanel:
+  product_docs: "https://docs.mixpanel.com/"
+  api_docs: "https://developer.mixpanel.com/reference/overview"
+  hardening_docs: "https://docs.mixpanel.com/docs/access-security"
+
+monday:
+  product_docs: "https://support.monday.com/hc/en-us"
+  api_docs: "https://developer.monday.com/api-reference/"
+  hardening_docs: "https://monday.com/trustcenter"
+
+mongodb-atlas:
+  product_docs: "https://www.mongodb.com/docs/atlas/"
+  api_docs: "https://www.mongodb.com/docs/atlas/api/"
+  hardening_docs: "https://www.cisecurity.org/benchmark/mongodb"
+
+netskope:
+  product_docs: "https://docs.netskope.com/"
+  api_docs: "https://docs.netskope.com/en/rest-api/"
+  hardening_docs: "https://docs.netskope.com/en/secure-tenant-configuration-and-hardening/"
+
+netsuite:
+  product_docs: "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/index.html"
+  api_docs: "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_1559132836.html"
+  hardening_docs: "https://www.netsuite.com/portal/platform/infrastructure/operational-security.shtml"
+
+new-relic:
+  product_docs: "https://docs.newrelic.com/"
+  api_docs: "https://docs.newrelic.com/docs/apis/intro-apis/introduction-new-relic-apis/"
+  hardening_docs: "https://docs.newrelic.com/docs/security/overview/"
+
+notion:
+  product_docs: "https://www.notion.com/help"
+  api_docs: "https://developers.notion.com/"
+  hardening_docs: "https://www.notion.com/help/guides/notion-enterprise-security-provisions"
+
+okta:
+  product_docs: "https://help.okta.com/en-us/content/index.htm"
+  api_docs: "https://developer.okta.com/docs/api/"
+  hardening_docs: "https://support.okta.com/help/s/article/best-practices-for-securing-okta-workforce-identity-cloud-admin-accounts"
+
+onelogin:
+  product_docs: "https://support.onelogin.com/"
+  api_docs: "https://developers.onelogin.com/"
+  hardening_docs: "https://www.onelogin.com/blog/best-practices-when-deploying-advanced-authentication"
+
+oracle-hcm:
+  product_docs: "https://docs.oracle.com/en/cloud/saas/human-resources/"
+  api_docs: "https://docs.oracle.com/en/cloud/saas/human-resources/24d/farws/index.html"
+  hardening_docs: "https://docs.oracle.com/en/cloud/saas/human-resources/24d/ochus/best-practices-for-hcm-data-roles-and-security-profiles.html"
+
+orca:
+  product_docs: "https://docs.orcasecurity.io/"
+  api_docs: "https://app.orcasecurity.io/api-doc"
+  hardening_docs: "https://orca.security/resources/"
+
+outreach:
+  product_docs: "https://support.outreach.io/hc/en-us"
+  api_docs: "https://developers.outreach.io/api/"
+  hardening_docs: "https://www.outreach.io/platform/security"
+
+pagerduty:
+  product_docs: "https://support.pagerduty.com/"
+  api_docs: "https://developer.pagerduty.com/api-reference"
+  hardening_docs: "https://support.pagerduty.com/main/docs/security-hygiene-for-the-current-cyber-threat-landscape"
+
+paylocity:
+  product_docs: "https://www.paylocity.com/contact/client-support/"
+  api_docs: "https://developer.paylocity.com/"
+  hardening_docs: "https://trust.paylocity.com/controls"
+
+pendo:
+  product_docs: "https://support.pendo.io/hc/en-us"
+  api_docs: "https://developers.pendo.io/"
+  hardening_docs: "https://support.pendo.io/hc/en-us/articles/360031862372-Security-and-privacy-in-Pendo"
+
+ping-identity:
+  product_docs: "https://docs.pingidentity.com/"
+  api_docs: "https://apidocs.pingidentity.com/pingone/main/v1/api/"
+  hardening_docs: "https://docs.pingidentity.com/pingoneforenterprise/pingone_for_enterprise/p14e_security_best_practices.html"
+
+postman:
+  product_docs: "https://learning.postman.com/docs/introduction/overview/"
+  api_docs: "https://learning.postman.com/docs/developer/postman-api/intro-api"
+  hardening_docs: "https://www.postman.com/trust/postman-security-features/"
+
+power-bi:
+  product_docs: "https://learn.microsoft.com/en-us/power-bi/"
+  api_docs: "https://learn.microsoft.com/en-us/rest/api/power-bi/"
+  hardening_docs: "https://learn.microsoft.com/en-us/power-bi/guidance/white-paper-powerbi-security"
+
+proofpoint:
+  product_docs: "https://help.proofpoint.com/"
+  api_docs: "https://help.proofpoint.com/Threat_Insight_Dashboard/API_Documentation"
+  hardening_docs: "https://prod.docs.oit.proofpoint.com/configuration_guide/security_best_practices.htm"
+
+qualys:
+  product_docs: "https://www.qualys.com/documentation/"
+  api_docs: "https://www.qualys.com/documentation/"
+  hardening_docs: "https://www.qualys.com/docs/qualys-security-configuration-assessment-guide.pdf"
+
+rapid7:
+  product_docs: "https://docs.rapid7.com/"
+  api_docs: "https://docs.rapid7.com/insight/api-overview/"
+  hardening_docs: "https://docs.rapid7.com/insightvm/security-console-best-practices/"
+
+rippling:
+  product_docs: "https://help.rippling.com/"
+  api_docs: "https://developer.rippling.com/documentation/rest-api"
+  hardening_docs: "https://www.rippling.com/blog/seven-powerful-simple-steps-to-secure-your-rippling-tenant"
+
+sailpoint:
+  product_docs: "https://documentation.sailpoint.com/"
+  api_docs: "https://developer.sailpoint.com/docs/api/v3/"
+  hardening_docs: "https://www.sailpoint.com/why-us/trust/cybersecurity"
+
+salesforce:
+  product_docs: "https://help.salesforce.com/"
+  api_docs: "https://developer.salesforce.com/docs/apis"
+  hardening_docs: "https://security.salesforce.com/security-best-practices"
+
+sap-successfactors:
+  product_docs: "https://help.sap.com/docs/SAP_SUCCESSFACTORS_PLATFORM"
+  api_docs: "https://api.sap.com/products/SAPSuccessFactors/apis/all"
+  hardening_docs: "https://help.sap.com/docs/successfactors-platform/implementing-security-features-for-sap-successfactors/sap-successfactors-security-recommendations"
+
+segment:
+  product_docs: "https://www.twilio.com/docs/segment"
+  api_docs: "https://docs.segmentapis.com/"
+  hardening_docs: "https://segment.com/security/"
+
+sendgrid:
+  product_docs: "https://www.twilio.com/docs/sendgrid"
+  api_docs: "https://www.twilio.com/docs/sendgrid/api-reference"
+  hardening_docs: "https://sendgrid.com/en-us/blog/7-best-practices-to-protect-your-twilo-sendgrid-account-and-sending-reputation"
+
+sentinelone:
+  product_docs: "https://community.sentinelone.com/s/"
+  api_docs: ""
+  hardening_docs: ""
+
+sentry:
+  product_docs: "https://docs.sentry.io/"
+  api_docs: "https://docs.sentry.io/api/"
+  hardening_docs: "https://sentry.io/security/"
+
+servicenow:
+  product_docs: "https://docs.servicenow.com/"
+  api_docs: "https://developer.servicenow.com/dev.do#!/reference"
+  hardening_docs: "https://www.servicenow.com/docs/bundle/washingtondc-platform-security/page/administer/security/reference/security-best-practices-instance-security-hardening.html"
+
+shopify:
+  product_docs: "https://help.shopify.com/en/"
+  api_docs: "https://shopify.dev/docs/api"
+  hardening_docs: "https://help.shopify.com/en/manual/privacy-and-security/account-security/account-security-best-practices"
+
+slack:
+  product_docs: "https://slack.com/help"
+  api_docs: "https://docs.slack.dev/apis/"
+  hardening_docs: "https://slack.com/help/articles/115004155306-Security-tips-to-protect-your-workspace"
+
+smartsheet:
+  product_docs: "https://help.smartsheet.com/"
+  api_docs: "https://developers.smartsheet.com/"
+  hardening_docs: "https://www.smartsheet.com/trust/security"
+
+snowflake:
+  product_docs: "https://docs.snowflake.com/"
+  api_docs: "https://docs.snowflake.com/en/developer-guide/snowflake-rest-api/reference"
+  hardening_docs: "https://www.cisecurity.org/benchmark/snowflake"
+
+snyk:
+  product_docs: "https://docs.snyk.io/"
+  api_docs: "https://apidocs.snyk.io/"
+  hardening_docs: "https://snyk.io/blog/application-security-best-practices/"
+
+splunk:
+  product_docs: "https://docs.splunk.com/"
+  api_docs: "https://dev.splunk.com/enterprise/reference"
+  hardening_docs: "https://docs.splunk.com/Documentation/Splunk/latest/Security/Hardeningstandards"
+
+square:
+  product_docs: "https://squareup.com/help/us/en"
+  api_docs: "https://developer.squareup.com/reference/square"
+  hardening_docs: "https://squareup.com/us/en/security"
+
+stripe:
+  product_docs: "https://support.stripe.com/"
+  api_docs: "https://docs.stripe.com/api"
+  hardening_docs: "https://docs.stripe.com/security"
+
+tableau:
+  product_docs: "https://help.tableau.com/"
+  api_docs: "https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api.htm"
+  hardening_docs: "https://help.tableau.com/current/server/en-us/security_harden.htm"
+
+tenable:
+  product_docs: "https://docs.tenable.com/"
+  api_docs: "https://developer.tenable.com/"
+  hardening_docs: "https://docs.tenable.com/nessus/Content/HardenNessus.htm"
+
+terraform-cloud:
+  product_docs: "https://developer.hashicorp.com/terraform/cloud-docs"
+  api_docs: "https://developer.hashicorp.com/terraform/cloud-docs/api-docs"
+  hardening_docs: "https://developer.hashicorp.com/terraform/cloud-docs/recommended-practices"
+
+twilio:
+  product_docs: "https://www.twilio.com/docs"
+  api_docs: "https://www.twilio.com/docs/usage/api"
+  hardening_docs: "https://www.twilio.com/docs/usage/security"
+
+ukg:
+  product_docs: "https://community.ukg.com/"
+  api_docs: "https://developer.ukg.com/"
+  hardening_docs: "https://trustcenter.ukg.com/"
+
+vanta:
+  product_docs: "https://help.vanta.com/"
+  api_docs: "https://developer.vanta.com/reference/"
+  hardening_docs: "https://vanta.com/security"
+
+vercel:
+  product_docs: "https://vercel.com/docs"
+  api_docs: "https://vercel.com/docs/rest-api"
+  hardening_docs: "https://vercel.com/docs/security"
+
+webex:
+  product_docs: "https://help.webex.com/"
+  api_docs: "https://developer.webex.com/docs/getting-started"
+  hardening_docs: "https://www.cisco.com/c/en/us/td/docs/voice_ip_comm/cloudCollaboration/wbxt/hardening-guide/webex-hardening-guide.html"
+
+wiz:
+  product_docs: "https://docs.wiz.io/"
+  api_docs: "https://docs.wiz.io/"
+  hardening_docs: "https://www.wiz.io/resources"
+
+workato:
+  product_docs: "https://docs.workato.com/"
+  api_docs: "https://docs.workato.com/oem/oem-api.html"
+  hardening_docs: "https://www.workato.com/security"
+
+workday:
+  product_docs: "https://doc.workday.com/"
+  api_docs: "https://community.workday.com/api"
+  hardening_docs: "https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html"
+
+zendesk:
+  product_docs: "https://support.zendesk.com/hc/en-us"
+  api_docs: "https://developer.zendesk.com/api-reference/"
+  hardening_docs: "https://support.zendesk.com/hc/en-us/articles/4408883094554-Best-practices-for-Zendesk-account-security"
+
+zoom:
+  product_docs: "https://support.zoom.com/"
+  api_docs: "https://developers.zoom.us/docs/api/"
+  hardening_docs: "https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0060720"
+
+zscaler:
+  product_docs: "https://help.zscaler.com/"
+  api_docs: "https://help.zscaler.com/zia/getting-started-zia-api"
+  hardening_docs: "https://help.zscaler.com/zia/best-practices-security-policy"

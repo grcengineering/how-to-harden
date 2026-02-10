@@ -50,6 +50,29 @@ layout: default
     {% if page.description %}
     <p class="guide-description">{{ page.description }}</p>
     {% endif %}
+    {% assign links = site.data.doc_links[page.slug] %}
+    {% if links %}
+    <div class="guide-doc-links">
+      {% if links.product_docs and links.product_docs != "" %}
+      <a href="{{ links.product_docs }}" target="_blank" rel="noopener noreferrer" class="doc-link-btn doc-link-product">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        Product Docs
+      </a>
+      {% endif %}
+      {% if links.api_docs and links.api_docs != "" %}
+      <a href="{{ links.api_docs }}" target="_blank" rel="noopener noreferrer" class="doc-link-btn doc-link-api">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        API Docs
+      </a>
+      {% endif %}
+      {% if links.hardening_docs and links.hardening_docs != "" %}
+      <a href="{{ links.hardening_docs }}" target="_blank" rel="noopener noreferrer" class="doc-link-btn doc-link-hardening">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        Hardening Guide
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
   </div>
 
   <div class="guide-content">

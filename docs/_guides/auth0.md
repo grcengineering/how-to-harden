@@ -1,7 +1,7 @@
 ---
 layout: guide
 title: "Auth0 Hardening Guide"
-vendor: "Okta"
+vendor: "Auth0"
 slug: "auth0"
 tier: "2"
 category: "Identity"

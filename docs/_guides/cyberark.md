@@ -619,10 +619,30 @@ HAVING COUNT(*) > 5;
 
 ## Appendix A: References
 
+## Appendix B: References
+
 **Official CyberArk Documentation:**
-- [Security Best Practices](https://docs.cyberark.com/security-best-practices)
-- [REST API Guide](https://docs.cyberark.com/rest-api)
-- [CPM Configuration](https://docs.cyberark.com/cpm)
+- [Trust Center](https://www.cyberark.com/trust/)
+- [Trust Center (SafeBase Portal)](https://trust.cyberark.com/)
+- [Product Security and Vulnerability Disclosure](https://www.cyberark.com/product-security/)
+- [CyberArk Labs Security Advisories](https://labs.cyberark.com/cyberark-labs-security-advisories/)
+- [Documentation Portal (All Products)](https://docs.cyberark.com)
+- [Privilege Cloud Security Fundamentals](https://docs.cyberark.com/privilege-cloud-standard/latest/en/content/security/security%20fundamentals-introduction.htm)
+- [Privilege Cloud Connector Hardening](https://docs.cyberark.com/privilege-cloud-standard/latest/en/content/privilege%20cloud/privcloud-hardening-overview.htm)
+- [Technical Best Practices](https://docs.cyberark.com/privilege-cloud-standard/latest/en/content/getstarted/best-pactices.htm)
+
+**API Documentation:**
+- [CyberArk API Documentation Portal](https://api-docs.cyberark.com/)
+- [REST API Overview](https://www.cyberark.com/rest-api/)
+
+**Compliance Frameworks:**
+- [CyberArk Compliance (SOC 2, ISO 27001, FedRAMP)](https://www.cyberark.com/trust/compliance/)
+- [Corporate Security White Paper](https://www.cyberark.com/resources/white-papers/cyberark-corporate-security-white-paper-standards-and-practices)
+- [Blueprint for Identity Security Success](https://www.cyberark.com/resources/white-papers/cyberark-blueprint-for-identity-security-success-whitepaper)
+
+**Security Vulnerabilities:**
+- [CVE Details — CyberArk](https://www.cvedetails.com/vulnerability-list/vendor_id-18857/Cyberark.html)
+- [Addressing Recent Vulnerabilities (Blog)](https://www.cyberark.com/resources/product-insights-blog/addressing-recent-vulnerabilities-and-our-commitment-to-security)
 
 ---
 

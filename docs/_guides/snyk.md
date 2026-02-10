@@ -202,6 +202,32 @@ WHERE action = 'service_account.create'
 
 ---
 
+## Appendix B: References
+
+**Official Snyk Documentation:**
+- [Trust Center](https://trust.snyk.io/)
+- [Secure by Design](https://snyk.io/security/)
+- [User Docs](https://docs.snyk.io)
+- [SSO Setup Guide](https://docs.snyk.io/implementation-and-setup/enterprise-setup/single-sign-on-sso-for-authentication-to-snyk/set-up-snyk-single-sign-on-sso)
+- [Service Accounts](https://docs.snyk.io/implementation-and-setup/enterprise-setup/service-accounts)
+- [Snyk Broker](https://docs.snyk.io/implementation-and-setup/enterprise-setup/snyk-broker)
+- [Vulnerability Disclosure Program](https://snyk.io/vulnerability-disclosure/)
+
+**API Documentation:**
+- [API Overview](https://docs.snyk.io/snyk-api)
+- [Interactive REST API Docs](https://apidocs.snyk.io/)
+- [Audit Logs API](https://docs.snyk.io/snyk-api/reference/audit-logs)
+- [Authentication for API](https://docs.snyk.io/snyk-api/authentication-for-api)
+
+**Compliance Frameworks:**
+- ISO 27001, ISO 27017, SOC 2 Type II — via [Trust Center](https://trust.snyk.io/)
+- [Platform Compliance](https://snyk.io/platform/compliance/)
+
+**Security Incidents:**
+- No major public incidents involving Snyk identified
+
+---
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |

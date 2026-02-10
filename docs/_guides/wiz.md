@@ -370,10 +370,27 @@ GROUP BY service_account, source_ip;
 
 ## Appendix A: References
 
+## Appendix B: References
+
 **Official Wiz Documentation:**
-- [Security Best Practices](https://docs.wiz.io/security)
-- [Cloud Connector Setup](https://docs.wiz.io/connectors)
-- [API Reference](https://docs.wiz.io/api)
+- [Trust Center](https://www.wiz.io/trust-center)
+- [Trust Center (SafeBase)](https://trust.wiz.io/)
+- [Documentation Portal](https://docs.wiz.io/) (login required)
+- [Resource Center](https://www.wiz.io/resources)
+- [Wiz Research](https://www.wiz.io/research)
+- [Cloud Threat Landscape — Incidents](https://threats.wiz.io/all-incidents)
+- [CVE Vulnerability Database](https://www.wiz.io/vulnerability-database)
+
+**API Documentation:**
+- API endpoint: `https://api.<REGION>.app.wiz.io/graphql` (GraphQL)
+- [Wiz GitHub Organization](https://github.com/wiz-sec)
+
+**Compliance Frameworks:**
+- SOC 2 Type II, SOC 3, ISO 27001, ISO 27017, ISO 27018, ISO 27701, HIPAA, PCI, FedRAMP Moderate — via [Trust Center](https://trust.wiz.io/)
+- [Wiz for Government (FedRAMP)](https://www.wiz.io/verticals/government)
+
+**Security Incidents:**
+- No major public incidents involving Wiz as a victim identified
 
 ---
 

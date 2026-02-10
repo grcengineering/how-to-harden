@@ -649,8 +649,31 @@ def stream_to_siem():
 - [CrowdStrike Guides and Resources](https://www.crowdstrike.com/en-us/resources/guides/)
 - [Falcon SSO with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/saas-apps/crowdstrike-falcon-platform-tutorial)
 
-**Incident Analysis:**
-- [July 2024 Outage Technical Details](https://www.crowdstrike.com/blog/technical-details-on-todays-outage)
+## Appendix B: References
+
+**Official CrowdStrike Documentation:**
+- [Trust Center (SafeBase)](https://trust.crowdstrike.com/)
+- [Falcon Documentation Portal](https://falcon.crowdstrike.com/documentation/) (login required)
+- [Resources and Guides](https://www.crowdstrike.com/en-us/resources/guides/)
+- [Privacy Notice](https://www.crowdstrike.com/en-us/legal/privacy-notice/)
+
+**API and Developer Documentation:**
+- [Developer Center](https://developer.crowdstrike.com/)
+- [API Documentation](https://developer.crowdstrike.com/docs)
+- [OpenAPI Specifications](https://developer.crowdstrike.com/docs/openapi/)
+- [SDKs (Python, Go, JS, PowerShell, Rust, Ruby)](https://developer.crowdstrike.com/docs/sdks/)
+- [FalconPy Python SDK (GitHub)](https://github.com/CrowdStrike/falconpy)
+- [FalconPy Documentation](https://www.falconpy.io/Home.html)
+
+**Compliance Frameworks:**
+- [Security Compliance and Certification](https://www.crowdstrike.com/en-us/why-crowdstrike/crowdstrike-compliance-certification/) (SOC 2 Type II, FedRAMP High, ISO 27001:2022, ISO 42001, CSA STAR)
+
+**Security Incidents — July 19, 2024 Channel File 291 Outage:**
+- [Technical Details: Falcon Update for Windows Hosts](https://www.crowdstrike.com/en-us/blog/falcon-update-for-windows-hosts-technical-details/)
+- [Preliminary Post Incident Report](https://www.crowdstrike.com/en-us/blog/falcon-content-update-preliminary-post-incident-report/)
+- [Channel File 291 Root Cause Analysis (PDF)](https://www.crowdstrike.com/wp-content/uploads/2024/08/Channel-File-291-Incident-Root-Cause-Analysis-08.06.2024.pdf)
+- [PIR Executive Summary (PDF)](https://www.crowdstrike.com/wp-content/uploads/2024/07/CrowdStrike-PIR-Executive-Summary.pdf)
+- [CISA Alert: Widespread IT Outage](https://www.cisa.gov/news-events/alerts/2024/07/19/widespread-it-outage-due-crowdstrike-update)
 
 ---
 

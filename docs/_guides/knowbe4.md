@@ -236,11 +236,26 @@ Secure API access.
 
 ---
 
-## Appendix A: References
+## Appendix B: References
 
 **Official KnowBe4 Documentation:**
-- [KnowBe4 Admin Guide](https://support.knowbe4.com/)
-- [SAML Configuration](https://support.knowbe4.com/hc/en-us/articles/360034731734-SAML-Configuration-Overview)
+- [Trust Center (SafeBase)](https://trust.knowbe4.com/)
+- [Security Statement](https://www.knowbe4.com/legal/security)
+- [Knowledge Base](https://support.knowbe4.com/hc/en-us)
+- [SAML Integration Overview](https://support.knowbe4.com/hc/en-us/articles/206293387-SAML-Integration-Overview)
+- [SCIM Configuration Guide](https://support.knowbe4.com/hc/en-us/articles/360052380374-SCIM-Configuration-Guide)
+
+**API Documentation:**
+- [KnowBe4 Developer Portal](https://developer.knowbe4.com/)
+- [Reporting API Overview](https://support.knowbe4.com/hc/en-us/articles/115016090908-Reporting-API-Overview)
+
+**Compliance Frameworks:**
+- SOC 2 Type 2, ISO 27001:2022, ISO 27701, ISO 27017, ISO 27018, FedRAMP Moderate, CSA STAR — via [Security Statement](https://www.knowbe4.com/legal/security)
+- [FedRAMP Moderate Authorization Announcement](https://www.knowbe4.com/press/knowbe4-is-now-fedramp-federal-risk-and-authorization-management-program-moderate-authorized)
+
+**Security Incidents:**
+- [How a North Korean Fake IT Worker Tried to Infiltrate Us (July 2024)](https://blog.knowbe4.com/how-a-north-korean-fake-it-worker-tried-to-infiltrate-us)
+- [North Korean Fake IT Worker FAQ](https://blog.knowbe4.com/north-korean-fake-it-worker-faq)
 
 ---
 
