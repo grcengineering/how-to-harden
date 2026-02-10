@@ -192,9 +192,13 @@ document.addEventListener('DOMContentLoaded', function() {
   function loadMonaco() {
     if (monacoPromise) return monacoPromise;
 
-    monacoPromise = new Promise(function(resolve) {
+    monacoPromise = new Promise(function(resolve, reject) {
       var script = document.createElement('script');
       script.src = MONACO_CDN + '/loader.min.js';
+      script.onerror = function() {
+        monacoPromise = null;
+        reject(new Error('Monaco CDN failed to load'));
+      };
       script.onload = function() {
         require.config({ paths: { vs: MONACO_CDN } });
 
@@ -353,14 +357,16 @@ document.addEventListener('DOMContentLoaded', function() {
         replaceTarget = highlightDiv;
       }
     }
+    // Insert wrapper but keep it hidden until Monaco renders
+    wrapper.style.display = 'none';
     replaceTarget.parentNode.insertBefore(wrapper, replaceTarget);
-    replaceTarget.style.display = 'none';
 
-    // Create the editor
+    // Create the editor — only swap visibility on success
     loadMonaco().then(function(monaco) {
       var editor = monaco.editor.create(container, {
         value: codeText,
         language: language,
+        theme: getCurrentTheme(),
         readOnly: true,
         minimap: { enabled: false },
         fontSize: 13,
@@ -393,12 +399,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
       editors.push(editor);
 
+      // Show Monaco wrapper, hide original code block
+      wrapper.style.display = '';
+      replaceTarget.style.display = 'none';
+
       // Auto-size height after content is laid out
       requestAnimationFrame(function() {
         var contentHeight = editor.getContentHeight();
         container.style.height = contentHeight + 'px';
         editor.layout();
       });
+    }).catch(function() {
+      // Monaco failed — remove empty wrapper, keep original code visible
+      wrapper.remove();
     });
   }
 
