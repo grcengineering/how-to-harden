@@ -94,7 +94,7 @@ Last updated: 2025-12-27
 
 | Guide | Version | Maturity | Last Updated |
 |-------|---------|----------|--------------|
-| [Okta](docs/_guides/okta.md) | v0.2.0 | draft | 2025-12-26 |
+| [Okta](docs/_guides/okta.md) | v0.3.0 | draft | 2026-02-10 |
 | [GitHub](docs/_guides/github.md) | v0.1.0 | draft | 2025-12-13 |
 | [Salesforce](docs/_guides/salesforce.md) | v0.1.0 | draft | 2025-12-13 |
 | [Snowflake](docs/_guides/snowflake.md) | v0.1.0 | draft | 2025-12-13 |
@@ -121,6 +121,7 @@ Last updated: 2025-12-27
 | [JFrog](docs/_guides/jfrog.md) | v0.1.0 | draft | 2025-12-13 |
 | [Snyk](docs/_guides/snyk.md) | v0.1.0 | draft | 2025-12-13 |
 | [Zoom](docs/_guides/zoom.md) | v0.1.0 | draft | 2025-12-13 |
+| [Workato](docs/_guides/workato.md) | v0.2.0 | draft | 2026-02-10 |
 
 ### Tier 3
 
