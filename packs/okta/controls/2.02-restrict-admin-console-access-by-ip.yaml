@@ -1,0 +1,23 @@
+id: "okta-2.2"
+vendor: "okta"
+title: "Restrict Admin Console Access by IP"
+section: "2.2"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#22-restrict-admin-console-access-by-ip"
+description: >
+  Limit access to the Okta Admin Console to specific IP ranges (corporate network, VPN,
+  security team IPs). Prevents remote attackers from accessing administrative functions
+  even with stolen credentials, adding a network-layer defense to the authentication
+  boundary for privileged operations.
+compliance:
+  nist_800_53: ["AC-3(7)"]
+audit:
+  - id: "admin-console-ip-restriction"
+    description: "Verify admin sign-on policy restricts access to specific networks rather than allowing all"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=OKTA_SIGN_ON"
+      check: '[.[] | select(.name | test("admin"; "i")) | .conditions.network.connection] | . != ["ANYWHERE"]'
+    expected: true
+tags: ["admin-console", "ip-restriction", "access-control", "network"]

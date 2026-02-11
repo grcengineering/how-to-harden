@@ -1,0 +1,41 @@
+id: "okta-4.2"
+vendor: "okta"
+title: "Disable Session Persistence"
+section: "4.2"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#42-disable-session-persistence"
+description: >
+  Disable "Remember Me" and persistent session features that increase session hijacking
+  risk. Persistent global session cookies allow sessions to survive browser restarts,
+  extending the window for session hijacking.
+compliance:
+  nist_800_53: ["SC-23"]
+  disa_stig: ["V-273206"]
+audit:
+  - id: "persistent-sessions-disabled"
+    description: "Verify all custom sign-on policies have persistent cookies disabled"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=OKTA_SIGN_ON"
+      check: '[.[] | select(.system == false) | .settings.oie.session.usePersistentCookie] | all(. == false)'
+    expected: true
+remediate:
+  api:
+    - description: "Update session policy to disable persistent cookies"
+      method: PUT
+      endpoint: "/api/v1/policies/${POLICY_ID}"
+      body:
+        settings:
+          oie:
+            session:
+              usePersistentCookie: false
+  terraform:
+    resources:
+      - type: "okta_policy_signon"
+        name: "no_persistent_sessions"
+        config:
+          name: "No Persistent Sessions"
+          status: "ACTIVE"
+          session_persistent: false
+tags: ["session-management", "persistence", "remember-me"]

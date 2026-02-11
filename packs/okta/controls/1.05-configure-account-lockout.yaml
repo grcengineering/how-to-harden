@@ -1,0 +1,54 @@
+id: "okta-1.5"
+vendor: "okta"
+title: "Configure Account Lockout"
+section: "1.5"
+profile_level: 1
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/okta/#15-configure-account-lockout"
+
+description: >
+  Enforce account lockout after consecutive invalid login attempts to protect against
+  brute-force password attacks. L1 requires lockout after 5 attempts with 30-minute
+  duration. L2/L3 (DISA STIG) requires lockout after 3 attempts until admin unlock.
+  This control significantly reduces the risk of unauthorized access via password guessing.
+
+compliance:
+  nist_800_53: ["AC-7"]
+  disa_stig: ["V-273189"]
+
+audit:
+  - id: "check-lockout-enabled"
+    description: "Verify account lockout is configured in password policy"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=PASSWORD"
+      check: '[.[] | select(.settings.password.lockout.maxAttempts != null and .settings.password.lockout.maxAttempts <= 5 and .settings.password.lockout.maxAttempts > 0)] | length > 0'
+    expected: true
+
+remediate:
+  api:
+    - description: "Configure account lockout after 3 failed attempts"
+      method: PUT
+      endpoint: "/api/v1/policies/${POLICY_ID}"
+      body:
+        settings:
+          password:
+            lockout:
+              maxAttempts: 3
+              autoUnlockMinutes: 0
+              showLockoutFailures: true
+      condition: "!check-lockout-enabled"
+
+  terraform:
+    resources:
+      - type: "okta_policy_password"
+        name: "lockout_policy"
+        config:
+          name: "Account Lockout Policy"
+          status: "ACTIVE"
+          password_lockout_notification_channels:
+            - "EMAIL"
+          password_max_lockout_attempts: 3
+          password_auto_unlock_minutes: 0
+
+tags: ["lockout", "brute-force", "password", "account-security"]

@@ -1,0 +1,28 @@
+id: "okta-7.2"
+vendor: "okta"
+title: "Monitor Okta Security Advisories"
+section: "7.2"
+profile_level: 1
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/okta/#72-monitor-okta-security-advisories"
+description: >
+  Establish a process to monitor Okta security advisories and ensure all Okta client
+  software (Verify, Browser Plugin) is kept up to date. Recent vulnerabilities include
+  DLL hijacking in Okta Verify, XSS in the Browser Plugin, and iOS push notification
+  bypasses.
+compliance:
+  nist_800_53: ["SI-5", "RA-5"]
+audit:
+  - id: "advisory-monitoring-process"
+    description: "Verify organization exists and is accessible (process-based control — verified manually)"
+    api:
+      method: GET
+      endpoint: "/api/v1/org"
+      check: '. | length > 0'
+    expected: true
+remediate:
+  note: >
+    Process-based control. No API automation available. Requires subscribing to
+    trust.okta.com/security-advisories and establishing patch management for Okta
+    client software (Verify, Browser Plugin).
+tags: ["advisories", "patching", "vulnerability-management", "client-updates"]

@@ -1,0 +1,66 @@
+id: "okta-1.9"
+vendor: "okta"
+title: "Audit Default Authentication Policy"
+section: "1.9"
+profile_level: 1
+severity: "critical"
+guide_url: "https://howtoharden.com/guides/okta/#19-audit-default-authentication-policy"
+
+description: >
+  Audit and mitigate the risk posed by Okta's immutable Default Authentication Policy, which
+  permits password-only login with no MFA requirement. This built-in policy is the final
+  catch-all and cannot be modified or deleted. Any application or login flow that falls
+  through to the default policy bypasses all MFA enforcement. New applications are assigned
+  to this policy unless explicitly moved. Organizations must reassign all applications to
+  explicit custom policies and verify zero apps remain on the Default Policy.
+
+compliance:
+  nist_800_53: ["AC-3", "IA-2"]
+
+audit:
+  - id: "check-default-policy-no-apps"
+    description: "Verify zero applications are assigned to the Default Authentication Policy"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=ACCESS_POLICY"
+      check: >
+        [.[] | select(.system == true and .name == "Default Policy") | .id] as $ids |
+        if ($ids | length) > 0 then true else false end
+    expected: true
+
+  - id: "check-default-policy-apps-count"
+    description: "Check the Default Policy for assigned applications (should be zero)"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies/${DEFAULT_POLICY_ID}/app"
+      check: 'length == 0'
+    expected: true
+
+remediate:
+  api:
+    - description: "Reassign application from Default Policy to a custom MFA-enforcing policy"
+      method: PUT
+      endpoint: "/api/v1/apps/${APP_ID}/policies/${TARGET_POLICY_ID}"
+      body: {}
+      condition: "!check-default-policy-apps-count"
+
+  terraform:
+    resources:
+      - type: "okta_app_signon_policy"
+        name: "mfa_required"
+        config:
+          name: "MFA Required - All Applications"
+          description: "Enforces MFA for all applications - prevents fallthrough to default policy"
+
+      - type: "okta_app_signon_policy_rule"
+        name: "catch_all_deny"
+        config:
+          name: "Catch-All Deny"
+          priority: 99
+          access: "DENY"
+          factor_mode: "2FA"
+          groups_included:
+            - "EVERYONE"
+          network_connection: "ANYWHERE"
+
+tags: ["authentication-policy", "default-policy", "mfa-bypass", "policy-audit", "critical"]

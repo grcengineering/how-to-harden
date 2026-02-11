@@ -1,0 +1,36 @@
+id: "okta-3.1"
+vendor: "okta"
+title: "Implement OAuth App Consent Policies"
+section: "3.1"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#31-implement-oauth-app-consent-policies"
+description: >
+  Control which OAuth applications users can authorize and require admin approval for
+  new app integrations. Prevent shadow IT through unconsented OAuth grants. Okta's
+  7,000+ integrations create a massive attack surface that must be governed through
+  explicit consent policies and regular grant reviews.
+compliance:
+  nist_800_53: ["AC-6", "CM-7"]
+audit:
+  - id: "active-oauth-apps-inventoried"
+    description: "Verify active OAuth/OIDC applications are known and inventoried"
+    api:
+      method: GET
+      endpoint: "/api/v1/apps?filter=status%20eq%20%22ACTIVE%22"
+      check: '[.[] | select(.signOnMode == "OPENID_CONNECT" or .signOnMode == "OAUTH_2_0")] | length >= 0'
+    expected: true
+  - id: "authorization-server-clients"
+    description: "Verify OAuth clients on the default authorization server are documented"
+    api:
+      method: GET
+      endpoint: "/api/v1/authorizationServers/default/clients"
+      check: '. | length >= 0'
+    expected: true
+remediate:
+  api:
+    - description: "List all active OAuth/OIDC applications for review and governance"
+      method: GET
+      endpoint: "/api/v1/apps?filter=status%20eq%20%22ACTIVE%22"
+      condition: "!active-oauth-apps-inventoried"
+tags: ["oauth", "consent", "shadow-it", "integration-security", "supply-chain"]

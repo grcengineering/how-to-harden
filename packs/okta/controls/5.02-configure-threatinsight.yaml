@@ -1,0 +1,37 @@
+id: "okta-5.2"
+vendor: "okta"
+title: "Configure ThreatInsight"
+section: "5.2"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#52-configure-threatinsight"
+description: >
+  Enable Okta ThreatInsight to automatically block authentication from known-malicious IPs
+  based on Okta's threat intelligence. ThreatInsight aggregates data across Okta's customer
+  base to identify and block malicious authentication attempts before they reach your tenant.
+compliance:
+  nist_800_53: ["SI-3", "SI-4"]
+audit:
+  - id: "threatinsight-enabled"
+    description: "Verify ThreatInsight is configured in block mode"
+    api:
+      method: GET
+      endpoint: "/api/v1/threats/configuration"
+      check: '.action == "block"'
+    expected: true
+remediate:
+  api:
+    - description: "Enable ThreatInsight in block mode"
+      method: POST
+      endpoint: "/api/v1/threats/configuration"
+      body:
+        action: "block"
+        excludeZones: []
+      condition: "!threatinsight-enabled"
+  terraform:
+    resources:
+      - type: "okta_threat_policy"
+        name: "threatinsight"
+        config:
+          action: "block"
+tags: ["threat-intelligence", "blocking", "automated-defense", "threatinsight"]

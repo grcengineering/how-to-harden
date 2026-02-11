@@ -1,0 +1,27 @@
+id: "okta-5.3"
+vendor: "okta"
+title: "Enable Identity Threat Protection (ITP)"
+section: "5.3"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#53-enable-identity-threat-protection-itp"
+description: >
+  Enable Identity Threat Protection with Okta AI for continuous post-authentication risk
+  evaluation. Unlike traditional MFA (authentication-time only), ITP evaluates risk signals
+  during active sessions and can automatically terminate sessions, require step-up MFA, or
+  trigger Workflows responses in real-time.
+compliance:
+  nist_800_53: ["SI-4", "RA-5"]
+audit:
+  - id: "itp-enabled"
+    description: "Verify Identity Threat Protection is enabled (actual API may differ — best approximation)"
+    api:
+      method: GET
+      endpoint: "/api/v1/threats/configuration"
+      check: '.identityThreatProtection.enabled == true'
+    expected: true
+remediate:
+  note: >
+    Requires ITP license add-on. Configuration is primarily through the Okta Admin Console
+    (ClickOps). No public API remediation available at this time.
+tags: ["itp", "continuous-risk", "post-auth", "okta-ai", "threat-detection"]

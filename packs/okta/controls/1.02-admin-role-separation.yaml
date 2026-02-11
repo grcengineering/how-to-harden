@@ -1,0 +1,56 @@
+id: "okta-1.2"
+vendor: "okta"
+title: "Implement Admin Role Separation"
+section: "1.2"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#12-implement-admin-role-separation"
+description: >
+  Separate administrative privileges using Okta's custom admin roles instead of granting
+  Super Admin access. Create role-specific permissions for Help Desk, Application Admins,
+  and Read-Only Auditors to enforce least privilege and limit blast radius of compromised
+  admin accounts.
+compliance:
+  soc2: ["CC6.2"]
+  nist_800_53: ["AC-5", "AC-6(1)"]
+audit:
+  - id: "custom-roles-exist"
+    description: "Verify custom admin roles have been created beyond default built-in roles"
+    api:
+      method: GET
+      endpoint: "/api/v1/iam/roles"
+      check: '[.[] | select(.type == "CUSTOM")] | length > 0'
+    expected: true
+  - id: "super-admin-count"
+    description: "Verify Super Admin role assignments are fewer than 5"
+    api:
+      method: GET
+      endpoint: "/api/v1/iam/assignees/users?roleType=SUPER_ADMIN"
+      check: 'length < 5'
+    expected: true
+remediate:
+  api:
+    - description: "Create Help Desk Admin custom role with limited permissions"
+      method: POST
+      endpoint: "/api/v1/iam/roles"
+      body:
+        label: "Help Desk Admin"
+        description: "Limited admin for password resets and account unlocks"
+        permissions:
+          - "okta.users.read"
+          - "okta.users.credentials.resetPassword"
+          - "okta.users.lifecycle.unlock"
+      condition: "!custom-roles-exist"
+    - description: "Create Security Auditor read-only custom role"
+      method: POST
+      endpoint: "/api/v1/iam/roles"
+      body:
+        label: "Security Auditor"
+        description: "Read-only access for security reviews and compliance audits"
+        permissions:
+          - "okta.users.read"
+          - "okta.apps.read"
+          - "okta.policies.read"
+          - "okta.logs.read"
+      condition: "!custom-roles-exist"
+tags: ["access-control", "least-privilege", "admin-roles", "separation-of-duties"]

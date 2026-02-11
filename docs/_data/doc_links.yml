@@ -367,6 +367,7 @@ okta:
   product_docs: "https://help.okta.com/en-us/content/index.htm"
   api_docs: "https://developer.okta.com/docs/api/"
   hardening_docs: "https://support.okta.com/help/s/article/best-practices-for-securing-okta-workforce-identity-cloud-admin-accounts"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/okta"
 
 onelogin:
   product_docs: "https://support.onelogin.com/"

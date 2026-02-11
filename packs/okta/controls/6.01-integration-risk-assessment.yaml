@@ -1,0 +1,24 @@
+id: "okta-6.1"
+vendor: "okta"
+title: "Integration Risk Assessment Matrix"
+section: "6.1"
+profile_level: 1
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/okta/#61-integration-risk-assessment-matrix"
+description: >
+  Establish a risk assessment framework for evaluating third-party integrations connected
+  to Okta. Categorize integrations by access level, data sensitivity, and integration
+  method to prioritize security controls.
+compliance:
+  nist_800_53: ["RA-3", "SA-9"]
+audit:
+  - id: "active-apps-inventory"
+    description: "Inventory check returning count of active applications"
+    api:
+      method: GET
+      endpoint: "/api/v1/apps?limit=200"
+      check: '. | length >= 0'
+    expected: true
+remediate:
+  note: "Process-based control. Requires manual risk categorization of each integration. No API automation."
+tags: ["integration-security", "risk-assessment", "third-party", "supply-chain"]

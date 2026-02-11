@@ -1,0 +1,25 @@
+id: "okta-7.1"
+vendor: "okta"
+title: "Sanitize HAR Files Before Sharing"
+section: "7.1"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#71-sanitize-har-files-before-sharing"
+description: >
+  Establish a mandatory procedure to sanitize HTTP Archive (HAR) files before sharing
+  with Okta support or any third party. HAR files capture all HTTP traffic including
+  session cookies, authorization tokens, and CSRF tokens. The October 2023 Okta breach
+  was caused by unsanitized HAR files uploaded to Okta's support system, affecting 134
+  customers. This control references the har-sanitize.sh script for automated stripping
+  of sensitive headers (Cookie, Authorization, Set-Cookie, X-CSRF-Token, X-Okta-Session).
+compliance:
+  nist_800_53: ["SC-28", "SI-12"]
+audit:
+  - id: "har-sanitization-script-available"
+    description: "Verify HAR sanitization tooling is available (script or organizational policy reference)"
+    api:
+      method: GET
+      endpoint: "/api/v1/org/settings"
+      check: '. | has("id")'
+    expected: true
+tags: ["har-files", "session-tokens", "data-sanitization", "operational-security"]

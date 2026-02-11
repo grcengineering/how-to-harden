@@ -1,0 +1,32 @@
+id: "okta-1.8"
+vendor: "okta"
+title: "Configure FIPS-Compliant Authenticators"
+section: "1.8"
+profile_level: 3
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/okta/#18-configure-fips-compliant-authenticators"
+description: >
+  Configure Okta Verify to only connect with FIPS-compliant devices. This ensures that
+  authentication uses FIPS 140-2 validated cryptographic modules, meeting federal and
+  regulated industry requirements for approved encryption standards.
+compliance:
+  nist_800_53: ["SC-13"]
+  disa_stig: ["V-273205"]
+audit:
+  - id: "okta-verify-fips-mode"
+    description: "Verify Okta Verify authenticator is configured for FIPS-only compliance mode"
+    api:
+      method: GET
+      endpoint: "/api/v1/authenticators"
+      check: '[.[] | select(.key == "okta_verify") | .settings.compliance == "FIPS_ONLY"]'
+    expected: true
+remediate:
+  api:
+    - description: "Enable FIPS-only mode for Okta Verify authenticator"
+      method: PUT
+      endpoint: "/api/v1/authenticators/${AUTHENTICATOR_ID}"
+      body:
+        settings:
+          compliance: "FIPS_ONLY"
+      condition: "!okta-verify-fips-mode"
+tags: ["fips", "compliance", "authenticator", "federal"]

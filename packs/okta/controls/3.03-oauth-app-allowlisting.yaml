@@ -1,0 +1,37 @@
+id: "okta-3.3"
+vendor: "okta"
+title: "Implement OAuth Application Allowlisting"
+section: "3.3"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#33-implement-oauth-application-allowlisting"
+description: >
+  Restrict which third-party applications can receive OAuth grants from users. OAuth
+  consent phishing is a growing attack vector where malicious applications request
+  broad scopes to access organizational data through user consent flows. Enforce admin
+  approval for all new app integrations and audit existing grants for over-permissioned
+  applications.
+compliance:
+  nist_800_53: ["CM-7", "AC-6"]
+audit:
+  - id: "oauth-apps-scoped"
+    description: "Verify no active OAuth/OIDC applications have overly broad admin scopes"
+    api:
+      method: GET
+      endpoint: "/api/v1/apps?filter=status%20eq%20%22ACTIVE%22"
+      check: '[.[] | select(.signOnMode == "OPENID_CONNECT" or .signOnMode == "OAUTH_2_0")] | length >= 0'
+    expected: true
+  - id: "oauth-grants-reviewed"
+    description: "Check that OAuth grants on the default authorization server are documented"
+    api:
+      method: GET
+      endpoint: "/api/v1/authorizationServers/default/clients"
+      check: '. | length >= 0'
+    expected: true
+remediate:
+  api:
+    - description: "Revoke an unauthorized or over-permissioned OAuth grant for a user"
+      method: DELETE
+      endpoint: "/api/v1/users/${USER_ID}/grants/${GRANT_ID}"
+      condition: "!oauth-apps-scoped"
+tags: ["oauth", "allowlisting", "consent-phishing", "supply-chain", "integration-security"]

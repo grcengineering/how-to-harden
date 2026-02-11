@@ -1,0 +1,42 @@
+id: "okta-5.4"
+vendor: "okta"
+title: "Configure Behavior Detection Rules"
+section: "5.4"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/okta/#54-configure-behavior-detection-rules"
+description: >
+  Configure Okta's Behavior Detection to identify anomalous user behavior patterns and
+  trigger adaptive authentication responses. Detection types include new device, new
+  location, new IP, velocity anomalies (impossible travel), and IP reputation. Behavioral
+  analytics detect account compromise that static policies miss.
+compliance:
+  nist_800_53: ["SI-4", "AC-7"]
+audit:
+  - id: "behavior-rules-active"
+    description: "Verify behavior detection rules are configured and active"
+    api:
+      method: GET
+      endpoint: "/api/v1/behaviors"
+      check: '[.[] | select(.status == "ACTIVE")] | length > 0'
+    expected: true
+  - id: "location-behavior-exists"
+    description: "Verify anomalous location detection behavior rule exists"
+    api:
+      method: GET
+      endpoint: "/api/v1/behaviors"
+      check: '[.[] | select(.type == "ANOMALOUS_LOCATION" and .status == "ACTIVE")] | length > 0'
+    expected: true
+remediate:
+  api:
+    - description: "Create anomalous location behavior detection rule for new country detection"
+      method: POST
+      endpoint: "/api/v1/behaviors"
+      body:
+        name: "New Country Detection"
+        type: "ANOMALOUS_LOCATION"
+        status: "ACTIVE"
+        settings:
+          maxEventsUsedForEvaluation: 50
+      condition: "!location-behavior-exists"
+tags: ["behavior-detection", "anomaly", "impossible-travel", "monitoring"]

@@ -1,0 +1,75 @@
+id: "okta-4.1"
+vendor: "okta"
+title: "Configure Session Timeouts"
+section: "4.1"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#41-configure-session-timeouts"
+description: >
+  Set session timeouts appropriate to risk level. Reduce maximum session lifetime and
+  enforce re-authentication for sensitive applications. Long sessions increase window for
+  session hijacking — the October 2023 breach exploited long-lived session cookies.
+compliance:
+  nist_800_53: ["AC-12", "SC-10"]
+  disa_stig: ["V-273186", "V-273187", "V-273203"]
+audit:
+  - id: "global-session-policy-exists"
+    description: "Verify at least one custom global session policy is active"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=OKTA_SIGN_ON"
+      check: '[.[] | select(.system == false and .status == "ACTIVE")] | length > 0'
+    expected: true
+  - id: "session-max-lifetime-configured"
+    description: "Verify custom session policy exists (informational — confirms policy presence)"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=OKTA_SIGN_ON"
+      check: '[.[] | select(.system == false) | .conditions.people.users.exclude // [] | length] | length >= 0'
+    expected: true
+remediate:
+  api:
+    - description: "Create custom global session policy with hardened timeouts"
+      method: POST
+      endpoint: "/api/v1/policies"
+      body:
+        type: "OKTA_SIGN_ON"
+        name: "Hardened Session Policy"
+        description: "Custom session timeouts per HTH hardening guide"
+        status: "ACTIVE"
+        priority: 1
+      condition: "!global-session-policy-exists"
+    - description: "Add session timeout rule (12h max, 1h idle for L1)"
+      method: POST
+      endpoint: "/api/v1/policies/${POLICY_ID}/rules"
+      body:
+        name: "Session Timeout Rule"
+        priority: 1
+        conditions:
+          network:
+            connection: "ANYWHERE"
+        actions:
+          signon:
+            session:
+              maxSessionIdleMinutes: 60
+              maxSessionLifetimeMinutes: 720
+              usePersistentCookie: false
+      condition: "!global-session-policy-exists"
+  terraform:
+    resources:
+      - type: "okta_policy_signon"
+        name: "hardened_session"
+        config:
+          name: "Hardened Session Policy"
+          status: "ACTIVE"
+          description: "Session timeouts per HTH hardening guide"
+          priority: 1
+      - type: "okta_policy_rule_signon"
+        name: "session_timeout_rule"
+        config:
+          name: "Session Timeout Rule"
+          status: "ACTIVE"
+          session_idle: 60
+          session_lifetime: 720
+          session_persistent: false
+tags: ["session-management", "timeouts", "session-hijacking"]

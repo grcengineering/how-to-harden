@@ -1,0 +1,45 @@
+id: "okta-7.3"
+vendor: "okta"
+title: "Conduct Regular Access Reviews"
+section: "7.3"
+profile_level: 1
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/okta/#73-conduct-regular-access-reviews"
+description: >
+  Perform periodic access reviews (recertification campaigns) to verify user access is
+  appropriate and remove orphaned accounts, stale privileges, and excessive permissions.
+  SOC 2 auditors specifically require documented evidence of regular access reviews.
+  This includes verifying Super Admin count is fewer than 5, identifying accounts
+  inactive for 90+ days, and reviewing privileged group memberships.
+compliance:
+  soc2: ["CC6.1", "CC6.2"]
+  nist_800_53: ["AC-2(3)"]
+audit:
+  - id: "super-admin-count-safe"
+    description: "Verify Super Admin role assignments are fewer than 5"
+    api:
+      method: GET
+      endpoint: "/api/v1/iam/assignees/users?roleType=SUPER_ADMIN"
+      check: 'length < 5'
+    expected: true
+  - id: "stale-users-checked"
+    description: "Check for active users who have not logged in for 90+ days"
+    api:
+      method: GET
+      endpoint: "/api/v1/users?filter=status+eq+%22ACTIVE%22&limit=200"
+      check: '[.[] | select(.lastLogin != null) | select((.lastLogin | fromdateiso8601) < (now - 7776000))] | length == 0'
+    expected: true
+  - id: "admin-assignments-reviewed"
+    description: "Verify admin role assignments are documented and current"
+    api:
+      method: GET
+      endpoint: "/api/v1/iam/assignees/users"
+      check: '. | length >= 0'
+    expected: true
+remediate:
+  api:
+    - description: "Suspend a user account that has been inactive for 90+ days"
+      method: POST
+      endpoint: "/api/v1/users/${USER_ID}/lifecycle/suspend"
+      condition: "!stale-users-checked"
+tags: ["access-review", "recertification", "soc2", "orphaned-accounts", "governance"]

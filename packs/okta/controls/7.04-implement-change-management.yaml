@@ -1,0 +1,25 @@
+id: "okta-7.4"
+vendor: "okta"
+title: "Implement Change Management for Okta Configuration"
+section: "7.4"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/okta/#74-implement-change-management-for-okta-configuration"
+description: >
+  Establish a change management process for Okta configuration changes. All modifications
+  to authentication policies, admin roles, network zones, and integrations should be
+  tracked, approved, and auditable. Requires separation of duties for critical changes.
+compliance:
+  nist_800_53: ["CM-3"]
+  soc2: ["CC8.1"]
+audit:
+  - id: "config-change-logging"
+    description: "Verify system log is accessible for change tracking of policy and application lifecycle events"
+    api:
+      method: GET
+      endpoint: "/api/v1/logs?limit=5&filter=eventType+eq+%22policy.lifecycle.update%22"
+      check: '. | length >= 0'
+    expected: true
+remediate:
+  note: "Process-based control. Implement via Terraform + git workflows. No direct API remediation."
+tags: ["change-management", "governance", "separation-of-duties", "audit-trail"]

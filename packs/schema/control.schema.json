@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://howtoharden.com/schemas/control.schema.json",
+  "title": "HTH Control Definition",
+  "description": "Machine-readable security control definition for How to Harden code packs",
+  "type": "object",
+  "required": ["id", "vendor", "title", "section", "profile_level", "severity", "description", "compliance", "audit"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique control identifier in format vendor-section.subsection",
+      "pattern": "^[a-z]+-[0-9]+\\.[0-9]+$"
+    },
+    "vendor": {
+      "type": "string",
+      "description": "Vendor slug matching the guide filename"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable control title"
+    },
+    "section": {
+      "type": "string",
+      "description": "Section number in the hardening guide (e.g., '1.1')"
+    },
+    "profile_level": {
+      "type": "integer",
+      "enum": [1, 2, 3],
+      "description": "Minimum profile level: 1=Baseline, 2=Hardened, 3=Maximum Security"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "Control severity"
+    },
+    "guide_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the control in the published guide"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this control configures and why"
+    },
+    "compliance": {
+      "type": "object",
+      "description": "Compliance framework mappings",
+      "properties": {
+        "soc2": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "nist_800_53": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "iso_27001": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "pci_dss": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "disa_stig": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "audit": {
+      "type": "array",
+      "description": "Checks to verify the control is in place",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "api", "expected"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique check identifier within this control"
+          },
+          "description": {
+            "type": "string",
+            "description": "What this check verifies"
+          },
+          "api": {
+            "type": "object",
+            "required": ["method", "endpoint", "check"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["GET", "POST", "PUT", "DELETE"]
+              },
+              "endpoint": {
+                "type": "string",
+                "description": "API endpoint path (relative to base URL)"
+              },
+              "check": {
+                "type": "string",
+                "description": "jq expression that returns true if the check passes"
+              }
+            },
+            "additionalProperties": false
+          },
+          "expected": {
+            "type": "boolean",
+            "description": "Expected result of the jq check expression"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "remediate": {
+      "type": "object",
+      "description": "Actions to bring the control into compliance",
+      "properties": {
+        "api": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["description", "method", "endpoint"],
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "method": {
+                "type": "string",
+                "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"]
+              },
+              "endpoint": {
+                "type": "string"
+              },
+              "body": {
+                "type": "object",
+                "description": "Request body (JSON object)"
+              },
+              "condition": {
+                "type": "string",
+                "description": "Only run if this audit check failed (prefix with ! for negation)"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "terraform": {
+          "type": "object",
+          "properties": {
+            "resources": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["type", "name", "config"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Terraform resource type"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Terraform resource name"
+                  },
+                  "config": {
+                    "type": "object",
+                    "description": "Resource configuration attributes"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Searchable tags for this control"
+    }
+  },
+  "additionalProperties": false
+}

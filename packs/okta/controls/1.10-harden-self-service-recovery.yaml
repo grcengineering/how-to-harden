@@ -1,0 +1,94 @@
+id: "okta-1.10"
+vendor: "okta"
+title: "Harden Self-Service Recovery"
+section: "1.10"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#110-harden-self-service-recovery"
+description: >
+  Restrict self-service account recovery to trusted methods and network locations. Remove
+  weak recovery options (SMS, voice call, security questions) that are susceptible to SIM
+  swapping, SS7 interception, and social engineering. Limit recovery to email and Okta
+  Verify authenticator-based methods only.
+compliance:
+  nist_800_53: ["IA-5(1)", "IA-11"]
+audit:
+  - id: "sms-recovery-disabled"
+    description: "Verify SMS recovery is disabled in all active password policies"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=PASSWORD"
+      check: '[.[] | select(.status == "ACTIVE") | .settings.recovery.factors.okta_sms.status == "INACTIVE"] | all'
+    expected: true
+  - id: "call-recovery-disabled"
+    description: "Verify voice call recovery is disabled in all active password policies"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=PASSWORD"
+      check: '[.[] | select(.status == "ACTIVE") | .settings.recovery.factors.okta_call.status == "INACTIVE"] | all'
+    expected: true
+  - id: "security-question-disabled"
+    description: "Verify security question authenticator is deactivated"
+    api:
+      method: GET
+      endpoint: "/api/v1/authenticators"
+      check: '[.[] | select(.key == "security_question" and .status == "ACTIVE")] | length == 0'
+    expected: true
+  - id: "email-recovery-active"
+    description: "Verify email-based recovery remains active as an approved recovery method"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=PASSWORD"
+      check: '[.[] | select(.status == "ACTIVE") | .settings.recovery.factors.okta_email.status == "ACTIVE"] | all'
+    expected: true
+remediate:
+  api:
+    - description: "Update password policy to disable SMS, voice, and security question recovery"
+      method: PUT
+      endpoint: "/api/v1/policies/${POLICY_ID}"
+      body:
+        settings:
+          recovery:
+            factors:
+              okta_email:
+                status: "ACTIVE"
+                properties:
+                  recoveryToken:
+                    tokenLifetimeMinutes: 10
+              okta_sms:
+                status: "INACTIVE"
+              okta_call:
+                status: "INACTIVE"
+              recovery_question:
+                status: "INACTIVE"
+      condition: "!sms-recovery-disabled"
+    - description: "Deactivate the security question authenticator globally"
+      method: POST
+      endpoint: "/api/v1/authenticators/${AUTHENTICATOR_ID}/lifecycle/deactivate"
+      condition: "!security-question-disabled"
+  terraform:
+    resources:
+      - type: "okta_authenticator"
+        name: "security_question"
+        config:
+          name: "Security Question"
+          key: "security_question"
+          status: "INACTIVE"
+      - type: "okta_authenticator"
+        name: "phone"
+        config:
+          name: "Phone"
+          key: "phone_number"
+          status: "ACTIVE"
+          settings: '{"allowedFor":"authentication"}'
+      - type: "okta_policy_password"
+        name: "hardened_recovery"
+        config:
+          name: "Hardened Password Policy"
+          status: "ACTIVE"
+          priority: 1
+          email_recovery: "ACTIVE"
+          sms_recovery: "INACTIVE"
+          call_recovery: "INACTIVE"
+          question_recovery: "INACTIVE"
+tags: ["recovery", "account-takeover", "sim-swapping", "authentication"]

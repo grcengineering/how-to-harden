@@ -1,0 +1,87 @@
+id: "okta-3.4"
+vendor: "okta"
+title: "Govern Non-Human Identities (NHI)"
+section: "3.4"
+profile_level: 1
+severity: "critical"
+guide_url: "https://howtoharden.com/guides/okta/#34-govern-non-human-identities-nhi"
+
+description: >
+  Implement governance for non-human identities: service accounts, API tokens, automation
+  accounts, and machine-to-machine integrations. Migrate from static SSWS API tokens to
+  OAuth 2.0 for API access. The October 2023 breach was caused by a compromised service
+  account whose credentials were saved to a personal Google profile. Static SSWS tokens
+  never expire unless manually revoked, creating persistent access risk. OAuth 2.0 provides
+  shorter token lifespans, granular scopes, and automatic key rotation.
+
+compliance:
+  nist_800_53: ["IA-4", "IA-5", "AC-2"]
+  disa_stig: ["V-273210", "V-273211", "V-273212", "V-273213", "V-273214"]
+
+audit:
+  - id: "check-api-tokens-inventory"
+    description: "List all active API tokens for audit"
+    api:
+      method: GET
+      endpoint: "/api/v1/api-tokens"
+      check: '. | length >= 0'
+    expected: true
+
+  - id: "check-oauth-service-apps-exist"
+    description: "Verify OAuth 2.0 service apps exist (migration from SSWS)"
+    api:
+      method: GET
+      endpoint: "/api/v1/apps?filter=status%20eq%20%22ACTIVE%22"
+      check: '[.[] | select(.settings.oauthClient.application_type == "service")] | length >= 0'
+    expected: true
+
+remediate:
+  api:
+    - description: "Create an OAuth 2.0 service app with client credentials grant"
+      method: POST
+      endpoint: "/api/v1/apps"
+      body:
+        name: "oidc_client"
+        label: "SVC - Automation API Access"
+        signOnMode: "OPENID_CONNECT"
+        credentials:
+          oauthClient:
+            token_endpoint_auth_method: "private_key_jwt"
+            autoKeyRotation: true
+        settings:
+          oauthClient:
+            grant_types:
+              - "client_credentials"
+            response_types:
+              - "token"
+            application_type: "service"
+      condition: "!check-oauth-service-apps-exist"
+
+    - description: "Revoke a stale API token"
+      method: DELETE
+      endpoint: "/api/v1/api-tokens/${TOKEN_ID}"
+      body: {}
+      condition: "!check-api-tokens-inventory"
+
+  terraform:
+    resources:
+      - type: "okta_app_oauth"
+        name: "service_automation"
+        config:
+          label: "SVC - Automation API Access"
+          type: "service"
+          grant_types:
+            - "client_credentials"
+          response_types:
+            - "token"
+          token_endpoint_auth_method: "private_key_jwt"
+          pkce_required: false
+
+      - type: "okta_app_oauth_api_scope"
+        name: "users_read"
+        config:
+          issuer: "https://${var.okta_domain}"
+          scopes:
+            - "okta.users.read"
+
+tags: ["nhi", "service-account", "api-token", "oauth2", "client-credentials", "token-rotation"]

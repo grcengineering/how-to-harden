@@ -1,0 +1,27 @@
+id: "okta-5.6"
+vendor: "okta"
+title: "Run HealthInsight Security Reviews"
+section: "5.6"
+profile_level: 1
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/okta/#56-run-healthinsight-security-reviews"
+description: >
+  Run Okta HealthInsight regularly to assess your tenant's security posture against Okta's
+  16 built-in security recommendations. HealthInsight is free and built into every Okta
+  admin console — no additional license needed. Provides automated detection of common
+  security misconfigurations.
+compliance:
+  nist_800_53: ["CA-7", "RA-5"]
+audit:
+  - id: "healthinsight-score-acceptable"
+    description: "Verify HealthInsight score meets minimum threshold (API may not be publicly available — validation is primarily ClickOps)"
+    api:
+      method: GET
+      endpoint: "/api/internal/healthInsight"
+      check: '.overallScore >= 80'
+    expected: true
+remediate:
+  note: >
+    ClickOps only (Security > HealthInsight in Admin Console). No public API automation
+    available. Review recommendations and remediate flagged items manually.
+tags: ["healthinsight", "posture-management", "security-review", "compliance"]

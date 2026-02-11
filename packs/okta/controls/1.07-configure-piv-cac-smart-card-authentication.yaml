@@ -1,0 +1,24 @@
+id: "okta-1.7"
+vendor: "okta"
+title: "Configure PIV/CAC Smart Card Authentication"
+section: "1.7"
+profile_level: 3
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/okta/#17-configure-pivcac-smart-card-authentication"
+description: >
+  Configure Okta to accept Personal Identity Verification (PIV) credentials and Common
+  Access Cards (CAC) for authentication. This enables hardware-based multifactor
+  authentication using approved certificate authorities, meeting federal requirements
+  for phishing-resistant authentication with cryptographic proof of identity.
+compliance:
+  nist_800_53: ["IA-2(12)"]
+  disa_stig: ["V-273204", "V-273207"]
+audit:
+  - id: "smart-card-idp-active"
+    description: "Verify an X.509 certificate-based identity provider is active for smart card authentication"
+    api:
+      method: GET
+      endpoint: "/api/v1/idps"
+      check: '[.[] | select(.type == "X509" and .status == "ACTIVE")] | length > 0'
+    expected: true
+tags: ["piv", "cac", "smart-card", "certificate-auth", "federal"]

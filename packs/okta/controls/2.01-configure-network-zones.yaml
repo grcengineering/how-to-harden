@@ -1,0 +1,72 @@
+id: "okta-2.1"
+vendor: "okta"
+title: "Configure IP Zones and Network Policies"
+section: "2.1"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#21-configure-ip-zones-and-network-policies"
+description: >
+  Define network zones (corporate, VPN, known bad) and enforce authentication policies
+  based on network location. Block or require step-up authentication from untrusted
+  networks. IP-based policies add a defense layer even when credentials are stolen,
+  and enable geographic restrictions for compliance.
+compliance:
+  nist_800_53: ["AC-3", "SC-7"]
+audit:
+  - id: "network-zones-configured"
+    description: "Verify at least one custom network zone has been configured"
+    api:
+      method: GET
+      endpoint: "/api/v1/zones"
+      check: '[.[] | select(.status == "ACTIVE" and .system == false)] | length > 0'
+    expected: true
+  - id: "blocklist-zone-exists"
+    description: "Verify a blocklist zone exists for known-bad traffic sources"
+    api:
+      method: GET
+      endpoint: "/api/v1/zones"
+      check: '[.[] | select(.usage == "BLOCKLIST" and .status == "ACTIVE")] | length > 0'
+    expected: true
+remediate:
+  api:
+    - description: "Create Corporate Network IP zone with office and VPN egress IPs"
+      method: POST
+      endpoint: "/api/v1/zones"
+      body:
+        type: "IP"
+        name: "Corporate Network"
+        status: "ACTIVE"
+        gateways:
+          - type: "CIDR"
+            value: "203.0.113.0/24"
+          - type: "CIDR"
+            value: "198.51.100.0/24"
+      condition: "!network-zones-configured"
+    - description: "Create blocklist zone for Tor exit nodes and anonymizing proxies"
+      method: POST
+      endpoint: "/api/v1/zones"
+      body:
+        type: "DYNAMIC_V2"
+        name: "Blocked - TOR and Anonymizers"
+        status: "ACTIVE"
+        proxyType: "TorAnonymizer"
+        usage: "BLOCKLIST"
+      condition: "!blocklist-zone-exists"
+  terraform:
+    resources:
+      - type: "okta_network_zone"
+        name: "corporate"
+        config:
+          name: "Corporate Network"
+          type: "IP"
+          status: "ACTIVE"
+          gateways: ["203.0.113.0/24", "198.51.100.0/24"]
+      - type: "okta_network_zone"
+        name: "block_tor"
+        config:
+          name: "Blocked - TOR and Anonymizers"
+          type: "DYNAMIC_V2"
+          status: "ACTIVE"
+          usage: "BLOCKLIST"
+          dynamic_proxy_type: "TorAnonymizer"
+tags: ["network", "ip-zones", "access-control", "geographic-restrictions"]

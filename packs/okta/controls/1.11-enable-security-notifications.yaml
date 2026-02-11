@@ -1,0 +1,83 @@
+id: "okta-1.11"
+vendor: "okta"
+title: "Enable End-User Security Notifications"
+section: "1.11"
+profile_level: 1
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/okta/#111-enable-end-user-security-notifications"
+
+description: >
+  Enable all five end-user security notification types so users receive immediate alerts
+  when security-relevant changes occur on their accounts: new sign-on, authenticator
+  enrolled, authenticator reset, password changed, and MFA factor reset. Additionally
+  enable Suspicious Activity Reporting to allow users to flag unauthorized actions directly
+  from notification emails, creating actionable system log events for security teams.
+
+compliance:
+  nist_800_53: ["SI-4", "IR-6"]
+
+audit:
+  - id: "check-end-user-notifications-enabled"
+    description: "Verify all five end-user notification types are enabled"
+    api:
+      method: GET
+      endpoint: "/api/v1/org/settings"
+      check: >
+        .endUserNotifications.newSignOnNotification.enabled == true and
+        .endUserNotifications.authenticatorEnrolledNotification.enabled == true and
+        .endUserNotifications.authenticatorResetNotification.enabled == true and
+        .endUserNotifications.passwordChangedNotification.enabled == true and
+        .endUserNotifications.factorResetNotification.enabled == true
+    expected: true
+
+  - id: "check-suspicious-activity-reporting"
+    description: "Verify Suspicious Activity Reporting is enabled"
+    api:
+      method: GET
+      endpoint: "/api/v1/org/privacy/suspicious-activity-reporting"
+      check: '.enabled == true'
+    expected: true
+
+remediate:
+  api:
+    - description: "Enable all five end-user security notification types"
+      method: PUT
+      endpoint: "/api/v1/org/settings"
+      body:
+        endUserNotifications:
+          newSignOnNotification:
+            enabled: true
+          authenticatorEnrolledNotification:
+            enabled: true
+          authenticatorResetNotification:
+            enabled: true
+          passwordChangedNotification:
+            enabled: true
+          factorResetNotification:
+            enabled: true
+      condition: "!check-end-user-notifications-enabled"
+
+    - description: "Enable Suspicious Activity Reporting"
+      method: POST
+      endpoint: "/api/v1/org/privacy/suspicious-activity-reporting"
+      body:
+        enabled: true
+      condition: "!check-suspicious-activity-reporting"
+
+  terraform:
+    resources:
+      - type: "null_resource"
+        name: "enable_end_user_notifications"
+        config:
+          description: "Org-level notification settings require API provisioning via null_resource"
+          triggers:
+            always_run: "timestamp()"
+
+      - type: "null_resource"
+        name: "enable_suspicious_activity_reporting"
+        config:
+          description: "Suspicious Activity Reporting requires API provisioning via null_resource"
+          triggers:
+            always_run: "timestamp()"
+
+tags: ["notifications", "suspicious-activity", "detection", "user-reporting", "account-monitoring"]

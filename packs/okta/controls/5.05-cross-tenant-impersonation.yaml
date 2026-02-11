@@ -1,0 +1,44 @@
+id: "okta-5.5"
+vendor: "okta"
+title: "Monitor for Cross-Tenant Impersonation"
+section: "5.5"
+profile_level: 1
+severity: "critical"
+guide_url: "https://howtoharden.com/guides/okta/#55-monitor-for-cross-tenant-impersonation"
+description: >
+  Monitor for cross-tenant impersonation attacks where an adversary with admin access
+  configures a malicious Identity Provider (IdP) to impersonate any user without
+  credentials or MFA. This high-impact attack involves creating external federation
+  trusts and routing rules to direct authentication through attacker-controlled IdPs.
+  IdP lifecycle events are low-volume and should trigger immediate investigation.
+compliance:
+  nist_800_53: ["SI-4", "AU-6"]
+audit:
+  - id: "idps-inventoried"
+    description: "Verify all configured Identity Providers are inventoried and documented"
+    api:
+      method: GET
+      endpoint: "/api/v1/idps"
+      check: '. | length >= 0'
+    expected: true
+  - id: "idp-discovery-policies-reviewed"
+    description: "Verify IDP discovery (routing) policies are reviewed for unauthorized entries"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=IDP_DISCOVERY"
+      check: '. | length >= 0'
+    expected: true
+  - id: "no-recent-idp-creation"
+    description: "Check system log for recent IdP lifecycle create events in last 7 days"
+    api:
+      method: GET
+      endpoint: "/api/v1/logs?filter=eventType+sw+%22system.idp.lifecycle%22&since=2026-02-03T00:00:00.000Z"
+      check: '. | length == 0'
+    expected: true
+remediate:
+  api:
+    - description: "Deactivate a suspicious or unauthorized Identity Provider"
+      method: POST
+      endpoint: "/api/v1/idps/${IDP_ID}/lifecycle/deactivate"
+      condition: "!no-recent-idp-creation"
+tags: ["idp", "impersonation", "cross-tenant", "monitoring", "federation"]

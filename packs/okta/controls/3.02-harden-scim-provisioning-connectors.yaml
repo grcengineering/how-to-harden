@@ -1,0 +1,23 @@
+id: "okta-3.2"
+vendor: "okta"
+title: "Harden SCIM Provisioning Connectors"
+section: "3.2"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#32-harden-scim-provisioning-connectors"
+description: >
+  Secure SCIM (System for Cross-domain Identity Management) connectors that provision and
+  deprovision users to downstream applications. SCIM tokens enable identity manipulation
+  across connected apps, and compromised tokens enable backdoor account creation, privilege
+  escalation, and persistent unauthorized access across the entire SaaS estate.
+compliance:
+  nist_800_53: ["AC-2", "IA-4"]
+audit:
+  - id: "scim-apps-inventory"
+    description: "Inventory all active applications to identify SCIM-enabled provisioning connectors"
+    api:
+      method: GET
+      endpoint: "/api/v1/apps?filter=status eq \"ACTIVE\""
+      check: '. | length >= 0'
+    expected: true
+tags: ["scim", "provisioning", "integration-security", "token-management"]

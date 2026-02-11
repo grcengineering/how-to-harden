@@ -1,0 +1,103 @@
+# =============================================================================
+# Okta Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds anonymizer blocking, session restrictions
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Okta Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Your Okta org subdomain (e.g., "acme-corp" for acme-corp.okta.com)
+okta_org_name = "your-org"
+
+# Okta base URL (usually "okta.com"; use "oktapreview.com" for sandbox)
+okta_base_url = "okta.com"
+
+# Okta API token -- generate at Security > API > Tokens
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_okta_api_token="00abc..."
+okta_api_token = ""
+
+# Full Okta domain for API calls in null_resource provisioners
+# Format: your-org.okta.com
+okta_domain = "your-org.okta.com"
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: Phishing-Resistant MFA
+# The Okta group ID for administrators who require FIDO2 authentication.
+# Find at: Directory > Groups > [Admin Group] > copy the group ID from the URL
+# -----------------------------------------------------------------------------
+admin_group_id = "00g..."
+
+
+# -----------------------------------------------------------------------------
+# Section 1.10: Password Policy & Recovery
+# The "Everyone" group ID (built-in). Find at: Directory > Groups > Everyone
+# -----------------------------------------------------------------------------
+everyone_group_id = "00g..."
+
+# Password policy parameters (defaults match DISA STIG recommendations)
+password_min_length    = 15
+password_max_age_days  = 60
+password_history_count = 5
+
+
+# -----------------------------------------------------------------------------
+# Section 1.11: End-User Notifications
+# URL displayed to end users in Okta notification emails
+# -----------------------------------------------------------------------------
+support_url = "https://support.yourcompany.com"
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Network Zones (L1)
+# Corporate network gateway CIDRs for zone-based authentication policies
+# -----------------------------------------------------------------------------
+corporate_gateway_cidrs = [
+  # "203.0.113.0/24",    # Office egress
+  # "198.51.100.0/24",   # VPN egress
+]
+
+blocked_ip_cidrs = [
+  # "192.0.2.0/24",      # Known-bad range
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.3: Anonymizer Blocking (L2+ only)
+# ISO 3166-1 alpha-2 country codes to block
+# Only applied when profile_level >= 2
+# -----------------------------------------------------------------------------
+blocked_countries = ["CN", "RU", "KP", "IR"]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.4: Non-Human Identity Governance
+# RSA public key components for service app JWT authentication.
+# Generate with: openssl genrsa -out private.pem 2048
+#                openssl rsa -in private.pem -pubout -out public.pem
+# Extract e and n as Base64url values for the JWKS configuration.
+# Leave empty to skip service app creation.
+# -----------------------------------------------------------------------------
+service_app_public_key_e = ""
+service_app_public_key_n = ""

@@ -1,0 +1,33 @@
+id: "okta-7.5"
+vendor: "okta"
+title: "Establish Identity Incident Response Procedures"
+section: "7.5"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#75-establish-identity-incident-response-procedures"
+description: >
+  Document specific response procedures for identity-based security incidents. These
+  runbooks complement your organization's broader incident response plan with Okta-specific
+  actions and API calls. Covers compromised admin accounts, stolen session tokens, malicious
+  IdP creation, unauthorized MFA enrollment, and mass password spray attacks.
+compliance:
+  nist_800_53: ["IR-4", "IR-6"]
+  soc2: ["CC7.3"]
+audit:
+  - id: "ir-api-access-verified"
+    description: "Verify API token has access needed for incident response actions"
+    api:
+      method: GET
+      endpoint: "/api/v1/users/me"
+      check: '.id != null'
+    expected: true
+  - id: "admin-suspension-capability"
+    description: "Verify user management API is accessible for incident response"
+    api:
+      method: GET
+      endpoint: "/api/v1/users?limit=1"
+      check: '. | length > 0'
+    expected: true
+remediate:
+  note: "Process-based control. IR scripts available in packs/okta/scripts/incident-response/. No automated setup."
+tags: ["incident-response", "runbooks", "compromised-admin", "session-theft", "malicious-idp"]

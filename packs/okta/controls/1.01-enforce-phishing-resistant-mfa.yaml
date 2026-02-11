@@ -1,0 +1,92 @@
+id: "okta-1.1"
+vendor: "okta"
+title: "Enforce Phishing-Resistant MFA (FIDO2/WebAuthn)"
+section: "1.1"
+profile_level: 1
+severity: "critical"
+guide_url: "https://howtoharden.com/guides/okta/#11-enforce-phishing-resistant-mfa-fido2webauthn"
+description: >
+  Require phishing-resistant authenticators (FIDO2 security keys or platform authenticators)
+  for all users, especially administrators. This eliminates vulnerabilities to real-time
+  phishing proxies that bypass TOTP and push-based MFA. FIDO2 binds authentication to
+  specific origins, preventing token theft and replay attacks.
+compliance:
+  soc2: ["CC6.1"]
+  nist_800_53: ["IA-2(1)", "IA-2(6)"]
+  disa_stig: ["V-273190", "V-273191", "V-273193", "V-273194"]
+audit:
+  - id: "fido2-authenticator-active"
+    description: "Verify FIDO2 (WebAuthn) authenticator is enabled and active"
+    api:
+      method: GET
+      endpoint: "/api/v1/authenticators"
+      check: '[.[] | select(.key == "webauthn" and .status == "ACTIVE")] | length > 0'
+    expected: true
+  - id: "mfa-policy-exists"
+    description: "Verify an active non-system authentication policy exists that enforces MFA"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=ACCESS_POLICY"
+      check: '[.[] | select(.system == false and .status == "ACTIVE")] | length > 0'
+    expected: true
+remediate:
+  api:
+    - description: "Create phishing-resistant MFA authentication policy for admin groups"
+      method: POST
+      endpoint: "/api/v1/policies"
+      body:
+        type: "ACCESS_POLICY"
+        name: "Phishing-Resistant MFA Policy"
+        description: "Requires FIDO2 for sensitive applications"
+        priority: 1
+        conditions:
+          people:
+            groups:
+              include: ["ADMIN_GROUP_ID"]
+      condition: "!mfa-policy-exists"
+    - description: "Create policy rule requiring FIDO2 WebAuthn for all network locations"
+      method: POST
+      endpoint: "/api/v1/policies/${POLICY_ID}/rules"
+      body:
+        name: "Require FIDO2"
+        priority: 1
+        conditions:
+          network:
+            connection: "ANYWHERE"
+        actions:
+          signon:
+            access: "ALLOW"
+            requireFactor: true
+            factorPromptMode: "ALWAYS"
+            primaryFactor: "PASSWORD_IDP_ANY_FACTOR"
+            factorLifetime: 0
+      condition: "!mfa-policy-exists"
+  terraform:
+    resources:
+      - type: "okta_authenticator"
+        name: "fido2_webauthn"
+        config:
+          name: "FIDO2 WebAuthn"
+          key: "webauthn"
+          status: "ACTIVE"
+          settings: '{"userVerification":"REQUIRED","attachment":"ANY"}'
+      - type: "okta_policy_signon"
+        name: "phishing_resistant"
+        config:
+          name: "Phishing-Resistant MFA Policy"
+          status: "ACTIVE"
+          description: "Requires FIDO2 for all admin access"
+          priority: 1
+      - type: "okta_policy_rule_signon"
+        name: "require_fido2"
+        config:
+          name: "Require FIDO2"
+          status: "ACTIVE"
+          priority: 1
+          access: "ALLOW"
+          mfa_required: true
+          mfa_prompt: "ALWAYS"
+          primary_factor: "PASSWORD_IDP_ANY_FACTOR"
+          session_lifetime: 120
+          session_persistent: false
+tags: ["authentication", "mfa", "fido2", "webauthn", "phishing-resistant"]

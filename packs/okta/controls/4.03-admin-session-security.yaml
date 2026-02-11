@@ -1,0 +1,40 @@
+id: "okta-4.3"
+vendor: "okta"
+title: "Configure Admin Session Security"
+section: "4.3"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#43-configure-admin-session-security"
+description: >
+  Harden admin sessions with ASN binding, IP binding, and Protected Actions. These
+  controls prevent session hijacking by invalidating admin sessions when network
+  characteristics change, and require step-up authentication before critical operations
+  like creating Identity Providers or resetting MFA factors. Post-breach product
+  enhancement designed to prevent October 2023-style session replay attacks.
+compliance:
+  nist_800_53: ["SC-23", "AC-12"]
+audit:
+  - id: "asn-binding-enabled"
+    description: "Verify admin session ASN binding is enabled to detect network changes"
+    api:
+      method: GET
+      endpoint: "/api/v1/org/settings"
+      check: '.adminSessionASNBinding == "ENABLED"'
+    expected: true
+  - id: "ip-binding-enabled"
+    description: "Verify admin session IP binding is enabled for stricter session protection"
+    api:
+      method: GET
+      endpoint: "/api/v1/org/settings"
+      check: '.adminSessionIPBinding == "ENABLED"'
+    expected: true
+remediate:
+  api:
+    - description: "Enable both ASN and IP binding for admin sessions"
+      method: PUT
+      endpoint: "/api/v1/org/settings"
+      body:
+        adminSessionASNBinding: "ENABLED"
+        adminSessionIPBinding: "ENABLED"
+      condition: "!asn-binding-enabled"
+tags: ["session-security", "admin", "session-hijacking", "asn-binding", "ip-binding"]

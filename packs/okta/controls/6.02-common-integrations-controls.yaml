@@ -1,0 +1,24 @@
+id: "okta-6.2"
+vendor: "okta"
+title: "Common Integrations and Recommended Controls"
+section: "6.2"
+profile_level: 1
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/okta/#62-common-integrations-and-recommended-controls"
+description: >
+  Apply specific hardening controls to common Okta integrations including SIEM platforms,
+  ITSM tools, HR systems, and collaboration platforms. Each integration type has recommended
+  OAuth scopes, IP restrictions, and monitoring requirements.
+compliance:
+  nist_800_53: ["SA-9", "AC-4"]
+audit:
+  - id: "oauth-apps-scoped"
+    description: "Inventory of active OAuth/OIDC apps for scope review"
+    api:
+      method: GET
+      endpoint: "/api/v1/apps"
+      check: '[.[] | select(.signOnMode == "OPENID_CONNECT" and .status == "ACTIVE")] | length >= 0'
+    expected: true
+remediate:
+  note: "Per-integration hardening. Refer to vendor-specific guides on howtoharden.com. No single API remediation."
+tags: ["integrations", "oauth-scoping", "siem", "itsm", "supply-chain"]

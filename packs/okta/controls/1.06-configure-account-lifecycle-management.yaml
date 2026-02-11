@@ -1,0 +1,31 @@
+id: "okta-1.6"
+vendor: "okta"
+title: "Configure Account Lifecycle Management"
+section: "1.6"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#16-configure-account-lifecycle-management"
+description: >
+  Automatically disable user accounts after a period of inactivity to reduce the risk of
+  dormant account compromise. Attackers targeting inactive accounts may maintain undetected
+  access since account owners won't notice unauthorized activity. Lifecycle automation
+  ensures timely deprovisioning aligned with organizational offboarding processes.
+compliance:
+  nist_800_53: ["AC-2(3)"]
+  disa_stig: ["V-273188"]
+audit:
+  - id: "inactive-users-exist"
+    description: "Verify no active users have been inactive for more than 90 days"
+    api:
+      method: GET
+      endpoint: "/api/v1/users?filter=status eq \"ACTIVE\"&limit=200"
+      check: '[.[] | select(.lastLogin != null) | select((.lastLogin | fromdateiso8601) < (now - 7776000))] | length == 0'
+    expected: true
+remediate:
+  api:
+    - description: "Suspend users inactive for more than 90 days (requires iteration over matched users)"
+      method: POST
+      endpoint: "/api/v1/users/${USER_ID}/lifecycle/suspend"
+      body: {}
+      condition: "!inactive-users-exist"
+tags: ["account-lifecycle", "dormant-accounts", "automation", "inactivity"]

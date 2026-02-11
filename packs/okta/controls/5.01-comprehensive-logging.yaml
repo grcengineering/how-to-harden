@@ -1,0 +1,32 @@
+id: "okta-5.1"
+vendor: "okta"
+title: "Enable Comprehensive System Logging"
+section: "5.1"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#51-enable-comprehensive-system-logging"
+description: >
+  Configure Okta System Log forwarding to SIEM with comprehensive event capture for
+  security monitoring and incident response. Ensure all authentication, authorization,
+  administrative, and lifecycle events are captured and forwarded to centralized logging
+  infrastructure for threat detection and forensic analysis.
+compliance:
+  nist_800_53: ["AU-2", "AU-3", "AU-6"]
+  disa_stig: ["V-273202"]
+audit:
+  - id: "log-streaming-configured"
+    description: "Verify at least one log stream integration is active (EventBridge, Splunk, or API-based)"
+    api:
+      method: GET
+      endpoint: "/api/v1/logStreams"
+      check: '[.[] | select(.status == "ACTIVE")] | length > 0'
+    expected: true
+remediate:
+  api:
+    - description: "Create an API token for SIEM log collection via System Log API polling"
+      method: POST
+      endpoint: "/api/v1/api-tokens"
+      body:
+        name: "SIEM Log Collection"
+      condition: "!log-streaming-configured"
+tags: ["logging", "siem", "monitoring", "audit", "disa-stig"]

@@ -1,0 +1,30 @@
+id: "okta-1.3"
+vendor: "okta"
+title: "Enable Hardware-Bound Session Tokens"
+section: "1.3"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#13-enable-hardware-bound-session-tokens"
+description: >
+  Configure Okta to bind session tokens to specific devices using device trust and Okta
+  FastPass, preventing session token theft and replay attacks. The October 2023 breach
+  exploited stolen session cookies from HAR files, making hardware-bound sessions a
+  critical defense against credential theft via support channels.
+compliance:
+  nist_800_53: ["SC-23", "IA-11"]
+audit:
+  - id: "okta-verify-fastpass-enabled"
+    description: "Verify Okta Verify authenticator is enabled and active for FastPass"
+    api:
+      method: GET
+      endpoint: "/api/v1/authenticators"
+      check: '[.[] | select(.key == "okta_verify" and .status == "ACTIVE")] | length > 0'
+    expected: true
+  - id: "device-trust-configured"
+    description: "Verify a device trust or device assurance policy exists"
+    api:
+      method: GET
+      endpoint: "/api/v1/policies?type=ACCESS_POLICY"
+      check: '[.[] | select(.name | test("device"; "i"))] | length > 0'
+    expected: true
+tags: ["session-security", "device-trust", "fastpass", "session-binding"]

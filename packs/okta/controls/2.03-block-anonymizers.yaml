@@ -1,0 +1,64 @@
+id: "okta-2.3"
+vendor: "okta"
+title: "Configure Dynamic Network Zones and Anonymizer Blocking"
+section: "2.3"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/okta/#23-configure-dynamic-network-zones-and-anonymizer-blocking"
+
+description: >
+  Activate Okta's Enhanced Dynamic Zone (DefaultEnhancedDynamicZone) to automatically block
+  traffic from anonymizing proxies, Tor exit nodes, and residential proxies. This zone ships
+  inactive by default and must be explicitly activated. Blocking anonymizers reduces attack
+  surface from credential stuffing and session replay attacks without impacting legitimate users.
+
+compliance:
+  nist_800_53: ["SC-7", "AC-3"]
+
+audit:
+  - id: "check-enhanced-dynamic-zone-active"
+    description: "Verify DefaultEnhancedDynamicZone is activated and set to blocklist"
+    api:
+      method: GET
+      endpoint: "/api/v1/zones"
+      check: '[.[] | select(.name == "DefaultEnhancedDynamicZone" and .status == "ACTIVE" and .usage == "BLOCKLIST")] | length > 0'
+    expected: true
+
+remediate:
+  api:
+    - description: "Activate the DefaultEnhancedDynamicZone as a blocklist"
+      method: PUT
+      endpoint: "/api/v1/zones/${ZONE_ID}"
+      body:
+        type: "DYNAMIC_V2"
+        name: "DefaultEnhancedDynamicZone"
+        status: "ACTIVE"
+        usage: "BLOCKLIST"
+        proxyType: "TorAnonymizer"
+      condition: "!check-enhanced-dynamic-zone-active"
+
+  terraform:
+    resources:
+      - type: "okta_network_zone"
+        name: "block_anonymizers"
+        config:
+          name: "Block Anonymizers"
+          type: "DYNAMIC_V2"
+          status: "ACTIVE"
+          usage: "BLOCKLIST"
+          dynamic_proxy_type: "TorAnonymizer"
+
+      - type: "okta_network_zone"
+        name: "block_countries"
+        config:
+          name: "Blocked Countries"
+          type: "DYNAMIC"
+          status: "ACTIVE"
+          usage: "BLOCKLIST"
+          dynamic_locations:
+            - "CN"
+            - "RU"
+            - "KP"
+            - "IR"
+
+tags: ["anonymizer", "tor", "proxy", "dynamic-zone", "ip-intelligence", "network-security"]
