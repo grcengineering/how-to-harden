@@ -1,0 +1,39 @@
+id: "github-1.3"
+vendor: "github"
+title: "Restrict Public Repository Creation"
+section: "1.3"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#13-restrict-public-repository-creation"
+description: >
+  Prevent organization members from creating public repositories. Public repositories
+  can accidentally expose proprietary code, secrets, and internal documentation. Only
+  organization administrators should be able to create public repositories, with a review
+  process to ensure no sensitive data is exposed.
+compliance:
+  soc2: ["CC6.1", "CC6.7"]
+  nist_800_53: ["AC-4", "AC-22"]
+  iso_27001: ["A.8.2.3"]
+audit:
+  - id: "no-public-repo-creation"
+    description: "Verify members cannot create public repositories"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}"
+      check: '.members_can_create_public_repositories == false'
+    expected: true
+remediate:
+  api:
+    - description: "Disable public repository creation for members"
+      method: PATCH
+      endpoint: "/orgs/{org}"
+      body:
+        members_can_create_public_repositories: false
+      condition: "!no-public-repo-creation"
+  terraform:
+    resources:
+      - type: "github_organization_settings"
+        name: "repo_creation"
+        config:
+          members_can_create_public_repositories: false
+tags: ["repositories", "data-exposure", "access-control"]

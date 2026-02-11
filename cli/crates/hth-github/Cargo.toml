@@ -1,0 +1,20 @@
+[package]
+name = "hth-github"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "GitHub vendor provider for the HTH security hardening CLI"
+
+[dependencies]
+hth-core.workspace = true
+tokio.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+secrecy.workspace = true
+async-trait = "0.1"
+
+[dev-dependencies]
+wiremock.workspace = true

@@ -1,0 +1,33 @@
+id: "github-2.2"
+vendor: "github"
+title: "Enable Dependabot Security Updates"
+section: "2.2"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#22-enable-dependabot-security-updates"
+description: >
+  Enable Dependabot security updates on all repositories to automatically receive pull
+  requests that patch known vulnerabilities in dependencies. Unpatched dependencies are
+  a top supply chain attack vector — adversaries exploit known CVEs in third-party
+  libraries to compromise applications.
+compliance:
+  soc2: ["CC7.1", "CC8.1"]
+  nist_800_53: ["RA-5", "SI-2"]
+  iso_27001: ["A.12.6.1"]
+  pci_dss: ["6.2"]
+audit:
+  - id: "dependabot-security-updates-enabled"
+    description: "Verify Dependabot security updates are enabled on repositories"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden"
+      check: '.security_and_analysis.dependabot_security_updates.status == "enabled"'
+    expected: true
+  - id: "no-critical-dependabot-alerts"
+    description: "Verify no critical severity open Dependabot alerts exist"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/dependabot/alerts?state=open&severity=critical"
+      check: '. | length == 0'
+    expected: true
+tags: ["dependencies", "dependabot", "vulnerability-management", "patching", "supply-chain"]

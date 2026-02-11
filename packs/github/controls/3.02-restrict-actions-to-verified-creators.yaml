@@ -1,0 +1,25 @@
+id: "github-3.2"
+vendor: "github"
+title: "Restrict GitHub Actions to Verified Creators"
+section: "3.2"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#32-restrict-github-actions"
+description: >
+  Restrict which GitHub Actions can be used in the organization to only those created
+  by GitHub, verified marketplace creators, or explicitly approved actions. Unrestricted
+  Actions usage allows third-party code to execute in CI/CD pipelines with access to
+  secrets, deployment credentials, and source code — a prime supply chain attack vector.
+compliance:
+  soc2: ["CC6.1", "CC8.1"]
+  nist_800_53: ["CM-7", "SA-12"]
+  iso_27001: ["A.14.2.7"]
+audit:
+  - id: "actions-not-unrestricted"
+    description: "Verify GitHub Actions are not set to allow all actions (check how-to-harden repo)"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/actions/permissions"
+      check: '.allowed_actions != "all" or .enabled == false'
+    expected: true
+tags: ["actions", "ci-cd", "supply-chain", "third-party", "marketplace"]

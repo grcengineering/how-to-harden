@@ -1,0 +1,41 @@
+id: "github-1.2"
+vendor: "github"
+title: "Restrict Default Repository Permissions"
+section: "1.2"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#12-restrict-default-repository-permissions"
+description: >
+  Set the organization's default repository permission to 'read' or 'none' instead of
+  'write' or 'admin'. This enforces the principle of least privilege — new members only
+  get read access by default and must be explicitly granted write access through teams.
+  Overly permissive defaults enable supply chain attacks where any compromised member
+  account can push malicious code to any repository.
+compliance:
+  soc2: ["CC6.1", "CC6.3"]
+  nist_800_53: ["AC-6", "AC-6(1)"]
+  iso_27001: ["A.9.1.2", "A.9.4.1"]
+  pci_dss: ["7.1", "7.2"]
+audit:
+  - id: "default-permission-restricted"
+    description: "Verify default repository permission is 'read' or 'none'"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}"
+      check: '.default_repository_permission == "read" or .default_repository_permission == "none"'
+    expected: true
+remediate:
+  api:
+    - description: "Set default repository permission to read"
+      method: PATCH
+      endpoint: "/orgs/{org}"
+      body:
+        default_repository_permission: "read"
+      condition: "!default-permission-restricted"
+  terraform:
+    resources:
+      - type: "github_organization_settings"
+        name: "permissions"
+        config:
+          default_repository_permission: "read"
+tags: ["permissions", "least-privilege", "access-control", "supply-chain"]

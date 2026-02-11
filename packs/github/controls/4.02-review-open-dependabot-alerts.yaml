@@ -1,0 +1,33 @@
+id: "github-4.2"
+vendor: "github"
+title: "Review and Remediate Open Dependabot Alerts"
+section: "4.2"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#42-review-dependabot-alerts"
+description: >
+  Regularly review and remediate open Dependabot security alerts across the organization.
+  Open alerts represent known vulnerabilities in dependencies that adversaries can exploit.
+  Critical and high severity alerts should be addressed within defined SLA windows to
+  minimize the attack surface.
+compliance:
+  soc2: ["CC7.1", "CC7.2"]
+  nist_800_53: ["RA-5", "SI-2"]
+  iso_27001: ["A.12.6.1"]
+  pci_dss: ["6.2"]
+audit:
+  - id: "no-critical-open-alerts"
+    description: "Verify no critical severity Dependabot alerts are open"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/dependabot/alerts?state=open&severity=critical"
+      check: '. | length == 0'
+    expected: true
+  - id: "no-high-open-alerts"
+    description: "Verify no high severity Dependabot alerts are open"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/dependabot/alerts?state=open&severity=high"
+      check: '. | length == 0'
+    expected: true
+tags: ["vulnerability-management", "dependabot", "patching", "sla", "supply-chain"]

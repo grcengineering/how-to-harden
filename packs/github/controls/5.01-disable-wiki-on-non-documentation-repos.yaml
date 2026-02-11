@@ -1,0 +1,26 @@
+id: "github-5.1"
+vendor: "github"
+title: "Disable Wiki on Repositories That Don't Use It"
+section: "5.1"
+profile_level: 2
+severity: "low"
+guide_url: "https://howtoharden.com/guides/github/#51-disable-unused-wikis"
+description: >
+  Disable the wiki feature on repositories that do not actively use it. GitHub wikis
+  are often overlooked in security reviews and can be edited by anyone with write access.
+  Unused wikis increase the attack surface — adversaries can use them to host phishing
+  content, social engineering lures, or watering hole attacks using the organization's
+  trusted domain.
+compliance:
+  soc2: ["CC6.1"]
+  nist_800_53: ["CM-7"]
+  iso_27001: ["A.14.1.2"]
+audit:
+  - id: "repos-wiki-audit"
+    description: "Identify repositories with wiki enabled (informational — review which repos need wikis)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/repos?per_page=100"
+      check: '[.[] | select(.has_wiki == true)] | length >= 0'
+    expected: true
+tags: ["wiki", "attack-surface", "cleanup", "repositories"]

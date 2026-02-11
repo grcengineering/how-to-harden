@@ -1,0 +1,38 @@
+id: "github-1.4"
+vendor: "github"
+title: "Disable Private Repository Forking"
+section: "1.4"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#14-disable-private-repository-forking"
+description: >
+  Prevent members from forking private repositories within the organization. Forking
+  private repositories can create shadow copies outside of branch protection rules and
+  code review requirements, enabling unauthorized code changes and data exfiltration.
+compliance:
+  soc2: ["CC6.1"]
+  nist_800_53: ["AC-4", "AC-6"]
+  iso_27001: ["A.9.4.1"]
+audit:
+  - id: "private-fork-disabled"
+    description: "Verify members cannot fork private repositories"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}"
+      check: '.members_can_fork_private_repositories == false'
+    expected: true
+remediate:
+  api:
+    - description: "Disable private repository forking"
+      method: PATCH
+      endpoint: "/orgs/{org}"
+      body:
+        members_can_fork_private_repositories: false
+      condition: "!private-fork-disabled"
+  terraform:
+    resources:
+      - type: "github_organization_settings"
+        name: "forking"
+        config:
+          members_can_fork_private_repositories: false
+tags: ["repositories", "forking", "data-exfiltration", "access-control"]

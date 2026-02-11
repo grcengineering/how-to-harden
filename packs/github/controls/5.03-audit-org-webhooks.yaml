@@ -1,0 +1,32 @@
+id: "github-5.3"
+vendor: "github"
+title: "Audit Organization Webhooks for Insecure Configuration"
+section: "5.3"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#53-audit-org-webhooks"
+description: >
+  Audit organization-level webhooks to ensure they use HTTPS URLs and have a secret
+  configured for payload verification. Webhooks without secrets allow any network
+  intermediary to forge webhook payloads, potentially triggering unauthorized CI/CD
+  pipelines or deployments. Insecure (HTTP) webhook URLs expose event data in transit.
+compliance:
+  soc2: ["CC6.1", "CC6.7"]
+  nist_800_53: ["SC-8", "SI-7"]
+  iso_27001: ["A.10.1.1", "A.13.1.1"]
+audit:
+  - id: "no-insecure-webhooks"
+    description: "Verify no organization webhooks use insecure HTTP URLs (all should use HTTPS)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/hooks"
+      check: '[.[] | select(.config.url | startswith("http://"))] | length == 0'
+    expected: true
+  - id: "webhooks-have-secrets"
+    description: "Verify all organization webhooks have a secret configured for payload verification"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/hooks"
+      check: '[.[] | select(.config.secret == null or .config.secret == "")] | length == 0'
+    expected: true
+tags: ["webhooks", "https", "integrity", "ci-cd", "supply-chain"]

@@ -1,0 +1,36 @@
+[package]
+name = "hth"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "How to Harden — Security hardening audit and remediation CLI"
+
+[[bin]]
+name = "hth"
+path = "src/main.rs"
+
+[features]
+default = ["vendor-github", "vendor-okta"]
+vendor-github = ["dep:hth-github"]
+vendor-okta = ["dep:hth-okta"]
+all-vendors = ["vendor-github", "vendor-okta"]
+
+[dependencies]
+hth-core.workspace = true
+hth-github = { workspace = true, optional = true }
+hth-okta = { workspace = true, optional = true }
+tokio.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+console.workspace = true
+indicatif.workspace = true
+comfy-table.workspace = true
+chrono.workspace = true
+secrecy.workspace = true
+dirs.workspace = true
+toml.workspace = true

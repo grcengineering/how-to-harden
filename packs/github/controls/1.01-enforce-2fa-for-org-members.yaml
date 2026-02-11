@@ -1,0 +1,47 @@
+id: "github-1.1"
+vendor: "github"
+title: "Enforce Two-Factor Authentication for All Organization Members"
+section: "1.1"
+profile_level: 1
+severity: "critical"
+guide_url: "https://howtoharden.com/guides/github/#11-enforce-two-factor-authentication"
+description: >
+  Require two-factor authentication (2FA) for all members of the GitHub organization.
+  This prevents account takeover attacks that could grant adversaries access to source
+  code, CI/CD pipelines, and deployment secrets. Without 2FA enforcement, a single
+  compromised password can lead to full organization compromise.
+compliance:
+  soc2: ["CC6.1"]
+  nist_800_53: ["IA-2(1)", "IA-2(2)"]
+  iso_27001: ["A.9.4.2"]
+  pci_dss: ["8.3"]
+audit:
+  - id: "org-2fa-required"
+    description: "Verify the organization requires 2FA for all members"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}"
+      check: '.two_factor_requirement_enabled == true'
+    expected: true
+  - id: "no-members-without-2fa"
+    description: "Verify no organization members have 2FA disabled"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/members?filter=2fa_disabled"
+      check: '. | length == 0'
+    expected: true
+remediate:
+  api:
+    - description: "Note: 2FA requirement must be enabled via GitHub UI (Settings > Authentication security)"
+      method: PATCH
+      endpoint: "/orgs/{org}"
+      body:
+        two_factor_requirement_enabled: true
+      condition: "!org-2fa-required"
+  terraform:
+    resources:
+      - type: "github_organization_settings"
+        name: "security"
+        config:
+          two_factor_requirement: true
+tags: ["authentication", "2fa", "mfa", "account-security", "supply-chain"]

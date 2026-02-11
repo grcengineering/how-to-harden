@@ -1,0 +1,34 @@
+[package]
+name = "hth-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Core engine, traits, and models for the HTH security hardening CLI"
+
+[dependencies]
+tokio.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+thiserror.workspace = true
+jaq-interpret.workspace = true
+jaq-parse.workspace = true
+jaq-syn.workspace = true
+comfy-table.workspace = true
+indicatif.workspace = true
+console.workspace = true
+tracing.workspace = true
+chrono.workspace = true
+jsonschema.workspace = true
+hcl-rs.workspace = true
+secrecy.workspace = true
+dirs.workspace = true
+toml.workspace = true
+regex.workspace = true
+async-trait = "0.1"
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+wiremock.workspace = true

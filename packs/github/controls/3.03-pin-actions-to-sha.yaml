@@ -1,0 +1,25 @@
+id: "github-3.3"
+vendor: "github"
+title: "Require SHA Pinning for GitHub Actions"
+section: "3.3"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#33-pin-actions-to-sha"
+description: >
+  Require that all GitHub Actions references use SHA pinning instead of mutable tags.
+  Actions referenced by tag (e.g., @v1) can be silently replaced with malicious code
+  if the action maintainer's account is compromised — a proven supply chain attack
+  technique. SHA-pinned references (e.g., @abc123...) are immutable and tamper-proof.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["SA-12", "SI-7"]
+  iso_27001: ["A.14.2.7"]
+audit:
+  - id: "sha-pinning-required"
+    description: "Verify SHA pinning is required for GitHub Actions at the repository level"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/actions/permissions"
+      check: '.sha_pinning_required == true'
+    expected: true
+tags: ["actions", "ci-cd", "supply-chain", "sha-pinning", "integrity"]

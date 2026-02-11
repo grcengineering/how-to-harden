@@ -1,0 +1,40 @@
+id: "github-5.2"
+vendor: "github"
+title: "Enable Automatic Branch Deletion After Merge"
+section: "5.2"
+profile_level: 2
+severity: "low"
+guide_url: "https://howtoharden.com/guides/github/#52-delete-branches-on-merge"
+description: >
+  Configure repositories to automatically delete head branches after pull requests
+  are merged. Stale branches accumulate over time and can contain outdated, unpatched
+  code. Automatic deletion reduces clutter and prevents accidental deployment of
+  abandoned feature branches.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["CM-3"]
+  iso_27001: ["A.12.1.2"]
+audit:
+  - id: "delete-branch-on-merge"
+    description: "Verify repositories are configured to delete branches on merge (check how-to-harden repo)"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden"
+      check: '.delete_branch_on_merge == true'
+    expected: true
+remediate:
+  api:
+    - description: "Enable automatic branch deletion on merge"
+      method: PATCH
+      endpoint: "/repos/{org}/how-to-harden"
+      body:
+        delete_branch_on_merge: true
+      condition: "!delete-branch-on-merge"
+  terraform:
+    resources:
+      - type: "github_repository"
+        name: "how_to_harden"
+        config:
+          name: "how-to-harden"
+          delete_branch_on_merge: true
+tags: ["branches", "cleanup", "hygiene", "repositories"]

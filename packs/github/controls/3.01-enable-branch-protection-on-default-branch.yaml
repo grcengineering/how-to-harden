@@ -1,0 +1,51 @@
+id: "github-3.1"
+vendor: "github"
+title: "Enable Branch Protection on Default Branch"
+section: "3.1"
+profile_level: 1
+severity: "critical"
+guide_url: "https://howtoharden.com/guides/github/#31-enable-branch-protection"
+description: >
+  Enable branch protection rules on the default branch (typically 'main') of all
+  repositories. Without branch protection, any collaborator can push directly to
+  the default branch, bypassing code review, status checks, and approval requirements.
+  This is the foundation of secure software delivery — all changes must go through
+  a controlled review process.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["CM-3", "CM-5"]
+  iso_27001: ["A.12.1.2", "A.14.2.2"]
+  pci_dss: ["6.3.2"]
+audit:
+  - id: "default-branch-protected"
+    description: "Verify the default branch has branch protection rules enabled (check how-to-harden repo)"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/branches/main/protection"
+      check: 'has("url")'
+    expected: true
+remediate:
+  api:
+    - description: "Enable branch protection on the default branch"
+      method: PUT
+      endpoint: "/repos/{org}/how-to-harden/branches/main/protection"
+      body:
+        required_status_checks: null
+        enforce_admins: true
+        required_pull_request_reviews:
+          required_approving_review_count: 1
+          dismiss_stale_reviews: true
+        restrictions: null
+      condition: "!default-branch-protected"
+  terraform:
+    resources:
+      - type: "github_branch_protection"
+        name: "main"
+        config:
+          repository_id: "how-to-harden"
+          pattern: "main"
+          enforce_admins: true
+          required_pull_request_reviews:
+            required_approving_review_count: 1
+            dismiss_stale_reviews: true
+tags: ["branch-protection", "code-review", "ci-cd", "supply-chain"]

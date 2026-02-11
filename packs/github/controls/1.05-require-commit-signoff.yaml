@@ -1,0 +1,33 @@
+id: "github-1.5"
+vendor: "github"
+title: "Require Web Commit Sign-Off"
+section: "1.5"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#15-require-commit-sign-off"
+description: >
+  Require contributors to sign off on web-based commits, establishing a Developer
+  Certificate of Origin (DCO) for all changes. This provides an audit trail of who
+  authored and approved each commit, supporting non-repudiation and compliance
+  requirements.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["AU-10", "CM-5"]
+  iso_27001: ["A.12.1.2"]
+audit:
+  - id: "web-commit-signoff-required"
+    description: "Verify web commit sign-off is required at the organization level"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}"
+      check: '.web_commit_signoff_required == true'
+    expected: true
+remediate:
+  api:
+    - description: "Enable web commit sign-off requirement"
+      method: PATCH
+      endpoint: "/orgs/{org}"
+      body:
+        web_commit_signoff_required: true
+      condition: "!web-commit-signoff-required"
+tags: ["commits", "sign-off", "dco", "audit-trail", "non-repudiation"]

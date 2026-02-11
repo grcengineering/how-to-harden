@@ -1,0 +1,41 @@
+id: "github-3.4"
+vendor: "github"
+title: "Restrict GitHub Actions at the Organization Level"
+section: "3.4"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#34-restrict-org-actions"
+description: >
+  Restrict which GitHub Actions can run across the entire organization, not just per-repo.
+  When set to 'all', any third-party Action from the marketplace can execute in CI/CD
+  pipelines with access to secrets and deployment credentials. Restrict to GitHub-authored
+  and verified marketplace actions, or maintain an explicit allowlist.
+compliance:
+  soc2: ["CC6.1", "CC8.1"]
+  nist_800_53: ["CM-7", "SA-12"]
+  iso_27001: ["A.14.2.7"]
+audit:
+  - id: "org-actions-restricted"
+    description: "Verify organization-level Actions are not set to allow all actions"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/actions/permissions"
+      check: '.allowed_actions != "all"'
+    expected: true
+  - id: "org-actions-sha-pinning"
+    description: "Verify SHA pinning is required at the organization level for Actions"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/actions/permissions"
+      check: '.sha_pinning_required == true'
+    expected: true
+remediate:
+  api:
+    - description: "Restrict Actions to GitHub-authored and verified marketplace creators"
+      method: PUT
+      endpoint: "/orgs/{org}/actions/permissions"
+      body:
+        enabled_repositories: "all"
+        allowed_actions: "selected"
+      condition: "!org-actions-restricted"
+tags: ["actions", "ci-cd", "supply-chain", "third-party", "organization"]
