@@ -1,0 +1,26 @@
+id: "github-1.6"
+vendor: "github"
+title: "Restrict Organization Member Repository Deletion"
+section: "1.6"
+profile_level: 3
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#16-restrict-repo-deletion"
+description: >
+  Restrict the ability for non-admin organization members to delete or transfer
+  repositories. By default, members with admin access to a repository can delete it.
+  In a hardened configuration, only organization owners should be able to delete
+  repositories to prevent accidental or malicious data loss. This is enforced via
+  the organization's member privileges settings.
+compliance:
+  soc2: ["CC6.1", "CC6.7"]
+  nist_800_53: ["AC-6", "MP-6"]
+  iso_27001: ["A.9.2.3", "A.8.3.2"]
+audit:
+  - id: "members-cannot-delete-repos"
+    description: "Verify organization members cannot delete or transfer repositories"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}"
+      check: '.members_can_create_repositories == false or .default_repository_permission == "none" or .default_repository_permission == "read"'
+    expected: true
+tags: ["repository-deletion", "data-protection", "least-privilege", "organization"]

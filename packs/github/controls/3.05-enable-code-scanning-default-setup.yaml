@@ -1,0 +1,27 @@
+id: "github-3.5"
+vendor: "github"
+title: "Enable Code Scanning (CodeQL) Default Setup"
+section: "3.5"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#35-enable-code-scanning"
+description: >
+  Enable GitHub code scanning with CodeQL default setup on repositories. CodeQL
+  performs semantic analysis of source code to find security vulnerabilities such
+  as SQL injection, XSS, path traversal, and insecure deserialization. The default
+  setup automatically configures CodeQL for the repository's detected languages
+  without requiring a workflow file.
+compliance:
+  soc2: ["CC7.1", "CC8.1"]
+  nist_800_53: ["SA-11", "SI-7"]
+  iso_27001: ["A.14.2.1", "A.14.2.5"]
+  pci_dss: ["6.3.2"]
+audit:
+  - id: "code-scanning-enabled"
+    description: "Verify CodeQL code scanning default setup is configured on the repository"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/code-scanning/default-setup"
+      check: '.state == "configured"'
+    expected: true
+tags: ["code-scanning", "codeql", "sast", "vulnerability-detection", "ci-cd"]

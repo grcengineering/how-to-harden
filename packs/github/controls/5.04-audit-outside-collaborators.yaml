@@ -1,0 +1,26 @@
+id: "github-5.4"
+vendor: "github"
+title: "Audit Outside Collaborators"
+section: "5.4"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#54-audit-outside-collaborators"
+description: >
+  Audit outside collaborators across the organization. Outside collaborators are
+  non-members who have been granted access to specific repositories. These accounts
+  bypass organization-level security policies like required 2FA and may not follow
+  the organization's security standards. Regularly review outside collaborators to
+  ensure access is still required and appropriately scoped.
+compliance:
+  soc2: ["CC6.1", "CC6.2", "CC6.3"]
+  nist_800_53: ["AC-2", "AC-6", "PS-4"]
+  iso_27001: ["A.9.2.5", "A.9.2.6"]
+audit:
+  - id: "no-outside-collaborators"
+    description: "Verify the organization has no outside collaborators (or document justification for each)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/outside_collaborators"
+      check: 'length == 0'
+    expected: true
+tags: ["outside-collaborators", "access-control", "third-party", "audit"]

@@ -1,0 +1,26 @@
+id: "github-3.7"
+vendor: "github"
+title: "Require Signed Commits on Default Branch"
+section: "3.7"
+profile_level: 3
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#37-require-signed-commits"
+description: >
+  Require commit signature verification on the default branch. Unsigned commits allow
+  anyone with push access to impersonate other committers via git's author/committer
+  fields. Requiring GPG, SSH, or S/MIME signatures ensures cryptographic proof of
+  commit authorship, preventing unauthorized code from being attributed to trusted
+  developers. This is especially critical for supply chain integrity.
+compliance:
+  soc2: ["CC6.1", "CC8.1"]
+  nist_800_53: ["AU-10", "SC-13"]
+  iso_27001: ["A.10.1.1", "A.14.2.2"]
+audit:
+  - id: "latest-commits-signed"
+    description: "Verify the most recent commit on the default branch has a verified signature"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/commits?per_page=1"
+      check: '.[0].commit.verification.verified == true'
+    expected: true
+tags: ["signed-commits", "gpg", "supply-chain", "integrity", "commit-verification"]

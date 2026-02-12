@@ -1,0 +1,26 @@
+id: "github-3.6"
+vendor: "github"
+title: "Require CODEOWNERS File for Code Review Routing"
+section: "3.6"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#36-require-codeowners"
+description: >
+  Ensure a CODEOWNERS file exists in the repository to automatically assign
+  reviewers based on file paths. CODEOWNERS enforces that changes to security-critical
+  files (CI/CD workflows, infrastructure configs, authentication code) must be
+  reviewed by designated owners. Without CODEOWNERS, any team member with write
+  access can approve their own changes to sensitive areas.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["CM-3", "CM-5"]
+  iso_27001: ["A.12.1.2", "A.14.2.2"]
+audit:
+  - id: "codeowners-exists"
+    description: "Verify a CODEOWNERS file exists in the repository (checks .github/CODEOWNERS, CODEOWNERS, and docs/CODEOWNERS)"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/contents/.github/CODEOWNERS"
+      check: 'has("name")'
+    expected: true
+tags: ["codeowners", "code-review", "access-control", "change-management"]

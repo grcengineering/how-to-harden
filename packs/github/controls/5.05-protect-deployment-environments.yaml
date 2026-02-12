@@ -1,0 +1,25 @@
+id: "github-5.5"
+vendor: "github"
+title: "Protect Deployment Environments with Rules"
+section: "5.5"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#55-protect-deployment-environments"
+description: >
+  Ensure deployment environments (production, staging) have protection rules configured.
+  Environment protection rules can require manual approvals, restrict deployment to
+  specific branches, and enforce wait timers. Without protection rules, any workflow
+  with the environment name can deploy directly to production without review or approval.
+compliance:
+  soc2: ["CC6.1", "CC8.1"]
+  nist_800_53: ["CM-3", "CM-5", "SA-10"]
+  iso_27001: ["A.12.1.2", "A.14.2.9"]
+audit:
+  - id: "environments-have-protection-rules"
+    description: "Verify all deployment environments have at least one protection rule configured"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/environments"
+      check: '[.environments[] | select((.protection_rules | length) == 0)] | length == 0'
+    expected: true
+tags: ["environments", "deployment", "protection-rules", "ci-cd", "approvals"]

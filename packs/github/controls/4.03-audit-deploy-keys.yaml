@@ -1,0 +1,26 @@
+id: "github-4.3"
+vendor: "github"
+title: "Audit Deploy Keys for Overprivileged Access"
+section: "4.3"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#43-audit-deploy-keys"
+description: >
+  Audit repository deploy keys to ensure none have unnecessary write access. Deploy
+  keys with write permission can push code directly to the repository, bypassing
+  branch protection if not configured to apply to deploy keys. Read-only deploy keys
+  should be preferred unless write access is explicitly required for deployment
+  automation. Stale or unnecessary deploy keys should be removed.
+compliance:
+  soc2: ["CC6.1", "CC6.3"]
+  nist_800_53: ["AC-6", "IA-5"]
+  iso_27001: ["A.9.2.3", "A.9.4.1"]
+audit:
+  - id: "no-write-deploy-keys"
+    description: "Verify no deploy keys have write access to the repository"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/keys"
+      check: '[.[] | select(.read_only == false)] | length == 0'
+    expected: true
+tags: ["deploy-keys", "access-control", "least-privilege", "ssh-keys"]
