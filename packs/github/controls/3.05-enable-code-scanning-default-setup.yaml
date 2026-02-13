@@ -24,4 +24,22 @@ audit:
       endpoint: "/repos/{org}/how-to-harden/code-scanning/default-setup"
       check: '.state == "configured"'
     expected: true
+remediate:
+  api:
+    - description: "Enable CodeQL code scanning default setup on the repository"
+      method: PATCH
+      endpoint: "/repos/{org}/how-to-harden/code-scanning/default-setup"
+      body:
+        state: "configured"
+        query_suite: "default"
+      condition: "!code-scanning-enabled"
+  terraform:
+    resources:
+      - type: "github_repository"
+        name: "how_to_harden_code_scanning"
+        config:
+          name: "how-to-harden"
+          security_and_analysis:
+            advanced_security:
+              status: "enabled"
 tags: ["code-scanning", "codeql", "sast", "vulnerability-detection", "ci-cd"]

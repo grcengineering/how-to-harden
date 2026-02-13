@@ -23,4 +23,17 @@ audit:
       endpoint: "/repos/{org}/how-to-harden/commits?per_page=1"
       check: '.[0].commit.verification.verified == true'
     expected: true
+remediate:
+  note: >
+    Commit signing is configured per-developer (GPG/SSH key setup) and enforced via
+    branch protection rules. The audit check verifies actual commit signatures exist.
+    Enable 'Require signed commits' in branch protection rules to enforce this going forward.
+  terraform:
+    resources:
+      - type: "github_branch_protection"
+        name: "main_signed"
+        config:
+          repository_id: "how-to-harden"
+          pattern: "main"
+          require_signed_commits: true
 tags: ["signed-commits", "gpg", "supply-chain", "integrity", "commit-verification"]

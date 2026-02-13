@@ -30,4 +30,10 @@ remediate:
       body:
         web_commit_signoff_required: true
       condition: "!web-commit-signoff-required"
+  terraform:
+    resources:
+      - type: "github_organization_settings"
+        name: "commit_signoff"
+        config:
+          web_commit_signoff_required: true
 tags: ["commits", "sign-off", "dco", "audit-trail", "non-repudiation"]

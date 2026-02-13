@@ -23,4 +23,19 @@ audit:
       endpoint: "/orgs/{org}/repos?per_page=100"
       check: '[.[] | select(.has_wiki == true)] | length >= 0'
     expected: true
+remediate:
+  api:
+    - description: "Disable wiki on the repository"
+      method: PATCH
+      endpoint: "/repos/{org}/how-to-harden"
+      body:
+        has_wiki: false
+      condition: "!repos-wiki-audit"
+  terraform:
+    resources:
+      - type: "github_repository"
+        name: "how_to_harden_wiki"
+        config:
+          name: "how-to-harden"
+          has_wiki: false
 tags: ["wiki", "attack-surface", "cleanup", "repositories"]

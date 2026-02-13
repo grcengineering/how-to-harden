@@ -29,4 +29,9 @@ audit:
       endpoint: "/orgs/{org}/hooks"
       check: '[.[] | select(.config.secret == null or .config.secret == "")] | length == 0'
     expected: true
+remediate:
+  note: >
+    Insecure webhooks require manual review. Each webhook serves a specific integration
+    purpose. Use 'gh api /orgs/{org}/hooks' to list webhooks, then update each to use
+    HTTPS URLs and configure a secret via PATCH /orgs/{org}/hooks/{hook_id}.
 tags: ["webhooks", "https", "integrity", "ci-cd", "supply-chain"]

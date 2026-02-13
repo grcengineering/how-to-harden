@@ -23,4 +23,10 @@ audit:
       endpoint: "/repos/{org}/how-to-harden/contents/.github/CODEOWNERS"
       check: 'has("name")'
     expected: true
+remediate:
+  note: >
+    CODEOWNERS cannot be created via API — it must be committed to the repository.
+    Create a .github/CODEOWNERS file that maps critical paths to designated reviewers.
+    Example: '* @org/security-team' as a catch-all, '/.github/workflows/ @org/devops'
+    for CI/CD, and '/terraform/ @org/infra' for infrastructure code.
 tags: ["codeowners", "code-review", "access-control", "change-management"]

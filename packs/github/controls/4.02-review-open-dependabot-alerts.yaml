@@ -30,4 +30,10 @@ audit:
       endpoint: "/orgs/{org}/dependabot/alerts?state=open&severity=high"
       check: '. | length == 0'
     expected: true
+remediate:
+  note: >
+    Open Dependabot alerts cannot be auto-remediated via API — each alert requires
+    human review to determine the correct remediation (upgrade, patch, or dismiss with
+    justification). Use 'gh api /orgs/{org}/dependabot/alerts?state=open&severity=critical'
+    to list critical alerts requiring immediate attention.
 tags: ["vulnerability-management", "dependabot", "patching", "sla", "supply-chain"]

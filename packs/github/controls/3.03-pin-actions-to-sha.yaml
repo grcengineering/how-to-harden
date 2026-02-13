@@ -22,4 +22,18 @@ audit:
       endpoint: "/repos/{org}/how-to-harden/actions/permissions"
       check: '.sha_pinning_required == true'
     expected: true
+remediate:
+  note: >
+    SHA pinning cannot be fully automated via API. The sha_pinning_required setting
+    prevents new workflows from using mutable tags, but existing workflows must be
+    manually updated to replace tag references with full commit SHAs. Use tools like
+    'pin-github-action' (npx pin-github-action .github/workflows/*.yml) to convert.
+  terraform:
+    resources:
+      - type: "github_actions_repository_permissions"
+        name: "how_to_harden_sha_pinning"
+        config:
+          repository: "how-to-harden"
+          enabled: true
+          allowed_actions: "selected"
 tags: ["actions", "ci-cd", "supply-chain", "sha-pinning", "integrity"]

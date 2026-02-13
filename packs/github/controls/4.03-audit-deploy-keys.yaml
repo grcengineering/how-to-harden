@@ -23,4 +23,10 @@ audit:
       endpoint: "/repos/{org}/how-to-harden/keys"
       check: '[.[] | select(.read_only == false)] | length == 0'
     expected: true
+remediate:
+  note: >
+    Write deploy keys require manual review — each key serves a specific deployment
+    purpose. Use 'gh api /repos/{org}/{repo}/keys' to list all deploy keys, then
+    remove write keys that are no longer needed via DELETE /repos/{org}/{repo}/keys/{key_id}.
+    Replace write keys with read-only keys where possible.
 tags: ["deploy-keys", "access-control", "least-privilege", "ssh-keys"]

@@ -22,4 +22,24 @@ audit:
       endpoint: "/repos/{org}/how-to-harden/actions/permissions"
       check: '.allowed_actions != "all" or .enabled == false'
     expected: true
+remediate:
+  api:
+    - description: "Restrict Actions to GitHub-authored and verified marketplace creators at repo level"
+      method: PUT
+      endpoint: "/repos/{org}/how-to-harden/actions/permissions"
+      body:
+        enabled: true
+        allowed_actions: "selected"
+      condition: "!actions-not-unrestricted"
+  terraform:
+    resources:
+      - type: "github_actions_repository_permissions"
+        name: "how_to_harden_actions"
+        config:
+          repository: "how-to-harden"
+          enabled: true
+          allowed_actions: "selected"
+          allowed_actions_config:
+            github_owned_allowed: true
+            verified_allowed: true
 tags: ["actions", "ci-cd", "supply-chain", "third-party", "marketplace"]

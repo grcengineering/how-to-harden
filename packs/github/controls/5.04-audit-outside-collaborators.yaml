@@ -23,4 +23,10 @@ audit:
       endpoint: "/orgs/{org}/outside_collaborators"
       check: 'length == 0'
     expected: true
+remediate:
+  note: >
+    Outside collaborators require manual review — each has been granted access for a
+    specific reason. Use 'gh api /orgs/{org}/outside_collaborators' to list all outside
+    collaborators, then remove via DELETE /orgs/{org}/outside_collaborators/{username}
+    for each that no longer requires access. Document justification for any that remain.
 tags: ["outside-collaborators", "access-control", "third-party", "audit"]

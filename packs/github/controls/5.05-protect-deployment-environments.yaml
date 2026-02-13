@@ -22,4 +22,16 @@ audit:
       endpoint: "/repos/{org}/how-to-harden/environments"
       check: '[.environments[] | select((.protection_rules | length) == 0)] | length == 0'
     expected: true
+remediate:
+  api:
+    - description: "Add required reviewers protection rule to production environment"
+      method: PUT
+      endpoint: "/repos/{org}/how-to-harden/environments/github-pages"
+      body:
+        reviewers:
+          - type: "Team"
+        deployment_branch_policy:
+          protected_branches: true
+          custom_branch_policies: false
+      condition: "!environments-have-protection-rules"
 tags: ["environments", "deployment", "protection-rules", "ci-cd", "approvals"]

@@ -30,4 +30,17 @@ audit:
       endpoint: "/orgs/{org}/dependabot/alerts?state=open&severity=critical"
       check: '. | length == 0'
     expected: true
+remediate:
+  api:
+    - description: "Enable Dependabot vulnerability alerts on the repository"
+      method: PUT
+      endpoint: "/repos/{org}/how-to-harden/vulnerability-alerts"
+      condition: "!dependabot-security-updates-enabled"
+  terraform:
+    resources:
+      - type: "github_repository"
+        name: "how_to_harden_dependabot"
+        config:
+          name: "how-to-harden"
+          vulnerability_alerts: true
 tags: ["dependencies", "dependabot", "vulnerability-management", "patching", "supply-chain"]
