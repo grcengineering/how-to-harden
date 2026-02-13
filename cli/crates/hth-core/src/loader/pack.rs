@@ -62,3 +62,63 @@ pub fn discover_packs(packs_dir: &Path) -> HthResult<Vec<String>> {
     vendors.sort();
     Ok(vendors)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Resolve the real packs directory from the crate manifest dir.
+    fn packs_dir() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap() // crates/
+            .parent()
+            .unwrap() // cli/
+            .parent()
+            .unwrap() // repo root
+            .join("packs")
+    }
+
+    #[test]
+    fn load_pack_loads_github_controls() {
+        let dir = packs_dir();
+        let pack = load_pack(&dir, "github").expect("should load github pack");
+        assert_eq!(pack.vendor, "github");
+        assert!(!pack.controls.is_empty(), "github pack should have controls");
+    }
+
+    #[test]
+    fn load_pack_returns_pack_not_found_for_nonexistent_vendor() {
+        let dir = packs_dir();
+        let result = load_pack(&dir, "nonexistent-vendor-xyz");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        let msg = format!("{err}");
+        assert!(msg.contains("nonexistent-vendor-xyz"));
+    }
+
+    #[test]
+    fn discover_packs_finds_github_and_okta() {
+        let dir = packs_dir();
+        let vendors = discover_packs(&dir).expect("should discover packs");
+        assert!(vendors.contains(&"github".to_string()), "should find github");
+        assert!(vendors.contains(&"okta".to_string()), "should find okta");
+    }
+
+    #[test]
+    fn discover_packs_skips_schema_directory() {
+        let dir = packs_dir();
+        let vendors = discover_packs(&dir).expect("should discover packs");
+        assert!(
+            !vendors.contains(&"schema".to_string()),
+            "schema should not be in vendor list"
+        );
+    }
+
+    #[test]
+    fn discover_packs_returns_empty_for_nonexistent_dir() {
+        let dir = PathBuf::from("/tmp/nonexistent-hth-packs-dir-xyz");
+        let vendors = discover_packs(&dir).expect("should return Ok for missing dir");
+        assert!(vendors.is_empty());
+    }
+}

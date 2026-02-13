@@ -84,3 +84,36 @@ impl Default for VendorRegistry {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_registry_is_empty() {
+        let registry = VendorRegistry::new();
+        assert!(registry.list().is_empty());
+    }
+
+    #[test]
+    fn list_returns_empty_for_new_registry() {
+        let registry = VendorRegistry::new();
+        let vendors = registry.list();
+        assert_eq!(vendors.len(), 0);
+    }
+
+    #[test]
+    fn get_returns_none_for_unknown_vendor() {
+        let registry = VendorRegistry::new();
+        assert!(registry.get("github").is_none());
+        assert!(registry.get("okta").is_none());
+        assert!(registry.get("").is_none());
+    }
+
+    #[test]
+    fn default_is_same_as_new() {
+        let registry = VendorRegistry::default();
+        assert!(registry.list().is_empty());
+        assert!(registry.get("anything").is_none());
+    }
+}

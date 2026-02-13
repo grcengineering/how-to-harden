@@ -1,5 +1,7 @@
 use std::path::Path;
 
+use std::io::Write;
+
 use anyhow::{bail, Context, Result};
 use clap::Args;
 use console::style;
@@ -109,6 +111,7 @@ pub async fn run(
     // Render output
     let rendered = output::render_report(&report, format);
     print!("{rendered}");
+    let _ = std::io::stdout().flush();
 
     // Exit with appropriate code
     std::process::exit(report.exit_code());

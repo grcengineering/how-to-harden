@@ -1,5 +1,7 @@
 mod commands;
 
+use std::path::Path;
+
 use clap::Parser;
 use tracing_subscriber::EnvFilter;
 
@@ -20,16 +22,16 @@ struct Cli {
     config: String,
 
     /// Vendor to operate on (e.g., github, okta)
-    #[arg(long, short, global = true)]
+    #[arg(long, global = true)]
     vendor: Option<String>,
 
     /// Profile level: 1 (baseline), 2 (hardened), 3 (maximum)
     #[arg(long, short, global = true, default_value = "1")]
     profile: u8,
 
-    /// Path to packs directory
-    #[arg(long, global = true, default_value = "./packs")]
-    packs_dir: String,
+    /// Path to packs directory [env: HTH_PACKS_DIR]
+    #[arg(long, global = true, env = "HTH_PACKS_DIR")]
+    packs_dir: Option<String>,
 
     /// Output format: table, json, sarif, csv
     #[arg(long, short, global = true, default_value = "table")]
@@ -75,6 +77,46 @@ enum Commands {
     List(commands::list::ListArgs),
 }
 
+/// Resolve the packs directory using a search order:
+/// 1. Explicit --packs-dir flag or HTH_PACKS_DIR env var
+/// 2. ./packs relative to current working directory
+/// 3. packs/ relative to binary location (walking up parent dirs)
+fn resolve_packs_dir(explicit: Option<&str>) -> String {
+    if let Some(dir) = explicit {
+        return dir.to_string();
+    }
+
+    // Try ./packs relative to CWD
+    let cwd_packs = Path::new("./packs");
+    if cwd_packs.exists() && cwd_packs.is_dir() {
+        return "./packs".to_string();
+    }
+
+    // Try relative to the binary location — walk up parent directories
+    // This handles layouts like:
+    //   cli/target/release/hth         → ../../packs
+    //   cli/target/x86_64-*/release/hth → ../../../packs
+    //   /usr/local/bin/hth             → /usr/local/share/hth/packs (won't match, falls through)
+    if let Ok(exe_path) = std::env::current_exe() {
+        let mut dir = exe_path.as_path();
+        // Walk up to 5 levels from the binary
+        for _ in 0..5 {
+            if let Some(parent) = dir.parent() {
+                let candidate = parent.join("packs");
+                if candidate.exists() && candidate.is_dir() {
+                    return candidate.display().to_string();
+                }
+                dir = parent;
+            } else {
+                break;
+            }
+        }
+    }
+
+    // Fallback — will produce a clear "not found" error
+    "./packs".to_string()
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
@@ -98,30 +140,33 @@ async fn main() -> anyhow::Result<()> {
         console::set_colors_enabled(false);
     }
 
+    // Resolve packs directory
+    let packs_dir = resolve_packs_dir(cli.packs_dir.as_deref());
+
     // Build vendor registry
     let registry = build_vendor_registry();
 
     match cli.command {
         Commands::Scan(args) => {
-            commands::scan::run(args, &cli.vendor, cli.profile, &cli.packs_dir, &cli.output, &registry).await
+            commands::scan::run(args, &cli.vendor, cli.profile, &packs_dir, &cli.output, &registry).await
         }
         Commands::Remediate(args) => {
-            commands::remediate::run(args, &cli.vendor, cli.profile, &cli.packs_dir, &registry).await
+            commands::remediate::run(args, &cli.vendor, cli.profile, &packs_dir, &registry).await
         }
         Commands::Validate(args) => {
-            commands::validate::run(args, &cli.packs_dir).await
+            commands::validate::run(args, &packs_dir).await
         }
         Commands::Report(args) => {
-            commands::report::run(args, &cli.vendor, cli.profile, &cli.packs_dir, &cli.output, &registry).await
+            commands::report::run(args, &cli.vendor, cli.profile, &packs_dir, &cli.output, &registry).await
         }
         Commands::Analyze(args) => {
-            commands::analyze::run(args, &cli.packs_dir, &registry).await
+            commands::analyze::run(args, &packs_dir, &registry).await
         }
         Commands::Init(args) => {
             commands::init::run(args).await
         }
         Commands::List(args) => {
-            commands::list::run(args, &cli.packs_dir, &registry).await
+            commands::list::run(args, &packs_dir, &registry).await
         }
     }
 }

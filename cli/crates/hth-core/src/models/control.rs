@@ -241,3 +241,167 @@ pub struct TerraformResource {
     /// Resource configuration attributes.
     pub config: serde_json::Value,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Helper to build a minimal Control for testing.
+    fn make_control(profile_level: u8) -> Control {
+        Control {
+            id: "test-1.1".to_string(),
+            vendor: "test".to_string(),
+            title: "Test Control".to_string(),
+            section: "1.1".to_string(),
+            profile_level,
+            severity: Severity::High,
+            guide_url: None,
+            description: "A test control".to_string(),
+            compliance: ComplianceMapping::default(),
+            audit: vec![],
+            remediate: None,
+            tags: vec![],
+        }
+    }
+
+    // --- Control::applies_at_level ---
+
+    #[test]
+    fn l1_control_applies_at_l1_l2_l3() {
+        let control = make_control(1);
+        assert!(control.applies_at_level(1));
+        assert!(control.applies_at_level(2));
+        assert!(control.applies_at_level(3));
+    }
+
+    #[test]
+    fn l2_control_does_not_apply_at_l1() {
+        let control = make_control(2);
+        assert!(!control.applies_at_level(1));
+        assert!(control.applies_at_level(2));
+        assert!(control.applies_at_level(3));
+    }
+
+    #[test]
+    fn l3_control_does_not_apply_at_l1_or_l2() {
+        let control = make_control(3);
+        assert!(!control.applies_at_level(1));
+        assert!(!control.applies_at_level(2));
+        assert!(control.applies_at_level(3));
+    }
+
+    // --- Control::level_label ---
+
+    #[test]
+    fn level_label_returns_correct_labels() {
+        assert_eq!(make_control(1).level_label(), "L1 (Baseline)");
+        assert_eq!(make_control(2).level_label(), "L2 (Hardened)");
+        assert_eq!(make_control(3).level_label(), "L3 (Maximum)");
+        assert_eq!(make_control(0).level_label(), "Unknown");
+        assert_eq!(make_control(99).level_label(), "Unknown");
+    }
+
+    // --- Severity::as_str ---
+
+    #[test]
+    fn severity_as_str_all_variants() {
+        assert_eq!(Severity::Critical.as_str(), "critical");
+        assert_eq!(Severity::High.as_str(), "high");
+        assert_eq!(Severity::Medium.as_str(), "medium");
+        assert_eq!(Severity::Low.as_str(), "low");
+    }
+
+    // --- Severity ordering ---
+    // derive(Ord) uses variant declaration order: Critical(0) < High(1) < Medium(2) < Low(3)
+
+    #[test]
+    fn severity_ordering_critical_is_least_by_derive_ord() {
+        assert!(Severity::Critical < Severity::High);
+        assert!(Severity::High < Severity::Medium);
+        assert!(Severity::Medium < Severity::Low);
+    }
+
+    #[test]
+    fn severity_ordering_low_is_greatest_by_derive_ord() {
+        assert!(Severity::Low > Severity::Medium);
+        assert!(Severity::Low > Severity::High);
+        assert!(Severity::Low > Severity::Critical);
+    }
+
+    // --- ComplianceMapping::all_mappings ---
+
+    #[test]
+    fn all_mappings_returns_empty_for_default() {
+        let mapping = ComplianceMapping::default();
+        assert!(mapping.all_mappings().is_empty());
+    }
+
+    #[test]
+    fn all_mappings_returns_only_non_empty_frameworks() {
+        let mapping = ComplianceMapping {
+            soc2: vec!["CC6.1".to_string()],
+            nist_800_53: vec![],
+            iso_27001: vec!["A.9.4.1".to_string()],
+            pci_dss: vec![],
+            disa_stig: vec![],
+        };
+        let mappings = mapping.all_mappings();
+        assert_eq!(mappings.len(), 2);
+        assert_eq!(mappings[0].0, "SOC 2");
+        assert_eq!(mappings[1].0, "ISO 27001");
+    }
+
+    #[test]
+    fn all_mappings_returns_all_five_when_populated() {
+        let mapping = ComplianceMapping {
+            soc2: vec!["CC6.1".to_string()],
+            nist_800_53: vec!["AC-2".to_string()],
+            iso_27001: vec!["A.9.4.1".to_string()],
+            pci_dss: vec!["8.3".to_string()],
+            disa_stig: vec!["V-123456".to_string()],
+        };
+        let mappings = mapping.all_mappings();
+        assert_eq!(mappings.len(), 5);
+    }
+
+    // --- HttpMethod::Display ---
+
+    #[test]
+    fn http_method_display_all_variants() {
+        assert_eq!(format!("{}", HttpMethod::GET), "GET");
+        assert_eq!(format!("{}", HttpMethod::POST), "POST");
+        assert_eq!(format!("{}", HttpMethod::PUT), "PUT");
+        assert_eq!(format!("{}", HttpMethod::DELETE), "DELETE");
+        assert_eq!(format!("{}", HttpMethod::PATCH), "PATCH");
+    }
+
+    // --- Serde round-trip: Severity ---
+
+    #[test]
+    fn severity_serde_roundtrip() {
+        for severity in [Severity::Critical, Severity::High, Severity::Medium, Severity::Low] {
+            let json = serde_json::to_string(&severity).unwrap();
+            let deserialized: Severity = serde_json::from_str(&json).unwrap();
+            assert_eq!(deserialized, severity);
+        }
+    }
+
+    #[test]
+    fn severity_serializes_to_lowercase() {
+        assert_eq!(serde_json::to_string(&Severity::Critical).unwrap(), "\"critical\"");
+        assert_eq!(serde_json::to_string(&Severity::High).unwrap(), "\"high\"");
+        assert_eq!(serde_json::to_string(&Severity::Medium).unwrap(), "\"medium\"");
+        assert_eq!(serde_json::to_string(&Severity::Low).unwrap(), "\"low\"");
+    }
+
+    // --- Serde round-trip: HttpMethod ---
+
+    #[test]
+    fn http_method_serde_roundtrip() {
+        for method in [HttpMethod::GET, HttpMethod::POST, HttpMethod::PUT, HttpMethod::DELETE, HttpMethod::PATCH] {
+            let json = serde_json::to_string(&method).unwrap();
+            let deserialized: HttpMethod = serde_json::from_str(&json).unwrap();
+            assert_eq!(deserialized, method);
+        }
+    }
+}

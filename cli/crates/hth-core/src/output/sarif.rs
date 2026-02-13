@@ -97,3 +97,138 @@ fn control_to_sarif_result(control: &ControlResult) -> serde_json::Value {
         "kind": "fail"
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::*;
+    use chrono::Utc;
+
+    fn make_test_report() -> ScanReport {
+        ScanReport {
+            vendor: "test".to_string(),
+            profile_level: 1,
+            timestamp: Utc::now(),
+            controls: vec![
+                ControlResult {
+                    control_id: "test-1.1".to_string(),
+                    title: "Test Control Pass".to_string(),
+                    severity: Severity::High,
+                    profile_level: 1,
+                    status: ControlStatus::Pass,
+                    checks: vec![CheckResult {
+                        check_id: "check-1".to_string(),
+                        description: "A passing check".to_string(),
+                        status: CheckStatus::Pass,
+                        actual: Some(serde_json::json!(true)),
+                        expected: true,
+                        error: None,
+                        duration_ms: 100,
+                    }],
+                    compliance: ComplianceMapping::default(),
+                },
+                ControlResult {
+                    control_id: "test-1.2".to_string(),
+                    title: "Test Control Fail".to_string(),
+                    severity: Severity::Critical,
+                    profile_level: 1,
+                    status: ControlStatus::Fail,
+                    checks: vec![CheckResult {
+                        check_id: "check-2".to_string(),
+                        description: "A failing check".to_string(),
+                        status: CheckStatus::Fail,
+                        actual: Some(serde_json::json!(false)),
+                        expected: true,
+                        error: None,
+                        duration_ms: 200,
+                    }],
+                    compliance: ComplianceMapping::default(),
+                },
+            ],
+            summary: ScanSummary {
+                total: 2,
+                passed: 1,
+                failed: 1,
+                skipped: 0,
+                errors: 0,
+            },
+        }
+    }
+
+    fn make_all_pass_report() -> ScanReport {
+        ScanReport {
+            vendor: "test".to_string(),
+            profile_level: 1,
+            timestamp: Utc::now(),
+            controls: vec![ControlResult {
+                control_id: "test-1.1".to_string(),
+                title: "Test Control Pass".to_string(),
+                severity: Severity::High,
+                profile_level: 1,
+                status: ControlStatus::Pass,
+                checks: vec![],
+                compliance: ComplianceMapping::default(),
+            }],
+            summary: ScanSummary {
+                total: 1,
+                passed: 1,
+                failed: 0,
+                skipped: 0,
+                errors: 0,
+            },
+        }
+    }
+
+    #[test]
+    fn sarif_output_parses_as_valid_json() {
+        let report = make_test_report();
+        let output = render_scan_report(&report);
+        let parsed: serde_json::Value = serde_json::from_str(&output).expect("SARIF output must be valid JSON");
+        assert!(parsed.is_object());
+    }
+
+    #[test]
+    fn sarif_version_is_2_1_0() {
+        let report = make_test_report();
+        let output = render_scan_report(&report);
+        let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
+        assert_eq!(parsed["version"], "2.1.0");
+    }
+
+    #[test]
+    fn sarif_has_exactly_one_run() {
+        let report = make_test_report();
+        let output = render_scan_report(&report);
+        let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
+        let runs = parsed["runs"].as_array().expect("runs should be an array");
+        assert_eq!(runs.len(), 1);
+    }
+
+    #[test]
+    fn sarif_tool_driver_name_is_hth() {
+        let report = make_test_report();
+        let output = render_scan_report(&report);
+        let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
+        assert_eq!(parsed["runs"][0]["tool"]["driver"]["name"], "hth");
+    }
+
+    #[test]
+    fn sarif_results_only_contain_failing_and_error_controls() {
+        let report = make_test_report();
+        let output = render_scan_report(&report);
+        let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
+        let results = parsed["runs"][0]["results"].as_array().unwrap();
+        // The report has 1 pass and 1 fail, so only 1 result
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0]["ruleId"], "test-1.2");
+    }
+
+    #[test]
+    fn sarif_all_pass_produces_zero_results() {
+        let report = make_all_pass_report();
+        let output = render_scan_report(&report);
+        let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
+        let results = parsed["runs"][0]["results"].as_array().unwrap();
+        assert_eq!(results.len(), 0);
+    }
+}
