@@ -1,0 +1,36 @@
+title: Okta IDP Discovery Routing Rule Created or Modified
+id: 8a3f1d72-5e9b-4c06-b2a8-d74e9f1c3b65
+status: test
+description: |
+    Detects creation or modification of IDP discovery routing rules. Attackers modify
+    routing rules to direct authentication through a malicious IdP for cross-tenant
+    impersonation attacks. Changes to IDP routing should be rare and tightly controlled.
+    This corresponds to HTH Okta control okta-routing-rule-modified (section 5.5, L1).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+    - https://attack.mitre.org/techniques/T1556/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.persistence
+    - attack.t1556
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType:
+            - 'policy.lifecycle.create'
+            - 'policy.lifecycle.update'
+    filter_policy_type:
+        debugContext.debugData.policyType: 'IDP_DISCOVERY'
+    condition: selection and filter_policy_type
+fields:
+    - actor.displayName
+    - target.displayName
+    - client.ipAddress
+    - published
+falsepositives:
+    - Planned routing rule changes during IdP migration projects
+level: high

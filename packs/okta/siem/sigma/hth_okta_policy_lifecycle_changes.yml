@@ -1,0 +1,40 @@
+title: Okta Policy Lifecycle Changes - Creation, Modification, and Deletion
+id: 1b7e4c93-6f2a-48d1-9e35-a82d0c6f4b17
+status: test
+description: |
+    Monitors all policy lifecycle events including creation, modification, and deletion
+    of authentication policies, sign-on policies, and their rules. Correlate with change
+    management records to detect unauthorized configuration changes that could weaken
+    security posture.
+    This corresponds to HTH Okta control okta-policy-lifecycle-changes (section 7.4, L2).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+    - https://attack.mitre.org/techniques/T1562/001/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType:
+            - 'policy.lifecycle.create'
+            - 'policy.lifecycle.update'
+            - 'policy.lifecycle.delete'
+            - 'policy.rule.create'
+            - 'policy.rule.update'
+    condition: selection
+fields:
+    - actor.displayName
+    - actor.alternateId
+    - eventType
+    - target.displayName
+    - client.ipAddress
+    - published
+falsepositives:
+    - Planned policy changes documented in change management systems
+level: medium

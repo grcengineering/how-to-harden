@@ -1,0 +1,39 @@
+title: Okta Identity Provider Created or Activated - Persistence via Rogue IdP
+id: f2a8b6c9-3d7e-4f41-a0c8-e6d2f4b51a97
+status: test
+description: |
+    Detects creation or activation of new Identity Providers in Okta. An attacker with
+    admin access can create a malicious IdP to impersonate any user without credentials
+    or MFA, establishing persistent backdoor access to the entire tenant. This is a
+    high-impact, low-volume event that demands immediate investigation. Legitimate IdP
+    creation is rare and should always go through change management.
+    This corresponds to HTH Okta control okta-idp-lifecycle-create (section 5.5, L1).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+    - https://attack.mitre.org/techniques/T1556/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.persistence
+    - attack.t1556
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType:
+            - 'system.idp.lifecycle.create'
+            - 'system.idp.lifecycle.activate'
+    condition: selection
+fields:
+    - actor.displayName
+    - actor.alternateId
+    - target.displayName
+    - target.type
+    - client.ipAddress
+    - published
+falsepositives:
+    - Planned IdP integrations during federated SSO setup
+    - IdP migration projects with pre-approved change requests
+level: critical

@@ -1,0 +1,35 @@
+title: Okta User Reported Suspicious Activity
+id: 8a2d1660-9704-59e6-a904-632edabadb4d
+status: test
+description: |
+    Fires when an end user clicks "Report Suspicious Activity" in a notification
+    email. This is a high-fidelity signal that should trigger immediate incident
+    response. Correlate with recent authentication and factor enrollment events
+    for the reporting user. Escalate to SOC immediately.
+    This corresponds to HTH Okta control okta-suspicious-activity-report (section 1.11, L1).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.initial_access
+    - attack.t1078
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType: 'user.account.report_suspicious_activity_by_enduser'
+    condition: selection
+fields:
+    - actor.displayName
+    - actor.alternateId
+    - client.ipAddress
+    - client.geographicalContext.city
+    - client.geographicalContext.country
+    - outcome.result
+    - published
+falsepositives:
+    - Accidental clicks on "Report Suspicious Activity" link in legitimate emails
+level: critical

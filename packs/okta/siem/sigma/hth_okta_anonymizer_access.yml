@@ -1,0 +1,35 @@
+title: Okta Authentication from Anonymizing Proxy or Tor Network
+id: ebcc5d7b-5c44-58e6-8af5-7fd28b56639a
+status: test
+description: |
+    Detects authentication attempts from anonymizing proxies or Tor exit nodes
+    identified by Okta ThreatInsight. Attackers use anonymizers to hide origin
+    during credential stuffing and session replay attacks. Block anonymizers at
+    the network zone level after verifying no legitimate business use.
+    This corresponds to HTH Okta control okta-anonymizer-detected (section 2.3, L2).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.initial_access
+    - attack.t1090
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType: 'security.threat.detected'
+        debugContext.debugData.threatSuspected: 'ANONYMIZER'
+    condition: selection
+fields:
+    - actor.displayName
+    - actor.alternateId
+    - client.ipAddress
+    - debugContext.debugData.threatSuspected
+    - outcome.result
+    - published
+falsepositives:
+    - Privacy-focused employees using legitimate VPN services flagged as anonymizers
+level: high

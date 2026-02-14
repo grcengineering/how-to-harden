@@ -1,0 +1,34 @@
+title: Okta FIDO2/WebAuthn MFA Authentication Events
+id: e6cd019c-bae2-55cd-9530-e2d028d7632f
+status: test
+description: |
+    Monitors authentication events using FIDO2/WebAuthn MFA factors. Use to
+    verify phishing-resistant MFA adoption and detect fallback to weaker factors.
+    Absence of these events for a user population indicates FIDO2 enrollment gaps.
+    This corresponds to HTH Okta control okta-mfa-auth-events (section 1.1, L1).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.credential_access
+    - attack.t1556
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType: 'user.authentication.auth_via_mfa'
+        debugContext.debugData.factor: 'FIDO2_WEBAUTHN'
+    condition: selection
+fields:
+    - actor.displayName
+    - actor.alternateId
+    - client.ipAddress
+    - debugContext.debugData.factor
+    - outcome.result
+    - published
+falsepositives:
+    - Legitimate FIDO2 authentications during normal business hours
+level: medium

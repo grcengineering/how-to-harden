@@ -1,0 +1,39 @@
+title: Okta Impossible Travel - SSO Authentication from Anomalous Geographic Location
+id: a3b7c1d4-8e2f-4a96-b5d3-f1e7a9c06b42
+status: test
+description: |
+    Detects SSO authentication events where the user's geographic country changes within
+    a short time window, indicating credential theft or session replay. An attacker using
+    stolen credentials from a different country will generate SSO events with geographic
+    context that conflicts with the user's prior authentication location.
+    Note: Temporal correlation (geographic change within 1 hour) must be implemented at
+    the SIEM level using aggregation or correlation rules over the published timestamp
+    and client.geographicalContext.country fields.
+    This corresponds to HTH Okta control okta-impossible-travel (section 5.1, L1).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+    - https://attack.mitre.org/techniques/T1078/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.initial_access
+    - attack.t1078
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType: 'user.authentication.sso'
+    condition: selection
+fields:
+    - actor.displayName
+    - actor.alternateId
+    - client.ipAddress
+    - client.geographicalContext.country
+    - client.geographicalContext.city
+    - published
+falsepositives:
+    - Users connecting through VPNs in different geographic regions
+    - Legitimate business travel with rapid transit between locations
+level: high
