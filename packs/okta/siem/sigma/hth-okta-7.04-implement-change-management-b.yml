@@ -1,0 +1,37 @@
+title: Okta Application Lifecycle Changes - Creation and Modification
+id: 4d9a2e56-3c81-4f07-b6d2-f15e8a7c9d43
+status: test
+description: |
+    Monitors application creation and modification events to detect unauthorized
+    integrations. New applications may introduce OAuth scopes, SCIM provisioning, or
+    federation trust that expand the attack surface. All application changes should be
+    correlated with approved change requests.
+    This corresponds to HTH Okta control hth-okta-7.04-implement-change-management (section 7.4, L2).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+    - https://attack.mitre.org/techniques/T1098/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.persistence
+    - attack.t1098
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType:
+            - 'application.lifecycle.create'
+            - 'application.lifecycle.update'
+    condition: selection
+fields:
+    - actor.displayName
+    - actor.alternateId
+    - eventType
+    - target.displayName
+    - client.ipAddress
+    - published
+falsepositives:
+    - Approved application integrations during IT project deployments
+level: medium

@@ -1,0 +1,36 @@
+title: Okta SCIM User Create or Update Operations
+id: 39624659-f935-526c-8d1e-52cd8ffbb0b7
+status: test
+description: |
+    Monitors SCIM provisioning operations that create or modify users in
+    downstream applications. Compromised SCIM tokens enable backdoor account
+    creation across connected SaaS apps. Correlate with HR-driven provisioning
+    workflows to identify unauthorized SCIM operations outside normal onboarding.
+    This corresponds to HTH Okta control hth-okta-3.02-harden-scim-provisioning-connectors (section 3.2, L2).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.persistence
+    - attack.t1136
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType:
+            - 'system.scim.user.create'
+            - 'system.scim.user.update'
+    condition: selection
+fields:
+    - actor.displayName
+    - target.displayName
+    - target.type
+    - eventType
+    - client.ipAddress
+    - published
+falsepositives:
+    - Normal HR-driven provisioning via SCIM during employee onboarding
+level: medium

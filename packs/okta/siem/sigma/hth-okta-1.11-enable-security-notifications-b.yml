@@ -1,0 +1,38 @@
+title: Okta Authenticator Enrolled or Password Changed
+id: ec86b60e-1610-5621-987a-922d96cf71f7
+status: test
+description: |
+    Detects authenticator enrollment, activation, and password changes. Attackers
+    who gain temporary access immediately register their own MFA factors to
+    maintain persistence. Correlate with suspicious activity reports and recent
+    sign-in anomalies. High volume during onboarding is expected; focus on
+    out-of-band enrollments.
+    This corresponds to HTH Okta control hth-okta-1.11-enable-security-notifications (section 1.11, L1).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.persistence
+    - attack.t1556.006
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType:
+            - 'user.mfa.factor.activate'
+            - 'user.mfa.factor.enroll'
+            - 'system.mfa.factor.activate'
+            - 'user.account.update_password'
+    condition: selection
+fields:
+    - actor.displayName
+    - target.displayName
+    - client.ipAddress
+    - client.userAgent.rawUserAgent
+    - published
+falsepositives:
+    - Legitimate user onboarding or MFA factor rotation
+level: medium

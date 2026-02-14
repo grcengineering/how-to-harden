@@ -1,0 +1,37 @@
+title: Okta Password Recovery from Untrusted Network
+id: 68b3e324-0114-5df7-9674-d4855bcf05c6
+status: test
+description: |
+    Detects password recovery attempts originating from proxy networks or
+    non-corporate IP addresses. Recovery from untrusted networks is a top account
+    hijack technique. Correlate with the user's normal authentication geography
+    and recent suspicious activity reports.
+    This corresponds to HTH Okta control hth-okta-1.10-harden-self-service-recovery (section 1.10, L1).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.initial_access
+    - attack.t1078.004
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType:
+            - 'user.account.reset_password'
+            - 'user.credential.forgot_password'
+        securityContext.isProxy: true
+    condition: selection
+fields:
+    - actor.displayName
+    - client.ipAddress
+    - client.geographicalContext.city
+    - client.geographicalContext.country
+    - outcome.result
+    - published
+falsepositives:
+    - Employees using VPNs or working from non-corporate networks
+level: high

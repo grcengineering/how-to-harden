@@ -1,0 +1,36 @@
+title: Okta Admin Role Assignment or Modification - Privilege Escalation Detection
+id: c9d5e3f6-0a4b-4c18-d7f5-b3a9c1e28d64
+status: test
+description: |
+    Detects changes to admin role assignments including role grants, revocations, creation,
+    and deletion. Privilege escalation via unauthorized role changes is a key post-compromise
+    technique. An attacker with sufficient access can elevate privileges by assigning
+    Super Admin or Org Admin roles to compromised accounts.
+    This corresponds to HTH Okta control hth-okta-5.01-comprehensive-logging (section 5.1, L1).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+    - https://attack.mitre.org/techniques/T1098/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.privilege_escalation
+    - attack.t1098
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType|startswith: 'system.role'
+    condition: selection
+fields:
+    - actor.displayName
+    - actor.alternateId
+    - target.displayName
+    - eventType
+    - client.ipAddress
+    - published
+falsepositives:
+    - Legitimate role assignments by IT administrators during onboarding or offboarding
+    - Scheduled role rotations as part of access review cycles
+level: high

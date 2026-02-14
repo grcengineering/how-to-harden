@@ -1,0 +1,37 @@
+title: Okta API Token Lifecycle Events - Creation, Revocation, and OAuth Grant
+id: 2f6d9a14-7c3e-4b8f-a1d5-e9c4f2b06a37
+status: test
+description: |
+    Monitors API token lifecycle events including creation, revocation, and OAuth token
+    grants. New token creation should be rare and require justification. Unauthorized
+    token creation is a high-severity indicator of persistence establishment.
+    This corresponds to HTH Okta control hth-okta-3.04-govern-non-human-identities (section 3.4, L1).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+    - https://attack.mitre.org/techniques/T1098/001/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.persistence
+    - attack.t1098.001
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType:
+            - 'system.api_token.create'
+            - 'system.api_token.revoke'
+            - 'app.oauth2.token.grant'
+    condition: selection
+fields:
+    - actor.displayName
+    - actor.alternateId
+    - eventType
+    - target.displayName
+    - client.ipAddress
+    - published
+falsepositives:
+    - Routine API token rotation by authorized service accounts
+level: high

@@ -1,0 +1,37 @@
+title: Okta Network Zone Created or Modified
+id: 7c5b3f18-9d4a-4e62-a8c1-b26d4f0e5a92
+status: test
+description: |
+    Monitors creation and modification of network zones. An attacker with admin access
+    could add their own IP ranges to trusted zones, bypassing IP-based access controls
+    and network restriction policies. Network zone changes should be rare and tightly
+    audited.
+    This corresponds to HTH Okta control hth-okta-7.04-implement-change-management (section 7.4, L2).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+    - https://attack.mitre.org/techniques/T1562/001/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType:
+            - 'zone.lifecycle.create'
+            - 'zone.lifecycle.update'
+    condition: selection
+fields:
+    - actor.displayName
+    - actor.alternateId
+    - eventType
+    - target.displayName
+    - client.ipAddress
+    - published
+falsepositives:
+    - Network zone updates during office expansion or VPN infrastructure changes
+level: high

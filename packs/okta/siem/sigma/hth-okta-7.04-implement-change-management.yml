@@ -1,0 +1,35 @@
+title: Okta Admin Role Created - Custom Role Lifecycle Event
+id: 5f1c8b34-2d7e-4a96-b9f3-c64a1e8d7b25
+status: test
+description: |
+    Monitors creation of new admin roles and role assignments. Custom roles with excessive
+    permissions or unexpected role grants may indicate privilege escalation attempts.
+    Role creation should be rare and require documented justification through change
+    management.
+    This corresponds to HTH Okta control hth-okta-7.04-implement-change-management (section 7.4, L2).
+references:
+    - https://howtoharden.com/guides/okta/
+    - https://developer.okta.com/docs/reference/api/system-log/
+    - https://attack.mitre.org/techniques/T1098/
+author: How to Harden
+date: 2026/02/13
+tags:
+    - attack.privilege_escalation
+    - attack.t1098
+logsource:
+    product: okta
+    service: okta
+detection:
+    selection:
+        eventType: 'system.role.create'
+    condition: selection
+fields:
+    - actor.displayName
+    - actor.alternateId
+    - eventType
+    - target.displayName
+    - client.ipAddress
+    - published
+falsepositives:
+    - Planned custom role creation as part of RBAC implementation projects
+level: high

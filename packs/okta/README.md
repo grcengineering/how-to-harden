@@ -7,9 +7,9 @@ Runnable security hardening artifacts for [Okta](https://howtoharden.com/guides/
 | Component | Count | Description |
 |-----------|-------|-------------|
 | YAML Controls | 34 | Machine-readable definitions with audit checks, remediation, and compliance mappings |
-| Terraform Resources | 11 | Declarative modules for controls 1.1, 1.9, 1.10, 1.11, 2.1, 2.3, 3.4, 4.1, 4.2, 5.2, 5.4 |
-| API Scripts | 8 | Section-specific hardening scripts (sections 1-5, 7) + read-only validator |
-| SIEM Queries | 30 | Detection queries for Splunk, Elastic, and SQL-based SIEMs |
+| Terraform | 11 | Per-control `.tf` files for controls 1.1, 1.9, 1.10, 1.11, 2.1, 2.3, 3.4, 4.1, 4.2, 5.2, 5.4 |
+| API Scripts | 22 | Per-control hardening scripts + read-only validator |
+| Sigma Rules | 24 | Platform-agnostic SIEM detection rules (Splunk, Elastic, Microsoft 365 Defender) |
 | IR Runbooks | 3 | Incident response scripts for compromised admin, malicious IdP, unauthorized MFA |
 | Utilities | 1 | HAR file sanitizer for safe support ticket submission |
 
@@ -17,7 +17,7 @@ Runnable security hardening artifacts for [Okta](https://howtoharden.com/guides/
 
 - Okta tenant with **Super Admin** access
 - API token with appropriate permissions (`Security > API > Tokens`)
-- [Terraform](https://www.terraform.io/) >= 1.0 with the [okta/okta provider](https://registry.terraform.io/providers/okta/okta/latest) (for Terraform modules)
+- [Terraform](https://www.terraform.io/) >= 1.0 with the [okta/okta provider](https://registry.terraform.io/providers/okta/okta/latest) (for Terraform)
 - `bash`, `curl`, `jq` (for API scripts and validation)
 
 ## Quick Start
@@ -32,15 +32,15 @@ export OKTA_API_TOKEN="your-ssws-token"
 export HTH_PROFILE_LEVEL=1  # 1=Baseline, 2=Hardened, 3=Maximum
 
 # Audit first — read-only, changes nothing
-bash validate.sh
+bash hth-okta-validate.sh
 
-# Apply hardening section by section
-bash 01-auth-controls.sh
-bash 02-network-controls.sh
-bash 03-oauth-security.sh
-bash 04-session-mgmt.sh
-bash 05-monitoring.sh
-bash 07-operational.sh
+# Apply individual controls
+bash hth-okta-1.01-enforce-phishing-resistant-mfa.sh
+bash hth-okta-1.04-configure-password-policy.sh
+bash hth-okta-2.01-configure-network-zones.sh
+
+# Apply all controls at once
+for f in hth-okta-*.sh; do [ "$f" != "hth-okta-validate.sh" ] && bash "$f"; done
 ```
 
 ### 2. Terraform (Declarative)
@@ -57,28 +57,39 @@ terraform apply -var="profile_level=2"  # Apply L1 + L2 (Hardened)
 terraform apply -var="profile_level=3"  # Apply all controls
 ```
 
-### 3. SIEM Queries
+### 3. Sigma Rules (SIEM Detection)
 
-Import `siem/queries.yaml` into your SIEM platform. Queries are structured with severity levels, MITRE ATT&CK mappings, and platform-agnostic syntax adaptable to Splunk SPL, Elastic KQL, or SQL.
+Convert Sigma rules to your SIEM's native format using [sigma-cli](https://github.com/SigmaHQ/sigma-cli):
+
+```bash
+# Convert all rules to Splunk
+sigma convert -t splunk siem/sigma/
+
+# Convert all rules to Elastic Lucene
+sigma convert -t elastic_lucene siem/sigma/
+
+# Convert a single control's detection rule
+sigma convert -t splunk siem/sigma/hth-okta-1.01-enforce-phishing-resistant-mfa.yml
+```
 
 ### 4. Incident Response
 
 ```bash
 # Respond to a compromised admin account
-bash scripts/incident-response/compromised-admin.sh
+bash scripts/incident-response/hth-okta-ir-compromised-admin.sh
 
 # Respond to a malicious IdP configuration
-bash scripts/incident-response/malicious-idp.sh
+bash scripts/incident-response/hth-okta-ir-malicious-idp.sh
 
 # Respond to unauthorized MFA enrollment
-bash scripts/incident-response/unauthorized-mfa.sh
+bash scripts/incident-response/hth-okta-ir-unauthorized-mfa.sh
 ```
 
 ### 5. HAR File Sanitizer
 
 ```bash
 # Strip credentials from HAR files before sharing with support
-bash scripts/har-sanitize.sh recording.har > recording-sanitized.har
+bash scripts/hth-okta-har-sanitize.sh recording.har > recording-sanitized.har
 ```
 
 ## Profile Levels
@@ -98,41 +109,54 @@ Set `HTH_PROFILE_LEVEL` (API scripts) or `profile_level` (Terraform variable) on
 ```
 okta/
 ├── README.md
-├── controls/                        # 34 YAML control definitions
-│   ├── 1.01-enforce-phishing-resistant-mfa.yaml
-│   ├── 1.02-admin-role-separation.yaml
+├── controls/                                          # 34 YAML control definitions
+│   ├── hth-okta-1.01-enforce-phishing-resistant-mfa.yaml
+│   ├── hth-okta-1.02-admin-role-separation.yaml
 │   ├── ...
-│   ├── 6.01-integration-risk-assessment.yaml
-│   ├── 6.02-common-integrations-controls.yaml
-│   └── 7.05-establish-identity-incident-response.yaml
-├── terraform/                       # Terraform modules
-│   ├── main.tf                      # Resources gated by profile_level
-│   ├── variables.tf                 # Input variables including profile_level
-│   ├── outputs.tf                   # Output values
-│   ├── providers.tf                 # Provider configuration
-│   └── terraform.tfvars.example     # Example variable values
-├── api/                             # API hardening scripts
-│   ├── common.sh                    # Shared utilities (logging, API calls, profile gating)
-│   ├── validate.sh                  # Read-only audit across all sections
-│   ├── 01-auth-controls.sh          # Section 1: Authentication (11 controls)
-│   ├── 02-network-controls.sh       # Section 2: Network Security (3 controls)
-│   ├── 03-oauth-security.sh         # Section 3: OAuth & Integrations (4 controls)
-│   ├── 04-session-mgmt.sh           # Section 4: Session Management (3 controls)
-│   ├── 05-monitoring.sh             # Section 5: Monitoring & Detection (6 controls)
-│   └── 07-operational.sh            # Section 7: Operational Security (5 controls)
-├── siem/                            # Detection queries
-│   └── queries.yaml                 # 30 queries with severity and MITRE mappings
-└── scripts/                         # Operational utilities
-    ├── har-sanitize.sh              # Strip credentials from HAR files
+│   └── hth-okta-7.05-establish-identity-incident-response.yaml
+├── terraform/                                         # Per-control Terraform files
+│   ├── providers.tf                                   # Provider configuration
+│   ├── variables.tf                                   # Input variables
+│   ├── outputs.tf                                     # Output values
+│   ├── terraform.tfvars.example                       # Example variable values
+│   ├── hth-okta-1.01-enforce-phishing-resistant-mfa.tf
+│   ├── hth-okta-1.09-audit-default-auth-policy.tf
+│   ├── ...
+│   └── hth-okta-5.04-behavior-detection.tf
+├── api/                                               # Per-control API scripts
+│   ├── common.sh                                      # Shared utilities
+│   ├── hth-okta-validate.sh                           # Read-only audit
+│   ├── hth-okta-1.01-enforce-phishing-resistant-mfa.sh
+│   ├── hth-okta-1.02-admin-role-separation.sh
+│   ├── ...
+│   └── hth-okta-7.03-access-reviews.sh
+├── siem/sigma/                                        # Sigma detection rules
+│   ├── hth-okta-1.01-enforce-phishing-resistant-mfa.yml
+│   ├── hth-okta-1.09-audit-default-auth-policy.yml
+│   ├── ...
+│   └── hth-okta-7.04-implement-change-management-e.yml
+└── scripts/                                           # Operational utilities
+    ├── hth-okta-har-sanitize.sh
     └── incident-response/
-        ├── compromised-admin.sh     # Compromised admin account response
-        ├── malicious-idp.sh         # Malicious IdP detection and response
-        └── unauthorized-mfa.sh      # Unauthorized MFA enrollment response
+        ├── hth-okta-ir-compromised-admin.sh
+        ├── hth-okta-ir-malicious-idp.sh
+        └── hth-okta-ir-unauthorized-mfa.sh
 ```
+
+## Naming Convention
+
+All files follow: `hth-{vendor}-{section}-{control-title}.{ext}`
+
+- **Controls**: `hth-okta-1.01-enforce-phishing-resistant-mfa.yaml`
+- **Terraform**: `hth-okta-1.01-enforce-phishing-resistant-mfa.tf`
+- **API Scripts**: `hth-okta-1.01-enforce-phishing-resistant-mfa.sh`
+- **Sigma Rules**: `hth-okta-1.01-enforce-phishing-resistant-mfa.yml`
+- **Multi-rule controls**: Suffix `-b`, `-c`, etc. (e.g., `hth-okta-1.10-...-b.yml`)
+- **Shared files**: `common.sh`, `providers.tf`, `variables.tf`, `outputs.tf`
 
 ## Controls
 
-### Section 1 — Authentication (11 controls)
+### Section 1 -- Authentication (11 controls)
 
 | # | Control | Level |
 |---|---------|-------|
@@ -148,7 +172,7 @@ okta/
 | 1.10 | Harden Self-Service Recovery | L1 |
 | 1.11 | End-User Security Notifications | L1 |
 
-### Section 2 — Network Security (3 controls)
+### Section 2 -- Network Security (3 controls)
 
 | # | Control | Level |
 |---|---------|-------|
@@ -156,7 +180,7 @@ okta/
 | 2.2 | Admin Console IP Restriction | L1 |
 | 2.3 | Anonymizer Blocking | L2 |
 
-### Section 3 — OAuth & Integration Security (4 controls)
+### Section 3 -- OAuth & Integration Security (4 controls)
 
 | # | Control | Level |
 |---|---------|-------|
@@ -165,7 +189,7 @@ okta/
 | 3.3 | OAuth App Allowlisting | L2 |
 | 3.4 | Non-Human Identity Governance | L1 |
 
-### Section 4 — Session Management (3 controls)
+### Section 4 -- Session Management (3 controls)
 
 | # | Control | Level |
 |---|---------|-------|
@@ -173,7 +197,7 @@ okta/
 | 4.2 | Disable Session Persistence | L2 |
 | 4.3 | Admin Session Security | L1 |
 
-### Section 5 — Monitoring & Detection (6 controls)
+### Section 5 -- Monitoring & Detection (6 controls)
 
 | # | Control | Level |
 |---|---------|-------|
@@ -184,14 +208,14 @@ okta/
 | 5.5 | Cross-Tenant Impersonation | L1 |
 | 5.6 | HealthInsight Reviews | L1 |
 
-### Section 6 — Integration Risk (2 controls)
+### Section 6 -- Integration Risk (2 controls)
 
 | # | Control | Level |
 |---|---------|-------|
 | 6.1 | Integration Risk Assessment | L1 |
 | 6.2 | Common Integrations Controls | L1 |
 
-### Section 7 — Operational Security (5 controls)
+### Section 7 -- Operational Security (5 controls)
 
 | # | Control | Level |
 |---|---------|-------|
@@ -203,23 +227,23 @@ okta/
 
 ## Terraform Coverage
 
-The Terraform module manages the following controls declaratively:
+Each control with Terraform support has its own `.tf` file:
 
-| Control | Resource Type | Description |
-|---------|--------------|-------------|
-| 1.1 | `okta_policy_mfa` | Phishing-resistant MFA enrollment policy |
-| 1.9 | `okta_policy_signon` | Default authentication policy hardening |
-| 1.10 | `okta_policy_password` | Self-service recovery restrictions |
-| 1.11 | `okta_template_email` | End-user security notification templates |
-| 2.1 | `okta_network_zone` | IP-based network zone definitions |
-| 2.3 | `okta_network_zone` | Anonymizer/proxy blocking zone |
-| 3.4 | `okta_app_oauth` | Non-human identity scope restrictions |
-| 4.1 | `okta_policy_signon` | Session timeout configuration |
-| 4.2 | `okta_policy_signon` | Session persistence disabled |
-| 5.2 | `okta_threat_insight_settings` | ThreatInsight action mode |
-| 5.4 | `okta_behavior` | Behavior detection rule definitions |
+| Control | File | Description |
+|---------|------|-------------|
+| 1.1 | `hth-okta-1.01-enforce-phishing-resistant-mfa.tf` | FIDO2 authenticator + signon policy |
+| 1.9 | `hth-okta-1.09-audit-default-auth-policy.tf` | Default policy + MFA catch-all |
+| 1.10 | `hth-okta-1.10-harden-self-service-recovery.tf` | Recovery restrictions + password policy |
+| 1.11 | `hth-okta-1.11-enable-security-notifications.tf` | Org config + notification provisioners |
+| 2.1 | `hth-okta-2.01-configure-network-zones.tf` | Corporate + blocklist IP zones |
+| 2.3 | `hth-okta-2.03-block-anonymizers.tf` | Anonymizer + country block zones |
+| 3.4 | `hth-okta-3.04-govern-non-human-identities.tf` | Service OAuth app + API scopes |
+| 4.1 | `hth-okta-4.01-configure-session-timeouts.tf` | Session timeout policy + rule |
+| 4.2 | `hth-okta-4.02-disable-session-persistence.tf` | Non-persistent session policy |
+| 5.2 | `hth-okta-5.02-configure-threatinsight.tf` | ThreatInsight block mode |
+| 5.4 | `hth-okta-5.04-behavior-detection.tf` | Location + device behaviour rules |
 
-Controls not covered by Terraform (2.2, 3.1, 3.2, 3.3, 4.3, 5.1, 5.3, 5.5, 5.6, 6.x, 7.x) require API scripts or manual configuration. Use the API scripts for full coverage.
+Controls not covered by Terraform require API scripts or manual configuration.
 
 ## Compliance Coverage
 
