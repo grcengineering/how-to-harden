@@ -5,6 +5,7 @@
 # Source: https://howtoharden.com/guides/okta/#19-audit-default-authentication-policy
 # =============================================================================
 
+# HTH Guide Excerpt: begin terraform
 # Reference the immutable Default Authentication Policy
 data "okta_policy" "default_access" {
   name = "Default Policy"
@@ -41,3 +42,4 @@ resource "okta_app_signon_policy_rule" "require_mfa" {
   network_connection          = "ANYWHERE"
   re_authentication_frequency = "PT2H"
 }
+# HTH Guide Excerpt: end terraform

@@ -22,6 +22,7 @@ if [ "${CURRENT_ACTION}" = "block" ]; then
   exit 0
 fi
 
+# HTH Guide Excerpt: begin api-create-threatinsight
 # Enable ThreatInsight with block action
 info "5.2 Setting ThreatInsight to block mode..."
 okta_post "/api/v1/threats/configuration" '{
@@ -32,7 +33,9 @@ okta_post "/api/v1/threats/configuration" '{
   summary
   exit 0
 } || true
+# HTH Guide Excerpt: end api-create-threatinsight
 
+# HTH Guide Excerpt: begin api-update-threatinsight
 # Try PUT instead (API may vary by Okta version)
 okta_put "/api/v1/threats/configuration" '{
   "action": "block"
@@ -44,5 +47,6 @@ okta_put "/api/v1/threats/configuration" '{
   warn "5.2 Configure manually: Security > General > ThreatInsight > Block"
   increment_skipped
 }
+# HTH Guide Excerpt: end api-update-threatinsight
 
 summary

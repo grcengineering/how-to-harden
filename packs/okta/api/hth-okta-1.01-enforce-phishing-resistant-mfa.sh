@@ -20,6 +20,7 @@ if [ -n "${EXISTING}" ]; then
   exit 0
 fi
 
+# HTH Guide Excerpt: begin api-create-policy
 # Create FIDO2 authenticator policy
 info "1.1 Creating phishing-resistant MFA policy..."
 POLICY_RESPONSE=$(okta_post "/api/v1/policies" '{
@@ -42,8 +43,10 @@ POLICY_RESPONSE=$(okta_post "/api/v1/policies" '{
 }
 
 POLICY_ID=$(echo "${POLICY_RESPONSE}" | jq -r '.id // empty' 2>/dev/null || true)
+# HTH Guide Excerpt: end api-create-policy
 
 if [ -n "${POLICY_ID}" ]; then
+  # HTH Guide Excerpt: begin api-create-rule
   # Create policy rule requiring WebAuthn
   info "1.1 Creating policy rule requiring FIDO2..."
   okta_post "/api/v1/policies/${POLICY_ID}/rules" '{
@@ -64,6 +67,7 @@ if [ -n "${POLICY_ID}" ]; then
       }
     }
   }' > /dev/null 2>&1 || warn "1.1 Policy rule creation returned non-zero (may already exist)"
+  # HTH Guide Excerpt: end api-create-rule
 
   pass "1.1 Phishing-resistant MFA policy created (ID: ${POLICY_ID})"
   increment_applied

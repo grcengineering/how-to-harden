@@ -5,6 +5,7 @@
 # Source: https://howtoharden.com/guides/okta/#42-disable-session-persistence
 # =============================================================================
 
+# HTH Guide Excerpt: begin terraform
 # Global signon policy that disables persistent sessions
 # Prevents session cookies from surviving browser restarts
 resource "okta_policy_signon" "disable_session_persistence" {
@@ -31,3 +32,4 @@ resource "okta_policy_rule_signon" "no_persistent_sessions" {
   session_idle       = 30
   session_persistent = false
 }
+# HTH Guide Excerpt: end terraform

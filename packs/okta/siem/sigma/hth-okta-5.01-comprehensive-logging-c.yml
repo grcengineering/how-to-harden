@@ -22,6 +22,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType: 'user.authentication.sso'
@@ -33,6 +34,7 @@ fields:
     - client.geographicalContext.country
     - client.geographicalContext.city
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Users connecting through VPNs in different geographic regions
     - Legitimate business travel with rapid transit between locations

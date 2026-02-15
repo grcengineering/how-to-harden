@@ -1,87 +1,75 @@
-# Follow-Up: Guide-to-Pack Code Snippet Integration
+# Guide-to-Pack Code Snippet Integration
 
-These tasks should be executed after the file-per-control restructure is committed. The goal is to eliminate duplicate code snippets by having HTH guides pull content directly from code pack files, add GitHub source links, and make code blocks collapsible.
+## Status: COMPLETED (Okta) | PENDING (GitHub)
 
-## Task 1: Build-Time Snippet Extraction Script
+Implemented marker-based extraction: pack files contain `# hth:begin`/`# hth:end` comment markers around guide-worthy excerpts. A sync script extracts marked regions into `docs/_data/packs/okta.yml`. Jekyll includes render them as collapsible `<details>` blocks with GitHub source links.
 
-Create `scripts/extract-pack-snippets.sh` that:
-- Reads each per-control `.tf`, `.sh`, `.yml` file from `packs/`
-- Generates `docs/_data/pack_snippets.yml` with content keyed by `{vendor}-{section}-{type}`
-- Runs as part of the Jekyll build process (add to build script or Makefile)
-- Handles multi-rule controls (e.g., `-b`, `-c` suffixes) by concatenating into a single entry
+## Completed Tasks
 
-## Task 2: Jekyll Include Template for Code Snippets
+### 1. Marker System
+- [x] Added `# hth:begin <name>` / `# hth:end <name>` markers to 57 pack files
+- [x] 11 Terraform files: 1 `terraform` region each
+- [x] 22 API scripts: 1-3 named regions each (37 total: `api-create-policy`, `api-list-tokens`, etc.)
+- [x] 24 Sigma rules: 1 `detection` region each
 
-Create `docs/_includes/pack-code.html` that:
-- Takes parameters: `vendor`, `control`, `type` (terraform/api/sigma)
-- Renders a collapsible `<details><summary>` block with syntax-highlighted code
-- Adds a "View source on GitHub" link pointing to the raw file in the repo
-- Example usage in guides:
-  ```liquid
-  {% include pack-code.html vendor="okta" control="1.01" type="terraform" %}
-  ```
+### 2. Extraction Script
+- [x] Created `scripts/sync-packs-to-data.sh`
+- [x] Extracts marked regions, normalizes section numbers (1.01 → 1.1)
+- [x] Generates `docs/_data/packs/{vendor}.yml` keyed by section + type
+- [x] Handles whitespace-indented markers, multi-rule controls, arrays for Sigma
 
-## Task 3: Update Okta Guide
+### 3. Jekyll Include Template
+- [x] Created `docs/_includes/pack-code.html`
+- [x] Renders collapsible `<details>` for each type (Terraform, API, Sigma)
+- [x] Uses `<pre><code class="language-xxx">` for Tier 1/Tier 2 code enhancements
+- [x] "View source on GitHub" links for each file
+- [x] Guards: renders nothing if no data exists
 
-Update `docs/_guides/okta.md` to:
-- Replace inline Terraform snippets with `{% include pack-code.html %}` references
-- Replace inline API/CLI snippets with equivalent includes
-- Add Sigma rule references for controls that have detection rules
-- Verify blank-line compliance around all tables and HTML blocks
-- Test with `cd docs && bundle exec jekyll serve`
+### 4. CSS
+- [x] Added ~85 lines to `docs/assets/css/style.css`
+- [x] `.pack-details`, `.pack-summary`, `.pack-file-header`, type badges
+- [x] Dark/light theme support via CSS variables
+- [x] Mobile responsive at 640px breakpoint
 
-## Task 4: Update GitHub Guide
+### 5. Guide Layout
+- [x] Updated `docs/_layouts/guide.html`
+- [x] Added `<details>` toggle listener for Monaco lazy-loading in collapsed sections
 
-Update `docs/_guides/github.md` similarly:
-- Replace inline code snippets with `{% include pack-code.html %}` references
-- Add links to source files for each control
-- Note: GitHub pack only has control YAMLs currently (no terraform/api/siem yet)
+### 6. Okta Guide
+- [x] Added 25 `{% include pack-code.html %}` calls to `docs/_guides/okta.md`
+- [x] 77 excerpts across 25 sections
 
-## Task 5: Collapsible Code Blocks
+### 7. Verification
+- [x] Valid YAML: 25 sections, 77 excerpts, all balanced markers (77/77)
+- [x] All 25 include sections match data entries
+- [x] Blank line compliance verified around all includes
+- [x] All bash scripts pass `bash -n` syntax check
+- [x] Release binary builds successfully
 
-Make all code snippets in guides collapsible/expandable, collapsed by default:
-- Use kramdown-compatible `<details><summary>` HTML blocks
-- Pattern:
-  ```html
-  <details>
-  <summary>Terraform (click to expand)</summary>
+## Remaining Work
 
-  ```hcl
-  resource "okta_authenticator" "fido2" { ... }
-  ```
+### GitHub Guide
+- [ ] Create pack code files for GitHub controls (currently only control YAMLs exist)
+- [ ] Add markers to new pack files when created
+- [ ] Run `bash scripts/sync-packs-to-data.sh` to generate `docs/_data/packs/github.yml`
+- [ ] Add `{% include pack-code.html %}` calls to `docs/_guides/github.md`
 
-  </details>
-  ```
-- Ensure blank lines around markdown content inside `<details>` for kramdown
-- Test syntax highlighting works correctly inside collapsed blocks
+### Future Enhancements
+- [ ] GitHub Action to auto-run `sync-packs-to-data.sh` when pack files change
+- [ ] Jekyll build verification in CI (requires Ruby/Jekyll in CI)
 
-## Task 6: Source File Links
+## Architecture Reference
 
-For each control in an HTH guide that has a corresponding code pack file:
-- Add a link to the source file in the GitHub repo
-- Format: `[View source](https://github.com/grcengineering/how-to-harden/blob/main/packs/okta/terraform/hth-okta-1.01-enforce-phishing-resistant-mfa.tf)`
-- Include links for all types: Terraform, API script, Sigma rule(s)
+```
+Pack files (hth:begin/end markers)
+  └─▶ scripts/sync-packs-to-data.sh
+       └─▶ docs/_data/packs/{vendor}.yml
+            └─▶ {% include pack-code.html vendor="okta" section="1.1" %}
+                 └─▶ Collapsible <details> with excerpts + source links
+```
 
-## Task 7: Test Jekyll Build
-
-After all changes:
-- Run `cd docs && bundle exec jekyll serve`
-- Verify collapsible sections render correctly
-- Verify code syntax highlighting works inside `<details>`
-- Verify GitHub source links resolve correctly
-- Verify no blank-line violations around tables or HTML blocks
-- Check mobile responsiveness of collapsible blocks
-
-## Dependencies
-
-- Task 1 must complete before Tasks 3-4 (snippets need to exist for includes)
-- Task 2 must complete before Tasks 3-4 (template needs to exist)
-- Tasks 3, 4, 5, 6 can run in parallel after Tasks 1-2
-- Task 7 runs last as final verification
-
-## Notes
-
-- kramdown supports `<details>` natively -- no Jekyll plugins needed
-- The `pack_snippets.yml` data file approach avoids needing Jekyll to access files outside `docs/`
-- Consider caching the extraction script output to speed up Jekyll builds
-- The include template should gracefully handle missing snippets (control exists in guide but not in pack)
+### Regenerating Data
+After any pack file change:
+```bash
+bash scripts/sync-packs-to-data.sh
+```

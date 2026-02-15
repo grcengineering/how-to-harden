@@ -5,6 +5,7 @@
 # Source: https://howtoharden.com/guides/okta/#111-enable-end-user-security-notifications
 # =============================================================================
 
+# HTH Guide Excerpt: begin terraform
 # Org-level configuration for end-user support
 resource "okta_org_configuration" "notifications" {
   end_user_support_help_url = var.support_url
@@ -53,3 +54,4 @@ resource "null_resource" "enable_end_user_notifications" {
     always_run = timestamp()
   }
 }
+# HTH Guide Excerpt: end terraform

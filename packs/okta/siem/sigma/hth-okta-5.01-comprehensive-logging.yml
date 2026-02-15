@@ -19,6 +19,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType|startswith: 'system.role'
@@ -30,6 +31,7 @@ fields:
     - eventType
     - client.ipAddress
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Legitimate role assignments by IT administrators during onboarding or offboarding
     - Scheduled role rotations as part of access review cycles

@@ -36,6 +36,7 @@ if [ "${ZONE_STATUS}" = "ACTIVE" ] && [ "${ZONE_USAGE}" = "BLOCKLIST" ]; then
   exit 0
 fi
 
+# HTH Guide Excerpt: begin api-update-dynamic-zone
 # Activate the zone as a blocklist
 info "2.3 Activating DefaultEnhancedDynamicZone as blocklist..."
 okta_put "/api/v1/zones/${ZONE_ID}" '{
@@ -51,5 +52,6 @@ okta_put "/api/v1/zones/${ZONE_ID}" '{
   fail "2.3 Failed to activate Enhanced Dynamic Zone"
   increment_failed
 }
+# HTH Guide Excerpt: end api-update-dynamic-zone
 
 summary

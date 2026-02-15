@@ -513,6 +513,17 @@ document.addEventListener('DOMContentLoaded', function() {
     wrappedBlocks.forEach(function(info) {
       observer.observe(info.wrapper);
     });
+
+    // Re-observe code blocks inside pack <details> when expanded
+    document.querySelectorAll('.pack-details').forEach(function(details) {
+      details.addEventListener('toggle', function() {
+        if (details.open) {
+          details.querySelectorAll('.monaco-code-wrapper').forEach(function(wrapper) {
+            observer.observe(wrapper);
+          });
+        }
+      });
+    });
   });
 })();
 </script>

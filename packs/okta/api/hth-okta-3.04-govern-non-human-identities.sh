@@ -9,10 +9,12 @@ banner "3.4: Govern Non-Human Identities (NHI)"
 should_apply 1 || { increment_skipped; summary; exit 0; }
 info "3.4 Auditing non-human identities (API tokens and service apps)..."
 
+# HTH Guide Excerpt: begin api-list-tokens
 # List all active API tokens
 info "3.4 Listing all active API tokens..."
 API_TOKENS=$(okta_get "/api/v1/api-tokens" 2>/dev/null || echo "[]")
 TOKEN_COUNT=$(echo "${API_TOKENS}" | jq 'length' 2>/dev/null || echo "0")
+# HTH Guide Excerpt: end api-list-tokens
 
 info "3.4 Found ${TOKEN_COUNT} API token(s)"
 echo "${API_TOKENS}" | jq -r '.[] | "  - \(.name) (created: \(.created), user: \(.userId), network: \(.network.connection // "unrestricted"))"' 2>/dev/null || true
@@ -38,11 +40,13 @@ if [ -n "${NINETY_DAYS_AGO}" ]; then
   fi
 fi
 
+# HTH Guide Excerpt: begin api-list-service-apps
 # List service applications (OAuth client_credentials)
 info "3.4 Listing OAuth service applications..."
 SERVICE_APPS=$(okta_get "/api/v1/apps?filter=status%20eq%20%22ACTIVE%22&limit=200" 2>/dev/null \
   | jq '[.[] | select(.settings.oauthClient.grant_types? // [] | index("client_credentials"))]' 2>/dev/null || echo "[]")
 SVC_COUNT=$(echo "${SERVICE_APPS}" | jq 'length' 2>/dev/null || echo "0")
+# HTH Guide Excerpt: end api-list-service-apps
 
 info "3.4 Found ${SVC_COUNT} OAuth service application(s)"
 if [ "${SVC_COUNT}" -gt 0 ]; then

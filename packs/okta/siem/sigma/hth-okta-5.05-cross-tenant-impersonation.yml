@@ -20,6 +20,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType:
@@ -33,6 +34,7 @@ fields:
     - target.type
     - client.ipAddress
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Planned IdP integrations during federated SSO setup
     - IdP migration projects with pre-approved change requests

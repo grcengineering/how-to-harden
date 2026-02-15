@@ -22,6 +22,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType: 'user.session.start'
@@ -34,6 +35,7 @@ fields:
     - outcome.result
     - outcome.reason
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Users repeatedly mistyping passwords
     - Automated health checks with expired credentials

@@ -202,6 +202,8 @@ resource "okta_policy_rule_signon" "require_fido2" {
 }
 ```
 
+{% include pack-code.html vendor="okta" section="1.1" %}
+
 #### Validation & Testing
 1. [ ] Attempt admin login with only password - should be blocked
 2. [ ] Attempt admin login with TOTP - should be blocked (if FIDO2 required)
@@ -311,6 +313,8 @@ curl -X POST "https://${OKTA_DOMAIN}/api/v1/iam/roles" \
     ]
   }'
 ```
+
+{% include pack-code.html vendor="okta" section="1.2" %}
 
 ---
 
@@ -446,6 +450,8 @@ curl -X PUT "https://${OKTA_DOMAIN}/api/v1/policies/${POLICY_ID}" \
   }'
 ```
 
+{% include pack-code.html vendor="okta" section="1.4" %}
+
 #### Validation
 1. Navigate to: **Security → Authenticators → Password → Edit**
 2. For each policy, verify all settings match the requirements table above
@@ -487,6 +493,8 @@ For each listed Password Policy:
 3. Check **Lock out after X unsuccessful attempts**
 4. Set the value to **3** (L2/L3) or **5** (L1)
 5. Click **Save**
+
+{% include pack-code.html vendor="okta" section="1.5" %}
 
 #### Validation
 1. Navigate to: **Security → Authenticators → Password → Edit**
@@ -808,6 +816,8 @@ resource "okta_app_signon_policy_rule" "app_assignment" {
 }
 ```
 
+{% include pack-code.html vendor="okta" section="1.9" %}
+
 #### Validation & Testing
 1. [ ] Run API query to list all apps assigned to the Default Policy -- result should be **zero applications**
 2. [ ] Attempt login to a test application with password only -- should be denied by catch-all rule
@@ -1054,6 +1064,8 @@ resource "okta_policy_password" "hardened_recovery" {
 }
 ```
 
+{% include pack-code.html vendor="okta" section="1.10" %}
+
 #### Validation & Testing
 1. [ ] Navigate to **Security → Authenticators** and verify Security Question shows **Inactive**
 2. [ ] Navigate to **Security → Authenticators → Password → Edit** and verify SMS, Voice, and Security Question are disabled for recovery
@@ -1269,6 +1281,8 @@ resource "null_resource" "enable_end_user_notifications" {
 }
 ```
 
+{% include pack-code.html vendor="okta" section="1.11" %}
+
 #### Validation & Testing
 1. [ ] Navigate to **Settings → Account → End-User Notifications** and verify all five notification types are **Enabled**
 2. [ ] Navigate to **Security → General → Suspicious Activity Reporting** and verify it is **Enabled**
@@ -1408,6 +1422,8 @@ curl -X POST "https://${OKTA_DOMAIN}/api/v1/zones" \
   }'
 ```
 
+{% include pack-code.html vendor="okta" section="2.1" %}
+
 ---
 
 ### 2.2 Restrict Admin Console Access by IP
@@ -1533,6 +1549,8 @@ resource "okta_network_zone" "block_countries" {
 }
 ```
 
+{% include pack-code.html vendor="okta" section="2.3" %}
+
 #### Validation & Testing
 1. [ ] Navigate to **Security → Networks** and verify DefaultEnhancedDynamicZone shows **Active** status
 2. [ ] Verify zone usage is set to **Blocklist**
@@ -1609,6 +1627,8 @@ curl -X GET "https://${OKTA_DOMAIN}/api/v1/authorizationServers/default/clients"
   -H "Authorization: SSWS ${OKTA_API_TOKEN}"
 ```
 
+{% include pack-code.html vendor="okta" section="3.1" %}
+
 ---
 
 ### 3.2 Harden SCIM Provisioning Connectors
@@ -1653,6 +1673,8 @@ Secure SCIM (System for Cross-domain Identity Management) connectors that provis
 ```plaintext
 eventType eq "system.scim.user.create" OR eventType eq "system.scim.user.update"
 ```
+
+{% include pack-code.html vendor="okta" section="3.2" %}
 
 ---
 
@@ -1725,6 +1747,8 @@ curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/authorizationServers/default/clien
   -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
   | jq '.[] | {client_id: .client_id, client_name: .client_name}'
 ```
+
+{% include pack-code.html vendor="okta" section="3.3" %}
 
 #### Validation & Testing
 1. [ ] Verify admin approval is required for new app integrations
@@ -1892,6 +1916,8 @@ resource "okta_app_oauth_api_scope" "users_read" {
 }
 ```
 
+{% include pack-code.html vendor="okta" section="3.4" %}
+
 #### SSWS to OAuth 2.0 Migration Checklist
 - [ ] Inventory all active SSWS tokens and their consumers
 - [ ] Create OAuth 2.0 service app for each integration
@@ -1972,6 +1998,8 @@ For sensitive apps (PAM, admin consoles, financial systems):
    - **Session lifetime:** 2 hours max
    - **Re-authentication:** Required on every access
 
+{% include pack-code.html vendor="okta" section="4.1" %}
+
 ---
 
 ### 4.2 Disable Session Persistence
@@ -1997,6 +2025,8 @@ Disable "Remember Me" and persistent session features that increase session hija
    - **Stay signed in for:** Set to minimum
 5. Navigate to: **Customizations → Other**
 6. Disable: **Allow users to remain signed in**
+
+{% include pack-code.html vendor="okta" section="4.2" %}
 
 ---
 
@@ -2080,6 +2110,8 @@ curl -X PUT "https://${OKTA_DOMAIN}/api/v1/org/settings" \
   }'
 ```
 
+{% include pack-code.html vendor="okta" section="4.3" %}
+
 #### Validation & Testing
 1. [ ] Verify ASN binding is active: Navigate to **Security → General → Admin Session Settings**
 2. [ ] Verify IP binding is active (if applicable)
@@ -2157,6 +2189,8 @@ WHERE eventType LIKE 'system.role%'
   OR eventType LIKE 'group.user_membership%admin%'
 ```
 
+{% include pack-code.html vendor="okta" section="5.1" %}
+
 ---
 
 ### 5.2 Configure ThreatInsight
@@ -2173,6 +2207,8 @@ Enable Okta ThreatInsight to automatically block authentication from known-malic
    - **Action:** Block
    - **Exempt IPs:** Add known testing IPs if needed
 3. Save
+
+{% include pack-code.html vendor="okta" section="5.2" %}
 
 ---
 
@@ -2251,6 +2287,8 @@ WHERE eventType = 'security.threat.detected'
 ORDER BY published DESC
 ```
 
+{% include pack-code.html vendor="okta" section="5.3" %}
+
 ---
 
 ### 5.4 Configure Behavior Detection Rules
@@ -2324,6 +2362,8 @@ curl -X POST "https://${OKTA_DOMAIN}/api/v1/behaviors" \
     }
   }'
 ```
+
+{% include pack-code.html vendor="okta" section="5.4" %}
 
 #### Validation & Testing
 1. [ ] Verify all behavior detection rules are active: **Security → Behavior Detection**
@@ -2418,6 +2458,8 @@ curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/logs?filter=eventType+sw+%22system
   -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
   | jq '.[] | {eventType: .eventType, actor: .actor.displayName, target: .target[0].displayName, published: .published}'
 ```
+
+{% include pack-code.html vendor="okta" section="5.5" %}
 
 #### Validation & Testing
 1. [ ] Verify IdP management is restricted to minimum necessary administrators
@@ -2533,6 +2575,8 @@ Run Okta HealthInsight regularly to assess your tenant's security posture agains
 | **Admin API** | No API access | Limited endpoints | Full API access |
 | **Data Access** | User profile only | Group membership | Authentication data |
 
+{% include pack-code.html vendor="okta" section="6.1" %}
+
 ### 6.2 Common Integrations and Recommended Controls
 
 #### Salesforce
@@ -2555,6 +2599,8 @@ Run Okta HealthInsight regularly to assess your tenant's security posture agains
 - ✅ SAML SSO with MFA
 - ✅ Disable username/password fallback
 - ✅ Sync team membership carefully
+
+{% include pack-code.html vendor="okta" section="6.2" %}
 
 ---
 
@@ -2751,6 +2797,8 @@ curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/iam/assignees/users?roleType=SUPER
   | jq 'length'
 ```
 
+{% include pack-code.html vendor="okta" section="7.3" %}
+
 #### Quarterly Access Review Checklist
 - [ ] All admin accounts verified against current employee list
 - [ ] Super Admin count is < 5
@@ -2824,6 +2872,8 @@ Key events to track:
 - No single admin can both propose and approve critical changes
 - Require two-person integrity for authentication policy modifications
 - Use Okta Workflows to enforce approval gates for critical changes
+
+{% include pack-code.html vendor="okta" section="7.4" %}
 
 #### Validation & Testing
 1. [ ] Change management process documented

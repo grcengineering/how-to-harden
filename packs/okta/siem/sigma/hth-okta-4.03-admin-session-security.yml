@@ -19,6 +19,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType: 'user.session.invalidate'
@@ -32,6 +33,7 @@ fields:
     - debugContext.debugData.reason
     - outcome.result
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Admin switching between VPN and direct connections during same session
 level: high

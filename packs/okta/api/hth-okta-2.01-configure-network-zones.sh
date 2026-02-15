@@ -16,6 +16,7 @@ EXISTING_CORP=$(okta_get "/api/v1/zones" \
 if [ -n "${EXISTING_CORP}" ]; then
   pass "2.1 Corporate Network zone already exists (ID: ${EXISTING_CORP})"
 else
+  # HTH Guide Excerpt: begin api-create-corporate-zone
   # Create Corporate Network zone
   # NOTE: Replace gateway CIDRs with your actual corporate IP ranges
   info "2.1 Creating Corporate Network zone..."
@@ -34,6 +35,7 @@ else
   } || {
     fail "2.1 Failed to create Corporate Network zone"
   }
+  # HTH Guide Excerpt: end api-create-corporate-zone
 fi
 
 # Create TOR/Anonymizer block zone (idempotent)
@@ -43,6 +45,7 @@ EXISTING_BLOCK=$(okta_get "/api/v1/zones" \
 if [ -n "${EXISTING_BLOCK}" ]; then
   pass "2.1 TOR/Anonymizer block zone already exists (ID: ${EXISTING_BLOCK})"
 else
+  # HTH Guide Excerpt: begin api-create-anonymizer-zone
   info "2.1 Creating TOR/Anonymizer block zone..."
   okta_post "/api/v1/zones" '{
     "type": "DYNAMIC_V2",
@@ -55,6 +58,7 @@ else
   } || {
     warn "2.1 Failed to create TOR block zone (may require Adaptive MFA license)"
   }
+  # HTH Guide Excerpt: end api-create-anonymizer-zone
 fi
 
 increment_applied

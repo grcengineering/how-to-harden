@@ -9,6 +9,7 @@ banner "4.2: Disable Session Persistence"
 should_apply 2 || { increment_skipped; summary; exit 0; }
 info "4.2 Checking session persistence settings..."
 
+# HTH Guide Excerpt: begin api-check-session-persistence
 POLICIES=$(okta_get "/api/v1/policies?type=OKTA_SIGN_ON") || {
   fail "4.2 Failed to retrieve global session policies"
   increment_failed
@@ -28,6 +29,7 @@ for POLICY_ID in $(echo "${POLICIES}" | jq -r '.[].id' 2>/dev/null); do
     warn "4.2 Found ${PERSISTENT} rule(s) with persistent sessions in policy '${POLICY_NAME}' (${POLICY_ID})"
   fi
 done
+# HTH Guide Excerpt: end api-check-session-persistence
 
 if [ "${persistent_found}" = false ]; then
   pass "4.2 No persistent sessions detected"

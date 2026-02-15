@@ -9,10 +9,12 @@ banner "5.1: Enable Comprehensive System Logging"
 should_apply 1 || { increment_skipped; summary; exit 0; }
 info "5.1 Verifying system logging configuration..."
 
+# HTH Guide Excerpt: begin api-check-system-log
 # Verify System Log API is accessible and returning events
 info "5.1 Testing System Log API access..."
 LOG_RESPONSE=$(okta_get "/api/v1/logs?limit=1" 2>/dev/null || echo "[]")
 LOG_COUNT=$(echo "${LOG_RESPONSE}" | jq 'length' 2>/dev/null || echo "0")
+# HTH Guide Excerpt: end api-check-system-log
 
 if [ "${LOG_COUNT}" -gt 0 ]; then
   LATEST_EVENT=$(echo "${LOG_RESPONSE}" | jq -r '.[0] | "\(.eventType) at \(.published)"' 2>/dev/null || echo "unknown")
@@ -21,10 +23,12 @@ else
   warn "5.1 System Log API returned no events -- verify API token has log read permissions"
 fi
 
+# HTH Guide Excerpt: begin api-check-log-streams
 # Check for log streaming integrations
 info "5.1 Checking log streaming configuration..."
 LOG_STREAMS=$(okta_get "/api/v1/logStreams" 2>/dev/null || echo "[]")
 STREAM_COUNT=$(echo "${LOG_STREAMS}" | jq 'length' 2>/dev/null || echo "0")
+# HTH Guide Excerpt: end api-check-log-streams
 
 if [ "${STREAM_COUNT}" -gt 0 ]; then
   pass "5.1 Found ${STREAM_COUNT} log stream(s) configured"

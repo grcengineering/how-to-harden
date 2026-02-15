@@ -5,6 +5,7 @@
 # Source: https://howtoharden.com/guides/okta/#41-configure-session-timeouts
 # =============================================================================
 
+# HTH Guide Excerpt: begin terraform
 # Global session policy with hardened timeout values
 resource "okta_policy_signon" "session_timeouts" {
   name        = "Hardened Session Timeouts"
@@ -25,3 +26,4 @@ resource "okta_policy_rule_signon" "session_timeout_rule" {
   session_idle       = var.session_max_idle_minutes
   session_persistent = false
 }
+# HTH Guide Excerpt: end terraform

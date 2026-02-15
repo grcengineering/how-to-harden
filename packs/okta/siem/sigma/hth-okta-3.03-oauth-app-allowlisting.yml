@@ -17,6 +17,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType:
@@ -30,6 +31,7 @@ fields:
     - debugContext.debugData.requestedScopes
     - client.ipAddress
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Legitimate OAuth consent grants for approved business applications
 level: medium

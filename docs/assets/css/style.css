@@ -1387,7 +1387,144 @@ body {
   .hero h1 {
     font-size: 1.75rem;
   }
+}
 
+/* ==========================================================================
+   Pack Code Sections — collapsible <details> for code pack excerpts
+   ========================================================================== */
+
+.pack-code-section {
+  margin: var(--space-md) 0;
+}
+
+.pack-details {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-bg-secondary);
+}
+
+.pack-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-tertiary);
+  border-bottom: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+  list-style: none;
+}
+
+.pack-summary::-webkit-details-marker {
+  display: none;
+}
+
+.pack-summary::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.pack-details[open] > .pack-summary::before {
+  transform: rotate(90deg);
+}
+
+.pack-summary:hover {
+  background: var(--color-bg-elevated);
+}
+
+.pack-details[open] > .pack-summary {
+  border-bottom-color: var(--color-border);
+}
+
+.pack-summary-text {
+  flex-grow: 1;
+}
+
+.pack-details-content {
+  padding: var(--space-md);
+}
+
+.pack-file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.pack-file-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.pack-type-terraform {
+  background: rgba(124, 58, 237, 0.15);
+  color: #a78bfa;
+}
+
+.pack-type-api {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.pack-type-sigma {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.pack-source-link {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.pack-source-link:hover {
+  color: var(--color-link);
+}
+
+.pack-rule-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-md) 0;
+}
+
+.pack-details-content pre {
+  margin-top: 0;
+}
+
+/* Light theme overrides for pack code type badges */
+[data-theme="light"] .pack-type-terraform {
+  color: #7c3aed;
+}
+
+[data-theme="light"] .pack-type-api {
+  color: #16a34a;
+}
+
+[data-theme="light"] .pack-type-sigma {
+  color: #d97706;
+}
+
+@media (max-width: 640px) {
   .hero .tagline {
     font-size: 0.9375rem;
     padding: 0 var(--space-sm);
@@ -1622,5 +1759,23 @@ body {
 
   .about-page h2 {
     font-size: 1.25rem;
+  }
+}
+
+/* Pack code mobile adjustments */
+@media (max-width: 640px) {
+  .pack-summary {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 0.8125rem;
+  }
+
+  .pack-details-content {
+    padding: var(--space-sm);
+  }
+
+  .pack-file-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
   }
 }

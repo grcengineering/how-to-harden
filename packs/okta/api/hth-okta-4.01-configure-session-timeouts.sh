@@ -28,6 +28,7 @@ fi
 
 info "4.1 Target settings for L${HTH_PROFILE_LEVEL}: max session=${MAX_SESSION}, max idle=${MAX_IDLE}, admin idle=${ADMIN_IDLE}"
 
+# HTH Guide Excerpt: begin api-check-session-policies
 # Get global session policies and report current settings
 POLICIES=$(okta_get "/api/v1/policies?type=OKTA_SIGN_ON") || {
   fail "4.1 Failed to retrieve global session policies"
@@ -56,6 +57,7 @@ for POLICY_ID in $(echo "${POLICIES}" | jq -r '.[].id' 2>/dev/null); do
     echo "${RULES}" | jq -r '.[] | "  - Rule: \(.name), MaxLifetime: \(.actions.signon.session.maxSessionLifetimeMinutes // "default")min, MaxIdle: \(.actions.signon.session.maxSessionIdleMinutes // "default")min, Persistent: \(.actions.signon.session.usePersistentCookie // "default")"' 2>/dev/null || true
   fi
 done
+# HTH Guide Excerpt: end api-check-session-policies
 
 pass "4.1 Session policies reviewed (${POLICY_COUNT} policy/policies) -- verify settings match L${HTH_PROFILE_LEVEL} targets above"
 warn "4.1 NOTE: Global session policies are best configured via ClickOps or Terraform for full control"

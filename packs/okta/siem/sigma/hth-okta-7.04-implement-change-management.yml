@@ -19,6 +19,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType: 'system.role.create'
@@ -30,6 +31,7 @@ fields:
     - target.displayName
     - client.ipAddress
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Planned custom role creation as part of RBAC implementation projects
 level: high

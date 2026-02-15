@@ -5,6 +5,7 @@
 # Source: https://howtoharden.com/guides/okta/#110-harden-self-service-recovery
 # =============================================================================
 
+# HTH Guide Excerpt: begin terraform
 # Deactivate security question authenticator
 resource "okta_authenticator" "security_question" {
   name   = "Security Question"
@@ -44,3 +45,4 @@ resource "okta_policy_password" "hardened_recovery" {
 
   groups_included = [var.everyone_group_id]
 }
+# HTH Guide Excerpt: end terraform

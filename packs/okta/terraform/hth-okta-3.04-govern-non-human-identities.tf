@@ -5,6 +5,7 @@
 # Source: https://howtoharden.com/guides/okta/#34-govern-non-human-identities
 # =============================================================================
 
+# HTH Guide Excerpt: begin terraform
 # OAuth 2.0 service app using client_credentials with private_key_jwt
 resource "okta_app_oauth" "service_automation" {
   label                      = "SVC - Automation API Access"
@@ -27,3 +28,4 @@ resource "okta_app_oauth_api_scope" "users_read" {
   issuer = "https://${var.okta_domain}"
   scopes = ["okta.users.read"]
 }
+# HTH Guide Excerpt: end terraform

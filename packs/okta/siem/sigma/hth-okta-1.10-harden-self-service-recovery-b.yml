@@ -18,6 +18,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType: 'user.account.reset_password'
@@ -31,6 +32,7 @@ fields:
     - client.ipAddress
     - outcome.result
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Recovery attempts during migration period before weak factors are fully disabled
 level: high

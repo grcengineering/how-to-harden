@@ -5,6 +5,7 @@
 # Source: https://howtoharden.com/guides/okta/#54-configure-behavior-detection-rules
 # =============================================================================
 
+# HTH Guide Excerpt: begin terraform
 # Behavior detection rule for new location sign-on
 resource "okta_behaviour" "new_location" {
   count = var.profile_level >= 2 ? 1 : 0
@@ -25,3 +26,4 @@ resource "okta_behaviour" "new_device" {
   status                    = "ACTIVE"
   number_of_authentications  = 3
 }
+# HTH Guide Excerpt: end terraform

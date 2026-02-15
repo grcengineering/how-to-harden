@@ -20,6 +20,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection_event:
         eventType:
@@ -37,6 +38,7 @@ fields:
     - debugContext.debugData.riskLevel
     - debugContext.debugData.riskReasons
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Okta ITP false positives during initial tuning period
     - Legitimate user behavior that triggers anomaly detection before baseline stabilizes

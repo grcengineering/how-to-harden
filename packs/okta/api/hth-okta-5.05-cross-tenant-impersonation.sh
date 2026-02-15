@@ -9,10 +9,12 @@ banner "5.5: Monitor for Cross-Tenant Impersonation"
 should_apply 1 || { increment_skipped; summary; exit 0; }
 info "5.5 Auditing identity providers for cross-tenant impersonation risk..."
 
+# HTH Guide Excerpt: begin api-list-identity-providers
 # Audit all configured identity providers
 info "5.5 Listing all configured identity providers..."
 IDPS=$(okta_get "/api/v1/idps" 2>/dev/null || echo "[]")
 IDP_COUNT=$(echo "${IDPS}" | jq 'length' 2>/dev/null || echo "0")
+# HTH Guide Excerpt: end api-list-identity-providers
 
 if [ "${IDP_COUNT}" -eq 0 ]; then
   pass "5.5 No external identity providers configured"
@@ -24,6 +26,7 @@ fi
 info "5.5 Found ${IDP_COUNT} identity provider(s):"
 echo "${IDPS}" | jq -r '.[] | "  - \(.name) (type: \(.type), status: \(.status), created: \(.created), protocol: \(.protocol.type))"' 2>/dev/null || true
 
+# HTH Guide Excerpt: begin api-check-idp-discovery
 # Audit IDP discovery (routing) policies
 info "5.5 Auditing IDP discovery (routing) policies..."
 IDP_POLICIES=$(okta_get "/api/v1/policies?type=IDP_DISCOVERY" 2>/dev/null || echo "[]")
@@ -40,7 +43,9 @@ if [ "${IDP_POLICY_COUNT}" -gt 0 ]; then
       | jq -r '.[] | "    - Rule: \(.name)"' 2>/dev/null || true
   done
 fi
+# HTH Guide Excerpt: end api-check-idp-discovery
 
+# HTH Guide Excerpt: begin api-check-idp-events
 # Search system log for recent IdP lifecycle events (last 7 days)
 info "5.5 Checking for recent IdP lifecycle events (last 7 days)..."
 SINCE=$(date -d '7 days ago' -u +%Y-%m-%dT%H:%M:%S.000Z 2>/dev/null \
@@ -59,6 +64,7 @@ if [ -n "${SINCE}" ]; then
 else
   warn "5.5 Unable to compute date range -- skipping log check"
 fi
+# HTH Guide Excerpt: end api-check-idp-events
 
 warn "5.5 IMPORTANT: Configure SIEM alerts for system.idp.lifecycle.* events"
 pass "5.5 Cross-tenant impersonation audit complete"

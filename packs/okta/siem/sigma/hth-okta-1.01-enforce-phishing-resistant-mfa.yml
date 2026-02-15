@@ -17,6 +17,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType: 'user.authentication.auth_via_mfa'
@@ -29,6 +30,7 @@ fields:
     - debugContext.debugData.factor
     - outcome.result
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Legitimate FIDO2 authentications during normal business hours
 level: medium

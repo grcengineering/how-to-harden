@@ -12,10 +12,12 @@ info "6.2 Auditing OAuth/OIDC integration security..."
 # -----------------------------------------------------------------------
 # 6.2a: List all OAuth/OIDC applications
 # -----------------------------------------------------------------------
+# HTH Guide Excerpt: begin api-list-oauth-apps
 info "6.2 Fetching active OAuth/OIDC applications..."
 ACTIVE_APPS=$(okta_get "/api/v1/apps?filter=status%20eq%20%22ACTIVE%22&limit=200" 2>/dev/null || echo "[]")
 OAUTH_APPS=$(echo "${ACTIVE_APPS}" | jq '[.[] | select(.signOnMode == "OPENID_CONNECT" or .signOnMode == "OAUTH_2_0")]' 2>/dev/null || echo "[]")
 OAUTH_COUNT=$(echo "${OAUTH_APPS}" | jq 'length' 2>/dev/null || echo "0")
+# HTH Guide Excerpt: end api-list-oauth-apps
 
 if [ "${OAUTH_COUNT}" -eq 0 ]; then
   info "6.2 No OAuth/OIDC applications found"
@@ -68,6 +70,7 @@ fi
 for APP_ID in ${APP_IDS}; do
   APP_LABEL=$(echo "${OAUTH_APPS}" | jq -r ".[] | select(.id == \"${APP_ID}\") | .label // .name" 2>/dev/null || echo "unknown")
 
+  # HTH Guide Excerpt: begin api-check-app-grants
   # Fetch grants for this application
   GRANTS=$(okta_get "/api/v1/apps/${APP_ID}/grants" 2>/dev/null || echo "[]")
   GRANT_COUNT=$(echo "${GRANTS}" | jq 'length' 2>/dev/null || echo "0")
@@ -79,6 +82,7 @@ for APP_ID in ${APP_IDS}; do
 
   # Extract all granted scope IDs
   SCOPE_LIST=$(echo "${GRANTS}" | jq -r '.[].scopeId // empty' 2>/dev/null || true)
+  # HTH Guide Excerpt: end api-check-app-grants
 
   info "6.2   ${APP_LABEL} (${GRANT_COUNT} grant(s)):"
   echo "${GRANTS}" | jq -r \
@@ -113,6 +117,7 @@ done
 echo ""
 info "6.2 Auditing OAuth clients on authorization servers..."
 
+# HTH Guide Excerpt: begin api-list-auth-server-clients
 # Check default authorization server
 AUTH_CLIENTS=$(okta_get "/api/v1/authorizationServers/default/clients" 2>/dev/null || echo "[]")
 DEFAULT_CLIENT_COUNT=$(echo "${AUTH_CLIENTS}" | jq 'length' 2>/dev/null || echo "0")
@@ -125,7 +130,9 @@ if [ "${DEFAULT_CLIENT_COUNT}" -gt 0 ]; then
 else
   info "6.2 No clients registered on default authorization server"
 fi
+# HTH Guide Excerpt: end api-list-auth-server-clients
 
+# HTH Guide Excerpt: begin api-list-auth-servers
 # List all custom authorization servers
 AUTH_SERVERS=$(okta_get "/api/v1/authorizationServers" 2>/dev/null || echo "[]")
 CUSTOM_SERVERS=$(echo "${AUTH_SERVERS}" | jq '[.[] | select(.name != "default")]' 2>/dev/null || echo "[]")
@@ -137,6 +144,7 @@ if [ "${CUSTOM_COUNT}" -gt 0 ]; then
     '.[] | "  - \(.name) (ID: \(.id), audiences: \(.audiences // [] | join(", ")))"' \
     2>/dev/null || true
 fi
+# HTH Guide Excerpt: end api-list-auth-servers
 
 # -----------------------------------------------------------------------
 # 6.2e: Summary and recommendations

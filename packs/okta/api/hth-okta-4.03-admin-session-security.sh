@@ -35,6 +35,7 @@ if [ "${ASN_BINDING}" = "ENABLED" ] && { [ "${HTH_PROFILE_LEVEL}" -lt 2 ] || [ "
   exit 0
 fi
 
+# HTH Guide Excerpt: begin api-update-admin-sessions
 info "4.3 Updating admin session binding settings..."
 okta_put "/api/v1/org/settings" "{
   \"adminSessionASNBinding\": \"${asn_target}\",
@@ -46,6 +47,7 @@ okta_put "/api/v1/org/settings" "{
   fail "4.3 Failed to update admin session settings"
   increment_failed
 }
+# HTH Guide Excerpt: end api-update-admin-sessions
 
 info "4.3 Additionally, enable Protected Actions via: Security > General > Protected Actions"
 

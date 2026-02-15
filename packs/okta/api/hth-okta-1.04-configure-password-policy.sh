@@ -46,6 +46,7 @@ for POLICY_ID in ${POLICY_IDS}; do
   POLICY_NAME=$(echo "${POLICIES}" | jq -r ".[] | select(.id == \"${POLICY_ID}\") | .name" 2>/dev/null || echo "unknown")
   info "1.4 Updating password policy '${POLICY_NAME}' (${POLICY_ID})..."
 
+  # HTH Guide Excerpt: begin api-update-password-policy
   okta_put "/api/v1/policies/${POLICY_ID}" "{
     \"settings\": {
       \"password\": {
@@ -66,6 +67,7 @@ for POLICY_ID in ${POLICY_IDS}; do
   }" > /dev/null 2>&1 && {
     updated=$((updated + 1))
   } || warn "1.4 Failed to update policy '${POLICY_NAME}'"
+  # HTH Guide Excerpt: end api-update-password-policy
 done
 
 if [ "${updated}" -gt 0 ]; then

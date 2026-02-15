@@ -9,6 +9,7 @@ banner "3.1: Implement OAuth App Consent Policies"
 should_apply 1 || { increment_skipped; summary; exit 0; }
 info "3.1 Auditing OAuth app consent and active applications..."
 
+# HTH Guide Excerpt: begin api-list-active-apps
 # List all active applications with OAuth/OIDC sign-on
 info "3.1 Listing active applications..."
 ACTIVE_APPS=$(okta_get "/api/v1/apps?filter=status%20eq%20%22ACTIVE%22&limit=200") || {
@@ -24,7 +25,9 @@ OAUTH_COUNT=$(echo "${OAUTH_APPS}" | jq 'length' 2>/dev/null || echo "0")
 
 info "3.1 Total active apps: ${TOTAL_COUNT}, OAuth/OIDC apps: ${OAUTH_COUNT}"
 echo "${OAUTH_APPS}" | jq -r '.[] | "  - \(.label // .name) (mode: \(.signOnMode), created: \(.created))"' 2>/dev/null || true
+# HTH Guide Excerpt: end api-list-active-apps
 
+# HTH Guide Excerpt: begin api-list-auth-server-clients
 # Audit OAuth token clients on default authorization server
 info "3.1 Auditing OAuth clients on default authorization server..."
 AUTH_CLIENTS=$(okta_get "/api/v1/authorizationServers/default/clients" 2>/dev/null || echo "[]")
@@ -36,6 +39,7 @@ if [ "${CLIENT_COUNT}" -gt 0 ]; then
 else
   info "3.1 No OAuth clients on default authorization server"
 fi
+# HTH Guide Excerpt: end api-list-auth-server-clients
 
 pass "3.1 OAuth app audit complete -- review output for over-permissioned apps"
 increment_applied

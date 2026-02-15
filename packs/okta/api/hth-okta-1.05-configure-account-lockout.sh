@@ -30,6 +30,7 @@ for POLICY_ID in ${POLICY_IDS}; do
   POLICY_NAME=$(echo "${POLICIES}" | jq -r ".[] | select(.id == \"${POLICY_ID}\") | .name" 2>/dev/null || echo "unknown")
   info "1.5 Updating lockout for policy '${POLICY_NAME}'..."
 
+  # HTH Guide Excerpt: begin api-update-lockout-policy
   okta_put "/api/v1/policies/${POLICY_ID}" "{
     \"settings\": {
       \"password\": {
@@ -43,6 +44,7 @@ for POLICY_ID in ${POLICY_IDS}; do
   }" > /dev/null 2>&1 && {
     updated=$((updated + 1))
   } || warn "1.5 Failed to update lockout for policy '${POLICY_NAME}'"
+  # HTH Guide Excerpt: end api-update-lockout-policy
 done
 
 if [ "${updated}" -gt 0 ]; then

@@ -24,6 +24,7 @@ for POLICY_ID in ${POLICY_IDS}; do
   POLICY_NAME=$(echo "${POLICIES}" | jq -r ".[] | select(.id == \"${POLICY_ID}\") | .name" 2>/dev/null || echo "unknown")
   info "1.10 Updating recovery settings for policy '${POLICY_NAME}'..."
 
+  # HTH Guide Excerpt: begin api-update-recovery-settings
   okta_put "/api/v1/policies/${POLICY_ID}" '{
     "settings": {
       "recovery": {
@@ -51,8 +52,10 @@ for POLICY_ID in ${POLICY_IDS}; do
   }' > /dev/null 2>&1 && {
     updated=$((updated + 1))
   } || warn "1.10 Failed to update recovery for policy '${POLICY_NAME}'"
+  # HTH Guide Excerpt: end api-update-recovery-settings
 done
 
+# HTH Guide Excerpt: begin api-deactivate-security-question
 # Step 2: Deactivate Security Question authenticator
 info "1.10 Deactivating Security Question authenticator..."
 SECURITY_QUESTION_ID=$(okta_get "/api/v1/authenticators" \
@@ -63,7 +66,9 @@ if [ -n "${SECURITY_QUESTION_ID}" ]; then
     && info "1.10 Security Question authenticator deactivated" \
     || warn "1.10 Security Question may already be inactive"
 fi
+# HTH Guide Excerpt: end api-deactivate-security-question
 
+# HTH Guide Excerpt: begin api-update-phone-authenticator
 # Step 3: Update Phone authenticator to remove recovery usage
 info "1.10 Removing Phone authenticator from recovery..."
 PHONE_ID=$(okta_get "/api/v1/authenticators" \
@@ -79,6 +84,7 @@ if [ -n "${PHONE_ID}" ]; then
     && info "1.10 Phone authenticator restricted to authentication only" \
     || warn "1.10 Failed to update phone authenticator"
 fi
+# HTH Guide Excerpt: end api-update-phone-authenticator
 
 if [ "${updated}" -gt 0 ]; then
   pass "1.10 Self-service recovery hardened (SMS/voice/questions disabled) -- ${updated} policy/policies updated"

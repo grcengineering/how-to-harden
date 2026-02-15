@@ -1,0 +1,71 @@
+{% comment %}
+  Pack Code Include — renders collapsible code pack excerpts for a guide control.
+
+  Usage: {% include pack-code.html vendor="okta" section="1.1" %}
+
+  Reads from: site.data.packs.{vendor}["{section}"]
+  Renders: collapsible <details> blocks with syntax-highlighted code excerpts
+           and "View source on GitHub" links.
+{% endcomment %}
+
+{% assign pack = site.data.packs[include.vendor] %}
+{% if pack %}
+{% assign control = pack[include.section] %}
+{% if control %}
+
+{% if control.terraform %}
+<div class="pack-code-section">
+<details class="pack-details">
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: Terraform</span></summary>
+<div class="pack-details-content">
+<div class="pack-file-header">
+<span class="pack-file-type pack-type-terraform">{{ control.terraform.filename }}</span>
+<a href="{{ control.terraform.source_url }}" target="_blank" rel="noopener noreferrer" class="pack-source-link">View source on GitHub &nearr;</a>
+</div>
+{% for excerpt in control.terraform.excerpts %}
+<pre><code class="language-{{ control.terraform.lang }}">{{ excerpt[1].content | strip | xml_escape }}</code></pre>
+{% endfor %}
+</div>
+</details>
+</div>
+{% endif %}
+
+{% if control.api %}
+<div class="pack-code-section">
+<details class="pack-details">
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: API Script</span></summary>
+<div class="pack-details-content">
+<div class="pack-file-header">
+<span class="pack-file-type pack-type-api">{{ control.api.filename }}</span>
+<a href="{{ control.api.source_url }}" target="_blank" rel="noopener noreferrer" class="pack-source-link">View source on GitHub &nearr;</a>
+</div>
+{% for excerpt in control.api.excerpts %}
+<pre><code class="language-{{ control.api.lang }}">{{ excerpt[1].content | strip | xml_escape }}</code></pre>
+{% endfor %}
+</div>
+</details>
+</div>
+{% endif %}
+
+{% if control.sigma %}
+<div class="pack-code-section">
+<details class="pack-details">
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: Sigma Detection {% if control.sigma.size > 1 %}Rules ({{ control.sigma.size }}){% else %}Rule{% endif %}</span></summary>
+<div class="pack-details-content">
+{% for rule in control.sigma %}
+<div class="pack-file-header">
+<span class="pack-file-type pack-type-sigma">{{ rule.filename }}</span>
+<a href="{{ rule.source_url }}" target="_blank" rel="noopener noreferrer" class="pack-source-link">View source on GitHub &nearr;</a>
+</div>
+{% for excerpt in rule.excerpts %}
+<pre><code class="language-{{ rule.lang }}">{{ excerpt[1].content | strip | xml_escape }}</code></pre>
+{% endfor %}
+{% unless forloop.last %}<hr class="pack-rule-divider">{% endunless %}
+{% endfor %}
+</div>
+</details>
+</div>
+{% endif %}
+
+{% endif %}
+{% endif %}

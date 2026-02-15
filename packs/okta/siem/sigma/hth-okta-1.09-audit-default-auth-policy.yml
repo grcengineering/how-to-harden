@@ -19,6 +19,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType: 'policy.evaluate_sign_on'
@@ -31,6 +32,7 @@ fields:
     - client.ipAddress
     - outcome.result
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Newly integrated applications not yet assigned to a custom policy
 level: high

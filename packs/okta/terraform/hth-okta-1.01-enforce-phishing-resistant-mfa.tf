@@ -5,6 +5,7 @@
 # Source: https://howtoharden.com/guides/okta/#11-enforce-phishing-resistant-mfa
 # =============================================================================
 
+# HTH Guide Excerpt: begin terraform
 # Enable FIDO2 (WebAuthn) as an authenticator
 resource "okta_authenticator" "fido2" {
   name   = "FIDO2 WebAuthn"
@@ -39,3 +40,4 @@ resource "okta_policy_rule_signon" "require_fido2" {
   session_lifetime   = 120
   session_persistent = false
 }
+# HTH Guide Excerpt: end terraform

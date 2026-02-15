@@ -19,6 +19,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType:
@@ -32,6 +33,7 @@ fields:
     - target.displayName
     - client.ipAddress
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Routine admin operations that trigger Protected Action challenges
 level: medium

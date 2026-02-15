@@ -19,6 +19,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType:
@@ -33,6 +34,7 @@ fields:
     - client.ipAddress
     - client.userAgent.rawUserAgent
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - Legitimate user onboarding or MFA factor rotation
 level: medium

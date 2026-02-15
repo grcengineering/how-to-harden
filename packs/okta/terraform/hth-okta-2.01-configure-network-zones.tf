@@ -5,6 +5,7 @@
 # Source: https://howtoharden.com/guides/okta/#21-configure-ip-zones-and-network-policies
 # =============================================================================
 
+# HTH Guide Excerpt: begin terraform
 # Corporate network zone with configurable CIDRs
 resource "okta_network_zone" "corporate" {
   count = length(var.corporate_gateway_cidrs) > 0 ? 1 : 0
@@ -25,3 +26,4 @@ resource "okta_network_zone" "blocklist" {
   usage    = "BLOCKLIST"
   gateways = var.blocked_ip_cidrs
 }
+# HTH Guide Excerpt: end terraform

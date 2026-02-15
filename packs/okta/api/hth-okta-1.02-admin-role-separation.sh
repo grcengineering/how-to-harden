@@ -20,6 +20,7 @@ if [ -n "${EXISTING}" ]; then
   exit 0
 fi
 
+# HTH Guide Excerpt: begin api-create-role
 # Create custom Help Desk Admin role
 info "1.2 Creating Help Desk Admin custom role..."
 okta_post "/api/v1/iam/roles" '{
@@ -37,5 +38,6 @@ okta_post "/api/v1/iam/roles" '{
   fail "1.2 Failed to create Help Desk Admin role"
   increment_failed
 }
+# HTH Guide Excerpt: end api-create-role
 
 summary

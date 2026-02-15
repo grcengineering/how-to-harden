@@ -20,6 +20,7 @@ tags:
 logsource:
     product: okta
     service: okta
+# HTH Guide Excerpt: begin detection
 detection:
     selection:
         eventType: 'security.behavior_detection.triggered'
@@ -33,6 +34,7 @@ fields:
     - debugContext.debugData.behaviors
     - outcome.result
     - published
+# HTH Guide Excerpt: end detection
 falsepositives:
     - New employees authenticating for the first time from unknown devices and locations
     - Users traveling to new locations for legitimate business purposes

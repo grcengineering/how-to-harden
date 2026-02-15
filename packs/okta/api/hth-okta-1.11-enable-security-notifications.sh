@@ -9,6 +9,7 @@ banner "1.11: Enable End-User Security Notifications"
 should_apply 1 || { increment_skipped; summary; exit 0; }
 info "1.11 Enabling end-user security notifications..."
 
+# HTH Guide Excerpt: begin api-update-notifications
 # Enable all five end-user notification types
 info "1.11 Enabling all five notification types..."
 okta_put "/api/v1/org/settings" '{
@@ -37,7 +38,9 @@ okta_put "/api/v1/org/settings" '{
   summary
   exit 0
 }
+# HTH Guide Excerpt: end api-update-notifications
 
+# HTH Guide Excerpt: begin api-enable-suspicious-activity
 # Enable Suspicious Activity Reporting
 info "1.11 Enabling Suspicious Activity Reporting..."
 okta_post "/api/v1/org/privacy/suspicious-activity-reporting" '{
@@ -47,6 +50,7 @@ okta_post "/api/v1/org/privacy/suspicious-activity-reporting" '{
 } || {
   warn "1.11 Suspicious Activity Reporting may already be enabled"
 }
+# HTH Guide Excerpt: end api-enable-suspicious-activity
 
 # Verify settings
 NOTIFICATIONS=$(okta_get "/api/v1/org/settings" | jq -c '.endUserNotifications' 2>/dev/null || echo "{}")

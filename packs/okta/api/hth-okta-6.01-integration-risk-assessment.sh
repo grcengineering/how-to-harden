@@ -12,9 +12,11 @@ info "6.1 Building integration risk assessment inventory..."
 # -----------------------------------------------------------------------
 # 6.1a: Fetch all active applications
 # -----------------------------------------------------------------------
+# HTH Guide Excerpt: begin api-list-active-apps
 info "6.1 Fetching active applications..."
 ACTIVE_APPS=$(okta_get "/api/v1/apps?filter=status%20eq%20%22ACTIVE%22&limit=200" 2>/dev/null || echo "[]")
 TOTAL_APPS=$(echo "${ACTIVE_APPS}" | jq 'length' 2>/dev/null || echo "0")
+# HTH Guide Excerpt: end api-list-active-apps
 
 if [ "${TOTAL_APPS}" -eq 0 ]; then
   warn "6.1 No active applications found (or API token lacks apps:read scope)"
