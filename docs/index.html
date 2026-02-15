@@ -3,6 +3,12 @@ layout: default
 title: Home
 ---
 
+{% assign pack_count = 0 %}
+{% for guide in site.guides %}
+  {% assign pd = site.data.packs[guide.slug] %}
+  {% if pd %}{% assign pack_count = pack_count | plus: 1 %}{% endif %}
+{% endfor %}
+
 <section class="hero">
   <div class="container">
     <h1>How to Harden</h1>
@@ -24,6 +30,10 @@ title: Home
       <div class="stat">
         <div class="stat-value">7</div>
         <div class="stat-label">SaaS Categories</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">{{ pack_count }}</div>
+        <div class="stat-label">Code Packs</div>
       </div>
     </div>
   </div>
@@ -71,6 +81,19 @@ title: Home
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
               Verified
+            </button>
+          </div>
+        </div>
+        <div class="pack-filter">
+          <span class="pack-filter-label">Code Pack:</span>
+          <div class="pack-toggle">
+            <button class="pack-toggle-btn active" data-pack="all">All</button>
+            <button class="pack-toggle-btn" data-pack="has-pack">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+              With Pack
             </button>
           </div>
         </div>
@@ -146,7 +169,10 @@ title: Home
         {% assign status_class = "status-draft" %}
         {% assign status_label = "AI Drafted" %}
       {% endif %}
-      <div class="guide-card" data-category="{{ data_cat }}" data-name="{{ guide.slug }}" data-reviewed="{{ review_status }}">
+      {% assign has_pack = false %}
+      {% assign pack_data = site.data.packs[guide.slug] %}
+      {% if pack_data %}{% assign has_pack = true %}{% endif %}
+      <div class="guide-card" data-category="{{ data_cat }}" data-name="{{ guide.slug }}" data-reviewed="{{ review_status }}" data-has-pack="{{ has_pack }}">
         <div class="guide-card-header">
           <h3><a href="{{ guide.url | relative_url }}">{{ guide.vendor }}</a></h3>
           <span class="status-badge {{ status_class }}">
@@ -172,6 +198,15 @@ title: Home
         <p class="guide-card-description">{{ guide.description }}</p>
         <div class="guide-card-meta">
           <span class="category-tag category-{{ data_cat }}">{{ cat_label }}</span>
+          {% if has_pack %}
+          <span class="pack-badge">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            Code Pack
+          </span>
+          {% endif %}
         </div>
       </div>
       {% endfor %}
@@ -187,6 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const categoryFilters = document.querySelectorAll('.category-filter');
   const sortSelect = document.getElementById('sort-select');
   const reviewToggleButtons = document.querySelectorAll('.review-toggle-btn');
+  const packToggleButtons = document.querySelectorAll('.pack-toggle-btn');
   const viewButtons = document.querySelectorAll('.view-btn');
   const guidesGrid = document.getElementById('guides-grid');
   const guideCards = document.querySelectorAll('.guide-card');
@@ -200,23 +236,32 @@ document.addEventListener('DOMContentLoaded', function() {
     return activeBtn ? activeBtn.dataset.review : 'all';
   }
 
+  // Get active pack filter
+  function getActivePackFilter() {
+    const activeBtn = document.querySelector('.pack-toggle-btn.active');
+    return activeBtn ? activeBtn.dataset.pack : 'all';
+  }
+
   function filterGuides() {
     const searchTerm = searchInput.value.toLowerCase();
     const activeCategory = document.querySelector('.category-filter.active').dataset.category;
     const reviewFilter = getActiveReviewFilter();
+    const packFilter = getActivePackFilter();
 
     guideCards.forEach(card => {
       const name = card.dataset.name.toLowerCase();
       const category = card.dataset.category;
       const reviewed = card.dataset.reviewed;
+      const hasPack = card.dataset.hasPack;
       const title = card.querySelector('h3').textContent.toLowerCase();
       const desc = card.querySelector('.guide-card-description').textContent.toLowerCase();
 
       const matchesSearch = !searchTerm || name.includes(searchTerm) || title.includes(searchTerm) || desc.includes(searchTerm);
       const matchesCategory = activeCategory === 'all' || category === activeCategory;
       const matchesReview = reviewFilter === 'all' || reviewed === reviewFilter;
+      const matchesPack = packFilter === 'all' || hasPack === 'true';
 
-      card.style.display = matchesSearch && matchesCategory && matchesReview ? '' : 'none';
+      card.style.display = matchesSearch && matchesCategory && matchesReview && matchesPack ? '' : 'none';
     });
   }
 
@@ -266,6 +311,15 @@ document.addEventListener('DOMContentLoaded', function() {
   reviewToggleButtons.forEach(btn => {
     btn.addEventListener('click', function() {
       reviewToggleButtons.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      filterGuides();
+    });
+  });
+
+  // Pack toggle button click handlers
+  packToggleButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      packToggleButtons.forEach(b => b.classList.remove('active'));
       this.classList.add('active');
       filterGuides();
     });
