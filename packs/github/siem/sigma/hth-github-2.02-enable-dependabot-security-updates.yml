@@ -1,0 +1,34 @@
+title: GitHub Dependabot Vulnerability Alert Dismissed
+id: b8c9d0e1-f2a3-4b4c-5d6e-7f8091021324
+status: test
+description: |
+    Detects when a Dependabot vulnerability alert is dismissed. Bulk dismissals or
+    dismissals without proper justification may indicate suppression of security
+    findings or inadequate vulnerability management practices.
+    This corresponds to HTH GitHub control hth-github-2.02-enable-dependabot-security-updates (section 2.2, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'repository_vulnerability_alert.dismiss'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Legitimate dismissal with documented justification
+level: medium

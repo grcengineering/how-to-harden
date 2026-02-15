@@ -1,0 +1,34 @@
+title: GitHub Repository Settings Changed (Branch Deletion on Merge)
+id: 32435465-7687-4980-9102-132435465768
+status: test
+description: |
+    Detects when repository settings are updated, which may include changes to the
+    automatic branch deletion on merge setting. Disabling this feature leads to stale
+    branch accumulation that increases the attack surface and complicates auditing.
+    This corresponds to HTH GitHub control hth-github-5.02-enable-delete-branch-on-merge (section 5.2, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'repo.update'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Repository configuration updates
+level: low

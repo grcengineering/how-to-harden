@@ -1,0 +1,36 @@
+title: GitHub Deployment Environment Protection Rules Changed or Deleted
+id: 65768798-0910-4213-2435-465768798091
+status: test
+description: |
+    Detects when deployment environment protection rules are updated or an environment
+    is deleted. Environment protections enforce approval gates and deployment controls.
+    Removing these protections can allow unauthorized deployments to production.
+    This corresponds to HTH GitHub control hth-github-5.05-protect-deployment-environments (section 5.5, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_update:
+        action: 'environment.update_protection_rules'
+    selection_delete:
+        action: 'environment.delete'
+    condition: selection_update or selection_delete
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized environment configuration changes
+level: high

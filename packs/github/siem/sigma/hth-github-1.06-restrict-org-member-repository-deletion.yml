@@ -1,0 +1,34 @@
+title: GitHub Repository Deleted
+id: f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f809102
+status: test
+description: |
+    Detects when a repository is deleted from a GitHub organization. Repository
+    deletion is a destructive and irreversible action that can result in permanent
+    loss of source code, issues, pull requests, and CI/CD configuration.
+    This corresponds to HTH GitHub control hth-github-1.06-restrict-org-member-repository-deletion (section 1.6, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.impact
+    - attack.t1485
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'repo.destroy'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized deletion of test/temporary repositories
+level: critical

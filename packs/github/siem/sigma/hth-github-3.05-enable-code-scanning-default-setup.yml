@@ -1,0 +1,34 @@
+title: GitHub Code Scanning Default Setup Disabled
+id: c5d6e7f8-0910-4213-2435-465768798091
+status: test
+description: |
+    Detects when the code scanning default setup is disabled on a repository. Code
+    scanning with CodeQL identifies security vulnerabilities in source code. Disabling
+    default setup removes automated vulnerability detection from the development workflow.
+    This corresponds to HTH GitHub control hth-github-3.05-enable-code-scanning-default-setup (section 3.5, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'repository_code_scanning_default_setup.disable'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Repository using custom CodeQL workflow instead of default setup
+level: high

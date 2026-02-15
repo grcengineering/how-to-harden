@@ -1,0 +1,34 @@
+title: GitHub Branch Protection CODEOWNERS Review Requirement Changed
+id: d6e7f809-1021-4324-3546-576879809102
+status: test
+description: |
+    Detects when a branch protection rule is updated that may change the CODEOWNERS
+    review requirement. Disabling required code owner reviews allows changes to
+    critical paths without approval from designated owners.
+    This corresponds to HTH GitHub control hth-github-3.06-require-codeowners-file (section 3.6, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'protected_branch.update'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Branch protection rule refinement
+level: medium

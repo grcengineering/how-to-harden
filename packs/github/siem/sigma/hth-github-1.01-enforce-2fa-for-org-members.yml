@@ -1,0 +1,34 @@
+title: GitHub Organization Two-Factor Authentication Requirement Disabled
+id: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d
+status: test
+description: |
+    Detects when the two-factor authentication requirement is disabled for a GitHub
+    organization. Disabling 2FA removes a critical authentication safeguard and exposes
+    all organization members to credential-based attacks.
+    This corresponds to HTH GitHub control hth-github-1.01-enforce-2fa-for-org-members (section 1.1, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.persistence
+    - attack.t1556
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'org.disable_two_factor_requirement'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Temporary disablement during SSO migration
+level: critical

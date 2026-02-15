@@ -1,0 +1,34 @@
+title: GitHub Organization Default Repository Permission Changed
+id: b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e
+status: test
+description: |
+    Detects when the default repository permission level is changed for a GitHub
+    organization. Elevating default permissions can grant overly broad access to all
+    members across all repositories, violating the principle of least privilege.
+    This corresponds to HTH GitHub control hth-github-1.02-restrict-default-repository-permissions (section 1.2, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.privilege_escalation
+    - attack.t1078
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'org.update_default_repository_permission'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized org settings changes by administrators
+level: high

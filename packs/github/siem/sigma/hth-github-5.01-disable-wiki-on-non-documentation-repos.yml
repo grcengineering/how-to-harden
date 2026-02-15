@@ -1,0 +1,34 @@
+title: GitHub Repository Wiki Settings Changed
+id: 21324354-6576-4879-8091-021324354657
+status: test
+description: |
+    Detects when repository settings are updated, which may include enabling or
+    disabling the wiki feature. Wikis on non-documentation repositories can serve
+    as an unmonitored content hosting vector for phishing or malware distribution.
+    This corresponds to HTH GitHub control hth-github-5.01-disable-wiki-on-non-documentation-repos (section 5.1, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.initial_access
+    - attack.t1189
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'repo.update'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Legitimate wiki enablement for documentation
+level: low

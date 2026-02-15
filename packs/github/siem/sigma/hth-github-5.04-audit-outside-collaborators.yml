@@ -1,0 +1,34 @@
+title: GitHub Outside Collaborator Added to Organization
+id: 54657687-9809-4102-1324-354657687980
+status: test
+description: |
+    Detects when an outside collaborator is added to the organization. Outside
+    collaborators bypass organization membership controls and may introduce
+    unauthorized access from external parties including contractors and vendors.
+    This corresponds to HTH GitHub control hth-github-5.04-audit-outside-collaborators (section 5.4, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.persistence
+    - attack.t1136
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'org.add_outside_collaborator'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized contractor or vendor access grants
+level: high

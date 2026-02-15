@@ -1,0 +1,34 @@
+title: GitHub Organization Repository Forking Permission Changed
+id: d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80
+status: test
+description: |
+    Detects when the member repository forking permission is changed for a GitHub
+    organization. Enabling private forks can allow members to copy repository contents
+    outside organizational controls, risking data exfiltration.
+    This corresponds to HTH GitHub control hth-github-1.04-disable-private-fork-creation (section 1.4, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.collection
+    - attack.t1530
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'org.update_member_repository_forking_permission'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized fork policy changes for open source contributions
+level: medium

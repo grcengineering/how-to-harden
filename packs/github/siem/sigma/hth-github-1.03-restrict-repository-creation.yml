@@ -1,0 +1,34 @@
+title: GitHub Organization Member Repository Creation Permission Changed
+id: c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f
+status: test
+description: |
+    Detects when the member repository creation permission is changed for a GitHub
+    organization. Allowing unrestricted repository creation can lead to shadow IT,
+    unmonitored code repositories, and policy bypass.
+    This corresponds to HTH GitHub control hth-github-1.03-restrict-repository-creation (section 1.3, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'org.update_member_repository_creation_permission'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized policy changes during onboarding
+level: high

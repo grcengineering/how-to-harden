@@ -1,0 +1,34 @@
+title: GitHub Actions Permissions Changed (SHA Pinning Enforcement)
+id: a3b4c5d6-e7f8-4091-0213-243546576879
+status: test
+description: |
+    Detects when GitHub Actions permissions are changed at the repository level, which
+    may allow unpinned actions to execute. Actions not pinned to a specific SHA are
+    vulnerable to supply chain attacks through tag or branch manipulation.
+    This corresponds to HTH GitHub control hth-github-3.03-pin-actions-to-sha (section 3.3, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.supply_chain_compromise
+    - attack.t1195
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'repo.actions_enabled'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized workflow updates
+level: medium

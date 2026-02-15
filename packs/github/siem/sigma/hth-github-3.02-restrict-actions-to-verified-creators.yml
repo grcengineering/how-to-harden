@@ -1,0 +1,34 @@
+title: GitHub Actions Permissions Changed
+id: f2a3b4c5-d6e7-4f80-9102-132435465768
+status: test
+description: |
+    Detects when GitHub Actions permissions are changed at the repository level.
+    Broadening Actions permissions can allow execution of untrusted or unverified
+    third-party actions, introducing supply chain attack vectors.
+    This corresponds to HTH GitHub control hth-github-3.02-restrict-actions-to-verified-creators (section 3.2, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.execution
+    - attack.t1059
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'repo.actions_enabled'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized CI/CD pipeline configuration changes
+level: high

@@ -1,0 +1,34 @@
+title: GitHub Branch Protection Signed Commits Requirement Changed
+id: e7f80910-2132-4435-4657-687980910213
+status: test
+description: |
+    Detects when a branch protection rule is updated that may change the signed
+    commits requirement. Disabling required commit signing allows unverified commits
+    to be merged, weakening code provenance and integrity guarantees.
+    This corresponds to HTH GitHub control hth-github-3.07-require-signed-commits (section 3.7, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'protected_branch.update'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Migration between signing methods (GPG to SSH)
+level: medium

@@ -1,0 +1,34 @@
+title: GitHub Deploy Key Created
+id: 10213243-5465-4768-7980-910213243546
+status: test
+description: |
+    Detects when a new deploy key is added to a repository. Deploy keys provide
+    direct SSH access to repository contents and can be used as a persistence
+    mechanism by attackers who have gained temporary access.
+    This corresponds to HTH GitHub control hth-github-4.03-audit-deploy-keys (section 4.3, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.persistence
+    - attack.t1098
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'deploy_key.create'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized CI/CD deploy key provisioning
+level: medium

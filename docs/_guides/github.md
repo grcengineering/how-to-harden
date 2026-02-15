@@ -149,6 +149,8 @@ resource "github_organization_settings" "main" {
 }
 ```
 
+{% include pack-code.html vendor="github" section="1.1" %}
+
 #### Validation & Testing
 1. [ ] Create test user account, add to organization
 2. [ ] Verify test user is prompted to enable 2FA
@@ -247,6 +249,8 @@ gh api /orgs/{org} --jq '.default_repository_permission'
 # Expected: "none"
 ```
 
+{% include pack-code.html vendor="github" section="1.2" %}
+
 #### Compliance Mappings
 - **SOC 2:** CC6.2 (Least privilege)
 - **NIST 800-53:** AC-6
@@ -308,6 +312,8 @@ Integrate GitHub with your corporate identity provider (Okta, Azure AD, Google W
 
 gh api /orgs/{org} --jq '.saml_identity_provider'
 ```
+
+{% include pack-code.html vendor="github" section="1.3" %}
 
 #### Additional Hardening
 
@@ -381,6 +387,10 @@ gh api /orgs/{org}/audit-log?phrase=action:org.update_member \
 # Check for users with admin role
 gh api /orgs/{org}/members --jq '.[] | select(.role == "admin") | .login'
 ```
+
+{% include pack-code.html vendor="github" section="1.4" %}
+{% include pack-code.html vendor="github" section="1.5" %}
+{% include pack-code.html vendor="github" section="1.6" %}
 
 #### Validation & Testing
 1. [ ] Verify enterprise owner count is 2-3 maximum
@@ -593,6 +603,10 @@ for repo in org.get_repos():
             print(f"  Skipped {branch_name}: {e}")
 ```
 
+{% include pack-code.html vendor="github" section="3.1" %}
+{% include pack-code.html vendor="github" section="3.6" %}
+{% include pack-code.html vendor="github" section="3.7" %}
+
 #### Validation & Testing
 1. [ ] Attempt to push directly to protected branch (should fail)
 2. [ ] Create PR without required status checks (should block merge)
@@ -709,6 +723,12 @@ resource "github_repository" "repo" {
   }
 }
 ```
+
+{% include pack-code.html vendor="github" section="2.1" %}
+{% include pack-code.html vendor="github" section="2.2" %}
+{% include pack-code.html vendor="github" section="2.3" %}
+{% include pack-code.html vendor="github" section="2.4" %}
+{% include pack-code.html vendor="github" section="3.5" %}
 
 #### Secret Scanning Push Protection
 
@@ -930,6 +950,8 @@ gh api -X PUT "/repos/{org}/{repo}/branches/main/protection" \
   -f required_signatures=true
 ```
 
+{% include pack-code.html vendor="github" section="3.7" %}
+
 #### Validation & Testing
 1. [ ] Create an unsigned commit and attempt to push (should fail if required)
 2. [ ] Create a signed commit and verify it shows as "Verified" in GitHub UI
@@ -1068,6 +1090,9 @@ updates:
       interval: "weekly"
 ```
 
+{% include pack-code.html vendor="github" section="3.2" %}
+{% include pack-code.html vendor="github" section="3.3" %}
+
 #### Monitoring & Maintenance
 
 **Alert on unapproved Action usage:**
@@ -1157,6 +1182,8 @@ gh api -X PUT /orgs/{org}/actions/permissions/workflow \
   -f default_workflow_permissions=read \
   -f can_approve_pull_request_reviews=false
 ```
+
+{% include pack-code.html vendor="github" section="3.4" %}
 
 #### Common Permission Combinations
 
@@ -1395,6 +1422,9 @@ for app in apps:
     print(f"{status}: {app['name']} (last used: {app['last_used']})")
 ```
 
+{% include pack-code.html vendor="github" section="4.3" %}
+{% include pack-code.html vendor="github" section="5.4" %}
+
 #### Recommended Scope Restrictions
 
 | App Type | Recommended Scopes | Avoid |
@@ -1511,6 +1541,8 @@ gh api -X PUT "/repos/${REPO}/environments/production" \
 # Add secret to environment
 gh secret set PROD_API_KEY --env production --body "secret-value"
 ```
+
+{% include pack-code.html vendor="github" section="5.5" %}
 
 #### Best Practices
 
@@ -1725,6 +1757,9 @@ Automated via workflow (see above). Can also use CLI:
 gh api /repos/{owner}/{repo}/dependency-graph/compare/main...feature-branch
 ```
 
+{% include pack-code.html vendor="github" section="4.1" %}
+{% include pack-code.html vendor="github" section="4.2" %}
+
 #### Monitoring
 
 **Track introduced vulnerabilities:**
@@ -1793,6 +1828,9 @@ FROM node:18@sha256:a1b2c3d4...
 
 Use Dependabot or Renovate to keep pins up-to-date while maintaining hash verification.
 
+{% include pack-code.html vendor="github" section="5.1" %}
+{% include pack-code.html vendor="github" section="5.2" %}
+
 #### Compliance Mappings
 - **SLSA:** Build L3 (Hermetic builds)
 - **NIST 800-53:** SA-12
@@ -1844,6 +1882,8 @@ gh api -X POST /orgs/{org}/audit-log/streams \
   -f token=$SPLUNK_HEC_TOKEN \
   -f endpoint=https://splunk.example.com:8088/services/collector
 ```
+
+{% include pack-code.html vendor="github" section="5.3" %}
 
 #### Key Events to Monitor
 

@@ -1,0 +1,34 @@
+title: GitHub Dependabot Vulnerability Alert Dismissed (SLA Tracking)
+id: 09102132-4354-4657-6879-809102132435
+status: test
+description: |
+    Detects when a Dependabot vulnerability alert is dismissed. Tracking alert
+    dismissals supports SLA compliance monitoring and ensures vulnerabilities are
+    addressed rather than silently suppressed without remediation.
+    This corresponds to HTH GitHub control hth-github-4.02-review-open-dependabot-alerts (section 4.2, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'repository_vulnerability_alert.dismiss'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Legitimate dismissal with documented reason
+level: medium

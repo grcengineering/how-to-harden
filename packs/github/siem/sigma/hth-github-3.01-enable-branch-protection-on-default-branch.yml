@@ -1,0 +1,34 @@
+title: GitHub Branch Protection Rule Removed
+id: e1f2a3b4-c5d6-4e7f-8091-021324354657
+status: test
+description: |
+    Detects when a branch protection rule is removed from a repository. Branch
+    protection enforces code review, status checks, and merge restrictions. Removing
+    these rules allows unreviewed code to be pushed directly to protected branches.
+    This corresponds to HTH GitHub control hth-github-3.01-enable-branch-protection-on-default-branch (section 3.1, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'protected_branch.destroy'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Temporary removal for emergency hotfix deployment
+level: critical
