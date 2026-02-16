@@ -340,20 +340,13 @@ body {
   box-shadow: 0 0 0 2px var(--color-primary-muted);
 }
 
-/* Horizontal scrolling filter strip */
+/* Horizontal filter strip */
 .floating-filters {
   display: flex;
   align-items: center;
   gap: 6px;
   flex: 1;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
   padding: 2px 0;
-}
-
-.floating-filters::-webkit-scrollbar {
-  display: none;
 }
 
 /* Filter buttons (shared style for sort + dropdown triggers) */
@@ -409,10 +402,12 @@ body {
   transform: rotate(180deg);
 }
 
-/* Dropdown menu — uses fixed positioning to escape overflow containers */
+/* Dropdown menu — absolute on desktop, bottom-sheet on mobile */
 .filter-dropdown-menu {
   display: none;
-  position: fixed;
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   border-radius: 10px;
@@ -1363,11 +1358,42 @@ body {
 
   .floating-filters {
     width: 100%;
+    flex-wrap: wrap;
   }
 
   .filter-btn {
     padding: 5px 10px;
     font-size: 0.75rem;
+  }
+
+  /* Dropdown menus on mobile: full-width bottom sheet */
+  .filter-dropdown-menu {
+    position: fixed;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    width: 100%;
+    min-width: unset;
+    border-radius: 12px 12px 0 0;
+    padding: 12px;
+    padding-bottom: 120px; /* space for floating bar behind it */
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 200;
+  }
+
+  .filter-option {
+    padding: 12px 10px;
+    font-size: 0.9375rem;
+  }
+
+  /* Scrim behind mobile bottom sheet */
+  .filter-dropdown.open::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 199;
   }
 
   /* Add bottom padding to body so content isn't hidden behind fixed bar */

@@ -204,43 +204,20 @@ document.addEventListener('DOMContentLoaded', function() {
   let activeStatus = 'all';
   let activePack = 'all';
 
-  // Position a dropdown menu relative to its trigger button
-  function positionDropdown(dd) {
-    const btn = dd.querySelector('.filter-btn');
-    const menu = dd.querySelector('.filter-dropdown-menu');
-    const rect = btn.getBoundingClientRect();
-    var vvHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    var isMobile = window.innerWidth <= 640;
-    if (isMobile) {
-      menu.style.left = Math.max(4, rect.left) + 'px';
-      menu.style.right = 'auto';
-      menu.style.bottom = (vvHeight - rect.top + 6) + 'px';
-      menu.style.top = 'auto';
-      // Ensure menu doesn't overflow right edge
-      var menuWidth = menu.offsetWidth || 180;
-      if (rect.left + menuWidth > window.innerWidth - 8) {
-        menu.style.left = 'auto';
-        menu.style.right = '4px';
-      }
-    } else {
-      menu.style.left = rect.left + 'px';
-      menu.style.right = 'auto';
-      menu.style.top = (rect.bottom + 6) + 'px';
-      menu.style.bottom = 'auto';
-    }
-  }
-
   // --- Dropdown toggle logic ---
   dropdowns.forEach(function(dd) {
     var btn = dd.querySelector('.filter-btn');
     var menu = dd.querySelector('.filter-dropdown-menu');
+    // Prevent touchstart from reaching the outside-close handler
+    dd.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: false });
+
     btn.addEventListener('click', function(e) {
+      e.preventDefault();
       e.stopPropagation();
       var wasOpen = dd.classList.contains('open');
       closeAllDropdowns();
       if (!wasOpen) {
         dd.classList.add('open');
-        positionDropdown(dd);
       }
     });
     // Handle radio changes inside dropdown
@@ -270,10 +247,12 @@ document.addEventListener('DOMContentLoaded', function() {
     dropdowns.forEach(function(dd) { dd.classList.remove('open'); });
   }
 
-  // Close dropdowns on outside click
-  document.addEventListener('click', function(e) {
+  // Close dropdowns on outside click/touch (iOS Safari needs touchstart)
+  function handleOutsideClick(e) {
     if (!e.target.closest('.filter-dropdown')) closeAllDropdowns();
-  });
+  }
+  document.addEventListener('click', handleOutsideClick);
+  document.addEventListener('touchstart', handleOutsideClick, { passive: true });
 
   // Update button text when a non-default option is selected
   function updateDropdownLabel(dd, filterName, val) {
