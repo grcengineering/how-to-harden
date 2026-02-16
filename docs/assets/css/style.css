@@ -326,7 +326,7 @@ body {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   color: var(--color-text-primary);
-  font-size: 0.875rem;
+  font-size: 16px; /* Must be >= 16px to prevent iOS Safari auto-zoom */
   font-family: var(--font-sans);
 }
 
@@ -448,7 +448,8 @@ body {
   display: none;
 }
 
-.filter-option:has(input:checked) {
+.filter-option:has(input:checked),
+.filter-option.option-checked {
   color: var(--color-primary);
   font-weight: 600;
 }
@@ -481,7 +482,6 @@ body {
   border-radius: 20px;
   padding: 2px;
   flex-shrink: 0;
-  margin-left: auto;
 }
 
 .view-btn {

@@ -41,10 +41,18 @@ title: Home
       <input type="text" id="search" placeholder="Search guides...">
     </div>
     <div class="floating-filters">
-      <button class="filter-btn sort-btn" id="sort-btn" aria-label="Sort A to Z">
+      <button class="filter-btn sort-btn filter-active" id="sort-btn" aria-label="Sort A to Z">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5h10M11 9h7M11 13h4M3 17l4 4 4-4M7 3v18"></path></svg>
         A-Z
       </button>
+      <div class="view-toggle">
+        <button class="view-btn active" data-view="card" aria-label="Card view">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+        </button>
+        <button class="view-btn" data-view="list" aria-label="List view">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+        </button>
+      </div>
 
       <div class="filter-dropdown" id="filter-category">
         <button class="filter-btn">
@@ -88,15 +96,6 @@ title: Home
           <label class="filter-option"><input type="radio" name="packs" value="all" checked> All Guides</label>
           <label class="filter-option"><input type="radio" name="packs" value="has-pack"> With Code Pack</label>
         </div>
-      </div>
-
-      <div class="view-toggle">
-        <button class="view-btn active" data-view="card" aria-label="Card view">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
-        </button>
-        <button class="view-btn" data-view="list" aria-label="List view">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-        </button>
       </div>
     </div>
   </div>
@@ -200,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // State
   const originalOrder = Array.from(guideCards);
-  let sortDirection = 'default'; // 'default' | 'az' | 'za'
+  let sortDirection = 'az'; // default to A-Z
   let activeCategory = 'all';
   let activeStatus = 'all';
   let activePack = 'all';
@@ -210,25 +209,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const btn = dd.querySelector('.filter-btn');
     const menu = dd.querySelector('.filter-dropdown-menu');
     const rect = btn.getBoundingClientRect();
-    const isMobile = window.innerWidth <= 640;
+    var vvHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    var isMobile = window.innerWidth <= 640;
     if (isMobile) {
-      menu.style.left = rect.left + 'px';
-      menu.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
+      menu.style.left = Math.max(4, rect.left) + 'px';
+      menu.style.right = 'auto';
+      menu.style.bottom = (vvHeight - rect.top + 6) + 'px';
       menu.style.top = 'auto';
+      // Ensure menu doesn't overflow right edge
+      var menuWidth = menu.offsetWidth || 180;
+      if (rect.left + menuWidth > window.innerWidth - 8) {
+        menu.style.left = 'auto';
+        menu.style.right = '4px';
+      }
     } else {
       menu.style.left = rect.left + 'px';
+      menu.style.right = 'auto';
       menu.style.top = (rect.bottom + 6) + 'px';
       menu.style.bottom = 'auto';
     }
   }
 
   // --- Dropdown toggle logic ---
-  dropdowns.forEach(dd => {
-    const btn = dd.querySelector('.filter-btn');
-    const menu = dd.querySelector('.filter-dropdown-menu');
+  dropdowns.forEach(function(dd) {
+    var btn = dd.querySelector('.filter-btn');
+    var menu = dd.querySelector('.filter-dropdown-menu');
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
-      const wasOpen = dd.classList.contains('open');
+      var wasOpen = dd.classList.contains('open');
       closeAllDropdowns();
       if (!wasOpen) {
         dd.classList.add('open');
@@ -236,23 +244,30 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     // Handle radio changes inside dropdown
-    menu.querySelectorAll('input[type="radio"]').forEach(radio => {
+    menu.querySelectorAll('input[type="radio"]').forEach(function(radio) {
       radio.addEventListener('change', function() {
-        const filterName = this.name;
-        const val = this.value;
+        var filterName = this.name;
+        var val = this.value;
         if (filterName === 'category') activeCategory = val;
         else if (filterName === 'status') activeStatus = val;
         else if (filterName === 'packs') activePack = val;
-        // Update button label to show active filter
+        // Update checked class on all options (fallback for :has())
+        menu.querySelectorAll('.filter-option').forEach(function(opt) {
+          opt.classList.toggle('option-checked', opt.querySelector('input').checked);
+        });
         updateDropdownLabel(dd, filterName, val);
         dd.classList.remove('open');
         filterGuides();
       });
     });
+    // Set initial checked class on load
+    menu.querySelectorAll('.filter-option').forEach(function(opt) {
+      opt.classList.toggle('option-checked', opt.querySelector('input').checked);
+    });
   });
 
   function closeAllDropdowns() {
-    dropdowns.forEach(dd => dd.classList.remove('open'));
+    dropdowns.forEach(function(dd) { dd.classList.remove('open'); });
   }
 
   // Close dropdowns on outside click
@@ -262,9 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Update button text when a non-default option is selected
   function updateDropdownLabel(dd, filterName, val) {
-    const btn = dd.querySelector('.filter-btn');
-    const labels = { category: 'System Type', status: 'Guide Status', packs: 'Code Packs' };
-    const baseLabel = labels[filterName] || filterName;
+    var btn = dd.querySelector('.filter-btn');
     if (val === 'all') {
       btn.classList.remove('filter-active');
     } else {
@@ -272,19 +285,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // --- Sort toggle ---
+  // --- Sort toggle (default: A-Z, tap toggles to Z-A) ---
   sortBtn.addEventListener('click', function() {
-    if (sortDirection === 'default' || sortDirection === 'za') {
-      sortDirection = 'az';
-      sortBtn.querySelector('svg:first-child').style.transform = '';
-      sortBtn.childNodes[sortBtn.childNodes.length - 1].textContent = 'A-Z';
-      sortBtn.classList.add('filter-active');
-    } else {
+    if (sortDirection === 'az') {
       sortDirection = 'za';
       sortBtn.querySelector('svg:first-child').style.transform = 'scaleY(-1)';
       sortBtn.childNodes[sortBtn.childNodes.length - 1].textContent = 'Z-A';
-      sortBtn.classList.add('filter-active');
+    } else {
+      sortDirection = 'az';
+      sortBtn.querySelector('svg:first-child').style.transform = '';
+      sortBtn.childNodes[sortBtn.childNodes.length - 1].textContent = 'A-Z';
     }
+    sortBtn.classList.add('filter-active');
     sortGuides();
   });
 
@@ -328,23 +340,33 @@ document.addEventListener('DOMContentLoaded', function() {
     guidesGrid.classList.toggle('list-view', view === 'list');
   }
 
-  searchInput.addEventListener('input', filterGuides);
+  searchInput.addEventListener('input', function() {
+    filterGuides();
+    // On mobile, scroll to guides so results are visible
+    if (window.innerWidth <= 640) {
+      var guidesEl = document.getElementById('guides');
+      if (guidesEl) guidesEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
 
-  viewButtons.forEach(btn => {
+  viewButtons.forEach(function(btn) {
     btn.addEventListener('click', function() {
-      viewButtons.forEach(b => b.classList.remove('active'));
+      viewButtons.forEach(function(b) { b.classList.remove('active'); });
       this.classList.add('active');
       setView(this.dataset.view);
     });
   });
 
   // Make entire guide card clickable
-  guideCards.forEach(card => {
+  guideCards.forEach(function(card) {
     card.addEventListener('click', function(e) {
       if (e.target.tagName === 'A' || e.target.closest('a')) return;
-      const link = this.querySelector('h3 a');
+      var link = this.querySelector('h3 a');
       if (link) link.click();
     });
   });
+
+  // Sort A-Z on initial load
+  sortGuides();
 });
 </script>
