@@ -45,85 +45,65 @@ title: Home
       <h2>Hardening Guides</h2>
     </div>
 
-    <div class="guides-controls">
-      <div class="category-filters">
-        <button class="category-filter active" data-category="all">All</button>
-        <button class="category-filter" data-category="identity">Identity</button>
-        <button class="category-filter" data-category="security">Security</button>
-        <button class="category-filter" data-category="devops">DevOps</button>
-        <button class="category-filter" data-category="data">Data</button>
-        <button class="category-filter" data-category="productivity">Productivity</button>
-        <button class="category-filter" data-category="hr">HR/Finance</button>
-        <button class="category-filter" data-category="marketing">Marketing</button>
-      </div>
-      <div class="view-controls">
-        <div class="review-filter">
-          <span class="review-filter-label">Status:</span>
-          <div class="review-toggle">
-            <button class="review-toggle-btn active" data-review="all">All</button>
-            <button class="review-toggle-btn" data-review="ai-drafted">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <circle cx="12" cy="17" r="1" fill="currentColor"></circle>
-              </svg>
-              AI Drafted
+    <div class="guides-toolbar">
+      <div class="toolbar-row">
+        <div class="category-filters">
+          <button class="category-filter active" data-category="all">All</button>
+          <button class="category-filter" data-category="identity">Identity</button>
+          <button class="category-filter" data-category="security">Security</button>
+          <button class="category-filter" data-category="devops">DevOps</button>
+          <button class="category-filter" data-category="data">Data</button>
+          <button class="category-filter" data-category="productivity">Productivity</button>
+          <button class="category-filter" data-category="hr">HR/Finance</button>
+          <button class="category-filter" data-category="marketing">Marketing</button>
+        </div>
+        <div class="toolbar-actions">
+          <div class="filter-group">
+            <button class="filter-chip active" data-review="all">All Status</button>
+            <button class="filter-chip" data-review="ai-drafted">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+              Drafted
             </button>
-            <button class="review-toggle-btn" data-review="human-reviewed">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
+            <button class="filter-chip" data-review="human-reviewed">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
               Reviewed
             </button>
-            <button class="review-toggle-btn" data-review="human-verified">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
+            <button class="filter-chip" data-review="human-verified">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
               Verified
             </button>
           </div>
-        </div>
-        <div class="pack-filter">
-          <span class="pack-filter-label">Code Pack:</span>
-          <div class="pack-toggle">
-            <button class="pack-toggle-btn active" data-pack="all">All</button>
-            <button class="pack-toggle-btn" data-pack="has-pack">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="16 18 22 12 16 6"></polyline>
-                <polyline points="8 6 2 12 8 18"></polyline>
+          <span class="toolbar-divider"></span>
+          <button class="filter-chip pack-chip" data-pack="all">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            Code Packs
+          </button>
+          <span class="toolbar-divider"></span>
+          <select id="sort-select" class="toolbar-select" aria-label="Sort guides">
+            <option value="default">Default</option>
+            <option value="az">A &rarr; Z</option>
+            <option value="za">Z &rarr; A</option>
+          </select>
+          <div class="view-toggle">
+            <button class="view-btn active" data-view="card" aria-label="Card view">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
               </svg>
-              With Pack
+            </button>
+            <button class="view-btn" data-view="list" aria-label="List view">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
             </button>
           </div>
-        </div>
-        <div class="sort-control">
-          <label for="sort-select">Sort:</label>
-          <select id="sort-select">
-            <option value="default">Default</option>
-            <option value="az">A-Z</option>
-            <option value="za">Z-A</option>
-          </select>
-        </div>
-        <div class="view-toggle">
-          <button class="view-btn active" data-view="card" aria-label="Card view">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-            </svg>
-          </button>
-          <button class="view-btn" data-view="list" aria-label="List view">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="8" y1="6" x2="21" y2="6"></line>
-              <line x1="8" y1="12" x2="21" y2="12"></line>
-              <line x1="8" y1="18" x2="21" y2="18"></line>
-              <line x1="3" y1="6" x2="3.01" y2="6"></line>
-              <line x1="3" y1="12" x2="3.01" y2="12"></line>
-              <line x1="3" y1="18" x2="3.01" y2="18"></line>
-            </svg>
-          </button>
         </div>
       </div>
     </div>
@@ -200,11 +180,7 @@ title: Home
           <span class="category-tag category-{{ data_cat }}">{{ cat_label }}</span>
           {% if has_pack %}
           <span class="pack-badge">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="16 18 22 12 16 6"></polyline>
-              <polyline points="8 6 2 12 8 18"></polyline>
-            </svg>
-            Code Pack
+            <span class="pack-badge-text">&lt;/&gt; Code Pack</span>
           </span>
           {% endif %}
         </div>
@@ -221,8 +197,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const searchInput = document.getElementById('search');
   const categoryFilters = document.querySelectorAll('.category-filter');
   const sortSelect = document.getElementById('sort-select');
-  const reviewToggleButtons = document.querySelectorAll('.review-toggle-btn');
-  const packToggleButtons = document.querySelectorAll('.pack-toggle-btn');
+  const reviewChips = document.querySelectorAll('.filter-chip[data-review]');
+  const packChip = document.querySelector('.pack-chip');
   const viewButtons = document.querySelectorAll('.view-btn');
   const guidesGrid = document.getElementById('guides-grid');
   const guideCards = document.querySelectorAll('.guide-card');
@@ -232,14 +208,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Get active review filter
   function getActiveReviewFilter() {
-    const activeBtn = document.querySelector('.review-toggle-btn.active');
+    const activeBtn = document.querySelector('.filter-chip[data-review].active');
     return activeBtn ? activeBtn.dataset.review : 'all';
   }
 
   // Get active pack filter
   function getActivePackFilter() {
-    const activeBtn = document.querySelector('.pack-toggle-btn.active');
-    return activeBtn ? activeBtn.dataset.pack : 'all';
+    return packChip && packChip.classList.contains('active') ? 'has-pack' : 'all';
   }
 
   function filterGuides() {
@@ -307,23 +282,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
   sortSelect.addEventListener('change', sortGuides);
 
-  // Review toggle button click handlers
-  reviewToggleButtons.forEach(btn => {
+  // Review filter chip click handlers
+  reviewChips.forEach(btn => {
     btn.addEventListener('click', function() {
-      reviewToggleButtons.forEach(b => b.classList.remove('active'));
+      reviewChips.forEach(b => b.classList.remove('active'));
       this.classList.add('active');
       filterGuides();
     });
   });
 
-  // Pack toggle button click handlers
-  packToggleButtons.forEach(btn => {
-    btn.addEventListener('click', function() {
-      packToggleButtons.forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
+  // Pack filter toggle (single button, toggles on/off)
+  if (packChip) {
+    packChip.addEventListener('click', function() {
+      this.classList.toggle('active');
       filterGuides();
     });
-  });
+  }
 
   viewButtons.forEach(btn => {
     btn.addEventListener('click', function() {
