@@ -144,9 +144,9 @@ a:hover {
   z-index: 100;
 }
 
-/* Offset for fixed header */
+/* Offset for fixed header + fixed floating bar */
 body {
-  padding-top: 64px;
+  padding-top: 120px;
 }
 
 .site-header .container {
@@ -285,8 +285,10 @@ body {
    Floating search + filter bar (Google Images / Reddit style)
    ============================================================ */
 .floating-bar {
-  position: sticky;
+  position: fixed;
   top: 64px;
+  left: 0;
+  right: 0;
   z-index: 90;
   background: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border);
