@@ -355,19 +355,29 @@ document.addEventListener('DOMContentLoaded', function() {
   // iOS Safari: blur search input on scroll to dismiss virtual keyboard.
   // When the keyboard is open, Safari's visual viewport shrinks and
   // position:fixed elements detach from the screen on scroll.
-  var scrollAtFocus = null;
+  // Grace period: Safari fires scroll events during its keyboard-open
+  // animation (~300-400ms). We wait 600ms after focus before arming
+  // the scroll listener so the keyboard can fully open without being
+  // immediately dismissed.
+  var scrollArmed = false;
+  var scrollArmTimer = null;
   searchInput.addEventListener('focus', function() {
-    scrollAtFocus = window.scrollY;
+    scrollArmed = false;
+    clearTimeout(scrollArmTimer);
+    scrollArmTimer = setTimeout(function() {
+      scrollArmed = true;
+    }, 600);
   });
   window.addEventListener('scroll', function() {
-    if (scrollAtFocus !== null && document.activeElement === searchInput) {
-      if (Math.abs(window.scrollY - scrollAtFocus) > 5) {
-        searchInput.blur();
-        scrollAtFocus = null;
-      }
+    if (scrollArmed && document.activeElement === searchInput) {
+      searchInput.blur();
+      scrollArmed = false;
     }
   }, { passive: true });
-  searchInput.addEventListener('blur', function() { scrollAtFocus = null; });
+  searchInput.addEventListener('blur', function() {
+    scrollArmed = false;
+    clearTimeout(scrollArmTimer);
+  });
 
   searchInput.addEventListener('input', function() {
     filterGuides();
