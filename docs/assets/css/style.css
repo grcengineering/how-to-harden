@@ -290,8 +290,6 @@ body {
   z-index: 90;
   background: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 .floating-bar-inner {
@@ -422,6 +420,7 @@ body {
 }
 
 .filter-option {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -430,6 +429,7 @@ body {
   font-size: 0.8125rem;
   color: var(--color-text-secondary);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition: background 0.1s;
   white-space: nowrap;
 }
@@ -440,7 +440,11 @@ body {
 }
 
 .filter-option input[type="radio"] {
-  display: none;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
 }
 
 .filter-option:has(input:checked),

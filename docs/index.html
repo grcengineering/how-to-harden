@@ -220,21 +220,33 @@ document.addEventListener('DOMContentLoaded', function() {
         dd.classList.add('open');
       }
     });
-    // Handle radio changes inside dropdown
+    // Handle filter option selection
+    function handleSelection(radio) {
+      var filterName = radio.name;
+      var val = radio.value;
+      if (filterName === 'category') activeCategory = val;
+      else if (filterName === 'status') activeStatus = val;
+      else if (filterName === 'packs') activePack = val;
+      // Update checked class on all options (fallback for :has())
+      menu.querySelectorAll('.filter-option').forEach(function(opt) {
+        opt.classList.toggle('option-checked', opt.querySelector('input').checked);
+      });
+      updateDropdownLabel(dd, filterName, val);
+      dd.classList.remove('open');
+      filterGuides();
+    }
+    // Listen for radio change (works in most browsers)
     menu.querySelectorAll('input[type="radio"]').forEach(function(radio) {
-      radio.addEventListener('change', function() {
-        var filterName = this.name;
-        var val = this.value;
-        if (filterName === 'category') activeCategory = val;
-        else if (filterName === 'status') activeStatus = val;
-        else if (filterName === 'packs') activePack = val;
-        // Update checked class on all options (fallback for :has())
-        menu.querySelectorAll('.filter-option').forEach(function(opt) {
-          opt.classList.toggle('option-checked', opt.querySelector('input').checked);
-        });
-        updateDropdownLabel(dd, filterName, val);
-        dd.classList.remove('open');
-        filterGuides();
+      radio.addEventListener('change', function() { handleSelection(this); });
+    });
+    // Safari fallback: tap on label may not fire radio change event
+    menu.querySelectorAll('.filter-option').forEach(function(label) {
+      label.addEventListener('click', function(e) {
+        var radio = this.querySelector('input[type="radio"]');
+        if (radio && !radio.checked) {
+          radio.checked = true;
+          handleSelection(radio);
+        }
       });
     });
     // Set initial checked class on load
