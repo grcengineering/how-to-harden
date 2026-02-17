@@ -274,7 +274,12 @@ mod tests {
 
     #[test]
     fn control_status_serde_roundtrip() {
-        for status in [ControlStatus::Pass, ControlStatus::Fail, ControlStatus::Skip, ControlStatus::Error] {
+        for status in [
+            ControlStatus::Pass,
+            ControlStatus::Fail,
+            ControlStatus::Skip,
+            ControlStatus::Error,
+        ] {
             let json = serde_json::to_string(&status).unwrap();
             let deserialized: ControlStatus = serde_json::from_str(&json).unwrap();
             assert_eq!(deserialized, status);
@@ -283,9 +288,21 @@ mod tests {
 
     #[test]
     fn control_status_serializes_to_lowercase() {
-        assert_eq!(serde_json::to_string(&ControlStatus::Pass).unwrap(), "\"pass\"");
-        assert_eq!(serde_json::to_string(&ControlStatus::Fail).unwrap(), "\"fail\"");
-        assert_eq!(serde_json::to_string(&ControlStatus::Skip).unwrap(), "\"skip\"");
-        assert_eq!(serde_json::to_string(&ControlStatus::Error).unwrap(), "\"error\"");
+        assert_eq!(
+            serde_json::to_string(&ControlStatus::Pass).unwrap(),
+            "\"pass\""
+        );
+        assert_eq!(
+            serde_json::to_string(&ControlStatus::Fail).unwrap(),
+            "\"fail\""
+        );
+        assert_eq!(
+            serde_json::to_string(&ControlStatus::Skip).unwrap(),
+            "\"skip\""
+        );
+        assert_eq!(
+            serde_json::to_string(&ControlStatus::Error).unwrap(),
+            "\"error\""
+        );
     }
 }

@@ -42,18 +42,18 @@ pub fn discover_packs(packs_dir: &Path) -> HthResult<Vec<String>> {
         return Ok(vendors);
     }
 
-    for entry in std::fs::read_dir(packs_dir).map_err(|e| HthError::Io(e))? {
-        let entry = entry.map_err(|e| HthError::Io(e))?;
+    for entry in std::fs::read_dir(packs_dir).map_err(HthError::Io)? {
+        let entry = entry.map_err(HthError::Io)?;
         let path = entry.path();
 
         if path.is_dir() {
             let controls_dir = path.join("controls");
-            if controls_dir.exists() {
-                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                    // Skip schema and other non-vendor directories
-                    if name != "schema" {
-                        vendors.push(name.to_string());
-                    }
+            if controls_dir.exists()
+                && let Some(name) = path.file_name().and_then(|n| n.to_str())
+            {
+                // Skip schema and other non-vendor directories
+                if name != "schema" {
+                    vendors.push(name.to_string());
                 }
             }
         }
@@ -84,7 +84,10 @@ mod tests {
         let dir = packs_dir();
         let pack = load_pack(&dir, "github").expect("should load github pack");
         assert_eq!(pack.vendor, "github");
-        assert!(!pack.controls.is_empty(), "github pack should have controls");
+        assert!(
+            !pack.controls.is_empty(),
+            "github pack should have controls"
+        );
     }
 
     #[test]
@@ -101,7 +104,10 @@ mod tests {
     fn discover_packs_finds_github_and_okta() {
         let dir = packs_dir();
         let vendors = discover_packs(&dir).expect("should discover packs");
-        assert!(vendors.contains(&"github".to_string()), "should find github");
+        assert!(
+            vendors.contains(&"github".to_string()),
+            "should find github"
+        );
         assert!(vendors.contains(&"okta".to_string()), "should find okta");
     }
 

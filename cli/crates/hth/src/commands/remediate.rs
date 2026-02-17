@@ -66,7 +66,9 @@ pub async fn run(
     if failing.is_empty() {
         eprintln!(
             "{}",
-            style("  All controls passing — nothing to remediate").green().bold()
+            style("  All controls passing — nothing to remediate")
+                .green()
+                .bold()
         );
         return Ok(());
     }
@@ -83,28 +85,20 @@ pub async fn run(
             .iter()
             .filter(|c| {
                 failing.iter().any(|f| f.control_id == c.id)
-                    && c.remediate
-                        .as_ref()
-                        .is_some_and(|r| r.terraform.is_some())
+                    && c.remediate.as_ref().is_some_and(|r| r.terraform.is_some())
             })
             .collect();
 
         if !failing_controls.is_empty() {
             let hcl = TerraformGenerator::generate(&failing_controls, provider)?;
-            eprintln!(
-                "\n{}",
-                style("  Generated Terraform:").cyan().bold()
-            );
+            eprintln!("\n{}", style("  Generated Terraform:").cyan().bold());
             println!("{hcl}");
 
             if args.apply {
                 let tf_dir = Path::new(&args.terraform_dir);
                 std::fs::create_dir_all(tf_dir)?;
                 std::fs::write(tf_dir.join("main.tf"), &hcl)?;
-                eprintln!(
-                    "  Terraform written to {}",
-                    style(tf_dir.display()).green()
-                );
+                eprintln!("  Terraform written to {}", style(tf_dir.display()).green());
             }
         }
     }
@@ -142,11 +136,7 @@ pub async fn run(
 
                 for result in &results {
                     if result.success {
-                        eprintln!(
-                            "    {} {}",
-                            style("✓").green(),
-                            result.description
-                        );
+                        eprintln!("    {} {}", style("✓").green(), result.description);
                     } else {
                         eprintln!(
                             "    {} {} — {}",

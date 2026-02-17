@@ -2,7 +2,7 @@ use std::path::Path;
 
 use std::io::Write;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::Args;
 use console::style;
 
@@ -50,7 +50,8 @@ pub async fn run(
         .as_deref()
         .context("--vendor is required for scan. Use --vendor github or --vendor okta")?;
 
-    let format = OutputFormat::from_str(output_format)
+    let format: OutputFormat = output_format
+        .parse()
         .context(format!("Unknown output format: {output_format}"))?;
 
     // Load the vendor pack
@@ -73,7 +74,10 @@ pub async fn run(
     );
 
     if args.dry_run {
-        eprintln!("{}", style("  [DRY RUN] No API calls will be made").yellow());
+        eprintln!(
+            "{}",
+            style("  [DRY RUN] No API calls will be made").yellow()
+        );
         // In dry-run mode, list controls that would be checked
         for control in &pack.controls {
             if control.applies_at_level(profile) {

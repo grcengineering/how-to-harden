@@ -61,7 +61,10 @@ impl VendorProvider for GitHubProvider {
 
     fn auth_headers(&self) -> Vec<(String, String)> {
         vec![
-            ("Accept".to_string(), "application/vnd.github+json".to_string()),
+            (
+                "Accept".to_string(),
+                "application/vnd.github+json".to_string(),
+            ),
             ("X-GitHub-Api-Version".to_string(), "2022-11-28".to_string()),
         ]
     }
@@ -76,9 +79,7 @@ impl VendorProvider for GitHubProvider {
     }
 
     async fn validate_credentials(&self) -> HthResult<()> {
-        self.client
-            .request(HttpMethod::GET, "/user", None)
-            .await?;
+        self.client.request(HttpMethod::GET, "/user", None).await?;
         Ok(())
     }
 

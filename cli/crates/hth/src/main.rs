@@ -129,9 +129,9 @@ async fn main() -> anyhow::Result<()> {
     };
 
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-            EnvFilter::new(filter)
-        }))
+        .with_env_filter(
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(filter)),
+        )
         .with_target(false)
         .init();
 
@@ -148,26 +148,34 @@ async fn main() -> anyhow::Result<()> {
 
     match cli.command {
         Commands::Scan(args) => {
-            commands::scan::run(args, &cli.vendor, cli.profile, &packs_dir, &cli.output, &registry).await
+            commands::scan::run(
+                args,
+                &cli.vendor,
+                cli.profile,
+                &packs_dir,
+                &cli.output,
+                &registry,
+            )
+            .await
         }
         Commands::Remediate(args) => {
             commands::remediate::run(args, &cli.vendor, cli.profile, &packs_dir, &registry).await
         }
-        Commands::Validate(args) => {
-            commands::validate::run(args, &packs_dir).await
-        }
+        Commands::Validate(args) => commands::validate::run(args, &packs_dir).await,
         Commands::Report(args) => {
-            commands::report::run(args, &cli.vendor, cli.profile, &packs_dir, &cli.output, &registry).await
+            commands::report::run(
+                args,
+                &cli.vendor,
+                cli.profile,
+                &packs_dir,
+                &cli.output,
+                &registry,
+            )
+            .await
         }
-        Commands::Analyze(args) => {
-            commands::analyze::run(args, &packs_dir, &registry).await
-        }
-        Commands::Init(args) => {
-            commands::init::run(args).await
-        }
-        Commands::List(args) => {
-            commands::list::run(args, &packs_dir, &registry).await
-        }
+        Commands::Analyze(args) => commands::analyze::run(args, &packs_dir, &registry).await,
+        Commands::Init(args) => commands::init::run(args).await,
+        Commands::List(args) => commands::list::run(args, &packs_dir, &registry).await,
     }
 }
 

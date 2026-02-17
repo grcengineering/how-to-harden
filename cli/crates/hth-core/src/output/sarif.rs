@@ -30,7 +30,7 @@ pub fn render_scan_report(report: &ScanReport) -> String {
         .controls
         .iter()
         .filter(|c| c.status == ControlStatus::Fail || c.status == ControlStatus::Error)
-        .map(|c| control_to_sarif_result(c))
+        .map(control_to_sarif_result)
         .collect();
 
     let sarif = json!({
@@ -183,7 +183,8 @@ mod tests {
     fn sarif_output_parses_as_valid_json() {
         let report = make_test_report();
         let output = render_scan_report(&report);
-        let parsed: serde_json::Value = serde_json::from_str(&output).expect("SARIF output must be valid JSON");
+        let parsed: serde_json::Value =
+            serde_json::from_str(&output).expect("SARIF output must be valid JSON");
         assert!(parsed.is_object());
     }
 

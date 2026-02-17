@@ -9,6 +9,4 @@ pub use control::{
     AuditCheck, ComplianceMapping, Control, HttpMethod, Remediation, RemediationStep, Severity,
     TerraformRemediation, TerraformResource,
 };
-pub use report::{
-    CheckResult, CheckStatus, ControlResult, ControlStatus, ScanReport, ScanSummary,
-};
+pub use report::{CheckResult, CheckStatus, ControlResult, ControlStatus, ScanReport, ScanSummary};

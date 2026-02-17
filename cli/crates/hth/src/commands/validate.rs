@@ -16,8 +16,7 @@ pub struct ValidateArgs {
 pub async fn run(args: ValidateArgs, packs_dir: &str) -> Result<()> {
     let packs_path = Path::new(packs_dir);
 
-    let vendors = loader::discover_packs(packs_path)
-        .context("Failed to discover packs")?;
+    let vendors = loader::discover_packs(packs_path).context("Failed to discover packs")?;
 
     if vendors.is_empty() {
         eprintln!("{}", style("  No vendor packs found").yellow());
@@ -31,10 +30,7 @@ pub async fn run(args: ValidateArgs, packs_dir: &str) -> Result<()> {
     for vendor in &vendors {
         let controls_dir = packs_path.join(vendor).join("controls");
 
-        eprintln!(
-            "{}",
-            style(format!("  Validating {vendor} pack...")).cyan()
-        );
+        eprintln!("{}", style(format!("  Validating {vendor} pack...")).cyan());
 
         let mut entries: Vec<_> = std::fs::read_dir(&controls_dir)
             .context(format!("Failed to read {}", controls_dir.display()))?
@@ -90,12 +86,7 @@ pub async fn run(args: ValidateArgs, packs_dir: &str) -> Result<()> {
                     } else {
                         total_warnings += warnings.len();
                         for warning in &warnings {
-                            eprintln!(
-                                "  {} {} — {}",
-                                style("⚠").yellow(),
-                                control.id,
-                                warning
-                            );
+                            eprintln!("  {} {} — {}", style("⚠").yellow(), control.id, warning);
                         }
                     }
                 }

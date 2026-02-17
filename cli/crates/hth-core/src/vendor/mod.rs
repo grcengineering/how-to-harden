@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use async_trait::async_trait;
 
 use crate::error::HthResult;
-use crate::models::{HttpMethod};
+use crate::models::HttpMethod;
 
 /// Each vendor crate implements this trait to provide vendor-specific
 /// behavior: authentication, URL resolution, rate limiting, and pagination.

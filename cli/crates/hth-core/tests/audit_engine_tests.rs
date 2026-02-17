@@ -19,11 +19,10 @@ use serde_json::json;
 
 use hth_core::engine::AuditEngine;
 use hth_core::error::{HthError, HthResult};
-use hth_core::models::{
-    AuditCheck, CheckStatus, ComplianceMapping, Control, ControlStatus, HttpMethod,
-    Severity,
-};
 use hth_core::models::control::ApiCall;
+use hth_core::models::{
+    AuditCheck, CheckStatus, ComplianceMapping, Control, ControlStatus, HttpMethod, Severity,
+};
 use hth_core::vendor::VendorProvider;
 
 // ---------------------------------------------------------------------------
@@ -142,11 +141,7 @@ fn make_test_control(id: &str, level: u8, endpoint: &str, check: &str) -> Contro
 }
 
 /// Build a Control with multiple audit checks.
-fn make_multi_check_control(
-    id: &str,
-    level: u8,
-    checks: Vec<(&str, &str, &str)>,
-) -> Control {
+fn make_multi_check_control(id: &str, level: u8, checks: Vec<(&str, &str, &str)>) -> Control {
     let audit = checks
         .into_iter()
         .enumerate()
@@ -214,8 +209,10 @@ fn make_control_with_method(id: &str, method: HttpMethod) -> Control {
 #[tokio::test]
 async fn test_audit_control_passes_when_check_matches() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("github")
-        .with_response("/orgs/test", json!({"two_factor_requirement_enabled": true}));
+    let provider = MockVendorProvider::new("github").with_response(
+        "/orgs/test",
+        json!({"two_factor_requirement_enabled": true}),
+    );
 
     let control = make_test_control(
         "gh-1.1",
@@ -234,8 +231,10 @@ async fn test_audit_control_passes_when_check_matches() {
 #[tokio::test]
 async fn test_audit_control_fails_when_check_doesnt_match() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("github")
-        .with_response("/orgs/test", json!({"two_factor_requirement_enabled": false}));
+    let provider = MockVendorProvider::new("github").with_response(
+        "/orgs/test",
+        json!({"two_factor_requirement_enabled": false}),
+    );
 
     let control = make_test_control(
         "gh-1.1",
@@ -259,11 +258,11 @@ async fn test_audit_control_fails_when_check_doesnt_match() {
 async fn test_control_with_multiple_checks_all_pass() {
     let engine = AuditEngine::new();
     let provider = MockVendorProvider::new("github")
-        .with_response("/orgs/test", json!({"two_factor_requirement_enabled": true}))
         .with_response(
-            "/orgs/test/members?filter=2fa_disabled",
-            json!([]),
-        );
+            "/orgs/test",
+            json!({"two_factor_requirement_enabled": true}),
+        )
+        .with_response("/orgs/test/members?filter=2fa_disabled", json!([]));
 
     let control = make_multi_check_control(
         "gh-1.1",
@@ -294,7 +293,10 @@ async fn test_control_with_multiple_checks_all_pass() {
 async fn test_control_with_multiple_checks_one_fails() {
     let engine = AuditEngine::new();
     let provider = MockVendorProvider::new("github")
-        .with_response("/orgs/test", json!({"two_factor_requirement_enabled": true}))
+        .with_response(
+            "/orgs/test",
+            json!({"two_factor_requirement_enabled": true}),
+        )
         .with_response(
             "/orgs/test/members?filter=2fa_disabled",
             json!([{"login": "baduser"}]),
@@ -363,8 +365,8 @@ async fn test_audit_control_error_on_api_failure() {
 #[tokio::test]
 async fn test_audit_rejects_non_get_post_method() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/v1/test", json!({"enabled": true}));
+    let provider =
+        MockVendorProvider::new("test").with_response("/api/v1/test", json!({"enabled": true}));
 
     let control = make_control_with_method("post-ctrl", HttpMethod::POST);
     let result = engine.audit_control(&control, &provider).await;
@@ -385,8 +387,8 @@ async fn test_audit_rejects_non_get_post_method() {
 #[tokio::test]
 async fn test_audit_rejects_non_get_put_method() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/v1/test", json!({"enabled": true}));
+    let provider =
+        MockVendorProvider::new("test").with_response("/api/v1/test", json!({"enabled": true}));
 
     let control = make_control_with_method("put-ctrl", HttpMethod::PUT);
     let result = engine.audit_control(&control, &provider).await;
@@ -405,8 +407,8 @@ async fn test_audit_rejects_non_get_put_method() {
 #[tokio::test]
 async fn test_audit_rejects_non_get_delete_method() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/v1/test", json!({"enabled": true}));
+    let provider =
+        MockVendorProvider::new("test").with_response("/api/v1/test", json!({"enabled": true}));
 
     let control = make_control_with_method("delete-ctrl", HttpMethod::DELETE);
     let result = engine.audit_control(&control, &provider).await;
@@ -418,8 +420,8 @@ async fn test_audit_rejects_non_get_delete_method() {
 #[tokio::test]
 async fn test_audit_rejects_non_get_patch_method() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/v1/test", json!({"enabled": true}));
+    let provider =
+        MockVendorProvider::new("test").with_response("/api/v1/test", json!({"enabled": true}));
 
     let control = make_control_with_method("patch-ctrl", HttpMethod::PATCH);
     let result = engine.audit_control(&control, &provider).await;
@@ -731,8 +733,8 @@ async fn test_scan_report_summary_counts() {
 #[tokio::test]
 async fn test_scan_report_exit_code_zero_on_all_pass() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/ok", json!({"enabled": true}));
+    let provider =
+        MockVendorProvider::new("test").with_response("/api/ok", json!({"enabled": true}));
 
     let controls = vec![
         make_test_control("pass-1", 1, "/api/ok", ".enabled == true"),
@@ -746,8 +748,8 @@ async fn test_scan_report_exit_code_zero_on_all_pass() {
 #[tokio::test]
 async fn test_scan_report_exit_code_zero_with_skips() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/ok", json!({"enabled": true}));
+    let provider =
+        MockVendorProvider::new("test").with_response("/api/ok", json!({"enabled": true}));
 
     let controls = vec![
         make_test_control("pass-1", 1, "/api/ok", ".enabled == true"),
@@ -780,9 +782,12 @@ async fn test_scan_report_exit_code_one_on_error() {
     // No response registered -> 404 error
     let provider = MockVendorProvider::new("test");
 
-    let controls = vec![
-        make_test_control("err-1", 1, "/api/missing", ".enabled == true"),
-    ];
+    let controls = vec![make_test_control(
+        "err-1",
+        1,
+        "/api/missing",
+        ".enabled == true",
+    )];
 
     let report = engine.scan(&controls, &provider, 1).await;
     assert_eq!(report.exit_code(), 1);
@@ -792,12 +797,10 @@ async fn test_scan_report_exit_code_one_on_error() {
 #[tokio::test]
 async fn test_scan_report_metadata() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("github")
-        .with_response("/api/ok", json!({"enabled": true}));
+    let provider =
+        MockVendorProvider::new("github").with_response("/api/ok", json!({"enabled": true}));
 
-    let controls = vec![
-        make_test_control("gh-1", 1, "/api/ok", ".enabled == true"),
-    ];
+    let controls = vec![make_test_control("gh-1", 1, "/api/ok", ".enabled == true")];
 
     let report = engine.scan(&controls, &provider, 2).await;
 
@@ -814,18 +817,26 @@ async fn test_scan_report_metadata() {
 async fn test_audit_makes_correct_api_calls() {
     let engine = AuditEngine::new();
     let provider = MockVendorProvider::new("github")
-        .with_response("/orgs/acme", json!({"two_factor_requirement_enabled": true}))
         .with_response(
-            "/orgs/acme/members?filter=2fa_disabled",
-            json!([]),
-        );
+            "/orgs/acme",
+            json!({"two_factor_requirement_enabled": true}),
+        )
+        .with_response("/orgs/acme/members?filter=2fa_disabled", json!([]));
 
     let control = make_multi_check_control(
         "gh-2fa",
         1,
         vec![
-            ("check-org", "/orgs/acme", ".two_factor_requirement_enabled == true"),
-            ("check-members", "/orgs/acme/members?filter=2fa_disabled", ". | length == 0"),
+            (
+                "check-org",
+                "/orgs/acme",
+                ".two_factor_requirement_enabled == true",
+            ),
+            (
+                "check-members",
+                "/orgs/acme/members?filter=2fa_disabled",
+                ". | length == 0",
+            ),
         ],
     );
 
@@ -848,25 +859,32 @@ async fn test_audit_makes_correct_api_calls() {
 #[tokio::test]
 async fn test_skipped_controls_dont_make_api_calls() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/l2", json!({"enabled": true}));
+    let provider =
+        MockVendorProvider::new("test").with_response("/api/l2", json!({"enabled": true}));
 
-    let controls = vec![
-        make_test_control("ctrl-l2", 2, "/api/l2", ".enabled == true"),
-    ];
+    let controls = vec![make_test_control(
+        "ctrl-l2",
+        2,
+        "/api/l2",
+        ".enabled == true",
+    )];
 
     // Scan at L1: L2 control should be skipped, no API calls
     let report = engine.scan(&controls, &provider, 1).await;
 
     assert_eq!(report.controls[0].status, ControlStatus::Skip);
-    assert_eq!(provider.call_count(), 0, "Skipped controls must not make API calls");
+    assert_eq!(
+        provider.call_count(),
+        0,
+        "Skipped controls must not make API calls"
+    );
 }
 
 #[tokio::test]
 async fn test_non_get_methods_dont_execute_api_call() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/v1/test", json!({"enabled": true}));
+    let provider =
+        MockVendorProvider::new("test").with_response("/api/v1/test", json!({"enabled": true}));
 
     let control = make_control_with_method("post-ctrl", HttpMethod::POST);
     let _result = engine.audit_control(&control, &provider).await;
@@ -882,8 +900,8 @@ async fn test_non_get_methods_dont_execute_api_call() {
 #[tokio::test]
 async fn test_single_api_call_per_check() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/endpoint", json!({"status": "active"}));
+    let provider =
+        MockVendorProvider::new("test").with_response("/api/endpoint", json!({"status": "active"}));
 
     let controls = vec![
         make_test_control("ctrl-1", 1, "/api/endpoint", r#".status == "active""#),
@@ -923,8 +941,8 @@ async fn test_empty_controls_list() {
 #[tokio::test]
 async fn test_control_result_preserves_metadata() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("github")
-        .with_response("/api/test", json!({"enabled": true}));
+    let provider =
+        MockVendorProvider::new("github").with_response("/api/test", json!({"enabled": true}));
 
     let mut control = make_test_control("gh-meta", 2, "/api/test", ".enabled == true");
     control.severity = Severity::Critical;
@@ -949,22 +967,25 @@ async fn test_control_result_preserves_metadata() {
 #[tokio::test]
 async fn test_check_result_has_duration() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/test", json!({"enabled": true}));
+    let provider =
+        MockVendorProvider::new("test").with_response("/api/test", json!({"enabled": true}));
 
     let control = make_test_control("dur-1", 1, "/api/test", ".enabled == true");
     let result = engine.audit_control(&control, &provider).await;
 
     // Duration should be a non-negative value (the mock is instant, so likely 0-1ms)
-    assert!(result.checks[0].duration_ms < 1000, "Check should complete quickly with mock");
+    assert!(
+        result.checks[0].duration_ms < 1000,
+        "Check should complete quickly with mock"
+    );
 }
 
 #[tokio::test]
 async fn test_error_takes_precedence_over_failure() {
     let engine = AuditEngine::new();
     // First endpoint returns data that causes a fail, second endpoint is missing (error)
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/fail", json!({"enabled": false}));
+    let provider =
+        MockVendorProvider::new("test").with_response("/api/fail", json!({"enabled": false}));
 
     let control = make_multi_check_control(
         "mixed-1",
@@ -986,8 +1007,7 @@ async fn test_error_takes_precedence_over_failure() {
 #[tokio::test]
 async fn test_null_json_response_handling() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test")
-        .with_response("/api/null", json!(null));
+    let provider = MockVendorProvider::new("test").with_response("/api/null", json!(null));
 
     let control = make_test_control("null-1", 1, "/api/null", ". == null");
     let result = engine.audit_control(&control, &provider).await;
@@ -1024,10 +1044,8 @@ async fn test_nested_json_field_access() {
 #[tokio::test]
 async fn test_numeric_comparison_in_jq() {
     let engine = AuditEngine::new();
-    let provider = MockVendorProvider::new("test").with_response(
-        "/api/timeout",
-        json!({"session_timeout_minutes": 30}),
-    );
+    let provider = MockVendorProvider::new("test")
+        .with_response("/api/timeout", json!({"session_timeout_minutes": 30}));
 
     let control = make_test_control(
         "timeout-1",

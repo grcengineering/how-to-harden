@@ -379,7 +379,12 @@ mod tests {
 
     #[test]
     fn severity_serde_roundtrip() {
-        for severity in [Severity::Critical, Severity::High, Severity::Medium, Severity::Low] {
+        for severity in [
+            Severity::Critical,
+            Severity::High,
+            Severity::Medium,
+            Severity::Low,
+        ] {
             let json = serde_json::to_string(&severity).unwrap();
             let deserialized: Severity = serde_json::from_str(&json).unwrap();
             assert_eq!(deserialized, severity);
@@ -388,9 +393,15 @@ mod tests {
 
     #[test]
     fn severity_serializes_to_lowercase() {
-        assert_eq!(serde_json::to_string(&Severity::Critical).unwrap(), "\"critical\"");
+        assert_eq!(
+            serde_json::to_string(&Severity::Critical).unwrap(),
+            "\"critical\""
+        );
         assert_eq!(serde_json::to_string(&Severity::High).unwrap(), "\"high\"");
-        assert_eq!(serde_json::to_string(&Severity::Medium).unwrap(), "\"medium\"");
+        assert_eq!(
+            serde_json::to_string(&Severity::Medium).unwrap(),
+            "\"medium\""
+        );
         assert_eq!(serde_json::to_string(&Severity::Low).unwrap(), "\"low\"");
     }
 
@@ -398,7 +409,13 @@ mod tests {
 
     #[test]
     fn http_method_serde_roundtrip() {
-        for method in [HttpMethod::GET, HttpMethod::POST, HttpMethod::PUT, HttpMethod::DELETE, HttpMethod::PATCH] {
+        for method in [
+            HttpMethod::GET,
+            HttpMethod::POST,
+            HttpMethod::PUT,
+            HttpMethod::DELETE,
+            HttpMethod::PATCH,
+        ] {
             let json = serde_json::to_string(&method).unwrap();
             let deserialized: HttpMethod = serde_json::from_str(&json).unwrap();
             assert_eq!(deserialized, method);

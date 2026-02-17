@@ -57,7 +57,9 @@ pub enum HthError {
     #[error("Terraform generation error: {0}")]
     TerraformGen(String),
 
-    #[error("Audit check '{check_id}' in control '{control_id}' uses non-GET method {method} — scan mode requires GET only")]
+    #[error(
+        "Audit check '{check_id}' in control '{control_id}' uses non-GET method {method} — scan mode requires GET only"
+    )]
     ScanWriteViolation {
         control_id: String,
         check_id: String,

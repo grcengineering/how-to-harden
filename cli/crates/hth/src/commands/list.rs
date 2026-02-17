@@ -2,7 +2,7 @@ use std::path::Path;
 
 use anyhow::Result;
 use clap::Args;
-use comfy_table::{Cell, Color, Table, presets::UTF8_FULL, modifiers::UTF8_ROUND_CORNERS};
+use comfy_table::{Cell, Color, Table, modifiers::UTF8_ROUND_CORNERS, presets::UTF8_FULL};
 
 use hth_core::loader;
 use hth_core::models::Framework;
@@ -27,11 +27,7 @@ pub struct ListArgs {
     tags: bool,
 }
 
-pub async fn run(
-    args: ListArgs,
-    packs_dir: &str,
-    registry: &VendorRegistry,
-) -> Result<()> {
+pub async fn run(args: ListArgs, packs_dir: &str, registry: &VendorRegistry) -> Result<()> {
     let packs_path = Path::new(packs_dir);
 
     // Default to listing vendors if no specific flag

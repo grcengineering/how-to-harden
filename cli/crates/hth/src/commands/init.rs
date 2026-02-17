@@ -17,10 +17,7 @@ pub async fn run(args: InitArgs) -> Result<()> {
     let config_path = ".hth.toml";
 
     if std::path::Path::new(config_path).exists() {
-        eprintln!(
-            "  {} already exists",
-            style(config_path).yellow()
-        );
+        eprintln!("  {} already exists", style(config_path).yellow());
         return Ok(());
     }
 

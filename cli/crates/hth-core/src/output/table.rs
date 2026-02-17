@@ -1,4 +1,4 @@
-use comfy_table::{modifiers::UTF8_ROUND_CORNERS, presets::UTF8_FULL, Cell, Color, Table};
+use comfy_table::{Cell, Color, Table, modifiers::UTF8_ROUND_CORNERS, presets::UTF8_FULL};
 use console::style;
 
 use crate::models::{CheckStatus, ControlStatus, ScanReport, Severity};
@@ -93,7 +93,10 @@ fn format_checks_summary(checks: &[crate::models::CheckResult]) -> String {
     if checks.is_empty() {
         return "—".to_string();
     }
-    let pass = checks.iter().filter(|c| c.status == CheckStatus::Pass).count();
+    let pass = checks
+        .iter()
+        .filter(|c| c.status == CheckStatus::Pass)
+        .count();
     let total = checks.len();
     format!("{}/{}", pass, total)
 }

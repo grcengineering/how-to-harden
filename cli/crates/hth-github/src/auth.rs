@@ -15,9 +15,7 @@ impl GitHubAuth {
     pub fn from_env() -> Result<Self, String> {
         let token = std::env::var("GITHUB_TOKEN")
             .or_else(|_| std::env::var("GH_TOKEN"))
-            .map_err(|_| {
-                "Set GITHUB_TOKEN or GH_TOKEN environment variable".to_string()
-            })?;
+            .map_err(|_| "Set GITHUB_TOKEN or GH_TOKEN environment variable".to_string())?;
         Ok(Self {
             token: SecretString::from(token),
         })

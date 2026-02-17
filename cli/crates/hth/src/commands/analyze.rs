@@ -19,15 +19,8 @@ pub struct AnalyzeArgs {
     supply_chain: bool,
 }
 
-pub async fn run(
-    args: AnalyzeArgs,
-    packs_dir: &str,
-    _registry: &VendorRegistry,
-) -> Result<()> {
-    eprintln!(
-        "\n{}",
-        style("  Stack Analysis").bold().cyan()
-    );
+pub async fn run(args: AnalyzeArgs, packs_dir: &str, _registry: &VendorRegistry) -> Result<()> {
+    eprintln!("\n{}", style("  Stack Analysis").bold().cyan());
 
     if args.stack.is_empty() {
         eprintln!("  Specify vendors with --stack (e.g., --stack github,slack,salesforce)");

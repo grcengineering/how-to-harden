@@ -92,10 +92,7 @@ pub struct ReportConfig {
 impl Default for ReportConfig {
     fn default() -> Self {
         Self {
-            frameworks: vec![
-                "soc2".to_string(),
-                "nist-800-53".to_string(),
-            ],
+            frameworks: vec!["soc2".to_string(), "nist-800-53".to_string()],
             include_passing: false,
         }
     }
@@ -137,13 +134,12 @@ impl HthConfig {
         };
 
         for path in paths_to_try {
-            if path.exists() {
-                if let Ok(content) = std::fs::read_to_string(&path) {
-                    if let Ok(config) = toml::from_str::<HthConfig>(&content) {
-                        tracing::info!("Loaded config from {}", path.display());
-                        return config;
-                    }
-                }
+            if path.exists()
+                && let Ok(content) = std::fs::read_to_string(&path)
+                && let Ok(config) = toml::from_str::<HthConfig>(&content)
+            {
+                tracing::info!("Loaded config from {}", path.display());
+                return config;
             }
         }
 

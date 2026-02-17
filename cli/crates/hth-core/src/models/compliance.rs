@@ -79,12 +79,18 @@ mod tests {
 
     #[test]
     fn from_slug_nist_800_53_hyphen() {
-        assert_eq!(Framework::from_slug("nist-800-53"), Some(Framework::Nist80053));
+        assert_eq!(
+            Framework::from_slug("nist-800-53"),
+            Some(Framework::Nist80053)
+        );
     }
 
     #[test]
     fn from_slug_nist_800_53_underscore() {
-        assert_eq!(Framework::from_slug("nist_800_53"), Some(Framework::Nist80053));
+        assert_eq!(
+            Framework::from_slug("nist_800_53"),
+            Some(Framework::Nist80053)
+        );
     }
 
     #[test]

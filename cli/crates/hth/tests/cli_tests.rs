@@ -79,7 +79,15 @@ fn test_help_output() {
     assert!(output.status.success(), "hth --help should exit 0");
     let text = full_output(&output);
     // Must mention the core subcommands
-    for keyword in &["scan", "validate", "list", "init", "report", "analyze", "remediate"] {
+    for keyword in &[
+        "scan",
+        "validate",
+        "list",
+        "init",
+        "report",
+        "analyze",
+        "remediate",
+    ] {
         assert!(
             text.contains(keyword),
             "help output should mention '{keyword}', got: {text}"
@@ -339,9 +347,11 @@ fn test_list_tags_sorted() {
 fn test_scan_dry_run_github_l1() {
     let output = run(&[
         "scan",
-        "--vendor", "github",
+        "--vendor",
+        "github",
         "--dry-run",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
     assert!(
         output.status.success(),
@@ -363,17 +373,23 @@ fn test_scan_dry_run_github_l1() {
 fn test_scan_dry_run_github_l2_includes_more_controls() {
     let l1_output = run(&[
         "scan",
-        "--vendor", "github",
-        "--profile", "1",
+        "--vendor",
+        "github",
+        "--profile",
+        "1",
         "--dry-run",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
     let l2_output = run(&[
         "scan",
-        "--vendor", "github",
-        "--profile", "2",
+        "--vendor",
+        "github",
+        "--profile",
+        "2",
         "--dry-run",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
 
     let l1_text = full_output(&l1_output);
@@ -382,8 +398,14 @@ fn test_scan_dry_run_github_l2_includes_more_controls() {
     // L1 scan header says "Scanning N controls" where N = 25 (total loaded),
     // but the per-control lines differ: L2 controls show "skip" at L1 but active at L2.
     // Count the lines that do NOT contain "skip" in each output
-    let l1_active = l1_text.lines().filter(|l| !l.contains("skip") && l.contains("checks")).count();
-    let l2_active = l2_text.lines().filter(|l| !l.contains("skip") && l.contains("checks")).count();
+    let l1_active = l1_text
+        .lines()
+        .filter(|l| !l.contains("skip") && l.contains("checks"))
+        .count();
+    let l2_active = l2_text
+        .lines()
+        .filter(|l| !l.contains("skip") && l.contains("checks"))
+        .count();
     assert!(
         l2_active > l1_active,
         "L2 should have more active controls ({l2_active}) than L1 ({l1_active})"
@@ -394,16 +416,22 @@ fn test_scan_dry_run_github_l2_includes_more_controls() {
 fn test_scan_dry_run_github_l3_includes_all_controls() {
     let output = run(&[
         "scan",
-        "--vendor", "github",
-        "--profile", "3",
+        "--vendor",
+        "github",
+        "--profile",
+        "3",
         "--dry-run",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
     assert!(output.status.success());
     let text = full_output(&output);
 
     // At L3, no controls should be skipped
-    let skip_count = text.lines().filter(|l| l.contains("skip, requires L")).count();
+    let skip_count = text
+        .lines()
+        .filter(|l| l.contains("skip, requires L"))
+        .count();
     assert_eq!(
         skip_count, 0,
         "L3 should not skip any controls, but found {skip_count} skipped lines"
@@ -414,9 +442,11 @@ fn test_scan_dry_run_github_l3_includes_all_controls() {
 fn test_scan_dry_run_okta() {
     let output = run(&[
         "scan",
-        "--vendor", "okta",
+        "--vendor",
+        "okta",
         "--dry-run",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
     assert!(
         output.status.success(),
@@ -434,9 +464,11 @@ fn test_scan_dry_run_okta() {
 fn test_scan_dry_run_shows_control_count() {
     let output = run(&[
         "scan",
-        "--vendor", "github",
+        "--vendor",
+        "github",
         "--dry-run",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
     let text = full_output(&output);
     assert!(
@@ -447,11 +479,7 @@ fn test_scan_dry_run_shows_control_count() {
 
 #[test]
 fn test_scan_missing_vendor_flag() {
-    let output = run(&[
-        "scan",
-        "--dry-run",
-        "--packs-dir", &packs_dir(),
-    ]);
+    let output = run(&["scan", "--dry-run", "--packs-dir", &packs_dir()]);
     assert!(
         !output.status.success(),
         "scan without --vendor should fail"
@@ -467,9 +495,11 @@ fn test_scan_missing_vendor_flag() {
 fn test_scan_unknown_vendor() {
     let output = run(&[
         "scan",
-        "--vendor", "nonexistent",
+        "--vendor",
+        "nonexistent",
         "--dry-run",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
     assert!(
         !output.status.success(),
@@ -516,8 +546,8 @@ fn test_init_with_vendor_github() {
     let tmp = tempfile::tempdir().expect("failed to create temp dir");
     let output = run_in(tmp.path(), &["init", "--vendor", "github"]);
     assert!(output.status.success());
-    let content = std::fs::read_to_string(tmp.path().join(".hth.toml"))
-        .expect("failed to read .hth.toml");
+    let content =
+        std::fs::read_to_string(tmp.path().join(".hth.toml")).expect("failed to read .hth.toml");
     assert!(
         content.contains("[vendors.github]"),
         "config should contain [vendors.github] section, got: {content}"
@@ -533,8 +563,8 @@ fn test_init_with_vendor_okta() {
     let tmp = tempfile::tempdir().expect("failed to create temp dir");
     let output = run_in(tmp.path(), &["init", "--vendor", "okta"]);
     assert!(output.status.success());
-    let content = std::fs::read_to_string(tmp.path().join(".hth.toml"))
-        .expect("failed to read .hth.toml");
+    let content =
+        std::fs::read_to_string(tmp.path().join(".hth.toml")).expect("failed to read .hth.toml");
     assert!(
         content.contains("[vendors.okta]"),
         "config should contain [vendors.okta] section, got: {content}"
@@ -563,8 +593,8 @@ fn test_init_does_not_overwrite_existing() {
         "init should warn about existing config, got: {text}"
     );
     // Verify the original content is preserved
-    let content = std::fs::read_to_string(tmp.path().join(".hth.toml"))
-        .expect("failed to read .hth.toml");
+    let content =
+        std::fs::read_to_string(tmp.path().join(".hth.toml")).expect("failed to read .hth.toml");
     assert_eq!(
         content, "# existing config\n",
         "existing config should not be overwritten"
@@ -575,8 +605,8 @@ fn test_init_does_not_overwrite_existing() {
 fn test_init_config_has_scan_section() {
     let tmp = tempfile::tempdir().expect("failed to create temp dir");
     run_in(tmp.path(), &["init"]);
-    let content = std::fs::read_to_string(tmp.path().join(".hth.toml"))
-        .expect("failed to read .hth.toml");
+    let content =
+        std::fs::read_to_string(tmp.path().join(".hth.toml")).expect("failed to read .hth.toml");
     assert!(
         content.contains("[scan]"),
         "config should contain [scan] section, got: {content}"
@@ -593,8 +623,8 @@ fn test_init_config_has_restrictive_permissions() {
     use std::os::unix::fs::PermissionsExt;
     let tmp = tempfile::tempdir().expect("failed to create temp dir");
     run_in(tmp.path(), &["init"]);
-    let metadata = std::fs::metadata(tmp.path().join(".hth.toml"))
-        .expect("failed to read .hth.toml metadata");
+    let metadata =
+        std::fs::metadata(tmp.path().join(".hth.toml")).expect("failed to read .hth.toml metadata");
     let mode = metadata.permissions().mode() & 0o777;
     assert_eq!(
         mode, 0o600,
@@ -608,11 +638,7 @@ fn test_init_config_has_restrictive_permissions() {
 
 #[test]
 fn test_analyze_single_vendor() {
-    let output = run(&[
-        "analyze",
-        "--stack", "github",
-        "--packs-dir", &packs_dir(),
-    ]);
+    let output = run(&["analyze", "--stack", "github", "--packs-dir", &packs_dir()]);
     assert!(
         output.status.success(),
         "analyze --stack github should exit 0; stderr: {}",
@@ -633,8 +659,10 @@ fn test_analyze_single_vendor() {
 fn test_analyze_multi_vendor() {
     let output = run(&[
         "analyze",
-        "--stack", "github,okta",
-        "--packs-dir", &packs_dir(),
+        "--stack",
+        "github,okta",
+        "--packs-dir",
+        &packs_dir(),
     ]);
     assert!(output.status.success());
     let text = full_output(&output);
@@ -648,8 +676,10 @@ fn test_analyze_multi_vendor() {
 fn test_analyze_unknown_vendor_in_stack() {
     let output = run(&[
         "analyze",
-        "--stack", "github,slack",
-        "--packs-dir", &packs_dir(),
+        "--stack",
+        "github,slack",
+        "--packs-dir",
+        &packs_dir(),
     ]);
     assert!(output.status.success());
     let text = full_output(&output);
@@ -662,10 +692,7 @@ fn test_analyze_unknown_vendor_in_stack() {
 
 #[test]
 fn test_analyze_empty_stack() {
-    let output = run(&[
-        "analyze",
-        "--packs-dir", &packs_dir(),
-    ]);
+    let output = run(&["analyze", "--packs-dir", &packs_dir()]);
     assert!(output.status.success());
     let text = full_output(&output);
     assert!(
@@ -680,10 +707,7 @@ fn test_analyze_empty_stack() {
 
 #[test]
 fn test_report_missing_vendor() {
-    let output = run(&[
-        "report",
-        "--packs-dir", &packs_dir(),
-    ]);
+    let output = run(&["report", "--packs-dir", &packs_dir()]);
     assert!(
         !output.status.success(),
         "report without --vendor should fail"
@@ -697,10 +721,7 @@ fn test_report_missing_vendor() {
 
 #[test]
 fn test_remediate_missing_vendor() {
-    let output = run(&[
-        "remediate",
-        "--packs-dir", &packs_dir(),
-    ]);
+    let output = run(&["remediate", "--packs-dir", &packs_dir()]);
     assert!(
         !output.status.success(),
         "remediate without --vendor should fail"
@@ -722,7 +743,8 @@ fn test_verbose_flag_accepted() {
         "--verbose",
         "list",
         "--frameworks",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
     assert!(
         output.status.success(),
@@ -737,7 +759,8 @@ fn test_no_color_flag_accepted() {
         "--no-color",
         "list",
         "--frameworks",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
     assert!(output.status.success(), "--no-color should be accepted");
 }
@@ -748,7 +771,8 @@ fn test_quiet_flag_accepted() {
         "--quiet",
         "list",
         "--frameworks",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
     assert!(output.status.success(), "--quiet should be accepted");
 }
@@ -757,12 +781,17 @@ fn test_quiet_flag_accepted() {
 fn test_output_json_flag_accepted() {
     // The list command renders its own tables, but the flag should still parse
     let output = run(&[
-        "--output", "json",
+        "--output",
+        "json",
         "list",
         "--frameworks",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
-    assert!(output.status.success(), "--output json should be accepted with list");
+    assert!(
+        output.status.success(),
+        "--output json should be accepted with list"
+    );
 }
 
 #[test]
@@ -788,10 +817,7 @@ fn test_packs_resolution_from_non_repo_dir() {
     // Regression: running from outside repo should still work
     // via explicit --packs-dir absolute path
     let tmp = tempfile::tempdir().expect("failed to create temp dir");
-    let output = run_in(
-        tmp.path(),
-        &["validate", "--packs-dir", &packs_dir()],
-    );
+    let output = run_in(tmp.path(), &["validate", "--packs-dir", &packs_dir()]);
     assert!(
         output.status.success(),
         "validate should work from non-repo dir with explicit --packs-dir; stderr: {}",
@@ -838,9 +864,11 @@ fn test_scan_dry_run_from_temp_dir() {
         tmp.path(),
         &[
             "scan",
-            "--vendor", "github",
+            "--vendor",
+            "github",
             "--dry-run",
-            "--packs-dir", &packs_dir(),
+            "--packs-dir",
+            &packs_dir(),
         ],
     );
     assert!(
@@ -856,9 +884,12 @@ fn test_list_controls_shows_severity() {
     let output = run(&["list", "--controls", "--packs-dir", &packs_dir()]);
     let text = full_output(&output);
     // Should contain severity values from the packs
-    let has_severity = text.contains("critical") || text.contains("Critical")
-        || text.contains("high") || text.contains("High")
-        || text.contains("medium") || text.contains("Medium");
+    let has_severity = text.contains("critical")
+        || text.contains("Critical")
+        || text.contains("high")
+        || text.contains("High")
+        || text.contains("medium")
+        || text.contains("Medium");
     assert!(
         has_severity,
         "controls list should show severity levels, got: {text}"
@@ -869,10 +900,13 @@ fn test_list_controls_shows_severity() {
 fn test_scan_dry_run_l1_skips_higher_controls() {
     let output = run(&[
         "scan",
-        "--vendor", "github",
-        "--profile", "1",
+        "--vendor",
+        "github",
+        "--profile",
+        "1",
         "--dry-run",
-        "--packs-dir", &packs_dir(),
+        "--packs-dir",
+        &packs_dir(),
     ]);
     let text = full_output(&output);
     // At L1, L2 and L3 controls should show "skip, requires L2" or "skip, requires L3"

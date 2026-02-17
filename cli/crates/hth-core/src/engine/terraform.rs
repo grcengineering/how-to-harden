@@ -7,10 +7,7 @@ pub struct TerraformGenerator;
 
 impl TerraformGenerator {
     /// Generate Terraform HCL for a set of controls.
-    pub fn generate(
-        controls: &[&Control],
-        provider: &dyn VendorProvider,
-    ) -> HthResult<String> {
+    pub fn generate(controls: &[&Control], provider: &dyn VendorProvider) -> HthResult<String> {
         let mut output = String::new();
 
         // Provider block
@@ -19,16 +16,13 @@ impl TerraformGenerator {
 
         // Resource blocks
         for control in controls {
-            if let Some(ref remediate) = control.remediate {
-                if let Some(ref terraform) = remediate.terraform {
-                    output.push_str(&format!(
-                        "# {} — {}\n",
-                        control.id, control.title
-                    ));
-                    for resource in &terraform.resources {
-                        output.push_str(&Self::resource_to_hcl(resource)?);
-                        output.push('\n');
-                    }
+            if let Some(ref remediate) = control.remediate
+                && let Some(ref terraform) = remediate.terraform
+            {
+                output.push_str(&format!("# {} — {}\n", control.id, control.title));
+                for resource in &terraform.resources {
+                    output.push_str(&Self::resource_to_hcl(resource)?);
+                    output.push('\n');
                 }
             }
         }

@@ -1,5 +1,5 @@
-pub mod auth;
 pub mod api;
+pub mod auth;
 
 use async_trait::async_trait;
 use secrecy::SecretString;
@@ -60,9 +60,7 @@ impl VendorProvider for OktaProvider {
     }
 
     fn auth_headers(&self) -> Vec<(String, String)> {
-        vec![
-            ("Content-Type".to_string(), "application/json".to_string()),
-        ]
+        vec![("Content-Type".to_string(), "application/json".to_string())]
     }
 
     async fn execute_request(
@@ -84,7 +82,10 @@ impl VendorProvider for OktaProvider {
         };
 
         request = request
-            .header("Authorization", format!("SSWS {}", self.token.expose_secret()))
+            .header(
+                "Authorization",
+                format!("SSWS {}", self.token.expose_secret()),
+            )
             .header("Content-Type", "application/json");
 
         if let Some(body) = body {

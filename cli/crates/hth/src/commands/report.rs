@@ -2,7 +2,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use clap::Args;
-use comfy_table::{Cell, Color, Table, presets::UTF8_FULL, modifiers::UTF8_ROUND_CORNERS};
+use comfy_table::{Cell, Color, Table, modifiers::UTF8_ROUND_CORNERS, presets::UTF8_FULL};
 use console::style;
 
 use hth_core::engine::AuditEngine;
@@ -62,9 +62,9 @@ pub async fn run(
         serde_json::from_str(&content)?
     } else {
         let pack = loader::load_pack(Path::new(packs_dir), vendor)?;
-        let provider = registry.get(vendor).context(format!(
-            "Vendor '{vendor}' is not configured"
-        ))?;
+        let provider = registry
+            .get(vendor)
+            .context(format!("Vendor '{vendor}' is not configured"))?;
 
         eprintln!(
             "{}",
@@ -76,17 +76,17 @@ pub async fn run(
     };
 
     // If JSON/SARIF output is requested, use the standard formatters
-    if let Some(format) = OutputFormat::from_str(output_format) {
-        if format != OutputFormat::Table {
-            let rendered = output::render_report(&report, format);
-            if let Some(output_file) = &args.output_file {
-                std::fs::write(output_file, &rendered)?;
-                eprintln!("  Report written to {}", style(output_file).green());
-            } else {
-                print!("{rendered}");
-            }
-            return Ok(());
+    if let Ok(format) = output_format.parse::<OutputFormat>()
+        && format != OutputFormat::Table
+    {
+        let rendered = output::render_report(&report, format);
+        if let Some(output_file) = &args.output_file {
+            std::fs::write(output_file, &rendered)?;
+            eprintln!("  Report written to {}", style(output_file).green());
+        } else {
+            print!("{rendered}");
         }
+        return Ok(());
     }
 
     // Table-based compliance report

@@ -5,12 +5,11 @@ use crate::models::Control;
 
 /// Load a single control from a YAML file.
 pub fn load_control(path: &Path) -> HthResult<Control> {
-    let content = std::fs::read_to_string(path).map_err(|e| HthError::Io(e))?;
-    let control: Control =
-        serde_yaml::from_str(&content).map_err(|e| HthError::YamlParse {
-            path: path.display().to_string(),
-            source: e,
-        })?;
+    let content = std::fs::read_to_string(path).map_err(HthError::Io)?;
+    let control: Control = serde_yaml::from_str(&content).map_err(|e| HthError::YamlParse {
+        path: path.display().to_string(),
+        source: e,
+    })?;
     Ok(control)
 }
 
@@ -23,7 +22,7 @@ pub fn load_controls_from_dir(dir: &Path) -> HthResult<Vec<Control>> {
     }
 
     let mut entries: Vec<_> = std::fs::read_dir(dir)
-        .map_err(|e| HthError::Io(e))?
+        .map_err(HthError::Io)?
         .filter_map(|entry| entry.ok())
         .filter(|entry| {
             entry
@@ -70,7 +69,10 @@ mod tests {
 
         if packs_dir.exists() {
             let controls = load_controls_from_dir(&packs_dir).unwrap();
-            assert!(!controls.is_empty(), "Should load at least one Okta control");
+            assert!(
+                !controls.is_empty(),
+                "Should load at least one Okta control"
+            );
 
             // Verify first control has expected structure
             for control in &controls {

@@ -89,11 +89,7 @@ impl AuditEngine {
     }
 
     /// Run a single audit check: call the API, evaluate jq, compare to expected.
-    async fn run_check(
-        &self,
-        check: &AuditCheck,
-        provider: &dyn VendorProvider,
-    ) -> CheckResult {
+    async fn run_check(&self, check: &AuditCheck, provider: &dyn VendorProvider) -> CheckResult {
         let start = Instant::now();
 
         // Enforce GET-only for audit checks

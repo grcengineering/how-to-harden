@@ -101,7 +101,11 @@ fn native_functions() -> Vec<(String, usize, Native<Val>)> {
         ("explode".into(), 0, Native::new(native_explode)),
         ("implode".into(), 0, Native::new(native_implode)),
         ("now".into(), 0, Native::new(native_now)),
-        ("fromdateiso8601".into(), 0, Native::new(native_fromdateiso8601)),
+        (
+            "fromdateiso8601".into(),
+            0,
+            Native::new(native_fromdateiso8601),
+        ),
         ("todateiso8601".into(), 0, Native::new(native_todateiso8601)),
         ("strftime".into(), 1, Native::new(native_strftime)),
         ("floor".into(), 0, Native::new(native_floor)),
@@ -375,7 +379,7 @@ fn native_test2<'a>(args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a> {
                             return Err(Error::Type(
                                 input2.clone(),
                                 jaq_interpret::error::Type::Str,
-                            ))
+                            ));
                         }
                     };
                     let re = build_regex(&pattern, flags)?;
@@ -393,15 +397,15 @@ fn regex_match_to_val(m: &regex::Match, captures: &regex::Captures) -> Val {
         if i == 0 {
             continue;
         }
-        if let Some(c) = cap {
-            if let Ok(cap_obj) = Val::from_map([
+        if let Some(c) = cap
+            && let Ok(cap_obj) = Val::from_map([
                 (val_str("offset"), Val::Int(c.start() as isize)),
                 (val_str("length"), Val::Int(c.len() as isize)),
                 (val_str("string"), Val::from(c.as_str().to_string())),
                 (val_str("name"), Val::Null),
-            ]) {
-                cap_vals.push(cap_obj);
-            }
+            ])
+        {
+            cap_vals.push(cap_obj);
         }
     }
 
@@ -425,10 +429,10 @@ fn do_match(input_str: &str, pattern: &str, flags: &str) -> Result<Vec<Val>, Err
                 results.push(regex_match_to_val(&m, &caps));
             }
         }
-    } else if let Some(caps) = re.captures(input_str) {
-        if let Some(m) = caps.get(0) {
-            results.push(regex_match_to_val(&m, &caps));
-        }
+    } else if let Some(caps) = re.captures(input_str)
+        && let Some(m) = caps.get(0)
+    {
+        results.push(regex_match_to_val(&m, &caps));
     }
     Ok(results)
 }
@@ -452,7 +456,7 @@ fn native_match1<'a>(args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a> 
                 return box_once(Err(Error::Type(
                     input.clone(),
                     jaq_interpret::error::Type::Str,
-                )))
+                )));
             }
         };
         match do_match(&input_str, &pattern, "") {
@@ -493,7 +497,7 @@ fn native_match2<'a>(args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a> 
                             return box_once(Err(Error::Type(
                                 flags_val,
                                 jaq_interpret::error::Type::Str,
-                            )))
+                            )));
                         }
                     };
                     let input_str = match &input2 {
@@ -502,7 +506,7 @@ fn native_match2<'a>(args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a> 
                             return box_once(Err(Error::Type(
                                 input2.clone(),
                                 jaq_interpret::error::Type::Str,
-                            )))
+                            )));
                         }
                     };
                     match do_match(&input_str, &pattern, &flags) {
@@ -540,10 +544,16 @@ fn native_split<'a>(args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a> {
         };
         // Try as regex first, fall back to literal split
         if let Ok(re) = regex::Regex::new(sep) {
-            let parts: Vec<Val> = re.split(input_str).map(|s| Val::from(s.to_string())).collect();
+            let parts: Vec<Val> = re
+                .split(input_str)
+                .map(|s| Val::from(s.to_string()))
+                .collect();
             Ok(Val::arr(parts))
         } else {
-            let parts: Vec<Val> = input_str.split(sep).map(|s| Val::from(s.to_string())).collect();
+            let parts: Vec<Val> = input_str
+                .split(sep)
+                .map(|s| Val::from(s.to_string()))
+                .collect();
             Ok(Val::arr(parts))
         }
     }))
@@ -607,11 +617,13 @@ fn native_gsub<'a>(args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a> {
                             return Err(Error::Type(
                                 input2.clone(),
                                 jaq_interpret::error::Type::Str,
-                            ))
+                            ));
                         }
                     };
                     let re = build_regex(&pattern, "")?;
-                    Ok(Val::from(re.replace_all(input_str, replacement).to_string()))
+                    Ok(Val::from(
+                        re.replace_all(input_str, replacement).to_string(),
+                    ))
                 }),
         ) as Out
     }))
@@ -649,7 +661,7 @@ fn native_sub<'a>(args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a> {
                             return Err(Error::Type(
                                 input2.clone(),
                                 jaq_interpret::error::Type::Str,
-                            ))
+                            ));
                         }
                     };
                     let re = build_regex(&pattern, "")?;
@@ -714,7 +726,10 @@ fn native_tonumber<'a>(_args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'
                 box_once(Err(Error::str(format!("cannot convert {s:?} to number"))))
             }
         }
-        other => box_once(Err(Error::Type(other.clone(), jaq_interpret::error::Type::Num))),
+        other => box_once(Err(Error::Type(
+            other.clone(),
+            jaq_interpret::error::Type::Num,
+        ))),
     }
 }
 
@@ -724,7 +739,10 @@ fn native_explode<'a>(_args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a
             let codepoints: Vec<Val> = s.chars().map(|c| Val::Int(c as isize)).collect();
             box_once(Ok(Val::arr(codepoints)))
         }
-        other => box_once(Err(Error::Type(other.clone(), jaq_interpret::error::Type::Str))),
+        other => box_once(Err(Error::Type(
+            other.clone(),
+            jaq_interpret::error::Type::Str,
+        ))),
     }
 }
 
@@ -739,12 +757,20 @@ fn native_implode<'a>(_args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a
                             s.push(c);
                         }
                     }
-                    _ => return box_once(Err(Error::Type(v.clone(), jaq_interpret::error::Type::Int))),
+                    _ => {
+                        return box_once(Err(Error::Type(
+                            v.clone(),
+                            jaq_interpret::error::Type::Int,
+                        )));
+                    }
                 }
             }
             box_once(Ok(Val::from(s)))
         }
-        other => box_once(Err(Error::Type(other.clone(), jaq_interpret::error::Type::Arr))),
+        other => box_once(Err(Error::Type(
+            other.clone(),
+            jaq_interpret::error::Type::Arr,
+        ))),
     }
 }
 
@@ -762,43 +788,38 @@ fn native_fromdateiso8601<'a>(_args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -
             if let Ok(dt) = chrono::DateTime::parse_from_rfc3339(s) {
                 box_once(Ok(Val::Int(dt.timestamp() as isize)))
             } else if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S") {
-                box_once(Ok(Val::Int(
-                    dt.and_utc().timestamp() as isize,
-                )))
+                box_once(Ok(Val::Int(dt.and_utc().timestamp() as isize)))
             } else if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%SZ") {
-                box_once(Ok(Val::Int(
-                    dt.and_utc().timestamp() as isize,
-                )))
+                box_once(Ok(Val::Int(dt.and_utc().timestamp() as isize)))
             } else if let Ok(dt) = chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d") {
                 box_once(Ok(Val::Int(
-                    dt.and_hms_opt(0, 0, 0)
-                        .unwrap()
-                        .and_utc()
-                        .timestamp() as isize,
+                    dt.and_hms_opt(0, 0, 0).unwrap().and_utc().timestamp() as isize,
                 )))
             } else {
-                box_once(Err(Error::str(format!(
-                    "cannot parse date: {s}"
-                ))))
+                box_once(Err(Error::str(format!("cannot parse date: {s}"))))
             }
         }
-        other => box_once(Err(Error::Type(other.clone(), jaq_interpret::error::Type::Str))),
+        other => box_once(Err(Error::Type(
+            other.clone(),
+            jaq_interpret::error::Type::Str,
+        ))),
     }
 }
 
 fn native_todateiso8601<'a>(_args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a> {
     match &cv.1 {
         Val::Int(ts) => {
-            let dt = chrono::DateTime::from_timestamp(*ts as i64, 0)
-                .unwrap_or_default();
+            let dt = chrono::DateTime::from_timestamp(*ts as i64, 0).unwrap_or_default();
             box_once(Ok(Val::from(dt.format("%Y-%m-%dT%H:%M:%SZ").to_string())))
         }
         Val::Float(ts) => {
-            let dt = chrono::DateTime::from_timestamp(*ts as i64, 0)
-                .unwrap_or_default();
+            let dt = chrono::DateTime::from_timestamp(*ts as i64, 0).unwrap_or_default();
             box_once(Ok(Val::from(dt.format("%Y-%m-%dT%H:%M:%SZ").to_string())))
         }
-        other => box_once(Err(Error::Type(other.clone(), jaq_interpret::error::Type::Num))),
+        other => box_once(Err(Error::Type(
+            other.clone(),
+            jaq_interpret::error::Type::Num,
+        ))),
     }
 }
 
@@ -849,7 +870,10 @@ fn native_fabs<'a>(_args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a> {
     match &cv.1 {
         Val::Int(i) => box_once(Ok(Val::Int(i.unsigned_abs() as isize))),
         Val::Float(f) => box_once(Ok(Val::Float(f.abs()))),
-        other => box_once(Err(Error::Type(other.clone(), jaq_interpret::error::Type::Num))),
+        other => box_once(Err(Error::Type(
+            other.clone(),
+            jaq_interpret::error::Type::Num,
+        ))),
     }
 }
 
@@ -885,8 +909,12 @@ fn native_pow<'a>(args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'a> {
         };
         Box::new(exp_filter.clone().run(cv.clone()).map(move |exp| {
             let exp = exp?;
-            let b = base.as_float().map_err(|_| Error::Type(base.clone(), jaq_interpret::error::Type::Num))?;
-            let e = exp.as_float().map_err(|_| Error::Type(exp.clone(), jaq_interpret::error::Type::Num))?;
+            let b = base
+                .as_float()
+                .map_err(|_| Error::Type(base.clone(), jaq_interpret::error::Type::Num))?;
+            let e = exp
+                .as_float()
+                .map_err(|_| Error::Type(exp.clone(), jaq_interpret::error::Type::Num))?;
             Ok(Val::Float(b.powf(e)))
         })) as Out
     }))
@@ -941,20 +969,78 @@ fn native_env<'a>(_args: jaq_interpret::Args<'a, Val>, _cv: Cv<'a>) -> Out<'a> {
 
 fn native_builtins<'a>(_args: jaq_interpret::Args<'a, Val>, _cv: Cv<'a>) -> Out<'a> {
     let builtins = vec![
-        "length", "empty", "not", "type", "null", "true", "false",
-        "error", "has", "contains", "keys", "keys_unsorted", "values",
-        "sort", "reverse", "add", "min", "max", "test", "match",
-        "capture", "split", "join", "startswith", "endswith",
-        "tostring", "tonumber", "explode", "implode", "now",
-        "fromdateiso8601", "todateiso8601", "strftime",
-        "floor", "ceil", "round", "fabs", "log", "log2", "sqrt", "pow",
-        "infinite", "nan", "path", "getpath", "env", "builtins",
-        "select", "map", "any", "all", "first", "last", "limit",
-        "from_entries", "to_entries", "with_entries", "flatten",
-        "recurse", "unique", "unique_by", "sort_by", "group_by",
-        "min_by", "max_by", "tojson", "fromjson",
+        "length",
+        "empty",
+        "not",
+        "type",
+        "null",
+        "true",
+        "false",
+        "error",
+        "has",
+        "contains",
+        "keys",
+        "keys_unsorted",
+        "values",
+        "sort",
+        "reverse",
+        "add",
+        "min",
+        "max",
+        "test",
+        "match",
+        "capture",
+        "split",
+        "join",
+        "startswith",
+        "endswith",
+        "tostring",
+        "tonumber",
+        "explode",
+        "implode",
+        "now",
+        "fromdateiso8601",
+        "todateiso8601",
+        "strftime",
+        "floor",
+        "ceil",
+        "round",
+        "fabs",
+        "log",
+        "log2",
+        "sqrt",
+        "pow",
+        "infinite",
+        "nan",
+        "path",
+        "getpath",
+        "env",
+        "builtins",
+        "select",
+        "map",
+        "any",
+        "all",
+        "first",
+        "last",
+        "limit",
+        "from_entries",
+        "to_entries",
+        "with_entries",
+        "flatten",
+        "recurse",
+        "unique",
+        "unique_by",
+        "sort_by",
+        "group_by",
+        "min_by",
+        "max_by",
+        "tojson",
+        "fromjson",
     ];
-    let vals: Vec<Val> = builtins.into_iter().map(|s| Val::from(s.to_string())).collect();
+    let vals: Vec<Val> = builtins
+        .into_iter()
+        .map(|s| Val::from(s.to_string()))
+        .collect();
     box_once(Ok(Val::arr(vals)))
 }
 
@@ -972,7 +1058,10 @@ fn native_fromjson<'a>(_args: jaq_interpret::Args<'a, Val>, cv: Cv<'a>) -> Out<'
             Ok(v) => box_once(Ok(Val::from(v))),
             Err(e) => box_once(Err(Error::str(format!("fromjson: {e}")))),
         },
-        other => box_once(Err(Error::Type(other.clone(), jaq_interpret::error::Type::Str))),
+        other => box_once(Err(Error::Type(
+            other.clone(),
+            jaq_interpret::error::Type::Str,
+        ))),
     }
 }
 
@@ -990,7 +1079,9 @@ mod tests {
         register_stdlib(&mut ctx);
         let filter = ctx.compile(filter);
         if !ctx.errs.is_empty() {
-            let msgs: Vec<String> = ctx.errs.iter()
+            let msgs: Vec<String> = ctx
+                .errs
+                .iter()
                 .map(|(err, span)| format!("span={span:?}, err={err}"))
                 .collect();
             panic!("Compile errors:\n{}", msgs.join("\n"));
@@ -1026,10 +1117,7 @@ mod tests {
 
     #[test]
     fn test_gsub() {
-        assert_eq!(
-            eval(r#"gsub("o"; "0")"#, &json!("foobar")),
-            json!("f00bar")
-        );
+        assert_eq!(eval(r#"gsub("o"; "0")"#, &json!("foobar")), json!("f00bar"));
     }
 
     #[test]
@@ -1038,12 +1126,15 @@ mod tests {
         let mut ctx = ParseCtx::new(Vec::new());
         register_stdlib(&mut ctx);
 
-        let src = "def myselect(f): if f then . else empty end; [1, 2, 3] | [.[] | myselect(. > 1)]";
+        let src =
+            "def myselect(f): if f then . else empty end; [1, 2, 3] | [.[] | myselect(. > 1)]";
         let (filter, errs) = jaq_parse::parse(src, jaq_parse::main());
         assert!(errs.is_empty(), "Parse errors: {:?}", errs);
         let _filter = ctx.compile(filter.unwrap());
         if !ctx.errs.is_empty() {
-            let msgs: Vec<String> = ctx.errs.iter()
+            let msgs: Vec<String> = ctx
+                .errs
+                .iter()
                 .map(|(err, span)| format!("span={span:?}, err={err}"))
                 .collect();
             panic!("Compile errors:\n{}", msgs.join("\n"));
