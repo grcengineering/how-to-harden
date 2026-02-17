@@ -54,7 +54,8 @@ title: Home
         </button>
       </div>
 
-      <div class="filter-dropdown" id="filter-category">
+      <!-- Desktop: dropdown menus -->
+      <div class="filter-dropdown desktop-only" id="filter-category">
         <button class="filter-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
           System Type
@@ -72,7 +73,7 @@ title: Home
         </div>
       </div>
 
-      <div class="filter-dropdown" id="filter-status">
+      <div class="filter-dropdown desktop-only" id="filter-status">
         <button class="filter-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
           Guide Status
@@ -86,7 +87,7 @@ title: Home
         </div>
       </div>
 
-      <div class="filter-dropdown" id="filter-packs">
+      <div class="filter-dropdown desktop-only" id="filter-packs">
         <button class="filter-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
           Code Packs
@@ -96,6 +97,24 @@ title: Home
           <label class="filter-option"><input type="radio" name="packs" value="all" checked> All Guides</label>
           <label class="filter-option"><input type="radio" name="packs" value="has-pack"> With Code Pack</label>
         </div>
+      </div>
+
+      <!-- Mobile: flat horizontal scrollable chip strip (no dropdowns) -->
+      <div class="mobile-chips" id="mobile-chips">
+        <button class="chip chip-active" data-filter="category" data-value="all">All</button>
+        <button class="chip" data-filter="category" data-value="identity"><span class="dot dot-identity"></span> Identity</button>
+        <button class="chip" data-filter="category" data-value="security"><span class="dot dot-security"></span> Security</button>
+        <button class="chip" data-filter="category" data-value="devops"><span class="dot dot-devops"></span> DevOps</button>
+        <button class="chip" data-filter="category" data-value="data"><span class="dot dot-data"></span> Data</button>
+        <button class="chip" data-filter="category" data-value="productivity"><span class="dot dot-productivity"></span> Productivity</button>
+        <button class="chip" data-filter="category" data-value="hr"><span class="dot dot-hr"></span> HR</button>
+        <button class="chip" data-filter="category" data-value="marketing"><span class="dot dot-marketing"></span> Marketing</button>
+        <span class="chip-divider"></span>
+        <button class="chip" data-filter="status" data-value="ai-drafted"><span class="dot dot-drafted"></span> Draft</button>
+        <button class="chip" data-filter="status" data-value="human-reviewed"><span class="dot dot-reviewed"></span> Reviewed</button>
+        <button class="chip" data-filter="status" data-value="human-verified"><span class="dot dot-verified"></span> Verified</button>
+        <span class="chip-divider"></span>
+        <button class="chip" data-filter="packs" data-value="has-pack">&lt;/&gt; Code Pack</button>
       </div>
     </div>
   </div>
@@ -264,6 +283,61 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!e.target.closest('.filter-dropdown')) closeAllDropdowns();
   }
   document.addEventListener('click', handleOutsideClick);
+
+  // --- Mobile chip strip logic ---
+  var mobileChips = document.querySelectorAll('#mobile-chips .chip');
+  mobileChips.forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      var filter = this.dataset.filter;
+      var value = this.dataset.value;
+
+      if (filter === 'category') {
+        // Category: exclusive selection (only one active at a time)
+        mobileChips.forEach(function(c) {
+          if (c.dataset.filter === 'category') c.classList.remove('chip-active');
+        });
+        // If tapping already-active non-All chip, reset to All
+        if (activeCategory === value && value !== 'all') {
+          value = 'all';
+          mobileChips.forEach(function(c) {
+            if (c.dataset.filter === 'category' && c.dataset.value === 'all') c.classList.add('chip-active');
+          });
+        } else {
+          this.classList.add('chip-active');
+        }
+        activeCategory = value;
+        // Sync desktop dropdown radio
+        var radio = document.querySelector('input[name="category"][value="' + value + '"]');
+        if (radio) radio.checked = true;
+      } else if (filter === 'status') {
+        // Status: exclusive selection
+        mobileChips.forEach(function(c) {
+          if (c.dataset.filter === 'status') c.classList.remove('chip-active');
+        });
+        if (activeStatus === value) {
+          value = 'all';
+          // No chip highlighted = all status
+        } else {
+          this.classList.add('chip-active');
+        }
+        activeStatus = value;
+        var radio = document.querySelector('input[name="status"][value="' + value + '"]');
+        if (radio) radio.checked = true;
+      } else if (filter === 'packs') {
+        // Packs: toggle on/off
+        if (activePack === value) {
+          value = 'all';
+          this.classList.remove('chip-active');
+        } else {
+          this.classList.add('chip-active');
+        }
+        activePack = value;
+        var radio = document.querySelector('input[name="packs"][value="' + value + '"]');
+        if (radio) radio.checked = true;
+      }
+      filterGuides();
+    });
+  });
   document.addEventListener('touchstart', handleOutsideClick, { passive: true });
 
   // Update button text when a non-default option is selected
