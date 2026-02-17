@@ -88,6 +88,9 @@ Configure IP access lists to restrict which IP addresses can connect to your Atl
 
 ---
 
+
+{% include pack-code.html vendor="mongodb-atlas" section="1.1" %}
+
 ### 1.2 Configure VPC Peering or Private Endpoints
 
 **Profile Level:** L2 (Hardened)
@@ -195,6 +198,9 @@ Create database users with role-based access control (RBAC) following the princi
 **Time to Complete:** ~30 minutes
 
 ---
+
+
+{% include pack-code.html vendor="mongodb-atlas" section="2.1" %}
 
 ### 2.2 Enable Multi-Factor Authentication for Atlas Console
 
@@ -358,6 +364,9 @@ Configure customer-managed encryption keys for additional control over data encr
 
 ---
 
+
+{% include pack-code.html vendor="mongodb-atlas" section="3.2" %}
+
 ### 3.3 Configure Client-Side Field Level Encryption
 
 **Profile Level:** L3 (Maximum Security)
@@ -415,6 +424,9 @@ Enable database auditing to log authentication attempts and data access.
    - Third-party SIEM
 
 ---
+
+
+{% include pack-code.html vendor="mongodb-atlas" section="4.1" %}
 
 ### 4.2 Monitor Atlas Activity Feed
 

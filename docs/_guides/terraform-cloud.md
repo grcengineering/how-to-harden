@@ -87,6 +87,9 @@ This guide covers Terraform Cloud security configurations including authenticati
 
 ---
 
+
+{% include pack-code.html vendor="terraform-cloud" section="1.2" %}
+
 ## 2. Workspace Security
 
 ### 2.1 Configure Workspace Restrictions
@@ -107,6 +110,9 @@ This guide covers Terraform Cloud security configurations including authenticati
 3. Enable speculative plans
 
 ---
+
+
+{% include pack-code.html vendor="terraform-cloud" section="2.1" %}
 
 ### 2.2 Sentinel Policy Enforcement
 
@@ -141,6 +147,9 @@ main = rule {
 ```
 
 ---
+
+
+{% include pack-code.html vendor="terraform-cloud" section="2.2" %}
 
 ## 3. State File Security
 
@@ -292,6 +301,9 @@ WHERE action LIKE '%variable%'
 ```
 
 ---
+
+
+{% include pack-code.html vendor="terraform-cloud" section="5.1" %}
 
 ## Appendix A: Edition Compatibility
 

@@ -92,6 +92,9 @@ Secure JumpCloud Admin Portal access with MFA and role-based access controls. Ad
 
 ---
 
+
+{% include pack-code.html vendor="jumpcloud" section="1.1" %}
+
 ### 1.2 Implement Least Privilege Administration
 
 **Profile Level:** L1 (Baseline)
@@ -167,6 +170,9 @@ Require MFA for all user authentication to protected resources including the Use
 **Time to Complete:** ~20 minutes
 
 ---
+
+
+{% include pack-code.html vendor="jumpcloud" section="2.1" %}
 
 ### 2.2 Configure MFA for System Access
 
@@ -258,6 +264,9 @@ Apply to: All Users
 
 ---
 
+
+{% include pack-code.html vendor="jumpcloud" section="3.1" %}
+
 ### 3.2 Configure Device Trust
 
 **Profile Level:** L2 (Hardened)
@@ -341,6 +350,9 @@ Create and apply these essential policies:
 
 ---
 
+
+{% include pack-code.html vendor="jumpcloud" section="4.1" %}
+
 ### 4.2 Configure LDAP & RADIUS Security
 
 **Profile Level:** L2 (Hardened)
@@ -404,6 +416,9 @@ Enable JumpCloud Directory Insights for comprehensive audit logging and security
 **Time to Complete:** ~30 minutes
 
 ---
+
+
+{% include pack-code.html vendor="jumpcloud" section="5.1" %}
 
 ### 5.2 Key Events to Monitor
 

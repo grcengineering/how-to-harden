@@ -134,6 +134,9 @@ resource "auth0_attack_protection" "protection" {
 
 ---
 
+
+{% include pack-code.html vendor="auth0" section="1.1" %}
+
 ### 1.2 Enable Suspicious IP Throttling
 
 **Profile Level:** L1 (Baseline)
@@ -164,6 +167,9 @@ Suspicious IP throttling monitors and limits requests from IP addresses exhibiti
 **Time to Complete:** ~10 minutes
 
 ---
+
+
+{% include pack-code.html vendor="auth0" section="1.2" %}
 
 ### 1.3 Enable Breached Password Detection
 
@@ -197,6 +203,9 @@ Breached Password Detection checks user passwords against known breached credent
 
 ---
 
+
+{% include pack-code.html vendor="auth0" section="1.3" %}
+
 ### 1.4 Configure Bot Detection
 
 **Profile Level:** L2 (Hardened)
@@ -227,6 +236,9 @@ Configure CAPTCHA and bot detection to prevent automated attacks against authent
 3. Set challenge frequency
 
 ---
+
+
+{% include pack-code.html vendor="auth0" section="1.4" %}
 
 ## 2. Authentication & MFA
 
@@ -262,6 +274,9 @@ Configure password policies that enforce complexity requirements while balancing
 **Time to Complete:** ~10 minutes
 
 ---
+
+
+{% include pack-code.html vendor="auth0" section="2.1" %}
 
 ### 2.2 Enable Multi-Factor Authentication
 
@@ -321,6 +336,9 @@ resource "auth0_guardian" "mfa" {
 ```
 
 ---
+
+
+{% include pack-code.html vendor="auth0" section="2.2" %}
 
 ### 2.3 Configure Adaptive MFA
 
@@ -384,6 +402,9 @@ Limit Dashboard admin access to essential personnel and require MFA for all admi
 3. Admins must enroll in MFA on next login
 
 ---
+
+
+{% include pack-code.html vendor="auth0" section="3.1" %}
 
 ### 3.2 Configure Tenant Isolation
 
@@ -495,6 +516,9 @@ Configure Auth0 applications with security best practices.
 
 ---
 
+
+{% include pack-code.html vendor="auth0" section="4.2" %}
+
 ### 4.3 Secure Rules and Actions
 
 **Profile Level:** L2 (Hardened)
@@ -556,6 +580,9 @@ Configure Auth0 logging and integrate with SIEM for security monitoring.
 **Time to Complete:** ~30 minutes
 
 ---
+
+
+{% include pack-code.html vendor="auth0" section="5.1" %}
 
 ### 5.2 Key Events to Monitor
 

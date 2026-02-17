@@ -198,6 +198,9 @@ ALTER ACCOUNT UNSET AUTHENTICATION POLICY;
 
 ---
 
+
+{% include pack-code.html vendor="snowflake" section="1.1" %}
+
 ### 1.2 Implement Service Account Key-Pair Authentication
 
 **Profile Level:** L1 (Baseline)
@@ -296,6 +299,9 @@ REVOKE ROLE ACCOUNTADMIN FROM USER over_privileged_user;
 
 ---
 
+
+{% include pack-code.html vendor="snowflake" section="1.3" %}
+
 ## 2. Network Access Controls
 
 ### 2.1 Implement Network Policies
@@ -389,6 +395,9 @@ SHOW PARAMETERS LIKE 'NETWORK_POLICY' IN USER svc_tableau;
 
 ---
 
+
+{% include pack-code.html vendor="snowflake" section="2.1" %}
+
 ### 2.2 Enable Private Connectivity (PrivateLink/Private Service Connect)
 
 **Profile Level:** L2 (Hardened)
@@ -463,6 +472,9 @@ ALTER SECURITY INTEGRATION tableau_oauth
 
 ---
 
+
+{% include pack-code.html vendor="snowflake" section="3.1" %}
+
 ### 3.2 Implement External OAuth (IdP Integration)
 
 **Profile Level:** L2 (Hardened)
@@ -535,6 +547,9 @@ ALTER TABLE customers MODIFY COLUMN email
 ```
 
 ---
+
+
+{% include pack-code.html vendor="snowflake" section="4.1" %}
 
 ### 4.2 Enable Row Access Policies
 
@@ -649,6 +664,9 @@ WHERE (query_text ILIKE '%GRANT%ACCOUNTADMIN%'
 ```
 
 ---
+
+
+{% include pack-code.html vendor="snowflake" section="5.1" %}
 
 ### 5.2 Forward Logs to SIEM
 

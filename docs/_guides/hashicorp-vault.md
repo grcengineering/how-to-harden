@@ -226,6 +226,9 @@ vault read sys/internal/counters/tokens
 
 ---
 
+
+{% include pack-code.html vendor="hashicorp-vault" section="1.1" %}
+
 ### 1.2 Implement Granular Policies
 
 **Profile Level:** L1 (Baseline)
@@ -295,6 +298,9 @@ EOF
 ```
 
 ---
+
+
+{% include pack-code.html vendor="hashicorp-vault" section="1.2" %}
 
 ### 1.3 Enable Entity and Group Management
 
@@ -394,6 +400,9 @@ EOF
 ```
 
 ---
+
+
+{% include pack-code.html vendor="hashicorp-vault" section="2.1" %}
 
 ### 2.2 Implement Secrets Versioning and Rotation
 
@@ -593,6 +602,9 @@ vault audit list -detailed
 ```
 
 ---
+
+
+{% include pack-code.html vendor="hashicorp-vault" section="4.1" %}
 
 ### 4.2 Configure Audit Log Alerting
 

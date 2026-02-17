@@ -158,6 +158,9 @@ Configure granular roles for least privilege access.
 
 ---
 
+
+{% include pack-code.html vendor="qualys" section="1.3" %}
+
 ### 1.4 Configure IP Restrictions
 
 **Profile Level:** L2 (Hardened)
@@ -228,6 +231,9 @@ Securely manage credentials used for authenticated scanning.
 
 ---
 
+
+{% include pack-code.html vendor="qualys" section="2.1" %}
+
 ### 2.2 Configure Scan Options
 
 **Profile Level:** L1 (Baseline)
@@ -262,6 +268,9 @@ Configure appropriate scan options for comprehensive coverage.
 3. Ensure full coverage
 
 ---
+
+
+{% include pack-code.html vendor="qualys" section="2.2" %}
 
 ### 2.3 Configure Agent Security
 
@@ -435,6 +444,9 @@ Configure comprehensive asset discovery for visibility.
 
 ---
 
+
+{% include pack-code.html vendor="qualys" section="4.1" %}
+
 ### 4.2 Configure Cloud Connector Security
 
 **Profile Level:** L1 (Baseline)
@@ -465,6 +477,9 @@ Securely configure cloud provider connectors.
 3. Configure connector
 
 ---
+
+
+{% include pack-code.html vendor="qualys" section="4.2" %}
 
 ### 4.3 Configure Approval Workflows
 

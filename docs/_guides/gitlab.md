@@ -185,6 +185,9 @@ curl -H "PRIVATE-TOKEN: ${ADMIN_TOKEN}" \
 
 ---
 
+
+{% include pack-code.html vendor="gitlab" section="1.3" %}
+
 ## 2. CI/CD Pipeline Security
 
 ### 2.1 Protect CI/CD Variables
@@ -237,6 +240,9 @@ deploy_production:
 ```
 
 ---
+
+
+{% include pack-code.html vendor="gitlab" section="2.1" %}
 
 ### 2.2 Implement Pipeline Security Controls
 
@@ -457,6 +463,9 @@ secret_detection:
 
 ---
 
+
+{% include pack-code.html vendor="gitlab" section="4.1" %}
+
 ### 4.2 Enable Commit Signing
 
 **Profile Level:** L2 (Hardened)
@@ -559,6 +568,9 @@ WHERE entity_type = 'Ci::Variable'
 ```
 
 ---
+
+
+{% include pack-code.html vendor="gitlab" section="6.1" %}
 
 ## 7. Compliance Quick Reference
 

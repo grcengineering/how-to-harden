@@ -64,6 +64,9 @@ This guide covers LaunchDarkly security configurations including authentication,
 
 ---
 
+
+{% include pack-code.html vendor="launchdarkly" section="1.1" %}
+
 ### 1.2 Role-Based Access Control
 
 **Profile Level:** L1 (Baseline)
@@ -86,6 +89,9 @@ This guide covers LaunchDarkly security configurations including authentication,
 3. Apply least privilege
 
 ---
+
+
+{% include pack-code.html vendor="launchdarkly" section="1.2" %}
 
 ## 2. SDK & API Security
 
@@ -117,6 +123,9 @@ Protect LaunchDarkly SDK keys.
 
 ---
 
+
+{% include pack-code.html vendor="launchdarkly" section="2.1" %}
+
 ### 2.2 API Token Security
 
 **Profile Level:** L1 (Baseline)
@@ -135,6 +144,9 @@ Protect LaunchDarkly SDK keys.
 3. Set expiration dates
 
 ---
+
+
+{% include pack-code.html vendor="launchdarkly" section="2.2" %}
 
 ## 3. Environment Security
 
@@ -159,6 +171,9 @@ Protect LaunchDarkly SDK keys.
 
 ---
 
+
+{% include pack-code.html vendor="launchdarkly" section="3.1" %}
+
 ### 3.2 Flag Security
 
 **Profile Level:** L2 (Hardened)
@@ -177,6 +192,9 @@ Protect LaunchDarkly SDK keys.
 3. Monitor for enumeration
 
 ---
+
+
+{% include pack-code.html vendor="launchdarkly" section="3.2" %}
 
 ## 4. Monitoring & Detection
 
@@ -212,6 +230,9 @@ HAVING COUNT(*) > 10;
 ```
 
 ---
+
+
+{% include pack-code.html vendor="launchdarkly" section="4.1" %}
 
 ## Appendix A: Edition Compatibility
 

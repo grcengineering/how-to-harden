@@ -87,6 +87,9 @@ Configure SAML SSO to centralize authentication for ServiceNow users.
 
 ---
 
+
+{% include pack-code.html vendor="servicenow" section="1.1" %}
+
 ### 1.2 Configure Account Recovery Administrator
 
 **Profile Level:** L1 (Baseline)
@@ -197,6 +200,9 @@ Activate high-security plugins for enhanced protection.
 
 ---
 
+
+{% include pack-code.html vendor="servicenow" section="2.2" %}
+
 ## 3. Access Controls
 
 ### 3.1 Configure Role-Based Access Control
@@ -252,6 +258,9 @@ Minimize and protect administrator accounts.
 
 ---
 
+
+{% include pack-code.html vendor="servicenow" section="3.2" %}
+
 ## 4. Monitoring & Compliance
 
 ### 4.1 Configure Audit Logging
@@ -282,6 +291,9 @@ Enable and monitor audit logs for security events.
 2. Set up alerts for suspicious activity
 
 ---
+
+
+{% include pack-code.html vendor="servicenow" section="4.1" %}
 
 ## 5. Compliance Quick Reference
 

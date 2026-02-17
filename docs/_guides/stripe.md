@@ -221,6 +221,9 @@ Secure Stripe API keys.
 
 ---
 
+
+{% include pack-code.html vendor="stripe" section="3.1" %}
+
 ### 3.2 Configure Webhook Security
 
 **Profile Level:** L2 (Hardened)
@@ -247,6 +250,9 @@ Secure webhook endpoints.
 
 ---
 
+
+{% include pack-code.html vendor="stripe" section="3.2" %}
+
 ### 3.3 Configure Restricted Keys
 
 **Profile Level:** L2 (Hardened)
@@ -272,6 +278,9 @@ Use restricted API keys for specific functions.
 3. Audit key usage
 
 ---
+
+
+{% include pack-code.html vendor="stripe" section="3.3" %}
 
 ## 4. Compliance Quick Reference
 

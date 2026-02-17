@@ -135,6 +135,9 @@ Enable ABAC for fine-grained access control.
 
 ---
 
+
+{% include pack-code.html vendor="aws-iam-identity-center" section="1.3" %}
+
 ## 2. Identity Source Configuration
 
 ### 2.1 Configure External Identity Provider
@@ -227,6 +230,9 @@ Create least-privilege permission sets.
 
 ---
 
+
+{% include pack-code.html vendor="aws-iam-identity-center" section="3.1" %}
+
 ### 3.2 Configure Account Assignments
 
 **Profile Level:** L1 (Baseline)
@@ -252,6 +258,9 @@ Assign access to AWS accounts.
 3. Regular access reviews
 
 ---
+
+
+{% include pack-code.html vendor="aws-iam-identity-center" section="3.2" %}
 
 ### 3.3 Protect Privileged Access
 
@@ -307,6 +316,9 @@ Enable CloudTrail for IAM Identity Center events.
 
 ---
 
+
+{% include pack-code.html vendor="aws-iam-identity-center" section="4.1" %}
+
 ### 4.2 Configure Access Analyzer
 
 **Profile Level:** L2 (Hardened)
@@ -327,6 +339,9 @@ Use IAM Access Analyzer for policy validation.
 3. Remediate external access
 
 ---
+
+
+{% include pack-code.html vendor="aws-iam-identity-center" section="4.2" %}
 
 ## 5. Compliance Quick Reference
 

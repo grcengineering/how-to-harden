@@ -100,6 +100,9 @@ Integrate Cloudflare Zero Trust with your corporate identity provider to enable 
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="1.1" %}
+
 ### 1.2 Configure Multi-Factor Authentication
 
 **Profile Level:** L1 (Baseline)
@@ -127,6 +130,9 @@ Ensure MFA is enforced for all Access application authentications through IdP po
 2. Optionally add additional authentication factor via policy
 
 ---
+
+
+{% include pack-code.html vendor="cloudflare" section="1.2" %}
 
 ### 1.3 Harden Device Enrollment
 
@@ -167,6 +173,9 @@ Configure device enrollment policies to control which devices can enroll in WARP
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="1.3" %}
+
 ### 1.4 Configure Admin Role Restrictions
 
 **Profile Level:** L1 (Baseline)
@@ -196,6 +205,9 @@ Configure granular admin roles in Cloudflare to limit dashboard access based on 
 3. Remove unnecessary Super Administrator access
 
 ---
+
+
+{% include pack-code.html vendor="cloudflare" section="1.4" %}
 
 ## 2. Access Application Policies
 
@@ -257,6 +269,9 @@ Create Access policies that protect applications with identity-based, context-aw
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="2.1" %}
+
 ### 2.2 Require WARP for Application Access
 
 **Profile Level:** L2 (Hardened)
@@ -283,6 +298,9 @@ Configure Access policies to require WARP client for application access, enablin
 2. This ensures all traffic passes through Gateway for inspection
 
 ---
+
+
+{% include pack-code.html vendor="cloudflare" section="2.2" %}
 
 ### 2.3 Configure Device Posture Checks
 
@@ -319,6 +337,9 @@ Define device posture checks to verify endpoint security status before granting 
 3. Block access if checks fail
 
 ---
+
+
+{% include pack-code.html vendor="cloudflare" section="2.3" %}
 
 ## 3. Gateway Security Policies
 
@@ -368,6 +389,9 @@ Configure Gateway DNS policies to block access to malicious and policy-violating
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="3.1" %}
+
 ### 3.2 Configure HTTP Filtering
 
 **Profile Level:** L1 (Baseline)
@@ -401,6 +425,9 @@ Configure Gateway HTTP policies for deeper inspection and control of web traffic
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="3.2" %}
+
 ### 3.3 Configure Network Policies
 
 **Profile Level:** L2 (Hardened)
@@ -433,6 +460,9 @@ Configure Gateway network policies to control non-HTTP traffic based on IP, port
    - Log all private network access
 
 ---
+
+
+{% include pack-code.html vendor="cloudflare" section="3.3" %}
 
 ### 3.4 Enable Browser Isolation (L3)
 
@@ -468,6 +498,9 @@ Enable Cloudflare Browser Isolation to execute web sessions in a secure cloud en
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="3.4" %}
+
 ## 4. WARP Client Hardening
 
 ### 4.1 Configure WARP Client Settings
@@ -500,6 +533,9 @@ Configure WARP client settings to ensure consistent security posture across all 
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="4.1" %}
+
 ### 4.2 Lock WARP Client
 
 **Profile Level:** L2 (Hardened)
@@ -530,6 +566,9 @@ Lock WARP client to prevent users from disabling Zero Trust protection.
 3. Alternative modes available for specific needs
 
 ---
+
+
+{% include pack-code.html vendor="cloudflare" section="4.2" %}
 
 ### 4.3 Configure Split Tunnel Settings
 
@@ -570,6 +609,9 @@ Configure split tunnel settings to control which traffic passes through WARP and
 3. Everything else uses local network
 
 ---
+
+
+{% include pack-code.html vendor="cloudflare" section="4.3" %}
 
 ## 5. Tunnel Security
 
@@ -614,6 +656,9 @@ Configure Cloudflare Tunnel (formerly Argo Tunnel) securely to expose internal a
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="5.1" %}
+
 ### 5.2 Protect Tunnels with Access Policies
 
 **Profile Level:** L1 (Baseline)
@@ -641,6 +686,9 @@ Always protect tunnel endpoints with Access policies before exposing them public
 **Never expose tunnel endpoints without Access protection.**
 
 ---
+
+
+{% include pack-code.html vendor="cloudflare" section="5.2" %}
 
 ## 6. Monitoring & Detection
 
@@ -682,6 +730,9 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 3. Configure dashboards for monitoring
 
 ---
+
+
+{% include pack-code.html vendor="cloudflare" section="6.1" %}
 
 ### 6.2 Key Events to Monitor
 

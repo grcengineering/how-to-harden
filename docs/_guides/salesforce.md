@@ -98,6 +98,9 @@ curl -X PATCH "${SF_INSTANCE_URL}/services/data/v59.0/sobjects/SessionSettings/S
 
 ---
 
+
+{% include pack-code.html vendor="salesforce" section="1.1" %}
+
 ## 2. Network Access Controls
 
 ### 2.1 Restrict API Access via IP Allowlisting for Third-Party Integrations
@@ -120,6 +123,9 @@ Configure Salesforce Network Access to restrict API calls from third-party integ
 **Why This Works:** Even if integration's OAuth tokens are stolen, attackers cannot use them from infrastructure outside the integration's documented IP ranges.
 
 ---
+
+
+{% include pack-code.html vendor="salesforce" section="2.1" %}
 
 ### 2.1.1 IP Allowlisting: Restricting Gainsight
 
@@ -413,6 +419,9 @@ for app in apps['records']:
 
 ---
 
+
+{% include pack-code.html vendor="salesforce" section="3.1" %}
+
 ### 3.2 Enable Connected App Session-Level Security
 
 **Profile Level:** L2 (Hardened)
@@ -522,6 +531,9 @@ Export EventLogFile daily to:
 - AWS Security Lake
 
 ---
+
+
+{% include pack-code.html vendor="salesforce" section="5.1" %}
 
 ## 6. Third-Party Integration Security
 
