@@ -1,0 +1,68 @@
+# How to Harden — CI Test Suite
+#
+# Mirrors local `make` targets so local and CI run identical checks.
+# Jobs run in parallel for speed; any failure blocks merge.
+
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─── Content Lint (validate-guides.sh — 7 checks) ──────────────────────────
+  lint-content:
+    name: Content Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyyaml
+      - run: make lint-content
+
+  # ─── Rust Lint (clippy + rustfmt) ───────────────────────────────────────────
+  lint-rust:
+    name: Rust Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: cli
+      - run: make lint-rust
+
+  # ─── Rust Tests (unit + integration) ────────────────────────────────────────
+  test-rust:
+    name: Rust Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: cli
+      - run: make test-unit
+
+  # ─── Build Verification (pack sync + Jekyll) ───────────────────────────────
+  test-build:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyyaml
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: docs
+      - run: make test-build
