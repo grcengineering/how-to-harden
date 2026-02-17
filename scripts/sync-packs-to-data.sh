@@ -31,15 +31,21 @@ normalize_section() {
 }
 
 # Extract content between HTH Guide Excerpt markers
-# Returns extracted content via stdout
+# Returns extracted content via stdout, with consistent minimum 2-space indent
+# to prevent YAML block scalar indentation errors
 extract_region() {
   local file="$1"
   local region_name="$2"
-  sed -n "/^[[:space:]]*# HTH Guide Excerpt: begin ${region_name}\$/,/^[[:space:]]*# HTH Guide Excerpt: end ${region_name}\$/{
+  local raw
+  raw=$(sed -n "/^[[:space:]]*# HTH Guide Excerpt: begin ${region_name}\$/,/^[[:space:]]*# HTH Guide Excerpt: end ${region_name}\$/{
     /^[[:space:]]*# HTH Guide Excerpt: begin ${region_name}\$/d
     /^[[:space:]]*# HTH Guide Excerpt: end ${region_name}\$/d
     p
-  }" "${file}"
+  }" "${file}")
+  # Ensure all non-empty lines have at least 2-space indent so YAML block
+  # scalars don't break from inconsistent indentation in source code.
+  # Lines starting with a non-space character get 2 spaces prepended.
+  echo "${raw}" | sed '/^[^[:space:]]/s/^/  /'
 }
 
 # List all region names in a file
