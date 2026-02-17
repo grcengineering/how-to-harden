@@ -1381,11 +1381,9 @@ body {
     flex-shrink: 0;
   }
 
-  /* Dropdown menus on mobile: open ABOVE the button, constrained size */
+  /* Dropdown menus on mobile: fixed position above the bar, JS-positioned */
   .filter-dropdown-menu {
-    position: absolute;
-    left: 0;
-    bottom: calc(100% + 6px);
+    position: fixed;
     top: auto;
     max-width: calc(100vw - 24px);
     max-height: 25vh;

@@ -218,6 +218,12 @@ document.addEventListener('DOMContentLoaded', function() {
       closeAllDropdowns();
       if (!wasOpen) {
         dd.classList.add('open');
+        // On mobile, position the fixed menu above the button
+        if (window.innerWidth <= 640) {
+          var rect = btn.getBoundingClientRect();
+          menu.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
+          menu.style.left = Math.max(12, Math.min(rect.left, window.innerWidth - menu.offsetWidth - 12)) + 'px';
+        }
       }
     });
     // Handle filter option selection
