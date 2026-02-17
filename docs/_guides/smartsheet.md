@@ -22,6 +22,16 @@ Smartsheet is a collaborative work management platform for projects, workflows, 
 - GRC professionals assessing project management security
 - Third-party risk managers evaluating workflow integrations
 
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Smartsheet security configurations including authentication, access controls, and integration security.
+
 ---
 
 ## Table of Contents
@@ -64,7 +74,7 @@ Smartsheet is a collaborative work management platform for projects, workflows, 
 **Step 1: Define User Types**
 
 | Type | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | System Admin | Full admin access |
 | Group Admin | Manage specific groups |
 | Licensed User | Create and share |

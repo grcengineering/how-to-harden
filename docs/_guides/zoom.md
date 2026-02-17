@@ -4,7 +4,7 @@ title: "Zoom Hardening Guide"
 vendor: "Zoom"
 slug: "zoom"
 tier: "2"
-category: "Collaboration"
+category: "Productivity"
 description: "Video conferencing security for meeting policies, recording controls, and app marketplace"
 version: "0.1.0"
 maturity: "draft"
@@ -91,7 +91,7 @@ Implement role-based access and user provisioning.
 2. Create/modify roles:
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Member | Host meetings, basic features |
 | Admin | Manage users, settings |
 | Owner | Full account control (1 user only) |

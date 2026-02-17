@@ -4,7 +4,7 @@ title: "ChatGPT Enterprise Hardening Guide"
 vendor: "OpenAI"
 slug: "chatgpt-enterprise"
 tier: "1"
-category: "AI"
+category: "Productivity"
 description: "Enterprise AI security hardening for ChatGPT, SSO configuration, data privacy, and admin controls"
 version: "0.1.0"
 maturity: "draft"
@@ -205,6 +205,7 @@ Configure role-based access using ChatGPT Enterprise's three role types: Owner, 
 3. Use Member role for all regular users
 
 **Role Definitions:**
+
 | Role | Capabilities |
 |------|-------------|
 | **Owner** | Full workspace control, billing, SSO configuration |
@@ -437,7 +438,7 @@ Set organization-wide custom instructions that apply to all conversations, embed
 
 **Step 2: Configure Organization Instructions**
 1. Add security-aware instructions such as:
-   ```
+```text
    - Do not request or encourage submission of PII, credentials, or sensitive data
    - Remind users to sanitize code before sharing
    - Follow [Company] AI acceptable use policy

@@ -197,7 +197,7 @@ Configure IP-based access restrictions for 1Password access.
 2. Configure rule priority
 
 **Example Configuration:**
-```
+```text
 Rule 1: Allow - Country: United States, Canada, UK
 Rule 2: Allow - IP Range: Corporate VPN IPs
 Rule 3: Deny - All other countries
@@ -301,6 +301,7 @@ Configure vault access permissions following least privilege principles.
 2. Use groups for scalable management
 
 **Best Practice Vault Structure:**
+
 | Vault | Purpose | Access |
 |-------|---------|--------|
 | Employee Private | Personal items | Individual only |

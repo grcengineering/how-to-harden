@@ -4,7 +4,7 @@ title: "Vercel Hardening Guide"
 vendor: "Vercel"
 slug: "vercel"
 tier: "5"
-category: "Hosting"
+category: "DevOps"
 description: "Deployment platform security for access tokens, environment variables, and Git integration"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Vercel is a frontend cloud platform for deployment and hosting. REST API, deploy
 - DevOps administrators
 - GRC professionals assessing deployment security
 - Third-party risk managers evaluating hosting integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Vercel security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -63,7 +73,7 @@ Vercel is a frontend cloud platform for deployment and hosting. REST API, deploy
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Owner | Full team access |
 | Member | Deploy and manage |
 | Developer | Deploy only |

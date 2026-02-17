@@ -4,7 +4,7 @@ title: "Google Workspace Hardening Guide"
 vendor: "Google"
 slug: "google-workspace"
 tier: "1"
-category: "Collaboration"
+category: "Productivity"
 description: "Comprehensive security hardening for Google Workspace, Gmail, Drive, and Google Admin Console"
 version: "0.1.0"
 maturity: "draft"
@@ -180,7 +180,7 @@ resource "google_organization_policy" "enforce_2sv" {
 - Track 2SV enrollment completion
 
 **Admin Console Query:**
-```
+```text
 Navigate to: Security → Investigation Tool
 Event: Login
 Filter: 2SV method = None, Login result = Success

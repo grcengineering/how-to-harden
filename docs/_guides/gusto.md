@@ -4,7 +4,7 @@ title: "Gusto Hardening Guide"
 vendor: "Gusto"
 slug: "gusto"
 tier: "5"
-category: "Payroll"
+category: "HR/Finance"
 description: "Payroll security for admin controls, partner integrations, and bank account protection"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Gusto is a payroll and benefits platform for small-medium businesses. REST API a
 - Gusto administrators
 - GRC professionals assessing payroll compliance
 - Third-party risk managers evaluating HR integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Gusto security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -64,7 +74,7 @@ Gusto is a payroll and benefits platform for small-medium businesses. REST API a
 **Step 1: Define Admin Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Primary Admin | Full access |
 | Full Admin | Most admin functions |
 | Limited Admin | Specific access |

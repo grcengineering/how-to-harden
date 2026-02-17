@@ -52,7 +52,7 @@ This guide covers Okta-specific security configurations including authentication
 **Profile Level:** L1 (Baseline)
 
 | Framework | Control |
-||------|---------|----------|---------|--------|--|---------|
+|-----------|---------|
 | CIS Controls | 6.3, 6.5 |
 | NIST 800-53 | IA-2(1), IA-2(6) |
 | DISA STIG | V-273190, V-273191, V-273193 (HIGH), V-273194 (HIGH) |

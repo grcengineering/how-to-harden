@@ -4,7 +4,7 @@ title: "Zendesk Hardening Guide"
 vendor: "Zendesk"
 slug: "zendesk"
 tier: "4"
-category: "Support"
+category: "Productivity"
 description: "Support platform security for API tokens, app marketplace, and ticket redaction"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Zendesk handles customer support data including tickets, chat transcripts, and c
 - Zendesk administrators
 - GRC professionals assessing customer data compliance
 - Third-party risk managers evaluating support integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Zendesk security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -64,7 +74,7 @@ Zendesk handles customer support data including tickets, chat transcripts, and c
 **Step 1: Define Custom Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Admin | Full access (limited users) |
 | Team Lead | Manage team, view reports |
 | Agent | Handle tickets only |

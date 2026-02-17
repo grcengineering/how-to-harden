@@ -4,7 +4,7 @@ title: "Bitbucket Cloud Hardening Guide"
 vendor: "Atlassian"
 slug: "bitbucket"
 tier: "2"
-category: "DevOps & Engineering"
+category: "DevOps"
 description: "Code repository security hardening for Bitbucket Cloud including workspace security, branch permissions, and access controls"
 version: "0.1.0"
 maturity: "draft"
@@ -160,7 +160,7 @@ Restrict Bitbucket access to approved IP addresses to prevent access from unauth
 3. Document emergency procedures
 
 **Configuration Example:**
-```
+```text
 Corporate Office: 203.0.113.0/24
 VPN Egress: 198.51.100.0/24
 CI/CD Servers: 192.0.2.0/24

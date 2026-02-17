@@ -4,7 +4,7 @@ title: "Docker Hub Hardening Guide"
 vendor: "Docker Hub"
 slug: "dockerhub"
 tier: "3"
-category: "Container"
+category: "DevOps"
 description: "Container registry security for access tokens, image signing, and repository controls"
 version: "0.1.0"
 maturity: "draft"
@@ -26,6 +26,10 @@ Docker Hub is the largest public container registry with millions of images. Res
 - **L1 (Baseline):** Essential controls for all organizations
 - **L2 (Hardened):** Enhanced controls for security-sensitive environments
 - **L3 (Maximum Security):** Strictest controls (use private registry)
+
+
+### Scope
+This guide covers Docker Hub security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -87,7 +91,7 @@ Use personal access tokens instead of passwords for automation.
 **Step 2: Rotate Tokens**
 
 | Token Type | Rotation |
-||------|---------|----------|---------|--------|---|----------|
+|------------|----------|
 | CI/CD pull | Quarterly |
 | Build/push | Monthly |
 

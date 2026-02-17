@@ -4,7 +4,7 @@ title: "Rippling Hardening Guide"
 vendor: "Rippling"
 slug: "rippling"
 tier: "5"
-category: "HR/IT"
+category: "HR/Finance"
 description: "Workforce platform security for app provisioning, device management, and SCIM controls"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Rippling is a unified workforce platform managing HR, IT, payroll, and spend. RE
 - Rippling administrators
 - GRC professionals assessing unified platform security
 - Third-party risk managers evaluating HR/IT integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Rippling security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -64,7 +74,7 @@ Rippling is a unified workforce platform managing HR, IT, payroll, and spend. RE
 **Step 1: Define Permission Sets**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Super Admin | Full access |
 | HR Admin | HR/payroll functions |
 | IT Admin | Device/app management |

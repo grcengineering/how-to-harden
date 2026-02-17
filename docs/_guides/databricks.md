@@ -4,7 +4,7 @@ title: "Databricks Hardening Guide"
 vendor: "Databricks"
 slug: "databricks"
 tier: "2"
-category: "Data Platform"
+category: "Data"
 description: "Data platform security for workspace access, Unity Catalog, and secrets management"
 version: "0.1.0"
 maturity: "draft"
@@ -446,7 +446,7 @@ GROUP BY user_identity.email, source_ip_address;
 ### SOC 2 Mapping
 
 | Control ID | Databricks Control | Guide Section |
-||------|---------|----------|---------|--------|--|------------------|---------------|
+|------------|--------------------|---------------|
 | CC6.1 | SSO enforcement | 1.1 |
 | CC6.2 | Unity Catalog permissions | 2.1 |
 | CC6.7 | Data masking | 2.2 |

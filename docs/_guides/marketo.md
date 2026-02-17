@@ -22,6 +22,16 @@ Adobe Marketo Engage is a B2B marketing automation platform managing lead databa
 - GRC professionals assessing marketing compliance
 - Third-party risk managers evaluating Adobe integrations
 
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Adobe Marketo security configurations including authentication, access controls, and integration security.
+
 ---
 
 ## Table of Contents
@@ -75,7 +85,7 @@ Require SAML SSO with MFA for Marketo access.
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Admin | Full access (2-3 users) |
 | Marketing User | Create/edit campaigns |
 | Designer | Email/landing page design |
@@ -143,7 +153,7 @@ Harden REST API integrations.
 
 #### API Best Practices
 
-```
+```text
 API Security Checklist:
 ├── Create dedicated API users per integration
 ├── Use API-only users (no UI access)

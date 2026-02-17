@@ -151,7 +151,7 @@ jf rt access-token-create \
 **Step 3: Rotate Tokens**
 
 | Token Type | Rotation Frequency |
-||------|---------|----------|---------|--------|---|-------------------|
+|------------|--------------------|
 | CI/CD tokens | Quarterly |
 | User API keys | Semi-annually |
 | Admin tokens | Quarterly |
@@ -207,7 +207,7 @@ Secure remote repository (proxy) configurations.
    - **Block mismatching MIME types:** Enable
 
 **Step 2: Configure Exclude Patterns**
-```
+```text
 # Block potentially dangerous artifacts
 *.exe
 *.dll

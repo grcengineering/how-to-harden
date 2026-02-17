@@ -4,7 +4,7 @@ title: "Power BI Hardening Guide"
 vendor: "Power BI"
 slug: "power-bi"
 tier: "5"
-category: "Analytics"
+category: "Data"
 description: "Microsoft BI security for tenant settings, gateway credentials, and embed controls"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Microsoft Power BI provides business intelligence with data connections across e
 - Power BI administrators
 - GRC professionals assessing analytics security
 - Third-party risk managers evaluating Microsoft integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Power BI security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -65,7 +75,7 @@ Microsoft Power BI provides business intelligence with data connections across e
 **Step 1: Define Workspace Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Admin | Full workspace control |
 | Member | Edit and publish |
 | Contributor | Edit only |

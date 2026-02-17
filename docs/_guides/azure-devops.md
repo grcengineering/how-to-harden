@@ -90,7 +90,7 @@ Require Azure AD authentication with Conditional Access policies including MFA, 
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-||------|---------|----------|---------|--------|--|-----------|---------------------|
+|-----------|------------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1) | MFA for network access |
 
@@ -107,7 +107,7 @@ Configure granular project permissions using Azure DevOps security groups.
 #### ClickOps Implementation
 
 **Step 1: Define Security Group Strategy**
-```
+```text
 Security Groups:
 ├── Project Administrators (2-3 users max)
 ├── Build Administrators
@@ -427,7 +427,7 @@ Configure agent pools with appropriate security controls.
 #### ClickOps Implementation
 
 **Step 1: Create Tiered Agent Pools**
-```
+```text
 Agent Pools:
 ├── Azure Pipelines (Microsoft-hosted, ephemeral)
 ├── Development-Agents (self-hosted, lower trust)

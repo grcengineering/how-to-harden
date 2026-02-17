@@ -4,7 +4,7 @@ title: "CyberArk Hardening Guide"
 vendor: "CyberArk"
 slug: "cyberark"
 tier: "1"
-category: "PAM"
+category: "Identity"
 description: "Privileged access management hardening for vaults, PSM, and credential rotation"
 version: "0.1.0"
 maturity: "draft"
@@ -117,7 +117,7 @@ curl -X PUT "https://${PVWA_URL}/PasswordVault/API/Configuration/AuthenticationM
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-||------|---------|----------|---------|--------|--|-----------|---------------------|
+|-----------|------------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1), IA-2(6) | MFA for privileged accounts |
 | **PCI DSS** | 8.3.1 | MFA for administrative access |
@@ -136,7 +136,7 @@ Configure granular safe-level permissions ensuring users only access credentials
 #### ClickOps Implementation
 
 **Step 1: Design Safe Structure**
-```
+```text
 Safes/
 ├── Infrastructure/
 │   ├── Windows-DomainAdmins (requires approval)
@@ -383,7 +383,7 @@ Limit integration accounts to minimum required permissions. Service accounts sho
 #### ClickOps Implementation
 
 **Step 1: Create Purpose-Specific Integration Users**
-```
+```text
 Integration Users:
 ├── Svc-Jenkins: Access to Application-Secrets only
 ├── Svc-Ansible: Access to Infrastructure-Credentials only
@@ -618,8 +618,6 @@ HAVING COUNT(*) > 5;
 ---
 
 ## Appendix A: References
-
-## Appendix B: References
 
 **Official CyberArk Documentation:**
 - [Trust Center](https://www.cyberark.com/trust/)

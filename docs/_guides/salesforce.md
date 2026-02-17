@@ -4,7 +4,7 @@ title: "Salesforce Hardening Guide"
 vendor: "Salesforce"
 slug: "salesforce"
 tier: "2"
-category: "CRM"
+category: "Marketing"
 description: "CRM platform security for MFA enforcement, Connected Apps, and Shield Event Monitoring"
 version: "0.1.0"
 maturity: "draft"
@@ -365,7 +365,7 @@ For each over-permissioned app:
 #### Recommended Scope Restrictions by Integration Type
 
 | Integration Type | Recommended Scopes | Avoid |
-||------|---------|----------|---------|--------|--------|-------------------|-------|
+|------------------|--------------------|-------|
 | **Customer Success (Gainsight)** | `api`, `custom_permissions`, specific objects | `full`, `refresh_token` with long expiry |
 | **Marketing (HubSpot, Drift)** | `api`, `chatter_api`, limited objects | `full`, `manage_users` |
 | **Support (Zendesk, Intercom)** | `api`, `chatter_api`, Case object only | `full`, access to all objects |

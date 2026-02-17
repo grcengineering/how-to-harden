@@ -4,7 +4,7 @@ title: "New Relic Hardening Guide"
 vendor: "New Relic"
 slug: "new-relic"
 tier: "5"
-category: "Observability"
+category: "Data"
 description: "Observability security for API keys, license keys, and log obfuscation"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ New Relic is an observability platform ingesting application performance, infras
 - DevOps/SRE administrators
 - GRC professionals assessing monitoring security
 - Third-party risk managers evaluating APM integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers New Relic security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -64,7 +74,7 @@ New Relic is an observability platform ingesting application performance, infras
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Admin | Full account access |
 | User | Standard access |
 | Restricted User | Limited data access |

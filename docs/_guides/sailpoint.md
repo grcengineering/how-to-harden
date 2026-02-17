@@ -4,7 +4,7 @@ title: "SailPoint Hardening Guide"
 vendor: "SailPoint"
 slug: "sailpoint"
 tier: "3"
-category: "IGA"
+category: "Identity"
 description: "Identity governance security for certification campaigns, source configs, and API access"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ SailPoint is the **#1 IGA (Identity Governance and Administration) vendor** cont
 - IT administrators configuring SailPoint
 - GRC professionals assessing identity compliance
 - Third-party risk managers evaluating IGA integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers SailPoint security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -75,7 +85,7 @@ Require strong MFA for all SailPoint administrative access.
 **Step 1: Define Admin Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Org Admin | Full platform access (2-3 users) |
 | Source Admin | Manage specific sources |
 | Cert Admin | Manage access certifications |

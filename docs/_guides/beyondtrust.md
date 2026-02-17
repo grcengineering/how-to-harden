@@ -4,7 +4,7 @@ title: "BeyondTrust Hardening Guide"
 vendor: "BeyondTrust"
 slug: "beyondtrust"
 tier: "1"
-category: "PAM"
+category: "Identity"
 description: "Remote access security for PRA, session monitoring, and credential injection"
 version: "0.1.0"
 maturity: "draft"
@@ -117,7 +117,7 @@ curl -X POST "https://${BEYONDTRUST_HOST}/api/config/security-provider" \
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-||------|---------|----------|---------|--------|--|-----------|---------------------|
+|-----------|------------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1), IA-2(6) | MFA for privileged access |
 | **PCI DSS** | 8.3.1 | MFA for administrative access |
@@ -408,7 +408,7 @@ Deploy BeyondTrust in a segmented network zone with strict ingress/egress contro
 #### Implementation
 
 **Network Architecture:**
-```
+```text
 Internet
     │
     ▼

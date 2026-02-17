@@ -4,7 +4,7 @@ title: "SAP SuccessFactors Hardening Guide"
 vendor: "SAP SuccessFactors"
 slug: "sap-successfactors"
 tier: "3"
-category: "HR"
+category: "HR/Finance"
 description: "HCM security for permission groups, integration center, and data protection"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ SAP SuccessFactors is a global enterprise HCM with deep SAP ecosystem integratio
 - SAP administrators configuring SuccessFactors
 - GRC professionals assessing HR compliance
 - Third-party risk managers evaluating SAP integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers SAP SuccessFactors security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -64,7 +74,7 @@ SAP SuccessFactors is a global enterprise HCM with deep SAP ecosystem integratio
 **Step 1: Define Permission Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | System Admin | Full access (limit users) |
 | HR Admin | Employee data management |
 | Manager | Team access only |

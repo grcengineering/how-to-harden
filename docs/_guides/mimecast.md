@@ -4,7 +4,7 @@ title: "Mimecast Hardening Guide"
 vendor: "Mimecast"
 slug: "mimecast"
 tier: "2"
-category: "Security & Compliance"
+category: "Security"
 description: "Email security hardening for Mimecast including targeted threat protection, impersonation policies, and gateway configuration"
 version: "0.1.0"
 maturity: "draft"
@@ -103,7 +103,7 @@ Configure email authentication to prevent spoofing and verify sender identity.
 **Step 1: Configure SPF**
 1. Navigate to: **Administration** → **Gateway** → **Policies** → **Definitions** → **DNS Authentication - Outbound**
 2. Verify SPF record includes Mimecast:
-```
+```text
 v=spf1 include:_netblocks.mimecast.com ~all
 ```
 
@@ -115,7 +115,7 @@ v=spf1 include:_netblocks.mimecast.com ~all
 
 **Step 3: Configure DMARC**
 1. Publish DMARC record:
-```
+```text
 _dmarc.yourdomain.com TXT "v=DMARC1; p=quarantine; rua=mailto:dmarc@yourdomain.com; pct=100"
 ```
 2. Start with `p=none` for monitoring

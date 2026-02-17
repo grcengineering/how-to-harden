@@ -4,7 +4,7 @@ title: "BambooHR Hardening Guide"
 vendor: "BambooHR"
 slug: "bamboohr"
 tier: "5"
-category: "HR"
+category: "HR/Finance"
 description: "HR platform security for API keys, access levels, and sensitive field protection"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ BambooHR is a cloud-based HR platform managing employee records, benefits, and p
 - BambooHR administrators
 - GRC professionals assessing HR compliance
 - Third-party risk managers evaluating HRIS integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers BambooHR security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -64,7 +74,7 @@ BambooHR is a cloud-based HR platform managing employee records, benefits, and p
 **Step 1: Define Access Levels**
 
 | Level | Permissions |
-|-------||------|---------|----------|---------|--------|----|
+|-------|-------------|
 | Admin | Full access |
 | HR Manager | HR functions |
 | Manager | Team access |

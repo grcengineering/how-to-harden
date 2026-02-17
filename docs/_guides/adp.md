@@ -4,7 +4,7 @@ title: "ADP Hardening Guide"
 vendor: "ADP"
 slug: "adp"
 tier: "3"
-category: "HR/Payroll"
+category: "HR/Finance"
 description: "Payroll platform security for API connections, SSO, and data access controls"
 version: "0.1.0"
 maturity: "draft"
@@ -26,6 +26,10 @@ ADP processes payroll for **640,000+ companies** worldwide with access to W-2 da
 - **L1 (Baseline):** Essential controls for all organizations
 - **L2 (Hardened):** Enhanced controls for security-sensitive environments
 - **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers ADP security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -86,7 +90,7 @@ Configure ADP roles with segregation of duties for payroll functions.
 **Step 1: Define Role Structure**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Payroll Administrator | Full payroll access (limit to 2-3) |
 | Payroll Processor | Run payroll, NO tax changes |
 | HR Administrator | Employee data, NO payroll |

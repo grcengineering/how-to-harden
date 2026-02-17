@@ -4,7 +4,7 @@ title: "NetSuite Hardening Guide"
 vendor: "NetSuite"
 slug: "netsuite"
 tier: "2"
-category: "ERP"
+category: "Data"
 description: "ERP security for role-based access, SuiteScript controls, and integration hardening"
 version: "0.1.0"
 maturity: "draft"
@@ -85,7 +85,7 @@ Configure NetSuite roles with least-privilege access to financial data.
 #### ClickOps Implementation
 
 **Step 1: Design Role Structure**
-```
+```text
 Roles:
 ├── Administrator (limit to 2-3 users)
 ├── Financial Controller
@@ -176,7 +176,7 @@ Harden Token-Based Authentication (TBA) for API integrations.
 **Step 3: Implement Token Rotation**
 
 | Token Type | Rotation Frequency |
-||------|---------|----------|---------|--------|---|-------------------|
+|------------|--------------------|
 | Production integrations | Quarterly |
 | Development tokens | Monthly |
 | One-time exports | Immediately after use |

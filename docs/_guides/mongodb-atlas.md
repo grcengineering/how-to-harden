@@ -77,6 +77,7 @@ Configure IP access lists to restrict which IP addresses can connect to your Atl
 4. Set expiration for temporary access
 
 **Best Practices:**
+
 | Environment | Recommended Configuration |
 |-------------|--------------------------|
 | Development | Individual IPs with expiration |
@@ -178,6 +179,7 @@ Create database users with role-based access control (RBAC) following the princi
 4. Restrict to specific database if possible
 
 **Recommended Roles:**
+
 | Use Case | Recommended Role |
 |----------|-----------------|
 | Application read | readAnyDatabase or read on specific DB |

@@ -112,7 +112,7 @@ gitlab_rails['gitlab_signin_enabled'] = false
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-||------|---------|----------|---------|--------|--|-----------|---------------------|
+|-----------|------------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1) | MFA for network access |
 
@@ -343,7 +343,7 @@ Deploy isolated runners for different trust levels and environments.
 #### Implementation
 
 **Step 1: Create Runner Tiers**
-```
+```text
 Runner Architecture:
 ├── shared-runners (general use)
 │   └── Docker executor, ephemeral containers

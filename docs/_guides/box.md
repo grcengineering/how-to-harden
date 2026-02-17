@@ -4,7 +4,7 @@ title: "Box Hardening Guide"
 vendor: "Box"
 slug: "box"
 tier: "3"
-category: "Storage"
+category: "Data"
 description: "Enterprise content security for sharing policies, app controls, and classification"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Box serves **115,000+ customers including 70% of Fortune 500**. Box Platform API
 - IT administrators configuring Box
 - GRC professionals assessing content compliance
 - Third-party risk managers evaluating storage integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Box security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -61,7 +71,7 @@ Box serves **115,000+ customers including 70% of Fortune 500**. Box Platform API
 #### ClickOps Implementation
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Co-Admin | Full admin (limited users) |
 | Group Admin | Manage specific groups |
 | Content Manager | Manage content, no users |

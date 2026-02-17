@@ -89,7 +89,7 @@ Configure Workday security groups with least-privilege access to HR and financia
 #### ClickOps Implementation
 
 **Step 1: Design Security Group Structure**
-```
+```text
 Security Groups:
 ├── HR Business Partner
 │   └── View employee data for assigned organizations
@@ -168,7 +168,7 @@ Harden Integration System Users that provide API access for third-party integrat
 
 **Step 2: Create Purpose-Specific ISUs**
 For each integration, create dedicated ISU:
-```
+```text
 ISU Architecture:
 ├── ISU-ADP-Payroll (payroll data only)
 ├── ISU-Benefits-Carrier (benefits data only)
@@ -211,7 +211,7 @@ Configure OAuth token policies for integration authentication.
 **Step 2: Rotate Client Secrets**
 
 | Integration Type | Rotation Frequency |
-||------|---------|----------|---------|--------|--------|-------------------|
+|------------------|--------------------|
 | Payroll connectors | Quarterly |
 | Benefits integrations | Quarterly |
 | Reporting tools | Semi-annually |
@@ -237,7 +237,7 @@ Restrict access to sensitive fields based on business need.
 #### ClickOps Implementation
 
 **Step 1: Identify Sensitive Fields**
-```
+```text
 High Sensitivity:
 - Social Security Number
 - Bank Account Numbers

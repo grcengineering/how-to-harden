@@ -4,7 +4,7 @@ title: "Miro Hardening Guide"
 vendor: "Miro"
 slug: "miro"
 tier: "4"
-category: "Collaboration"
+category: "Productivity"
 description: "Visual collaboration security for board sharing, app controls, and export restrictions"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Miro is a visual collaboration platform for whiteboards, diagrams, and design se
 - Miro team administrators
 - GRC professionals assessing visual collaboration security
 - Third-party risk managers evaluating design tool integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Miro security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -63,7 +73,7 @@ Miro is a visual collaboration platform for whiteboards, diagrams, and design se
 **Step 1: Define Team Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Admin | Full team management |
 | Member | Create/edit boards |
 | Guest | Board-specific access |

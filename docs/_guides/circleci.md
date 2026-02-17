@@ -4,7 +4,7 @@ title: "CircleCI Hardening Guide"
 vendor: "CircleCI"
 slug: "circleci"
 tier: "2"
-category: "CI/CD"
+category: "DevOps"
 description: "CI/CD pipeline security including contexts, secrets, and runner hardening"
 version: "0.1.0"
 maturity: "draft"
@@ -88,7 +88,7 @@ Require SAML SSO with MFA for all CircleCI access. The January 2023 breach demon
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-||------|---------|----------|---------|--------|--|-----------|---------------------|
+|-----------|------------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1) | MFA for network access |
 

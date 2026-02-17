@@ -22,6 +22,16 @@ Mailchimp manages email marketing with audience data, campaign history, and cust
 - GRC professionals assessing email marketing compliance
 - Third-party risk managers evaluating marketing integrations
 
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Mailchimp security configurations including authentication, access controls, and integration security.
+
 ---
 
 ## Table of Contents
@@ -64,7 +74,7 @@ Mailchimp manages email marketing with audience data, campaign history, and cust
 **Step 1: Define User Levels**
 
 | Level | Permissions |
-|-------||------|---------|----------|---------|--------|----|
+|-------|-------------|
 | Owner | Full access (1 user) |
 | Admin | Manage users, full features |
 | Manager | Create campaigns, manage audiences |

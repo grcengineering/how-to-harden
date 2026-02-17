@@ -22,6 +22,16 @@ LaunchDarkly manages feature flags controlling application behavior across envir
 - GRC professionals assessing release management
 - Third-party risk managers evaluating deployment integrations
 
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers LaunchDarkly security configurations including authentication, access controls, and integration security.
+
 ---
 
 ## Table of Contents
@@ -64,7 +74,7 @@ LaunchDarkly manages feature flags controlling application behavior across envir
 **Step 1: Define Custom Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Admin | Full access |
 | Writer | Create/modify flags |
 | Reader | View only |

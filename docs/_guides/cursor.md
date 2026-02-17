@@ -4,7 +4,7 @@ title: "Cursor Hardening Guide"
 vendor: "Anysphere"
 slug: "cursor"
 tier: "1"
-category: "Developer Tools"
+category: "DevOps"
 description: "AI code editor security hardening for code privacy, API key management, and workspace trust"
 version: "0.1.0"
 maturity: "draft"
@@ -113,7 +113,7 @@ Require all developers to authenticate with a Cursor account instead of using th
 #### Operational Impact
 
 | Aspect | Impact Level | Details |
-||------|---------|----------|---------|--------|-------------|----------|
+|--------|--------------|---------|
 | **User Experience** | Low | One-time authentication flow |
 | **Development Workflow** | None | No workflow changes after authentication |
 | **Maintenance Burden** | Low | Occasional re-authentication required |

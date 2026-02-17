@@ -4,7 +4,7 @@ title: "Looker Hardening Guide"
 vendor: "Looker"
 slug: "looker"
 tier: "5"
-category: "Analytics"
+category: "Data"
 description: "Google BI security for model access, embed secrets, and database connections"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Looker (Google Cloud) provides business intelligence with LookML modeling and da
 - Looker administrators
 - GRC professionals assessing analytics security
 - Third-party risk managers evaluating Google Cloud integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Looker security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -64,7 +74,7 @@ Looker (Google Cloud) provides business intelligence with LookML modeling and da
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Admin | Full access |
 | Developer | Model development |
 | User | Explore and save |
@@ -93,7 +103,7 @@ Control content access through folder hierarchy.
 #### ClickOps Implementation
 
 **Step 1: Folder Structure**
-```
+```text
 Content Organization:
 ├── Shared (company-wide)
 ├── Group Folders (team-specific)

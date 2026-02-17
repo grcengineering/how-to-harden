@@ -4,7 +4,7 @@ title: "Dropbox Hardening Guide"
 vendor: "Dropbox"
 slug: "dropbox"
 tier: "3"
-category: "Storage"
+category: "Data"
 description: "Cloud storage security for sharing policies, linked apps, and admin controls"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Dropbox has **700+ million registered users** with enterprise file storage. The 
 - IT administrators configuring Dropbox
 - GRC professionals assessing collaboration compliance
 - Third-party risk managers evaluating storage integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Dropbox security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -166,7 +176,7 @@ WHERE action = 'share_link_create'
 ## Appendix A: Edition Compatibility
 
 | Control | Standard | Advanced | Enterprise |
-||------|---------|----------|---------|--------||----------|----------|------------|
+|---------|----------|----------|------------|
 | SSO (SAML) | ❌ | ✅ | ✅ |
 | Audit Log | Basic | ✅ | ✅ |
 | Device Approval | ❌ | ✅ | ✅ |

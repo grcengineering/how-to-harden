@@ -97,7 +97,7 @@ Configure Wiz roles with least-privilege access.
 **Step 1: Define Role Strategy**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Admin | Full platform access (limit to 2-3) |
 | Security Analyst | View issues, run queries, NO settings |
 | Developer | View assigned projects only |

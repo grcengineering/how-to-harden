@@ -22,6 +22,16 @@ Snyk provides developer security for vulnerability scanning across code, depende
 - GRC professionals assessing development security
 - Third-party risk managers evaluating security scanning tools
 
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Snyk security configurations including authentication, access controls, and integration security.
+
 ---
 
 ## Table of Contents
@@ -63,7 +73,7 @@ Snyk provides developer security for vulnerability scanning across code, depende
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Group Admin | Full organization access |
 | Org Admin | Organization management |
 | Org Collaborator | View and test projects |

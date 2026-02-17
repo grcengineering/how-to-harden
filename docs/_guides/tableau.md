@@ -4,7 +4,7 @@ title: "Tableau Hardening Guide"
 vendor: "Tableau"
 slug: "tableau"
 tier: "4"
-category: "Analytics"
+category: "Data"
 description: "BI platform security for site roles, data source credentials, and embed controls"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Tableau provides business intelligence and data visualization with connections t
 - Tableau administrators
 - GRC professionals assessing data governance
 - Third-party risk managers evaluating analytics integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Tableau security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -64,7 +74,7 @@ Tableau provides business intelligence and data visualization with connections t
 **Step 1: Define Site Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Site Administrator Creator | Full site access |
 | Site Administrator Explorer | Admin without publish |
 | Creator | Create/publish content |
@@ -113,7 +123,7 @@ Protect data source credentials and connections.
 #### Implementation
 
 **Step 1: Implement User Filters**
-```
+```text
 # User filter calculation
 [Region] = USERNAME()
 

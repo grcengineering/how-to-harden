@@ -4,7 +4,7 @@ title: "GitHub Hardening Guide"
 vendor: "GitHub"
 slug: "github"
 tier: "1"
-category: "DevOps & Engineering"
+category: "DevOps"
 description: "Comprehensive source control and CI/CD security hardening for GitHub organizations, Actions, supply chain protection, and Enterprise Cloud/Server"
 version: "0.2.0"
 maturity: "draft"
@@ -1015,7 +1015,7 @@ Prevent use of arbitrary third-party Actions by restricting to GitHub-verified c
    - **Allow actions created by GitHub** (GitHub-verified)
    - **Allow actions by Marketplace verified creators**
    - Add specific allow-listed actions:
-     ```
+```text
      actions/*,
      github/*,
      docker/*,

@@ -22,6 +22,16 @@ Terraform Cloud state files containing plaintext secrets, cloud provider credent
 - GRC professionals assessing infrastructure compliance
 - DevOps teams implementing secure IaC
 
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Terraform Cloud security configurations including authentication, access controls, and integration security.
+
 ---
 
 ## Table of Contents
@@ -65,7 +75,7 @@ Terraform Cloud state files containing plaintext secrets, cloud provider credent
 **Step 1: Define Teams**
 
 | Team | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | owners | Full organization access |
 | platform | Manage workspaces |
 | developers | Plan only (no apply) |

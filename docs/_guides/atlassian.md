@@ -4,7 +4,7 @@ title: "Atlassian Cloud Hardening Guide"
 vendor: "Atlassian Cloud"
 slug: "atlassian"
 tier: "2"
-category: "Collaboration"
+category: "Productivity"
 description: "Jira/Confluence security for organization policies, app controls, and data residency"
 version: "0.1.0"
 maturity: "draft"
@@ -114,7 +114,7 @@ curl -X PUT "https://api.atlassian.com/admin/v1/orgs/${ORG_ID}/policies/authenti
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-||------|---------|----------|---------|--------|--|-----------|---------------------|
+|-----------|------------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1) | MFA for network access |
 

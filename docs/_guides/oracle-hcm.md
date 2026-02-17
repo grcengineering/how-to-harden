@@ -4,7 +4,7 @@ title: "Oracle HCM Cloud Hardening Guide"
 vendor: "Oracle HCM Cloud"
 slug: "oracle-hcm"
 tier: "3"
-category: "HR"
+category: "HR/Finance"
 description: "Enterprise HR security for security profiles, HDL controls, and IDCS integration"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Oracle HCM Cloud is a global enterprise HR platform with REST APIs, SOAP web ser
 - Oracle administrators configuring HCM Cloud
 - GRC professionals assessing HR compliance
 - Third-party risk managers evaluating Oracle integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Oracle HCM Cloud security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -75,7 +85,7 @@ Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
 **Step 1: Define Role Hierarchy**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | IT Security Manager | Security configuration |
 | Application Administrator | Full HCM admin |
 | HR Analyst | Read HR data |
@@ -137,7 +147,7 @@ Harden REST API integrations for HCM data.
    - Redirect URIs (exact match)
 
 **Step 2: Scope Restrictions**
-```
+```text
 Minimum Scopes:
 ├── urn:opc:resource:consumer::all (avoid if possible)
 ├── Specific API scopes only:

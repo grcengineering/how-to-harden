@@ -4,7 +4,7 @@ title: "Snowflake Hardening Guide"
 vendor: "Snowflake"
 slug: "snowflake"
 tier: "1"
-category: "Data Platform"
+category: "Data"
 description: "Data warehouse security including network policies, MFA enforcement, and access controls"
 version: "0.1.0"
 maturity: "draft"
@@ -175,7 +175,7 @@ WHERE deleted_on IS NULL
 #### Operational Impact
 
 | Aspect | Impact Level | Details |
-||------|---------|----------|---------|--------|-------------|----------|
+|--------|--------------|---------|
 | **User Experience** | Low | Users enroll once, authenticate via app |
 | **System Performance** | None | No performance impact |
 | **Maintenance Burden** | Low | Self-service enrollment |

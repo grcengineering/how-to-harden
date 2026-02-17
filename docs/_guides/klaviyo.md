@@ -22,6 +22,16 @@ Klaviyo is an e-commerce marketing platform managing customer data, email/SMS ca
 - GRC professionals assessing e-commerce marketing compliance
 - Third-party risk managers evaluating marketing integrations
 
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Klaviyo security configurations including authentication, access controls, and integration security.
+
 ---
 
 ## Table of Contents
@@ -64,7 +74,7 @@ Klaviyo is an e-commerce marketing platform managing customer data, email/SMS ca
 **Step 1: Define User Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Owner | Full access (1 user) |
 | Admin | Manage account settings |
 | Manager | Create campaigns |

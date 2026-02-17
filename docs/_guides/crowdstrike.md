@@ -88,7 +88,7 @@ Require MFA for all Falcon console access. Console compromise provides access to
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-||------|---------|----------|---------|--------|--|-----------|---------------------|
+|-----------|------------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1) | MFA for network access |
 | **PCI DSS** | 8.3.1 | MFA for administrative access |
@@ -106,7 +106,7 @@ Configure granular RBAC preventing over-privileged access to Falcon console func
 #### ClickOps Implementation
 
 **Step 1: Design Role Structure**
-```
+```text
 Roles:
 ├── Falcon Administrator
 │   └── Full console access (limit to 2-3 users)
@@ -365,7 +365,7 @@ Organize sensors into logical groups for policy management and staged deployment
 
 #### ClickOps Implementation
 
-```
+```text
 Sensor Groups:
 ├── Production-Critical
 │   ├── Domain Controllers
@@ -644,17 +644,11 @@ def stream_to_siem():
 ## Appendix C: References
 
 **Official CrowdStrike Documentation:**
-- [Falcon Administration Guide](https://falcon.crowdstrike.com/documentation)
-- [API Documentation](https://falcon.crowdstrike.com/documentation/api)
-- [CrowdStrike Guides and Resources](https://www.crowdstrike.com/en-us/resources/guides/)
-- [Falcon SSO with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/saas-apps/crowdstrike-falcon-platform-tutorial)
-
-## Appendix B: References
-
-**Official CrowdStrike Documentation:**
 - [Trust Center (SafeBase)](https://trust.crowdstrike.com/)
 - [Falcon Documentation Portal](https://falcon.crowdstrike.com/documentation/) (login required)
+- [Falcon Administration Guide](https://falcon.crowdstrike.com/documentation)
 - [Resources and Guides](https://www.crowdstrike.com/en-us/resources/guides/)
+- [Falcon SSO with Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/saas-apps/crowdstrike-falcon-platform-tutorial)
 - [Privacy Notice](https://www.crowdstrike.com/en-us/legal/privacy-notice/)
 
 **API and Developer Documentation:**

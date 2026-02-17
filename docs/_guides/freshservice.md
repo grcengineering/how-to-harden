@@ -4,7 +4,7 @@ title: "Freshservice Hardening Guide"
 vendor: "Freshservice"
 slug: "freshservice"
 tier: "5"
-category: "ITSM"
+category: "IT Operations"
 description: "ITSM security for API tokens, CMDB access, and change management controls"
 version: "0.1.0"
 maturity: "draft"
@@ -21,6 +21,16 @@ Freshservice is an IT service management (ITSM) platform handling IT tickets, as
 - Freshservice administrators
 - GRC professionals assessing IT service security
 - Third-party risk managers evaluating ITSM integrations
+
+
+### How to Use This Guide
+- **L1 (Baseline):** Essential controls for all organizations
+- **L2 (Hardened):** Enhanced controls for security-sensitive environments
+- **L3 (Maximum Security):** Strictest controls for regulated industries
+
+
+### Scope
+This guide covers Freshservice security configurations including authentication, access controls, and integration security.
 
 ---
 
@@ -64,7 +74,7 @@ Freshservice is an IT service management (ITSM) platform handling IT tickets, as
 **Step 1: Define Roles**
 
 | Role | Permissions |
-|------|---------|----------|---------|--------|----|
+|------|-------------|
 | Admin | Full access |
 | SD Agent | Service desk functions |
 | Asset Manager | CMDB access |

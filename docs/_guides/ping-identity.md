@@ -122,7 +122,7 @@ curl -X PUT "https://api.pingone.com/v1/environments/${ENV_ID}/groups/${ADMIN_GR
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-||------|---------|----------|---------|--------|--|-----------|---------------------|
+|-----------|------------|---------------------|
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(6) | MFA for privileged accounts |
 | **PCI DSS** | 8.3.1 | MFA for administrative access |
