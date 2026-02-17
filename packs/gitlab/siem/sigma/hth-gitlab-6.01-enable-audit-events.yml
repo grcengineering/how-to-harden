@@ -1,0 +1,40 @@
+title: GitLab Audit Event Streaming Destination Removed
+id: f1a3b5c7-9d2e-4f80-b6a4-e8c0d2f73a19
+status: test
+description: |
+    Detects removal of external audit event streaming destinations or their headers.
+    Attackers who gain admin access may disable audit streaming to prevent detection
+    of subsequent malicious activity. Removing a streaming destination breaks the
+    audit trail to your SIEM, creating a blind spot for security monitoring.
+    This corresponds to HTH GitLab control hth-gitlab-6.01-enable-audit-events (section 6.1, L1).
+references:
+    - https://howtoharden.com/guides/gitlab/
+    - https://docs.gitlab.com/ee/administration/audit_event_schema.html
+    - https://attack.mitre.org/techniques/T1562/008/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.008
+logsource:
+    product: gitlab
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_destination:
+        entity_type: 'ExternalAuditEventDestination'
+        action: 'destroy'
+    selection_header:
+        entity_type: 'AuditEventsStreamingHeader'
+        action: 'destroy'
+    condition: selection_destination or selection_header
+fields:
+    - author_name
+    - entity_path
+    - target_details
+    - ip_address
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Legitimate audit destination migration or replacement during SIEM infrastructure changes
+level: high

@@ -1,0 +1,61 @@
+title: AWS IAM Identity Center Sensitive Admin Actions
+id: hth-aws-iic-4.01-cloudtrail-sso-events
+status: test
+description: |
+    Detects sensitive administrative actions in IAM Identity Center including
+    identity provider configuration changes, MFA device modifications, and
+    instance-level setting changes. These events indicate potential identity
+    infrastructure tampering or account takeover attempts.
+    This corresponds to HTH AWS IAM Identity Center control 4.1: Configure
+    CloudTrail Logging (L1, NIST AU-2).
+references:
+    - https://howtoharden.com/guides/aws-iam-identity-center/
+    - https://docs.aws.amazon.com/singlesignon/latest/userguide/logging-using-cloudtrail.html
+    - https://docs.aws.amazon.com/IAM/latest/UserGuide/cloudtrail-integration.html
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.008
+    - attack.persistence
+    - attack.t1556.006
+logsource:
+    product: aws
+    service: cloudtrail
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_idp_changes:
+        eventSource: sso.amazonaws.com
+        eventName:
+            - 'AssociateDirectory'
+            - 'DisassociateDirectory'
+            - 'CreateInstanceAccessControlAttributeConfiguration'
+            - 'UpdateInstanceAccessControlAttributeConfiguration'
+            - 'DeleteInstanceAccessControlAttributeConfiguration'
+    selection_mfa_changes:
+        eventSource: sso.amazonaws.com
+        eventName:
+            - 'RegisterMfaDevice'
+            - 'DeregisterMfaDevice'
+            - 'UpdateMfaDevice'
+    selection_instance_changes:
+        eventSource: sso.amazonaws.com
+        eventName:
+            - 'CreateInstance'
+            - 'DeleteInstance'
+            - 'UpdateInstance'
+    condition: selection_idp_changes or selection_mfa_changes or selection_instance_changes
+fields:
+    - eventTime
+    - eventName
+    - userIdentity.arn
+    - userIdentity.principalId
+    - sourceIPAddress
+    - errorCode
+    - errorMessage
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Initial IAM Identity Center setup and configuration
+    - Planned identity provider migrations
+    - Authorized MFA device enrollment by users
+level: critical

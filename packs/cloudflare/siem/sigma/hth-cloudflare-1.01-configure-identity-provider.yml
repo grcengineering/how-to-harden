@@ -1,0 +1,36 @@
+title: Cloudflare Zero Trust Identity Provider Deleted or Modified
+id: cf-zt-1001-idp-changed
+status: test
+description: |
+    Detects when an identity provider configuration is deleted or modified in
+    Cloudflare Zero Trust. Removing or weakening IdP integration can degrade
+    authentication controls and enable unauthorized access.
+    This corresponds to HTH Cloudflare control 1.1 (section 1.1, L1).
+references:
+    - https://howtoharden.com/guides/cloudflare/
+    - https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.credential_access
+    - attack.t1556
+logsource:
+    product: cloudflare
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        ActionType|contains:
+            - 'DeleteAccessIdentityProvider'
+            - 'UpdateAccessIdentityProvider'
+    condition: selection
+fields:
+    - ActorEmail
+    - ActionType
+    - ResourceID
+    - When
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned IdP migration or rotation
+    - IdP configuration updates during maintenance
+level: high

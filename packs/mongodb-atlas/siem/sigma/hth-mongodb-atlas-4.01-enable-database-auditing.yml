@@ -1,0 +1,41 @@
+title: MongoDB Atlas Database Auditing Disabled
+id: b4f2d9e3-7a16-4c8f-a521-9d6b0e3f8c47
+status: test
+description: |
+    Detects when database auditing is disabled on a MongoDB Atlas project. Disabling
+    auditing removes visibility into authentication, authorization, and DDL events,
+    which is a prerequisite for covering tracks after unauthorized access. Auditing
+    should never be disabled in production environments.
+    This corresponds to HTH MongoDB Atlas control hth-mongodb-atlas-4.01-enable-database-auditing (section 4.1, L1).
+references:
+    - https://howtoharden.com/guides/mongodb-atlas/
+    - https://www.mongodb.com/docs/atlas/reference/api-resources-spec/v2/#tag/Auditing
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.008
+logsource:
+    product: mongodb_atlas
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        eventTypeName:
+            - 'AUDIT_CONFIGURATION_UPDATED'
+            - 'PROJECT_AUDIT_CONFIGURATION_UPDATED'
+    filter_disabled:
+        enabled: false
+    condition: selection and filter_disabled
+fields:
+    - username
+    - remoteAddress
+    - groupId
+    - enabled
+    - auditFilter
+    - created
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Temporary disable during maintenance windows (should be re-enabled immediately)
+    - Project decommissioning
+level: high

@@ -1,0 +1,51 @@
+title: Snowflake Network Policy Created or Modified
+id: b4e82d1f-6c93-4a7e-a456-2f8d1b5e7c34
+status: test
+description: |
+    Detects creation, modification, or deletion of Snowflake network policies.
+    Network policies are a critical perimeter control (HTH Control 2.1). Unauthorized
+    changes could expose the account to untrusted networks. Changes should be
+    correlated with approved change management tickets.
+    This corresponds to HTH Snowflake control hth-snowflake-2.01-implement-network-policies (section 2.1, L1).
+references:
+    - https://howtoharden.com/guides/snowflake/
+    - https://docs.snowflake.com/en/sql-reference/account-usage/query_history
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.007
+    - attack.persistence
+    - attack.t1098
+logsource:
+    product: snowflake
+    service: account_usage
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_create:
+        query_text|contains:
+            - 'CREATE NETWORK POLICY'
+            - 'CREATE OR REPLACE NETWORK POLICY'
+    selection_alter:
+        query_text|contains:
+            - 'ALTER NETWORK POLICY'
+            - 'ALTER ACCOUNT SET NETWORK_POLICY'
+            - 'ALTER ACCOUNT UNSET NETWORK_POLICY'
+    selection_drop:
+        query_text|contains:
+            - 'DROP NETWORK POLICY'
+    filter_success:
+        execution_status: 'SUCCESS'
+    condition: (selection_create or selection_alter or selection_drop) and filter_success
+fields:
+    - user_name
+    - role_name
+    - query_text
+    - start_time
+    - client_ip
+    - execution_status
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Scheduled infrastructure-as-code deployments (Terraform, Pulumi)
+    - Approved network policy updates during maintenance windows
+level: high

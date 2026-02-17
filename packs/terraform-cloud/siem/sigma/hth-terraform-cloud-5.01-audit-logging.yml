@@ -1,0 +1,36 @@
+title: Terraform Cloud Audit Log Destination Removed
+id: d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80
+status: test
+description: |
+    Detects when an audit log streaming destination is removed from a Terraform Cloud
+    organization. Removing audit log destinations prevents security teams from monitoring
+    infrastructure changes and may indicate an attacker attempting to cover their tracks.
+    This corresponds to HTH Terraform Cloud control hth-terraform-cloud-5.01-audit-logging (section 5.1, L1).
+references:
+    - https://howtoharden.com/guides/terraform-cloud/
+    - https://developer.hashicorp.com/terraform/cloud-docs/api-docs/audit-trails
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.008
+logsource:
+    product: terraform_cloud
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        resource_type: 'audit-trail-destination'
+        action: 'delete'
+    condition: selection
+fields:
+    - actor
+    - action
+    - resource_type
+    - resource_id
+    - timestamp
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Migration from one SIEM destination to another (delete followed by create)
+    - Organization restructuring with planned audit trail reconfiguration
+level: critical

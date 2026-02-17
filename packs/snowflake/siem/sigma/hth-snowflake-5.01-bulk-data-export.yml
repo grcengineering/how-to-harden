@@ -1,0 +1,52 @@
+title: Snowflake Bulk Data Export or Large Result Set
+id: c5f93e20-7da4-4b8f-b567-3g9e2c6f8d45
+status: test
+description: |
+    Detects queries that produce unusually large result sets or use COPY INTO
+    commands to export data to external stages. Large data exports may indicate
+    data exfiltration, especially when performed by non-ETL accounts or outside
+    business hours. Correlate with data classification and user role.
+    This corresponds to HTH Snowflake control hth-snowflake-5.01-enable-audit-logging (section 5.1, L1).
+references:
+    - https://howtoharden.com/guides/snowflake/
+    - https://docs.snowflake.com/en/sql-reference/account-usage/query_history
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.exfiltration
+    - attack.t1567
+    - attack.collection
+    - attack.t1530
+logsource:
+    product: snowflake
+    service: account_usage
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_copy:
+        query_text|contains:
+            - 'COPY INTO @'
+            - 'COPY INTO ''s3://'
+            - 'COPY INTO ''gcs://'
+            - 'COPY INTO ''azure://'
+    selection_large_result:
+        rows_produced|gte: 1000000
+    selection_large_bytes:
+        bytes_scanned|gte: 1073741824
+    filter_success:
+        execution_status: 'SUCCESS'
+    condition: (selection_copy or selection_large_result or selection_large_bytes) and filter_success
+fields:
+    - user_name
+    - role_name
+    - query_text
+    - rows_produced
+    - bytes_scanned
+    - start_time
+    - warehouse_name
+    - client_ip
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Scheduled ETL/ELT pipelines exporting data to data lakes
+    - Approved data warehouse migration jobs
+    - Business intelligence tools generating large reports
+level: medium

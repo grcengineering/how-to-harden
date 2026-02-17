@@ -1,0 +1,48 @@
+title: Salesforce Connected App OAuth Scope Modified
+id: hth-salesforce-3.01-connected-app-scope-modified
+status: test
+description: |
+    Detects creation, modification, or deletion of Connected Applications and their
+    OAuth scope configurations. Unauthorized changes to Connected Apps can introduce
+    over-permissioned third-party integrations, enabling data exfiltration or privilege
+    escalation via OAuth tokens.
+    This corresponds to HTH Salesforce control hth-salesforce-3.01-audit-connected-app-scopes (section 3.1, L1).
+references:
+    - https://howtoharden.com/guides/salesforce/
+    - https://help.salesforce.com/s/articleView?id=sf.connected_app_overview.htm
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.persistence
+    - attack.t1098.001
+logsource:
+    product: salesforce
+    service: event_monitoring
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_app_change:
+        EventType: 'SetupAuditTrail'
+        Action|contains:
+            - 'createdConnectedApp'
+            - 'updatedConnectedApp'
+            - 'deletedConnectedApp'
+            - 'changedConnectedAppOauth'
+            - 'changedConnectedAppAttributes'
+    selection_oauth_policy:
+        EventType: 'SetupAuditTrail'
+        Action|contains:
+            - 'changedOauthPolicy'
+            - 'updatedOauthToken'
+    condition: selection_app_change or selection_oauth_policy
+fields:
+    - CreatedDate
+    - CreatedByContext
+    - Display
+    - Section
+    - DelegateUser
+    - ResponsibleNamespacePrefix
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Legitimate Connected App deployments during scheduled release windows
+    - Admin-initiated OAuth policy tightening
+level: high

@@ -1,0 +1,47 @@
+title: AWS IAM Identity Center Account Assignment Changed
+id: hth-aws-iic-3.02-account-assignment-changed
+status: test
+description: |
+    Detects creation or deletion of account assignments in IAM Identity Center.
+    Account assignments link permission sets to users or groups for specific AWS
+    accounts. Unauthorized changes can grant cross-account access and should be
+    investigated immediately.
+    This corresponds to HTH AWS IAM Identity Center control 3.2: Configure
+    Account Assignments (L1, NIST AC-6).
+references:
+    - https://howtoharden.com/guides/aws-iam-identity-center/
+    - https://docs.aws.amazon.com/singlesignon/latest/userguide/logging-using-cloudtrail.html
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.persistence
+    - attack.t1098.001
+    - attack.privilege_escalation
+    - attack.t1078.004
+logsource:
+    product: aws
+    service: cloudtrail
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        eventSource: sso.amazonaws.com
+        eventName:
+            - 'CreateAccountAssignment'
+            - 'DeleteAccountAssignment'
+            - 'ProvisionPermissionSet'
+    condition: selection
+fields:
+    - eventTime
+    - eventName
+    - userIdentity.arn
+    - sourceIPAddress
+    - requestParameters.permissionSetArn
+    - requestParameters.targetId
+    - requestParameters.principalType
+    - requestParameters.principalId
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned onboarding of new teams to AWS accounts
+    - Automated account vending processes
+    - Infrastructure-as-code deployments
+level: high

@@ -1,0 +1,43 @@
+title: Salesforce Login IP Range Modified
+id: hth-salesforce-2.01-ip-allowlist-changed
+status: test
+description: |
+    Detects additions, modifications, or removals of Login IP Ranges in Salesforce.
+    Changes to IP allowlists can weaken network boundary controls and permit API access
+    from unauthorized locations. Correlate with change management tickets to verify
+    legitimacy.
+    This corresponds to HTH Salesforce control hth-salesforce-2.01-restrict-api-ip-allowlisting (section 2.1, L1).
+references:
+    - https://howtoharden.com/guides/salesforce/
+    - https://help.salesforce.com/s/articleView?id=sf.security_networkaccess.htm
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: salesforce
+    service: event_monitoring
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        EventType: 'SetupAuditTrail'
+        Action|contains:
+            - 'insertedLoginIpRange'
+            - 'deletedLoginIpRange'
+            - 'updatedLoginIpRange'
+            - 'insertedNetworkAccess'
+            - 'deletedNetworkAccess'
+    condition: selection
+fields:
+    - CreatedDate
+    - CreatedByContext
+    - Display
+    - Section
+    - DelegateUser
+    - ResponsibleNamespacePrefix
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Approved network configuration changes during maintenance windows
+    - Onboarding new office locations or VPN egress IPs
+level: high

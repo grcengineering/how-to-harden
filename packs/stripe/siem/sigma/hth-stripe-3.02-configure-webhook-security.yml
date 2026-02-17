@@ -1,0 +1,35 @@
+title: Stripe Webhook Endpoint Deleted
+id: stripe-webhook-3002-endpoint-deleted
+status: test
+description: |
+    Detects when a Stripe webhook endpoint is deleted via the API.
+    Removing webhook endpoints disrupts event delivery to security
+    monitoring and fulfillment systems.
+    This corresponds to HTH Stripe control 3.2 (section 3.2, L2).
+references:
+    - https://howtoharden.com/guides/stripe/
+    - https://docs.stripe.com/api/webhook_endpoints
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.008
+logsource:
+    product: stripe
+    service: events
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        request_method: 'DELETE'
+        request_path|startswith: '/v1/webhook_endpoints/'
+    condition: selection
+fields:
+    - timestamp
+    - request_method
+    - request_path
+    - source_ip
+    - api_key_id
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned webhook endpoint cleanup during migration
+level: high

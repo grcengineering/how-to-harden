@@ -1,0 +1,38 @@
+title: GitLab Personal Access Token Created with Full API Scope
+id: a4b7c92d-1e8f-5a3c-b6d0-f2e9a7c41835
+status: test
+description: |
+    Detects creation of personal access tokens with the broad 'api' scope. Tokens with
+    full API access represent a supply chain risk -- an attacker with a stolen PAT can
+    read/write repositories, pipelines, and registry images. Monitor for tokens created
+    outside of change management windows or by non-admin users.
+    This corresponds to HTH GitLab control hth-gitlab-1.03-configure-personal-access-token-policies (section 1.3, L1).
+references:
+    - https://howtoharden.com/guides/gitlab/
+    - https://docs.gitlab.com/ee/administration/audit_event_schema.html
+    - https://attack.mitre.org/techniques/T1098/001/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.persistence
+    - attack.t1098.001
+logsource:
+    product: gitlab
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        entity_type: 'PersonalAccessToken'
+        action: 'create'
+    condition: selection
+fields:
+    - author_name
+    - entity_path
+    - target_details
+    - ip_address
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Legitimate PAT creation by developers during onboarding or credential rotation
+    - Automated service account token provisioning by IT administrators
+level: medium

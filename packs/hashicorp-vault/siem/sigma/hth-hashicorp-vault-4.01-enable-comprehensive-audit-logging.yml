@@ -1,0 +1,39 @@
+title: Vault Audit Device Disabled
+id: d2e8b4a6-1f73-5c9d-a45e-7b0d9c2f6e1a
+status: test
+description: |
+    Detects when a Vault audit device is disabled via the sys/audit API endpoint.
+    Disabling audit logging removes visibility into Vault operations and is a
+    critical indicator of defense evasion. All audit device removals should be
+    investigated immediately and require change management approval.
+    This corresponds to HTH HashiCorp Vault control hth-hashicorp-vault-4.01-enable-comprehensive-audit-logging (section 4.1, L1).
+references:
+    - https://howtoharden.com/guides/hashicorp-vault/
+    - https://developer.hashicorp.com/vault/docs/audit
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.008
+logsource:
+    product: vault
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        request.path|startswith: 'sys/audit'
+        request.operation:
+            - 'delete'
+    condition: selection
+fields:
+    - auth.display_name
+    - auth.policies
+    - request.path
+    - request.operation
+    - request.remote_address
+    - time
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned audit device rotation during maintenance windows
+    - Audit device reconfiguration (disable + re-enable with new settings)
+level: critical

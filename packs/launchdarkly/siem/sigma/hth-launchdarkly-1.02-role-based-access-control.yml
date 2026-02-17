@@ -1,0 +1,37 @@
+title: LaunchDarkly Role Escalation to Admin
+id: ld-rbac-1002-admin-role-granted
+status: test
+description: |
+    Detects when a LaunchDarkly member is granted the admin role.
+    Unauthorized role escalation can lead to full account compromise
+    and feature flag manipulation across all environments.
+    This corresponds to HTH LaunchDarkly control 1.2 (section 1.2, L1).
+references:
+    - https://howtoharden.com/guides/launchdarkly/
+    - https://apidocs.launchdarkly.com/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.privilege_escalation
+    - attack.t1078.004
+logsource:
+    product: launchdarkly
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        kind: 'member'
+        accesses.action: 'updateMemberRole'
+    filter_admin:
+        title|contains: 'admin'
+    condition: selection and filter_admin
+fields:
+    - date
+    - title
+    - member.email
+    - subject.name
+    - accesses.resource
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned admin role assignment for new administrators
+level: high

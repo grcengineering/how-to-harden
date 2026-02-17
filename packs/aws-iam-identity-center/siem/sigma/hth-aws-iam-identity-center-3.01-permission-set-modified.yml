@@ -1,0 +1,51 @@
+title: AWS IAM Identity Center Permission Set Modified
+id: hth-aws-iic-3.01-permission-set-modified
+status: test
+description: |
+    Detects creation, modification, or deletion of IAM Identity Center permission
+    sets. Permission set changes can grant or escalate access across multiple AWS
+    accounts and should be reviewed for unauthorized modifications.
+    This corresponds to HTH AWS IAM Identity Center control 3.1: Configure
+    Permission Sets (L1, NIST AC-6).
+references:
+    - https://howtoharden.com/guides/aws-iam-identity-center/
+    - https://docs.aws.amazon.com/singlesignon/latest/userguide/logging-using-cloudtrail.html
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.persistence
+    - attack.t1098
+    - attack.privilege_escalation
+    - attack.t1078
+logsource:
+    product: aws
+    service: cloudtrail
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        eventSource: sso.amazonaws.com
+        eventName:
+            - 'CreatePermissionSet'
+            - 'UpdatePermissionSet'
+            - 'DeletePermissionSet'
+            - 'PutInlinePolicyToPermissionSet'
+            - 'DeleteInlinePolicyFromPermissionSet'
+            - 'AttachManagedPolicyToPermissionSet'
+            - 'DetachManagedPolicyFromPermissionSet'
+            - 'AttachCustomerManagedPolicyReferenceToPermissionSet'
+            - 'DetachCustomerManagedPolicyReferenceToPermissionSet'
+            - 'PutPermissionsBoundaryToPermissionSet'
+            - 'DeletePermissionsBoundaryFromPermissionSet'
+    condition: selection
+fields:
+    - eventTime
+    - eventName
+    - userIdentity.arn
+    - sourceIPAddress
+    - requestParameters.permissionSetArn
+    - requestParameters.name
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned permission set updates by authorized administrators
+    - Infrastructure-as-code deployments (Terraform, CloudFormation)
+level: high

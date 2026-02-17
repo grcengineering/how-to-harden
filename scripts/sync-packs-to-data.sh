@@ -87,7 +87,7 @@ detect_type() {
 extract_raw_section() {
   local filename="$1"
   # Match hth-{vendor}-{section}-{rest}.{ext}
-  echo "${filename}" | sed -n 's/^hth-[a-z]*-\([0-9]*\.[0-9]*\)-.*/\1/p'
+  echo "${filename}" | sed -n 's/^hth-[a-z0-9-]*-\([0-9]*\.[0-9]*\)-.*/\1/p'
 }
 
 # Process a single vendor
@@ -245,7 +245,8 @@ process_vendor() {
     echo "" >> "${output_file}"
   done
 
-  local section_count=${#sections_seen[@]}
+  local section_count=0
+  [ ${#sections_seen[@]} -gt 0 ] 2>/dev/null && section_count=${#sections_seen[@]}
   local file_count=${#marked_files[@]}
   echo "  ✓ ${vendor}: ${file_count} files → ${section_count} sections → ${output_file}"
 }

@@ -1,0 +1,48 @@
+title: Snowflake Login Without MFA Second Factor
+id: a7f31c2e-9b84-4d6f-b123-8e5c0a3d9f71
+status: test
+description: |
+    Detects successful Snowflake logins where no second authentication factor was
+    used. In a hardened environment with MFA enforced (HTH Control 1.1), logins
+    without a second factor indicate a policy bypass, exempted service account, or
+    misconfigured authentication policy. Investigate immediately if the user is
+    a human (non-service) account.
+    This corresponds to HTH Snowflake control hth-snowflake-1.01-enforce-mfa (section 1.1, L1).
+references:
+    - https://howtoharden.com/guides/snowflake/
+    - https://docs.snowflake.com/en/sql-reference/account-usage/login_history
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.credential_access
+    - attack.t1556.006
+    - attack.initial_access
+    - attack.t1078
+logsource:
+    product: snowflake
+    service: account_usage
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        event_type: 'LOGIN'
+        is_success: 'YES'
+    filter_mfa:
+        second_authentication_factor|contains:
+            - 'MFA_TOKEN'
+            - 'DUO_PASSCODE'
+    filter_keypair:
+        first_authentication_factor: 'RSA_KEYPAIR'
+    condition: selection and not filter_mfa and not filter_keypair
+fields:
+    - user_name
+    - client_ip
+    - reported_client_type
+    - first_authentication_factor
+    - second_authentication_factor
+    - event_timestamp
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Service accounts using key-pair authentication (excluded by filter)
+    - Temporary MFA exemptions during enrollment periods
+    - Snowflake internal system accounts
+level: high

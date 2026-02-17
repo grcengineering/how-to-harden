@@ -1,0 +1,35 @@
+title: JumpCloud MFA Settings Modified
+id: jc-mfa-2001-mfa-settings-changed
+status: test
+description: |
+    Detects when JumpCloud organization MFA settings are modified,
+    including user MFA requirements, admin MFA, or conditional
+    access policies affecting MFA. Weakening MFA exposes accounts
+    to credential-based attacks.
+    This corresponds to HTH JumpCloud control 2.1 (section 2.1, L1).
+references:
+    - https://howtoharden.com/guides/jumpcloud/
+    - https://docs.jumpcloud.com/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.credential_access
+    - attack.t1556
+logsource:
+    product: jumpcloud
+    service: directory_insights
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        event_type: 'organization_update'
+    condition: selection
+fields:
+    - timestamp
+    - event_type
+    - initiated_by.email
+    - client_ip
+    - changes
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned organization settings changes
+level: high

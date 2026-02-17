@@ -1,0 +1,38 @@
+title: ServiceNow Admin Role Granted to User
+id: f7a1c3e5-9b2d-4f8a-b6c1-3e5d7a9f2b4c
+status: test
+description: |
+    Detects when the admin role is granted to a user in ServiceNow. Unexpected
+    admin role assignments may indicate privilege escalation or unauthorized
+    access provisioning. Correlate with change management records.
+    This corresponds to HTH ServiceNow control hth-servicenow-3.02-limit-admin-access (section 3.2, L1).
+references:
+    - https://howtoharden.com/guides/servicenow/
+    - https://docs.servicenow.com/bundle/latest/page/administer/security/concept/c_RoleBasedAccessControl.html
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.persistence
+    - attack.t1098
+logsource:
+    product: servicenow
+    service: sys_audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        tablename: 'sys_user_has_role'
+        fieldname: 'role'
+        newvalue|contains: 'admin'
+    condition: selection
+fields:
+    - sys_created_on
+    - user
+    - tablename
+    - fieldname
+    - newvalue
+    - documentkey
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned admin onboarding with approved change request
+    - Emergency break-glass account provisioning
+level: high

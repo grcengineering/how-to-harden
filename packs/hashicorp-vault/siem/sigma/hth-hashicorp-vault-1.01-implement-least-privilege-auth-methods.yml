@@ -1,0 +1,44 @@
+title: Vault Root Token Usage or Auth Method Modification
+id: a7f3c5d1-9e42-5b8a-b12d-4c6e8f0a3d7b
+status: test
+description: |
+    Detects root token usage in Vault authentication events or modifications to
+    auth methods (enable, disable, tune). Root token usage outside break-glass
+    procedures indicates a critical policy violation. Auth method changes may
+    signal unauthorized reconfiguration of the authentication surface.
+    This corresponds to HTH HashiCorp Vault control hth-hashicorp-vault-1.01-implement-least-privilege-auth-methods (section 1.1, L1).
+references:
+    - https://howtoharden.com/guides/hashicorp-vault/
+    - https://developer.hashicorp.com/vault/docs/audit
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.persistence
+    - attack.t1098
+    - attack.privilege_escalation
+    - attack.t1078
+logsource:
+    product: vault
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_root_token:
+        auth.policies|contains: 'root'
+    selection_auth_changes:
+        request.path|startswith: 'sys/auth'
+        request.operation:
+            - 'update'
+            - 'delete'
+    condition: selection_root_token or selection_auth_changes
+fields:
+    - auth.display_name
+    - auth.policies
+    - request.path
+    - request.operation
+    - request.remote_address
+    - time
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Break-glass emergency procedures using root token
+    - Planned auth method reconfiguration during maintenance windows
+level: critical

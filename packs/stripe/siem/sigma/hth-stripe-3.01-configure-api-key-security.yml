@@ -1,0 +1,37 @@
+title: Stripe Account Configuration Changed
+id: stripe-account-3001-config-changed
+status: test
+description: |
+    Detects account.updated webhook events from Stripe indicating
+    changes to account configuration. This may include security
+    settings, team changes, or API key modifications. Since Stripe
+    has no granular API key audit events, account.updated is the
+    closest signal for configuration changes.
+    This corresponds to HTH Stripe control 3.1 (section 3.1, L1).
+references:
+    - https://howtoharden.com/guides/stripe/
+    - https://docs.stripe.com/api/events/types
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: stripe
+    service: webhook
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        type: 'account.updated'
+    condition: selection
+fields:
+    - id
+    - created
+    - type
+    - data.object.id
+    - data.previous_attributes
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Routine account settings updates
+    - Planned configuration changes
+level: medium

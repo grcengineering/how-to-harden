@@ -1,0 +1,36 @@
+title: Cloudflare Logpush Job Disabled or Deleted
+id: cf-zt-6001-logpush-disabled
+status: test
+description: |
+    Detects when a Cloudflare Logpush job is disabled or deleted. Disabling
+    log forwarding creates blind spots in security monitoring and can indicate
+    an attacker attempting to cover their tracks.
+    This corresponds to HTH Cloudflare control 6.1 (section 6.1, L1).
+references:
+    - https://howtoharden.com/guides/cloudflare/
+    - https://developers.cloudflare.com/logs/logpush/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.008
+logsource:
+    product: cloudflare
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        ActionType|contains:
+            - 'DeleteLogpushJob'
+            - 'UpdateLogpushJob'
+    condition: selection
+fields:
+    - ActorEmail
+    - ActionType
+    - ResourceID
+    - When
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Log destination migration
+    - Cost optimization changes
+level: critical

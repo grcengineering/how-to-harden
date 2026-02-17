@@ -1,0 +1,41 @@
+title: ServiceNow Suspicious Audit Log Access Pattern
+id: d9e1f3a5-7b2c-4d8e-9a6f-1c3b5d7e9f2a
+status: test
+description: |
+    Detects suspicious access patterns to the sys_audit table, such as bulk
+    exports or deletion attempts. Threat actors may attempt to access or
+    tamper with audit logs to cover their tracks after gaining admin access.
+    This corresponds to HTH ServiceNow control hth-servicenow-4.01-configure-audit-logging (section 4.1, L1).
+references:
+    - https://howtoharden.com/guides/servicenow/
+    - https://docs.servicenow.com/bundle/latest/page/administer/security/concept/c_Auditing.html
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1070
+logsource:
+    product: servicenow
+    service: sys_audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_audit_access:
+        tablename: 'sys_audit'
+    selection_deletion:
+        tablename: 'sys_audit_delete'
+    selection_export:
+        tablename|contains: 'sys_audit'
+        fieldname: 'export'
+    condition: selection_audit_access or selection_deletion or selection_export
+fields:
+    - sys_created_on
+    - user
+    - tablename
+    - fieldname
+    - newvalue
+    - oldvalue
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Scheduled audit log archival by authorized service accounts
+    - Compliance team running authorized audit reports
+level: critical

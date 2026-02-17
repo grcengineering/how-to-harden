@@ -1,0 +1,40 @@
+title: LaunchDarkly Audit Log Webhook Disabled
+id: ld-audit-4001-webhook-disabled
+status: test
+description: |
+    Detects when an audit log webhook or integration subscription is
+    deleted or disabled. Disabling audit log streaming prevents
+    security monitoring of LaunchDarkly activity.
+    This corresponds to HTH LaunchDarkly control 4.1 (section 4.1, L1).
+references:
+    - https://howtoharden.com/guides/launchdarkly/
+    - https://apidocs.launchdarkly.com/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.008
+logsource:
+    product: launchdarkly
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_webhook:
+        kind: 'webhook'
+        accesses.action:
+            - 'deleteWebhook'
+    selection_integration:
+        kind: 'integration'
+        accesses.action:
+            - 'deleteIntegration'
+    condition: selection_webhook or selection_integration
+fields:
+    - date
+    - title
+    - member.email
+    - target.name
+    - accesses.resource
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned migration between SIEM platforms
+level: high

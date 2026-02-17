@@ -1,0 +1,40 @@
+title: Auth0 Log Stream Deleted or Paused
+id: a0-log-5001-stream-disabled
+status: test
+description: |
+    Detects when an Auth0 log stream is deleted or paused. Disabling log
+    streaming creates blind spots in security monitoring and may indicate
+    an attacker attempting to cover their tracks.
+    This corresponds to HTH Auth0 control 5.1 (section 5.1, L1).
+references:
+    - https://howtoharden.com/guides/auth0/
+    - https://auth0.com/docs/customize/log-streams
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.008
+logsource:
+    product: auth0
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        type: 'sapi'
+        description|contains: 'log-streams'
+    filter_action:
+        details.request.method|contains:
+            - 'delete'
+            - 'patch'
+    condition: selection and filter_action
+fields:
+    - date
+    - type
+    - description
+    - user_name
+    - ip
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Log destination migration
+    - Stream configuration updates
+level: critical

@@ -1,0 +1,38 @@
+title: Cloudflare Tunnel Created or Configuration Modified
+id: cf-zt-5001-tunnel-changed
+status: test
+description: |
+    Detects when a Cloudflare Tunnel is created or its configuration is modified.
+    Unauthorized tunnel changes can expose internal services to the internet
+    without proper Access policy protection.
+    This corresponds to HTH Cloudflare control 5.1 (section 5.1, L1).
+references:
+    - https://howtoharden.com/guides/cloudflare/
+    - https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.persistence
+    - attack.t1133
+logsource:
+    product: cloudflare
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        ActionType|contains:
+            - 'CreateTunnel'
+            - 'UpdateTunnel'
+            - 'DeleteTunnel'
+            - 'UpdateTunnelConfiguration'
+    condition: selection
+fields:
+    - ActorEmail
+    - ActionType
+    - ResourceID
+    - When
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Routine tunnel maintenance
+    - New application deployments
+level: medium

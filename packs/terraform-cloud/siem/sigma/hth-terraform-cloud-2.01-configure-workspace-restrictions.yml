@@ -1,0 +1,39 @@
+title: Terraform Cloud Workspace Auto-Apply Enabled
+id: c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f
+status: test
+description: |
+    Detects when auto-apply is enabled on a Terraform Cloud workspace. Auto-apply
+    bypasses manual approval for infrastructure changes, allowing plans to apply
+    automatically without human review. This is dangerous for production workspaces
+    where changes should require explicit approval.
+    This corresponds to HTH Terraform Cloud control hth-terraform-cloud-2.01-configure-workspace-restrictions (section 2.1, L1).
+references:
+    - https://howtoharden.com/guides/terraform-cloud/
+    - https://developer.hashicorp.com/terraform/cloud-docs/api-docs/audit-trails
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: terraform_cloud
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        resource_type: 'workspace'
+        action: 'update'
+    filter_auto_apply:
+        new_values|contains: '"auto-apply":true'
+    condition: selection and filter_auto_apply
+fields:
+    - actor
+    - action
+    - resource_type
+    - resource_id
+    - timestamp
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Enabling auto-apply on development or sandbox workspaces
+    - Temporary enablement during approved batch infrastructure rollouts
+level: high

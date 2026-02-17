@@ -1,0 +1,41 @@
+title: Qualys Admin or Manager Role Assigned to User
+id: c7a2e4f1-89d3-4b6a-a1c0-3f8e72d50b19
+status: test
+description: |
+    Detects when a user is created with or assigned an elevated role (Manager or
+    Unit Manager) in Qualys. Excessive admin accounts increase attack surface.
+    Investigate whether the role assignment follows change management procedures.
+    This corresponds to HTH Qualys control hth-qualys-1.03-implement-rbac (section 1.3, L1).
+references:
+    - https://howtoharden.com/guides/qualys/
+    - https://www.qualys.com/documentation/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.persistence
+    - attack.t1098
+logsource:
+    product: qualys
+    service: activity_log
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_create:
+        Action: 'User Created'
+    selection_modify:
+        Action: 'User Role Modified'
+    selection_role:
+        Details|contains:
+            - 'Manager'
+            - 'Unit Manager'
+    condition: (selection_create or selection_modify) and selection_role
+fields:
+    - Date
+    - User
+    - Action
+    - Details
+    - UserLogin
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned user onboarding with documented approval
+    - Temporary role elevation during incident response
+level: high

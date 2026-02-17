@@ -1,0 +1,36 @@
+title: Cloudflare Account Member Role Changed to Super Administrator
+id: cf-zt-1004-admin-role-escalation
+status: test
+description: |
+    Detects when a Cloudflare account member is granted Super Administrator
+    privileges. Excessive Super Admin access increases the blast radius of
+    compromised accounts.
+    This corresponds to HTH Cloudflare control 1.4 (section 1.4, L1).
+references:
+    - https://howtoharden.com/guides/cloudflare/
+    - https://developers.cloudflare.com/fundamentals/setup/manage-members/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.persistence
+    - attack.t1098
+logsource:
+    product: cloudflare
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        ActionType: 'UpdateMember'
+    filter_role:
+        ActionMetadata|contains: 'Super Administrator'
+    condition: selection and filter_role
+fields:
+    - ActorEmail
+    - ActionType
+    - ResourceID
+    - When
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Onboarding new administrators
+    - Emergency access provisioning
+level: high

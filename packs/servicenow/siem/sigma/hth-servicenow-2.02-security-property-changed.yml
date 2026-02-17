@@ -1,0 +1,47 @@
+title: ServiceNow Security System Property Modified
+id: b3d5e7a9-1c3f-4b8d-a2e6-5f7c9d1b3e5a
+status: test
+description: |
+    Detects modifications to security-critical system properties in ServiceNow.
+    Changes to properties like glide.security.default.deny, secure cookies, or
+    CSRF protection can weaken the instance security posture. All changes should
+    be validated against approved change records.
+    This corresponds to HTH ServiceNow control hth-servicenow-2.02-enable-high-security-plugins (section 2.2, L2).
+references:
+    - https://howtoharden.com/guides/servicenow/
+    - https://docs.servicenow.com/bundle/latest/page/administer/security/concept/c_HighSecuritySettings.html
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: servicenow
+    service: sys_audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        tablename: 'sys_properties'
+        fieldname: 'value'
+    filter_security_properties:
+        documentkey|contains:
+            - 'glide.security.default.deny'
+            - 'glide.security.use_secure_cookies'
+            - 'glide.security.strict.xframe'
+            - 'glide.basicauth.required.user_password'
+            - 'glide.security.csrf_previous.enabled'
+            - 'glide.authenticate.multifactor'
+    condition: selection and filter_security_properties
+fields:
+    - sys_created_on
+    - user
+    - tablename
+    - fieldname
+    - oldvalue
+    - newvalue
+    - documentkey
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned hardening changes during maintenance windows
+    - Initial High Security Settings plugin activation
+level: high

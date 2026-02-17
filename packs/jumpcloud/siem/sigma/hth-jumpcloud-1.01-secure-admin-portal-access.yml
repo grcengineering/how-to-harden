@@ -1,0 +1,38 @@
+title: JumpCloud Admin Login from Unexpected Source
+id: jc-admin-1001-suspicious-admin-login
+status: test
+description: |
+    Detects admin login attempts to the JumpCloud Admin Portal.
+    Monitor for logins from unexpected IP addresses, at unusual times,
+    or following multiple failures. Admin portal access controls
+    all identity and security settings.
+    This corresponds to HTH JumpCloud control 1.1 (section 1.1, L1).
+references:
+    - https://howtoharden.com/guides/jumpcloud/
+    - https://docs.jumpcloud.com/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.initial_access
+    - attack.t1078.004
+logsource:
+    product: jumpcloud
+    service: directory_insights
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        event_type: 'admin_login_attempt'
+    filter_failure:
+        success: false
+    condition: selection and filter_failure
+fields:
+    - timestamp
+    - event_type
+    - initiated_by.email
+    - client_ip
+    - success
+    - mfa_meta.type
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Admin password rotation causing temporary failures
+level: high

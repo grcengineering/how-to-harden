@@ -1,0 +1,43 @@
+title: MongoDB Atlas Open IP Access List Entry (0.0.0.0/0) Added
+id: a7e3c8f1-2d94-4b1e-9f06-3c8a5d7e2b10
+status: test
+description: |
+    Detects when 0.0.0.0/0 or ::/0 is added to a MongoDB Atlas project IP access
+    list, exposing databases to the entire internet. This is the most critical Atlas
+    misconfiguration and must be remediated immediately. Legitimate use is extremely
+    rare and should require documented approval.
+    This corresponds to HTH MongoDB Atlas control hth-mongodb-atlas-1.01-configure-ip-access-list (section 1.1, L1).
+references:
+    - https://howtoharden.com/guides/mongodb-atlas/
+    - https://www.mongodb.com/docs/atlas/reference/api-resources-spec/v2/#tag/Project-IP-Access-List
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.initial_access
+    - attack.t1190
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: mongodb_atlas
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        eventTypeName:
+            - 'ACCESS_LIST_ENTRY_ADDED'
+            - 'PROJECT_IP_ACCESS_LIST_ENTRY_ADDED'
+    filter_open_access:
+        cidrBlock|contains:
+            - '0.0.0.0/0'
+            - '::/0'
+    condition: selection and filter_open_access
+fields:
+    - username
+    - remoteAddress
+    - cidrBlock
+    - groupId
+    - created
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Emergency break-glass access during incident response (should be temporary and documented)
+level: critical

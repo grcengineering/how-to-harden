@@ -1,0 +1,48 @@
+title: Salesforce Bulk Data Export or Large API Query Detected
+id: hth-salesforce-5.01-bulk-data-export-detected
+status: test
+description: |
+    Detects large-scale data exports via the Salesforce Bulk API or Data Export service.
+    Bulk exports can indicate data exfiltration by compromised accounts or malicious
+    integrations. Correlate with the requesting user, source IP, and Connected App to
+    determine legitimacy.
+    This corresponds to HTH Salesforce control hth-salesforce-5.01-enable-event-monitoring (section 5.1, L1).
+references:
+    - https://howtoharden.com/guides/salesforce/
+    - https://help.salesforce.com/s/articleView?id=sf.data_export.htm
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.exfiltration
+    - attack.t1567
+logsource:
+    product: salesforce
+    service: event_monitoring
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_bulk_api:
+        EventType:
+            - 'BulkApi'
+            - 'ApiBulkApiHard'
+    selection_data_export:
+        EventType: 'DataExport'
+    selection_large_query:
+        EventType:
+            - 'API'
+            - 'RestApi'
+        ROWS_PROCESSED|gte: 10000
+    condition: selection_bulk_api or selection_data_export or selection_large_query
+fields:
+    - EventDate
+    - Username
+    - SourceIp
+    - ROWS_PROCESSED
+    - ENTITY_NAME
+    - CLIENT_NAME
+    - REQUEST_STATUS
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Scheduled data backup jobs from approved integration accounts
+    - Authorized reporting and analytics pipelines
+    - Data migration activities during planned maintenance
+level: medium

@@ -1,0 +1,38 @@
+title: Cloudflare WARP Client Lock Setting Disabled
+id: cf-zt-4002-warp-unlocked
+status: test
+description: |
+    Detects when the WARP client lock setting is disabled, allowing users to
+    disconnect from Zero Trust protection. An unlocked WARP client means
+    endpoints can bypass Gateway filtering and Access policies.
+    This corresponds to HTH Cloudflare control 4.2 (section 4.2, L2).
+references:
+    - https://howtoharden.com/guides/cloudflare/
+    - https://developers.cloudflare.com/cloudflare-one/connections/connect-devices/warp/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: cloudflare
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        ActionType: 'UpdateDevicePolicy'
+    filter_unlock:
+        ActionMetadata|contains:
+            - 'switch_locked'
+            - 'allowed_to_leave'
+    condition: selection and filter_unlock
+fields:
+    - ActorEmail
+    - ActionType
+    - ResourceID
+    - When
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Temporary unlock for troubleshooting
+    - Device policy testing
+level: medium

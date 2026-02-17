@@ -1,0 +1,36 @@
+title: JumpCloud Admin Privilege Escalation
+id: jc-audit-5001-admin-created
+status: test
+description: |
+    Detects when a new administrator account is created or an
+    existing account is elevated to admin in JumpCloud. Unauthorized
+    admin creation enables full control over the directory.
+    This corresponds to HTH JumpCloud control 5.1 (section 5.1, L1).
+references:
+    - https://howtoharden.com/guides/jumpcloud/
+    - https://docs.jumpcloud.com/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.privilege_escalation
+    - attack.t1078.004
+logsource:
+    product: jumpcloud
+    service: directory_insights
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        event_type:
+            - 'admin_create'
+            - 'admin_update'
+    condition: selection
+fields:
+    - timestamp
+    - event_type
+    - initiated_by.email
+    - client_ip
+    - changes
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned administrator onboarding
+level: critical

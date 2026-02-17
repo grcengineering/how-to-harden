@@ -1,0 +1,44 @@
+title: LaunchDarkly Production Environment Controls Weakened
+id: ld-env-3001-prod-controls-weakened
+status: test
+description: |
+    Detects when production environment security controls are weakened,
+    such as disabling required comments, confirm changes, approval
+    workflows, or secure mode. Weakening these controls enables
+    unauthorized or unreviewed production flag changes.
+    This corresponds to HTH LaunchDarkly control 3.1 (section 3.1, L1).
+references:
+    - https://howtoharden.com/guides/launchdarkly/
+    - https://apidocs.launchdarkly.com/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: launchdarkly
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        kind: 'environment'
+        accesses.action:
+            - 'updateRequireComments'
+            - 'updateConfirmChanges'
+            - 'updateSecureMode'
+            - 'updateApprovalSettings'
+    filter_production:
+        accesses.resource|contains: 'env/production'
+    condition: selection and filter_production
+fields:
+    - date
+    - title
+    - member.email
+    - accesses.action
+    - accesses.resource
+    - previousVersion
+    - currentVersion
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned environment configuration changes during maintenance
+level: high

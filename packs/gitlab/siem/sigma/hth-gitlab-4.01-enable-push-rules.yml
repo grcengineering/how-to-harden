@@ -1,0 +1,41 @@
+title: GitLab Push Rules Modified or Disabled
+id: d8e6f234-5c1a-4b97-a2f0-c3d9e71b58a6
+status: test
+description: |
+    Detects creation, modification, or deletion of push rules on a project. Push rules
+    enforce secret prevention and commit signing requirements. Disabling or weakening
+    push rules may indicate an attacker preparing to push malicious code or secrets
+    into a repository without detection.
+    This corresponds to HTH GitLab control hth-gitlab-4.01-enable-push-rules (section 4.1, L1).
+references:
+    - https://howtoharden.com/guides/gitlab/
+    - https://docs.gitlab.com/ee/administration/audit_event_schema.html
+    - https://attack.mitre.org/techniques/T1562/001/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: gitlab
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        entity_type: 'PushRule'
+        action:
+            - 'create'
+            - 'update'
+            - 'destroy'
+    condition: selection
+fields:
+    - author_name
+    - entity_path
+    - target_details
+    - ip_address
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Legitimate push rule updates during repository configuration changes
+    - Infrastructure-as-code driven push rule management via CI/CD pipelines
+level: high

@@ -1,0 +1,38 @@
+title: Cloudflare Gateway DNS Security Policy Disabled or Deleted
+id: cf-zt-3001-dns-policy-weakened
+status: test
+description: |
+    Detects when a Gateway DNS filtering policy is disabled or deleted in
+    Cloudflare Zero Trust. Disabling DNS filtering removes a critical layer
+    of threat protection against malware, phishing, and C2 domains.
+    This corresponds to HTH Cloudflare control 3.1 (section 3.1, L1).
+references:
+    - https://howtoharden.com/guides/cloudflare/
+    - https://developers.cloudflare.com/cloudflare-one/policies/gateway/dns-policies/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: cloudflare
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        ActionType|contains:
+            - 'DeleteGatewayRule'
+            - 'UpdateGatewayRule'
+    filter_dns:
+        ActionMetadata|contains: 'dns'
+    condition: selection and filter_dns
+fields:
+    - ActorEmail
+    - ActionType
+    - ResourceID
+    - When
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Policy tuning to reduce false positives
+    - Planned policy migration
+level: high

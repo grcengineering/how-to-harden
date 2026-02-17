@@ -1,0 +1,35 @@
+title: Cloudflare Access Application Policy Deleted
+id: cf-zt-2001-access-policy-deleted
+status: test
+description: |
+    Detects when an Access application policy is deleted in Cloudflare Zero Trust.
+    Removing Access policies can expose protected applications to unauthorized users.
+    This corresponds to HTH Cloudflare control 2.1 (section 2.1, L1).
+references:
+    - https://howtoharden.com/guides/cloudflare/
+    - https://developers.cloudflare.com/cloudflare-one/policies/access/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: cloudflare
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        ActionType|contains:
+            - 'DeleteAccessPolicy'
+            - 'DeleteAccessApplication'
+    condition: selection
+fields:
+    - ActorEmail
+    - ActionType
+    - ResourceID
+    - When
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Decommissioning applications
+    - Policy migration or reorganization
+level: high

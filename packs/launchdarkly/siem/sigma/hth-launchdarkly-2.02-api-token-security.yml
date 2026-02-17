@@ -1,0 +1,34 @@
+title: LaunchDarkly Admin-Level API Token Created
+id: ld-token-2002-admin-token-created
+status: test
+description: |
+    Detects when an API access token is created with admin-level permissions.
+    Admin tokens can modify all project settings, flags, and member roles.
+    This corresponds to HTH LaunchDarkly control 2.2 (section 2.2, L1).
+references:
+    - https://howtoharden.com/guides/launchdarkly/
+    - https://apidocs.launchdarkly.com/
+author: How to Harden
+date: 2026/02/16
+tags:
+    - attack.credential_access
+    - attack.t1098.001
+logsource:
+    product: launchdarkly
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        kind: 'token'
+        accesses.action: 'createToken'
+    condition: selection
+fields:
+    - date
+    - title
+    - member.email
+    - target.name
+    - accesses.resource
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned service token creation during deployment setup
+level: medium
