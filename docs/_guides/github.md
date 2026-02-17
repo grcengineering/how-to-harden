@@ -1239,7 +1239,7 @@ find .github/workflows -name "*.yml" -exec grep -L "permissions:" {} \;
 Require manual approval before running workflows triggered by first-time contributors. Prevents malicious PR attacks that exfiltrate secrets.
 
 #### Rationale
-**Attack:** Attacker forks your public repo, modifies workflow to exfiltrate secrets, opens PR. Workflow runs automatically and steals `${{ secrets }}`.
+**Attack:** Attacker forks your public repo, modifies workflow to exfiltrate secrets, opens PR. Workflow runs automatically and steals `{% raw %}${{ secrets }}{% endraw %}`.
 
 **Prevention:** Require maintainer to review and approve workflow runs from new contributors.
 
@@ -1570,9 +1570,9 @@ gh secret set PROD_API_KEY --env production --body "secret-value"
 3. Rotate secrets on a documented schedule
 
 **Never Do:**
-- Echo secrets in workflow logs: `echo ${{ secrets.API_KEY }}`
+- Echo secrets in workflow logs: `echo {% raw %}${{ secrets.API_KEY }}{% endraw %}`
 - Write secrets to files that get uploaded as artifacts
-- Pass secrets in URLs: `curl https://api.example.com?key=${{ secrets.API_KEY }}`
+- Pass secrets in URLs: `curl https://api.example.com?key={% raw %}${{ secrets.API_KEY }}{% endraw %}`
 
 #### Monitoring
 

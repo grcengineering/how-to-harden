@@ -400,7 +400,7 @@ Use Postman Local Vault to store sensitive credentials locally, never syncing to
 **Step 1: Configure Postman Vault**
 1. Navigate to: **Settings** → **Vault**
 2. Add secrets to local vault
-3. Reference secrets using `{{vault:secret_name}}`
+3. Reference secrets using `{% raw %}{{vault:secret_name}}{% endraw %}`
 
 **Step 2: Configure Vault Integrations**
 1. Available integrations:

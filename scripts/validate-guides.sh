@@ -9,6 +9,7 @@
 #   5. Invalid frontmatter categories
 #   6. Required frontmatter fields
 #   7. Required structural sections
+#   8. Unescaped Liquid syntax ({{ outside code blocks)
 #
 # Usage: bash scripts/validate-guides.sh
 # Exit code: 0 = all pass, 1 = failures found
@@ -65,6 +66,7 @@ files = sorted(glob.glob(os.path.join(guides_dir, "*.md")))
 bare_issues = []
 sep_issues = []
 table_issues = []
+liquid_issues = []
 
 for fpath in files:
     with open(fpath, 'r') as f:
@@ -114,6 +116,10 @@ for fpath in files:
             if prev and not prev_is_table and prev != '---' and not prev_is_code:
                 table_issues.append(f"{fname}:L{i+1}: missing blank line before table")
 
+        # Test 8: Unescaped Liquid syntax ({{ or {%) outside code blocks
+        if '{{' in stripped and '{% raw %}' not in stripped:
+            liquid_issues.append(f"{fname}:L{i+1}: unescaped '{{{{}}' in: {stripped[:60]}")
+
         prev_stripped = stripped
 
 # Output results as sections separated by markers
@@ -130,6 +136,11 @@ for issue in sep_issues[:20]:
 print("===TABLE===")
 print(len(table_issues))
 for issue in table_issues[:20]:
+    print(f"    {issue}")
+
+print("===LIQUID===")
+print(len(liquid_issues))
+for issue in liquid_issues[:20]:
     print(f"    {issue}")
 PYEOF
 )
@@ -161,13 +172,25 @@ echo ""
 
 # Parse Test 4 results
 echo "▸ Test 4: Tables have required blank lines (kramdown)"
-table_section=$(echo "$content_results" | sed -n '/===TABLE===/,$p' | tail -n +2)
+table_section=$(echo "$content_results" | sed -n '/===TABLE===/,/===LIQUID===/p' | head -n -1 | tail -n +2)
 table_count=$(echo "$table_section" | head -1)
 if [ "$table_count" -gt 0 ]; then
   fail "${table_count} tables missing blank lines:"
   echo "$table_section" | tail -n +2
 else
   pass "All tables have required blank lines"
+fi
+echo ""
+
+# Parse Test 8 results
+echo "▸ Test 8: No unescaped Liquid syntax outside code blocks"
+liquid_section=$(echo "$content_results" | sed -n '/===LIQUID===/,$p' | tail -n +2)
+liquid_count=$(echo "$liquid_section" | head -1)
+if [ "$liquid_count" -gt 0 ]; then
+  fail "${liquid_count} unescaped Liquid expressions found:"
+  echo "$liquid_section" | tail -n +2
+else
+  pass "No unescaped Liquid syntax found"
 fi
 echo ""
 

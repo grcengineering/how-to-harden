@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: default
 title: "HTH Guides Roadmap: Obsidian Security Integrations"
 permalink: /roadmap/obsidian-integrations/
 description: "Roadmap for creating How to Harden guides covering 175+ SaaS products in Obsidian Security's integrations ecosystem"
