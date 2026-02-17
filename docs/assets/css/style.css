@@ -472,11 +472,6 @@ body {
 .dot-reviewed { background: #3b82f6; }
 .dot-verified { background: #22c55e; }
 
-/* Mobile chip strip — hidden on desktop */
-.mobile-chips {
-  display: none;
-}
-
 /* View toggle */
 .view-toggle {
   display: flex;
@@ -1342,7 +1337,7 @@ body {
     padding: var(--space-xs) var(--space-sm);
   }
 
-  /* Floating bar on mobile — move to bottom */
+  /* Floating bar on mobile — fixed at bottom */
   .floating-bar {
     position: fixed;
     top: auto;
@@ -1365,6 +1360,7 @@ body {
     width: 100%;
   }
 
+  /* Single horizontal row, scrollable */
   .floating-filters {
     width: 100%;
     overflow-x: auto;
@@ -1382,56 +1378,25 @@ body {
   .filter-btn {
     padding: 5px 10px;
     font-size: 0.75rem;
-  }
-
-  /* Hide desktop dropdown menus on mobile */
-  .desktop-only {
-    display: none !important;
-  }
-
-  /* Show mobile chip strip */
-  .mobile-chips {
-    display: flex;
-    align-items: center;
-    gap: 6px;
     flex-shrink: 0;
   }
 
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 5px 12px;
-    background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    font-family: var(--font-sans);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
-    -webkit-tap-highlight-color: transparent;
-    transition: all 0.15s;
+  /* Dropdown menus on mobile: open ABOVE the button, constrained size */
+  .filter-dropdown-menu {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 6px);
+    top: auto;
+    max-width: calc(100vw - 24px);
+    max-height: 25vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
   }
 
-  .chip:active {
-    transform: scale(0.95);
-  }
-
-  .chip-active {
-    background: var(--color-primary-muted);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    font-weight: 600;
-  }
-
-  .chip-divider {
-    width: 1px;
-    height: 16px;
-    background: var(--color-border);
-    flex-shrink: 0;
+  .filter-option {
+    padding: 10px;
+    font-size: 0.8125rem;
   }
 
   /* Add bottom padding to body so content isn't hidden behind fixed bar */
