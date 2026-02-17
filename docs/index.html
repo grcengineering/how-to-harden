@@ -205,11 +205,14 @@ document.addEventListener('DOMContentLoaded', function() {
   let activePack = 'all';
 
   // --- Dropdown toggle logic ---
+  var isMobile = function() { return window.innerWidth <= 640; };
+
   dropdowns.forEach(function(dd) {
     var btn = dd.querySelector('.filter-btn');
     var menu = dd.querySelector('.filter-dropdown-menu');
     // Prevent touchstart from reaching the outside-close handler
     dd.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: false });
+    menu.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: false });
 
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -218,8 +221,11 @@ document.addEventListener('DOMContentLoaded', function() {
       closeAllDropdowns();
       if (!wasOpen) {
         dd.classList.add('open');
-        // On mobile, position the fixed menu above the button
-        if (window.innerWidth <= 640) {
+        // On mobile, portal menu to body to escape overflow clipping
+        if (isMobile()) {
+          menu.setAttribute('data-owner', dd.id);
+          document.body.appendChild(menu);
+          menu.classList.add('mobile-portal');
           var rect = btn.getBoundingClientRect();
           menu.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
           menu.style.left = Math.max(12, Math.min(rect.left, window.innerWidth - menu.offsetWidth - 12)) + 'px';
@@ -238,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         opt.classList.toggle('option-checked', opt.querySelector('input').checked);
       });
       updateDropdownLabel(dd, filterName, val);
-      dd.classList.remove('open');
+      closeAllDropdowns();
       filterGuides();
     }
     // Listen for radio change (works in most browsers)
@@ -262,12 +268,21 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   function closeAllDropdowns() {
+    // Return any portaled menus back to their owner
+    document.querySelectorAll('body > .filter-dropdown-menu.mobile-portal').forEach(function(portaled) {
+      var ownerId = portaled.getAttribute('data-owner');
+      var owner = document.getElementById(ownerId);
+      portaled.classList.remove('mobile-portal');
+      portaled.style.bottom = '';
+      portaled.style.left = '';
+      if (owner) owner.appendChild(portaled);
+    });
     dropdowns.forEach(function(dd) { dd.classList.remove('open'); });
   }
 
   // Close dropdowns on outside click/touch (iOS Safari needs touchstart)
   function handleOutsideClick(e) {
-    if (!e.target.closest('.filter-dropdown')) closeAllDropdowns();
+    if (!e.target.closest('.filter-dropdown') && !e.target.closest('.filter-dropdown-menu')) closeAllDropdowns();
   }
   document.addEventListener('click', handleOutsideClick);
   document.addEventListener('touchstart', handleOutsideClick, { passive: true });

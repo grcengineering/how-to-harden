@@ -419,6 +419,18 @@ body {
   display: block;
 }
 
+/* Portaled menu: rendered on <body> to escape overflow clipping on mobile */
+.filter-dropdown-menu.mobile-portal {
+  display: block;
+  position: fixed;
+  top: auto;
+  max-width: calc(100vw - 24px);
+  max-height: 25vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  z-index: 9999;
+}
+
 .filter-option {
   position: relative;
   display: flex;
@@ -1379,17 +1391,6 @@ body {
     padding: 5px 10px;
     font-size: 0.75rem;
     flex-shrink: 0;
-  }
-
-  /* Dropdown menus on mobile: fixed position above the bar, JS-positioned */
-  .filter-dropdown-menu {
-    position: fixed;
-    top: auto;
-    max-width: calc(100vw - 24px);
-    max-height: 25vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 10px;
   }
 
   .filter-option {
