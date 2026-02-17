@@ -352,6 +352,23 @@ document.addEventListener('DOMContentLoaded', function() {
     guidesGrid.classList.toggle('list-view', view === 'list');
   }
 
+  // iOS Safari: blur search input on scroll to dismiss virtual keyboard.
+  // When the keyboard is open, Safari's visual viewport shrinks and
+  // position:fixed elements detach from the screen on scroll.
+  var scrollAtFocus = null;
+  searchInput.addEventListener('focus', function() {
+    scrollAtFocus = window.scrollY;
+  });
+  window.addEventListener('scroll', function() {
+    if (scrollAtFocus !== null && document.activeElement === searchInput) {
+      if (Math.abs(window.scrollY - scrollAtFocus) > 5) {
+        searchInput.blur();
+        scrollAtFocus = null;
+      }
+    }
+  }, { passive: true });
+  searchInput.addEventListener('blur', function() { scrollAtFocus = null; });
+
   searchInput.addEventListener('input', function() {
     filterGuides();
     // On mobile, scroll to guides so results are visible
