@@ -1,15 +1,82 @@
 # How to Harden -- Code Packs
 
-Machine-readable security controls and executable automation bundles that complement the hardening guides on [howtoharden.com](https://howtoharden.com). Each pack converts guide controls into runnable code: Terraform, API scripts, Sigma detection rules, and incident response runbooks.
+Machine-readable security controls and executable automation bundles that complement the hardening guides on [howtoharden.com](https://howtoharden.com). Each pack converts guide controls into runnable code across multiple language types -- API scripts, CLI scripts, SDK scripts, Config-as-Code (Terraform), DB queries, and Sigma detection rules.
 
 ## What Are Code Packs?
 
 Hardening guides tell you _what_ to configure and _why_. Code Packs give you the _how_ in a form machines can execute. Every control from a guide is represented twice:
 
 1. **As a YAML definition** -- structured metadata a CLI tool can consume for scanning and remediation.
-2. **As runnable code** -- shell scripts, Terraform files, and Sigma detection rules you can use today.
+2. **As runnable code** -- scripts, modules, queries, and detection rules you can use today.
 
-Code Packs are profile-level gated. Set `HTH_PROFILE_LEVEL=1` for baseline controls, `2` for hardened, or `3` for maximum security. Every script and Terraform file respects this variable, so you apply exactly the controls appropriate for your environment.
+Code Packs are profile-level gated. Set `HTH_PROFILE_LEVEL=1` for baseline controls, `2` for hardened, or `3` for maximum security. Every script and module respects this variable, so you apply exactly the controls appropriate for your environment.
+
+## Code Pack Ontology
+
+Code Packs are classified along two axes: **what the code does** (Functional Type) and **how it's written** (Language Type).
+
+### Functional Types
+
+| Functional Type | Purpose | Verb | Example |
+|-----------------|---------|------|---------|
+| **Enforcement** | Remediate or implement a control | Configure, create, enable, restrict | Terraform resource creating an MFA policy |
+| **Verification** | Scan or audit current state (read-only) | Check, list, get, validate | API call asserting MFA is enabled for all users |
+| **Drift Detection** | Alert when configuration changes from hardened state | Detect config change | Sigma rule firing on `policy.lifecycle.update` |
+| **Threat Detection** | Alert on attack patterns or anomalous behavior | Detect attack/anomaly | Sigma rule firing on `user.session.impersonation` |
+
+### Language Types
+
+| Language Type | Directory | Extensions | Example Tools |
+|---------------|-----------|------------|---------------|
+| **API Scripts** | `api/` | `.sh` | bash + curl + jq against vendor REST APIs |
+| **CLI Scripts** | `cli/` | `.sh` | Vendor-native CLIs (`gh`, `op`, `gcloud`, `az`, `okta`) |
+| **SDK Scripts** | `sdk/` | `.py`, `.ps1`, `.go` | Python, PowerShell, Go vendor SDKs |
+| **Config-as-Code** | `terraform/` | `.tf` | Terraform, Pulumi, CloudFormation |
+| **DB Queries** | `db/` | `.sql`, `.js` | SQL (Snowflake, Databricks), NoSQL (MongoDB) |
+| **Detection Rules** | `siem/sigma/` | `.yml` | Sigma (converts to Splunk, Elastic, Sentinel, etc.) |
+
+### The Matrix
+
+Not every cell is populated for every vendor -- the matrix shows what is _possible_. A well-developed vendor pack fills all applicable cells.
+
+```
+                  ┌──────────┬──────────┬──────────┬───────────────┬────────┬───────────┐
+                  │ API      │ CLI      │ SDK      │ Config-as-    │ DB     │ Detection │
+                  │ Scripts  │ Scripts  │ Scripts  │ Code (TF)     │ Queries│ Rules     │
+┌─────────────────┼──────────┼──────────┼──────────┼───────────────┼────────┼───────────┤
+│ Enforcement     │    ✓     │    ✓     │    ✓     │      ✓        │   ✓    │           │
+│ (remediate)     │          │          │          │               │        │           │
+├─────────────────┼──────────┼──────────┼──────────┼───────────────┼────────┼───────────┤
+│ Verification    │    ✓     │    ✓     │    ✓     │               │   ✓    │           │
+│ (audit)         │          │          │          │               │        │           │
+├─────────────────┼──────────┼──────────┼──────────┼───────────────┼────────┼───────────┤
+│ Drift Detection │          │          │          │               │   ✓    │     ✓     │
+│ (config change) │          │          │          │               │        │           │
+├─────────────────┼──────────┼──────────┼──────────┼───────────────┼────────┼───────────┤
+│ Threat Detection│          │          │          │               │   ✓    │     ✓     │
+│ (attack/anomaly)│          │          │          │               │        │           │
+└─────────────────┴──────────┴──────────┴──────────┴───────────────┴────────┴───────────┘
+```
+
+**Reading the matrix:** A `✓` means this combination is valid. For example, Enforcement can be implemented via API scripts, CLI scripts, SDK scripts, Config-as-Code, or DB queries -- but not via detection rules (which are read-only by nature). Drift and Threat Detection use detection rules (Sigma) and DB queries (SIEM/warehouse queries), but not enforcement tools.
+
+### Examples by Cell
+
+| Function | Language | Example |
+|----------|----------|---------|
+| Enforcement x API | `curl -X PUT "$OKTA_DOMAIN/api/v1/policies/$ID" -d '{"status":"ACTIVE"}'` |
+| Enforcement x CLI | `gh api orgs/{org}/actions/permissions -X PUT -f allowed_actions=selected` |
+| Enforcement x SDK | `Set-MgIdentityConditionalAccessPolicy -State "enabled"` (PowerShell) |
+| Enforcement x Config-as-Code | `resource "okta_authenticator" "fido2" { status = "ACTIVE" }` |
+| Enforcement x DB | `ALTER ACCOUNT SET NETWORK_POLICY = 'restrict_access';` (Snowflake SQL) |
+| Verification x API | `curl -s "$OKTA_DOMAIN/api/v1/policies" \| jq '.[] \| select(.status=="ACTIVE")'` |
+| Verification x CLI | `gh api orgs/{org}/actions/permissions \| jq '.allowed_actions'` |
+| Verification x SDK | `Get-MgIdentityConditionalAccessPolicy \| Where-Object {$_.State -eq "enabled"}` |
+| Verification x DB | `SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.NETWORK_POLICIES;` |
+| Drift Detection x Sigma | `detection: selection: eventType: policy.lifecycle.update` |
+| Drift Detection x DB | `SELECT * FROM okta_system_log WHERE eventType = 'policy.lifecycle.update'` |
+| Threat Detection x Sigma | `detection: selection: eventType: user.session.impersonation` |
+| Threat Detection x DB | `SELECT * FROM okta_system_log WHERE eventType LIKE 'user.account.lock%'` |
 
 ## Architecture
 
@@ -18,8 +85,8 @@ Two-layer design:
 **Layer 1 -- Controls (`controls/`).**
 Machine-readable YAML definitions with audit checks (jq assertions against API responses), remediation steps (API calls and Terraform resources), and compliance mappings (SOC 2, NIST 800-53, ISO 27001, PCI DSS, DISA STIG). Designed for the `hth` CLI tool (`hth scan`, `hth harden`).
 
-**Layer 2 -- Automation (`terraform/`, `api/`, `siem/`, `scripts/`).**
-Immediately usable code organized by function. Each file maps to a single control, so you can selectively implement one control at a time, several, or all of them at once.
+**Layer 2 -- Automation (`terraform/`, `api/`, `cli/`, `sdk/`, `db/`, `siem/`, `scripts/`).**
+Immediately usable code organized by language type. Each file maps to a single control, so you can selectively implement one control at a time, several, or all of them at once.
 
 ```
 packs/
@@ -29,16 +96,23 @@ packs/
     README.md                                        # Vendor-specific docs and quick start
     controls/                                        # Machine-readable YAML control definitions
       hth-{vendor}-{section}-{name}.yaml
-    terraform/                                       # Per-control Terraform files
+    terraform/                                       # Config-as-Code (Enforcement)
       providers.tf                                   # Shared provider configuration
       variables.tf                                   # Shared input variables
       outputs.tf                                     # Shared output values
       hth-{vendor}-{section}-{name}.tf               # One file per control
-    api/                                             # Per-control API scripts
+    api/                                             # API scripts (Enforcement + Verification)
       common.sh                                      # Shared utilities
-      hth-{vendor}-validate.sh                       # Read-only audit
-      hth-{vendor}-{section}-{name}.sh               # One script per control
-    siem/sigma/                                      # Per-control Sigma detection rules
+      hth-{vendor}-validate.sh                       # Read-only audit (Verification)
+      hth-{vendor}-{section}-{name}.sh               # One script per control (Enforcement)
+    cli/                                             # CLI scripts (Enforcement + Verification)
+      hth-{vendor}-{section}-{name}.sh               # Vendor-native CLI commands
+    sdk/                                             # SDK scripts (Enforcement + Verification)
+      hth-{vendor}-{section}-{name}.py               # Python SDK
+      hth-{vendor}-{section}-{name}.ps1              # PowerShell SDK
+    db/                                              # DB queries (Enforcement + Verification + Detection)
+      hth-{vendor}-{section}-{name}.sql              # SQL/NoSQL queries
+    siem/sigma/                                      # Detection rules (Drift + Threat Detection)
       hth-{vendor}-{section}-{name}.yml              # One rule per control
     scripts/                                         # Operational utilities and IR runbooks
       hth-{vendor}-{utility}.sh
@@ -50,13 +124,16 @@ packs/
 
 All files follow: `hth-{vendor}-{section}-{control-title}.{ext}`
 
-| Type | Example |
-|------|---------|
-| Control | `hth-okta-1.01-enforce-phishing-resistant-mfa.yaml` |
-| Terraform | `hth-okta-1.01-enforce-phishing-resistant-mfa.tf` |
-| API Script | `hth-okta-1.01-enforce-phishing-resistant-mfa.sh` |
-| Sigma Rule | `hth-okta-1.01-enforce-phishing-resistant-mfa.yml` |
-| IR Runbook | `hth-okta-ir-compromised-admin.sh` |
+| Type | Directory | Example |
+|------|-----------|---------|
+| Control | `controls/` | `hth-okta-1.01-enforce-phishing-resistant-mfa.yaml` |
+| Terraform | `terraform/` | `hth-okta-1.01-enforce-phishing-resistant-mfa.tf` |
+| API Script | `api/` | `hth-okta-1.01-enforce-phishing-resistant-mfa.sh` |
+| CLI Script | `cli/` | `hth-github-1.01-enforce-2fa-for-org-members.sh` |
+| SDK Script | `sdk/` | `hth-entra-1.01-enforce-phishing-resistant-mfa.ps1` |
+| DB Query | `db/` | `hth-snowflake-2.01-enforce-network-policy.sql` |
+| Sigma Rule | `siem/sigma/` | `hth-okta-1.01-enforce-phishing-resistant-mfa.yml` |
+| IR Runbook | `scripts/incident-response/` | `hth-okta-ir-compromised-admin.sh` |
 
 Multi-rule controls use letter suffixes: `-b`, `-c`, `-d`, `-e`.
 
@@ -145,12 +222,13 @@ Controls follow the JSON Schema defined in [`schema/control.schema.json`](schema
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines. To add a new vendor pack:
 
-1. Create the directory structure: `packs/{vendor}/` with `controls/`, `terraform/`, `api/`, `siem/sigma/`, `scripts/` subdirectories.
+1. Create the directory structure: `packs/{vendor}/` with subdirectories for each applicable language type (see Architecture above).
 2. Create YAML controls following `schema/control.schema.json`.
-3. Implement per-control API scripts that source `common.sh`.
-4. Add per-control Terraform files with shared `providers.tf`/`variables.tf`/`outputs.tf`.
-5. Write Sigma detection rules with MITRE ATT&CK mappings.
-6. Submit a PR with the vendor name in the title.
+3. Implement **enforcement** code in one or more language types (API, CLI, SDK, Terraform, DB) -- more is better.
+4. Implement **verification** code to audit current state (read-only checks).
+5. Write **detection rules** (Sigma for SIEM, DB queries for data warehouses) for drift and threat detection.
+6. Not every language type applies to every vendor. Use the ontology matrix to determine which cells are relevant.
+7. Submit a PR with the vendor name in the title.
 
 ## License
 

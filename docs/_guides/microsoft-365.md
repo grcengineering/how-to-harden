@@ -169,34 +169,6 @@ az rest --method POST \
   }'
 ```
 
-**Option 3: Terraform (azuread provider)**
-```hcl
-# terraform/m365/conditional-access-mfa.tf
-
-resource "azuread_conditional_access_policy" "require_mfa" {
-  display_name = "Require MFA for all users"
-  state        = "enabled"
-
-  conditions {
-    users {
-      included_users = ["All"]
-      excluded_users = [azuread_user.break_glass.object_id]
-    }
-
-    applications {
-      included_applications = ["All"]
-    }
-
-    client_app_types = ["all"]
-  }
-
-  grant_controls {
-    operator          = "OR"
-    built_in_controls = ["mfa"]
-  }
-}
-```
-
 #### Validation & Testing
 **How to verify the control is working:**
 1. [ ] Sign in as a test user and verify MFA prompt appears

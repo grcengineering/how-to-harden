@@ -1377,32 +1377,6 @@ curl -X DELETE "https://${OKTA_DOMAIN}/api/v1/api-tokens/${TOKEN_ID}" \
   -H "Authorization: SSWS ${OKTA_API_TOKEN}"
 ```
 
-**Terraform**
-```hcl
-# terraform/okta/nhi-governance.tf
-
-resource "okta_app_oauth" "service_automation" {
-  label                      = "SVC - Automation API Access"
-  type                       = "service"
-  grant_types                = ["client_credentials"]
-  response_types             = ["token"]
-  token_endpoint_auth_method = "private_key_jwt"
-  pkce_required              = false
-
-  jwks {
-    kty = "RSA"
-    e   = var.service_app_public_key_e
-    n   = var.service_app_public_key_n
-  }
-}
-
-resource "okta_app_oauth_api_scope" "users_read" {
-  app_id = okta_app_oauth.service_automation.id
-  issuer = "https://${var.okta_domain}"
-  scopes = ["okta.users.read"]
-}
-```
-
 {% include pack-code.html vendor="okta" section="3.4" %}
 
 #### SSWS to OAuth 2.0 Migration Checklist

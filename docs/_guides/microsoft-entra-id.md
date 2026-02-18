@@ -156,39 +156,6 @@ Update-MgPolicyAuthenticationMethodPolicyAuthenticationMethodConfiguration `
     -BodyParameter $authAppConfig
 ```
 
-**Option 2: Terraform (azuread provider)**
-```hcl
-# Configure authentication methods policy
-resource "azuread_authentication_methods_policy" "main" {
-  display_name = "Default Authentication Methods Policy"
-
-  # Enable FIDO2
-  fido2 {
-    state = "enabled"
-    allowed_aaguids = []  # Allow all FIDO2 keys
-    key_restrictions_enforcement_type = "allow"
-  }
-
-  # Enable Microsoft Authenticator with number matching
-  microsoft_authenticator {
-    state = "enabled"
-    feature_settings {
-      display_app_information_required_state {
-        state = "enabled"
-      }
-      number_matching_required_state {
-        state = "enabled"
-      }
-    }
-  }
-
-  # Disable SMS (weak)
-  sms {
-    state = "disabled"
-  }
-}
-```
-
 #### Validation & Testing
 **How to verify the control is working:**
 1. [ ] Sign in as test user - MFA prompt should appear
@@ -586,28 +553,6 @@ New-MgRoleManagementDirectoryRoleEligibilityScheduleRequest -BodyParameter $para
 
 # Configure role settings (requires beta endpoint)
 # Use Microsoft Entra admin center for full settings configuration
-```
-
-**Option 2: Terraform**
-```hcl
-# Note: Terraform support for PIM is limited
-# Use PowerShell or admin center for comprehensive PIM configuration
-
-# Create eligible assignment
-resource "azuread_directory_role_eligibility_schedule_request" "global_admin" {
-  role_definition_id = data.azuread_directory_role.global_admin.template_id
-  principal_id       = azuread_user.admin.object_id
-  directory_scope_id = "/"
-  justification      = "PIM eligible assignment"
-
-  schedule_info {
-    start_date_time = timestamp()
-    expiration {
-      duration = "P365D"
-      type     = "afterDuration"
-    }
-  }
-}
 ```
 
 #### Validation & Testing
