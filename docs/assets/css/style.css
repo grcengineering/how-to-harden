@@ -1774,3 +1774,177 @@ body {
     gap: var(--space-xs);
   }
 }
+
+/* ==========================================================================
+   Terminal Demo — animated CLI showcase on homepage
+   ========================================================================== */
+
+.terminal-demo {
+  padding: var(--space-xxl) 0;
+}
+
+.demo-heading {
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.demo-subheading {
+  text-align: center;
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-xl);
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.demo-subheading code {
+  background: var(--color-bg-elevated);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.9375em;
+  color: var(--color-primary);
+}
+
+.terminal-window {
+  max-width: 780px;
+  margin: 0 auto;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-light);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.terminal-titlebar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px 16px;
+  background: #1c1c1c;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.terminal-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.dot-close { background: #ff5f57; }
+.dot-minimize { background: #ffbd2e; }
+.dot-maximize { background: #28c840; }
+
+.terminal-title {
+  flex: 1;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+}
+
+.terminal-body {
+  background: #0a0a0a;
+  padding: var(--space-md) var(--space-lg);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  min-height: 320px;
+  overflow: hidden;
+}
+
+.terminal-line {
+  white-space: pre;
+  color: var(--color-text-secondary);
+}
+
+.terminal-prompt {
+  color: #28c840;
+  margin-right: 8px;
+  user-select: none;
+}
+
+.terminal-cursor {
+  color: #28c840;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.term-cyan { color: #56b6c2; }
+.term-green { color: #28c840; }
+.term-red { color: #e06c75; }
+.term-yellow { color: #e5c07b; }
+.term-magenta { color: #c678dd; }
+.term-white { color: #dcdfe4; }
+.term-dim { color: #5c6370; }
+.term-bold { font-weight: 700; }
+
+.terminal-table {
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  width: 100%;
+  margin: 4px 0;
+}
+
+.terminal-table th {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  text-align: left;
+  padding: 2px 12px 2px 0;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.terminal-table td {
+  padding: 2px 12px 2px 0;
+  white-space: nowrap;
+}
+
+/* Light theme overrides */
+[data-theme="light"] .terminal-window {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .terminal-demo {
+    padding: var(--space-xl) 0;
+  }
+
+  .demo-heading {
+    font-size: 1.375rem;
+  }
+
+  .demo-subheading {
+    font-size: 0.875rem;
+    padding: 0 var(--space-sm);
+  }
+
+  .terminal-body {
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.6875rem;
+    min-height: 280px;
+    overflow-x: auto;
+  }
+
+  .terminal-table {
+    font-size: 0.6875rem;
+  }
+
+  .terminal-table td,
+  .terminal-table th {
+    padding-right: 8px;
+  }
+}
