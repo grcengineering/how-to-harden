@@ -42,11 +42,13 @@ auth0:
   product_docs: "https://auth0.com/docs"
   api_docs: "https://auth0.com/docs/api"
   hardening_docs: "https://auth0.com/docs/best-practices"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/auth0"
 
 aws-iam-identity-center:
   product_docs: "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html"
   api_docs: "https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html"
   hardening_docs: "https://docs.aws.amazon.com/singlesignon/latest/userguide/security.html"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/aws-iam-identity-center"
 
 azure-devops:
   product_docs: "https://learn.microsoft.com/en-us/azure/devops/"
@@ -102,6 +104,7 @@ cloudflare:
   product_docs: "https://developers.cloudflare.com/"
   api_docs: "https://developers.cloudflare.com/api/"
   hardening_docs: "https://developers.cloudflare.com/fundamentals/security/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/cloudflare"
 
 concur:
   product_docs: "https://help.sap.com/docs/SAP_CONCUR"
@@ -193,6 +196,7 @@ gitlab:
   product_docs: "https://docs.gitlab.com/"
   api_docs: "https://docs.gitlab.com/api/rest/"
   hardening_docs: "https://docs.gitlab.com/security/hardening/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/gitlab"
 
 gong:
   product_docs: "https://help.gong.io/"
@@ -218,6 +222,7 @@ hashicorp-vault:
   product_docs: "https://developer.hashicorp.com/vault/docs"
   api_docs: "https://developer.hashicorp.com/vault/api-docs"
   hardening_docs: "https://developer.hashicorp.com/vault/docs/concepts/production-hardening"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/hashicorp-vault"
 
 heap:
   product_docs: "https://help.heap.io/hc/en-us"
@@ -258,6 +263,7 @@ jumpcloud:
   product_docs: "https://jumpcloud.com/support"
   api_docs: "https://docs.jumpcloud.com/"
   hardening_docs: "https://jumpcloud.com/support/best-practices-secure-your-organization"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/jumpcloud"
 
 keeper:
   product_docs: "https://docs.keeper.io/en"
@@ -283,6 +289,7 @@ launchdarkly:
   product_docs: "https://launchdarkly.com/docs/home"
   api_docs: "https://apidocs.launchdarkly.com/"
   hardening_docs: "https://launchdarkly.com/security/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/launchdarkly"
 
 linear:
   product_docs: "https://linear.app/docs"
@@ -338,6 +345,7 @@ mongodb-atlas:
   product_docs: "https://www.mongodb.com/docs/atlas/"
   api_docs: "https://www.mongodb.com/docs/atlas/api/"
   hardening_docs: "https://www.cisecurity.org/benchmark/mongodb"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/mongodb-atlas"
 
 netskope:
   product_docs: "https://docs.netskope.com/"
@@ -424,6 +432,7 @@ qualys:
   product_docs: "https://www.qualys.com/documentation/"
   api_docs: "https://www.qualys.com/documentation/"
   hardening_docs: "https://www.qualys.com/docs/qualys-security-configuration-assessment-guide.pdf"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/qualys"
 
 rapid7:
   product_docs: "https://docs.rapid7.com/"
@@ -444,6 +453,7 @@ salesforce:
   product_docs: "https://help.salesforce.com/"
   api_docs: "https://developer.salesforce.com/docs/apis"
   hardening_docs: "https://security.salesforce.com/security-best-practices"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/salesforce"
 
 sap-successfactors:
   product_docs: "https://help.sap.com/docs/SAP_SUCCESSFACTORS_PLATFORM"
@@ -474,6 +484,7 @@ servicenow:
   product_docs: "https://docs.servicenow.com/"
   api_docs: "https://developer.servicenow.com/dev.do#!/reference"
   hardening_docs: "https://www.servicenow.com/docs/bundle/washingtondc-platform-security/page/administer/security/reference/security-best-practices-instance-security-hardening.html"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/servicenow"
 
 shopify:
   product_docs: "https://help.shopify.com/en/"
@@ -494,6 +505,7 @@ snowflake:
   product_docs: "https://docs.snowflake.com/"
   api_docs: "https://docs.snowflake.com/en/developer-guide/snowflake-rest-api/reference"
   hardening_docs: "https://www.cisecurity.org/benchmark/snowflake"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/snowflake"
 
 snyk:
   product_docs: "https://docs.snyk.io/"
@@ -514,6 +526,7 @@ stripe:
   product_docs: "https://support.stripe.com/"
   api_docs: "https://docs.stripe.com/api"
   hardening_docs: "https://docs.stripe.com/security"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/stripe"
 
 tableau:
   product_docs: "https://help.tableau.com/"
@@ -529,6 +542,7 @@ terraform-cloud:
   product_docs: "https://developer.hashicorp.com/terraform/cloud-docs"
   api_docs: "https://developer.hashicorp.com/terraform/cloud-docs/api-docs"
   hardening_docs: "https://developer.hashicorp.com/terraform/cloud-docs/recommended-practices"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/terraform-cloud"
 
 twilio:
   product_docs: "https://www.twilio.com/docs"
