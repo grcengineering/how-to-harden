@@ -440,11 +440,16 @@ document.addEventListener('DOMContentLoaded', function() {
     return '<span class="' + cls + '">' + text + '</span>';
   }
 
+  function scrollToBottom() {
+    body.scrollTop = body.scrollHeight;
+  }
+
   function addLine(html) {
     var div = document.createElement('div');
     div.className = 'terminal-line';
     div.innerHTML = html || '&nbsp;';
     body.appendChild(div);
+    scrollToBottom();
     return div;
   }
 
@@ -453,6 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
     div.className = 'terminal-line';
     div.innerHTML = '<span class="terminal-prompt">$</span><span class="term-typed"></span><span class="terminal-cursor">&#x2588;</span>';
     body.appendChild(div);
+    scrollToBottom();
     return div;
   }
 
@@ -528,6 +534,7 @@ document.addEventListener('DOMContentLoaded', function() {
         + '<td>' + c.lvl + '</td>'
         + '<td class="term-white">' + c.title + '</td>'
         + '<td>' + c.checks + '</td>';
+      scrollToBottom();
       await delay(180);
     }
 

@@ -1857,8 +1857,24 @@ body {
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   line-height: 1.6;
-  min-height: 320px;
-  overflow: hidden;
+  height: 340px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3a #0a0a0a;
+}
+
+.terminal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.terminal-body::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+.terminal-body::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 3px;
 }
 
 .terminal-line {
@@ -1935,8 +1951,7 @@ body {
   .terminal-body {
     padding: var(--space-sm) var(--space-md);
     font-size: 0.6875rem;
-    min-height: 280px;
-    overflow-x: auto;
+    height: 280px;
   }
 
   .terminal-table {
