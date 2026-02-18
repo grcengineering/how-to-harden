@@ -1374,7 +1374,7 @@ body {
     width: 100%;
   }
 
-  /* Single horizontal row, scrollable */
+  /* Single horizontal row, scrollable with fade edges */
   .floating-filters {
     width: 100%;
     overflow-x: auto;
@@ -1383,6 +1383,11 @@ body {
     flex-wrap: nowrap;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    position: relative;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
+    mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
+    padding-left: 4px;
+    padding-right: 4px;
   }
 
   .floating-filters::-webkit-scrollbar {
