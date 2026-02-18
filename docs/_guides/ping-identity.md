@@ -127,6 +127,8 @@ curl -X PUT "https://api.pingone.com/v1/environments/${ENV_ID}/groups/${ADMIN_GR
 | **NIST 800-53** | IA-2(6) | MFA for privileged accounts |
 | **PCI DSS** | 8.3.1 | MFA for administrative access |
 
+{% include pack-code.html vendor="ping-identity" section="1.1" %}
+
 ---
 
 ### 1.2 Implement Least-Privilege Admin Roles
@@ -171,6 +173,8 @@ Create granular administrative roles instead of using organization-wide admin ac
 3. Assign appropriate roles to each group
 4. Add users to groups (not direct role assignment)
 
+{% include pack-code.html vendor="ping-identity" section="1.2" %}
+
 ---
 
 ### 1.3 Configure IP-Based Access Restrictions
@@ -195,6 +199,8 @@ Restrict administrative console and API access to known IP ranges.
 2. Create rule:
    - **Condition:** IP not in trusted ranges
    - **Action:** Deny access OR require additional verification
+
+{% include pack-code.html vendor="ping-identity" section="1.3" %}
 
 ---
 
@@ -257,6 +263,8 @@ Configure secure SAML settings to prevent assertion manipulation and replay atta
   </saml:Conditions>
 </saml:Assertion>
 ```
+
+{% include pack-code.html vendor="ping-identity" section="2.1" %}
 
 ---
 
@@ -324,6 +332,8 @@ Implement proactive certificate management to prevent federation disruption.
 3. Coordinate rotation with SPs
 4. Remove old certificate after validation
 
+{% include pack-code.html vendor="ping-identity" section="2.3" %}
+
 ---
 
 ## 3. OAuth & Token Security
@@ -377,6 +387,8 @@ curl -X PUT "https://api.pingone.com/v1/environments/${ENV_ID}/applications/${AP
   }'
 ```
 
+{% include pack-code.html vendor="ping-identity" section="3.1" %}
+
 ---
 
 ### 3.2 Implement Token Revocation
@@ -407,6 +419,8 @@ Enable token revocation for user sessions and compromised tokens.
 2. Document incident response procedure
 3. Test revocation propagation
 
+{% include pack-code.html vendor="ping-identity" section="3.2" %}
+
 ---
 
 ### 3.3 OAuth Consent Management
@@ -428,6 +442,8 @@ Control OAuth consent to prevent unauthorized application access.
 1. Navigate to: **Identities → User → Authorized Applications**
 2. Audit granted permissions
 3. Revoke unnecessary or suspicious consents
+
+{% include pack-code.html vendor="ping-identity" section="3.3" %}
 
 ---
 
@@ -478,6 +494,8 @@ Harden PingOne DaVinci orchestration flows to prevent abuse and unauthorized wor
    - **Include input/output:** Masked sensitive data
    - **Retention:** 90 days minimum
 
+{% include pack-code.html vendor="ping-identity" section="4.1" %}
+
 ---
 
 ### 4.2 Version Control for Flows
@@ -494,6 +512,8 @@ Implement version control and change management for DaVinci flows.
 2. Require pull request for changes
 3. Implement staging environment for testing
 4. Document rollback procedures
+
+{% include pack-code.html vendor="ping-identity" section="4.2" %}
 
 ---
 
@@ -558,6 +578,8 @@ GROUP BY user_id, application_name
 HAVING COUNT(*) > 100;
 ```
 
+{% include pack-code.html vendor="ping-identity" section="5.1" %}
+
 ---
 
 ## 6. Third-Party Integration Security
@@ -576,6 +598,8 @@ Harden Service Provider (SP) connections in federation.
 - ✅ Enable encryption (L2)
 - ✅ Document business owner
 
+{% include pack-code.html vendor="ping-identity" section="6.1" %}
+
 ### 6.2 API Client Management
 
 | Client Type | Token Lifetime | Scopes | Controls |
@@ -584,6 +608,8 @@ Harden Service Provider (SP) connections in federation.
 | **SSO Application** | 4 hours | OpenID, Profile | Standard validation |
 | **Admin API** | 15 minutes | Admin scopes | MFA required, IP restriction |
 | **Reporting** | 1 hour | Read-only | Dedicated service account |
+
+{% include pack-code.html vendor="ping-identity" section="6.2" %}
 
 ---
 

@@ -1,0 +1,125 @@
+# =============================================================================
+# Zscaler Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- URL filtering, threat protection, app segments, SSL
+# 2 = Hardened (L2) -- adds firewall policies, device posture, CC lock
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# ZPA Provider Configuration
+# Generate API credentials at: ZPA Admin Portal > Administration > API Keys
+# WARNING: These are sensitive values. Use environment variables in production:
+#   export TF_VAR_zpa_client_id="..."
+#   export TF_VAR_zpa_client_secret="..."
+# -----------------------------------------------------------------------------
+zpa_client_id     = ""
+zpa_client_secret = ""
+zpa_customer_id   = ""
+zpa_cloud         = "production"
+
+
+# -----------------------------------------------------------------------------
+# ZIA Provider Configuration
+# Generate API credentials at: ZIA Admin Portal > Administration > API Key Management
+# WARNING: These are sensitive values. Use environment variables in production:
+#   export TF_VAR_zia_client_id="..."
+#   export TF_VAR_zia_client_secret="..."
+# -----------------------------------------------------------------------------
+zia_client_id     = ""
+zia_client_secret = ""
+zia_customer_id   = ""
+zia_cloud         = "zscaler"
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: URL Filtering
+# High-risk categories to block and medium-risk categories to caution.
+# Defaults are provided -- customize to match your organization's policy.
+# -----------------------------------------------------------------------------
+# url_block_categories = [
+#   "MALWARE_SITE",
+#   "PHISHING",
+#   "BOTNET",
+#   "CRYPTOMINING",
+#   "ADULT_CONTENT",
+#   "GAMBLING",
+#   "P2P",
+#   "ANONYMIZER",
+# ]
+#
+# url_caution_categories = [
+#   "UNCATEGORIZED",
+#   "NEWLY_REGISTERED_DOMAINS",
+#   "FILE_SHARING",
+#   "ONLINE_STORAGE",
+# ]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Application Segments
+# Define internal applications accessible through ZPA.
+# Each segment requires a name, domain names, and TCP port ranges.
+# -----------------------------------------------------------------------------
+app_connector_group_name = ""
+
+# application_segments = [
+#   {
+#     name         = "Finance-ERP"
+#     domain_names = ["erp.internal.example.com"]
+#     tcp_port_range = [{ from = "443", to = "443" }]
+#     description  = "Finance ERP application"
+#   },
+#   {
+#     name         = "HR-Portal"
+#     domain_names = ["hr.internal.example.com"]
+#     tcp_port_range = [{ from = "443", to = "443" }, { from = "8443", to = "8443" }]
+#     description  = "HR self-service portal"
+#   },
+# ]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Access Policies
+# IdP and SCIM group IDs for restricting application access.
+# Find your IdP ID at: ZPA Admin Portal > Administration > IdP Configuration
+# -----------------------------------------------------------------------------
+idp_id         = ""
+scim_group_ids = []
+
+
+# -----------------------------------------------------------------------------
+# Section 3.3: Device Posture (L2+ only)
+# Minimum OS versions required for endpoint compliance.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+posture_min_os_version_windows = "10.0.19045"
+posture_min_os_version_macos   = "14.0"
+
+
+# -----------------------------------------------------------------------------
+# Section 5.1: SSL Inspection
+# URL categories to exclude from SSL inspection.
+# Typically certificate-pinned or privacy-sensitive applications.
+# -----------------------------------------------------------------------------
+# ssl_do_not_inspect_urls = [
+#   "FINANCIAL_SERVICES",
+#   "HEALTH_CARE",
+#   "GOVERNMENT",
+# ]

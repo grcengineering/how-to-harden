@@ -218,6 +218,8 @@ Filter: 2SV method = None, Login result = Success
 | **ISO 27001** | A.9.4.2 | Secure log-on procedures |
 | **CIS Google Workspace** | 1.1 | Ensure 2-Step Verification is enforced |
 
+{% include pack-code.html vendor="google-workspace" section="1.1" lang="terraform" %}
+
 ---
 
 ### 1.2 Restrict Super Admin Account Usage
@@ -296,6 +298,8 @@ gam delete admin user bob@domain.com role "Super Admin"
 3. [ ] Test delegated admin can perform assigned tasks only
 4. [ ] Verify delegated admin cannot access Super Admin functions
 
+{% include pack-code.html vendor="google-workspace" section="1.2" lang="terraform" %}
+
 ---
 
 ### 1.3 Configure Context-Aware Access
@@ -346,6 +350,10 @@ Implement context-aware access policies that evaluate device, location, and user
 
 **Time to Complete:** ~1 hour
 
+#### Code Implementation
+
+{% include pack-code.html vendor="google-workspace" section="1.3" lang="terraform" %}
+
 ---
 
 ## 2. Network Access Controls
@@ -373,6 +381,10 @@ Restrict Admin Console access to specific IP ranges (corporate network, VPN) to 
 **Step 2: Alternative - Session Control**
 1. Navigate to: **Security** → **Google Cloud session control**
 2. Configure reauthentication frequency for sensitive apps
+
+#### Code Implementation
+
+{% include pack-code.html vendor="google-workspace" section="2.1" lang="terraform" %}
 
 ---
 
@@ -483,6 +495,8 @@ for token in tokens.get('items', []):
 | **NIST 800-53** | AC-3 | Access enforcement |
 | **CIS Google Workspace** | 2.1 | Ensure third-party apps are audited and controlled |
 
+{% include pack-code.html vendor="google-workspace" section="3.1" lang="terraform" %}
+
 ---
 
 ### 3.2 Disable Less Secure Apps
@@ -511,6 +525,10 @@ Disable "Less Secure Apps" access which allows applications to authenticate with
 3. Click **Save**
 
 > **Note:** This should be disabled by default for most tenants as of recent Google updates.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="google-workspace" section="3.2" lang="terraform" %}
 
 ---
 
@@ -583,6 +601,8 @@ gam report drive user all parameters doc_type,visibility,shared_with_user_accoun
 3. [ ] Audit existing files with external sharing
 4. [ ] Confirm allowed external sharing still functions
 
+{% include pack-code.html vendor="google-workspace" section="4.1" lang="terraform" %}
+
 ---
 
 ### 4.2 Enable Data Loss Prevention (DLP)
@@ -616,6 +636,10 @@ Configure Google Workspace DLP rules to detect and prevent sharing of sensitive 
    - **Conditions:** Content matches predefined detectors (SSN, Credit Card, etc.)
    - **Actions:** Block external sharing, warn user, alert admin
 3. Save and enable rule
+
+#### Code Implementation
+
+{% include pack-code.html vendor="google-workspace" section="4.2" lang="terraform" %}
 
 ---
 
@@ -717,6 +741,8 @@ WHERE event_name = 'change_user_access'
   AND target_user NOT LIKE '%@yourdomain.com'
   AND _PARTITIONTIME >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR);
 ```
+
+{% include pack-code.html vendor="google-workspace" section="5.1" lang="terraform" %}
 
 ---
 

@@ -1,0 +1,150 @@
+# =============================================================================
+# SendGrid Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds SSO, event webhooks, IP restrictions
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# SendGrid Provider Configuration
+# Generate a full-access API key at: Settings > API Keys > Create API Key
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_sendgrid_api_key="SG.xxxx..."
+# -----------------------------------------------------------------------------
+sendgrid_api_key = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: SAML Single Sign-On (L2+ only)
+# Requires SendGrid Pro or Premier plan.
+# Configure these values from your identity provider (Okta, Entra ID, etc.)
+# Only applied when profile_level >= 2
+# -----------------------------------------------------------------------------
+sso_name       = "Corporate SSO"
+sso_signin_url = ""
+# sso_signin_url  = "https://idp.example.com/app/sendgrid/sso/saml"
+sso_signout_url = ""
+# sso_signout_url = "https://idp.example.com/app/sendgrid/slo/saml"
+sso_entity_id = ""
+# sso_entity_id   = "https://idp.example.com/saml/metadata"
+
+# IdP X.509 certificate in PEM format. Use environment variable in production:
+#   export TF_VAR_sso_certificate="$(cat idp-cert.pem)"
+sso_certificate = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.3: SSO Teammates (L2+ only)
+# Teammates authenticated through your IdP. Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+sso_teammates = [
+  # {
+  #   email      = "alice@example.com"
+  #   first_name = "Alice"
+  #   last_name  = "Smith"
+  #   is_admin   = false
+  #   scopes     = ["mail.send", "stats.read"]
+  # },
+  # {
+  #   email      = "bob@example.com"
+  #   first_name = "Bob"
+  #   last_name  = "Jones"
+  #   is_admin   = true
+  #   scopes     = []
+  # },
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 1.4: IP Access Management (L2+ only)
+# IPs/CIDRs allowed to access SendGrid. Requires manual API/UI configuration.
+# Listed here for documentation and future provider support.
+# -----------------------------------------------------------------------------
+allowed_ips = [
+  # "203.0.113.0/24",    # Office egress
+  # "198.51.100.10",     # VPN endpoint
+  # "10.0.0.0/8",        # CI/CD systems (if using private network)
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1 / 2.3: API Keys with Least Privilege Scopes
+# Each key is created with only the scopes it needs. Never use full access.
+# Common scopes: mail.send, stats.read, stats.global.read,
+#   marketing.automation.read, marketing.automation.update,
+#   user.webhooks.event.settings.read, user.webhooks.event.settings.update
+# -----------------------------------------------------------------------------
+api_keys = {
+  transactional_sender = {
+    scopes = ["mail.send"]
+  }
+  # marketing_automation = {
+  #   scopes = ["mail.send", "marketing.automation.read", "marketing.automation.update"]
+  # }
+  # stats_reader = {
+  #   scopes = ["stats.read", "stats.global.read"]
+  # }
+  # webhook_manager = {
+  #   scopes = ["user.webhooks.event.settings.read", "user.webhooks.event.settings.update"]
+  # }
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Password-Authenticated Teammates
+# For organizations not using SSO. Assign minimum required scopes per role.
+# -----------------------------------------------------------------------------
+teammates = [
+  # {
+  #   email    = "developer@example.com"
+  #   is_admin = false
+  #   scopes   = ["mail.send", "stats.read"]
+  # },
+  # {
+  #   email    = "marketing@example.com"
+  #   is_admin = false
+  #   scopes   = ["marketing.read", "marketing.update", "stats.read"]
+  # },
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.3: Sender Authentication
+# Domain authentication (SPF/DKIM) and link branding for email deliverability.
+# After applying, add the DNS records from the Terraform output to your DNS.
+# -----------------------------------------------------------------------------
+authenticated_domain           = ""
+# authenticated_domain         = "example.com"
+authenticated_domain_subdomain = ""
+# authenticated_domain_subdomain = "em"
+
+link_branding_domain    = ""
+# link_branding_domain    = "example.com"
+link_branding_subdomain = ""
+# link_branding_subdomain = "click"
+
+
+# -----------------------------------------------------------------------------
+# Section 4.2: Event Webhooks (L2+ only)
+# HTTPS endpoint to receive real-time email event notifications.
+# Must be a publicly accessible HTTPS URL. Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+event_webhook_url = ""
+# event_webhook_url = "https://siem.example.com/webhooks/sendgrid"

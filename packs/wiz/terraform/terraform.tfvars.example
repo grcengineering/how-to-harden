@@ -1,0 +1,150 @@
+# =============================================================================
+# Wiz Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds credential rotation monitoring, API audit, export controls
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Wiz Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Wiz API endpoint URL (region-specific)
+# Common values:
+#   https://api.us1.app.wiz.io/graphql
+#   https://api.us2.app.wiz.io/graphql
+#   https://api.eu1.app.wiz.io/graphql
+wiz_url = "https://api.us1.app.wiz.io/graphql"
+
+# Service account credentials -- generate at Settings > Service Accounts
+# WARNING: These are sensitive values. Use environment variables in production:
+#   export TF_VAR_wiz_auth_client_id="your-client-id"
+#   export TF_VAR_wiz_auth_client_secret="your-client-secret"
+wiz_auth_client_id     = ""
+wiz_auth_client_secret = ""
+
+# Authentication audience (usually "wiz-api")
+wiz_auth_audience = "wiz-api"
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: SSO with MFA
+# SAML identity provider configuration for enforcing SSO.
+# Leave saml_login_url empty to skip SSO configuration.
+# -----------------------------------------------------------------------------
+saml_idp_name   = "Corporate SSO"
+saml_login_url  = ""
+# saml_certificate = ""   # PEM-encoded IdP certificate
+# saml_issuer_url  = ""   # IdP issuer URL (defaults to login_url)
+# saml_logout_url  = ""   # IdP logout endpoint
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Role-Based Access Control
+# Set saml_idp_id to the output from control 1.1 (or an existing IdP ID).
+# Configure group mappings to enforce least-privilege RBAC.
+# -----------------------------------------------------------------------------
+saml_idp_id = ""
+
+# rbac_group_mappings = [
+#   {
+#     provider_group_id = "security-admins"
+#     role              = "GLOBAL_ADMIN"
+#     projects          = []
+#   },
+#   {
+#     provider_group_id = "security-analysts"
+#     role              = "PROJECT_READER"
+#     projects          = []
+#   },
+#   {
+#     provider_group_id = "developers"
+#     role              = "PROJECT_READER"
+#     projects          = ["project-uuid-here"]
+#   },
+#   {
+#     provider_group_id = "auditors"
+#     role              = "PROJECT_READER"
+#     projects          = []
+#   },
+# ]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Cloud Connector Security
+# AWS connector: provide the ARN of a least-privilege IAM role.
+# Leave aws_connector_role_arn empty to skip AWS connector creation.
+# -----------------------------------------------------------------------------
+aws_connector_name = "hth-aws-connector"
+aws_connector_role_arn = ""
+# aws_connector_regions = ["us-east-1", "us-west-2"]
+# aws_connector_excluded_accounts = []
+
+# GCP connector: provide the organization ID for org-wide scanning.
+# Leave gcp_connector_organization_id empty to skip GCP connector creation.
+gcp_connector_name = "hth-gcp-connector"
+gcp_connector_organization_id = ""
+# gcp_connector_excluded_projects = []
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Service Account Management
+# Purpose-specific service accounts with minimum scopes.
+# Defaults create SIEM (read-only) and ticketing (read-only) accounts.
+# -----------------------------------------------------------------------------
+# service_accounts = [
+#   {
+#     name   = "hth-siem-integration"
+#     scopes = ["read:issues", "read:vulnerabilities"]
+#   },
+#   {
+#     name   = "hth-ticketing-integration"
+#     scopes = ["read:issues"]
+#   },
+#   {
+#     name   = "hth-automation"
+#     scopes = ["read:issues", "update:issues"]
+#   },
+# ]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: API Access Monitoring (L2+ only)
+# Scheduled report for auditing API access patterns.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+api_audit_report_name    = "HTH API Access Audit"
+api_audit_interval_hours = 24
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Data Export Controls (L2+ only)
+# Project with restricted export permissions.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+data_export_project_name = "hth-data-export-restricted"
+
+
+# -----------------------------------------------------------------------------
+# Section 5.1: Audit Logging
+# Scheduled report for SIEM integration and audit trail.
+# -----------------------------------------------------------------------------
+audit_report_name           = "HTH Audit Log Report"
+audit_report_interval_hours = 24

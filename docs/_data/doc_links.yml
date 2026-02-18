@@ -7,6 +7,7 @@
   product_docs: "https://support.1password.com/"
   api_docs: "https://developer.1password.com/"
   hardening_docs: "https://support.1password.com/business-security-practices/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/1password"
 
 abnormal:
   product_docs: "https://abnormalsecurity.my.site.com/knowledgebase/s/"
@@ -54,6 +55,7 @@ azure-devops:
   product_docs: "https://learn.microsoft.com/en-us/azure/devops/"
   api_docs: "https://learn.microsoft.com/en-us/rest/api/azure/devops/"
   hardening_docs: "https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-best-practices"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/azure-devops"
 
 bamboohr:
   product_docs: "https://help.bamboohr.com/s/"
@@ -84,6 +86,7 @@ buildkite:
   product_docs: "https://buildkite.com/docs"
   api_docs: "https://buildkite.com/docs/apis"
   hardening_docs: "https://buildkite.com/docs/pipelines/best-practices/security-controls"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/buildkite"
 
 chatgpt-enterprise:
   product_docs: "https://help.openai.com/en/collections/5688074-chatgpt-enterprise"
@@ -120,6 +123,7 @@ crowdstrike:
   product_docs: "https://falcon.crowdstrike.com/documentation/"
   api_docs: "https://developer.crowdstrike.com/docs/openapi/"
   hardening_docs: "https://www.crowdstrike.com/en-us/resources/guides/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/crowdstrike"
 
 cursor:
   product_docs: "https://cursor.com/docs"
@@ -130,6 +134,7 @@ cyberark:
   product_docs: "https://docs.cyberark.com"
   api_docs: "https://docs.cyberark.com/pam-self-hosted/latest/en/content/webservices/implementing%20privileged%20account%20security%20web%20services%20.htm"
   hardening_docs: "https://docs.cyberark.com/pam-self-hosted/latest/en/content/security/psm-hardening-configuration.htm"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/cyberark"
 
 databricks:
   product_docs: "https://docs.databricks.com/aws/en/"
@@ -147,6 +152,7 @@ dockerhub:
   product_docs: "https://docs.docker.com/docker-hub/"
   api_docs: "https://docs.docker.com/reference/api/hub/latest/"
   hardening_docs: "https://docs.docker.com/engine/security/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/dockerhub"
 
 docusign:
   product_docs: "https://support.docusign.com/s/?language=en_US"
@@ -167,6 +173,7 @@ duo:
   product_docs: "https://duo.com/docs"
   api_docs: "https://duo.com/docs/adminapi"
   hardening_docs: "https://duo.com/docs/policy"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/duo"
 
 figma:
   product_docs: "https://help.figma.com/hc/en-us"
@@ -177,6 +184,7 @@ fivetran:
   product_docs: "https://fivetran.com/docs/getting-started"
   api_docs: "https://fivetran.com/docs/rest-api/api-reference"
   hardening_docs: "https://fivetran.com/docs/security"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/fivetran"
 
 freshservice:
   product_docs: "https://support.freshservice.com/support/solutions"
@@ -209,6 +217,7 @@ google-workspace:
   product_docs: "https://support.google.com/a/"
   api_docs: "https://developers.google.com/workspace"
   hardening_docs: "https://support.google.com/a/answer/7587183"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/google-workspace"
 
 gusto:
   product_docs: "https://support.gusto.com/"
@@ -219,6 +228,7 @@ harness:
   product_docs: "https://developer.harness.io/docs/"
   api_docs: "https://apidocs.harness.io/"
   hardening_docs: "https://developer.harness.io/docs/continuous-integration/secure-ci/security-hardening/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/harness"
 
 hashicorp-vault:
   product_docs: "https://developer.hashicorp.com/vault/docs"
@@ -245,16 +255,19 @@ jamf:
   product_docs: "https://www.jamf.com/resources/product-documentation/"
   api_docs: "https://developer.jamf.com/"
   hardening_docs: "https://learn.jamf.com/en-US/bundle/technical-articles/page/Jamf_Pro_Security_Recommendations.html"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/jamf"
 
 jenkins:
   product_docs: "https://www.jenkins.io/doc/"
   api_docs: "https://www.jenkins.io/doc/book/using/remote-access-api/"
   hardening_docs: "https://www.jenkins.io/doc/book/security/securing-jenkins/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/jenkins"
 
 jfrog:
   product_docs: "https://jfrog.com/help/"
   api_docs: "https://jfrog.com/help/r/jfrog-rest-apis/jfrog-rest-apis"
   hardening_docs: "https://jfrog.com/help/r/jfrog-platform-administration-documentation/security-configuration"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/jfrog"
 
 jira-cloud:
   product_docs: "https://support.atlassian.com/jira-software-cloud/"
@@ -271,6 +284,7 @@ keeper:
   product_docs: "https://docs.keeper.io/en"
   api_docs: "https://docs.keeper.io/en/enterprise-guide/developer-tools"
   hardening_docs: "https://docs.keeper.io/en/enterprise-guide/recommended-security-settings"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/keeper"
 
 klaviyo:
   product_docs: "https://help.klaviyo.com/hc/en-us"
@@ -317,11 +331,13 @@ microsoft-365:
   product_docs: "https://learn.microsoft.com/en-us/microsoft-365/"
   api_docs: "https://developer.microsoft.com/en-us/graph"
   hardening_docs: "https://www.cisecurity.org/benchmark/microsoft_365"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/microsoft-365"
 
 microsoft-entra-id:
   product_docs: "https://learn.microsoft.com/en-us/entra/"
   api_docs: "https://learn.microsoft.com/en-us/graph/identity-network-access-overview"
   hardening_docs: "https://learn.microsoft.com/en-us/entra/architecture/secure-best-practices"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/microsoft-entra-id"
 
 mimecast:
   product_docs: "https://docs.mimecast.com/"
@@ -353,6 +369,7 @@ netskope:
   product_docs: "https://docs.netskope.com/"
   api_docs: "https://docs.netskope.com/en/rest-api/"
   hardening_docs: "https://docs.netskope.com/en/secure-tenant-configuration-and-hardening/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/netskope"
 
 netsuite:
   product_docs: "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/index.html"
@@ -380,16 +397,19 @@ onelogin:
   product_docs: "https://support.onelogin.com/"
   api_docs: "https://developers.onelogin.com/"
   hardening_docs: "https://www.onelogin.com/blog/best-practices-when-deploying-advanced-authentication"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/onelogin"
 
 oracle-hcm:
   product_docs: "https://docs.oracle.com/en/cloud/saas/human-resources/"
   api_docs: "https://docs.oracle.com/en/cloud/saas/human-resources/24d/farws/index.html"
   hardening_docs: "https://docs.oracle.com/en/cloud/saas/human-resources/24d/ochus/best-practices-for-hcm-data-roles-and-security-profiles.html"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/oracle-hcm"
 
 orca:
   product_docs: "https://docs.orcasecurity.io/"
   api_docs: "https://app.orcasecurity.io/api-doc"
   hardening_docs: "https://orca.security/resources/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/orca"
 
 outreach:
   product_docs: "https://support.outreach.io/hc/en-us"
@@ -416,6 +436,7 @@ ping-identity:
   product_docs: "https://docs.pingidentity.com/"
   api_docs: "https://apidocs.pingidentity.com/pingone/main/v1/api/"
   hardening_docs: "https://docs.pingidentity.com/pingoneforenterprise/pingone_for_enterprise/p14e_security_best_practices.html"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/ping-identity"
 
 postman:
   product_docs: "https://learning.postman.com/docs/introduction/overview/"
@@ -463,6 +484,7 @@ sap-successfactors:
   product_docs: "https://help.sap.com/docs/SAP_SUCCESSFACTORS_PLATFORM"
   api_docs: "https://api.sap.com/products/SAPSuccessFactors/apis/all"
   hardening_docs: "https://help.sap.com/docs/successfactors-platform/implementing-security-features-for-sap-successfactors/sap-successfactors-security-recommendations"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/sap-successfactors"
 
 segment:
   product_docs: "https://www.twilio.com/docs/segment"
@@ -473,6 +495,7 @@ sendgrid:
   product_docs: "https://www.twilio.com/docs/sendgrid"
   api_docs: "https://www.twilio.com/docs/sendgrid/api-reference"
   hardening_docs: "https://sendgrid.com/en-us/blog/7-best-practices-to-protect-your-twilo-sendgrid-account-and-sending-reputation"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/sendgrid"
 
 sentinelone:
   product_docs: "https://community.sentinelone.com/s/"
@@ -483,6 +506,7 @@ sentry:
   product_docs: "https://docs.sentry.io/"
   api_docs: "https://docs.sentry.io/api/"
   hardening_docs: "https://sentry.io/security/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/sentry"
 
 servicenow:
   product_docs: "https://docs.servicenow.com/"
@@ -570,6 +594,7 @@ vercel:
   product_docs: "https://vercel.com/docs"
   api_docs: "https://vercel.com/docs/rest-api"
   hardening_docs: "https://vercel.com/docs/security"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/vercel"
 
 webex:
   product_docs: "https://help.webex.com/"
@@ -580,6 +605,7 @@ wiz:
   product_docs: "https://docs.wiz.io/"
   api_docs: "https://docs.wiz.io/"
   hardening_docs: "https://www.wiz.io/resources"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/wiz"
 
 workato:
   product_docs: "https://docs.workato.com/"
@@ -605,3 +631,4 @@ zscaler:
   product_docs: "https://help.zscaler.com/"
   api_docs: "https://help.zscaler.com/zia/getting-started-zia-api"
   hardening_docs: "https://help.zscaler.com/zia/best-practices-security-policy"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/zscaler"

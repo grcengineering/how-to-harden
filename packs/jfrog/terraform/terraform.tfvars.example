@@ -1,0 +1,122 @@
+# =============================================================================
+# JFrog Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds artifact signing, immutable repos, strict scanning
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# JFrog Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Your Artifactory instance URL (e.g., "https://mycompany.jfrog.io/artifactory")
+artifactory_url = "https://your-instance.jfrog.io/artifactory"
+
+# JFrog access token -- generate at Administration > Identity and Access > Access Tokens
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_artifactory_access_token="eyJ..."
+artifactory_access_token = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: SSO with MFA
+# SAML SSO configuration for centralized authentication
+# -----------------------------------------------------------------------------
+
+# Your Identity Provider login URL
+saml_idp_url = "https://idp.example.com/saml/login"
+
+# SAML IdP certificate (PEM format, paste the full certificate)
+saml_idp_certificate = ""
+
+# Service Provider entity ID (typically your Artifactory URL)
+saml_service_provider_id = "https://your-instance.jfrog.io"
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Permission Targets
+# Group names must match existing JFrog groups
+# -----------------------------------------------------------------------------
+
+# Repository keys
+release_repo_key  = "libs-release-local"
+snapshot_repo_key = "libs-snapshot-local"
+
+# Group names for permission targets
+release_readers_group = "developers"
+release_writers_group = "release-managers"
+ci_cd_group           = "ci-cd-accounts"
+
+
+# -----------------------------------------------------------------------------
+# Section 1.3: API Key and Token Security
+# Token expiry in seconds (default: 90 days = 7776000)
+# -----------------------------------------------------------------------------
+token_expiry_seconds = 7776000
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Repository Layout Security
+# Local repositories to harden
+# -----------------------------------------------------------------------------
+local_repo_keys = ["libs-release-local", "libs-snapshot-local"]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: Remote Repository Security
+# Remote (proxy) repository configuration
+# -----------------------------------------------------------------------------
+remote_repo_key           = "maven-remote"
+remote_repo_url           = "https://repo1.maven.org/maven2"
+blocked_remote_extensions = "**/*.exe,**/*.dll,**/*.msi"
+
+
+# -----------------------------------------------------------------------------
+# Section 2.3: Dependency Confusion Prevention
+# Virtual repository resolution order (internal first, external second)
+# -----------------------------------------------------------------------------
+virtual_repo_key   = "libs-virtual"
+internal_repo_keys = ["libs-release-local", "libs-snapshot-local"]
+external_repo_keys = ["maven-remote"]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Artifact Signing (L2+ only)
+# GPG public key for artifact verification (ASCII-armored)
+# Generate with: gpg --gen-key && gpg --export --armor > public.asc
+# Leave empty to skip signing configuration
+# -----------------------------------------------------------------------------
+gpg_public_key = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Xray Security Scanning
+# Repository keys to monitor for vulnerabilities
+# -----------------------------------------------------------------------------
+xray_watch_repos   = ["libs-release-local"]
+xray_block_critical = true
+xray_block_high     = false  # Set to true for L2+
+
+
+# -----------------------------------------------------------------------------
+# Section 5.1: Audit Logging
+# Webhook URL for SIEM integration (leave empty to skip)
+# -----------------------------------------------------------------------------
+audit_webhook_url = ""

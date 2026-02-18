@@ -73,6 +73,10 @@ Require SAML SSO with MFA for all Artifactory access.
    - **Expiration:** 90 days maximum
    - **Scopes:** Minimum required
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jfrog" section="1.1" %}
+
 ---
 
 ### 1.2 Implement Permission Targets
@@ -122,6 +126,10 @@ Configure granular permissions for repository access.
 2. Create separate roles for different functions
 3. Audit admin access quarterly
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jfrog" section="1.2" %}
+
 ---
 
 ### 1.3 Secure API Keys and Tokens
@@ -156,6 +164,10 @@ jf rt access-token-create \
 | User API keys | Semi-annually |
 | Admin tokens | Quarterly |
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jfrog" section="1.3" %}
+
 ---
 
 ## 2. Repository Security
@@ -186,6 +198,10 @@ Harden repository configurations to prevent unauthorized access.
 **Step 3: Disable Unused Features**
 1. Disable: File listing for remote repositories
 2. Disable: Properties search (if not needed)
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jfrog" section="2.1" %}
 
 ---
 
@@ -218,6 +234,10 @@ Secure remote repository (proxy) configurations.
 1. Configure: **Checksum policy:** Fail (L2)
 2. Validate checksums for all downloaded artifacts
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jfrog" section="2.2" %}
+
 ---
 
 ### 2.3 Prevent Dependency Confusion
@@ -249,6 +269,10 @@ virtual_repository:
 2. Configure: **Priority Resolution:** Enabled
 3. Set internal repositories higher priority
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jfrog" section="2.3" %}
+
 ---
 
 ## 3. Artifact Integrity
@@ -279,6 +303,10 @@ jf rt download libs-release-local/artifact.jar --gpg-key=/path/to/public.asc
 1. Use Xray policies to block unsigned artifacts
 2. Document signing requirements
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jfrog" section="3.1" %}
+
 ---
 
 ### 3.2 Immutable Artifacts
@@ -301,6 +329,10 @@ Make release artifacts immutable to prevent tampering.
 1. Use release repository for production artifacts
 2. Block re-deployment of existing versions
 3. Delete permissions restricted to admins
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jfrog" section="3.2" %}
 
 ---
 
@@ -336,6 +368,10 @@ Configure JFrog Xray for vulnerability and license scanning.
 2. Configure periodic rescanning
 3. Set up notifications
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jfrog" section="4.1" %}
+
 ---
 
 ### 4.2 CVE Remediation Workflow
@@ -364,6 +400,10 @@ policy:
           active: true
         fail_build: true
 ```
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jfrog" section="4.2" %}
 
 ---
 
@@ -415,6 +455,10 @@ WHERE user = 'anonymous'
 GROUP BY source_ip, path
 HAVING COUNT(*) > 10;
 ```
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jfrog" section="5.1" %}
 
 ---
 

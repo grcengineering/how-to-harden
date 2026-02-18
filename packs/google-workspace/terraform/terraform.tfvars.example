@@ -1,0 +1,149 @@
+# =============================================================================
+# Google Workspace Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds context-aware access, DLP, IP restrictions
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Google Workspace Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Your Google Workspace customer ID
+# Find at: Admin Console > Account > Account settings > Customer ID
+customer_id = "C01234567"
+
+# Path to service account JSON key file with domain-wide delegation
+# WARNING: This is a sensitive value. Protect this file appropriately.
+# See: https://developers.google.com/workspace/guides/create-credentials
+credentials_file = "service-account-key.json"
+
+# Service account email with domain-wide delegation enabled
+service_account_email = "terraform@your-project.iam.gserviceaccount.com"
+
+# Super Admin email to impersonate for Workspace API calls
+impersonated_user_email = "admin@yourdomain.com"
+
+# Primary domain for the Google Workspace organization
+primary_domain = "yourdomain.com"
+
+
+# -----------------------------------------------------------------------------
+# Google Cloud Provider Configuration (required for L2+ controls)
+# Used for Access Context Manager, DLP, and BigQuery log export
+# -----------------------------------------------------------------------------
+
+# GCP project ID for Access Context Manager, DLP templates, and BigQuery
+gcp_project_id = "your-gcp-project-id"
+
+# Google Cloud organization ID (required for Context-Aware Access at L2+)
+# Find at: gcloud organizations list
+organization_id = "123456789012"
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: Multi-Factor Authentication
+# Grace period (in days) for new users to enroll in 2SV
+# -----------------------------------------------------------------------------
+mfa_enforcement_grace_period_days = 7
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Super Admin Governance
+# Custom delegated admin roles (in addition to built-in User, Groups,
+# and Help Desk admin roles created automatically)
+# -----------------------------------------------------------------------------
+# delegated_admin_roles = {
+#   "Security Auditor" = {
+#     description = "Read-only access to security settings and reports"
+#     privileges = [
+#       {
+#         service_id = "00haapch16h1ysv"
+#         privilege  = "USERS_RETRIEVE"
+#       }
+#     ]
+#   }
+# }
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Admin Console IP Restrictions (L2+ only)
+# CIDR ranges allowed to access Admin Console
+# Only applied when profile_level >= 2
+# -----------------------------------------------------------------------------
+admin_allowed_cidrs = [
+  # "203.0.113.0/24",    # Corporate office egress
+  # "198.51.100.0/24",   # VPN egress
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: OAuth App Whitelisting
+# Client IDs of OAuth apps to trust or limit
+# -----------------------------------------------------------------------------
+trusted_oauth_app_ids = [
+  # "123456789012-abcdef.apps.googleusercontent.com",   # Slack
+  # "987654321098-ghijkl.apps.googleusercontent.com",   # Zoom
+]
+
+limited_oauth_app_ids = [
+  # "111222333444-mnopqr.apps.googleusercontent.com",   # Third-party tool
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: External Drive Sharing
+# Domains allowed for external file sharing (empty = no external sharing)
+# -----------------------------------------------------------------------------
+allowed_external_domains = [
+  # "partner-company.com",
+  # "contractor-org.com",
+]
+
+# Org unit path for applying Drive sharing restrictions
+target_org_unit_path = "/"
+
+
+# -----------------------------------------------------------------------------
+# Section 4.2: Data Loss Prevention (L2+ only)
+# Notification emails for DLP policy violations
+# -----------------------------------------------------------------------------
+dlp_notification_emails = [
+  # "security-team@yourdomain.com",
+  # "compliance@yourdomain.com",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 5.1: Audit Logging
+# BigQuery dataset and log retention configuration
+# -----------------------------------------------------------------------------
+
+# BigQuery dataset ID for audit log export
+bigquery_dataset_id = "google_workspace_audit_logs"
+
+# Number of days to retain audit logs in BigQuery
+log_retention_days = 365
+
+# Email addresses to receive security alert notifications
+alert_notification_emails = [
+  # "security-team@yourdomain.com",
+  # "soc@yourdomain.com",
+]

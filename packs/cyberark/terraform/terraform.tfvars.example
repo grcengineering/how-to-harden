@@ -1,0 +1,170 @@
+# =============================================================================
+# CyberArk Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds JIT access, HA verification, enhanced detection
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Conjur Provider Configuration
+# -----------------------------------------------------------------------------
+
+# CyberArk Conjur appliance URL
+conjur_appliance_url = "https://conjur.company.com"
+
+# Conjur account name
+conjur_account = "myorg"
+
+# Conjur login identity
+conjur_login = "admin"
+
+# Conjur API key -- use environment variable in production:
+#   export TF_VAR_conjur_api_key="your-api-key"
+conjur_api_key = ""
+
+# Path to Conjur SSL certificate (leave empty to skip verification)
+conjur_ssl_cert_path = "/path/to/conjur.pem"
+
+
+# -----------------------------------------------------------------------------
+# PVWA Configuration (REST API)
+# -----------------------------------------------------------------------------
+
+# CyberArk PVWA base URL
+pvwa_url = "https://pvwa.company.com"
+
+# PVWA API authentication token -- use environment variable in production:
+#   export TF_VAR_pvwa_auth_token="your-token"
+pvwa_auth_token = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: MFA Configuration
+# RADIUS server for MFA integration (leave empty to skip)
+# -----------------------------------------------------------------------------
+mfa_radius_server  = "mfa.company.com"
+mfa_radius_port    = 1812
+mfa_radius_timeout = 60
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Vault-Level Access Controls
+# Default safes to create. Modify or extend as needed.
+# -----------------------------------------------------------------------------
+# safes = {
+#   "Windows-DomainAdmins" = {
+#     description        = "Domain Administrator credentials - requires approval"
+#     managing_cpm       = "PasswordManager"
+#     retention_versions = 10
+#     retention_days     = 30
+#     olac_enabled       = true
+#   }
+#   "Linux-Root" = {
+#     description        = "Linux root credentials"
+#     managing_cpm       = "PasswordManager"
+#     retention_versions = 10
+#     retention_days     = 30
+#     olac_enabled       = true
+#   }
+# }
+
+# safe_members = {
+#   "windowsadmins-domainadmin-safe" = {
+#     safe_name          = "Windows-DomainAdmins"
+#     member_name        = "WindowsAdmins"
+#     member_type        = "Group"
+#     use_accounts       = true
+#     retrieve_accounts  = true
+#     list_accounts      = true
+#     add_accounts       = false
+#     update_accounts    = false
+#     delete_accounts    = false
+#     manage_safe        = false
+#     request_auth_level = 1
+#   }
+# }
+
+
+# -----------------------------------------------------------------------------
+# Section 1.3: Break-Glass Procedures
+# -----------------------------------------------------------------------------
+break_glass_safe_name       = "Emergency-BreakGlass"
+break_glass_approval_count  = 2
+break_glass_expiration_hours = 1
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: API Authentication
+# IP addresses allowed for API access (leave empty to skip IP restriction)
+# -----------------------------------------------------------------------------
+api_allowed_ips = [
+  # "10.0.0.0/8",          # Internal network
+  # "203.0.113.50/32",     # CI/CD server
+]
+
+api_rate_limit_max_concurrent = 50
+api_rate_limit_timeout        = 120
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Integration Permissions
+# Purpose-specific integration service accounts
+# -----------------------------------------------------------------------------
+# integration_users = {
+#   "Svc-Jenkins" = {
+#     safe_access   = ["Application-Secrets"]
+#     use_accounts  = true
+#     retrieve      = true
+#     list_accounts = true
+#   }
+#   "Svc-Ansible" = {
+#     safe_access   = ["Linux-Root"]
+#     use_accounts  = true
+#     retrieve      = true
+#     list_accounts = true
+#   }
+# }
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Session Management
+# PSM session timeout configuration
+# -----------------------------------------------------------------------------
+session_max_duration_minutes = 480   # 8 hours (L1), 240 (L2)
+session_idle_timeout_minutes = 30    # 30 min (L1), 15 (L2)
+session_recording_enabled    = true
+
+
+# -----------------------------------------------------------------------------
+# Section 5.1: Secrets Rotation
+# CPM password rotation policy
+# -----------------------------------------------------------------------------
+password_rotation_days               = 30   # 30 (L1), 7 (L2), 1 (L3)
+password_min_length                  = 20
+password_verification_interval_hours = 24
+
+
+# -----------------------------------------------------------------------------
+# Section 6.1: Audit Logging
+# SIEM integration for log forwarding (leave server empty to skip)
+# -----------------------------------------------------------------------------
+siem_server         = ""
+siem_port           = 514
+audit_retention_days = 365

@@ -81,6 +81,10 @@ Configure SAML SSO to centralize authentication for Buildkite users.
 
 **Time to Complete:** ~1-2 hours
 
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="1.1" %}
+
 ---
 
 ### 1.2 Enforce Two-Factor Authentication
@@ -106,6 +110,10 @@ Require 2FA for all Buildkite users.
 1. Enable MFA in identity provider
 2. Use phishing-resistant methods for admins
 3. All SSO users subject to IdP MFA
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="1.2" %}
 
 ---
 
@@ -142,6 +150,10 @@ Implement least privilege using Buildkite teams.
 2. Update access as needed
 3. Remove inactive members
 
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="2.1" %}
+
 ---
 
 ### 2.2 Configure Pipeline Permissions
@@ -168,6 +180,10 @@ Control access to specific pipelines.
 2. Restrict manual builds on production
 3. Audit build triggers
 
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="2.2" %}
+
 ---
 
 ### 2.3 Limit Admin Access
@@ -193,6 +209,10 @@ Minimize and protect administrator accounts.
 1. Limit admin to 2-3 users
 2. Require 2FA/SSO for admins
 3. Monitor admin activity
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="2.3" %}
 
 ---
 
@@ -222,6 +242,10 @@ Securely manage agent registration tokens.
 2. Rotate tokens regularly
 3. Revoke unused tokens
 
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="3.1" %}
+
 ---
 
 ### 3.2 Configure Agent Clusters
@@ -250,6 +274,10 @@ Isolate agents by environment or sensitivity.
 2. Restrict production access
 3. Audit cluster assignments
 
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="3.2" %}
+
 ---
 
 ### 3.3 Secure Agent Infrastructure
@@ -275,6 +303,10 @@ Secure agent host infrastructure.
 1. Restrict agent network access
 2. Use private networks
 3. Monitor agent traffic
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="3.3" %}
 
 ---
 
@@ -304,6 +336,10 @@ Enable and monitor audit logs.
 2. Pipeline changes
 3. Permission modifications
 4. Agent token usage
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="4.1" %}
 
 ---
 

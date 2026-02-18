@@ -1,0 +1,145 @@
+# =============================================================================
+# Microsoft Entra ID Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds device compliance, risk policies, PIM
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# AzureAD Provider Configuration
+# Authenticate using Azure CLI (az login), managed identity, or
+# service principal. Set ARM_* environment variables for CI/CD:
+#   export ARM_CLIENT_ID="..."
+#   export ARM_CLIENT_SECRET="..."
+#   export ARM_TENANT_ID="..."
+# -----------------------------------------------------------------------------
+
+# Your Azure AD tenant ID (GUID)
+tenant_id = "00000000-0000-0000-0000-000000000000"
+
+# Primary domain (use .onmicrosoft.com for cloud-only accounts)
+domain_name = "yourorg.onmicrosoft.com"
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: Phishing-Resistant MFA
+# FIDO2 AAGUIDs to allow (empty = allow all FIDO2 keys)
+# Find AAGUIDs at: https://support.yubico.com/hc/en-us/articles/360016648959
+# -----------------------------------------------------------------------------
+fido2_allowed_aaguids = [
+  # "cb69481e-8ff7-4039-93ec-0a2729a154a8",  # YubiKey 5
+]
+
+# Set to false to keep SMS enabled (not recommended)
+disable_sms_authentication = true
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Emergency Access (Break-Glass) Accounts
+# Minimum 2 accounts; passwords output as sensitive values.
+# Store passwords in a physically secure location (safe/vault).
+# -----------------------------------------------------------------------------
+emergency_account_count      = 2
+emergency_account_upn_prefix = "emergency-admin"
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Block Legacy Authentication
+# Use "enabledForReportingButNotEnforced" to test before enforcing
+# -----------------------------------------------------------------------------
+legacy_auth_policy_state = "enabled"
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: Require MFA for All Users
+# Use "enabledForReportingButNotEnforced" to test before enforcing
+# -----------------------------------------------------------------------------
+mfa_policy_state = "enabled"
+
+
+# -----------------------------------------------------------------------------
+# Section 2.3: Require Compliant Devices for Admins (L2+ only)
+# Directory role template IDs to target. Common roles:
+#   Global Administrator:         62e90394-69f5-4237-9190-012177145e10
+#   Security Administrator:       194ae4cb-b126-40b2-bd5b-6091b380977d
+#   Exchange Administrator:       29232cdf-9323-42fd-ade2-1d097af3e4de
+#   SharePoint Administrator:     f28a1f50-f6e7-4571-818b-6a12f2af6b6c
+# Leave empty to target only Global Administrator (default)
+# -----------------------------------------------------------------------------
+admin_role_ids = []
+
+
+# -----------------------------------------------------------------------------
+# Section 2.4: Block High-Risk Sign-Ins (L2+ only)
+# Requires Entra ID P2 license for Identity Protection risk detection
+# Use "enabledForReportingButNotEnforced" to test before enforcing
+# -----------------------------------------------------------------------------
+high_risk_policy_state = "enabled"
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Just-In-Time Access / PIM (L2+ only)
+# User object IDs to convert to PIM-eligible Global Administrators.
+# Find at: Users > [User] > Object ID
+# Keep only emergency accounts as permanent assignments.
+# -----------------------------------------------------------------------------
+pim_eligible_user_ids = [
+  # "00000000-0000-0000-0000-000000000001",  # Admin User 1
+  # "00000000-0000-0000-0000-000000000002",  # Admin User 2
+]
+
+# Maximum PIM activation duration in hours (1-8)
+pim_activation_max_hours = 2
+
+# PIM eligibility assignment duration in days
+pim_eligibility_duration_days = 365
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Access Reviews (L2+ only)
+# User object IDs to serve as access review reviewers.
+# Requires manual configuration via admin center or Graph API.
+# -----------------------------------------------------------------------------
+access_review_reviewer_ids = [
+  # "00000000-0000-0000-0000-000000000003",  # Security Lead
+]
+
+# Review frequency: "monthly" or "quarterly"
+access_review_frequency = "quarterly"
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Restrict User Consent to Applications
+# User object IDs who can review admin consent requests.
+# Configure workflow via: Applications > Enterprise applications > Consent
+# -----------------------------------------------------------------------------
+admin_consent_reviewer_ids = [
+  # "00000000-0000-0000-0000-000000000004",  # Security Engineer
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 5.1: Sign-In and Audit Logging
+# Azure Log Analytics workspace resource ID for diagnostic log export.
+# Requires azurerm provider -- see control file for setup instructions.
+# Leave empty to skip (configure logging manually via Entra admin center).
+# Format: /subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.OperationalInsights/workspaces/{name}
+# -----------------------------------------------------------------------------
+log_analytics_workspace_id = ""

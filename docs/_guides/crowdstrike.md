@@ -319,6 +319,8 @@ Configure sensor anti-tamper protections to prevent unauthorized removal.
 2. Enable: **Detect sensor tampering attempts**
 3. Alert on: Sensor component modification attempts
 
+{% include pack-code.html vendor="crowdstrike" section="3.1" %}
+
 ---
 
 ### 3.2 Configure Prevention Policy Hardening
@@ -352,6 +354,8 @@ Configure aggressive prevention policies while managing false positive risk.
 1. Navigate to: **Configuration → Response Policies**
 2. Enable automated containment for high-severity detections
 3. Configure: **Network contain on critical severity**
+
+{% include pack-code.html vendor="crowdstrike" section="3.2" %}
 
 ---
 
@@ -393,6 +397,8 @@ Sensor Groups:
 1. Navigate to: **Configuration → Prevention Policies**
 2. Assign stricter policies to critical groups
 3. Enable: **Test-Canary group receives updates first**
+
+{% include pack-code.html vendor="crowdstrike" section="3.3" %}
 
 ---
 
@@ -474,6 +480,8 @@ def monitor_canary_health(falcon):
     return issues
 ```
 
+{% include pack-code.html vendor="crowdstrike" section="4.1" %}
+
 ---
 
 ### 4.2 Configure Rollback Procedures
@@ -496,6 +504,8 @@ Document and test rollback procedures for sensor updates.
 2. Apply older sensor version
 3. Verify protection maintained
 4. Re-apply current version
+
+{% include pack-code.html vendor="crowdstrike" section="4.2" %}
 
 ---
 
@@ -528,6 +538,8 @@ Tune detection rules to reduce noise while maintaining visibility.
 1. Navigate to: **Configuration → Custom IOA Rules**
 2. Adjust severity based on environment context
 3. Map to your incident response SLA
+
+{% include pack-code.html vendor="crowdstrike" section="5.1" %}
 
 ---
 

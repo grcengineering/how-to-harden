@@ -1,0 +1,104 @@
+# =============================================================================
+# CrowdStrike Falcon Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds early-adopter ring, tiered sensor updates, RTR controls
+# 3 = Maximum Security (L3) -- strictest ML levels, container drift prevention, full RTR
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# CrowdStrike Provider Configuration
+# -----------------------------------------------------------------------------
+
+# API Client ID -- generate at Support > API Clients and Keys
+# WARNING: Sensitive value. Prefer environment variables in production:
+#   export TF_VAR_crowdstrike_client_id="abc123..."
+crowdstrike_client_id = ""
+
+# API Client Secret
+# WARNING: Sensitive value. Prefer environment variables in production:
+#   export TF_VAR_crowdstrike_client_secret="xyz789..."
+crowdstrike_client_secret = ""
+
+# Falcon cloud region (us-1, us-2, eu-1, us-gov-1, us-gov-2)
+crowdstrike_cloud = "us-2"
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Sensor Anti-Tamper
+# Enable uninstall protection to prevent unauthorized sensor removal
+# -----------------------------------------------------------------------------
+uninstall_protection_enabled = true
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Prevention Policy Hardening
+# Custom names for prevention policies (optional)
+# -----------------------------------------------------------------------------
+prevention_policy_windows_name = "HTH Hardened Windows Policy"
+prevention_policy_linux_name   = "HTH Hardened Linux Policy"
+prevention_policy_mac_name     = "HTH Hardened Mac Policy"
+
+
+# -----------------------------------------------------------------------------
+# Section 3.3: Host Group Strategy
+# Dynamic assignment rules use SensorGroupingTags to classify hosts.
+# Tag hosts with: --tags="SensorGroupingTags/canary" during sensor install.
+# See: https://falcon.crowdstrike.com/documentation/hosts/host-groups
+# -----------------------------------------------------------------------------
+canary_group_assignment_rule          = "tags:'SensorGroupingTags/canary'"
+production_critical_assignment_rule   = "tags:'SensorGroupingTags/production-critical'"
+production_standard_assignment_rule   = "tags:'SensorGroupingTags/production-standard'"
+workstation_assignment_rule           = "tags:'SensorGroupingTags/workstation'"
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Staged Content Deployment
+# Delay hours for each deployment ring.
+# Post-July 2024 lesson: never deploy content to entire fleet simultaneously.
+#
+# Recommended delays:
+#   Canary: 0 hours (immediate)
+#   Early Adopter: 4 hours (validate canary health)
+#   Production: 24 hours (proven stable)
+#   Critical: 48 hours (maximum caution)
+# -----------------------------------------------------------------------------
+canary_content_delay_hours         = 0
+early_adopter_content_delay_hours  = 4
+production_content_delay_hours     = 24
+critical_content_delay_hours       = 48
+
+
+# -----------------------------------------------------------------------------
+# Section 4.2: Sensor Update Rollback
+# Sensor build versions for canary and production rings.
+# Leave empty to use default/latest builds.
+# Use N-1 version for production: set to the previous stable build.
+# Find builds at: Configuration > Sensor Update Policies > Build selector
+# -----------------------------------------------------------------------------
+sensor_update_canary_build     = ""
+sensor_update_production_build = ""
+sensor_update_schedule_timezone = "Etc/UTC"
+
+
+# -----------------------------------------------------------------------------
+# Section 5.1: Detection Tuning - Response Policy
+# Custom name for the Real Time Response policy (optional)
+# -----------------------------------------------------------------------------
+response_policy_name = "HTH Hardened RTR Policy"

@@ -1,0 +1,168 @@
+# =============================================================================
+# Keeper Security Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds IP allowlisting, SSO, export restrictions
+# 3 = Maximum Security (L3) -- strictest controls, dual 2FA for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Keeper Provider Configuration
+# Generate a Secrets Manager one-time access token from Admin Console:
+#   Admin Console > Secrets Manager > Applications > Add Application
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_keeper_credential="<base64-encoded-token>"
+# -----------------------------------------------------------------------------
+keeper_credential = ""
+
+
+# -----------------------------------------------------------------------------
+# Shared Folder UIDs
+# All security configuration records are stored in Keeper shared folders.
+# Find folder UIDs in the Keeper vault or via Commander CLI:
+#   keeper-commander ls --format=json
+# -----------------------------------------------------------------------------
+
+# Shared folder for break-glass admin credentials (restricted access)
+break_glass_folder_uid = ""
+
+# Shared folder for security configuration audit records
+security_config_folder_uid = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: Protect Administrator Accounts
+# At least two admin accounts required for redundancy (Keeper cannot recover
+# admin access -- if all admins lose access, there is no recovery path).
+# -----------------------------------------------------------------------------
+admin_usernames = [
+  # "admin1@yourcompany.com",
+  # "admin2@yourcompany.com",
+]
+
+# Break-glass admin account for emergency access
+break_glass_account_email    = ""
+break_glass_initial_password = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: IP Address Allowlisting for Admins (L2+ only)
+# Corporate network and VPN egress IPs allowed for admin access.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+admin_allowed_ips = [
+  # "203.0.113.0/24",    # Corporate office egress
+  # "198.51.100.0/24",   # VPN egress
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 1.3: Administrative Event Alerts
+# SIEM integration endpoint for streaming security events.
+# Supports Splunk HEC, Azure Sentinel, or custom webhooks.
+# -----------------------------------------------------------------------------
+siem_endpoint = ""
+
+alert_recipients = [
+  # "security-team@yourcompany.com",
+  # "soc@yourcompany.com",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Master Password Requirements
+# Minimum length recommendations by profile level:
+#   L1: 16 characters | L2: 20 characters | L3: 24 characters
+# -----------------------------------------------------------------------------
+master_password_min_length    = 16
+master_password_require_upper   = true
+master_password_require_lower   = true
+master_password_require_digits  = true
+master_password_require_special = true
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: Two-Factor Authentication
+# Allowed methods: "totp", "fido2", "duo", "rsa", "keeper_dna"
+# SMS should be disabled (SIM swap vulnerability).
+# -----------------------------------------------------------------------------
+tfa_required       = true
+tfa_allowed_methods = ["totp", "fido2"]
+tfa_disable_sms    = true
+
+
+# -----------------------------------------------------------------------------
+# Section 2.3: Sharing and Export Restrictions
+# L2+ automatically restricts sharing to org-only and disables export.
+# These flags allow overriding at L1 if desired.
+# -----------------------------------------------------------------------------
+restrict_sharing_to_org = false
+disable_export          = false
+
+
+# -----------------------------------------------------------------------------
+# Section 2.4: Browser Extension Restrictions (L2+ only)
+# Additional approved browser extension IDs beyond Keeper.
+# Keeper extension ID (Chrome): bfogiafebfohielmmehodmfbbebbbpei
+# -----------------------------------------------------------------------------
+approved_browser_extensions = [
+  # "Chrome: nngceckbapebfimnlniiiahkandclblb (Bitwarden)",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Biometric Authentication
+# Timeout before requiring master password re-entry.
+# Recommended: 15 minutes for L1, 10 for L2, 5 for L3.
+# -----------------------------------------------------------------------------
+biometric_timeout_minutes = 15
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: SAML SSO Configuration (L2+ only)
+# Requires Keeper SSO Connect Cloud license.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+sso_entity_id   = ""
+sso_url         = ""
+sso_certificate = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 4.2: Just-in-Time Provisioning (L2+ only)
+# SCIM endpoint for automated user lifecycle management.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+scim_endpoint    = ""
+jit_default_role = "Default User"
+
+
+# -----------------------------------------------------------------------------
+# Section 5.1: Audit Logging
+# Log retention period in days (365 recommended, 730 for regulated industries).
+# -----------------------------------------------------------------------------
+audit_log_retention_days = 365
+
+
+# -----------------------------------------------------------------------------
+# Section 5.3: BreachWatch
+# Requires add-on license for Business and Enterprise plans.
+# Included with Enterprise Plus.
+# -----------------------------------------------------------------------------
+breachwatch_enabled = true

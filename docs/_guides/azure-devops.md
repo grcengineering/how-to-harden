@@ -94,6 +94,10 @@ Require Azure AD authentication with Conditional Access policies including MFA, 
 | **SOC 2** | CC6.1 | Logical access controls |
 | **NIST 800-53** | IA-2(1) | MFA for network access |
 
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="1.1" %}
+
 ---
 
 ### 1.2 Implement Project-Level Security Groups
@@ -129,6 +133,10 @@ Security Groups:
 2. Grant minimum permissions needed
 3. Do not add to Project Administrators
 
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="1.2" %}
+
 ---
 
 ### 1.3 Configure Personal Access Token Policies
@@ -161,6 +169,10 @@ $headers = @{
 Invoke-RestMethod -Uri "https://vssps.dev.azure.com/$org/_apis/tokens/pats?api-version=7.1-preview.1" `
     -Headers $headers | ConvertTo-Json
 ```
+
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="1.3" %}
 
 ---
 
@@ -205,6 +217,8 @@ Replace service connections with stored credentials with workload identity feder
    - **Allow all pipelines:** Disable
 
 #### Code Implementation (Pipeline)
+
+{% include pack-code.html vendor="azure-devops" section="2.1" %}
 
 ```yaml
 # azure-pipelines.yml - Using workload identity federation
@@ -291,6 +305,10 @@ Invoke-RestMethod -Method Put `
     -Headers $headers -Body $body -ContentType "application/json"
 ```
 
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="2.2" %}
+
 ---
 
 ### 2.3 Implement Service Connection Approval Gates
@@ -309,6 +327,10 @@ Require approval for pipeline use of sensitive service connections.
    - **Required approvers:** Security team member
    - **Business hours:** Production deployments only during business hours
    - **Branch control:** Only from protected branches
+
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="2.3" %}
 
 ---
 
@@ -389,6 +411,10 @@ stages:
                 - script: echo "Deploying to ${{ parameters.environment }}"
 ```
 
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="3.1" %}
+
 ---
 
 ### 3.2 Configure Pipeline Permissions and Approvals
@@ -413,6 +439,10 @@ Restrict pipeline access to resources and require approvals for production.
 2. Configure:
    - **Pipeline permissions:** Specific users/groups
    - **Queue builds:** Restricted to authorized users
+
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="3.2" %}
 
 ---
 
@@ -458,6 +488,10 @@ Agent Pools:
     --windowsLogonAccount "DOMAIN\svc-agent"
 ```
 
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="3.3" %}
+
 ---
 
 ## 4. Repository Security
@@ -486,6 +520,10 @@ Implement branch policies to enforce code review and prevent direct pushes.
    - `azure-pipelines.yml`: Require security team review
    - `terraform/`: Require platform team review
 
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="4.1" %}
+
 ---
 
 ### 4.2 Enable Credential Scanning
@@ -497,6 +535,8 @@ Implement branch policies to enforce code review and prevent direct pushes.
 Enable Microsoft Security DevOps to detect secrets in repositories.
 
 #### Implementation
+
+{% include pack-code.html vendor="azure-devops" section="4.2" %}
 
 ```yaml
 # azure-pipelines.yml - Credential scanning
@@ -551,6 +591,10 @@ Configure variable groups with appropriate security controls.
    - **Pipeline permissions:** Specific pipelines only
    - **User permissions:** Administrators only
 
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="5.1" %}
+
 ---
 
 ### 5.2 Use Runtime Parameters for Secrets
@@ -582,6 +626,10 @@ stages:
               # Use secret from parameter
               echo "##vso[task.setvariable variable=SECRET;issecret=true]$(secretKey)"
 ```
+
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="5.2" %}
 
 ---
 
@@ -649,6 +697,10 @@ AzureDevOpsAuditing
 | summarize count() by ActorUPN, bin(TimeGenerated, 1h)
 | where count_ > 50
 ```
+
+#### Code Implementation
+
+{% include pack-code.html vendor="azure-devops" section="6.1" %}
 
 ---
 

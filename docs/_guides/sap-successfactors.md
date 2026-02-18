@@ -62,6 +62,10 @@ This guide covers SAP SuccessFactors security configurations including authentic
 2. Configure attribute mapping
 3. Enable session management
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sap-successfactors" section="1.1" lang="terraform" %}
+
 ---
 
 ### 1.2 Role-Based Permissions (RBP)
@@ -84,6 +88,10 @@ This guide covers SAP SuccessFactors security configurations including authentic
 1. Navigate to: **Admin Center → Manage Permission Roles**
 2. Create permission groups
 3. Assign target populations
+
+#### Code Implementation
+
+{% include pack-code.html vendor="sap-successfactors" section="1.2" lang="terraform" %}
 
 ---
 
@@ -112,6 +120,10 @@ Harden OData API integrations.
 2. Configure field-level restrictions
 3. Enable audit logging
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sap-successfactors" section="2.1" lang="terraform" %}
+
 ---
 
 ### 2.2 OAuth Token Management
@@ -125,6 +137,10 @@ Harden OData API integrations.
 |------------|------------|
 | Access Token | 1 hour |
 | Refresh Token | 24 hours (L1) / 8 hours (L2) |
+
+#### Code Implementation
+
+{% include pack-code.html vendor="sap-successfactors" section="2.2" lang="terraform" %}
 
 ---
 
@@ -148,6 +164,10 @@ Harden OData API integrations.
 1. Configure sensitive field masking
 2. Restrict SSN/Tax ID visibility
 3. Enable audit for sensitive data access
+
+#### Code Implementation
+
+{% include pack-code.html vendor="sap-successfactors" section="3.1" lang="terraform" %}
 
 ---
 
@@ -176,6 +196,8 @@ WHERE api_endpoint LIKE '%Employee%'
 GROUP BY user_id, api_endpoint
 HAVING COUNT(*) > 100;
 ```
+
+{% include pack-code.html vendor="sap-successfactors" section="4.1" lang="terraform" %}
 
 ---
 

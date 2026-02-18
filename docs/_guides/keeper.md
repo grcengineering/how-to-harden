@@ -84,6 +84,10 @@ Protect Keeper Administrator accounts as they have full control over the enterpr
 
 **Time to Complete:** ~30 minutes
 
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="1.1" lang="terraform" %}
+
 ---
 
 ### 1.2 Configure IP Address Allowlisting for Admins
@@ -122,6 +126,10 @@ Restrict admin access to approved IP addresses to prevent unauthorized administr
 2. Test access from allowed IPs
 3. Verify blocked from other IPs
 
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="1.2" lang="terraform" %}
+
 ---
 
 ### 1.3 Enable Administrative Event Alerts
@@ -150,6 +158,10 @@ Configure alerts for administrative events to detect suspicious activity.
 1. Add security team email addresses
 2. Configure alert thresholds
 3. Integrate with SIEM if available
+
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="1.3" lang="terraform" %}
 
 ---
 
@@ -186,6 +198,10 @@ Configure master password requirements through role enforcement policies.
 1. Apply policy to all user roles
 2. Allow grace period for compliance
 3. Monitor compliance dashboard
+
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="2.1" lang="terraform" %}
 
 ---
 
@@ -225,6 +241,10 @@ Require 2FA for all users accessing their Keeper vault.
    - Identity provider side
    - Keeper side (additional layer)
 
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="2.2" lang="terraform" %}
+
 ---
 
 ### 2.3 Configure Sharing and Export Restrictions
@@ -253,6 +273,10 @@ Control how records can be shared and exported from Keeper.
 2. Configure:
    - **Allow export:** Disable for L2+ environments
    - **Allow printing:** Disable if not needed
+
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="2.3" lang="terraform" %}
 
 ---
 
@@ -287,6 +311,10 @@ Control which browser extensions users can install to prevent malicious extensio
 2. Communicate policy to users
 3. Regular audit of installed extensions
 
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="2.4" lang="terraform" %}
+
 ---
 
 ## 3. Authentication & MFA
@@ -318,6 +346,10 @@ Configure biometric authentication options for improved security and usability.
 2. Require master password periodically
 3. Configure fallback authentication
 
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="3.1" lang="terraform" %}
+
 ---
 
 ### 3.2 Configure Account Recovery
@@ -345,6 +377,10 @@ Configure secure account recovery options.
    - Configure approval workflow
    - Require verification steps
    - Log all recovery events
+
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="3.2" lang="terraform" %}
 
 ---
 
@@ -389,6 +425,10 @@ Integrate Keeper with your SAML identity provider for centralized authentication
 2. Follow IdP security best practices
 3. Ensure admin accounts are secured
 
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="4.1" lang="terraform" %}
+
 ---
 
 ### 4.2 Configure Just-in-Time Provisioning
@@ -414,6 +454,10 @@ Configure automatic user provisioning through SSO.
 1. For automated lifecycle management
 2. Configure SCIM endpoint
 3. Integrate with IdP SCIM
+
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="4.2" lang="terraform" %}
 
 ---
 
@@ -456,6 +500,10 @@ Enable and review audit logs for security events.
 - Admin privilege changes
 - Policy modifications
 
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="5.1" lang="terraform" %}
+
 ---
 
 ### 5.2 Monitor Security Audit
@@ -490,6 +538,10 @@ Use Security Audit to monitor organization password health.
 2. Set improvement targets
 3. Track progress over time
 
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="5.2" lang="terraform" %}
+
 ---
 
 ### 5.3 BreachWatch Integration
@@ -517,6 +569,10 @@ Enable BreachWatch to detect compromised credentials.
    - Require password change
    - Investigate exposure source
 2. Document incident response
+
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="5.3" lang="terraform" %}
 
 ---
 

@@ -1,0 +1,148 @@
+# =============================================================================
+# Azure DevOps Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds approval gates, classic pipeline restrictions
+# 3 = Maximum Security (L3) -- business hours restrictions, strictest controls
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Azure DevOps Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Organization URL (e.g., "https://dev.azure.com/your-org")
+org_service_url = "https://dev.azure.com/your-org"
+
+# Personal access token -- generate at User Settings > Personal access tokens
+# Required scopes: Full access (for initial setup), then scope down
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_personal_access_token="your-pat-here"
+personal_access_token = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1: Authentication & Access Controls
+# Target project to apply hardening controls
+# -----------------------------------------------------------------------------
+
+# Project name (required)
+project_name = "your-project"
+
+# Project ID (optional -- looked up from project_name if not set)
+project_id = ""
+
+# Security reviewers group -- members who approve service connections and deploys
+security_reviewers_group_name = "Security Reviewers"
+
+# User principal names of security team members
+security_reviewer_members = [
+  # "user1@yourcompany.com",
+  # "user2@yourcompany.com",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 2: Service Connection Security
+# Azure Resource Manager connection using workload identity federation.
+# Leave azure_subscription_id empty to skip service connection creation.
+# -----------------------------------------------------------------------------
+
+# Azure subscription for workload identity federation
+azure_subscription_id   = ""
+azure_subscription_name = ""
+service_principal_id    = ""
+azure_tenant_id         = ""
+
+# Approvers for service connection usage (L2+ only)
+service_connection_approvers = [
+  # "secteam@yourcompany.com",
+]
+
+# Legacy service connection IDs to audit (for Control 2.2)
+legacy_service_connection_ids = [
+  # "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 3: Pipeline Security
+# Deployment environments and agent pools
+# -----------------------------------------------------------------------------
+
+# Environment names for pipeline approval gates
+production_environment_name = "production"
+staging_environment_name    = "staging"
+
+# Approvers for production deployments
+deployment_approvers = [
+  # "releasemanager@yourcompany.com",
+  # "secteam@yourcompany.com",
+]
+
+# Self-hosted agent pool names
+agent_pool_name          = "Production-Agents"
+security_agent_pool_name = "Security-Agents"
+
+
+# -----------------------------------------------------------------------------
+# Section 4: Repository Security
+# Branch policies for the primary repository.
+# Leave repository_id empty to skip branch policy creation.
+# -----------------------------------------------------------------------------
+
+# Repository to protect
+repository_name = ""
+repository_id   = ""
+default_branch  = "refs/heads/main"
+
+# Minimum reviewers (scale with profile: L1=1, L2=2, L3=3)
+min_reviewer_count = 1
+
+# Build definition ID for CI validation (0 to skip)
+build_validation_definition_id = 0
+
+# Auto-reviewers for pipeline YAML and Terraform changes (L2+ only)
+pipeline_yaml_reviewers = [
+  # "platformteam@yourcompany.com",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 5: Variable & Secret Management
+# Key Vault linked variable groups.
+# Leave key_vault_name empty to skip Key Vault integration.
+# -----------------------------------------------------------------------------
+
+# Azure Key Vault for production secrets
+key_vault_name                = ""
+key_vault_service_connection_id = ""
+
+# Key Vault secrets to expose as pipeline variables
+key_vault_secrets = {
+  # "DB_CONNECTION_STRING" = ""
+  # "API_KEY"              = ""
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 6: Monitoring & Detection
+# -----------------------------------------------------------------------------
+
+# Enable audit log streaming (requires Azure DevOps audit feature)
+enable_audit_stream = false

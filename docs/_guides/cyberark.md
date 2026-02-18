@@ -108,6 +108,8 @@ curl -X PUT "https://${PVWA_URL}/PasswordVault/API/Configuration/AuthenticationM
   }'
 ```
 
+{% include pack-code.html vendor="cyberark" section="1.1" lang="terraform" %}
+
 #### Validation & Testing
 1. [ ] Attempt PVWA login with password only - should fail
 2. [ ] Complete login with password + MFA - should succeed
@@ -199,6 +201,8 @@ curl -X POST "https://${PVWA_URL}/PasswordVault/API/Safes/Windows-DomainAdmins/M
   }'
 ```
 
+{% include pack-code.html vendor="cyberark" section="1.2" lang="terraform" %}
+
 ---
 
 ### 1.3 Configure Break-Glass Procedures
@@ -227,6 +231,10 @@ Implement emergency access procedures for critical scenarios when normal authent
 1. Store break-glass credentials in physical safe
 2. Distribute parts to different individuals
 3. Document recovery procedure
+
+#### Code Implementation
+
+{% include pack-code.html vendor="cyberark" section="1.3" lang="terraform" %}
 
 ---
 
@@ -261,6 +269,10 @@ BackupKeyAge=365
 - Configure Windows Firewall
 - Enable audit logging
 
+#### Code Implementation
+
+{% include pack-code.html vendor="cyberark" section="2.1" lang="terraform" %}
+
 ---
 
 ### 2.2 Implement Vault High Availability
@@ -286,6 +298,8 @@ PAReplicate.exe Status
 # Test DR failover (non-production)
 PAReplicate.exe Failover /target:DR_VAULT
 ```
+
+{% include pack-code.html vendor="cyberark" section="2.2" lang="terraform" %}
 
 ---
 
@@ -370,6 +384,8 @@ def get_credential(token, safe, account):
     return response.json()
 ```
 
+{% include pack-code.html vendor="cyberark" section="3.1" lang="terraform" %}
+
 ---
 
 ### 3.2 Restrict Integration Permissions
@@ -396,6 +412,10 @@ For each integration:
 1. Grant access to specific safes only
 2. Limit to `UseAccounts` permission (no admin rights)
 3. Enable audit logging for all actions
+
+#### Code Implementation
+
+{% include pack-code.html vendor="cyberark" section="3.2" lang="terraform" %}
 
 ---
 
@@ -439,6 +459,8 @@ def sync_to_aws_secrets(cyberark_client, aws_region):
         )
 ```
 
+{% include pack-code.html vendor="cyberark" section="3.3" lang="terraform" %}
+
 ---
 
 ## 4. Session Management
@@ -475,6 +497,10 @@ IdleSessionTimeout=30   # 30 minutes idle
 WarningBeforeTimeout=5  # 5 minute warning
 ```
 
+#### Code Implementation
+
+{% include pack-code.html vendor="cyberark" section="4.1" lang="terraform" %}
+
 ---
 
 ### 4.2 Implement Just-In-Time Access
@@ -500,6 +526,10 @@ Configure time-limited access requests with automatic credential rotation after 
    - Approver reviews justification
    - Time-limited access granted
    - Credentials rotate after session
+
+#### Code Implementation
+
+{% include pack-code.html vendor="cyberark" section="4.2" lang="terraform" %}
 
 ---
 
@@ -533,6 +563,10 @@ RequireSpecial=true
 ExcludedCharacters='"<>;
 ```
 
+#### Code Implementation
+
+{% include pack-code.html vendor="cyberark" section="5.1" lang="terraform" %}
+
 ---
 
 ### 5.2 Monitor Rotation Failures
@@ -549,6 +583,8 @@ FROM PasswordVault_Accounts
 WHERE CPMStatus = 'FAILED'
 ORDER BY LastFailDate DESC;
 ```
+
+{% include pack-code.html vendor="cyberark" section="5.2" lang="terraform" %}
 
 ---
 
@@ -593,6 +629,8 @@ WHERE Action = 'Logon'
 GROUP BY UserName, SourceIP
 HAVING COUNT(*) > 5;
 ```
+
+{% include pack-code.html vendor="cyberark" section="6.1" lang="terraform" %}
 
 ---
 

@@ -1,0 +1,137 @@
+# =============================================================================
+# Vercel Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds preview protection, IP allowlisting, WAF
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Vercel Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Vercel API token -- generate at Account Settings > Tokens
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_vercel_api_token="your-token-here"
+vercel_api_token = ""
+
+# Vercel team ID -- found at Team Settings > General
+vercel_team_id = "team_..."
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: SSO with MFA (Enterprise)
+# Requires Vercel Enterprise plan
+# -----------------------------------------------------------------------------
+saml_enforced = true
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Team Access Controls
+# Map of team members with email and role
+# Roles: OWNER, MEMBER, DEVELOPER, VIEWER (VIEWER requires Enterprise)
+# -----------------------------------------------------------------------------
+team_members = {
+  # "alice" = { email = "alice@example.com", role = "MEMBER" }
+  # "bob"   = { email = "bob@example.com",   role = "DEVELOPER" }
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Secure Deployments
+# Project ID to apply hardening controls
+# -----------------------------------------------------------------------------
+project_id = "prj_..."
+
+# Git repository in owner/repo format
+git_repository = ""
+
+# Git provider: github, gitlab, or bitbucket
+git_provider = "github"
+
+# Production branch name
+production_branch = "main"
+
+# Preview deployment password (L2+ only)
+# WARNING: Sensitive value. Use environment variables in production:
+#   export TF_VAR_preview_password="your-password"
+preview_password = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: Git Integration Security
+# -----------------------------------------------------------------------------
+
+# Block deployments from forked repositories
+git_fork_protection_enabled = true
+
+# Require signed/verified commits for deployments (L2+ recommended)
+require_verified_commits = false
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Environment Variables
+# Manage environment variables with sensitivity flags and environment scoping
+# -----------------------------------------------------------------------------
+environment_variables = {
+  # "DATABASE_URL" = {
+  #   value     = "postgresql://..."
+  #   target    = ["production"]
+  #   sensitive = true
+  # }
+  # "NEXT_PUBLIC_API_URL" = {
+  #   value     = "https://api.example.com"
+  #   target    = ["production", "preview"]
+  #   sensitive = false
+  # }
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Access Token Security (L2+)
+# Trusted IP addresses for IP allowlisting
+# Only applied when profile_level >= 2
+# -----------------------------------------------------------------------------
+trusted_ip_addresses = [
+  # { value = "203.0.113.0/24", note = "Office egress" },
+  # { value = "198.51.100.0/24", note = "VPN egress" },
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Audit Log & Monitoring
+# Log drain configuration for forwarding logs to your SIEM
+# -----------------------------------------------------------------------------
+
+# HTTPS endpoint for receiving logs (leave empty to skip)
+log_drain_endpoint = ""
+
+# Shared secret for webhook verification
+# WARNING: Sensitive value. Use environment variables in production:
+#   export TF_VAR_log_drain_secret="your-secret"
+log_drain_secret = ""
+
+# Log sources to forward
+log_drain_sources = ["static", "edge", "external", "build", "lambda"]
+
+# Environments to collect logs from
+log_drain_environments = ["production", "preview"]
+
+# Enable Web Application Firewall (L2+ only, requires Pro/Enterprise)
+firewall_enabled = false

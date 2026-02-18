@@ -94,6 +94,8 @@ Configure SAML-based SSO for Zscaler Admin Portal and Client Connector authentic
 
 **Time to Complete:** ~1 hour
 
+{% include pack-code.html vendor="zscaler" section="1.1" %}
+
 ---
 
 ### 1.2 Implement Role-Based Admin Access
@@ -140,6 +142,8 @@ Configure granular admin roles in Zscaler to limit access based on job responsib
 | Security Admin | Policy management, reporting |
 | Help Desk | User management, basic troubleshooting |
 | Auditor | Read-only access to logs and configs |
+
+{% include pack-code.html vendor="zscaler" section="1.2" %}
 
 ---
 
@@ -188,6 +192,8 @@ Configure URL filtering policies to block access to malicious, risky, and policy
 
 **Time to Complete:** ~45 minutes
 
+{% include pack-code.html vendor="zscaler" section="2.1" %}
+
 ---
 
 ### 2.2 Enable Advanced Threat Protection
@@ -223,6 +229,8 @@ Enable Zscaler's advanced threat protection capabilities including cloud sandbox
 1. Configure real-time threat blocking
 2. Enable browser isolation for high-risk categories (if licensed)
 
+{% include pack-code.html vendor="zscaler" section="2.2" %}
+
 ---
 
 ### 2.3 Configure Firewall Policies
@@ -255,6 +263,8 @@ Configure Zscaler Cloud Firewall policies to control non-web traffic including p
    - Unencrypted protocols (FTP, Telnet, HTTP without upgrade)
    - Tunneling protocols (SSH tunnels, VPN bypass)
    - Remote access tools (unless approved)
+
+{% include pack-code.html vendor="zscaler" section="2.3" %}
 
 ---
 
@@ -298,6 +308,8 @@ Define application segments in ZPA to control access to internal applications wi
 
 **Time to Complete:** ~30 minutes per application
 
+{% include pack-code.html vendor="zscaler" section="3.1" %}
+
 ---
 
 ### 3.2 Create Access Policies
@@ -333,6 +345,8 @@ Create ZPA access policies that define who can access which applications based o
 2. All access must be explicitly permitted
 3. Review and document exceptions
 
+{% include pack-code.html vendor="zscaler" section="3.2" %}
+
 ---
 
 ### 3.3 Enable Device Posture Checks
@@ -362,6 +376,8 @@ Configure device posture checks to verify endpoint security status before granti
 1. Edit access policy rules
 2. Add posture profile as condition
 3. Block access if posture requirements not met
+
+{% include pack-code.html vendor="zscaler" section="3.3" %}
 
 ---
 
@@ -400,6 +416,8 @@ Deploy Zscaler Client Connector with security-optimized settings to ensure all t
 2. Minimize split tunnel scope
 3. Document exceptions
 
+{% include pack-code.html vendor="zscaler" section="4.1" %}
+
 ---
 
 ### 4.2 Install SSL Certificate for Inspection
@@ -435,6 +453,8 @@ Deploy Zscaler root certificate to enable SSL inspection of encrypted traffic.
 1. In Client Connector settings, enable "Install Zscaler SSL Certificate"
 2. This auto-installs during Client Connector installation
 
+{% include pack-code.html vendor="zscaler" section="4.2" %}
+
 ---
 
 ### 4.3 Lock Client Connector Settings
@@ -463,6 +483,8 @@ Lock Client Connector configuration to prevent users from disabling or bypassing
 1. For maximum security, disable admin override codes
 2. Users cannot bypass even temporarily
 3. Implement support process for legitimate issues
+
+{% include pack-code.html vendor="zscaler" section="4.3" %}
 
 ---
 
@@ -514,6 +536,8 @@ Enable SSL/TLS inspection to decrypt, inspect, and re-encrypt HTTPS traffic for 
 
 **Time to Complete:** ~2-4 hours (including testing)
 
+{% include pack-code.html vendor="zscaler" section="5.1" %}
+
 ---
 
 ### 5.2 Test SSL Inspection Thoroughly
@@ -541,6 +565,8 @@ Thoroughly test SSL inspection before production deployment to identify and reso
 - [ ] Check for certificate errors in logs
 - [ ] Verify malware detection is working
 - [ ] Confirm DLP policies are applied
+
+{% include pack-code.html vendor="zscaler" section="5.2" %}
 
 ---
 
@@ -583,6 +609,8 @@ Configure comprehensive logging and integrate with SIEM for security monitoring 
    - Policy violations
    - Admin changes
    - Authentication failures
+
+{% include pack-code.html vendor="zscaler" section="6.1" %}
 
 ---
 

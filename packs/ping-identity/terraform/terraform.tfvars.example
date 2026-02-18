@@ -1,0 +1,129 @@
+# =============================================================================
+# Ping Identity Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds IP restrictions, DaVinci security, consent mgmt
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# PingOne Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Worker application client ID (create at Applications > Applications > Worker)
+pingone_client_id = "your-worker-app-client-id"
+
+# Worker application client secret
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_pingone_client_secret="your-secret"
+pingone_client_secret = ""
+
+# PingOne environment ID (find at Settings > Environment > Properties)
+pingone_environment_id = "your-environment-id"
+
+# PingOne region (NorthAmerica, Canada, Europe, AsiaPacific)
+pingone_region = "NorthAmerica"
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: Phishing-Resistant MFA
+# PingOne population and group IDs for administrator MFA enforcement.
+# Find at: Identities > Populations / Groups
+# -----------------------------------------------------------------------------
+admin_population_id = ""
+admin_group_id      = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Least-Privilege Admin Roles
+# Group IDs for role-based access. Leave empty to use HTH-created groups.
+# Find at: Identities > Groups
+# -----------------------------------------------------------------------------
+identity_admin_group_id = ""
+app_admin_group_id      = ""
+security_admin_group_id = ""
+auditor_group_id        = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.3: IP-Based Access Restrictions (L2+ only)
+# Corporate and VPN CIDRs for IP-based access control.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+corporate_gateway_cidrs = [
+  # "203.0.113.0/24",    # Office egress
+  # "198.51.100.0/24",   # Branch office
+]
+
+vpn_egress_cidrs = [
+  # "192.0.2.0/24",      # VPN gateway
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: SAML Federation Trust
+# Assertion validity and session timeout configuration.
+# -----------------------------------------------------------------------------
+saml_assertion_validity_seconds = 300
+saml_session_timeout_hours      = 8
+
+
+# -----------------------------------------------------------------------------
+# Section 2.3: Certificate Lifecycle Management
+# Alert thresholds for certificate expiry monitoring.
+# -----------------------------------------------------------------------------
+cert_expiry_warning_days  = 90
+cert_expiry_critical_days = 30
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: OAuth & Token Security
+# Token lifetimes for hardened OAuth configuration.
+# L1: access=3600, refresh=604800 (7 days)
+# L2: access=3600, refresh=86400 (24 hours)
+# L3: access=3600, refresh disabled (re-auth required)
+# -----------------------------------------------------------------------------
+access_token_lifetime_seconds       = 3600
+refresh_token_lifetime_seconds      = 604800
+id_token_lifetime_seconds           = 3600
+authorization_code_lifetime_seconds = 60
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: DaVinci Orchestration Security (L2+ only)
+# Flow execution log retention period.
+# -----------------------------------------------------------------------------
+davinci_flow_log_retention_days = 90
+
+
+# -----------------------------------------------------------------------------
+# Section 5.1: Comprehensive Audit Logging
+# SIEM webhook URL for forwarding audit events. Leave empty to skip.
+# -----------------------------------------------------------------------------
+audit_log_retention_days = 90
+siem_webhook_url         = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 6.2: API Client Management
+# Token lifetimes per client type.
+# Admin API: 15 minutes (900s), SCIM: 1 hour (3600s)
+# -----------------------------------------------------------------------------
+admin_api_token_lifetime_seconds = 900
+scim_token_lifetime_seconds      = 3600

@@ -83,6 +83,10 @@ Enable authentication to prevent anonymous access to Jenkins. By default, older 
 
 **Time to Complete:** ~30 minutes
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="1.1" lang="terraform" %}
+
 ---
 
 ### 1.2 Configure LDAP or SAML SSO
@@ -138,6 +142,10 @@ Configure centralized authentication using LDAP or SAML SSO for enterprise ident
    - Group search base: `ou=groups`
 4. Test LDAP connection
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="1.2" lang="terraform" %}
+
 ---
 
 ### 1.3 Disable Remember Me
@@ -167,6 +175,8 @@ import jenkins.model.Jenkins
 Jenkins.instance.setDisableRememberMe(true)
 Jenkins.instance.save()
 ```
+
+{% include pack-code.html vendor="jenkins" section="1.3" lang="terraform" %}
 
 ---
 
@@ -213,6 +223,10 @@ Configure Matrix-based security for fine-grained permission control. This is rec
 1. Remove or restrict the `authenticated` group permissions
 2. Grant permissions to specific groups/users only
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="2.1" lang="terraform" %}
+
 ---
 
 ### 2.2 Configure Project-Based Matrix Authorization
@@ -244,6 +258,10 @@ Enable project-based authorization for per-project access control.
 1. Navigate to: **Job** → **Configure** → **Enable project-based security**
 2. Add users/groups with project-specific permissions
 3. Example: "Joe can access projects A, B, and C, but not D"
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="2.2" lang="terraform" %}
 
 ---
 
@@ -286,6 +304,10 @@ Implement role-based access control for scalable permission management.
 2. Assign global roles to users/groups
 3. Assign item roles to users/groups
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="2.3" lang="terraform" %}
+
 ---
 
 ### 2.4 Restrict Script Console Access
@@ -317,6 +339,10 @@ Restrict access to the Script Console to administrators only.
 1. Review who has admin access
 2. Consider separate admin accounts for privileged operations
 3. Log and alert on Script Console usage
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="2.4" lang="terraform" %}
 
 ---
 
@@ -353,6 +379,10 @@ Enable Agent → Controller Access Control to prevent compromised agents from at
 3. Review whitelisted commands
 4. Remove unnecessary allowances
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="3.1" lang="terraform" %}
+
 ---
 
 ### 3.2 Disable Builds on Controller
@@ -383,6 +413,10 @@ Configure Jenkins to run builds only on agents, not on the controller node.
 **Step 2: Configure Labels**
 1. Ensure jobs are configured to run on specific agent labels
 2. Never use "any" or empty label restrictions
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="3.2" lang="terraform" %}
 
 ---
 
@@ -429,6 +463,10 @@ spec:
 2. Configure scale-up triggers
 3. Set idle timeout for termination
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="3.3" lang="terraform" %}
+
 ---
 
 ### 3.4 Secure Agent Communication
@@ -459,6 +497,10 @@ java -jar jenkins.war --httpsPort=8443 \
   --httpsKeyStorePassword=changeit
 ```
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="3.4" lang="terraform" %}
+
 ---
 
 ## 4. Pipeline Security
@@ -481,6 +523,10 @@ Enable CSRF protection to prevent cross-site request forgery attacks.
 1. Navigate to: **Manage Jenkins** → **Security** → **Configure Global Security**
 2. Under **CSRF Protection**, select **Default Crumb Issuer**
 3. Optionally enable **Enable proxy compatibility** if behind a reverse proxy
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="4.1" lang="terraform" %}
 
 ---
 
@@ -522,6 +568,10 @@ Securely manage credentials using Jenkins Credentials Plugin with appropriate sc
 1. Install Credentials Binding Plugin
 2. Use `withCredentials` in pipelines for explicit binding
 3. Audit which jobs use which credentials
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="4.2" lang="terraform" %}
 
 ---
 
@@ -569,6 +619,10 @@ pipeline {
 1. Limit who can approve scripts
 2. Review all approval requests carefully
 3. Consider security implications of each approval
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="4.3" lang="terraform" %}
 
 ---
 
@@ -641,6 +695,8 @@ pipeline {
 }
 ```
 
+{% include pack-code.html vendor="jenkins" section="4.4" lang="terraform" %}
+
 ---
 
 ## 5. Monitoring & Compliance
@@ -681,6 +737,10 @@ Enable comprehensive audit logging for security monitoring.
 - Credential access
 - Build triggers
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="5.1" lang="terraform" %}
+
 ---
 
 ### 5.2 Keep Jenkins Updated
@@ -712,6 +772,10 @@ Keep Jenkins and all plugins updated with security patches.
 - Stay on latest supported hot-patch release
 - Test updates in non-production first
 - Subscribe to Jenkins security advisories
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jenkins" section="5.2" lang="terraform" %}
 
 ---
 

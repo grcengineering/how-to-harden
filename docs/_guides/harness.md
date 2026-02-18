@@ -81,6 +81,10 @@ Configure SAML SSO to centralize authentication for Harness users.
 
 **Time to Complete:** ~1-2 hours
 
+#### Code Implementation
+
+{% include pack-code.html vendor="harness" section="1.1" lang="terraform" %}
+
 ---
 
 ### 1.2 Enforce Two-Factor Authentication
@@ -107,6 +111,10 @@ Require 2FA for all Harness users.
 2. Use phishing-resistant methods for admins
 3. All SSO users subject to IdP MFA
 
+#### Code Implementation
+
+{% include pack-code.html vendor="harness" section="1.2" lang="terraform" %}
+
 ---
 
 ### 1.3 Configure IP Allowlisting
@@ -127,6 +135,10 @@ Restrict access to approved IP ranges.
 1. Navigate to: **Account Settings** → **Security**
 2. Enable IP allowlisting
 3. Add approved IP ranges
+
+#### Code Implementation
+
+{% include pack-code.html vendor="harness" section="1.3" lang="terraform" %}
 
 ---
 
@@ -165,6 +177,10 @@ Implement least privilege using Harness RBAC.
 2. Use resource groups for scoping
 3. Regular access reviews
 
+#### Code Implementation
+
+{% include pack-code.html vendor="harness" section="2.1" lang="terraform" %}
+
 ---
 
 ### 2.2 Configure Organization/Project Hierarchy
@@ -191,6 +207,10 @@ Use hierarchy for access isolation.
 2. Use project-level access for least privilege
 3. Audit cross-project access
 
+#### Code Implementation
+
+{% include pack-code.html vendor="harness" section="2.2" lang="terraform" %}
+
 ---
 
 ### 2.3 Limit Admin Access
@@ -216,6 +236,10 @@ Minimize and protect administrator accounts.
 1. Limit account admin to 2-3 users
 2. Require 2FA/SSO for admins
 3. Monitor admin activity
+
+#### Code Implementation
+
+{% include pack-code.html vendor="harness" section="2.3" lang="terraform" %}
 
 ---
 
@@ -249,6 +273,10 @@ Securely manage secrets for pipelines.
 2. Reference secrets in pipelines
 3. Never hardcode credentials
 
+#### Code Implementation
+
+{% include pack-code.html vendor="harness" section="3.1" lang="terraform" %}
+
 ---
 
 ### 3.2 Configure Secret Access
@@ -274,6 +302,10 @@ Control access to secrets.
 1. Restrict secret creation
 2. Limit secret viewing
 3. Audit secret access
+
+#### Code Implementation
+
+{% include pack-code.html vendor="harness" section="3.2" lang="terraform" %}
 
 ---
 
@@ -303,6 +335,10 @@ Implement pipeline governance controls.
 2. Configure approval groups
 3. Require approvals for production
 
+#### Code Implementation
+
+{% include pack-code.html vendor="harness" section="4.1" lang="terraform" %}
+
 ---
 
 ### 4.2 Configure Audit Trail
@@ -329,6 +365,10 @@ Enable and monitor audit logs.
 2. Configuration changes
 3. Permission modifications
 4. Secret access
+
+#### Code Implementation
+
+{% include pack-code.html vendor="harness" section="4.2" lang="terraform" %}
 
 ---
 

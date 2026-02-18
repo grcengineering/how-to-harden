@@ -1,0 +1,179 @@
+# =============================================================================
+# Harness Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds IP allowlisting, org hierarchy, secret access,
+#                       pipeline governance, audit streaming
+# 3 = Maximum Security (L3) -- adds artifact verification policies
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Harness Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Harness API endpoint (default is SaaS; change for self-managed)
+harness_endpoint = "https://app.harness.io/gateway"
+
+# Your Harness account ID -- find at Account Settings > Overview
+harness_account_id = "your-account-id"
+
+# Harness API key -- generate a PAT or SAT at Account Settings > API Keys
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_harness_platform_api_key="pat.your-account-id.your-key..."
+harness_platform_api_key = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: SAML Single Sign-On
+# Display name and configuration for your SAML identity provider.
+# -----------------------------------------------------------------------------
+saml_provider_name   = "Corporate SSO"
+saml_group_attribute = "groups"
+saml_entity_id       = ""
+saml_metadata_url    = ""
+saml_metadata_xml    = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Two-Factor Authentication
+# Whether to enforce 2FA via IdP for all users.
+# -----------------------------------------------------------------------------
+enforce_2fa = true
+
+
+# -----------------------------------------------------------------------------
+# Section 1.3: IP Allowlisting (L2+ only)
+# Corporate network CIDRs to restrict platform access.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+allowed_source_cidrs = [
+  # "203.0.113.0/24",    # Office egress
+  # "198.51.100.0/24",   # VPN egress
+]
+
+ip_allowlist_name = "Corporate Network Allowlist"
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Role-Based Access Control
+# Custom roles beyond the built-in pipeline executor and viewer.
+# Leave empty to use only the default HTH roles.
+# -----------------------------------------------------------------------------
+# custom_roles = {
+#   "deployer" = {
+#     name        = "Deployer"
+#     permissions = ["core_pipeline_view", "core_pipeline_execute"]
+#   }
+# }
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: Organization/Project Hierarchy (L2+ only)
+# Business unit organizations and their projects.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+# organizations = {
+#   "engineering" = {
+#     name        = "Engineering"
+#     description = "Engineering business unit"
+#   }
+#   "platform" = {
+#     name        = "Platform"
+#     description = "Platform team"
+#   }
+# }
+
+# projects = {
+#   "backend_prod" = {
+#     name   = "Backend Production"
+#     org_id = "engineering"
+#   }
+#   "backend_dev" = {
+#     name   = "Backend Development"
+#     org_id = "engineering"
+#   }
+# }
+
+
+# -----------------------------------------------------------------------------
+# Section 2.3: Limit Admin Access
+# Restricted administrator group (limit to 2-3 members).
+# -----------------------------------------------------------------------------
+admin_user_group_name = "Platform Administrators"
+admin_user_emails     = [
+  # "admin1@yourcompany.com",
+  # "admin2@yourcompany.com",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Secret Manager
+# External secret manager type: builtin, vault, aws, azure, or gcp.
+# Configure the corresponding connection parameters below.
+# -----------------------------------------------------------------------------
+secret_manager_type = "builtin"
+
+# HashiCorp Vault (when secret_manager_type = "vault")
+vault_url                    = ""
+vault_token                  = ""
+vault_secret_engine          = "secret"
+vault_renew_interval_minutes = 10
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Secret Access (L2+ only)
+# Scoped access controls for secret management.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+secret_resource_group_name = "Secret Managers"
+secret_manager_role_name   = "Secret Manager Operator"
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Pipeline Governance (L2+ only)
+# OPA policies for pipeline enforcement.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+require_prod_approval  = true
+approval_user_group_id = ""
+
+# Custom OPA governance policies (optional)
+# governance_policies = {
+#   "require_scanning" = {
+#     name = "Require Security Scanning"
+#     rego = <<-REGO
+#       package pipeline
+#       deny[msg] {
+#         not has_scan_stage
+#         msg := "Pipelines must include a security scanning stage"
+#       }
+#       has_scan_stage {
+#         input.pipeline.stages[_].stage.name == "Security Scan"
+#       }
+#     REGO
+#   }
+# }
+
+
+# -----------------------------------------------------------------------------
+# Section 4.2: Audit Trail
+# Audit log configuration and streaming.
+# -----------------------------------------------------------------------------
+audit_log_streaming_enabled = false
+audit_retention_days        = 90

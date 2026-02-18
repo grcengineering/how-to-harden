@@ -1,0 +1,158 @@
+# =============================================================================
+# Oracle HCM Cloud Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds HDL restrictions, API rate monitoring, CMEK
+# 3 = Maximum Security (L3) -- FIDO2-only auth, HSM key protection, HDL alerts
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# OCI Provider Configuration
+# Generate an API key at: OCI Console > Profile > API Keys
+# WARNING: private_key_path and fingerprint are sensitive values.
+# Use environment variables in production:
+#   export TF_VAR_oci_fingerprint="aa:bb:cc:..."
+# -----------------------------------------------------------------------------
+
+# OCID of your OCI tenancy
+oci_tenancy_ocid = "ocid1.tenancy.oc1..aaaa..."
+
+# OCID of the API user
+oci_user_ocid = "ocid1.user.oc1..aaaa..."
+
+# API key fingerprint
+oci_fingerprint = "aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99"
+
+# Path to the API signing private key PEM file
+oci_private_key_path = "~/.oci/oci_api_key.pem"
+
+# OCI region (see: https://docs.oracle.com/en-us/iaas/Content/General/Concepts/regions.htm)
+oci_region = "us-ashburn-1"
+
+
+# -----------------------------------------------------------------------------
+# IDCS / Identity Domain Configuration
+# Find at: OCI Console > Identity & Security > Domains
+# -----------------------------------------------------------------------------
+
+# Full IDCS domain URL
+idcs_domain_url = "https://idcs-abc123def456.identity.oraclecloud.com"
+
+# OCID of the identity domain
+identity_domain_id = "ocid1.domain.oc1..aaaa..."
+
+# OCID of the compartment containing the identity domain
+idcs_compartment_id = "ocid1.compartment.oc1..aaaa..."
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: SSO with MFA Enforcement
+# MFA factors to enable (TOTP, PUSH, FIDO2, SMS, EMAIL)
+# Recommendation: TOTP + PUSH + FIDO2 (avoid SMS for phishing resistance)
+# -----------------------------------------------------------------------------
+mfa_enabled_factors = ["TOTP", "PUSH", "FIDO2"]
+
+# Display name for the federated IdP (leave empty to skip IdP creation)
+sso_idp_name = "Corporate SSO"
+
+# SAML metadata URL for the federated IdP (leave empty to skip)
+sso_idp_metadata_url = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Security Roles
+# Group names for IDCS role-based access control
+# -----------------------------------------------------------------------------
+it_security_manager_group_name = "HTH-IT-Security-Managers"
+hcm_admin_group_name           = "HTH-HCM-Admins"
+hr_analyst_group_name           = "HTH-HR-Analysts"
+
+
+# -----------------------------------------------------------------------------
+# Section 1.3: Security Profiles
+# Data-level access restrictions
+# -----------------------------------------------------------------------------
+restrict_compensation_visibility = true
+restrict_payroll_data            = true
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: REST API Security
+# OAuth client configuration for HCM REST API integrations
+# -----------------------------------------------------------------------------
+oauth_client_name = "HTH-HCM-API-Client"
+
+# Prefer authorization_code over client_credentials
+oauth_allowed_grant_types = ["authorization_code"]
+
+# Minimum required API scopes (restrict to specific endpoints)
+oauth_allowed_scopes = [
+  # "/hcmRestApi/resources/workers",
+  # "/hcmRestApi/resources/absences",
+]
+
+# Exact-match redirect URIs
+oauth_redirect_uris = [
+  # "https://your-app.example.com/callback",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: HCM Data Loader Security (L2+ only)
+# Group name for users authorized to run HDL bulk operations
+# -----------------------------------------------------------------------------
+hdl_authorized_group_name = "HTH-HDL-Authorized-Users"
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Data Encryption
+# Leave empty to use Oracle-managed encryption (L1) or auto-create vault (L2+)
+# Provide existing vault/key OCIDs to use your own
+# -----------------------------------------------------------------------------
+oci_vault_id = ""
+oci_key_id   = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Data Retention and Purge
+# Minimum 365 days for compliance
+# -----------------------------------------------------------------------------
+audit_retention_days = 365
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Audit Policies
+# Enable/disable specific audit categories
+# -----------------------------------------------------------------------------
+enable_auth_event_auditing  = true
+enable_data_access_auditing = true
+enable_config_change_auditing = true
+
+
+# -----------------------------------------------------------------------------
+# Section 4.2: Monitor Integration Activity (L2+ only)
+# API rate threshold and notification configuration
+# -----------------------------------------------------------------------------
+api_rate_limit_threshold = 500
+
+# Leave empty to auto-create a notification topic
+alarm_notification_topic_id = ""
+
+# Email for alarm notifications (used when auto-creating topic)
+alarm_notification_email = "security-team@example.com"

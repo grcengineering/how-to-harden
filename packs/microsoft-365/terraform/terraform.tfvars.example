@@ -1,0 +1,124 @@
+# =============================================================================
+# Microsoft 365 Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds PIM, named locations, risk-based policies
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Azure AD / Entra ID Provider Configuration
+# Create a service principal with appropriate Graph API permissions:
+#   - Policy.ReadWrite.ConditionalAccess
+#   - Application.ReadWrite.All
+#   - Directory.ReadWrite.All
+#   - RoleManagement.ReadWrite.Directory (for PIM)
+# -----------------------------------------------------------------------------
+
+# Your Azure AD tenant ID (found at Entra admin center > Overview)
+tenant_id = "00000000-0000-0000-0000-000000000000"
+
+# App registration client ID for Terraform
+client_id = "00000000-0000-0000-0000-000000000000"
+
+# App registration client secret
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_client_secret="your-secret-here"
+client_secret = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: Phishing-Resistant MFA
+# UPNs of break-glass accounts excluded from Conditional Access policies
+# -----------------------------------------------------------------------------
+break_glass_account_upns = [
+  # "emergency-admin-01@contoso.onmicrosoft.com",
+  # "emergency-admin-02@contoso.onmicrosoft.com",
+]
+
+mfa_policy_state = "enabled"
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Block Legacy Authentication
+# -----------------------------------------------------------------------------
+legacy_auth_policy_state = "enabled"
+
+
+# -----------------------------------------------------------------------------
+# Section 1.3: Privileged Identity Management (L2+ only)
+# UPNs of users to assign as PIM-eligible Global Administrators
+# -----------------------------------------------------------------------------
+pim_eligible_admin_upns = [
+  # "admin1@contoso.com",
+  # "admin2@contoso.com",
+]
+
+pim_activation_max_hours = 2
+
+
+# -----------------------------------------------------------------------------
+# Section 1.4: Break-Glass Emergency Access Accounts
+# The .onmicrosoft.com domain and passwords for emergency accounts
+# Use 64+ character random passwords stored securely offline
+# -----------------------------------------------------------------------------
+break_glass_account_domain = ""
+# break_glass_account_domain = "contoso.onmicrosoft.com"
+
+break_glass_account_passwords = []
+# Set via environment variable for security:
+#   export TF_VAR_break_glass_account_passwords='["<64-char-password-1>","<64-char-password-2>"]'
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Named Locations (L2+ only)
+# Corporate IP ranges and blocked countries
+# -----------------------------------------------------------------------------
+trusted_ip_ranges = [
+  # "203.0.113.0/24",    # Office egress
+  # "198.51.100.0/24",   # VPN egress
+]
+
+blocked_country_codes = ["CN", "RU", "KP", "IR"]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Restrict User Consent
+# Object IDs of users who review admin consent requests
+# -----------------------------------------------------------------------------
+admin_consent_request_reviewers = [
+  # "00000000-0000-0000-0000-000000000000",  # Security team lead
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 4.2: External Sharing Restrictions (L3 only)
+# Domains allowed for external sharing when using L3 profile
+# -----------------------------------------------------------------------------
+allowed_external_domains = [
+  # "partner-company.com",
+  # "auditor.com",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 5.1: Unified Audit Logging
+# Retention period in days (90 default, 365 for E5)
+# -----------------------------------------------------------------------------
+audit_log_retention_days = 90

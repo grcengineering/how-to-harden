@@ -1,0 +1,167 @@
+# =============================================================================
+# Buildkite Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds clusters, pipeline permissions, agent isolation
+# 3 = Maximum Security (L3) -- adds API IP restrictions
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Buildkite Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Your Buildkite organization slug (from your organization URL)
+# e.g., for buildkite.com/acme-corp, use "acme-corp"
+buildkite_organization = "your-org"
+
+# Buildkite API token -- generate at Personal Settings > API Access Tokens
+# Required scopes: GraphQL API access enabled, write_pipelines, read_pipelines
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_buildkite_api_token="bkua_..."
+buildkite_api_token = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Two-Factor Authentication
+# Whether to require 2FA for all organization members
+# -----------------------------------------------------------------------------
+enforce_2fa = true
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Team Permissions
+# Define teams with least-privilege defaults
+# -----------------------------------------------------------------------------
+teams = {
+  platform = {
+    description                  = "Platform engineering team"
+    privacy                      = "VISIBLE"
+    default_team                 = false
+    default_member_role          = "MEMBER"
+    members_can_create_pipelines = true
+  }
+  developers = {
+    description                  = "Development team with read and build access"
+    privacy                      = "VISIBLE"
+    default_team                 = true
+    default_member_role          = "MEMBER"
+    members_can_create_pipelines = false
+  }
+  security = {
+    description                  = "Security team with audit access"
+    privacy                      = "SECRET"
+    default_team                 = false
+    default_member_role          = "MEMBER"
+    members_can_create_pipelines = false
+  }
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: Pipeline Permissions (L2+ only)
+# Pipelines with hardened configurations
+# -----------------------------------------------------------------------------
+pipelines = {
+  # "my-app" = {
+  #   repository                 = "git@github.com:your-org/my-app.git"
+  #   description                = "Main application pipeline"
+  #   default_branch             = "main"
+  #   branch_configuration       = "main develop release/*"
+  #   skip_intermediate_builds   = true
+  #   cancel_intermediate_builds = true
+  #   default_timeout_in_minutes = 60
+  #   maximum_timeout_in_minutes = 120
+  #   allow_rebuilds             = true
+  #   cluster_id                 = null  # Set to a cluster ID to bind
+  # }
+}
+
+pipeline_team_access = {
+  # "my-app-developers" = {
+  #   pipeline_key = "my-app"
+  #   team_key     = "developers"
+  #   access_level = "BUILD_AND_READ"
+  # }
+  # "my-app-platform" = {
+  #   pipeline_key = "my-app"
+  #   team_key     = "platform"
+  #   access_level = "MANAGE_BUILD_AND_READ"
+  # }
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Agent Tokens
+# Scoped tokens per environment
+# -----------------------------------------------------------------------------
+agent_tokens = {
+  production = {
+    description = "Agent token for production environment"
+  }
+  staging = {
+    description = "Agent token for staging environment"
+  }
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Agent Clusters (L2+ only)
+# Isolated clusters per environment
+# -----------------------------------------------------------------------------
+clusters = {
+  production = {
+    description = "Production deployment agents - restricted access"
+    color       = "#FF0000"
+    emoji       = ":lock:"
+  }
+  development = {
+    description = "Development build agents"
+    color       = "#00FF00"
+    emoji       = ":hammer:"
+  }
+  security = {
+    description = "Security-sensitive build agents"
+    color       = "#FF8800"
+    emoji       = ":shield:"
+  }
+}
+
+cluster_queues = {
+  # "production-default" = {
+  #   cluster_key = "production"
+  #   key         = "default"
+  #   description = "Default production queue"
+  # }
+  # "production-deploy" = {
+  #   cluster_key = "production"
+  #   key         = "deploy"
+  #   description = "Production deployment queue"
+  # }
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Audit Logging / API Restrictions (L3 only)
+# IP addresses allowed to access the Buildkite API
+# Empty list allows all (default). Only applied at profile_level >= 3.
+# -----------------------------------------------------------------------------
+allowed_api_ip_addresses = [
+  # "203.0.113.0/24",    # Office egress
+  # "198.51.100.0/24",   # VPN egress
+]

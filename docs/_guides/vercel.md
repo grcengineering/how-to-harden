@@ -61,6 +61,8 @@ This guide covers Vercel security configurations including authentication, acces
 1. Navigate to: **Account Settings → Security**
 2. Enable: **Two-Factor Authentication**
 
+{% include pack-code.html vendor="vercel" section="1.1" %}
+
 ---
 
 ### 1.2 Team Access Controls
@@ -83,6 +85,8 @@ This guide covers Vercel security configurations including authentication, acces
 1. Navigate to: **Project Settings → Members**
 2. Configure project-specific access
 3. Limit production deployment
+
+{% include pack-code.html vendor="vercel" section="1.2" %}
 
 ---
 
@@ -111,6 +115,8 @@ Control deployment access and protect production.
 2. Limit preview access
 3. Password protect previews
 
+{% include pack-code.html vendor="vercel" section="2.1" %}
+
 ---
 
 ### 2.2 Git Integration Security
@@ -124,6 +130,8 @@ Control deployment access and protect production.
 1. Navigate to: **Team Settings → Integrations**
 2. Review connected repositories
 3. Limit repository access
+
+{% include pack-code.html vendor="vercel" section="2.2" %}
 
 ---
 
@@ -146,6 +154,8 @@ Control deployment access and protect production.
 2. Use Vercel's encrypted secrets
 3. Rotate secrets periodically
 
+{% include pack-code.html vendor="vercel" section="3.1" %}
+
 ---
 
 ### 3.2 Access Token Security
@@ -164,6 +174,8 @@ Control deployment access and protect production.
 1. Create tokens with specific scopes
 2. Set expiration dates
 3. Use for CI/CD only
+
+{% include pack-code.html vendor="vercel" section="3.2" %}
 
 ---
 
@@ -197,6 +209,8 @@ FROM vercel_audit_log
 WHERE action LIKE '%environment_variable%'
   AND timestamp > NOW() - INTERVAL '7 days';
 ```
+
+{% include pack-code.html vendor="vercel" section="4.1" %}
 
 ---
 

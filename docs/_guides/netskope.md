@@ -88,6 +88,8 @@ Secure Netskope Admin Console with SSO, MFA, and role-based access controls.
 
 **Time to Complete:** ~45 minutes
 
+{% include pack-code.html vendor="netskope" section="1.1" %}
+
 ---
 
 ### 1.2 Configure Tenant Hardening
@@ -113,6 +115,8 @@ Apply Netskope's recommended tenant hardening configurations.
 2. Configure **Password policies** (if using local auth)
 3. Enable **Audit logging** for admin actions
 4. Configure **IP allowlisting** for admin access (L2)
+
+{% include pack-code.html vendor="netskope" section="1.2" %}
 
 ---
 
@@ -157,6 +161,8 @@ Enable comprehensive visibility into all cloud applications in use, including sh
    - Risk level (Sanctioned, Tolerated, Unsanctioned)
    - Compliance requirement (HIPAA, PCI, etc.)
 
+{% include pack-code.html vendor="netskope" section="2.1" %}
+
 ---
 
 ### 2.2 Configure Real-Time Protection Policies
@@ -197,6 +203,8 @@ Configure real-time protection policies to control access to cloud applications 
 
 **Time to Complete:** ~1 hour
 
+{% include pack-code.html vendor="netskope" section="2.2" %}
+
 ---
 
 ### 2.3 Configure API Protection
@@ -232,6 +240,8 @@ Configure API-enabled protection to scan and protect data at rest in sanctioned 
    - Quarantine sensitive files
    - Revoke external sharing
    - Notify owner
+
+{% include pack-code.html vendor="netskope" section="2.3" %}
 
 ---
 
@@ -285,6 +295,8 @@ Configure Data Loss Prevention profiles to detect and protect sensitive data acr
 
 **Time to Complete:** ~1 hour
 
+{% include pack-code.html vendor="netskope" section="3.1" %}
+
 ---
 
 ### 3.2 Apply DLP to Policies
@@ -313,6 +325,8 @@ Apply DLP profiles to real-time protection and API protection policies.
 1. Edit API data protection policy
 2. Select DLP profile for scanning
 3. Configure remediation actions
+
+{% include pack-code.html vendor="netskope" section="3.2" %}
 
 ---
 
@@ -352,6 +366,8 @@ Configure Netskope's threat protection to detect and prevent malware in cloud tr
    - **Suspicious files:** Sandbox
    - **Phishing URLs:** Block
 
+{% include pack-code.html vendor="netskope" section="4.1" %}
+
 ---
 
 ### 4.2 Configure Threat Protection Policies
@@ -387,6 +403,8 @@ Create comprehensive threat protection policies following Netskope best practice
    - Unusual data exfiltration
    - Compromised account behavior
    - Insider threat indicators
+
+{% include pack-code.html vendor="netskope" section="4.2" %}
 
 ---
 
@@ -432,6 +450,8 @@ Configure Netskope Client steering to ensure traffic is properly routed through 
 
 **Time to Complete:** ~30 minutes
 
+{% include pack-code.html vendor="netskope" section="5.1" %}
+
 ---
 
 ### 5.2 Deploy Netskope Client
@@ -461,6 +481,8 @@ Deploy Netskope Client to endpoints to enable inline inspection and steering.
 1. Deploy via Intune, JAMF, or other MDM
 2. Install SSL certificate for inspection
 3. Verify client connects to Netskope cloud
+
+{% include pack-code.html vendor="netskope" section="5.2" %}
 
 ---
 
@@ -503,6 +525,8 @@ Configure comprehensive logging and alerting for security monitoring.
    - Azure Sentinel
    - Generic syslog/CEF
 3. Select log types to export
+
+{% include pack-code.html vendor="netskope" section="6.1" %}
 
 ---
 

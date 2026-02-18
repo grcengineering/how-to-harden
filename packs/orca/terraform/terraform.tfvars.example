@@ -1,0 +1,126 @@
+# =============================================================================
+# Orca Security Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds account scoping, API security monitoring
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Orca Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Orca Security API endpoint
+# Use "https://api.orcasecurity.io" for production (default)
+# Use your regional endpoint if applicable
+orca_api_endpoint = "https://api.orcasecurity.io"
+
+# Orca API token -- generate at Settings > API Keys
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_orca_api_token="your-api-token"
+orca_api_token = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: SAML SSO
+# Group for SSO-authenticated users. Get user IDs from the Orca API:
+#   curl -H "Authorization: Token <token>" https://api.orcasecurity.io/api/users
+# -----------------------------------------------------------------------------
+sso_group_name = "SSO Users"
+sso_user_ids   = [
+  # "user-id-1",
+  # "user-id-2",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Role-Based Access Control
+# Custom roles for least privilege. Adjust permissions as needed.
+# Available permissions: https://docs.orcasecurity.io/docs/custom-roles
+# -----------------------------------------------------------------------------
+readonly_role_name = "Security Analyst (Read-Only)"
+readonly_permissions = [
+  "assets.asset.read",
+  "alerts.alert.read",
+  "dashboard.view.read",
+  "compliance.report.read",
+]
+
+viewer_role_name = "Viewer"
+viewer_permissions = [
+  "assets.asset.read",
+  "dashboard.view.read",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: Account Scope (L2+ only)
+# Business units to limit user visibility by cloud provider or tags.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+business_unit_name            = "Production Environment"
+business_unit_cloud_providers = ["aws"]
+business_unit_cloud_tags      = [
+  # "env|production",
+  # "team|platform",
+]
+
+# Restricted production unit (L3 only)
+restricted_business_unit_name = "Production - Restricted"
+restricted_cloud_tags         = ["env|production"]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.3: Limit Admin Access
+# Keep admin group to 2-3 users maximum.
+# Get user IDs from the Orca API.
+# -----------------------------------------------------------------------------
+admin_group_name = "Platform Admins"
+admin_user_ids   = [
+  # "admin-user-id-1",
+  # "admin-user-id-2",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Cloud Account Security
+# Register trusted third-party cloud accounts.
+# Valid cloud_provider values: alicloud, aws, azure, gcp, oci
+# -----------------------------------------------------------------------------
+trusted_cloud_accounts = [
+  # {
+  #   account_name      = "Security Vendor - AWS"
+  #   description       = "AWS account for security scanning vendor"
+  #   cloud_provider    = "aws"
+  #   cloud_provider_id = "123456789012"
+  # },
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: API Security (L2+ only)
+# Monitoring and alerting for API key hygiene.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+api_alert_name        = "Unused API Keys Detected"
+api_alert_score       = 7.0
+enable_api_automation = true
+api_alert_emails      = [
+  # "security-team@yourcompany.com",
+]

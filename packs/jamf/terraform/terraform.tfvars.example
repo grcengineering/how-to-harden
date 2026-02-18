@@ -1,0 +1,106 @@
+# =============================================================================
+# Jamf Pro Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds CIS benchmarks, update deferral, extended logging
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Jamf Pro Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Your Jamf Pro instance FQDN (e.g., "yourorg.jamfcloud.com")
+jamfpro_instance_fqdn = "yourorg.jamfcloud.com"
+
+# OAuth2 API client credentials -- generate in Jamf Pro:
+# Settings > API Integrations > + New
+# WARNING: These are sensitive values. Use environment variables in production:
+#   export TF_VAR_jamfpro_client_id="your-client-id"
+#   export TF_VAR_jamfpro_client_secret="your-client-secret"
+jamfpro_client_id     = ""
+jamfpro_client_secret = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Password Policy
+# Minimum passcode length: 12 for L1, 14+ for L2
+# Max age: 90 days for L1, 0 (disabled) for L3 with passkey-only
+# Auto-lock: 5 minutes for L1, 2 minutes for L2
+# -----------------------------------------------------------------------------
+password_min_length    = 12
+password_max_age_days  = 90
+password_history_count = 5
+auto_lock_minutes      = 5
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: FileVault Encryption
+# Escrow recovery keys to Jamf Pro for institutional recovery
+# -----------------------------------------------------------------------------
+filevault_escrow_enabled = true
+
+
+# -----------------------------------------------------------------------------
+# Section 2.3: Firewall
+# Stealth mode hides the computer from network port scans
+# Block all incoming: recommended only for L3 (breaks some services)
+# -----------------------------------------------------------------------------
+firewall_stealth_mode       = true
+firewall_block_all_incoming = false
+
+
+# -----------------------------------------------------------------------------
+# Section 2.4: Software Updates (L2+ deferral)
+# Defer major OS updates to allow testing before deployment
+# Security updates should have minimal or zero deferral
+# -----------------------------------------------------------------------------
+software_update_deferral_days  = 30
+security_update_deferral_days  = 0
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: CIS Benchmark Configuration (L2+ only)
+# Screen saver idle time in seconds (600 = 10 minutes per CIS)
+# Disable remote login (SSH) per CIS 3.3
+# -----------------------------------------------------------------------------
+cis_gatekeeper_enabled     = true
+cis_screen_saver_idle_time = 600
+cis_disable_remote_login   = true
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: SIEM Webhook Configuration
+# Configure webhook URL to forward audit events to your SIEM
+# Leave empty to skip webhook creation
+# Authentication: "None", "BASIC", or "HEADER"
+# -----------------------------------------------------------------------------
+siem_webhook_url       = ""
+siem_webhook_auth_type = "None"
+siem_webhook_username  = ""
+siem_webhook_password  = ""
+
+
+# -----------------------------------------------------------------------------
+# Scope Configuration
+# Set scope_all_computers = true to apply profiles to all managed computers
+# Or set to false and provide specific computer group IDs
+# -----------------------------------------------------------------------------
+scope_all_computers    = true
+scope_computer_group_ids = []

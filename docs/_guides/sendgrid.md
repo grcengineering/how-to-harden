@@ -86,6 +86,10 @@ Enable and enforce two-factor authentication for all SendGrid users.
 
 **Time to Complete:** ~15 minutes
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="1.1" lang="terraform" %}
+
 ---
 
 ### 1.2 Configure SAML Single Sign-On
@@ -132,6 +136,10 @@ Configure SAML SSO for centralized authentication.
 2. Verify user login works
 3. Enable SSO for teammates
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="1.2" lang="terraform" %}
+
 ---
 
 ### 1.3 Configure SSO Teammates
@@ -166,6 +174,10 @@ Manage teammates through SSO for centralized access control.
 2. Review teammate access regularly
 3. Remove inactive teammates
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="1.3" lang="terraform" %}
+
 ---
 
 ### 1.4 Configure IP Access Management
@@ -198,6 +210,10 @@ Restrict account access to approved IP addresses.
 1. Enable IP access management
 2. Login rejected from non-listed IPs
 3. Test from approved location
+
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="1.4" lang="terraform" %}
 
 ---
 
@@ -244,6 +260,10 @@ Use API keys for all API and SMTP authentication.
 2. Store in secure vault
 3. Never commit to code repositories
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="2.1" lang="terraform" %}
+
 ---
 
 ### 2.2 Implement API Key Best Practices
@@ -277,6 +297,10 @@ Secure API key storage and management.
 1. Establish rotation schedule (90 days)
 2. Create new key before deleting old
 3. Update all integrations
+
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="2.2" lang="terraform" %}
 
 ---
 
@@ -312,6 +336,10 @@ Grant minimum necessary API permissions.
 2. Replace full access keys with restricted
 3. Document key purposes
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="2.3" lang="terraform" %}
+
 ---
 
 ### 2.4 Configure API Key Alerts
@@ -345,6 +373,10 @@ Monitor API key usage for anomalies.
 3. Update affected integrations
 4. Review audit logs
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="2.4" lang="terraform" %}
+
 ---
 
 ## 3. Account Security
@@ -377,6 +409,10 @@ Protect administrator account access.
 1. Review admin access quarterly
 2. Remove inactive admins
 3. Document access justification
+
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="3.1" lang="terraform" %}
 
 ---
 
@@ -413,6 +449,10 @@ Configure granular permissions for teammates.
 2. Remove unused permissions
 3. Update as roles change
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="3.2" lang="terraform" %}
+
 ---
 
 ### 3.3 Configure Sender Authentication
@@ -446,6 +486,10 @@ Configure domain authentication for email security.
 1. Configure branded links
 2. Improves deliverability
 3. Builds sender reputation
+
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="3.3" lang="terraform" %}
 
 ---
 
@@ -487,6 +531,10 @@ Monitor email sending activity and statistics.
 2. Integrate with analytics
 3. Retain for compliance
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="4.1" lang="terraform" %}
+
 ---
 
 ### 4.2 Configure Event Webhooks
@@ -525,6 +573,10 @@ Configure webhooks for real-time event notification.
 2. Set up alerting
 3. Monitor for anomalies
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="4.2" lang="terraform" %}
+
 ---
 
 ### 4.3 Monitor for Compromised Accounts
@@ -559,6 +611,10 @@ Detect and respond to account compromise.
 1. Enable 2FA on all accounts
 2. Use IP access management
 3. Monitor for exposed credentials
+
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="4.3" lang="terraform" %}
 
 ---
 

@@ -1,0 +1,114 @@
+# =============================================================================
+# Docker Hub Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds content trust, enhanced monitoring
+# 3 = Maximum Security (L3) -- adds Sigstore/Cosign, SLSA attestations
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Docker Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Docker daemon host (usually the default is fine)
+docker_host = "unix:///var/run/docker.sock"
+
+# Your Docker Hub organization name
+dockerhub_organization = "your-org"
+
+# Docker Hub username for API authentication
+dockerhub_username = "your-username"
+
+# Docker Hub personal access token
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_dockerhub_token="dckr_pat_..."
+dockerhub_token = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: MFA and SSO (Business plan required for SSO)
+# -----------------------------------------------------------------------------
+
+# SAML SSO metadata URL from your identity provider (Okta, Azure AD, etc.)
+sso_idp_metadata_url = ""
+
+# Set to true to enforce SSO for all org members (Business plan)
+enforce_sso = false
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Access Tokens
+# Scoped tokens replace password-based authentication for automation.
+# -----------------------------------------------------------------------------
+
+ci_cd_token_description = "CI/CD pipeline - read-only"
+build_token_description = "Build pipeline - read/write"
+
+ci_cd_token_scopes = ["repo:read"]
+build_token_scopes = ["repo:read", "repo:write"]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: Image Signing (L2+ only)
+# Docker Content Trust for cryptographic image signing.
+# -----------------------------------------------------------------------------
+
+enable_content_trust   = false
+# signing_key_passphrase = ""  # Use TF_VAR_signing_key_passphrase env var
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Repository Configuration
+# Define repositories to manage with private-by-default visibility.
+# -----------------------------------------------------------------------------
+
+repositories = {
+  # "my-app" = {
+  #   description = "Production application image"
+  #   visibility  = "private"
+  # }
+  # "my-base-image" = {
+  #   description = "Custom base image for all services"
+  #   visibility  = "private"
+  # }
+}
+
+# Team-based repository permissions (no individual user access)
+team_repository_permissions = {
+  # "developers" = {
+  #   permission = "read"
+  #   members    = ["user1", "user2"]
+  # }
+  # "ci-bots" = {
+  #   permission = "write"
+  #   members    = ["ci-service-account"]
+  # }
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Audit Logging (Business plan for export)
+# -----------------------------------------------------------------------------
+
+# Enable audit log export to external SIEM
+audit_log_export_enabled = false
+
+# Webhook URL for SIEM integration
+# Use TF_VAR_siem_webhook_url env var for sensitive values
+# siem_webhook_url = "https://siem.example.com/webhook/dockerhub"

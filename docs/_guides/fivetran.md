@@ -99,6 +99,10 @@ Configure SAML SSO to centralize authentication for Fivetran users.
 
 **Time to Complete:** ~1 hour
 
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="1.1" %}
+
 ---
 
 ### 1.2 Restrict Authentication to SSO
@@ -129,6 +133,10 @@ Require all users to authenticate via SSO only.
 1. Test login with password (should fail)
 2. Verify SSO login works
 3. Document emergency access procedures
+
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="1.2" %}
 
 ---
 
@@ -162,6 +170,10 @@ Enable automatic user provisioning on first login.
 1. Note: JIT users created with no permissions by default
 2. Enable SCIM for role provisioning
 3. Or manually assign roles after creation
+
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="1.3" %}
 
 ---
 
@@ -201,6 +213,10 @@ Configure session timeout for dashboard access.
 2. Sessions end when browser closes
 3. Document timeout policy
 
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="1.4" %}
+
 ---
 
 ## 2. Access Controls
@@ -237,6 +253,10 @@ Implement role-based permissions for Fivetran access.
 2. Assign destination-level permissions
 3. Apply minimum necessary access
 
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="2.1" %}
+
 ---
 
 ### 2.2 Configure Team Structure
@@ -268,6 +288,10 @@ Organize users into teams for granular access control.
 2. Assign destinations to teams
 3. Users inherit team permissions
 
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="2.2" %}
+
 ---
 
 ### 2.3 Configure SCIM Provisioning
@@ -298,6 +322,10 @@ Configure SCIM for automated user and group provisioning.
 1. Map IdP groups to Fivetran teams
 2. Configure provisioning rules
 3. Test user synchronization
+
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="2.3" %}
 
 ---
 
@@ -340,6 +368,10 @@ Secure credentials used for data source connections.
 2. Update credentials in Fivetran
 3. Verify connector after rotation
 
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="3.1" %}
+
 ---
 
 ### 3.2 Configure Network Security
@@ -371,6 +403,10 @@ Secure network access for Fivetran connections.
 2. Require encrypted connections
 3. Verify certificate validation
 
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="3.2" %}
+
 ---
 
 ### 3.3 Configure Destination Security
@@ -401,6 +437,10 @@ Secure data warehouse and destination configurations.
 1. Limit who can modify destination settings
 2. Restrict data access in destination
 3. Apply column-level security if needed
+
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="3.3" %}
 
 ---
 
@@ -439,6 +479,10 @@ Monitor user and connector activity.
 3. Connector credential updates
 4. Permission modifications
 
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="4.1" %}
+
 ---
 
 ### 4.2 Configure Sync Monitoring
@@ -470,6 +514,10 @@ Monitor data sync status and errors.
 2. Integrate with monitoring systems
 3. Automate incident response
 
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="4.2" %}
+
 ---
 
 ### 4.3 Data Governance
@@ -500,6 +548,10 @@ Implement data governance controls for sensitive data.
 1. Inventory all connectors
 2. Document data destinations
 3. Maintain data lineage
+
+#### Code Implementation
+
+{% include pack-code.html vendor="fivetran" section="4.3" %}
 
 ---
 

@@ -1,0 +1,114 @@
+# =============================================================================
+# SAP SuccessFactors Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds IP restrictions, field masking, SIEM integration
+# 3 = Maximum Security (L3) -- mTLS, data residency, alert notification
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# SAP BTP Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Your SAP BTP global account subdomain
+btp_globalaccount = "your-global-account"
+
+# SAP BTP CLI server URL (default is production)
+btp_cli_server_url = "https://cli.btp.cloud.sap"
+
+# SAP BTP username
+# WARNING: Use environment variables in production:
+#   export TF_VAR_btp_username="your-email@company.com"
+btp_username = "admin@company.com"
+
+# SAP BTP password
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_btp_password="your-password"
+btp_password = ""
+
+# SAP BTP subaccount ID where SuccessFactors is provisioned
+# Find at: BTP Cockpit > Global Account > Subaccounts > copy the subaccount ID
+btp_subaccount_id = "00000000-0000-0000-0000-000000000000"
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: SSO with MFA
+# SAML IdP metadata URL from your identity provider (Azure AD, Okta, etc.)
+# -----------------------------------------------------------------------------
+idp_metadata_url = "https://login.microsoftonline.com/tenant-id/federationmetadata/2007-06/federationmetadata.xml"
+idp_name         = "Corporate IdP"
+enforce_sso      = true
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Role-Based Permissions (RBP)
+# Keep admin_users list as small as possible (principle of least privilege)
+# -----------------------------------------------------------------------------
+admin_users = [
+  # "admin1@company.com",
+  # "admin2@company.com",
+]
+
+hr_admin_users = [
+  # "hr-admin@company.com",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: OData API Security
+# Dedicated OAuth client name for API integrations
+# -----------------------------------------------------------------------------
+oauth_client_name = "hth-integration-client"
+
+# L2+: Restrict API access to these CIDR ranges
+api_allowed_ip_cidrs = [
+  # "203.0.113.0/24",    # Corporate network
+  # "198.51.100.0/24",   # CI/CD pipeline
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: OAuth Token Management
+# Token lifetimes in seconds
+# L1: access=3600 (1h), refresh=86400 (24h)
+# L2: access=3600 (1h), refresh=28800 (8h) -- handled automatically
+# L3: access=1800 (30m), no refresh -- handled automatically
+# -----------------------------------------------------------------------------
+access_token_validity_seconds  = 3600
+refresh_token_validity_seconds = 86400
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Data Privacy
+# Data retention and field masking configuration
+# -----------------------------------------------------------------------------
+data_retention_days  = 365
+mask_sensitive_fields = true
+sensitive_field_names = ["ssn", "tax_id", "national_id"]
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Audit Logging
+# Retention: L1=365 days, L2=730 days, L3=1095 days
+# L2+: SIEM webhook for real-time event forwarding
+# -----------------------------------------------------------------------------
+audit_retention_days = 365
+
+# L2+: SIEM webhook URL (leave empty to skip)
+siem_webhook_url = ""

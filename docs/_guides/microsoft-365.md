@@ -112,6 +112,8 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 
 #### Code Implementation
 
+{% include pack-code.html vendor="microsoft-365" section="1.1" %}
+
 **Option 1: Microsoft Graph PowerShell**
 ```powershell
 # Install Microsoft Graph PowerShell module
@@ -302,6 +304,8 @@ Block legacy authentication protocols (POP3, IMAP, SMTP AUTH, Basic Auth) that c
 
 #### Code Implementation
 
+{% include pack-code.html vendor="microsoft-365" section="1.2" %}
+
 **Option 1: PowerShell**
 ```powershell
 # Connect to Exchange Online
@@ -406,6 +410,8 @@ Enable just-in-time privileged access using Microsoft Entra Privileged Identity 
 
 #### Code Implementation
 
+{% include pack-code.html vendor="microsoft-365" section="1.3" %}
+
 **Option 1: Microsoft Graph PowerShell**
 ```powershell
 # Connect with PIM permissions
@@ -505,6 +511,10 @@ Create and secure emergency access accounts that are excluded from Conditional A
 
 **Time to Complete:** ~30 minutes
 
+#### Code Implementation
+
+{% include pack-code.html vendor="microsoft-365" section="1.4" %}
+
 #### Validation & Testing
 1. [ ] Verify break-glass accounts can sign in bypassing Conditional Access
 2. [ ] Test sign-in generates alert
@@ -553,6 +563,8 @@ Define trusted IP ranges (corporate networks, VPN egress) and use them in Condit
 4. Create Conditional Access policy blocking access from this location
 
 #### Code Implementation
+
+{% include pack-code.html vendor="microsoft-365" section="2.1" %}
 
 ```powershell
 # Create named location via Graph API
@@ -621,6 +633,8 @@ Prevent users from granting OAuth consent to third-party applications. Require a
 
 #### Code Implementation
 
+{% include pack-code.html vendor="microsoft-365" section="3.1" %}
+
 ```powershell
 # Disable user consent via Graph API
 $params = @{
@@ -687,6 +701,8 @@ Regularly audit enterprise applications for excessive permissions (especially Ma
 
 #### Code Implementation
 
+{% include pack-code.html vendor="microsoft-365" section="3.2" %}
+
 ```powershell
 # List all applications with Mail.ReadWrite permission
 $apps = Get-MgApplication -All
@@ -743,6 +759,10 @@ Implement Microsoft Purview sensitivity labels to classify and protect sensitive
 5. Set policy actions (block sharing, notify user, alert admin)
 6. Enable policy
 
+#### Code Implementation
+
+{% include pack-code.html vendor="microsoft-365" section="4.1" %}
+
 ---
 
 ### 4.2 Configure External Sharing Restrictions
@@ -773,6 +793,8 @@ Restrict external sharing in SharePoint and OneDrive to prevent unauthorized dat
 2. Match or exceed SharePoint restrictions
 
 #### Code Implementation
+
+{% include pack-code.html vendor="microsoft-365" section="4.2" %}
 
 ```powershell
 # Connect to SharePoint Online
@@ -823,6 +845,8 @@ Enable and configure unified audit logging to capture user and admin activities 
 **Time to Complete:** ~15 minutes
 
 #### Code Implementation
+
+{% include pack-code.html vendor="microsoft-365" section="5.1" %}
 
 ```powershell
 # Connect to Exchange Online
@@ -878,6 +902,10 @@ Enable Microsoft Defender for Office 365 and configure alert policies for suspic
    - Global Admin role assignment
    - Conditional Access policy changes
    - New OAuth app with sensitive permissions
+
+#### Code Implementation
+
+{% include pack-code.html vendor="microsoft-365" section="5.2" %}
 
 ---
 

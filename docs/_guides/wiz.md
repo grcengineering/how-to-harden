@@ -82,6 +82,10 @@ Require SAML SSO with MFA for all Wiz console access.
    - **Session timeout:** 4 hours
    - **Idle timeout:** 30 minutes
 
+#### Code Implementation
+
+{% include pack-code.html vendor="wiz" section="1.1" lang="terraform" %}
+
 ---
 
 ### 1.2 Implement Role-Based Access Control
@@ -113,6 +117,10 @@ Configure Wiz roles with least-privilege access.
 1. Navigate to: **Settings → Projects**
 2. Create projects for different teams/environments
 3. Assign users to specific projects only
+
+#### Code Implementation
+
+{% include pack-code.html vendor="wiz" section="1.2" lang="terraform" %}
 
 ---
 
@@ -200,6 +208,10 @@ Harden cloud connector IAM permissions to minimum required.
 2. Create service account with minimal permissions
 3. Enable service account key rotation
 
+#### Code Implementation
+
+{% include pack-code.html vendor="wiz" section="2.1" lang="terraform" %}
+
 ---
 
 ### 2.2 Connector Credential Rotation
@@ -217,6 +229,10 @@ Implement regular rotation of cloud connector credentials.
 | AWS | IAM Role | External ID rotation annually |
 | Azure | App Registration | Secret rotation quarterly |
 | GCP | Service Account Key | Key rotation quarterly |
+
+#### Code Implementation
+
+{% include pack-code.html vendor="wiz" section="2.2" lang="terraform" %}
 
 ---
 
@@ -252,6 +268,10 @@ Secure Wiz API service accounts.
 2. Update integrations with new credentials
 3. Revoke old credentials
 
+#### Code Implementation
+
+{% include pack-code.html vendor="wiz" section="3.1" lang="terraform" %}
+
 ---
 
 ### 3.2 API Access Monitoring
@@ -285,6 +305,8 @@ query {
 }
 ```
 
+{% include pack-code.html vendor="wiz" section="3.2" lang="terraform" %}
+
 ---
 
 ## 4. Data Security
@@ -310,6 +332,10 @@ Control export of security findings and vulnerability data.
    - Internal sharing only
    - Expiration on shared links
    - Password protection
+
+#### Code Implementation
+
+{% include pack-code.html vendor="wiz" section="4.1" lang="terraform" %}
 
 ---
 
@@ -353,6 +379,8 @@ WHERE action_type = 'API_REQUEST'
   AND timestamp > NOW() - INTERVAL '24 hours'
 GROUP BY service_account, source_ip;
 ```
+
+{% include pack-code.html vendor="wiz" section="5.1" lang="terraform" %}
 
 ---
 

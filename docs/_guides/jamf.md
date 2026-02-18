@@ -89,6 +89,10 @@ Secure Jamf Pro console access with SSO, MFA, and role-based access controls.
 
 **Time to Complete:** ~1 hour
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jamf" section="1.1" lang="terraform" %}
+
 ---
 
 ### 1.2 Secure API Access
@@ -125,6 +129,10 @@ Secure Jamf Pro API access with dedicated accounts and token-based authenticatio
 - Store tokens in secure vault
 - Set token expiration policies
 - Audit API access regularly
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jamf" section="1.2" lang="terraform" %}
 
 ---
 
@@ -163,6 +171,10 @@ Configure device password policies through configuration profiles.
 2. Deploy profile
 
 **Time to Complete:** ~20 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jamf" section="2.1" lang="terraform" %}
 
 ---
 
@@ -205,6 +217,10 @@ Enforce FileVault full disk encryption on all managed macOS devices.
 1. Create Smart Group: Computers without FileVault
 2. Create policy to enforce or notify
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jamf" section="2.2" lang="terraform" %}
+
 ---
 
 ### 2.3 Configure Firewall
@@ -235,6 +251,10 @@ Enable and configure macOS firewall on all managed devices.
 **Step 2: Scope and Deploy**
 1. Scope to all computers
 2. Deploy profile
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jamf" section="2.3" lang="terraform" %}
 
 ---
 
@@ -272,6 +292,10 @@ Configure automatic software updates and patch management.
 1. Use Jamf Pro patch management
 2. Configure automatic patching for critical apps
 3. Monitor patch compliance
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jamf" section="2.4" lang="terraform" %}
 
 ---
 
@@ -333,6 +357,10 @@ Deploy CIS macOS Benchmark security configurations using Jamf Compliance Editor.
 
 **Time to Complete:** ~4 hours (testing included)
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jamf" section="3.1" lang="terraform" %}
+
 ---
 
 ### 3.2 Monitor CIS Compliance
@@ -366,6 +394,10 @@ Monitor device compliance with CIS Benchmark configurations.
 2. Export for compliance documentation
 3. Track compliance trends
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jamf" section="3.2" lang="terraform" %}
+
 ---
 
 ## 4. Monitoring & Compliance
@@ -393,6 +425,10 @@ Enable comprehensive audit logging for Jamf Pro activities.
 1. Configure syslog forwarding to SIEM
 2. Or use Jamf Pro webhooks for events
 3. Monitor for security events
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jamf" section="4.1" lang="terraform" %}
 
 ---
 

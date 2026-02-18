@@ -1,0 +1,196 @@
+# =============================================================================
+# Fivetran Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds SSO enforcement, teams, SCIM, data governance
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Fivetran Provider Configuration
+# Generate API credentials at: Account Settings > API Config
+# -----------------------------------------------------------------------------
+
+# Fivetran API key
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_fivetran_api_key="your-api-key"
+fivetran_api_key = ""
+
+# Fivetran API secret
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_fivetran_api_secret="your-api-secret"
+fivetran_api_secret = ""
+
+# Fivetran account ID (found at Account Settings > General)
+fivetran_account_id = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: SAML Single Sign-On (L1)
+# Configure your IdP (Okta, Entra ID, Google Workspace, etc.) first,
+# then enter the SAML metadata values here.
+# Leave empty to skip SAML configuration.
+# -----------------------------------------------------------------------------
+saml_idp_sso_url      = ""
+saml_idp_entity_id    = ""
+saml_x509_certificate = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Restrict Authentication to SSO (L2+ only)
+# When true, disables password login -- all users must authenticate via IdP.
+# Only applied when profile_level >= 2 and SAML is configured.
+# -----------------------------------------------------------------------------
+sso_enforce_saml_only = true
+
+
+# -----------------------------------------------------------------------------
+# Section 1.3: Just-In-Time Provisioning (L2+ only)
+# Automatically creates user accounts on first SAML login.
+# New users are created with no permissions by default.
+# -----------------------------------------------------------------------------
+jit_provisioning_enabled = true
+
+
+# -----------------------------------------------------------------------------
+# Section 1.4: Session Timeout (L1)
+# Session timeout in minutes. Recommended values:
+#   L1: 60 (1 hour)
+#   L2: 30 (30 minutes)
+#   L3: 15 (15 minutes)
+# -----------------------------------------------------------------------------
+session_timeout_minutes = 60
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Role-Based Access Control (L1)
+# Fivetran user IDs for role assignment.
+# Limit Account Administrators to 2-3 users.
+# -----------------------------------------------------------------------------
+admin_user_ids = [
+  # "user_abc123",    # Primary admin
+  # "user_def456",    # Backup admin
+]
+
+analyst_user_ids = [
+  # "user_ghi789",    # Read-only analyst
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: Team Structure (L2+ only)
+# Organize users into teams for granular connector/destination access.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+teams = {
+  # data_engineering = {
+  #   name        = "Data Engineering"
+  #   description = "Data pipeline builders and maintainers"
+  # }
+  # analytics = {
+  #   name        = "Analytics"
+  #   description = "Data analysts with read-only connector access"
+  # }
+}
+
+team_user_memberships = {
+  # data_engineering = ["user_abc123", "user_def456"]
+  # analytics        = ["user_ghi789"]
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Connector Credential Security (L1)
+# Managed connector configurations.
+# Each connector should use a dedicated service account.
+# -----------------------------------------------------------------------------
+connectors = {
+  # example_postgres = {
+  #   service        = "postgres"
+  #   group_id       = "group_abc123"
+  #   sync_frequency = 360
+  #   config = {
+  #     host     = "db.example.com"
+  #     port     = "5432"
+  #     database = "production"
+  #     user     = "fivetran_readonly"
+  #   }
+  # }
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Network Security (L2+ only)
+# Fivetran IP addresses to allowlist on source systems.
+# Get region-specific IPs from: https://fivetran.com/docs/getting-started/ips
+# -----------------------------------------------------------------------------
+approved_fivetran_ip_cidrs = [
+  # "35.234.176.0/24",    # Fivetran GCP US
+  # "52.0.2.4/32",        # Fivetran AWS US
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.3: Destination Security (L1)
+# Primary data warehouse/destination configuration.
+# Leave empty to skip destination management.
+# -----------------------------------------------------------------------------
+destination_group_id = ""
+destination_service  = ""   # e.g., "snowflake", "bigquery", "redshift"
+destination_config = {
+  # host     = "account.snowflakecomputing.com"
+  # port     = "443"
+  # database = "ANALYTICS"
+  # auth     = "PASSWORD"
+  # user     = "FIVETRAN_SVC"
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Activity Logging (L1)
+# Webhook URL for streaming Fivetran events to SIEM or monitoring.
+# Leave empty to skip webhook configuration.
+# -----------------------------------------------------------------------------
+webhook_url    = ""
+webhook_secret = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 4.2: Sync Monitoring (L1)
+# Email addresses for sync failure notifications.
+# -----------------------------------------------------------------------------
+notification_email_addresses = [
+  # "security-team@example.com",
+  # "data-engineering@example.com",
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 4.3: Data Governance (L2+ only)
+# Column blocking and hashing for PII protection.
+# Map of connector_id to list of column names.
+# Only applied when profile_level >= 2.
+# -----------------------------------------------------------------------------
+blocked_columns = {
+  # "connector_id_123" = ["ssn", "credit_card_number", "date_of_birth"]
+}
+
+hashed_columns = {
+  # "connector_id_123" = ["email", "phone_number"]
+}

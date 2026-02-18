@@ -70,6 +70,10 @@ Require MFA for Docker Hub accounts, especially those with push access.
 2. Configure SAML SSO
 3. Enforce SSO for all members
 
+#### Code Implementation
+
+{% include pack-code.html vendor="dockerhub" section="1.1" lang="terraform" %}
+
 ---
 
 ### 1.2 Implement Access Tokens
@@ -95,6 +99,10 @@ Use personal access tokens instead of passwords for automation.
 | CI/CD pull | Quarterly |
 | Build/push | Monthly |
 
+#### Code Implementation
+
+{% include pack-code.html vendor="dockerhub" section="1.2" lang="terraform" %}
+
 ---
 
 ## 2. Image Security
@@ -117,6 +125,10 @@ docker scout recommendations myimage:latest
 docker scout cves myimage:latest
 ```
 
+#### Code Implementation
+
+{% include pack-code.html vendor="dockerhub" section="2.1" lang="terraform" %}
+
 ---
 
 ### 2.2 Image Signing (Content Trust)
@@ -135,6 +147,10 @@ export DOCKER_CONTENT_TRUST=1
 docker push myorg/myimage:latest
 ```
 
+#### Code Implementation
+
+{% include pack-code.html vendor="dockerhub" section="2.2" lang="terraform" %}
+
 ---
 
 ## 3. Repository Security
@@ -148,6 +164,10 @@ docker push myorg/myimage:latest
 1. Set repositories to **Private** by default
 2. Configure team access (not individual)
 3. Audit repository permissions quarterly
+
+#### Code Implementation
+
+{% include pack-code.html vendor="dockerhub" section="3.1" lang="terraform" %}
 
 ---
 
@@ -170,6 +190,10 @@ RUN --mount=type=secret,id=api_key ./configure
 ENV API_KEY=secret123
 ```
 
+#### Code Implementation
+
+{% include pack-code.html vendor="dockerhub" section="3.2" lang="terraform" %}
+
 ---
 
 ## 4. Monitoring & Detection
@@ -190,6 +214,8 @@ WHERE action = 'push'
 GROUP BY user, repository
 HAVING COUNT(*) > 10;
 ```
+
+{% include pack-code.html vendor="dockerhub" section="4.1" lang="terraform" %}
 
 ---
 

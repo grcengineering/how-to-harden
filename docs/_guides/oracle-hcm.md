@@ -73,6 +73,10 @@ Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
    - Enrollment policies
    - Sign-on policies
 
+#### Code Implementation
+
+{% include pack-code.html vendor="oracle-hcm" section="1.1" lang="terraform" %}
+
 ---
 
 ### 1.2 Implement Security Roles
@@ -97,6 +101,10 @@ Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
 2. Create data roles with security profiles
 3. Assign to users via role provisioning
 
+#### Code Implementation
+
+{% include pack-code.html vendor="oracle-hcm" section="1.2" lang="terraform" %}
+
 ---
 
 ### 1.3 Configure Security Profiles
@@ -120,6 +128,10 @@ Implement data-level security using security profiles.
 1. Limit compensation visibility
 2. Restrict payroll data access
 3. Configure country-specific restrictions
+
+#### Code Implementation
+
+{% include pack-code.html vendor="oracle-hcm" section="1.3" lang="terraform" %}
 
 ---
 
@@ -155,6 +167,10 @@ Minimum Scopes:
 │   └── /hcmRestApi/resources/absences
 ```
 
+#### Code Implementation
+
+{% include pack-code.html vendor="oracle-hcm" section="2.1" lang="terraform" %}
+
 ---
 
 ### 2.2 HCM Data Loader (HDL) Security
@@ -177,6 +193,10 @@ Secure bulk data operations via HDL.
 2. Validate file integrity
 3. Monitor for bulk extracts
 
+#### Code Implementation
+
+{% include pack-code.html vendor="oracle-hcm" section="2.2" lang="terraform" %}
+
 ---
 
 ## 3. Data Security
@@ -197,6 +217,10 @@ Secure bulk data operations via HDL.
 2. Mask sensitive fields (SSN, Bank Account)
 3. Enable audit for sensitive data access
 
+#### Code Implementation
+
+{% include pack-code.html vendor="oracle-hcm" section="3.1" lang="terraform" %}
+
 ---
 
 ### 3.2 Data Retention and Purge
@@ -215,6 +239,10 @@ Secure bulk data operations via HDL.
 1. Configure data subject access requests
 2. Enable consent management
 3. Document processing activities
+
+#### Code Implementation
+
+{% include pack-code.html vendor="oracle-hcm" section="3.2" lang="terraform" %}
 
 ---
 
@@ -252,6 +280,10 @@ GROUP BY user_name, web_service
 HAVING COUNT(*) > 100;
 ```
 
+#### Code Implementation
+
+{% include pack-code.html vendor="oracle-hcm" section="4.1" lang="terraform" %}
+
 ---
 
 ### 4.2 Monitor Integration Activity
@@ -273,6 +305,10 @@ SELECT user_name, file_name, timestamp
 FROM hdl_audit_log
 WHERE EXTRACT(HOUR FROM timestamp) NOT BETWEEN 8 AND 18;
 ```
+
+#### Code Implementation
+
+{% include pack-code.html vendor="oracle-hcm" section="4.2" lang="terraform" %}
 
 ---
 

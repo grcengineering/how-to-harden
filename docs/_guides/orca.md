@@ -78,6 +78,10 @@ Configure SAML SSO for Orca platform access.
 
 **Time to Complete:** ~1-2 hours
 
+#### Code Implementation
+
+{% include pack-code.html vendor="orca" section="1.1" lang="terraform" %}
+
 ---
 
 ### 1.2 Enforce Multi-Factor Authentication
@@ -98,6 +102,10 @@ Require MFA for all Orca users.
 1. Enable MFA in identity provider
 2. All SSO users subject to IdP MFA
 3. Use phishing-resistant methods for admins
+
+#### Code Implementation
+
+{% include pack-code.html vendor="orca" section="1.2" lang="terraform" %}
 
 ---
 
@@ -135,6 +143,10 @@ Implement least privilege using Orca roles.
 2. Remove inactive users
 3. Update role assignments
 
+#### Code Implementation
+
+{% include pack-code.html vendor="orca" section="2.1" lang="terraform" %}
+
 ---
 
 ### 2.2 Configure Account Scope
@@ -155,6 +167,10 @@ Limit user access to specific cloud accounts.
 1. Limit users to required accounts
 2. Separate production visibility
 3. Apply business unit boundaries
+
+#### Code Implementation
+
+{% include pack-code.html vendor="orca" section="2.2" lang="terraform" %}
 
 ---
 
@@ -180,6 +196,10 @@ Minimize and protect admin accounts.
 1. Limit admins to 2-3 users
 2. Require MFA
 3. Monitor admin activity
+
+#### Code Implementation
+
+{% include pack-code.html vendor="orca" section="2.3" lang="terraform" %}
 
 ---
 
@@ -209,6 +229,10 @@ Secure cloud account integrations.
 2. Follow Orca's recommended IAM policies
 3. Review cloud permissions regularly
 
+#### Code Implementation
+
+{% include pack-code.html vendor="orca" section="3.1" lang="terraform" %}
+
 ---
 
 ### 3.2 Configure API Security
@@ -234,6 +258,10 @@ Secure Orca API access.
 1. Store keys securely
 2. Rotate regularly
 3. Monitor usage
+
+#### Code Implementation
+
+{% include pack-code.html vendor="orca" section="3.2" lang="terraform" %}
 
 ---
 

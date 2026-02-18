@@ -1,0 +1,129 @@
+# =============================================================================
+# Sentry Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds project isolation, DSN rate limits, IP filtering
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Sentry Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Sentry organization slug (the URL path segment for your org)
+sentry_organization = "your-org"
+
+# Sentry auth token -- create an internal integration at:
+#   Settings > Developer Settings > Internal Integrations
+# Required permissions: org:admin, project:admin, team:admin, alerts:write
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_sentry_token="sntrys_..."
+sentry_token = ""
+
+# Sentry API base URL (default for SaaS; change for self-hosted Sentry)
+# sentry_base_url = "https://sentry.io/api/"
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Team Access (L1)
+# Map of team slug => team display name
+# Organize teams by function or product area for least-privilege access
+# -----------------------------------------------------------------------------
+teams = {
+  "platform"  = "Platform Engineering"
+  "backend"   = "Backend Engineering"
+  "frontend"  = "Frontend Engineering"
+  "mobile"    = "Mobile Engineering"
+  "security"  = "Security"
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: Project Access (L2+ only)
+# Map of project slug => { name, platform, teams }
+# Each project is scoped to specific teams for access isolation
+# See platforms: https://docs.sentry.io/platforms/
+# -----------------------------------------------------------------------------
+# projects = {
+#   "api-service" = {
+#     name     = "API Service"
+#     platform = "python"
+#     teams    = ["backend", "platform"]
+#   }
+#   "web-app" = {
+#     name     = "Web Application"
+#     platform = "javascript-react"
+#     teams    = ["frontend"]
+#   }
+#   "mobile-ios" = {
+#     name     = "Mobile iOS"
+#     platform = "apple-ios"
+#     teams    = ["mobile"]
+#   }
+# }
+
+
+# -----------------------------------------------------------------------------
+# Section 2.3: Limit Admin Access (L1)
+# Map of email => role for admin accounts
+# Roles: owner, manager, admin, member
+# Limit owners to 2-3 accounts maximum
+# -----------------------------------------------------------------------------
+# admin_members = {
+#   "cto@yourcompany.com"            = "owner"
+#   "security-lead@yourcompany.com"  = "owner"
+#   "platform-lead@yourcompany.com"  = "manager"
+# }
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Data Scrubbing
+# Additional sensitive field names to scrub from error reports
+# Sentry default scrubbing is enabled automatically
+# -----------------------------------------------------------------------------
+sensitive_fields = ["password", "secret", "api_key", "token", "authorization", "credit_card", "ssn"]
+safe_fields      = []
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: DSN Security
+# Rate limiting parameters for client keys
+# Prevents DSN abuse and controls event volume
+# -----------------------------------------------------------------------------
+dsn_rate_limit_count  = 100
+dsn_rate_limit_window = 60
+
+
+# -----------------------------------------------------------------------------
+# Section 3.3: IP Filtering (L2+ only)
+# Inbound data filters to enable on managed projects
+# -----------------------------------------------------------------------------
+inbound_data_filters = ["browser-extensions", "localhost", "web-crawlers", "filtered-transaction"]
+
+# Legacy browser versions to filter
+legacy_browser_subfilters = ["ie_pre_9", "ie9", "ie10", "ie11", "opera_pre_15", "android_pre_4", "safari_pre_6"]
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Audit Logs - Security Monitoring Alert
+# Set a project slug to create a security monitoring alert
+# Leave empty to skip alert creation
+# -----------------------------------------------------------------------------
+# security_alert_project = "api-service"
+# alert_action_email     = "security@yourcompany.com"

@@ -108,6 +108,8 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 
 #### Code Implementation
 
+{% include pack-code.html vendor="microsoft-entra-id" section="1.1" %}
+
 **Option 1: Microsoft Graph PowerShell**
 ```powershell
 # Connect to Microsoft Graph
@@ -271,6 +273,8 @@ Create highly protected emergency access accounts excluded from Conditional Acce
 
 #### Code Implementation
 
+{% include pack-code.html vendor="microsoft-entra-id" section="1.2" %}
+
 **Option 1: PowerShell**
 ```powershell
 # Create emergency access account
@@ -353,6 +357,8 @@ Block legacy authentication protocols (Basic Auth, POP, IMAP, SMTP AUTH) that ca
 
 #### Code Implementation
 
+{% include pack-code.html vendor="microsoft-entra-id" section="2.1" %}
+
 ```powershell
 # Create policy to block legacy auth
 $params = @{
@@ -406,6 +412,10 @@ Create Conditional Access policy requiring MFA for all interactive sign-ins to a
 4. Enable policy: **On**
 5. Click **Create**
 
+#### Code Implementation
+
+{% include pack-code.html vendor="microsoft-entra-id" section="2.2" %}
+
 ---
 
 ### 2.3 Require Compliant Devices for Admins
@@ -431,6 +441,10 @@ Require privileged users to access admin portals only from Intune-compliant or H
    - **Cloud apps:** Microsoft Admin Portals (or all apps)
    - **Grant:** Require device to be marked as compliant OR Require Hybrid Azure AD joined device
 4. Enable policy
+
+#### Code Implementation
+
+{% include pack-code.html vendor="microsoft-entra-id" section="2.3" %}
 
 ---
 
@@ -466,6 +480,10 @@ Use Entra ID Protection to automatically block sign-ins classified as high risk 
 1. Create another policy for medium risk
 2. **Conditions** → **Sign-in risk:** Medium
 3. **Grant:** Require MFA + Require password change
+
+#### Code Implementation
+
+{% include pack-code.html vendor="microsoft-entra-id" section="2.4" %}
 
 ---
 
@@ -537,6 +555,8 @@ Implement Privileged Identity Management (PIM) to eliminate standing admin privi
 **Time to Complete:** ~1-2 hours
 
 #### Code Implementation
+
+{% include pack-code.html vendor="microsoft-entra-id" section="3.1" %}
 
 **Option 1: Microsoft Graph PowerShell**
 ```powershell
@@ -627,6 +647,10 @@ Enable recurring access reviews for privileged roles and group memberships to en
    - **Upon completion:** Remove access for denied users
 4. Start review
 
+#### Code Implementation
+
+{% include pack-code.html vendor="microsoft-entra-id" section="3.2" %}
+
 ---
 
 ## 4. Application Security
@@ -674,6 +698,8 @@ Prevent users from granting OAuth consent to third-party applications. Require a
 
 #### Code Implementation
 
+{% include pack-code.html vendor="microsoft-entra-id" section="4.1" %}
+
 ```powershell
 # Disable user consent
 $params = @{
@@ -718,6 +744,10 @@ Regularly audit enterprise applications for excessive permissions, especially hi
 2. Remove permissions not required for functionality
 3. Or delete unused applications entirely
 
+#### Code Implementation
+
+{% include pack-code.html vendor="microsoft-entra-id" section="4.2" %}
+
 ---
 
 ## 5. Monitoring & Detection
@@ -752,6 +782,10 @@ Enable and export Entra ID sign-in and audit logs for security monitoring, threa
    - Conditional Access policy changes
    - New OAuth app registration
    - Risky sign-in detected
+
+#### Code Implementation
+
+{% include pack-code.html vendor="microsoft-entra-id" section="5.1" %}
 
 ---
 
