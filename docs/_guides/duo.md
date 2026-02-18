@@ -1,7 +1,7 @@
 ---
 layout: guide
 title: "Cisco Duo Security Hardening Guide"
-vendor: "Cisco"
+vendor: "Duo Security"
 slug: "duo"
 tier: "2"
 category: "Identity"

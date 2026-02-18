@@ -79,6 +79,8 @@ Configure SAML SSO for Twilio Console access.
 
 **Time to Complete:** ~1-2 hours
 
+{% include pack-code.html vendor="twilio" section="1.1" %}
+
 ---
 
 ### 1.2 Enforce Two-Factor Authentication
@@ -104,6 +106,8 @@ Require 2FA for all Twilio Console users.
 1. Support authenticator apps
 2. Support Authy
 3. Use hardware keys for admins
+
+{% include pack-code.html vendor="twilio" section="1.2" %}
 
 ---
 
@@ -138,6 +142,8 @@ Implement least privilege using Twilio roles.
 2. Limit Administrator access
 3. Regular access reviews
 
+{% include pack-code.html vendor="twilio" section="2.1" %}
+
 ---
 
 ### 2.2 Configure Subaccounts
@@ -164,6 +170,8 @@ Use subaccounts for isolation.
 2. Use separate credentials
 3. Monitor subaccount activity
 
+{% include pack-code.html vendor="twilio" section="2.2" %}
+
 ---
 
 ### 2.3 Limit Admin Access
@@ -189,6 +197,8 @@ Minimize and protect owner accounts.
 1. Limit owners to 2-3 users
 2. Require 2FA for admins
 3. Monitor admin activity
+
+{% include pack-code.html vendor="twilio" section="2.3" %}
 
 ---
 
@@ -223,6 +233,8 @@ Secure Twilio API credentials.
 2. Store in secure vault
 3. Use environment variables
 
+{% include pack-code.html vendor="twilio" section="3.1" %}
+
 ---
 
 ### 3.2 Configure Webhook Security
@@ -248,6 +260,8 @@ Secure webhook callbacks.
 1. Use HTTPS only
 2. Implement IP allowlisting
 3. Monitor for anomalies
+
+{% include pack-code.html vendor="twilio" section="3.2" %}
 
 ---
 

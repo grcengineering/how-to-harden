@@ -85,6 +85,8 @@ Configure SAML SSO to centralize authentication for Splunk Cloud users.
 
 **Time to Complete:** ~2 hours
 
+{% include pack-code.html vendor="splunk" section="1.1" %}
+
 ---
 
 ### 1.2 Configure Local Admin Fallback
@@ -112,6 +114,8 @@ Maintain local admin access for emergency recovery.
 **Step 3: Protect Local Credentials**
 1. Use strong password (20+ characters)
 2. Store in password vault
+
+{% include pack-code.html vendor="splunk" section="1.2" %}
 
 ---
 
@@ -147,6 +151,8 @@ Implement least privilege using Splunk's role model.
 1. Assign through SAML mapping (preferred)
 2. Limit admin role to 2-3 users
 
+{% include pack-code.html vendor="splunk" section="2.1" %}
+
 ---
 
 ### 2.2 Configure Index Access
@@ -170,6 +176,8 @@ Restrict access to indexes based on role.
 **Step 2: Restrict Sensitive Indexes**
 1. Security logs in restricted index
 2. Grant access only to security team
+
+{% include pack-code.html vendor="splunk" section="2.2" %}
 
 ---
 
@@ -197,6 +205,8 @@ Control what data users can search.
 1. Configure search job quotas per role
 2. Prevent resource abuse
 
+{% include pack-code.html vendor="splunk" section="3.1" %}
+
 ---
 
 ### 3.2 Configure Encryption
@@ -219,6 +229,8 @@ Ensure data encryption in transit and at rest.
 **Step 2: Verify Storage Encryption**
 1. Splunk Cloud encrypts data at rest
 2. Customer-managed keys available
+
+{% include pack-code.html vendor="splunk" section="3.2" %}
 
 ---
 
@@ -249,6 +261,8 @@ Monitor administrative and security events.
 **Step 3: Configure Audit Alerts**
 1. Alert on admin role changes
 2. Alert on failed authentications
+
+{% include pack-code.html vendor="splunk" section="4.1" %}
 
 ---
 

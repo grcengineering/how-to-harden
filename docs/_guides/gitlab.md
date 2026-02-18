@@ -170,16 +170,7 @@ Restrict personal access token (PAT) creation and enforce expiration policies.
    - **Maximum allowable lifetime for access tokens:** 90 days
    - **Limit project access token creation:** Enable
 
-**Step 2: Audit Existing Tokens**
-```bash
-# GitLab API - List all personal access tokens (Admin)
-curl -H "PRIVATE-TOKEN: ${ADMIN_TOKEN}" \
-  "https://gitlab.company.com/api/v4/personal_access_tokens?state=active" \
-
-  | jq '.[] | {user: .user.username, name: .name, expires_at: .expires_at, scopes: .scopes}'
-```
-
-**Step 3: Disable API Scope for Non-Essential Tokens**
+**Step 2: Disable API Scope for Non-Essential Tokens**
 - Audit tokens with `api` scope
 - Replace with minimal scopes (read_repository, write_repository)
 

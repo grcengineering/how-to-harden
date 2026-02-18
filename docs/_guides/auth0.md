@@ -89,43 +89,6 @@ Brute force protection blocks IP addresses that repeatedly fail to authenticate 
 
 **Time to Complete:** ~15 minutes
 
-#### Code Implementation
-
-**Option 1: Auth0 CLI**
-```bash
-# Update brute-force protection settings
-auth0 protection brute-force-protection update \
-  --enabled true \
-  --shields "block" \
-  --shields "user_notification" \
-  --max-attempts 5 \
-  --allowlist "trusted-ip-range"
-```
-
-**Option 2: Auth0 Management API**
-```bash
-curl -X PATCH "https://YOUR_DOMAIN.auth0.com/api/v2/attack-protection/brute-force-protection" \
-  -H "Authorization: Bearer $MGMT_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "enabled": true,
-    "shields": ["block", "user_notification"],
-    "max_attempts": 5
-  }'
-```
-
-**Option 3: Terraform**
-```hcl
-resource "auth0_attack_protection" "protection" {
-  brute_force_protection {
-    enabled      = true
-    shields      = ["block", "user_notification"]
-    max_attempts = 5
-    mode         = "count_per_identifier_and_ip"
-  }
-}
-```
-
 #### Validation & Testing
 1. [ ] Verify protection is enabled in Dashboard
 2. [ ] Test by exceeding threshold (in test environment)
@@ -317,26 +280,6 @@ Require MFA for user authentication. Configure phishing-resistant options like W
 2. Enable **Require MFA for all Dashboard users**
 
 **Time to Complete:** ~30 minutes
-
-#### Code Implementation
-
-**Terraform**
-```hcl
-resource "auth0_guardian" "mfa" {
-  policy = "all-applications"
-
-  otp = true
-  webauthn_roaming {
-    user_verification = "required"
-  }
-  webauthn_platform {
-    user_verification = "required"
-  }
-}
-```
-
----
-
 
 {% include pack-code.html vendor="auth0" section="2.2" %}
 

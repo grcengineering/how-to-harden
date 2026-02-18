@@ -1,7 +1,7 @@
 ---
 layout: guide
 title: "Jira Cloud Hardening Guide"
-vendor: "Atlassian"
+vendor: "Jira Cloud"
 slug: "jira-cloud"
 tier: "2"
 category: "Productivity"

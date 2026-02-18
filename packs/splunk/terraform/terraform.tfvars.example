@@ -1,0 +1,101 @@
+# =============================================================================
+# Splunk Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- adds search restrictions, TLS hardening, audit alerts
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# Splunk Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Splunk management URL (include port, typically 8089)
+splunk_url = "https://your-instance.splunkcloud.com:8089"
+
+# Authentication: use EITHER username/password OR auth_token (not both)
+# Option 1: Username/password
+splunk_username = "admin"
+splunk_password = ""
+
+# Option 2: Auth token (preferred -- generate at Settings > Tokens)
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_splunk_auth_token="your-token-here"
+splunk_auth_token = ""
+
+# Skip TLS verification (only for dev/test environments)
+splunk_insecure_skip_verify = false
+
+
+# -----------------------------------------------------------------------------
+# Section 1.1: SAML SSO
+# Leave saml_idp_url empty to skip SAML configuration.
+# SAML must first be enabled by Splunk Cloud Support.
+# -----------------------------------------------------------------------------
+saml_idp_url       = ""
+saml_idp_cert_path = ""
+saml_entity_id     = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 1.2: Local Admin Fallback
+# Leave local_admin_password empty to skip emergency admin creation.
+# Use a strong password (20+ characters) and store in a vault.
+# -----------------------------------------------------------------------------
+local_admin_username = "hth-emergency-admin"
+local_admin_password = ""
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: Role-Based Access Control
+# Custom role for security analysts with restricted index access.
+# -----------------------------------------------------------------------------
+custom_analyst_role_name = "hth_security_analyst"
+analyst_allowed_indexes  = ["main", "security"]
+analyst_default_index    = "security"
+
+
+# -----------------------------------------------------------------------------
+# Section 2.2: Index Access
+# Dedicated indexes for security and audit data.
+# frozen_time_period is in seconds (94608000 = 3 years, 220752000 = 7 years)
+# -----------------------------------------------------------------------------
+security_index_name              = "security"
+security_index_max_data_size     = "auto"
+security_index_frozen_time_period = 94608000
+
+audit_index_name                 = "audit_trail"
+audit_index_frozen_time_period   = 220752000
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Search Security (L2+)
+# Search quotas and time limits. Only fully applied at L2+.
+# -----------------------------------------------------------------------------
+search_quota_standard     = 3
+search_quota_power        = 6
+search_time_limit_seconds = 600
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Encryption / HEC
+# HTTP Event Collector SSL settings.
+# -----------------------------------------------------------------------------
+hec_enable_ssl = true
+hec_port       = 8088

@@ -1,7 +1,7 @@
 ---
 layout: guide
 title: "Webex Hardening Guide"
-vendor: "Cisco"
+vendor: "Webex"
 slug: "webex"
 tier: "2"
 category: "Productivity"

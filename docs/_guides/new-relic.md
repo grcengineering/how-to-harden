@@ -62,6 +62,8 @@ This guide covers New Relic security configurations including authentication, ac
 2. Or enable New Relic MFA
 3. Require for all users
 
+{% include pack-code.html vendor="new-relic" section="1.1" %}
+
 ---
 
 ### 1.2 Role-Based Access
@@ -84,6 +86,8 @@ This guide covers New Relic security configurations including authentication, ac
 1. Navigate to: **Administration → Access management → Groups**
 2. Create groups per team
 3. Assign account/role combinations
+
+{% include pack-code.html vendor="new-relic" section="1.2" %}
 
 ---
 
@@ -120,6 +124,8 @@ Manage New Relic API keys securely.
 2. Rotate keys periodically
 3. Use least privilege
 
+{% include pack-code.html vendor="new-relic" section="2.1" %}
+
 ---
 
 ### 2.2 License Key Protection
@@ -134,6 +140,8 @@ Manage New Relic API keys securely.
 2. Generate new keys
 3. Update agents
 4. Deactivate old keys
+
+{% include pack-code.html vendor="new-relic" section="2.2" %}
 
 ---
 
@@ -162,6 +170,8 @@ Protect sensitive data in logs and traces.
 2. Drop sensitive log entries
 3. Audit filter effectiveness
 
+{% include pack-code.html vendor="new-relic" section="3.1" %}
+
 ---
 
 ### 3.2 Data Retention
@@ -175,6 +185,8 @@ Protect sensitive data in logs and traces.
 1. Navigate to: **Data management → Data retention**
 2. Review retention per data type
 3. Adjust as needed
+
+{% include pack-code.html vendor="new-relic" section="3.2" %}
 
 ---
 
@@ -203,6 +215,8 @@ SELECT * FROM NrAuditEvent
 WHERE actionIdentifier LIKE '%user%'
 SINCE 7 days ago
 ```
+
+{% include pack-code.html vendor="new-relic" section="4.1" %}
 
 ---
 

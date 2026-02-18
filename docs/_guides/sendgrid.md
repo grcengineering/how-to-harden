@@ -1,7 +1,7 @@
 ---
 layout: guide
 title: "SendGrid Hardening Guide"
-vendor: "Twilio"
+vendor: "SendGrid"
 slug: "sendgrid"
 tier: "2"
 category: "Marketing"

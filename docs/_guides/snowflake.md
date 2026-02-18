@@ -100,45 +100,6 @@ ORDER BY ext_authn_duo DESC;
 
 **Time to Complete:** ~15 minutes (policy) + user enrollment time
 
-#### Code Implementation
-
-**Option 1: SQL**
-```sql
--- Enforce MFA at account level
-ALTER ACCOUNT SET REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION = TRUE;
-
--- Create authentication policy requiring MFA
-CREATE OR REPLACE AUTHENTICATION POLICY mfa_required
-    MFA_AUTHENTICATION_METHODS = ('TOTP')
-    CLIENT_TYPES = ('SNOWFLAKE_UI', 'SNOWSIGHT')
-    SECURITY_INTEGRATIONS = ();
-
--- Apply to account
-ALTER ACCOUNT SET AUTHENTICATION POLICY = mfa_required;
-
--- For specific users
-ALTER USER sensitive_user SET MINS_TO_BYPASS_MFA = 0;
-```
-
-**Option 2: Terraform**
-```hcl
-# terraform/snowflake/mfa-enforcement.tf
-
-resource "snowflake_account_parameter" "require_mfa" {
-  key   = "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION"
-  value = "TRUE"
-}
-
-resource "snowflake_authentication_policy" "mfa_required" {
-  name     = "MFA_REQUIRED"
-  database = "SECURITY"
-  schema   = "POLICIES"
-
-  mfa_authentication_methods = ["TOTP"]
-  client_types               = ["SNOWFLAKE_UI", "SNOWSIGHT"]
-}
-```
-
 #### Validation & Testing
 1. [ ] Attempt login without MFA - should be blocked
 2. [ ] Complete login with MFA - should succeed
@@ -267,35 +228,17 @@ Create granular role hierarchy instead of granting broad SYSADMIN or ACCOUNTADMI
 #### ClickOps Implementation
 
 **Step 1: Design Role Hierarchy**
-```sql
--- Create functional roles
-CREATE ROLE IF NOT EXISTS data_analyst;
-CREATE ROLE IF NOT EXISTS data_engineer;
-CREATE ROLE IF NOT EXISTS security_admin;
-
--- Create object access roles
-CREATE ROLE IF NOT EXISTS sales_data_reader;
-CREATE ROLE IF NOT EXISTS sales_data_writer;
-CREATE ROLE IF NOT EXISTS pii_data_reader;
-
--- Grant object access to functional roles
-GRANT ROLE sales_data_reader TO ROLE data_analyst;
-GRANT ROLE sales_data_writer TO ROLE data_engineer;
-
--- Grant functional roles to users
-GRANT ROLE data_analyst TO USER john_analyst;
-```
+1. Navigate to: **Admin --> Account --> Roles**
+2. Create functional roles (data_analyst, data_engineer, security_admin)
+3. Create object access roles (sales_data_reader, sales_data_writer, pii_data_reader)
+4. Grant object access roles to functional roles
+5. Grant functional roles to users
 
 **Step 2: Restrict ACCOUNTADMIN**
-```sql
--- Audit ACCOUNTADMIN members
-SHOW GRANTS OF ROLE ACCOUNTADMIN;
-
--- Remove unnecessary ACCOUNTADMIN grants
-REVOKE ROLE ACCOUNTADMIN FROM USER over_privileged_user;
-
--- Create break-glass procedure for emergency admin access
-```
+1. Navigate to: **Admin --> Account --> Roles --> ACCOUNTADMIN**
+2. Review all members with ACCOUNTADMIN access
+3. Remove unnecessary ACCOUNTADMIN grants
+4. Document break-glass procedure for emergency admin access
 
 ---
 
@@ -338,49 +281,6 @@ ALTER ACCOUNT SET NETWORK_POLICY = corporate_access;
 
 -- Or apply to specific users only
 ALTER USER external_partner SET NETWORK_POLICY = partner_network_policy;
-```
-
-#### Code Implementation
-
-```sql
--- Create network policy
-CREATE OR REPLACE NETWORK POLICY corporate_access
-    ALLOWED_IP_LIST = (
-        '203.0.113.0/24',      -- Corporate HQ
-        '198.51.100.0/24',     -- VPN egress
-        '192.0.2.10/32'        -- Tableau Server
-    )
-    BLOCKED_IP_LIST = ()
-    COMMENT = 'Restrict access to corporate networks and BI tools';
-
--- Apply to account
-ALTER ACCOUNT SET NETWORK_POLICY = corporate_access;
-
--- Create separate policy for BI tool integrations
-CREATE OR REPLACE NETWORK POLICY bi_tools_access
-    ALLOWED_IP_LIST = (
-        '192.0.2.10/32',       -- Tableau Server
-        '192.0.2.20/32',       -- Power BI Gateway
-        '192.0.2.30/32'        -- Looker
-    )
-    COMMENT = 'Restrict service accounts to BI tool IPs';
-
--- Apply to service account
-ALTER USER svc_tableau SET NETWORK_POLICY = bi_tools_access;
-```
-
-**Terraform:**
-```hcl
-resource "snowflake_network_policy" "corporate" {
-  name            = "CORPORATE_ACCESS"
-  allowed_ip_list = ["203.0.113.0/24", "198.51.100.0/24"]
-  comment         = "Corporate network access only"
-}
-
-resource "snowflake_account_parameter" "network_policy" {
-  key   = "NETWORK_POLICY"
-  value = snowflake_network_policy.corporate.name
-}
 ```
 
 #### Validation & Testing
@@ -453,22 +353,13 @@ DESC SECURITY INTEGRATION tableau_oauth;
 ```
 
 **Step 2: Configure OAuth Integration**
-```sql
--- Create OAuth integration with restrictions
-CREATE OR REPLACE SECURITY INTEGRATION tableau_oauth
-    TYPE = OAUTH
-    ENABLED = TRUE
-    OAUTH_CLIENT = TABLEAU_DESKTOP
-    OAUTH_REFRESH_TOKEN_VALIDITY = 86400  -- 1 day (default is 90 days)
-    BLOCKED_ROLES_LIST = ('ACCOUNTADMIN', 'SECURITYADMIN', 'SYSADMIN');
-```
+1. Create a new OAuth security integration for your BI tool
+2. Set token refresh validity to 86400 seconds (1 day) instead of the 90-day default
+3. Add ACCOUNTADMIN, SECURITYADMIN, and SYSADMIN to the blocked roles list
 
 **Step 3: Block High-Privilege Roles from OAuth**
-```sql
--- Ensure admin roles cannot authenticate via OAuth
-ALTER SECURITY INTEGRATION tableau_oauth
-    SET BLOCKED_ROLES_LIST = ('ACCOUNTADMIN', 'SECURITYADMIN', 'SYSADMIN', 'ORGADMIN');
-```
+1. Edit the security integration to ensure ACCOUNTADMIN, SECURITYADMIN, SYSADMIN, and ORGADMIN are all in the blocked roles list
+2. Verify no admin roles can authenticate via OAuth tokens
 
 ---
 
@@ -521,30 +412,15 @@ Apply dynamic data masking to sensitive columns (PII, financial data) to restric
 
 #### ClickOps Implementation
 
-```sql
--- Create masking policy for SSN
-CREATE OR REPLACE MASKING POLICY ssn_mask AS (val STRING)
-RETURNS STRING ->
-    CASE
-        WHEN CURRENT_ROLE() IN ('PII_ADMIN') THEN val
-        ELSE 'XXX-XX-' || RIGHT(val, 4)
-    END;
+**Step 1: Create Masking Policies**
+1. Navigate to: **Data --> Databases --> [Database] --> Policies**
+2. Create masking policy for SSN that returns full value for PII_ADMIN role, masked value (XXX-XX-####) for all others
+3. Create masking policy for email that returns full value for PII_ADMIN and CUSTOMER_SERVICE roles, masked value for all others
 
--- Apply to column
-ALTER TABLE customers MODIFY COLUMN ssn
-    SET MASKING POLICY ssn_mask;
-
--- Create masking policy for email
-CREATE OR REPLACE MASKING POLICY email_mask AS (val STRING)
-RETURNS STRING ->
-    CASE
-        WHEN CURRENT_ROLE() IN ('PII_ADMIN', 'CUSTOMER_SERVICE') THEN val
-        ELSE REGEXP_REPLACE(val, '(.)[^@]*(@.*)', '\\1***\\2')
-    END;
-
-ALTER TABLE customers MODIFY COLUMN email
-    SET MASKING POLICY email_mask;
-```
+**Step 2: Apply Masking Policies to Columns**
+1. Navigate to the target table and column
+2. Set the SSN masking policy on the ssn column
+3. Set the email masking policy on the email column
 
 ---
 
@@ -605,63 +481,12 @@ Configure access to SNOWFLAKE.ACCOUNT_USAGE schema for security monitoring and a
 
 #### Detection Use Cases
 
-**Anomaly 1: Failed Login Spike (Credential Stuffing Detection)**
-```sql
-SELECT
-    DATE_TRUNC('hour', event_timestamp) as hour,
-    user_name,
-    client_ip,
-    COUNT(*) as failed_attempts
-FROM SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY
-WHERE is_success = 'NO'
-    AND event_timestamp > DATEADD(day, -1, CURRENT_TIMESTAMP())
-GROUP BY 1, 2, 3
-HAVING COUNT(*) > 10
-ORDER BY failed_attempts DESC;
-```
+Key anomaly detection queries are provided in the code pack below. These cover:
 
-**Anomaly 2: Bulk Data Export**
-```sql
-SELECT
-    user_name,
-    query_text,
-    rows_produced,
-    bytes_scanned,
-    start_time
-FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
-WHERE query_type = 'SELECT'
-    AND rows_produced > 1000000
-    AND start_time > DATEADD(day, -1, CURRENT_TIMESTAMP())
-ORDER BY rows_produced DESC;
-```
-
-**Anomaly 3: New IP Address Access**
-```sql
-WITH historical_ips AS (
-    SELECT DISTINCT user_name, client_ip
-    FROM SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY
-    WHERE event_timestamp < DATEADD(day, -7, CURRENT_TIMESTAMP())
-)
-SELECT DISTINCT l.user_name, l.client_ip, l.event_timestamp
-FROM SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY l
-LEFT JOIN historical_ips h ON l.user_name = h.user_name AND l.client_ip = h.client_ip
-WHERE l.event_timestamp > DATEADD(day, -1, CURRENT_TIMESTAMP())
-    AND h.client_ip IS NULL
-    AND l.is_success = 'YES';
-```
-
-**Anomaly 4: Privilege Escalation**
-```sql
-SELECT
-    query_text,
-    user_name,
-    role_name,
-    start_time
-FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
-WHERE (query_text ILIKE '%GRANT%ACCOUNTADMIN%'
-    OR query_text ILIKE '%ALTER USER%ACCOUNTADMIN%')
-    AND start_time > DATEADD(day, -1, CURRENT_TIMESTAMP());
-```
+- **Anomaly 1: Failed Login Spike** -- Detect credential stuffing by identifying users/IPs with 10+ failed logins per hour
+- **Anomaly 2: Bulk Data Export** -- Flag SELECT queries returning 1M+ rows (potential exfiltration)
+- **Anomaly 3: New IP Address Access** -- Identify successful logins from IPs not seen in the prior 7 days
+- **Anomaly 4: Privilege Escalation** -- Monitor for GRANT or ALTER statements targeting ACCOUNTADMIN
 
 ---
 

@@ -72,25 +72,6 @@ Require all Salesforce users to use MFA for authentication, eliminating single-f
 4. Set enforcement date and communicate to users
 5. Verify in Login History: **Setup → Security → Login History** (check for MFA column)
 
-#### Code Implementation
-```bash
-# Using Salesforce CLI
-sf org login web --alias prod-org
-
-# Query current MFA settings
-sf data query --query "SELECT Id, UserName, MfaEnabled FROM User WHERE IsActive = true" \
-  --target-org prod-org
-
-# Enable MFA requirement via Session Settings (requires API)
-curl -X PATCH "${SF_INSTANCE_URL}/services/data/v59.0/sobjects/SessionSettings/SYSTEM" \
-  -H "Authorization: Bearer ${SF_ACCESS_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "requireMfa": true,
-    "requireMfaForAllLogins": true
-  }'
-```
-
 #### Compliance Mappings
 - **SOC 2:** CC6.1 (Logical Access)
 - **NIST 800-53:** IA-2(1), IA-2(2)
@@ -163,94 +144,6 @@ For each IP address:
 3. Check Login History for blocked attempts: **Setup → Security → Login History**
 
 **Time to Complete:** ~10 minutes
-
-#### Code Implementation
-
-**Option 1: Salesforce API (bash/curl)**
-```bash
-ORG_URL="https://your-instance.salesforce.com"
-ACCESS_TOKEN="your_oauth_token"
-
-# Gainsight production IPs
-GAINSIGHT_IPS=(
-  "35.166.202.113:35.166.202.113:Gainsight Production 1"
-  "52.35.87.209:52.35.87.209:Gainsight Production 2"
-  "34.221.135.142:34.221.135.142:Gainsight Production 3"
-)
-
-for ip_entry in "${GAINSIGHT_IPS[@]}"; do
-  IFS=':' read -r start end description <<< "$ip_entry"
-
-  curl -X POST "${ORG_URL}/services/data/v59.0/sobjects/LoginIpRange" \
-    -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"StartAddress\": \"${start}\",
-      \"EndAddress\": \"${end}\",
-      \"Description\": \"${description} - verified $(date +%Y-%m-%d)\"
-    }"
-done
-
-# Verify
-curl -X GET "${ORG_URL}/services/data/v59.0/query?q=SELECT+StartAddress,Description+FROM+LoginIpRange+WHERE+Description+LIKE+'%Gainsight%'" \
-  -H "Authorization: Bearer ${ACCESS_TOKEN}"
-```
-
-**Option 2: Terraform**
-```hcl
-# terraform/salesforce/network-access.tf
-
-locals {
-  gainsight_ips = {
-    "prod_1" = { start = "35.166.202.113", end = "35.166.202.113" }
-    "prod_2" = { start = "52.35.87.209", end = "52.35.87.209" }
-    "prod_3" = { start = "34.221.135.142", end = "34.221.135.142" }
-  }
-}
-
-resource "salesforce_login_ip_range" "gainsight" {
-  for_each = local.gainsight_ips
-
-  start_address = each.value.start
-  end_address   = each.value.end
-  description   = "Gainsight ${each.key} - verified 2025-12-12"
-}
-```
-
-**Option 3: Python Script**
-```python
-#!/usr/bin/env python3
-# automation/scripts/salesforce/configure-gainsight-ips.py
-
-from simple_salesforce import Salesforce
-import os
-from datetime import date
-
-sf = Salesforce(
-    username=os.environ['SF_USERNAME'],
-    password=os.environ['SF_PASSWORD'],
-    security_token=os.environ['SF_SECURITY_TOKEN']
-)
-
-GAINSIGHT_IPS = [
-    {"start": "35.166.202.113", "end": "35.166.202.113", "name": "Production 1"},
-    {"start": "52.35.87.209", "end": "52.35.87.209", "name": "Production 2"},
-    {"start": "34.221.135.142", "end": "34.221.135.142", "name": "Production 3"},
-]
-
-today = date.today().isoformat()
-
-for ip in GAINSIGHT_IPS:
-    try:
-        sf.LoginIpRange.create({
-            'StartAddress': ip['start'],
-            'EndAddress': ip['end'],
-            'Description': f"Gainsight {ip['name']} - verified {today}"
-        })
-        print(f"✓ Added: {ip['start']} (Gainsight {ip['name']})")
-    except Exception as e:
-        print(f"❌ Failed to add {ip['start']}: {e}")
-```
 
 #### Monitoring & Maintenance
 
@@ -376,41 +269,6 @@ For each over-permissioned app:
 | **Marketing (HubSpot, Drift)** | `api`, `chatter_api`, limited objects | `full`, `manage_users` |
 | **Support (Zendesk, Intercom)** | `api`, `chatter_api`, Case object only | `full`, access to all objects |
 | **Analytics (Tableau)** | `api`, read-only specific objects | Write access, `full` |
-
-#### Code Implementation
-
-**Audit Script:**
-```python
-# automation/scripts/salesforce/audit-connected-apps.py
-
-from simple_salesforce import Salesforce
-import os
-
-sf = Salesforce(
-    username=os.environ['SF_USERNAME'],
-    password=os.environ['SF_PASSWORD'],
-    security_token=os.environ['SF_SECURITY_TOKEN']
-)
-
-# Query all Connected Apps
-query = """
-    SELECT Id, Name, CreatedDate, LastModifiedDate
-    FROM ConnectedApplication
-    WHERE IsActive = true
-"""
-apps = sf.query(query)
-
-print(f"Found {apps['totalSize']} active Connected Apps:\n")
-
-for app in apps['records']:
-    print(f"- {app['Name']}")
-    print(f"  Created: {app['CreatedDate']}")
-    print(f"  Last Modified: {app['LastModifiedDate']}")
-    print()
-
-# For detailed scope analysis, requires Tooling API
-# (OAuth scopes stored in PermissionSetAssignment)
-```
 
 #### Compliance Mappings
 - **SOC 2:** CC6.2 (Least Privilege)

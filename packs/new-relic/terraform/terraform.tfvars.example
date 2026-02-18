@@ -1,0 +1,97 @@
+# =============================================================================
+# New Relic Hardening Code Pack - Example Variable Values
+# How to Harden (howtoharden.com)
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control -- it contains secrets.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform plan
+#   terraform apply
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Profile Level
+# 1 = Baseline (L1) -- essential controls for all organizations
+# 2 = Hardened (L2) -- enhanced controls for security-sensitive environments
+# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# -----------------------------------------------------------------------------
+profile_level = 1
+
+
+# -----------------------------------------------------------------------------
+# New Relic Provider Configuration
+# -----------------------------------------------------------------------------
+
+# Your New Relic account ID (numeric, found at Administration > Access management)
+newrelic_account_id = 1234567
+
+# New Relic User API key -- generate at API keys page
+# WARNING: This is a sensitive value. Use environment variables in production:
+#   export TF_VAR_newrelic_api_key="NRAK-..."
+newrelic_api_key = ""
+
+# New Relic region: US or EU
+newrelic_region = "US"
+
+
+# -----------------------------------------------------------------------------
+# Section 2.1: API Key Management
+# User ID to associate with managed API keys. Find at:
+#   Administration > User management > [User] > copy user ID
+# Set to 0 to skip API key management.
+# -----------------------------------------------------------------------------
+api_key_user_id = 0
+ingest_key_name = "hth-managed-ingest-key"
+
+
+# -----------------------------------------------------------------------------
+# Section 3.1: Data Obfuscation
+# Regex patterns for sensitive data obfuscation in logs.
+# Defaults cover credit cards, SSNs, and API keys/tokens.
+# Override to add custom patterns for your environment.
+# -----------------------------------------------------------------------------
+# obfuscation_patterns = [
+#   {
+#     name    = "Credit Card Numbers"
+#     pattern = "\\b(?:\\d{4}[- ]?){3}\\d{4}\\b"
+#   },
+#   {
+#     name    = "Social Security Numbers"
+#     pattern = "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+#   },
+#   {
+#     name    = "API Keys and Tokens"
+#     pattern = "(?i)(?:api[_-]?key|token|bearer|authorization)[\"':\\s=]+[A-Za-z0-9+/=_-]{20,}"
+#   },
+#   {
+#     name    = "Custom Pattern"
+#     pattern = "your-regex-here"
+#   }
+# ]
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: Data Retention
+# Log retention in days. Adjust based on compliance requirements.
+# Minimum: 8 (New Relic minimum), Maximum: 395 (New Relic maximum)
+# -----------------------------------------------------------------------------
+log_retention_days = 30
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: NrAuditEvent Monitoring
+# Notification channel for security alerts. Create a channel first at:
+#   Alerts & AI > Destinations, then reference its ID here.
+# Leave empty to create alert policies without notification routing.
+# -----------------------------------------------------------------------------
+alert_notification_channel_id = ""
+
+# Number of audit events in the evaluation window to trigger critical alert
+audit_alert_threshold_critical = 10
+
+# Evaluation window in seconds (300 = 5 minutes)
+audit_alert_evaluation_window = 300

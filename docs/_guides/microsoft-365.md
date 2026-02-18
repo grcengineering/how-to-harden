@@ -1,7 +1,7 @@
 ---
 layout: guide
 title: "Microsoft 365 Hardening Guide"
-vendor: "Microsoft"
+vendor: "Microsoft 365"
 slug: "microsoft-365"
 tier: "1"
 category: "Productivity"

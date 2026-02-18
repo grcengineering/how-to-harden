@@ -121,34 +121,6 @@ This guide covers Terraform Cloud security configurations including authenticati
 
 #### Implementation
 
-```hcl
-# Sentinel policy - Require encryption
-policy "require-s3-encryption" {
-  enforcement_level = "hard-mandatory"
-}
-
-# policy.sentinel
-import "tfplan/v2" as tfplan
-
-s3_buckets = filter tfplan.resource_changes as _, rc {
-  rc.type is "aws_s3_bucket" and
-  (rc.change.actions contains "create" or rc.change.actions contains "update")
-}
-
-encryption_enabled = rule {
-  all s3_buckets as _, bucket {
-    bucket.change.after.server_side_encryption_configuration is not null
-  }
-}
-
-main = rule {
-  encryption_enabled
-}
-```
-
----
-
-
 {% include pack-code.html vendor="terraform-cloud" section="2.2" %}
 
 ## 3. State File Security

@@ -71,6 +71,8 @@ Require SAML SSO with MFA for all Databricks access.
 2. Configure connector with your IdP
 3. Enable: **Automatic user provisioning**
 
+{% include pack-code.html vendor="databricks" section="1.1" %}
+
 ---
 
 ### 1.2 Implement Service Principal Security
@@ -111,6 +113,8 @@ Secure service principals used for automation and integrations.
 3. Store tokens in secrets manager
 4. Rotate tokens quarterly
 
+{% include pack-code.html vendor="databricks" section="1.2" %}
+
 ---
 
 ### 1.3 Configure IP Access Lists
@@ -130,6 +134,8 @@ Restrict Databricks access to known IP ranges.
    - VPN egress
    - Approved integration IPs
 3. Enable: **Block public access** (L2)
+
+{% include pack-code.html vendor="databricks" section="1.3" %}
 
 ---
 
@@ -185,6 +191,8 @@ ALTER TABLE production.customer_data.orders
 SET ROW FILTER production.filters.region_filter ON (region);
 ```
 
+{% include pack-code.html vendor="databricks" section="2.1" %}
+
 ---
 
 ### 2.2 Configure Data Masking
@@ -208,6 +216,8 @@ END;
 ALTER TABLE production.customer_data.customers
 ALTER COLUMN ssn SET MASK production.masks.mask_ssn;
 ```
+
+{% include pack-code.html vendor="databricks" section="2.2" %}
 
 ---
 
@@ -240,6 +250,8 @@ WHERE action_name IN ('getTable', 'commandSubmit')
     AND event_time > current_timestamp() - INTERVAL 24 HOURS
 ORDER BY event_time DESC;
 ```
+
+{% include pack-code.html vendor="databricks" section="2.3" %}
 
 ---
 
@@ -295,6 +307,8 @@ Implement cluster policies to enforce security configurations.
 2. Assign policy to appropriate groups
 3. Set as default for users
 
+{% include pack-code.html vendor="databricks" section="3.1" %}
+
 ---
 
 ### 3.2 Network Isolation
@@ -333,6 +347,8 @@ resource "databricks_mws_private_access_settings" "this" {
   public_access_enabled        = false
 }
 ```
+
+{% include pack-code.html vendor="databricks" section="3.2" %}
 
 ---
 
@@ -376,6 +392,8 @@ db_password = dbutils.secrets.get(scope="production-secrets", key="db-password")
 print(db_password)  # Shows [REDACTED]
 ```
 
+{% include pack-code.html vendor="databricks" section="4.1" %}
+
 ---
 
 ### 4.2 External Secret Store Integration
@@ -396,6 +414,8 @@ databricks secrets create-scope \
   --resource-id /subscriptions/.../resourceGroups/.../providers/Microsoft.KeyVault/vaults/my-vault \
   --dns-name https://my-vault.vault.azure.net/
 ```
+
+{% include pack-code.html vendor="databricks" section="4.2" %}
 
 ---
 
@@ -438,6 +458,8 @@ WHERE user_identity.email LIKE 'svc-%'
     AND event_time > current_timestamp() - INTERVAL 1 HOUR
 GROUP BY user_identity.email, source_ip_address;
 ```
+
+{% include pack-code.html vendor="databricks" section="5.1" %}
 
 ---
 

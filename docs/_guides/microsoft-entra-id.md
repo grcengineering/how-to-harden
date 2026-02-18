@@ -1,7 +1,7 @@
 ---
 layout: guide
 title: "Microsoft Entra ID Hardening Guide"
-vendor: "Microsoft"
+vendor: "Microsoft Entra ID"
 slug: "microsoft-entra-id"
 tier: "1"
 category: "Identity"

@@ -135,11 +135,13 @@ databricks:
   product_docs: "https://docs.databricks.com/aws/en/"
   api_docs: "https://docs.databricks.com/api/workspace/introduction"
   hardening_docs: "https://docs.databricks.com/aws/en/lakehouse-architecture/security-compliance-and-privacy/best-practices"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/databricks"
 
 datadog:
   product_docs: "https://docs.datadoghq.com/"
   api_docs: "https://docs.datadoghq.com/api/latest/"
   hardening_docs: "https://docs.datadoghq.com/account_management/safety_center/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/datadog"
 
 dockerhub:
   product_docs: "https://docs.docker.com/docker-hub/"
@@ -361,6 +363,7 @@ new-relic:
   product_docs: "https://docs.newrelic.com/"
   api_docs: "https://docs.newrelic.com/docs/apis/intro-apis/introduction-new-relic-apis/"
   hardening_docs: "https://docs.newrelic.com/docs/security/overview/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/new-relic"
 
 notion:
   product_docs: "https://www.notion.com/help"
@@ -397,6 +400,7 @@ pagerduty:
   product_docs: "https://support.pagerduty.com/"
   api_docs: "https://developer.pagerduty.com/api-reference"
   hardening_docs: "https://support.pagerduty.com/main/docs/security-hygiene-for-the-current-cyber-threat-landscape"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/pagerduty"
 
 paylocity:
   product_docs: "https://www.paylocity.com/contact/client-support/"
@@ -511,11 +515,13 @@ snyk:
   product_docs: "https://docs.snyk.io/"
   api_docs: "https://apidocs.snyk.io/"
   hardening_docs: "https://snyk.io/blog/application-security-best-practices/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/snyk"
 
 splunk:
   product_docs: "https://docs.splunk.com/"
   api_docs: "https://dev.splunk.com/enterprise/reference"
   hardening_docs: "https://docs.splunk.com/Documentation/Splunk/latest/Security/Hardeningstandards"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/splunk"
 
 square:
   product_docs: "https://squareup.com/help/us/en"
@@ -548,6 +554,7 @@ twilio:
   product_docs: "https://www.twilio.com/docs"
   api_docs: "https://www.twilio.com/docs/usage/api"
   hardening_docs: "https://www.twilio.com/docs/usage/security"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/twilio"
 
 ukg:
   product_docs: "https://community.ukg.com/"

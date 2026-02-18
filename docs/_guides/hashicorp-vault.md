@@ -131,69 +131,6 @@ vault write auth/approle/role/jenkins \
     secret_id_bound_cidrs="10.0.0.0/8"
 ```
 
-#### Code Implementation
-
-**Terraform Configuration:**
-```hcl
-# terraform/vault/auth-methods.tf
-
-# OIDC for human users
-resource "vault_jwt_auth_backend" "oidc" {
-  path               = "oidc"
-  type               = "oidc"
-  oidc_discovery_url = var.oidc_discovery_url
-  oidc_client_id     = var.oidc_client_id
-  oidc_client_secret = var.oidc_client_secret
-  default_role       = "default"
-
-  tune {
-    default_lease_ttl = "1h"
-    max_lease_ttl     = "8h"
-  }
-}
-
-# AppRole for applications
-resource "vault_auth_backend" "approle" {
-  type = "approle"
-
-  tune {
-    default_lease_ttl = "1h"
-    max_lease_ttl     = "4h"
-  }
-}
-
-resource "vault_approle_auth_backend_role" "jenkins" {
-  backend        = vault_auth_backend.approle.path
-  role_name      = "jenkins"
-  token_policies = ["jenkins-secrets"]
-  token_ttl      = 3600
-  token_max_ttl  = 14400
-
-  # Bind to CIDR (L2)
-  token_bound_cidrs = ["10.0.0.0/8"]
-  secret_id_bound_cidrs = ["10.0.0.0/8"]
-}
-
-# Kubernetes auth for cloud-native workloads
-resource "vault_auth_backend" "kubernetes" {
-  type = "kubernetes"
-}
-
-resource "vault_kubernetes_auth_backend_config" "config" {
-  backend         = vault_auth_backend.kubernetes.path
-  kubernetes_host = var.kubernetes_host
-}
-
-resource "vault_kubernetes_auth_backend_role" "app" {
-  backend                          = vault_auth_backend.kubernetes.path
-  role_name                        = "app"
-  bound_service_account_names      = ["app-sa"]
-  bound_service_account_namespaces = ["production"]
-  token_ttl                        = 3600
-  token_policies                   = ["app-secrets"]
-}
-```
-
 #### Validation & Testing
 1. [ ] Attempt to use root token - should be revoked
 2. [ ] Login via OIDC - should succeed with appropriate policies
@@ -238,28 +175,6 @@ vault read sys/internal/counters/tokens
 Create fine-grained policies limiting access to specific paths. Avoid wildcard policies that grant excessive access.
 
 #### ClickOps Implementation
-
-```bash
-# Bad: Overly permissive policy
-path "secret/*" {
-  capabilities = ["read", "list"]
-}
-
-# Good: Scoped policy
-path "secret/data/{{identity.entity.aliases.auth_approle_XXXX.metadata.app}}/*" {
-  capabilities = ["read"]
-}
-
-# Better: Application-specific policy
-path "secret/data/jenkins/+/credentials" {
-  capabilities = ["read"]
-}
-
-# Deny access to sensitive paths explicitly
-path "secret/data/production/+/admin" {
-  capabilities = ["deny"]
-}
-```
 
 **Step 1: Create Hierarchical Policy Structure**
 ```bash
@@ -346,58 +261,6 @@ Configure dynamic secrets engines that generate credentials on-demand with autom
 - Static credentials never expire without rotation
 - Dynamic credentials auto-revoke after TTL
 - Limits blast radius of credential theft
-
-#### ClickOps Implementation
-
-**Database Dynamic Secrets:**
-```bash
-# Enable database secrets engine
-vault secrets enable database
-
-# Configure PostgreSQL connection
-vault write database/config/production \
-    plugin_name=postgresql-database-plugin \
-    connection_url="postgresql://{{username}}:{{password}}@db.company.com:5432/prod" \
-    allowed_roles="readonly,readwrite" \
-    username="vault_admin" \
-    password="$ADMIN_PASSWORD"
-
-# Create role for read-only access
-vault write database/roles/readonly \
-    db_name=production \
-    creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\";" \
-    revocation_statements="DROP ROLE IF EXISTS \"{{name}}\";" \
-    default_ttl="1h" \
-    max_ttl="24h"
-```
-
-**AWS Dynamic Secrets:**
-```bash
-# Enable AWS secrets engine
-vault secrets enable aws
-
-# Configure AWS backend
-vault write aws/config/root \
-    access_key=$AWS_ACCESS_KEY \
-    secret_key=$AWS_SECRET_KEY \
-    region=us-east-1
-
-# Create role for S3 access
-vault write aws/roles/s3-readonly \
-    credential_type=iam_user \
-    policy_document=-<<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": ["s3:GetObject", "s3:ListBucket"],
-      "Resource": ["arn:aws:s3:::company-data/*"]
-    }
-  ]
-}
-EOF
-```
 
 ---
 
@@ -572,33 +435,6 @@ vault audit enable socket \
 
 # Verify audit devices
 vault audit list -detailed
-```
-
-**Audit Log Format:**
-```json
-{
-  "time": "2025-01-15T10:30:00Z",
-  "type": "request",
-  "auth": {
-    "client_token": "hmac-sha256:xxx",
-    "accessor": "hmac-sha256:xxx",
-    "display_name": "approle",
-    "policies": ["jenkins-secrets"],
-    "token_policies": ["jenkins-secrets"],
-    "metadata": {
-      "role_name": "jenkins"
-    }
-  },
-  "request": {
-    "id": "req-xxx",
-    "operation": "read",
-    "path": "secret/data/jenkins/credentials",
-    "remote_address": "10.0.1.50"
-  },
-  "response": {
-    "succeeded": true
-  }
-}
 ```
 
 ---

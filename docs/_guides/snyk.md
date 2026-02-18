@@ -61,6 +61,8 @@ This guide covers Snyk security configurations including authentication, access 
 1. Configure MFA through account settings
 2. Enforce for all users
 
+{% include pack-code.html vendor="snyk" section="1.1" %}
+
 ---
 
 ### 1.2 Role-Based Access
@@ -83,6 +85,8 @@ This guide covers Snyk security configurations including authentication, access 
 1. Navigate to: **Settings → Members**
 2. Assign appropriate roles
 3. Use least privilege
+
+{% include pack-code.html vendor="snyk" section="1.2" %}
 
 ---
 
@@ -111,6 +115,8 @@ Manage Snyk service account tokens securely.
 2. Set token expiration
 3. Use least privilege roles
 
+{% include pack-code.html vendor="snyk" section="2.1" %}
+
 ---
 
 ### 2.2 SCM Integration Security
@@ -129,6 +135,8 @@ Manage Snyk service account tokens securely.
 1. Use Snyk Broker for private repos
 2. Configure accept.json filters
 3. Limit exposed endpoints
+
+{% include pack-code.html vendor="snyk" section="2.2" %}
 
 ---
 
@@ -151,6 +159,8 @@ Manage Snyk service account tokens securely.
 2. Control export permissions
 3. Audit report access
 
+{% include pack-code.html vendor="snyk" section="3.1" %}
+
 ---
 
 ### 3.2 Ignore Policy
@@ -164,6 +174,8 @@ Manage Snyk service account tokens securely.
 1. Require reason for ignores
 2. Set ignore expiration
 3. Audit ignored vulnerabilities
+
+{% include pack-code.html vendor="snyk" section="3.2" %}
 
 ---
 
@@ -198,6 +210,8 @@ FROM snyk_audit_log
 WHERE action = 'service_account.create'
   AND timestamp > NOW() - INTERVAL '7 days';
 ```
+
+{% include pack-code.html vendor="snyk" section="4.1" %}
 
 ---
 

@@ -101,20 +101,7 @@ Require all organization members to enable MFA on their GitHub accounts. This pr
 
 #### Code Implementation
 
-**Option 1: GitHub CLI**
-```bash
-# Check current 2FA enforcement status
-gh api /orgs/{org}/settings --jq '.two_factor_requirement_enabled'
-
-# Enable 2FA requirement (requires owner permissions)
-gh api -X PATCH /orgs/{org} \
-  -f two_factor_requirement_enabled=true
-
-# List members without 2FA
-gh api /orgs/{org}/members?filter=2fa_disabled --jq '.[].login'
-```
-
-**Option 2: GitHub API**
+**GitHub API (curl):**
 ```bash
 ORG="your-org-name"
 TOKEN="your_github_token"
@@ -131,22 +118,6 @@ curl -X PATCH "https://api.github.com/orgs/${ORG}" \
 curl -X GET "https://api.github.com/orgs/${ORG}/members?filter=2fa_disabled" \
   -H "Authorization: token ${TOKEN}" \
   -H "Accept: application/vnd.github+json"
-```
-
-**Option 3: Terraform**
-```hcl
-# terraform/github/org-settings.tf
-
-resource "github_organization_settings" "main" {
-  billing_email = "billing@example.com"
-
-  # Require 2FA for all members
-  two_factor_requirement = true
-
-  # Additional hardening
-  members_can_create_repositories = false
-  members_can_create_public_repositories = false
-}
 ```
 
 {% include pack-code.html vendor="github" section="1.1" %}
@@ -238,16 +209,6 @@ Set default organization member permissions to minimal access. Members should on
    - **Pages creation:** Restrict as needed
 
 #### Code Implementation
-
-```bash
-# Set base permissions to none
-gh api -X PATCH /orgs/{org} \
-  -f default_repository_permission=none
-
-# Verify
-gh api /orgs/{org} --jq '.default_repository_permission'
-# Expected: "none"
-```
 
 {% include pack-code.html vendor="github" section="1.2" %}
 
@@ -529,46 +490,7 @@ Protect `main`, `master`, `production`, and release branches from direct pushes.
 
 #### Code Implementation
 
-**Option 1: GitHub CLI**
-```bash
-REPO="org/repo-name"
-BRANCH="main"
-
-# Create branch protection rule
-gh api -X PUT "/repos/${REPO}/branches/${BRANCH}/protection" \
-  -H "Accept: application/vnd.github+json" \
-  -f required_status_checks='{"strict":true,"contexts":["ci/test","security/scan"]}' \
-  -f enforce_admins=true \
-  -f required_pull_request_reviews='{"dismissal_restrictions":{},"dismiss_stale_reviews":true,"require_code_owner_reviews":true,"required_approving_review_count":2}' \
-  -f restrictions=null
-```
-
-**Option 2: Terraform**
-```hcl
-# terraform/github/branch-protection.tf
-
-resource "github_branch_protection" "main" {
-  repository_id = github_repository.repo.node_id
-  pattern       = "main"
-
-  required_status_checks {
-    strict   = true  # Require branch to be up to date
-    contexts = ["ci/test", "security/scan"]
-  }
-
-  required_pull_request_reviews {
-    dismiss_stale_reviews      = true
-    require_code_owner_reviews = true
-    required_approving_review_count = 2
-  }
-
-  enforce_admins = true  # No admin bypass
-
-  require_conversation_resolution = true
-}
-```
-
-**Option 3: Bulk Protection Script**
+**Bulk Protection Script:**
 ```python
 #!/usr/bin/env python3
 # automation/scripts/github/protect-all-branches.py
@@ -686,43 +608,6 @@ Enable GitHub's native security features to detect vulnerabilities, secrets, and
 **Time to Complete:** ~15 minutes
 
 #### Code Implementation
-
-**Enable via API:**
-```bash
-ORG="your-org"
-TOKEN="your_github_token"
-
-# Enable Dependabot alerts for all repos
-for repo in $(gh repo list $ORG --json name --jq '.[].name'); do
-  gh api -X PUT "/repos/${ORG}/${repo}/vulnerability-alerts"
-  echo "Enabled Dependabot for ${repo}"
-done
-
-# Enable secret scanning (requires Advanced Security)
-for repo in $(gh repo list $ORG --json name --jq '.[].name'); do
-  gh api -X PUT "/repos/${ORG}/${repo}/secret-scanning/alerts"
-  echo "Enabled Secret Scanning for ${repo}"
-done
-```
-
-**Terraform:**
-```hcl
-resource "github_repository" "repo" {
-  name = "my-repo"
-
-  # Security features
-  vulnerability_alerts = true  # Dependabot
-
-  security_and_analysis {
-    secret_scanning {
-      status = "enabled"
-    }
-    secret_scanning_push_protection {
-      status = "enabled"  # Block pushes with secrets
-    }
-  }
-}
-```
 
 {% include pack-code.html vendor="github" section="2.1" %}
 {% include pack-code.html vendor="github" section="2.2" %}
@@ -1028,18 +913,8 @@ Prevent use of arbitrary third-party Actions by restricting to GitHub-verified c
 
 #### Code Implementation
 
-```bash
-# Set organization actions policy
-gh api -X PUT /orgs/{org}/actions/permissions \
-  -f enabled_repositories=all \
-  -f allowed_actions=selected
-
-# Configure allowed actions
-gh api -X PUT /orgs/{org}/actions/permissions/selected-actions \
-  -f github_owned_allowed=true \
-  -f verified_allowed=true \
-  -f patterns_allowed='["actions/*","github/*","docker/*","aws-actions/*","hashicorp/*"]'
-```
+{% include pack-code.html vendor="github" section="3.2" %}
+{% include pack-code.html vendor="github" section="3.3" %}
 
 #### Best Practices for Action Selection
 
@@ -1089,9 +964,6 @@ updates:
     schedule:
       interval: "weekly"
 ```
-
-{% include pack-code.html vendor="github" section="3.2" %}
-{% include pack-code.html vendor="github" section="3.3" %}
 
 #### Monitoring & Maintenance
 
@@ -1175,13 +1047,6 @@ jobs:
 **Time to Complete:** ~5 minutes org-wide + per-workflow updates
 
 #### Code Implementation
-
-```bash
-# Set organization default to read-only
-gh api -X PUT /orgs/{org}/actions/permissions/workflow \
-  -f default_workflow_permissions=read \
-  -f can_approve_pull_request_reviews=false
-```
 
 {% include pack-code.html vendor="github" section="3.4" %}
 
@@ -1527,20 +1392,6 @@ jobs:
 **Time to Complete:** ~15 minutes
 
 #### Code Implementation
-
-**Create environment via API:**
-```bash
-REPO="org/repo"
-
-# Create environment
-gh api -X PUT "/repos/${REPO}/environments/production" \
-  -f prevent_self_review=true \
-  -f reviewers='[{"type":"Team","id":12345}]' \
-  -f deployment_branch_policy='{"protected_branches":true,"custom_branch_policies":false}'
-
-# Add secret to environment
-gh secret set PROD_API_KEY --env production --body "secret-value"
-```
 
 {% include pack-code.html vendor="github" section="5.5" %}
 

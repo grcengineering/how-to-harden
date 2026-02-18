@@ -1,7 +1,7 @@
 ---
 layout: guide
 title: "Bitbucket Cloud Hardening Guide"
-vendor: "Atlassian"
+vendor: "Bitbucket"
 slug: "bitbucket"
 tier: "2"
 category: "DevOps"

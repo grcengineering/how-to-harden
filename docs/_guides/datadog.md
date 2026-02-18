@@ -97,6 +97,8 @@ Configure SAML SSO to centralize authentication for Datadog users.
 
 **Time to Complete:** ~1 hour
 
+{% include pack-code.html vendor="datadog" section="1.1" %}
+
 ---
 
 ### 1.2 Enable SAML Strict Mode
@@ -126,6 +128,8 @@ Require SAML authentication for all users.
 1. Allow per-user overrides if needed
 2. Configure individual exceptions carefully
 
+{% include pack-code.html vendor="datadog" section="1.2" %}
+
 ---
 
 ### 1.3 Configure Session Security
@@ -150,6 +154,8 @@ Configure session timeout and security settings.
 **Step 2: Configure Idle Timeout**
 1. Enable **Idle time session timeout**
 2. Users signed out after 30 minutes inactivity
+
+{% include pack-code.html vendor="datadog" section="1.3" %}
 
 ---
 
@@ -184,6 +190,8 @@ Implement least privilege using Datadog's RBAC model.
 **Step 3: Review Sensitive Permissions**
 1. Sensitive permissions are flagged in UI
 2. Review carefully before assigning
+
+{% include pack-code.html vendor="datadog" section="2.1" %}
 
 ---
 
@@ -244,6 +252,8 @@ Secure Datadog API keys used for data ingestion.
 2. Use environment variables
 3. Never commit to code
 
+{% include pack-code.html vendor="datadog" section="3.1" %}
+
 ---
 
 ### 3.2 Secure Application Keys
@@ -271,6 +281,8 @@ Secure application keys used for API access.
 **Step 3: Rotate Keys Regularly**
 1. Establish rotation schedule (90 days)
 2. Update integrations before deleting
+
+{% include pack-code.html vendor="datadog" section="3.2" %}
 
 ---
 
@@ -301,6 +313,8 @@ Monitor administrative and security events.
 **Step 3: Export Logs**
 1. Export audit logs for retention
 2. Integrate with SIEM
+
+{% include pack-code.html vendor="datadog" section="4.1" %}
 
 ---
 
