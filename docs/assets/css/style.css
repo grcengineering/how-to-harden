@@ -1530,6 +1530,21 @@ body {
   color: #fbbf24;
 }
 
+.pack-type-cli {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+.pack-type-sdk {
+  background: rgba(244, 114, 182, 0.15);
+  color: #f472b6;
+}
+
+.pack-type-db {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+
 .pack-source-link {
   font-size: 0.8125rem;
   color: var(--color-text-muted);
@@ -1565,6 +1580,18 @@ body {
 
 [data-theme="light"] .pack-type-sigma {
   color: #d97706;
+}
+
+[data-theme="light"] .pack-type-cli {
+  color: #0284c7;
+}
+
+[data-theme="light"] .pack-type-sdk {
+  color: #db2777;
+}
+
+[data-theme="light"] .pack-type-db {
+  color: #ea580c;
 }
 
 @media (max-width: 640px) {

@@ -6,6 +6,14 @@
   Reads from: site.data.packs.{vendor}["{section}"]
   Renders: collapsible <details> blocks with syntax-highlighted code excerpts
            and "View source on GitHub" links.
+
+  Supported pack types (render order):
+    terraform  — Config-as-Code (Enforcement)
+    api        — API Scripts (Enforcement + Verification)
+    cli        — CLI Scripts (Enforcement + Verification)
+    sdk        — SDK Scripts (Enforcement + Verification)
+    db         — DB Queries (Enforcement + Verification + Detection)
+    sigma      — Sigma Detection Rules (Drift + Threat Detection)
 {% endcomment %}
 
 {% assign pack = site.data.packs[include.vendor] %}
@@ -41,6 +49,57 @@
 </div>
 {% for excerpt in control.api.excerpts %}
 <pre><code class="language-{{ control.api.lang }}">{{ excerpt[1].content | strip | xml_escape }}</code></pre>
+{% endfor %}
+</div>
+</details>
+</div>
+{% endif %}
+
+{% if control.cli %}
+<div class="pack-code-section">
+<details class="pack-details">
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: CLI Script</span></summary>
+<div class="pack-details-content">
+<div class="pack-file-header">
+<span class="pack-file-type pack-type-cli">{{ control.cli.filename }}</span>
+<a href="{{ control.cli.source_url }}" target="_blank" rel="noopener noreferrer" class="pack-source-link">View source on GitHub &nearr;</a>
+</div>
+{% for excerpt in control.cli.excerpts %}
+<pre><code class="language-{{ control.cli.lang }}">{{ excerpt[1].content | strip | xml_escape }}</code></pre>
+{% endfor %}
+</div>
+</details>
+</div>
+{% endif %}
+
+{% if control.sdk %}
+<div class="pack-code-section">
+<details class="pack-details">
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: SDK Script</span></summary>
+<div class="pack-details-content">
+<div class="pack-file-header">
+<span class="pack-file-type pack-type-sdk">{{ control.sdk.filename }}</span>
+<a href="{{ control.sdk.source_url }}" target="_blank" rel="noopener noreferrer" class="pack-source-link">View source on GitHub &nearr;</a>
+</div>
+{% for excerpt in control.sdk.excerpts %}
+<pre><code class="language-{{ control.sdk.lang }}">{{ excerpt[1].content | strip | xml_escape }}</code></pre>
+{% endfor %}
+</div>
+</details>
+</div>
+{% endif %}
+
+{% if control.db %}
+<div class="pack-code-section">
+<details class="pack-details">
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: DB Query</span></summary>
+<div class="pack-details-content">
+<div class="pack-file-header">
+<span class="pack-file-type pack-type-db">{{ control.db.filename }}</span>
+<a href="{{ control.db.source_url }}" target="_blank" rel="noopener noreferrer" class="pack-source-link">View source on GitHub &nearr;</a>
+</div>
+{% for excerpt in control.db.excerpts %}
+<pre><code class="language-{{ control.db.lang }}">{{ excerpt[1].content | strip | xml_escape }}</code></pre>
 {% endfor %}
 </div>
 </details>

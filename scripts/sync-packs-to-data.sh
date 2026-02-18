@@ -70,10 +70,15 @@ yaml_content() {
 detect_lang() {
   local file="$1"
   case "${file}" in
-    *.tf)  echo "hcl" ;;
-    *.sh)  echo "bash" ;;
-    *.yml) echo "yaml" ;;
-    *)     echo "plaintext" ;;
+    *.tf)   echo "hcl" ;;
+    *.sh)   echo "bash" ;;
+    *.yml)  echo "yaml" ;;
+    *.py)   echo "python" ;;
+    *.ps1)  echo "powershell" ;;
+    *.sql)  echo "sql" ;;
+    *.js)   echo "javascript" ;;
+    *.go)   echo "go" ;;
+    *)      echo "plaintext" ;;
   esac
 }
 
@@ -83,6 +88,9 @@ detect_type() {
   case "${file}" in
     */terraform/*)  echo "terraform" ;;
     */api/*)        echo "api" ;;
+    */cli/*)        echo "cli" ;;
+    */sdk/*)        echo "sdk" ;;
+    */db/*)         echo "db" ;;
     */siem/sigma/*) echo "sigma" ;;
     */scripts/*)    echo "scripts" ;;
     *)              echo "other" ;;
@@ -129,6 +137,9 @@ process_vendor() {
   # Group files by normalized section
   declare -A section_terraform
   declare -A section_api
+  declare -A section_cli
+  declare -A section_sdk
+  declare -A section_db
   declare -A section_sigma
 
   for file in "${marked_files[@]}"; do
@@ -155,6 +166,15 @@ process_vendor() {
         ;;
       api)
         section_api["${section}"]="${file}|${rel_path}|${basename}"
+        ;;
+      cli)
+        section_cli["${section}"]="${file}|${rel_path}|${basename}"
+        ;;
+      sdk)
+        section_sdk["${section}"]="${file}|${rel_path}|${basename}"
+        ;;
+      db)
+        section_db["${section}"]="${file}|${rel_path}|${basename}"
         ;;
       sigma)
         # Sigma can have multiple files per section (-b, -c, etc.)
@@ -221,6 +241,75 @@ process_vendor() {
       done
     fi
 
+    # CLI
+    if [ -n "${section_cli[${section}]+x}" ]; then
+      IFS='|' read -r cli_file cli_rel cli_basename <<< "${section_cli[${section}]}"
+      local cli_lang
+      cli_lang=$(detect_lang "${cli_basename}")
+
+      echo "  cli:" >> "${output_file}"
+      echo "    lang: \"${cli_lang}\"" >> "${output_file}"
+      echo "    filename: \"${cli_basename}\"" >> "${output_file}"
+      echo "    source_url: \"${GITHUB_BASE}/${cli_rel}\"" >> "${output_file}"
+      echo "    excerpts:" >> "${output_file}"
+
+      local regions
+      regions=$(list_regions "${cli_file}")
+      for region in ${regions}; do
+        local content
+        content=$(extract_region "${cli_file}" "${region}")
+        echo "      ${region}:" >> "${output_file}"
+        echo "        content: |" >> "${output_file}"
+        echo "${content}" | sed 's/^/          /' >> "${output_file}"
+      done
+    fi
+
+    # SDK
+    if [ -n "${section_sdk[${section}]+x}" ]; then
+      IFS='|' read -r sdk_file sdk_rel sdk_basename <<< "${section_sdk[${section}]}"
+      local sdk_lang
+      sdk_lang=$(detect_lang "${sdk_basename}")
+
+      echo "  sdk:" >> "${output_file}"
+      echo "    lang: \"${sdk_lang}\"" >> "${output_file}"
+      echo "    filename: \"${sdk_basename}\"" >> "${output_file}"
+      echo "    source_url: \"${GITHUB_BASE}/${sdk_rel}\"" >> "${output_file}"
+      echo "    excerpts:" >> "${output_file}"
+
+      local regions
+      regions=$(list_regions "${sdk_file}")
+      for region in ${regions}; do
+        local content
+        content=$(extract_region "${sdk_file}" "${region}")
+        echo "      ${region}:" >> "${output_file}"
+        echo "        content: |" >> "${output_file}"
+        echo "${content}" | sed 's/^/          /' >> "${output_file}"
+      done
+    fi
+
+    # DB
+    if [ -n "${section_db[${section}]+x}" ]; then
+      IFS='|' read -r db_file db_rel db_basename <<< "${section_db[${section}]}"
+      local db_lang
+      db_lang=$(detect_lang "${db_basename}")
+
+      echo "  db:" >> "${output_file}"
+      echo "    lang: \"${db_lang}\"" >> "${output_file}"
+      echo "    filename: \"${db_basename}\"" >> "${output_file}"
+      echo "    source_url: \"${GITHUB_BASE}/${db_rel}\"" >> "${output_file}"
+      echo "    excerpts:" >> "${output_file}"
+
+      local regions
+      regions=$(list_regions "${db_file}")
+      for region in ${regions}; do
+        local content
+        content=$(extract_region "${db_file}" "${region}")
+        echo "      ${region}:" >> "${output_file}"
+        echo "        content: |" >> "${output_file}"
+        echo "${content}" | sed 's/^/          /' >> "${output_file}"
+      done
+    fi
+
     # Sigma (array — multiple files possible)
     if [ -n "${section_sigma[${section}]+x}" ]; then
       echo "  sigma:" >> "${output_file}"
@@ -266,6 +355,9 @@ for vendor_dir in "${PACKS_DIR}"/*/; do
   # Only process vendors that have code files (not just control YAMLs)
   if ls "${vendor_dir}"/terraform/hth-*.tf 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/api/hth-*.sh 2>/dev/null | head -1 > /dev/null 2>&1 || \
+     ls "${vendor_dir}"/cli/hth-*.sh 2>/dev/null | head -1 > /dev/null 2>&1 || \
+     ls "${vendor_dir}"/sdk/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
+     ls "${vendor_dir}"/db/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/siem/sigma/hth-*.yml 2>/dev/null | head -1 > /dev/null 2>&1; then
     process_vendor "${vendor}"
   fi
