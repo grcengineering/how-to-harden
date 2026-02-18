@@ -479,13 +479,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Scan results data (real GitHub controls)
   var controls = [
-    { status: 'PASS', id: 'github-1.1', sev: 'critical', sevCls: 'term-red',    lvl: 'L1', title: 'Enforce 2FA for Org Members',       checks: '3/3' },
-    { status: 'PASS', id: 'github-1.2', sev: 'high',     sevCls: 'term-yellow', lvl: 'L1', title: 'Restrict Default Repo Permissions',   checks: '2/2' },
-    { status: 'FAIL', id: 'github-2.1', sev: 'critical', sevCls: 'term-red',    lvl: 'L1', title: 'Enable Secret Scanning',              checks: '1/3' },
-    { status: 'PASS', id: 'github-2.2', sev: 'high',     sevCls: 'term-yellow', lvl: 'L1', title: 'Enable Dependabot Security Updates',   checks: '4/4' },
-    { status: 'FAIL', id: 'github-3.1', sev: 'critical', sevCls: 'term-red',    lvl: 'L1', title: 'Enable Branch Protection',             checks: '0/2' },
-    { status: 'PASS', id: 'github-3.2', sev: 'high',     sevCls: 'term-yellow', lvl: 'L2', title: 'Restrict Actions to Verified Creators', checks: '1/1' },
-    { status: 'PASS', id: 'github-4.1', sev: 'high',     sevCls: 'term-yellow', lvl: 'L1', title: 'Enable Vulnerability Alerts',           checks: '2/2' }
+    { status: 'PASS', id: 'github-1.1', lvl: 'L1', title: 'Enforce 2FA for Org Members',       checks: '3/3' },
+    { status: 'PASS', id: 'github-1.2', lvl: 'L1', title: 'Restrict Default Repo Permissions',   checks: '2/2' },
+    { status: 'FAIL', id: 'github-2.1', lvl: 'L1', title: 'Enable Secret Scanning',              checks: '1/3' },
+    { status: 'PASS', id: 'github-2.2', lvl: 'L1', title: 'Enable Dependabot Security Updates',   checks: '4/4' },
+    { status: 'FAIL', id: 'github-3.1', lvl: 'L1', title: 'Enable Branch Protection',             checks: '0/2' },
+    { status: 'PASS', id: 'github-3.2', lvl: 'L2', title: 'Restrict Actions to Verified Creators', checks: '1/1' },
+    { status: 'PASS', id: 'github-4.1', lvl: 'L1', title: 'Enable Vulnerability Alerts',           checks: '2/2' }
   ];
 
   async function runDemo() {
@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var tableEl = document.createElement('table');
     tableEl.className = 'terminal-table';
     var headerRow = tableEl.insertRow();
-    ['Status', 'ID', 'Sev', 'Lvl', 'Control', 'Checks'].forEach(function(h) {
+    ['Status', 'ID', 'Lvl', 'Control', 'Checks'].forEach(function(h) {
       var th = document.createElement('th');
       th.textContent = h;
       headerRow.appendChild(th);
@@ -530,7 +530,6 @@ document.addEventListener('DOMContentLoaded', function() {
       var statusCls = c.status === 'PASS' ? 'term-green' : 'term-red';
       row.innerHTML = '<td class="' + statusCls + '">' + c.status + '</td>'
         + '<td>' + c.id + '</td>'
-        + '<td class="' + c.sevCls + '">' + c.sev + '</td>'
         + '<td>' + c.lvl + '</td>'
         + '<td class="term-white">' + c.title + '</td>'
         + '<td>' + c.checks + '</td>';

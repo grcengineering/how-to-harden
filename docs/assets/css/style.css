@@ -1987,7 +1987,7 @@ body {
 }
 
 [data-theme="light"] .terminal-table td {
-  color: #1f2328;
+  color: inherit;
 }
 
 [data-theme="light"] .dot-close { background: #ff5f57; }
