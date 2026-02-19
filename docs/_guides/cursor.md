@@ -234,10 +234,6 @@ For more granular control:
 
 **Time to Complete:** ~5 minutes per workspace
 
-#### Code Implementation
-
-{% include pack-code.html vendor="cursor" section="2.1" %}
-
 #### Validation & Testing
 1. [ ] With Privacy Mode ON, attempt AI autocomplete - should not trigger
 2. [ ] Check network traffic - no requests to OpenAI/Anthropic APIs
@@ -313,8 +309,8 @@ Restrict which AI providers Cursor can use. Allow only approved providers with a
    - Local Models (if configured)
 
 **Step 2: Restrict to Approved Providers**
-
-{% include pack-code.html vendor="cursor" section="2.2" %}
+1. In Cursor Settings, configure allowed AI providers
+2. Disable any providers not approved by your organization
 
 **Step 3: Verify Provider Restrictions**
 1. Attempt to use disabled provider in chat
@@ -365,12 +361,10 @@ Options:
 - **LM Studio:** Local model management
 - **Custom OpenAI-compatible API:** Self-hosted models
 
-{% include pack-code.html vendor="cursor" section="2.3" %}
-
 **Step 2: Configure Cursor to Use Local Model**
 1. Open Cursor → **Settings**
 2. Navigate to: **AI Providers**
-3. Add custom provider (see Code Pack above for full configuration)
+3. Add custom provider pointing to local endpoint (e.g., `http://localhost:11434`)
 
 **Step 3: Verify Local Model Usage**
 1. Use Cursor AI chat
@@ -431,10 +425,6 @@ Store Cursor AI provider API keys in environment variables or secure credential 
 2. Should return no hardcoded keys
 
 **Time to Complete:** ~10 minutes
-
-#### Code Implementation
-
-{% include pack-code.html vendor="cursor" section="3.1" %}
 
 #### Validation & Testing
 1. [ ] Search settings files for hardcoded keys - should find none
@@ -500,10 +490,6 @@ For Anthropic:
 
 **Time to Complete:** ~15 minutes per provider
 
-#### Automation
-
-{% include pack-code.html vendor="cursor" section="3.2" %}
-
 ---
 
 ### 3.3 Monitor API Key Usage and Costs
@@ -531,10 +517,6 @@ For Anthropic:
 - **Daily:** Check for cost spikes
 - **Weekly:** Review usage patterns
 - **Monthly:** Analyze per-user usage (if using organization accounts)
-
-**Detection Queries:**
-
-{% include pack-code.html vendor="cursor" section="3.3" %}
 
 ---
 
@@ -574,8 +556,6 @@ Use VSCode/Cursor Workspace Trust to prevent automatic execution of untrusted co
 1. Add trusted parent directories:
    - Company code: `~/work/company-name/`
    - Personal projects: `~/projects/personal/`
-
-{% include pack-code.html vendor="cursor" section="4.1" %}
 
 **Step 3: Verify Trust Prompts**
 1. Clone a new repository outside trusted folders
@@ -642,11 +622,12 @@ Use secret scanning tools to detect and remove secrets from code before allowing
 3. Configure to scan on save
 
 **Step 2: Enable Pre-Commit Hooks**
-
-{% include pack-code.html vendor="cursor" section="4.2" %}
+1. Install `pre-commit` framework
+2. Add secret scanning hooks (e.g., `detect-secrets`, `trufflehog`)
+3. Run `pre-commit install` in repository
 
 **Step 3: Verify Secret Scanning**
-1. Create test file with fake secret (see SDK example in Code Pack above)
+1. Create test file with fake secret
 2. Attempt commit - should be blocked
 3. Remove secret and retry
 
@@ -688,8 +669,8 @@ Review all installed VSCode extensions and remove unnecessary or untrusted ones.
    - Extensions requesting network/filesystem permissions unnecessarily
 
 **Step 3: Use Extension Allowlist (Cursor Business)**
-
-{% include pack-code.html vendor="cursor" section="5.1" %}
+1. In Cursor Business dashboard, configure extension allowlist
+2. Only permit approved extensions for your organization
 
 #### Recommended Extensions Security Posture
 
@@ -723,9 +704,10 @@ Disable telemetry data collection and crash reporting to prevent code snippets o
 
 **Step 1: Disable All Telemetry**
 1. Open Cursor → **Settings**
-2. Configure (see Code Pack below for full settings)
-
-{% include pack-code.html vendor="cursor" section="6.1" %}
+2. Search for `telemetry`
+3. Set `telemetry.telemetryLevel` to `off`
+4. Disable `telemetry.enableCrashReporter`
+5. Disable `telemetry.enableTelemetry`
 
 **Step 2: Verify Telemetry Disabled**
 1. Check network traffic - should not see telemetry endpoints
@@ -773,15 +755,11 @@ Configure logging of Cursor AI usage for audit and compliance purposes.
 #### ClickOps Implementation
 
 **Step 1: Enable Built-in Logging**
-1. Configure Cursor to log AI interactions (see Code Pack below for full settings)
+1. Configure Cursor to log AI interactions in settings
 
 **Step 2: Export Logs to SIEM**
-
-{% include pack-code.html vendor="cursor" section="7.1" %}
-
-#### Monitoring Queries
-
-Detection queries for excessive AI usage and privacy mode bypass are provided in the DB Query Code Pack above.
+1. Configure log forwarding to your SIEM platform
+2. Set up alerts for anomalous AI usage patterns
 
 ---
 
@@ -815,10 +793,8 @@ Use Cursor Business edition to enforce organizational policies, manage licenses,
    - **Telemetry:** Disable for all users
 
 **Step 3: Deploy Managed Settings**
-
-{% include pack-code.html vendor="cursor" section="8.1" %}
-
-Deploy via MDM (Jamf, Intune, etc.) to all developer machines.
+1. Create organization-wide settings configuration
+2. Deploy via MDM (Jamf, Intune, etc.) to all developer machines
 
 ---
 

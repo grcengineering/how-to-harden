@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Guides: 116](https://img.shields.io/badge/Guides-116-blueviolet)](https://howtoharden.com)
-[![Code Packs: 61](https://img.shields.io/badge/Code%20Packs-61-orange)](packs/)
+[![Code Packs: 59](https://img.shields.io/badge/Code%20Packs-59-orange)](packs/)
 
 **Website:** [howtoharden.com](https://howtoharden.com) | **Organization:** [GRC Engineering](https://grc.engineering)
 
@@ -51,7 +51,7 @@ Every control includes:
 
 ### 2. Code Packs -- Executable Security Controls
 
-**61 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
+**59 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
 
 | Language Type | Directory | What It Does |
 |---------------|-----------|-------------|
@@ -140,7 +140,7 @@ how-to-harden/
 │   └── assets/
 │       └── css/
 │           └── style.css                 # Dark + light theme stylesheet
-├── packs/                                # Code Packs (61 vendors)
+├── packs/                                # Code Packs (59 vendors)
 │   ├── README.md                         # Code Pack Ontology documentation
 │   ├── schema/                           # YAML schema definitions
 │   ├── okta/                             # Example vendor pack
@@ -214,7 +214,7 @@ We maintain independence while accurately representing platform capabilities. We
 
 **Current coverage:**
 - 116 hardening guides across 9 categories (all currently at draft maturity)
-- 61 Code Packs with Terraform, API, CLI, SDK, DB, and Sigma implementations
+- 59 Code Packs with Terraform, API, CLI, SDK, DB, and Sigma implementations
 - Full Jekyll site with search, category filtering, and dark/light themes
 
 **What we need:**

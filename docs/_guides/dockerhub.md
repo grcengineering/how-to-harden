@@ -70,10 +70,6 @@ Require MFA for Docker Hub accounts, especially those with push access.
 2. Configure SAML SSO
 3. Enforce SSO for all members
 
-#### Code Implementation
-
-{% include pack-code.html vendor="dockerhub" section="1.1" %}
-
 ---
 
 ### 1.2 Implement Access Tokens
@@ -145,10 +141,6 @@ Enable Docker Content Trust for image signing.
 2. Configure team access (not individual)
 3. Audit repository permissions quarterly
 
-#### Code Implementation
-
-{% include pack-code.html vendor="dockerhub" section="3.1" %}
-
 ---
 
 ### 3.2 Prevent Secret Exposure
@@ -161,8 +153,6 @@ Enable Docker Content Trust for image signing.
 2. Use multi-stage builds
 3. Never include credentials in Dockerfiles
 
-{% include pack-code.html vendor="dockerhub" section="3.2" %}
-
 ---
 
 ## 4. Monitoring & Detection
@@ -173,8 +163,6 @@ Enable Docker Content Trust for image signing.
 **NIST 800-53:** AU-2
 
 #### Detection Focus
-
-{% include pack-code.html vendor="dockerhub" section="4.1" %}
 
 ---
 

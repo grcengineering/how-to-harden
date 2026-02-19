@@ -3,14 +3,14 @@
 # How to Harden (howtoharden.com)
 #
 # Configures the Snyk Terraform provider for organization management.
-# See: https://registry.terraform.io/providers/snyk/snyk/latest/docs
+# See: https://registry.terraform.io/providers/snyk-terraform-assets/snyk/latest/docs
 # =============================================================================
 
 terraform {
   required_version = ">= 1.0"
   required_providers {
     snyk = {
-      source  = "snyk/snyk"
+      source  = "snyk-terraform-assets/snyk"
       version = "~> 0.1"
     }
   }

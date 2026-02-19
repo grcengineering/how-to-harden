@@ -398,8 +398,6 @@ Configure alerts for security-relevant events based on lessons from December 202
 #### Description
 Export all audit logs to SIEM for correlation and long-term retention.
 
-{% include pack-code.html vendor="beyondtrust" section="5.2" %}
-
 ---
 
 ## 6. Incident Response

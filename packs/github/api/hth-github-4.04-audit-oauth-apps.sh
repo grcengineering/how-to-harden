@@ -16,10 +16,8 @@ APPS=$(gh_get "/orgs/${GITHUB_ORG}/installations") || {
 }
 echo "${APPS}" | jq '.installations[] | {app: .app_slug, permissions: .permissions, created_at: .created_at}'
 
-# List personal OAuth authorizations (run as authenticated user)
-info "4.04 Listing personal OAuth authorizations..."
-gh_get "/applications" \
-  | jq '.[] | {name: .name, scopes: .scopes}'
+# NOTE: The /applications endpoint was deprecated by GitHub in 2019.
+# Use the Admin Console (Settings > OAuth Apps) to review personal OAuth authorizations.
 # HTH Guide Excerpt: end api-list-oauth-apps
 
 APP_COUNT=$(echo "${APPS}" | jq '.installations | length' 2>/dev/null || echo "0")

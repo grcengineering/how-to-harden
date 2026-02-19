@@ -59,7 +59,7 @@ resource "null_resource" "verify_scim_provisioning" {
 resource "onepassword_item" "scim_bridge_config" {
   count = var.profile_level >= 2 && var.scim_bridge_url != "" ? 1 : 0
 
-  vault    = onepassword_vault.infrastructure[0].uuid
+  vault    = data.onepassword_vault.infrastructure.uuid
   title    = "SCIM Bridge Configuration"
   category = "secure_note"
 

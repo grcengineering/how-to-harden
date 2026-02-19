@@ -5,56 +5,48 @@
 # =============================================================================
 #
 # Vaults are the primary organizational unit in 1Password. The Terraform
-# provider directly supports creating and managing vaults. This control
-# creates a least-privilege vault structure with dedicated vaults for
-# different access tiers.
+# provider supports reading existing vaults via data sources (vaults are
+# created via the Admin Console or CLI, not Terraform). This control
+# references a least-privilege vault structure for different access tiers.
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform
 
 # Infrastructure vault -- server credentials, API keys, infrastructure secrets.
 # Access: IT/DevOps group only.
-resource "onepassword_vault" "infrastructure" {
-  count = 1
-
-  name        = "Infrastructure"
-  description = "Server credentials, API keys, and infrastructure secrets -- managed by HTH hardening pack"
+# NOTE: Vaults must be created in the Admin Console first; Terraform reads them.
+data "onepassword_vault" "infrastructure" {
+  name = "Infrastructure"
 }
 
 # Team Shared vault -- shared team credentials and service accounts.
 # Access: Designated team groups.
-resource "onepassword_vault" "team_shared" {
-  count = 1
-
-  name        = "Team Shared"
-  description = "Shared team credentials and service accounts -- managed by HTH hardening pack"
+data "onepassword_vault" "team_shared" {
+  name = "Team Shared"
 }
 
 # Executive vault -- sensitive business credentials.
 # Access: Executives only (L2+ enforced).
-resource "onepassword_vault" "executive" {
+data "onepassword_vault" "executive" {
   count = var.profile_level >= 2 ? 1 : 0
 
-  name        = "Executive"
-  description = "Sensitive business credentials -- restricted access -- managed by HTH hardening pack"
+  name = "Executive"
 }
 
 # Security vault -- security tools, certificates, and compliance credentials.
 # Access: Security team only (L2+ enforced).
-resource "onepassword_vault" "security" {
+data "onepassword_vault" "security" {
   count = var.profile_level >= 2 ? 1 : 0
 
-  name        = "Security"
-  description = "Security tool credentials, certificates, and compliance items -- managed by HTH hardening pack"
+  name = "Security"
 }
 
 # Break-glass vault -- emergency access credentials.
 # Access: Owners only (L3 enforced).
-resource "onepassword_vault" "break_glass" {
+data "onepassword_vault" "break_glass" {
   count = var.profile_level >= 3 ? 1 : 0
 
-  name        = "Break Glass - Emergency Access"
-  description = "Emergency access credentials -- Owner access only -- managed by HTH hardening pack"
+  name = "Break Glass - Emergency Access"
 }
 
 # Document vault permission requirements per profile level.
@@ -71,7 +63,7 @@ resource "null_resource" "verify_vault_permissions" {
       echo ""
       echo "Profile Level: ${var.profile_level}"
       echo ""
-      echo "Vault structure created:"
+      echo "Vault structure referenced:"
       echo ""
       echo "  | Vault              | Purpose                      | Access            |"
       echo "  |--------------------|------------------------------|-------------------|"

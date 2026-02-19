@@ -81,10 +81,6 @@ Configure SAML SSO to centralize authentication for Harness users.
 
 **Time to Complete:** ~1-2 hours
 
-#### Code Implementation
-
-{% include pack-code.html vendor="harness" section="1.1" lang="terraform" %}
-
 ---
 
 ### 1.2 Enforce Two-Factor Authentication

@@ -349,10 +349,6 @@ Configure JFrog Xray for vulnerability and license scanning.
 2. Configure periodic rescanning
 3. Set up notifications
 
-#### Code Implementation
-
-{% include pack-code.html vendor="jfrog" section="4.1" %}
-
 ---
 
 ### 4.2 CVE Remediation Workflow

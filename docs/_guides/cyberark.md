@@ -88,10 +88,6 @@ Require MFA for all CyberArk console access, including PVWA (Password Vault Web 
    - **Factors:** TOTP, Push, FIDO2
    - **Remember device:** Disabled (L2/L3)
 
-#### Code Implementation
-
-{% include pack-code.html vendor="cyberark" section="1.1" %}
-
 #### Validation & Testing
 1. [ ] Attempt PVWA login with password only - should fail
 2. [ ] Complete login with password + MFA - should succeed
@@ -170,10 +166,6 @@ Implement emergency access procedures for critical scenarios when normal authent
 2. Distribute parts to different individuals
 3. Document recovery procedure
 
-#### Code Implementation
-
-{% include pack-code.html vendor="cyberark" section="1.3" %}
-
 ---
 
 ## 2. Vault Security
@@ -224,8 +216,6 @@ Configure disaster recovery and high availability for vault infrastructure.
 4. Verify backup integrity
 
 Use `PAReplicate.exe` to verify replication status and test DR failover in non-production environments.
-
-{% include pack-code.html vendor="cyberark" section="2.2" %}
 
 ---
 
@@ -292,10 +282,6 @@ For each integration:
 1. Grant access to specific safes only
 2. Limit to `UseAccounts` permission (no admin rights)
 3. Enable audit logging for all actions
-
-#### Code Implementation
-
-{% include pack-code.html vendor="cyberark" section="3.2" %}
 
 ---
 
@@ -370,10 +356,6 @@ Configure time-limited access requests with automatic credential rotation after 
    - Approver reviews justification
    - Time-limited access granted
    - Credentials rotate after session
-
-#### Code Implementation
-
-{% include pack-code.html vendor="cyberark" section="4.2" %}
 
 ---
 

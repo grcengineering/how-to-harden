@@ -6,20 +6,6 @@
 # =============================================================================
 
 
-# -----------------------------------------------------------------------------
-# Section 1.1: Phishing-Resistant MFA
-# -----------------------------------------------------------------------------
-
-output "auth_methods_policy_id" {
-  description = "ID of the authentication methods policy"
-  value       = azuread_authentication_methods_policy.main.id
-}
-
-output "phishing_resistant_strength_id" {
-  description = "ID of the phishing-resistant authentication strength policy"
-  value       = azuread_authentication_strength_policy.phishing_resistant.id
-}
-
 
 # -----------------------------------------------------------------------------
 # Section 1.2: Emergency Access (Break-Glass) Accounts
@@ -112,14 +98,6 @@ output "access_review_config" {
 }
 
 
-# -----------------------------------------------------------------------------
-# Section 4.1: Restrict User Consent to Applications
-# -----------------------------------------------------------------------------
-
-output "authorization_policy_id" {
-  description = "ID of the authorization policy with user consent disabled"
-  value       = azuread_authorization_policy.consent_policy.id
-}
 
 
 # -----------------------------------------------------------------------------

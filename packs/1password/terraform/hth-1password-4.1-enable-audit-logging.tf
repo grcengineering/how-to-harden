@@ -73,7 +73,7 @@ resource "null_resource" "verify_audit_logging" {
 resource "onepassword_item" "siem_integration_config" {
   count = var.siem_endpoint != "" ? 1 : 0
 
-  vault    = onepassword_vault.infrastructure[0].uuid
+  vault    = data.onepassword_vault.infrastructure.uuid
   title    = "HTH SIEM Integration Configuration"
   category = "secure_note"
 

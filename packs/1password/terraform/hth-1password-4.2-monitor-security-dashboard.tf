@@ -60,7 +60,7 @@ resource "null_resource" "verify_security_dashboard" {
 
 # Store security dashboard review baseline.
 resource "onepassword_item" "security_dashboard_baseline" {
-  vault    = onepassword_vault.infrastructure[0].uuid
+  vault    = data.onepassword_vault.infrastructure.uuid
   title    = "HTH Security Dashboard Review Baseline"
   category = "secure_note"
 

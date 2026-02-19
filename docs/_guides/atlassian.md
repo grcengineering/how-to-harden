@@ -90,10 +90,6 @@ Require SAML SSO with MFA for all Atlassian Cloud access, eliminating local pass
    - **Enforcement:** Required
    - **Grace period:** None (L2)
 
-#### Code Implementation
-
-{% include pack-code.html vendor="atlassian" section="1.1" %}
-
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |

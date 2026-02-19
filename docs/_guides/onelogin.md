@@ -80,8 +80,6 @@ Configure password policies to enforce strong authentication requirements for On
 
 **Time to Complete:** ~20 minutes
 
-{% include pack-code.html vendor="onelogin" section="1.1" %}
-
 ---
 
 ### 1.2 Configure Session Controls
@@ -109,8 +107,6 @@ Configure session timeout and activity controls to limit exposure from idle sess
 1. Enable **Single session enforcement** if required
 2. Configure re-authentication for sensitive operations
 3. Enable session termination on logout
-
-{% include pack-code.html vendor="onelogin" section="1.2" %}
 
 ---
 
@@ -143,8 +139,6 @@ Configure secure self-service password reset to reduce helpdesk burden while mai
 1. Navigate to: **Settings** → **Security Questions**
 2. Configure custom security questions
 3. Require unique answers
-
-{% include pack-code.html vendor="onelogin" section="1.3" %}
 
 ---
 
@@ -195,8 +189,6 @@ Require multi-factor authentication for all users accessing OneLogin.
 
 **Time to Complete:** ~30 minutes
 
-{% include pack-code.html vendor="onelogin" section="2.1" %}
-
 ---
 
 ### 2.2 Configure SmartFactor Authentication
@@ -244,8 +236,6 @@ Enable SmartFactor Authentication for risk-based adaptive MFA.
 2. Adjust thresholds based on false positives
 3. Review blocked attempts
 
-{% include pack-code.html vendor="onelogin" section="2.2" %}
-
 ---
 
 ### 2.3 Require Phishing-Resistant MFA for Admins
@@ -276,8 +266,6 @@ Require WebAuthn/FIDO2 hardware keys for administrator accounts.
 1. Create admin group if not exists
 2. Assign `Admin MFA Policy` to admin group
 3. Document hardware key distribution
-
-{% include pack-code.html vendor="onelogin" section="2.3" %}
 
 ---
 
@@ -317,8 +305,6 @@ Configure delegated administration to implement least privilege for admin access
 2. Document role assignments
 3. Regular review of admin access
 
-{% include pack-code.html vendor="onelogin" section="3.1" %}
-
 ---
 
 ### 3.2 Configure IP Address Allowlisting
@@ -354,8 +340,6 @@ Restrict access to OneLogin from approved IP addresses.
 2. Verify blocked from unauthorized IPs
 3. Document emergency procedures
 
-{% include pack-code.html vendor="onelogin" section="3.2" %}
-
 ---
 
 ### 3.3 Protect Privileged Accounts
@@ -390,8 +374,6 @@ Implement additional protections for privileged administrator accounts.
 2. Require approval for privilege changes
 3. Regular access reviews
 
-{% include pack-code.html vendor="onelogin" section="3.3" %}
-
 ---
 
 ## 4. Session & Network Security
@@ -412,8 +394,6 @@ Ensure all OneLogin communications use strong TLS encryption.
 1. Verify OneLogin portal uses TLS 1.2+
 2. Check SAML connections use HTTPS
 3. Validate API connections are encrypted
-
-{% include pack-code.html vendor="onelogin" section="4.1" %}
 
 ---
 
@@ -443,8 +423,6 @@ Configure account lockout and brute force protection.
 2. Configure alerts for repeated failures
 3. Block known malicious IPs
 
-{% include pack-code.html vendor="onelogin" section="4.2" %}
-
 ---
 
 ### 4.3 Configure Device Trust
@@ -471,8 +449,6 @@ Implement device trust policies to verify device security posture.
    - Domain-joined devices
    - Certificate validation
    - Managed devices only
-
-{% include pack-code.html vendor="onelogin" section="4.3" %}
 
 ---
 
@@ -512,8 +488,6 @@ Enable and monitor audit logs for security events.
 - Password resets
 - User provisioning/deprovisioning
 
-{% include pack-code.html vendor="onelogin" section="5.1" %}
-
 ---
 
 ### 5.2 Configure Security Alerts
@@ -542,8 +516,6 @@ Configure alerts for security-relevant events.
 1. Set notification recipients
 2. Configure escalation procedures
 3. Test alert delivery
-
-{% include pack-code.html vendor="onelogin" section="5.2" %}
 
 ---
 

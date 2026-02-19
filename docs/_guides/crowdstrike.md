@@ -197,10 +197,6 @@ For each integration, create dedicated client with minimal scopes:
 | Development | Monthly |
 | One-time scripts | Immediately after use |
 
-#### Code Implementation
-
-{% include pack-code.html vendor="crowdstrike" section="2.1" %}
-
 ---
 
 ### 2.2 Configure API Rate Limiting

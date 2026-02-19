@@ -54,7 +54,7 @@ resource "null_resource" "verify_password_policy" {
 
 # Store password policy audit record as a secure note.
 resource "onepassword_item" "password_policy_audit" {
-  vault    = onepassword_vault.infrastructure[0].uuid
+  vault    = data.onepassword_vault.infrastructure.uuid
   title    = "HTH Password Policy Configuration"
   category = "secure_note"
 

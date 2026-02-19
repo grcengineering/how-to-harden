@@ -56,7 +56,7 @@ resource "null_resource" "verify_firewall_rules" {
 resource "onepassword_item" "firewall_rules_audit" {
   count = var.profile_level >= 2 ? 1 : 0
 
-  vault    = onepassword_vault.infrastructure[0].uuid
+  vault    = data.onepassword_vault.infrastructure.uuid
   title    = "HTH Firewall Rules Configuration"
   category = "secure_note"
 

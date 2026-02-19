@@ -61,7 +61,7 @@ resource "null_resource" "verify_sharing_policies" {
 resource "onepassword_item" "sharing_policies_audit" {
   count = var.profile_level >= 2 ? 1 : 0
 
-  vault    = onepassword_vault.infrastructure[0].uuid
+  vault    = data.onepassword_vault.infrastructure.uuid
   title    = "HTH Item Sharing Policies Configuration"
   category = "secure_note"
 

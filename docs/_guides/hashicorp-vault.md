@@ -218,8 +218,6 @@ Secure Vault API with TLS, client certificates, and rate limiting.
 #### Description
 Configure rate limiting to prevent abuse and detect anomalous access patterns.
 
-{% include pack-code.html vendor="hashicorp-vault" section="3.2" %}
-
 ---
 
 ## 4. Audit Logging

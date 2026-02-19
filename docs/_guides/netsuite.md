@@ -191,8 +191,6 @@ For new integrations:
 2. Configure short token lifetimes
 3. Implement token refresh
 
-{% include pack-code.html vendor="netsuite" section="2.2" %}
-
 ---
 
 ## 3. SuiteApp & Integration Security

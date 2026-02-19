@@ -12,27 +12,27 @@
 
 output "infrastructure_vault_id" {
   description = "UUID of the Infrastructure vault"
-  value       = onepassword_vault.infrastructure[0].uuid
+  value       = data.onepassword_vault.infrastructure.uuid
 }
 
 output "team_shared_vault_id" {
   description = "UUID of the Team Shared vault"
-  value       = onepassword_vault.team_shared[0].uuid
+  value       = data.onepassword_vault.team_shared.uuid
 }
 
 output "executive_vault_id" {
   description = "UUID of the Executive vault (L2+ only)"
-  value       = var.profile_level >= 2 ? onepassword_vault.executive[0].uuid : null
+  value       = var.profile_level >= 2 ? data.onepassword_vault.executive[0].uuid : null
 }
 
 output "security_vault_id" {
   description = "UUID of the Security vault (L2+ only)"
-  value       = var.profile_level >= 2 ? onepassword_vault.security[0].uuid : null
+  value       = var.profile_level >= 2 ? data.onepassword_vault.security[0].uuid : null
 }
 
 output "break_glass_vault_id" {
   description = "UUID of the Break Glass vault (L3 only)"
-  value       = var.profile_level >= 3 ? onepassword_vault.break_glass[0].uuid : null
+  value       = var.profile_level >= 3 ? data.onepassword_vault.break_glass[0].uuid : null
 }
 
 
@@ -72,7 +72,7 @@ output "hardening_summary" {
     l1_controls_applied    = true
     l2_controls_applied    = var.profile_level >= 2
     l3_controls_applied    = var.profile_level >= 3
-    vaults_created = {
+    vaults_referenced = {
       infrastructure = true
       team_shared    = true
       executive      = var.profile_level >= 2

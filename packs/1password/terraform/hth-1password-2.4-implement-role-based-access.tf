@@ -56,7 +56,7 @@ resource "null_resource" "verify_rbac" {
 
 # Store RBAC audit record with role inventory.
 resource "onepassword_item" "rbac_audit" {
-  vault    = onepassword_vault.infrastructure[0].uuid
+  vault    = data.onepassword_vault.infrastructure.uuid
   title    = "HTH Role-Based Access Inventory"
   category = "secure_note"
 

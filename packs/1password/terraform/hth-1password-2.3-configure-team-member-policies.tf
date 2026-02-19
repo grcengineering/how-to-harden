@@ -66,7 +66,7 @@ resource "null_resource" "verify_team_policies" {
 
 # Store team policy audit record.
 resource "onepassword_item" "team_policies_audit" {
-  vault    = onepassword_vault.infrastructure[0].uuid
+  vault    = data.onepassword_vault.infrastructure.uuid
   title    = "HTH Team Member Policies Configuration"
   category = "secure_note"
 

@@ -5,7 +5,8 @@
 
 # HTH Guide Excerpt: begin cli-docker-deploy-opa
 # Pull the Workato OPA Docker image
-docker pull workato/agent:latest
+# See: https://docs.workato.com/on-prem/agents/docker.html
+docker pull daa34553.workato.com/semi-public/amd64/workato-agent:latest
 
 # Run the agent with configuration
 docker run -d \
@@ -13,7 +14,7 @@ docker run -d \
   --restart unless-stopped \
   -v /opt/workato/conf:/opt/workato/conf:ro \
   -v /opt/workato/data:/opt/workato/data \
-  workato/agent:latest
+  daa34553.workato.com/semi-public/amd64/workato-agent:latest
 
 # Verify agent is running and connected
 docker logs workato-opa | grep -i "connected"

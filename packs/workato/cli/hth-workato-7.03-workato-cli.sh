@@ -49,8 +49,8 @@
 # HTH Guide Excerpt: end cli-github-actions-pipeline
 
 # HTH Guide Excerpt: begin cli-workato-connector-dev
-# Install Workato CLI (Ruby gem)
-gem install workato
+# Install Workato Connector SDK (Ruby gem)
+gem install workato-connector-sdk
 
 # Generate a new connector scaffold
 workato generate connector my-connector
