@@ -6,6 +6,17 @@
 set -euo pipefail
 
 # --------------------------------------------------------------------------
+# Anti-Pattern: Hardcoded API Keys (DO NOT DO THIS)
+# --------------------------------------------------------------------------
+
+# HTH Guide Excerpt: begin cli-bad-hardcoded-key
+# BAD - Don't do this: hardcoded API key in settings.json
+# {
+#   "cursor.openai.apiKey": "sk-proj-abc123..."
+# }
+# HTH Guide Excerpt: end cli-bad-hardcoded-key
+
+# --------------------------------------------------------------------------
 # Option 1: Environment Variables (Recommended)
 # Add to shell profile (~/.zshrc or ~/.bashrc)
 # --------------------------------------------------------------------------
@@ -19,6 +30,11 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 # Verify keys are set
 echo $OPENAI_API_KEY  # Should print key
 # HTH Guide Excerpt: end cli-env-var-api-keys
+
+# HTH Guide Excerpt: begin cli-reload-shell
+# Reload shell to pick up new environment variables
+source ~/.zshrc
+# HTH Guide Excerpt: end cli-reload-shell
 
 # --------------------------------------------------------------------------
 # Option 2: Enterprise Secret Management
@@ -46,3 +62,12 @@ security add-generic-password -a "$USER" -s "cursor-openai-key" -w "sk-proj-..."
 # Retrieve in shell
 security find-generic-password -a "$USER" -s "cursor-openai-key" -w
 # HTH Guide Excerpt: end cli-keychain-api-keys
+
+# --------------------------------------------------------------------------
+# Verification: Check for Hardcoded Keys in Settings
+# --------------------------------------------------------------------------
+
+# HTH Guide Excerpt: begin cli-verify-no-hardcoded-keys
+# Search for hardcoded API keys in Cursor settings
+grep -r "apiKey" ~/Library/Application\ Support/Cursor/User/
+# HTH Guide Excerpt: end cli-verify-no-hardcoded-keys

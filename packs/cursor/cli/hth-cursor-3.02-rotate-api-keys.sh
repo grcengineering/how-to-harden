@@ -19,3 +19,12 @@ echo "Rotating OpenAI API key..."
 
 echo "API keys rotated successfully"
 # HTH Guide Excerpt: end cli-rotate-api-keys
+
+# --------------------------------------------------------------------------
+# Update Environment Variable After Rotation
+# --------------------------------------------------------------------------
+
+# HTH Guide Excerpt: begin cli-update-env-after-rotation
+# Update environment variable with new key
+export OPENAI_API_KEY="sk-proj-NEW-KEY"
+# HTH Guide Excerpt: end cli-update-env-after-rotation

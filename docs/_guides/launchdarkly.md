@@ -212,26 +212,6 @@ Protect LaunchDarkly SDK keys.
 
 #### Detection Focus
 
-```sql
--- Detect production flag changes
-SELECT user_email, flag_key, action
-FROM launchdarkly_audit_log
-WHERE environment = 'production'
-  AND action IN ('updateFlag', 'toggleFlag')
-  AND timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect bulk flag modifications
-SELECT user_email, COUNT(*) as changes
-FROM launchdarkly_audit_log
-WHERE action LIKE '%Flag%'
-  AND timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY user_email
-HAVING COUNT(*) > 10;
-```
-
----
-
-
 {% include pack-code.html vendor="launchdarkly" section="4.1" %}
 
 ## Appendix A: Edition Compatibility

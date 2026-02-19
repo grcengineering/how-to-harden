@@ -1,0 +1,3 @@
+# HTH Guide Excerpt: begin cli-log-query-api-token-events
+eventType eq "system.api_token.create" OR eventType eq "system.api_token.revoke" OR eventType eq "app.oauth2.token.grant"
+# HTH Guide Excerpt: end cli-log-query-api-token-events

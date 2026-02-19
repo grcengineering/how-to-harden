@@ -75,61 +75,19 @@ Configure Vault authentication methods appropriate to each use case. Avoid using
 #### ClickOps Implementation
 
 **Step 1: Disable Root Token After Initial Setup**
-```bash
-# After initial configuration, revoke root token
-vault token revoke <root-token>
-
-# Create admin policy for emergency use
-vault policy write admin-emergency - <<EOF
-path "*" {
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-EOF
-
-# Create emergency token with TTL
-vault token create -policy=admin-emergency -ttl=1h -use-limit=5
-```
+1. Revoke the root token after initial configuration
+2. Create an admin-emergency policy for break-glass scenarios
+3. Generate emergency tokens with short TTLs and use limits
 
 **Step 2: Configure OIDC for User Authentication**
-```bash
-# Enable OIDC auth method
-vault auth enable oidc
-
-# Configure OIDC with your IdP
-vault write auth/oidc/config \
-    oidc_discovery_url="https://your-idp.okta.com" \
-    oidc_client_id="$CLIENT_ID" \
-    oidc_client_secret="$CLIENT_SECRET" \
-    default_role="default"
-
-# Create role mapping
-vault write auth/oidc/role/default \
-    bound_audiences="$CLIENT_ID" \
-    allowed_redirect_uris="https://vault.company.com/ui/vault/auth/oidc/oidc/callback" \
-    allowed_redirect_uris="http://localhost:8250/oidc/callback" \
-    user_claim="email" \
-    groups_claim="groups" \
-    policies="default"
-```
+1. Enable the OIDC auth method
+2. Configure OIDC with your identity provider (Okta, Azure AD, etc.)
+3. Create role mappings with bound audiences and redirect URIs
 
 **Step 3: Configure AppRole for Applications**
-```bash
-# Enable AppRole
-vault auth enable approle
-
-# Create role with limited TTL
-vault write auth/approle/role/jenkins \
-    token_policies="jenkins-secrets" \
-    token_ttl=1h \
-    token_max_ttl=4h \
-    secret_id_ttl=24h \
-    secret_id_num_uses=10
-
-# Bind to specific CIDR (L2)
-vault write auth/approle/role/jenkins \
-    token_bound_cidrs="10.0.0.0/8" \
-    secret_id_bound_cidrs="10.0.0.0/8"
-```
+1. Enable the AppRole auth method
+2. Create roles with limited TTLs and SecretID constraints
+3. Bind roles to specific CIDRs (L2)
 
 #### Validation & Testing
 1. [ ] Attempt to use root token - should be revoked
@@ -140,13 +98,6 @@ vault write auth/approle/role/jenkins \
 **Expected result:** Each auth method provides minimal required access
 
 #### Monitoring & Maintenance
-```bash
-# Monitor auth method usage
-vault read sys/auth
-
-# Check token counts by auth method
-vault read sys/internal/counters/tokens
-```
 
 **Maintenance schedule:**
 - **Weekly:** Review failed authentication attempts
@@ -177,40 +128,9 @@ Create fine-grained policies limiting access to specific paths. Avoid wildcard p
 #### ClickOps Implementation
 
 **Step 1: Create Hierarchical Policy Structure**
-```bash
-# Base policy - all authenticated users
-vault policy write base - <<EOF
-path "secret/data/shared/*" {
-  capabilities = ["read", "list"]
-}
-path "auth/token/lookup-self" {
-  capabilities = ["read"]
-}
-path "auth/token/renew-self" {
-  capabilities = ["update"]
-}
-EOF
-
-# Team-specific policy
-vault policy write team-platform - <<EOF
-path "secret/data/platform/*" {
-  capabilities = ["create", "read", "update", "delete", "list"]
-}
-path "aws/creds/platform-deploy" {
-  capabilities = ["read"]
-}
-EOF
-
-# Application policy (most restrictive)
-vault policy write app-frontend - <<EOF
-path "secret/data/frontend/config" {
-  capabilities = ["read"]
-}
-path "database/creds/frontend-readonly" {
-  capabilities = ["read"]
-}
-EOF
-```
+1. Create a base read-only policy for all authenticated users
+2. Create team-specific policies scoped to team secret paths
+3. Create application policies with the most restrictive access
 
 ---
 
@@ -314,24 +234,12 @@ Enable audit logging to file and SIEM for all Vault operations.
 
 #### ClickOps Implementation
 
-```bash
-# Enable file audit device
-vault audit enable file file_path=/vault/audit/vault-audit.log
-
-# Enable syslog audit device
-vault audit enable syslog tag="vault" facility="AUTH"
-
-# Enable socket audit device (for SIEM)
-vault audit enable socket \
-    address="siem.company.com:514" \
-    socket_type="tcp"
-
-# Verify audit devices
-vault audit list -detailed
-```
+1. Enable file audit device for local persistent logging
+2. Enable syslog audit device for centralized log forwarding
+3. Enable socket audit device for real-time SIEM streaming
+4. Verify all audit devices are active
 
 ---
-
 
 {% include pack-code.html vendor="hashicorp-vault" section="4.1" %}
 
@@ -363,32 +271,8 @@ Configure secure Vault integration for Jenkins with minimal privileges and short
 #### ClickOps Implementation
 
 **Jenkins Configuration (Jenkinsfile):**
-```groovy
-// Jenkinsfile
-pipeline {
-    agent any
 
-    environment {
-        VAULT_ADDR = 'https://vault.company.com'
-    }
-
-    stages {
-        stage('Get Secrets') {
-            steps {
-                withVault(configuration: [
-                    vaultUrl: "${VAULT_ADDR}",
-                    vaultCredentialId: 'vault-approle'
-                ], vaultSecrets: [
-                    [path: 'secret/data/jenkins/api-keys',
-                     secretValues: [[envVar: 'API_KEY', vaultKey: 'data.api_key']]]
-                ]) {
-                    sh 'echo "Using secret safely"'
-                }
-            }
-        }
-    }
-}
-```
+Configure a Jenkinsfile that uses the `withVault` step to securely retrieve secrets during pipeline execution. The Vault URL and AppRole credential ID are injected via environment variables, and secrets are mapped to environment variables within the build step scope only.
 
 {% include pack-code.html vendor="hashicorp-vault" section="5.1" %}
 
@@ -401,22 +285,7 @@ pipeline {
 #### Description
 Use GitHub Actions OIDC to authenticate to Vault without storing long-lived tokens.
 
-```bash
-# Configure JWT auth for GitHub Actions
-vault auth enable -path=github-actions jwt
-
-vault write auth/github-actions/config \
-    oidc_discovery_url="https://token.actions.githubusercontent.com" \
-    bound_issuer="https://token.actions.githubusercontent.com"
-
-vault write auth/github-actions/role/deploy \
-    role_type="jwt" \
-    bound_audiences="https://github.com/your-org" \
-    bound_subject="repo:your-org/your-repo:ref:refs/heads/main" \
-    user_claim="sub" \
-    policies="deploy-secrets" \
-    ttl=5m
-```
+Configure JWT authentication for GitHub Actions using OIDC federation. This eliminates long-lived tokens by using GitHub's OIDC provider to authenticate directly to Vault with short-lived JWTs bound to specific repositories and branches.
 
 {% include pack-code.html vendor="hashicorp-vault" section="5.2" %}
 
@@ -444,19 +313,9 @@ Configure auto-unseal using cloud KMS to eliminate manual unseal key management.
 #### Description
 Configure Vault disaster recovery and backup procedures.
 
-```bash
-# Create Raft snapshot
-vault operator raft snapshot save backup.snap
+Use Raft snapshots for backup and restore operations. Create snapshots regularly, verify their integrity, and test restoration procedures. For Enterprise deployments, configure DR replication for automated failover.
 
-# Verify snapshot
-vault operator raft snapshot inspect backup.snap
-
-# Restore from snapshot (DR scenario)
-vault operator raft snapshot restore backup.snap
-
-# For Enterprise: Configure DR replication
-vault write -f sys/replication/dr/primary/enable
-```
+{% include pack-code.html vendor="hashicorp-vault" section="6.2" %}
 
 ---
 

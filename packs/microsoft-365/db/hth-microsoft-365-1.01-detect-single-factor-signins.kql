@@ -1,0 +1,12 @@
+// =============================================================================
+// HTH Microsoft 365 Control 1.1: KQL Detection for Single-Factor Sign-Ins
+// Profile: L1
+// =============================================================================
+
+// HTH Guide Excerpt: begin db-detect-single-factor-signins
+SigninLogs
+| where TimeGenerated > ago(24h)
+| where AuthenticationRequirement == "singleFactorAuthentication"
+| where ResultType == 0
+| project TimeGenerated, UserPrincipalName, AppDisplayName, IPAddress, Location
+// HTH Guide Excerpt: end db-detect-single-factor-signins

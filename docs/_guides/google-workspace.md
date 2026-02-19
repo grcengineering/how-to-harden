@@ -114,12 +114,7 @@ Require 2-Step Verification (2SV) for all users with enforcement, not just enrol
 - Alert on suspicious sign-in attempts
 - Track 2SV enrollment completion
 
-**Admin Console Query:**
-```text
-Navigate to: Security → Investigation Tool
-Event: Login
-Filter: 2SV method = None, Login result = Success
-```
+**Admin Console Query:** Navigate to Security, then Investigation Tool. Set Event to Login, and filter by 2SV method = None, Login result = Success.
 
 **Maintenance schedule:**
 - **Weekly:** Review new user 2SV enrollment
@@ -578,30 +573,6 @@ Enable and configure audit logging across all Google Workspace services. Use the
 | `DOWNLOAD` | Drive | Data exfiltration |
 
 #### Code Implementation
-
-**BigQuery Detection Queries**
-```sql
--- Find failed login attempts by user
-SELECT
-  actor.email,
-  COUNT(*) as failed_attempts
-FROM `project.dataset.login_logs`
-WHERE event_name = 'login_failure'
-  AND _PARTITIONTIME >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
-GROUP BY actor.email
-HAVING failed_attempts > 10
-ORDER BY failed_attempts DESC;
-
--- Find external file sharing
-SELECT
-  actor.email,
-  doc_title,
-  target_user
-FROM `project.dataset.drive_logs`
-WHERE event_name = 'change_user_access'
-  AND target_user NOT LIKE '%@yourdomain.com'
-  AND _PARTITIONTIME >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR);
-```
 
 {% include pack-code.html vendor="google-workspace" section="5.1" %}
 

@@ -1,0 +1,3 @@
+# HTH Guide Excerpt: begin cli-log-query-itp-threats
+eventType eq "security.threat.detected" OR eventType eq "security.session.risk_change"
+# HTH Guide Excerpt: end cli-log-query-itp-threats

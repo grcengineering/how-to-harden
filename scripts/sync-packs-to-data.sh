@@ -41,14 +41,14 @@ normalize_section() {
 # Extract content between HTH Guide Excerpt markers
 # Returns extracted content via stdout, with consistent minimum 2-space indent
 # to prevent YAML block scalar indentation errors.
-# Supports both # (bash/python/HCL/YAML) and -- (SQL) comment styles.
+# Supports #, --, and // comment styles for bash/python/HCL, SQL, and KQL/Groovy.
 extract_region() {
   local file="$1"
   local region_name="$2"
   local raw
-  raw=$(sed -n "/^[[:space:]]*[#-][#-]* HTH Guide Excerpt: begin ${region_name}\$/,/^[[:space:]]*[#-][#-]* HTH Guide Excerpt: end ${region_name}\$/{
-    /^[[:space:]]*[#-][#-]* HTH Guide Excerpt: begin ${region_name}\$/d
-    /^[[:space:]]*[#-][#-]* HTH Guide Excerpt: end ${region_name}\$/d
+  raw=$(sed -n "/HTH Guide Excerpt: begin ${region_name}\$/,/HTH Guide Excerpt: end ${region_name}\$/{
+    /HTH Guide Excerpt: begin ${region_name}\$/d
+    /HTH Guide Excerpt: end ${region_name}\$/d
     p
   }" "${file}")
   # Ensure all non-empty lines have at least 2-space indent so YAML block
@@ -58,10 +58,10 @@ extract_region() {
 }
 
 # List all region names in a file
-# Supports both # and -- comment markers
+# Supports #, --, and // comment markers
 list_regions() {
   local file="$1"
-  grep -oP '^\s*[#-][#-]* HTH Guide Excerpt: begin \K.*' "${file}" 2>/dev/null || true
+  grep -oP 'HTH Guide Excerpt: begin \K.*' "${file}" 2>/dev/null || true
 }
 
 # Escape content for YAML literal block scalar
@@ -80,17 +80,27 @@ yaml_content() {
 detect_lang() {
   local file="$1"
   case "${file}" in
-    *.tf)    echo "hcl" ;;
-    *.sh)    echo "bash" ;;
-    *.yml)   echo "yaml" ;;
-    *.py)    echo "python" ;;
-    *.ps1)   echo "powershell" ;;
-    *.sql)   echo "sql" ;;
-    *.js)    echo "javascript" ;;
-    *.go)    echo "go" ;;
-    *.rb)    echo "ruby" ;;
-    *.toml)  echo "toml" ;;
-    *)       echo "plaintext" ;;
+    *.tf)         echo "hcl" ;;
+    *.sh)         echo "bash" ;;
+    *.yml|*.yaml) echo "yaml" ;;
+    *.py)         echo "python" ;;
+    *.ps1)        echo "powershell" ;;
+    *.sql)        echo "sql" ;;
+    *.js)         echo "javascript" ;;
+    *.go)         echo "go" ;;
+    *.rb)         echo "ruby" ;;
+    *.toml)       echo "toml" ;;
+    *.json)       echo "json" ;;
+    *.kql)        echo "kql" ;;
+    *.spl)        echo "spl" ;;
+    *.graphql)    echo "graphql" ;;
+    *.groovy)     echo "groovy" ;;
+    *.ini)        echo "ini" ;;
+    *.txt)        echo "text" ;;
+    *.xml)        echo "xml" ;;
+    *.dax)        echo "dax" ;;
+    *.regex)      echo "regex" ;;
+    *)            echo "plaintext" ;;
   esac
 }
 

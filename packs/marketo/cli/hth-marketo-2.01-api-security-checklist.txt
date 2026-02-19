@@ -1,0 +1,12 @@
+# HTH Adobe Marketo Control 2.1: Secure REST API Access
+# Profile: L1 | NIST: IA-5
+# https://howtoharden.com/guides/marketo/#21-secure-rest-api-access
+
+# HTH Guide Excerpt: begin cli-api-security-checklist
+API Security Checklist:
+├── Create dedicated API users per integration
+├── Use API-only users (no UI access)
+├── Rotate Client Secret annually
+├── Monitor API usage quotas
+└── Document all integrations
+# HTH Guide Excerpt: end cli-api-security-checklist

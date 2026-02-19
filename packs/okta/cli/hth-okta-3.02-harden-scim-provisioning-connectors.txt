@@ -1,0 +1,3 @@
+# HTH Guide Excerpt: begin cli-log-query-scim-events
+eventType eq "system.scim.user.create" OR eventType eq "system.scim.user.update"
+# HTH Guide Excerpt: end cli-log-query-scim-events

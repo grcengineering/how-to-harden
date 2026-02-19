@@ -1,0 +1,36 @@
+# =============================================================================
+# HTH Databricks Control 3.1: Configure Cluster Policies
+# Profile: L1 | NIST: CM-7
+# https://howtoharden.com/guides/databricks/#31-configure-cluster-policies
+# =============================================================================
+
+# HTH Guide Excerpt: begin cli-cluster-policy-json
+{
+  "spark_version": {
+    "type": "allowlist",
+    "values": ["13.3.x-scala2.12", "14.0.x-scala2.12"]
+  },
+  "node_type_id": {
+    "type": "allowlist",
+    "values": ["Standard_DS3_v2", "Standard_DS4_v2"]
+  },
+  "autotermination_minutes": {
+    "type": "range",
+    "minValue": 10,
+    "maxValue": 120,
+    "defaultValue": 30
+  },
+  "custom_tags.Environment": {
+    "type": "fixed",
+    "value": "production"
+  },
+  "spark_conf.spark.databricks.cluster.profile": {
+    "type": "fixed",
+    "value": "serverless"
+  },
+  "init_scripts": {
+    "type": "fixed",
+    "value": []
+  }
+}
+# HTH Guide Excerpt: end cli-cluster-policy-json

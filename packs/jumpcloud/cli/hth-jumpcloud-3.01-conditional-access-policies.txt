@@ -1,0 +1,22 @@
+# =============================================================================
+# HTH JumpCloud Conditional Access Policy Examples
+# Vendor: jumpcloud | Section: 3.1
+# =============================================================================
+
+# HTH Guide Excerpt: begin cli-policy-block-highrisk
+Name: Block High-Risk Countries
+Conditions:
+  - Location NOT IN: [US, CA, UK, trusted countries]
+Actions:
+  - Block access
+Apply to: All Users (except emergency accounts)
+# HTH Guide Excerpt: end cli-policy-block-highrisk
+
+# HTH Guide Excerpt: begin cli-policy-require-mfa-remote
+Name: Require MFA - Remote Access
+Conditions:
+  - Location NOT IN: [Corporate IP ranges]
+Actions:
+  - Require MFA
+Apply to: All Users
+# HTH Guide Excerpt: end cli-policy-require-mfa-remote

@@ -1,0 +1,18 @@
+# HTH NetSuite Control 1.2: Implement Role-Based Access Control
+# Profile: L1 | NIST: AC-3, AC-6
+# https://howtoharden.com/guides/netsuite/#12-implement-role-based-access-control
+
+# HTH Guide Excerpt: begin cli-role-structure
+Roles:
+├── Administrator (limit to 2-3 users)
+├── Financial Controller
+│   └── Full financial access, reporting
+├── Accounts Payable
+│   └── Vendor bills, payments (no GL access)
+├── Accounts Receivable
+│   └── Customer invoices, receipts
+├── Sales Representative
+│   └── Quotes, orders (no financial reports)
+└── Integration Role
+    └── API access for specific integrations
+# HTH Guide Excerpt: end cli-role-structure

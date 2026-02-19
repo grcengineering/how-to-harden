@@ -184,21 +184,7 @@ Manage BambooHR API keys securely.
 
 #### Detection Focus
 
-```sql
--- Detect bulk data exports
-SELECT user_email, report_name, record_count
-FROM bamboo_activity
-WHERE action = 'report_export'
-  AND record_count > 100
-  AND timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect API abuse
-SELECT api_key, endpoint, COUNT(*) as calls
-FROM api_log
-WHERE timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY api_key, endpoint
-HAVING COUNT(*) > 500;
-```
+{% include pack-code.html vendor="bamboohr" section="4.1" %}
 
 ---
 

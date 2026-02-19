@@ -1,0 +1,11 @@
+# HTH Oracle HCM Cloud Control 2.1: Secure REST API Access
+# Profile: L1 | NIST: IA-5
+# https://howtoharden.com/guides/oracle-hcm/#21-secure-rest-api-access
+
+# HTH Guide Excerpt: begin cli-scope-restrictions
+Minimum Scopes:
+├── urn:opc:resource:consumer::all (avoid if possible)
+├── Specific API scopes only:
+│   ├── /hcmRestApi/resources/workers
+│   └── /hcmRestApi/resources/absences
+# HTH Guide Excerpt: end cli-scope-restrictions

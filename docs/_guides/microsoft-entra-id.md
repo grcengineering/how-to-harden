@@ -626,27 +626,7 @@ Regularly review Identity Secure Score to track security posture and identify im
 
 #### KQL Queries for Azure Sentinel
 
-```kql
-// Privileged role assignments
-AuditLogs
-| where TimeGenerated > ago(24h)
-| where OperationName == "Add member to role"
-| where TargetResources[0].modifiedProperties[0].newValue contains "Global Administrator"
-| project TimeGenerated, InitiatedBy.user.userPrincipalName, TargetResources[0].userPrincipalName
-
-// Conditional Access policy changes
-AuditLogs
-| where TimeGenerated > ago(24h)
-| where OperationName has_any ("Add policy", "Update policy", "Delete policy")
-| where TargetResources[0].type == "Policy"
-| project TimeGenerated, InitiatedBy.user.userPrincipalName, OperationName, TargetResources[0].displayName
-
-// High-risk sign-ins
-SigninLogs
-| where TimeGenerated > ago(24h)
-| where RiskLevelDuringSignIn == "high"
-| project TimeGenerated, UserPrincipalName, IPAddress, Location, RiskDetail
-```
+{% include pack-code.html vendor="microsoft-entra-id" section="5.3" %}
 
 ---
 

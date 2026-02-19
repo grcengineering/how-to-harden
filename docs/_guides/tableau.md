@@ -123,13 +123,8 @@ Protect data source credentials and connections.
 #### Implementation
 
 **Step 1: Implement User Filters**
-```text
-# User filter calculation
-[Region] = USERNAME()
 
-# Or use groups
-ISMEMBEROF('Finance')
-```
+{% include pack-code.html vendor="tableau" section="2.2" %}
 
 **Step 2: Configure Data Source Filters**
 1. Create user-based filters
@@ -194,22 +189,7 @@ ISMEMBEROF('Finance')
 
 #### Detection Focus
 
-```sql
--- Detect bulk data downloads
-SELECT user_name, workbook_name, download_count
-FROM admin_insights
-WHERE action = 'Download'
-  AND timestamp > NOW() - INTERVAL '24 hours'
-GROUP BY user_name, workbook_name
-HAVING download_count > 10;
-
--- Detect unusual access patterns
-SELECT user_name, site_role, view_count
-FROM traffic_to_views
-WHERE timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY user_name, site_role
-HAVING view_count > 100;
-```
+{% include pack-code.html vendor="tableau" section="4.1" %}
 
 ---
 

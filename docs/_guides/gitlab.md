@@ -8,7 +8,7 @@ category: "DevOps"
 description: "DevOps platform security for CI/CD pipelines, repository access, and runners"
 version: "0.1.0"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-02-19"
 ---
 
 
@@ -189,28 +189,6 @@ Configure CI/CD variables with appropriate protection levels and masking.
 
 #### Code Implementation
 
-```yaml
-# .gitlab-ci.yml - Secure variable usage
-
-variables:
-  # Never hardcode secrets
-  # Reference protected CI/CD variables
-
-deploy_production:
-  stage: deploy
-  script:
-    - echo "Deploying with protected credentials"
-    - ./deploy.sh  # Uses $PROD_API_KEY from CI/CD settings
-  environment:
-    name: production
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-  # Only run on protected branch with protected variables
-```
-
----
-
-
 {% include pack-code.html vendor="gitlab" section="2.1" %}
 
 ### 2.2 Implement Pipeline Security Controls
@@ -246,62 +224,9 @@ Restrict pipeline execution and prevent unauthorized CI/CD modifications.
 **NIST 800-53:** CM-7
 
 #### Description
-Implement secure CI/CD configuration practices.
+Implement secure CI/CD configuration practices. See the CLI Code Pack below for a security-hardened .gitlab-ci.yml example.
 
-```yaml
-# .gitlab-ci.yml - Security hardened example
-
-default:
-  # Use specific image tags, not :latest
-  image: ruby:3.2.0-alpine@sha256:abc123...
-
-  # Limit job timeout
-  timeout: 30 minutes
-
-  # Run in isolated environment
-  tags:
-    - docker
-    - isolated
-
-# Prevent secret leakage in logs
-variables:
-  GIT_STRATEGY: clone
-  SECURE_LOG_LEVEL: "warn"
-
-# Security scanning stages
-stages:
-  - test
-  - security
-  - build
-  - deploy
-
-sast:
-  stage: security
-  allow_failure: false  # Block on security issues
-
-dependency_scanning:
-  stage: security
-  allow_failure: false
-
-container_scanning:
-  stage: security
-  allow_failure: false
-
-# Restrict production deployment
-deploy_production:
-  stage: deploy
-  script:
-    - ./deploy.sh
-  environment:
-    name: production
-    url: https://prod.company.com
-  rules:
-    # Only from main branch
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual  # Require manual approval
-  # Prevent concurrent deployments
-  resource_group: production
-```
+{% include pack-code.html vendor="gitlab" section="2.3" %}
 
 ---
 
@@ -318,17 +243,10 @@ Deploy isolated runners for different trust levels and environments.
 #### Implementation
 
 **Step 1: Create Runner Tiers**
-```text
-Runner Architecture:
-├── shared-runners (general use)
-│   └── Docker executor, ephemeral containers
-├── group-runners (team-specific)
-│   └── Isolated per business unit
-├── project-runners (sensitive projects)
-│   └── Dedicated to single project
-└── production-runners (deployment only)
-    └── Network access to production, limited users
-```
+1. **shared-runners** -- general use, Docker executor, ephemeral containers
+2. **group-runners** -- team-specific, isolated per business unit
+3. **project-runners** -- sensitive projects, dedicated to single project
+4. **production-runners** -- deployment only, network access to production, limited users
 
 {% include pack-code.html vendor="gitlab" section="3.1" %}
 
@@ -373,19 +291,8 @@ Configure push rules to prevent accidental secret commits and enforce commit hyg
    - **Check author email against verified:** Enable
 
 **Step 2: Configure Secret Detection**
-```yaml
-# .gitlab-ci.yml
-secret_detection:
-  stage: security
-  variables:
-    SECRET_DETECTION_HISTORIC_SCAN: "true"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-```
 
----
-
+See the CLI Code Pack below for the .gitlab-ci.yml secret detection configuration.
 
 {% include pack-code.html vendor="gitlab" section="4.1" %}
 
@@ -407,11 +314,9 @@ Require GPG or SSH signed commits to verify commit authorship.
 **Step 2: User Setup**
 1. Navigate to: **User Settings → GPG Keys**
 2. Add GPG public key
-3. Configure git client:
-```bash
-git config --global commit.gpgsign true
-git config --global user.signingkey YOUR_KEY_ID
-```
+3. Configure git client (see CLI Code Pack below)
+
+{% include pack-code.html vendor="gitlab" section="4.2" %}
 
 ---
 
@@ -461,25 +366,7 @@ Configure comprehensive audit logging for GitLab operations.
 
 #### Detection Queries
 
-```sql
--- Detect unusual repository cloning
-SELECT user_id, project_path, COUNT(*) as clone_count
-FROM audit_events
-WHERE action = 'repository_clone'
-  AND created_at > NOW() - INTERVAL '1 hour'
-GROUP BY user_id, project_path
-HAVING COUNT(*) > 20;
-
--- Detect pipeline variable modifications
-SELECT *
-FROM audit_events
-WHERE entity_type = 'Ci::Variable'
-  AND action IN ('create', 'update', 'destroy')
-  AND created_at > NOW() - INTERVAL '24 hours';
-```
-
----
-
+See the DB Code Pack below for SQL queries that detect unusual repository cloning and pipeline variable modifications.
 
 {% include pack-code.html vendor="gitlab" section="6.1" %}
 
@@ -547,5 +434,6 @@ WHERE entity_type = 'Ci::Variable'
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-02-19 | 0.1.2 | draft | Migrate all remaining inline code to Code Packs (2.1, 2.3, 3.1, 4.1, 4.2, 6.1); zero inline blocks | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.1.1 | draft | Migrate inline code to CLI Code Packs (1.1, 3.1, 3.2, 5.1) | Claude Code (Opus 4.6) |
 | 2025-12-14 | 0.1.0 | draft | Initial GitLab hardening guide | Claude Code (Opus 4.5) |

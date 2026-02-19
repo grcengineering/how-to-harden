@@ -153,14 +153,7 @@ Harden REST API integrations.
 
 #### API Best Practices
 
-```text
-API Security Checklist:
-├── Create dedicated API users per integration
-├── Use API-only users (no UI access)
-├── Rotate Client Secret annually
-├── Monitor API usage quotas
-└── Document all integrations
-```
+{% include pack-code.html vendor="marketo" section="2.1" %}
 
 ---
 
@@ -248,21 +241,7 @@ API Security Checklist:
 
 #### Detection Focus
 
-```sql
--- Detect bulk lead exports
-SELECT user_email, export_type, lead_count
-FROM marketo_audit_log
-WHERE action = 'EXPORT_LEADS'
-  AND lead_count > 10000
-  AND timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect API abuse
-SELECT service_name, endpoint, COUNT(*) as calls
-FROM api_usage_log
-WHERE timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY service_name, endpoint
-HAVING COUNT(*) > 1000;
-```
+{% include pack-code.html vendor="marketo" section="4.1" %}
 
 ---
 
@@ -272,19 +251,7 @@ HAVING COUNT(*) > 1000;
 
 #### Detection Queries
 
-```sql
--- Detect new LaunchPoint services
-SELECT service_name, created_by, created_date
-FROM launchpoint_services
-WHERE created_date > NOW() - INTERVAL '7 days';
-
--- Detect email template changes
-SELECT asset_name, modified_by, modification_type
-FROM audit_trail
-WHERE asset_type = 'EMAIL'
-  AND modification_type IN ('APPROVE', 'UNAPPROVE')
-  AND timestamp > NOW() - INTERVAL '24 hours';
-```
+{% include pack-code.html vendor="marketo" section="4.2" %}
 
 ---
 

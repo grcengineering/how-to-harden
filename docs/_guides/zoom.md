@@ -314,19 +314,7 @@ Configure Zoom audit logging.
 
 #### Detection Queries
 
-```sql
--- Detect unusual meeting creation
-SELECT user_id, COUNT(*) as meeting_count
-FROM zoom_meetings
-WHERE created_at > NOW() - INTERVAL '1 hour'
-GROUP BY user_id
-HAVING COUNT(*) > 20;
-
--- Detect recording access anomalies
-SELECT user_id, recording_id, access_time
-FROM recording_access_log
-WHERE user_id NOT IN (SELECT host_id FROM meetings WHERE id = recording_id);
-```
+{% include pack-code.html vendor="zoom" section="5.1" %}
 
 ---
 

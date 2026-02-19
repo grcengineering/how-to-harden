@@ -165,20 +165,7 @@ Manage Gusto partner integrations securely.
 
 #### Detection Focus
 
-```sql
--- Detect bank account changes
-SELECT admin_email, employee_name, change_type
-FROM gusto_activity
-WHERE action = 'bank_account_change'
-  AND timestamp > NOW() - INTERVAL '7 days';
-
--- Detect unusual admin activity
-SELECT admin_email, action, COUNT(*) as actions
-FROM gusto_activity
-WHERE timestamp > NOW() - INTERVAL '24 hours'
-GROUP BY admin_email, action
-HAVING COUNT(*) > 50;
-```
+{% include pack-code.html vendor="gusto" section="4.1" %}
 
 ---
 

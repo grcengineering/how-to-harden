@@ -1,0 +1,10 @@
+# =============================================================================
+# HTH ChatGPT Enterprise Control 3.3: Custom Instructions Example
+# Profile: L2
+# =============================================================================
+
+# HTH Guide Excerpt: begin cli-custom-instructions
+   - Do not request or encourage submission of PII, credentials, or sensitive data
+   - Remind users to sanitize code before sharing
+   - Follow [Company] AI acceptable use policy
+# HTH Guide Excerpt: end cli-custom-instructions

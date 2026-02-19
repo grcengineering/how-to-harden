@@ -148,13 +148,8 @@ Manage API keys and access tokens securely.
 3. Revoke unused tokens
 
 **Step 2: Create Scoped Tokens**
-```bash
-# Create scoped token via CLI
-jf rt access-token-create \
-  --groups readers \
-  --scope applied-permissions/groups:readers \
-  --expiry 7776000  # 90 days
-```
+
+See the CLI pack below for scoped token creation commands.
 
 **Step 3: Rotate Tokens**
 
@@ -223,12 +218,8 @@ Secure remote repository (proxy) configurations.
    - **Block mismatching MIME types:** Enable
 
 **Step 2: Configure Exclude Patterns**
-```text
-# Block potentially dangerous artifacts
-*.exe
-*.dll
-*.msi
-```
+
+See the CLI pack below for recommended exclude patterns.
 
 **Step 3: Enable Checksum Validation**
 1. Configure: **Checksum policy:** Fail (L2)
@@ -251,14 +242,8 @@ Configure Artifactory to prevent dependency confusion attacks.
 #### Implementation
 
 **Step 1: Configure Virtual Repository Priority**
-```yaml
-# Virtual repository configuration
-virtual_repository:
-  repositories:
-    - internal-libs     # First priority (internal)
-    - remote-maven     # Second priority (external)
-  default_deployment_repo: internal-libs
-```
+
+See the CLI pack below for virtual repository configuration.
 
 **Step 2: Reserve Internal Package Names**
 1. Create placeholder packages in remote proxies
@@ -288,16 +273,12 @@ Require artifact signing for production deployments.
 #### Implementation
 
 **Step 1: Configure GPG Signing**
-```bash
-# Sign artifact during deployment
-jf rt upload --gpg-key=/path/to/key.asc artifact.jar libs-release-local/
-```
+
+See the CLI pack below for signing and verification commands.
 
 **Step 2: Verify Signatures on Download**
-```bash
-# Verify artifact signature
-jf rt download libs-release-local/artifact.jar --gpg-key=/path/to/public.asc
-```
+
+See the CLI pack below for download verification commands.
 
 **Step 3: Enforce Signing Policy**
 1. Use Xray policies to block unsigned artifacts
@@ -386,20 +367,8 @@ Configure JFrog Xray for vulnerability and license scanning.
 3. Assign remediation owners
 
 **Step 2: Block Vulnerable Artifacts**
-```yaml
-# Xray policy - Block critical vulnerabilities
-policy:
-  name: block-critical-cves
-  type: security
-  rules:
-    - name: critical-cve-block
-      criteria:
-        min_severity: critical
-      actions:
-        block_download:
-          active: true
-        fail_build: true
-```
+
+See the CLI pack below for Xray policy configuration.
 
 #### Code Implementation
 
@@ -430,31 +399,7 @@ Configure comprehensive audit logging.
 
 #### Detection Queries
 
-```sql
--- Detect unusual upload patterns
-SELECT user, repo, COUNT(*) as upload_count
-FROM artifactory_access_log
-WHERE action = 'DEPLOY'
-  AND timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY user, repo
-HAVING COUNT(*) > 50;
-
--- Detect downloads of vulnerable artifacts
-SELECT user, path, xray_status
-FROM artifactory_access_log a
-JOIN xray_scan_results x ON a.path = x.artifact_path
-WHERE a.action = 'DOWNLOAD'
-  AND x.severity = 'critical'
-  AND a.timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect anonymous access attempts
-SELECT source_ip, path, COUNT(*) as attempts
-FROM artifactory_access_log
-WHERE user = 'anonymous'
-  AND timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY source_ip, path
-HAVING COUNT(*) > 10;
-```
+See the DB pack below for SIEM detection queries.
 
 #### Code Implementation
 

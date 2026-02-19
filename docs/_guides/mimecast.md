@@ -65,14 +65,8 @@ Ensure MX records are properly configured to route all email through Mimecast.
 #### Validation
 
 **Step 1: Check MX Records**
-```bash
-# Verify MX records
-nslookup -type=MX yourdomain.com
 
-# Expected: Mimecast servers at highest priority (lowest number)
-# Example:
-# yourdomain.com MX preference = 10, mail exchanger = xx-smtp-inbound-1.mimecast.com
-```
+{% include pack-code.html vendor="mimecast" section="1.1" %}
 
 **Step 2: Verify Configuration**
 1. MX records should point to Mimecast servers
@@ -102,10 +96,7 @@ Configure email authentication to prevent spoofing and verify sender identity.
 
 **Step 1: Configure SPF**
 1. Navigate to: **Administration** → **Gateway** → **Policies** → **Definitions** → **DNS Authentication - Outbound**
-2. Verify SPF record includes Mimecast:
-```text
-v=spf1 include:_netblocks.mimecast.com ~all
-```
+2. Verify SPF record includes Mimecast. See the Code Pack below for the recommended SPF and DMARC records.
 
 **Step 2: Configure DKIM**
 1. Navigate to: **Administration** → **Gateway** → **Policies** → **Definitions** → **DNS Authentication - Outbound**
@@ -114,12 +105,11 @@ v=spf1 include:_netblocks.mimecast.com ~all
 4. Publish DKIM DNS records
 
 **Step 3: Configure DMARC**
-1. Publish DMARC record:
-```text
-_dmarc.yourdomain.com TXT "v=DMARC1; p=quarantine; rua=mailto:dmarc@yourdomain.com; pct=100"
-```
+1. Publish DMARC record (see Code Pack below for recommended record format)
 2. Start with `p=none` for monitoring
 3. Progress to `p=quarantine` then `p=reject`
+
+{% include pack-code.html vendor="mimecast" section="1.2" %}
 
 **Step 4: Configure Inbound Checking**
 1. Navigate to: **Administration** → **Gateway** → **Policies** → **Definitions** → **DNS Authentication - Inbound**

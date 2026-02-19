@@ -240,25 +240,7 @@ Configure conditional access policies to enforce context-aware security controls
    - **Block access:** From blocked countries
 2. Set policy priority
 
-**Example Policy: Block Untrusted Locations**
-```text
-Name: Block High-Risk Countries
-Conditions:
-  - Location NOT IN: [US, CA, UK, trusted countries]
-Actions:
-  - Block access
-Apply to: All Users (except emergency accounts)
-```
-
-**Example Policy: Require MFA Outside Office**
-```text
-Name: Require MFA - Remote Access
-Conditions:
-  - Location NOT IN: [Corporate IP ranges]
-Actions:
-  - Require MFA
-Apply to: All Users
-```
+{% include pack-code.html vendor="jumpcloud" section="3.1" %}
 
 **Time to Complete:** ~45 minutes
 

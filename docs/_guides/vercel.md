@@ -195,21 +195,6 @@ Control deployment access and protect production.
 
 #### Detection Focus
 
-```sql
--- Detect unauthorized deployments
-SELECT user_email, project, environment, timestamp
-FROM vercel_audit_log
-WHERE action = 'deployment.created'
-  AND environment = 'production'
-  AND timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect environment variable changes
-SELECT user_email, project, variable_name
-FROM vercel_audit_log
-WHERE action LIKE '%environment_variable%'
-  AND timestamp > NOW() - INTERVAL '7 days';
-```
-
 {% include pack-code.html vendor="vercel" section="4.1" %}
 
 ---

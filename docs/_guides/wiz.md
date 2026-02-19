@@ -84,7 +84,7 @@ Require SAML SSO with MFA for all Wiz console access.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="wiz" section="1.1" lang="terraform" %}
+{% include pack-code.html vendor="wiz" section="1.1" %}
 
 ---
 
@@ -120,7 +120,7 @@ Configure Wiz roles with least-privilege access.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="wiz" section="1.2" lang="terraform" %}
+{% include pack-code.html vendor="wiz" section="1.2" %}
 
 ---
 
@@ -143,51 +143,15 @@ Harden cloud connector IAM permissions to minimum required.
 #### AWS Connector Best Practices
 
 **Step 1: Use Read-Only Policy**
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ec2:Describe*",
-        "s3:GetBucketLocation",
-        "s3:GetBucketPolicy",
-        "s3:ListAllMyBuckets",
-        "iam:GetAccountSummary",
-        "iam:ListRoles"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-```
+
+{% include pack-code.html vendor="wiz" section="2.1" %}
 
 **Step 2: Enable AWS CloudTrail for Connector**
 1. Monitor Wiz connector API calls
 2. Alert on unusual patterns
 3. Review access regularly
 
-**Step 3: Use External ID**
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::WIZ_ACCOUNT_ID:root"
-      },
-      "Action": "sts:AssumeRole",
-      "Condition": {
-        "StringEquals": {
-          "sts:ExternalId": "YOUR_UNIQUE_EXTERNAL_ID"
-        }
-      }
-    }
-  ]
-}
-```
+**Step 3: Use External ID** (see the Code Pack above for the trust policy JSON)
 
 #### Azure Connector Best Practices
 
@@ -207,10 +171,6 @@ Harden cloud connector IAM permissions to minimum required.
 1. Assign Viewer role at organization level
 2. Create service account with minimal permissions
 3. Enable service account key rotation
-
-#### Code Implementation
-
-{% include pack-code.html vendor="wiz" section="2.1" lang="terraform" %}
 
 ---
 
@@ -232,7 +192,7 @@ Implement regular rotation of cloud connector credentials.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="wiz" section="2.2" lang="terraform" %}
+{% include pack-code.html vendor="wiz" section="2.2" %}
 
 ---
 
@@ -270,7 +230,7 @@ Secure Wiz API service accounts.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="wiz" section="3.1" lang="terraform" %}
+{% include pack-code.html vendor="wiz" section="3.1" %}
 
 ---
 
@@ -284,28 +244,7 @@ Monitor API usage for anomalies.
 
 #### Implementation
 
-```graphql
-# Example Wiz GraphQL query for audit
-query {
-  auditLogs(
-    first: 100
-    orderBy: {field: TIMESTAMP, direction: DESC}
-    filterBy: {actionType: [API_REQUEST]}
-  ) {
-    nodes {
-      timestamp
-      actionType
-      user {
-        email
-      }
-      sourceIP
-      requestDetails
-    }
-  }
-}
-```
-
-{% include pack-code.html vendor="wiz" section="3.2" lang="terraform" %}
+{% include pack-code.html vendor="wiz" section="3.2" %}
 
 ---
 
@@ -335,7 +274,7 @@ Control export of security findings and vulnerability data.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="wiz" section="4.1" lang="terraform" %}
+{% include pack-code.html vendor="wiz" section="4.1" %}
 
 ---
 
@@ -362,25 +301,7 @@ Control export of security findings and vulnerability data.
 
 #### Detection Queries
 
-```sql
--- Detect unusual data access
-SELECT user_email, COUNT(*) as query_count
-FROM wiz_audit_log
-WHERE action_type = 'QUERY'
-  AND timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY user_email
-HAVING COUNT(*) > 100;
-
--- Detect API access from new IPs
-SELECT service_account, source_ip, COUNT(*) as requests
-FROM wiz_audit_log
-WHERE action_type = 'API_REQUEST'
-  AND source_ip NOT IN (SELECT DISTINCT source_ip FROM historical_ips)
-  AND timestamp > NOW() - INTERVAL '24 hours'
-GROUP BY service_account, source_ip;
-```
-
-{% include pack-code.html vendor="wiz" section="5.1" lang="terraform" %}
+{% include pack-code.html vendor="wiz" section="5.1" %}
 
 ---
 

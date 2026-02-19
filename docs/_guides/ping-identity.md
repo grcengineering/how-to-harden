@@ -88,36 +88,7 @@ Require FIDO2/WebAuthn authenticators for administrator and high-privilege user 
 
 #### Code Implementation (PingOne API)
 
-```bash
-# Create MFA policy requiring FIDO2
-curl -X POST "https://api.pingone.com/v1/environments/${ENV_ID}/mfaPolicies" \
-  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Phishing-Resistant MFA",
-    "enabled": true,
-    "configuration": {
-      "fido2": {
-        "enabled": true,
-        "required": true
-      },
-      "sms": {
-        "enabled": false
-      },
-      "totp": {
-        "enabled": false
-      }
-    }
-  }'
-
-# Assign to admin group
-curl -X PUT "https://api.pingone.com/v1/environments/${ENV_ID}/groups/${ADMIN_GROUP_ID}/mfaPolicy" \
-  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "mfaPolicyId": "${MFA_POLICY_ID}"
-  }'
-```
+See the API pack below for MFA policy creation and assignment commands.
 
 #### Compliance Mappings
 
@@ -251,18 +222,7 @@ Configure secure SAML settings to prevent assertion manipulation and replay atta
 
 #### Code Implementation
 
-```xml
-<!-- PingFederate SAML Configuration -->
-<saml:Assertion>
-  <saml:Conditions
-    NotBefore="2025-01-15T10:00:00Z"
-    NotOnOrAfter="2025-01-15T10:05:00Z">
-    <saml:AudienceRestriction>
-      <saml:Audience>https://sp.company.com</saml:Audience>
-    </saml:AudienceRestriction>
-  </saml:Conditions>
-</saml:Assertion>
-```
+See the CLI pack below for SAML configuration examples.
 
 {% include pack-code.html vendor="ping-identity" section="2.1" %}
 
@@ -278,33 +238,9 @@ Monitor federation activity for anomalous patterns indicating compromise.
 
 #### Detection Use Cases
 
-```sql
--- Detect unusual federation token issuance
-SELECT application_name, COUNT(*) as token_count
-FROM federation_events
-WHERE event_type = 'TOKEN_ISSUED'
-  AND timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY application_name
-HAVING COUNT(*) > 100;
+See the DB pack below for federation monitoring queries.
 
--- Detect new user federation patterns
-SELECT user_id, application_name, first_access
-FROM (
-  SELECT user_id, application_name,
-         MIN(timestamp) as first_access
-  FROM federation_events
-  WHERE timestamp > NOW() - INTERVAL '24 hours'
-  GROUP BY user_id, application_name
-) new_access
-WHERE first_access > NOW() - INTERVAL '24 hours';
-
--- Detect after-hours admin authentication
-SELECT user_id, application_name, timestamp
-FROM federation_events
-WHERE application_name = 'PingOne Admin Console'
-  AND (EXTRACT(HOUR FROM timestamp) < 6
-       OR EXTRACT(HOUR FROM timestamp) > 20);
-```
+{% include pack-code.html vendor="ping-identity" section="2.2" %}
 
 ---
 
@@ -370,22 +306,7 @@ Harden OAuth authorization server configuration with short token lifetimes and r
 
 #### Code Implementation
 
-```bash
-# PingOne - Configure OAuth application
-curl -X PUT "https://api.pingone.com/v1/environments/${ENV_ID}/applications/${APP_ID}" \
-  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Secure App",
-    "protocol": "OPENID_CONNECT",
-    "tokenEndpointAuthMethod": "CLIENT_SECRET_POST",
-    "grantTypes": ["AUTHORIZATION_CODE", "REFRESH_TOKEN"],
-    "pkceEnforcement": "S256_REQUIRED",
-    "accessTokenValiditySeconds": 3600,
-    "refreshTokenValiditySeconds": 86400,
-    "refreshTokenRollingEnabled": true
-  }'
-```
+See the API pack below for OAuth application configuration.
 
 {% include pack-code.html vendor="ping-identity" section="3.1" %}
 
@@ -554,29 +475,7 @@ Enable comprehensive audit logging for all identity operations.
 
 #### Detection Queries
 
-```sql
--- Detect potential credential stuffing
-SELECT ip_address, COUNT(*) as attempts
-FROM authentication_events
-WHERE result = 'FAILED'
-  AND timestamp > NOW() - INTERVAL '5 minutes'
-GROUP BY ip_address
-HAVING COUNT(*) > 50;
-
--- Detect privilege escalation
-SELECT actor_id, target_user, new_role
-FROM admin_events
-WHERE event_type = 'ROLE_ASSIGNED'
-  AND new_role IN ('Organization Admin', 'Environment Admin')
-  AND timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect unusual federation patterns
-SELECT user_id, application_name, COUNT(*) as access_count
-FROM federation_events
-WHERE timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY user_id, application_name
-HAVING COUNT(*) > 100;
-```
+See the DB pack below for SIEM detection queries.
 
 {% include pack-code.html vendor="ping-identity" section="5.1" %}
 

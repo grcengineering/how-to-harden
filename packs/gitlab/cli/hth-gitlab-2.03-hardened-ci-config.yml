@@ -1,0 +1,59 @@
+# =============================================================================
+# HTH GitLab Control 2.3: Harden .gitlab-ci.yml Configuration
+# Profile: L2 | Section: 2.3
+# =============================================================================
+
+# HTH Guide Excerpt: begin hardened-ci-config
+# .gitlab-ci.yml - Security hardened example
+
+default:
+  # Use specific image tags, not :latest
+  image: ruby:3.2.0-alpine@sha256:abc123...
+
+  # Limit job timeout
+  timeout: 30 minutes
+
+  # Run in isolated environment
+  tags:
+    - docker
+    - isolated
+
+# Prevent secret leakage in logs
+variables:
+  GIT_STRATEGY: clone
+  SECURE_LOG_LEVEL: "warn"
+
+# Security scanning stages
+stages:
+  - test
+  - security
+  - build
+  - deploy
+
+sast:
+  stage: security
+  allow_failure: false  # Block on security issues
+
+dependency_scanning:
+  stage: security
+  allow_failure: false
+
+container_scanning:
+  stage: security
+  allow_failure: false
+
+# Restrict production deployment
+deploy_production:
+  stage: deploy
+  script:
+    - ./deploy.sh
+  environment:
+    name: production
+    url: https://prod.company.com
+  rules:
+    # Only from main branch
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual  # Require manual approval
+  # Prevent concurrent deployments
+  resource_group: production
+# HTH Guide Excerpt: end hardened-ci-config

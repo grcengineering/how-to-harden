@@ -1,0 +1,7 @@
+# HTH Guide Excerpt: begin cli-log-query-session-binding
+eventType eq "user.session.invalidate" AND debugContext.debugData.reason eq "ADMIN_SESSION_BINDING"
+# HTH Guide Excerpt: end cli-log-query-session-binding
+
+# HTH Guide Excerpt: begin cli-log-query-protected-actions
+eventType eq "system.protected_action.challenge" OR eventType eq "system.protected_action.success"
+# HTH Guide Excerpt: end cli-log-query-protected-actions

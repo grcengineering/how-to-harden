@@ -1,0 +1,10 @@
+// =============================================================================
+// HTH Power BI Row-Level Security DAX Expressions
+// Vendor: power-bi | Section: 3.2
+// =============================================================================
+
+// HTH Guide Excerpt: begin db-rls-roles
+[Region] = USERPRINCIPALNAME()
+// Or use security groups
+PATHCONTAINS("Finance", USERPRINCIPALNAME())
+// HTH Guide Excerpt: end db-rls-roles

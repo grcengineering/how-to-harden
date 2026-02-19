@@ -8,7 +8,7 @@ category: "DevOps"
 description: "CI/CD security hardening for Jenkins including authorization, agent security, and pipeline protection"
 version: "0.1.0"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-02-19"
 ---
 
 ## Overview
@@ -85,7 +85,7 @@ Enable authentication to prevent anonymous access to Jenkins. By default, older 
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="1.1" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="1.1" %}
 
 ---
 
@@ -144,7 +144,7 @@ Configure centralized authentication using LDAP or SAML SSO for enterprise ident
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="1.2" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="1.2" %}
 
 ---
 
@@ -168,15 +168,9 @@ Disable the "Remember me" feature to prevent persistent authentication tokens.
 3. Configure session timeout
 
 **Step 2: Configure Session Settings**
-1. Edit `jenkins.xml` or use System Properties:
-```groovy
-// In init.groovy.d/disable-remember-me.groovy
-import jenkins.model.Jenkins
-Jenkins.instance.setDisableRememberMe(true)
-Jenkins.instance.save()
-```
+1. Edit `jenkins.xml` or use System Properties (see Groovy init script in SDK Code Pack below)
 
-{% include pack-code.html vendor="jenkins" section="1.3" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="1.3" %}
 
 ---
 
@@ -225,7 +219,7 @@ Configure Matrix-based security for fine-grained permission control. This is rec
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="2.1" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="2.1" %}
 
 ---
 
@@ -261,7 +255,7 @@ Enable project-based authorization for per-project access control.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="2.2" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="2.2" %}
 
 ---
 
@@ -306,7 +300,7 @@ Implement role-based access control for scalable permission management.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="2.3" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="2.3" %}
 
 ---
 
@@ -342,7 +336,7 @@ Restrict access to the Script Console to administrators only.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="2.4" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="2.4" %}
 
 ---
 
@@ -381,7 +375,7 @@ Enable Agent → Controller Access Control to prevent compromised agents from at
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="3.1" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="3.1" %}
 
 ---
 
@@ -416,7 +410,7 @@ Configure Jenkins to run builds only on agents, not on the controller node.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="3.2" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="3.2" %}
 
 ---
 
@@ -444,19 +438,7 @@ Use ephemeral (disposable) agents that are created fresh for each build.
 
 **Step 2: Kubernetes Pod Template Example**
 1. Install Kubernetes Plugin
-2. Configure pod template:
-```yaml
-apiVersion: v1
-kind: Pod
-spec:
-  containers:
-  - name: jnlp
-    image: jenkins/inbound-agent:latest
-    resources:
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
-```
+2. Configure pod template (see CLI Code Pack below for K8s pod spec)
 
 **Step 3: Configure Auto-Scaling**
 1. Set minimum instances to 0
@@ -465,7 +447,7 @@ spec:
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="3.3" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="3.3" %}
 
 ---
 
@@ -490,16 +472,11 @@ Secure communication between agents and controller using JNLP over TLS.
 
 **Step 2: Configure HTTPS**
 1. Configure Jenkins to run behind HTTPS reverse proxy
-2. Or configure HTTPS directly in Jenkins:
-```bash
-java -jar jenkins.war --httpsPort=8443 \
-  --httpsKeyStore=/path/to/keystore.jks \
-  --httpsKeyStorePassword=changeit
-```
+2. Or configure HTTPS directly in Jenkins (see CLI Code Pack below)
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="3.4" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="3.4" %}
 
 ---
 
@@ -526,7 +503,7 @@ Enable CSRF protection to prevent cross-site request forgery attacks.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="4.1" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="4.1" %}
 
 ---
 
@@ -571,7 +548,7 @@ Securely manage credentials using Jenkins Credentials Plugin with appropriate sc
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="4.2" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="4.2" %}
 
 ---
 
@@ -601,19 +578,7 @@ Use Pipeline Groovy Sandbox to restrict what pipeline scripts can do.
 3. Do not approve requests without review
 
 **Step 2: Use Declarative Pipelines**
-1. Prefer declarative pipelines over scripted:
-```groovy
-pipeline {
-    agent any
-    stages {
-        stage('Build') {
-            steps {
-                sh 'make build'
-            }
-        }
-    }
-}
-```
+1. Prefer declarative pipelines over scripted (see SDK Code Pack below for example)
 
 **Step 3: Restrict Script Approval**
 1. Limit who can approve scripts
@@ -622,7 +587,7 @@ pipeline {
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="4.3" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="4.3" %}
 
 ---
 
@@ -640,62 +605,9 @@ Implement secure Jenkinsfile practices to prevent pipeline attacks.
 
 #### Code Implementation
 
-**Secure Jenkinsfile Template:**
-```groovy
-pipeline {
-    agent {
-        label 'secure-agent'
-    }
+See the SDK Code Pack below for a secure Jenkinsfile template demonstrating hardened pipeline practices.
 
-    options {
-        // Limit build time
-        timeout(time: 1, unit: 'HOURS')
-        // Discard old builds
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-        // Prevent concurrent builds
-        disableConcurrentBuilds()
-    }
-
-    environment {
-        // Use credentials binding
-        AWS_CREDENTIALS = credentials('aws-deploy-creds')
-    }
-
-    stages {
-        stage('Build') {
-            steps {
-                // Use approved methods only
-                sh 'make build'
-            }
-        }
-
-        stage('Deploy') {
-            when {
-                branch 'main'
-            }
-            steps {
-                // Use credentials securely
-                withCredentials([usernamePassword(
-                    credentialsId: 'deploy-creds',
-                    usernameVariable: 'USER',
-                    passwordVariable: 'PASS'
-                )]) {
-                    sh './deploy.sh'
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            // Clean up workspace
-            cleanWs()
-        }
-    }
-}
-```
-
-{% include pack-code.html vendor="jenkins" section="4.4" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="4.4" %}
 
 ---
 
@@ -739,7 +651,7 @@ Enable comprehensive audit logging for security monitoring.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="5.1" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="5.1" %}
 
 ---
 
@@ -775,7 +687,7 @@ Keep Jenkins and all plugins updated with security patches.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jenkins" section="5.2" lang="terraform" %}
+{% include pack-code.html vendor="jenkins" section="5.2" %}
 
 ---
 
@@ -852,6 +764,7 @@ Keep Jenkins and all plugins updated with security patches.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-02-19 | 0.1.1 | draft | Migrate inline code to SDK/CLI Code Packs (1.3, 3.3, 3.4, 4.3, 4.4); remove lang= from includes | Claude Code (Opus 4.6) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with authentication, authorization, and pipeline security | Claude Code (Opus 4.5) |
 
 ---

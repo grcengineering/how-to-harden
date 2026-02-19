@@ -1,0 +1,12 @@
+# HTH JFrog Control 2.3: Prevent Dependency Confusion
+# Profile: L1 | NIST: SI-7
+# https://howtoharden.com/guides/jfrog/#23-prevent-dependency-confusion
+
+# HTH Guide Excerpt: begin virtual-repo-config
+# Virtual repository configuration
+virtual_repository:
+  repositories:
+    - internal-libs     # First priority (internal)
+    - remote-maven     # Second priority (external)
+  default_deployment_repo: internal-libs
+# HTH Guide Excerpt: end virtual-repo-config

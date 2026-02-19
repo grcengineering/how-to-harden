@@ -1,0 +1,24 @@
+# HTH Wiz Control 3.2: API Access Monitoring
+# Profile: L2 | NIST: AU-6
+# https://howtoharden.com/guides/wiz/#32-api-access-monitoring
+
+# HTH Guide Excerpt: begin api-audit-query
+# Example Wiz GraphQL query for audit
+query {
+  auditLogs(
+    first: 100
+    orderBy: {field: TIMESTAMP, direction: DESC}
+    filterBy: {actionType: [API_REQUEST]}
+  ) {
+    nodes {
+      timestamp
+      actionType
+      user {
+        email
+      }
+      sourceIP
+      requestDetails
+    }
+  }
+}
+# HTH Guide Excerpt: end api-audit-query

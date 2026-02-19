@@ -201,11 +201,8 @@ Manage private app access tokens with appropriate restrictions.
 - Rotate tokens quarterly
 
 **Step 3: Audit Existing Tokens**
-```bash
-# List private apps via API
-curl -X GET "https://api.hubapi.com/integrations/v1/apps" \
-  -H "Authorization: Bearer ${ACCESS_TOKEN}"
-```
+
+{% include pack-code.html vendor="hubspot" section="3.1" %}
 
 ---
 
@@ -225,12 +222,8 @@ Design integrations with HubSpot's rate limits in mind.
 | Burst | 150 requests / 10 seconds |
 
 #### Monitoring
-```python
-# Monitor rate limit headers
-response = requests.get(url, headers=headers)
-remaining = response.headers.get('X-HubSpot-RateLimit-Remaining')
-daily_remaining = response.headers.get('X-HubSpot-RateLimit-Daily-Remaining')
-```
+
+{% include pack-code.html vendor="hubspot" section="3.2" %}
 
 ---
 
@@ -308,27 +301,7 @@ Monitor HubSpot activity through audit logs.
 
 #### Detection Queries
 
-```sql
--- Detect bulk contact access
-SELECT user_id, COUNT(*) as view_count
-FROM hubspot_activity_log
-WHERE action = 'contact.view'
-  AND timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY user_id
-HAVING COUNT(*) > 100;
-
--- Detect API key creation
-SELECT *
-FROM hubspot_activity_log
-WHERE action = 'private_app.created'
-  AND timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect permission changes
-SELECT *
-FROM hubspot_activity_log
-WHERE action LIKE '%permission%'
-  AND timestamp > NOW() - INTERVAL '7 days';
-```
+{% include pack-code.html vendor="hubspot" section="5.1" %}
 
 ---
 

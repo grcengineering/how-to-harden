@@ -1,0 +1,25 @@
+// =============================================================================
+// HTH Azure DevOps Control 6.1: Enable Audit Logging
+// Profile: L1 | Section: 6.1
+// =============================================================================
+
+// HTH Guide Excerpt: begin detection-queries
+// Azure Sentinel / Log Analytics queries
+
+// Detect service connection modifications
+AzureDevOpsAuditing
+| where OperationName contains "ServiceEndpoint"
+| where OperationName contains "Modified" or OperationName contains "Created"
+| project TimeGenerated, ActorUPN, OperationName, ProjectName, Data
+
+// Detect pipeline permission changes
+AzureDevOpsAuditing
+| where OperationName contains "Security" or OperationName contains "Permission"
+| project TimeGenerated, ActorUPN, OperationName, ProjectName, Data
+
+// Detect unusual build activity
+AzureDevOpsAuditing
+| where OperationName == "Build.QueueBuild"
+| summarize count() by ActorUPN, bin(TimeGenerated, 1h)
+| where count_ > 50
+// HTH Guide Excerpt: end detection-queries

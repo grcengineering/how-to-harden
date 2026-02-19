@@ -42,9 +42,26 @@ resource "databricks_permissions" "network_isolation_usage" {
   }
 }
 
-# Note: Full VPC/VNet deployment with Private Link requires account-level
-# Terraform resources (databricks_mws_workspaces, databricks_mws_networks,
-# databricks_mws_private_access_settings). Those are provisioned at workspace
-# creation time and are outside the scope of workspace-level hardening.
-# See the guide section 3.2 for the account-level Terraform example.
 # HTH Guide Excerpt: end terraform
+
+# HTH Guide Excerpt: begin terraform-account-level
+# Account-level: Private workspace deployment with VPC isolation
+resource "databricks_mws_workspaces" "this" {
+  account_id      = var.databricks_account_id
+  workspace_name  = "secure-workspace"
+  deployment_name = "secure"
+
+  aws_region = var.region
+
+  network_id = databricks_mws_networks.this.network_id
+
+  # Private configuration
+  private_access_settings_id = databricks_mws_private_access_settings.this.private_access_settings_id
+}
+
+resource "databricks_mws_private_access_settings" "this" {
+  private_access_settings_name = "secure-pas"
+  region                       = var.region
+  public_access_enabled        = false
+}
+# HTH Guide Excerpt: end terraform-account-level

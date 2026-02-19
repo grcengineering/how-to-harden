@@ -158,19 +158,7 @@ This guide covers Terraform Cloud security configurations including authenticati
 
 #### Implementation
 
-```hcl
-# Mark variables as sensitive
-variable "db_password" {
-  type      = string
-  sensitive = true
-}
-
-# Output marking
-output "connection_string" {
-  value     = local.connection_string
-  sensitive = true
-}
-```
+{% include pack-code.html vendor="terraform-cloud" section="3.2" %}
 
 ---
 
@@ -186,43 +174,9 @@ Use OIDC workload identity instead of static credentials.
 
 #### AWS Configuration
 
-```hcl
-# Configure OIDC provider in AWS
-resource "aws_iam_openid_connect_provider" "tfc" {
-  url             = "https://app.terraform.io"
-  client_id_list  = ["aws.workload.identity"]
-  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
-}
+See the Terraform pack below for OIDC provider and workspace variable configuration.
 
-# Trust policy for TFC
-data "aws_iam_policy_document" "tfc_trust" {
-  statement {
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-    principals {
-      type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.tfc.arn]
-    }
-    condition {
-      test     = "StringEquals"
-      variable = "app.terraform.io:aud"
-      values   = ["aws.workload.identity"]
-    }
-    condition {
-      test     = "StringLike"
-      variable = "app.terraform.io:sub"
-      values   = ["organization:myorg:project:*:workspace:*:run_phase:*"]
-    }
-  }
-}
-```
-
-#### Terraform Cloud Workspace
-
-```hcl
-# workspace variables
-TFC_AWS_PROVIDER_AUTH = true
-TFC_AWS_RUN_ROLE_ARN  = arn:aws:iam::123456789:role/tfc-role
-```
+{% include pack-code.html vendor="terraform-cloud" section="4.1" %}
 
 ---
 
@@ -232,20 +186,7 @@ TFC_AWS_RUN_ROLE_ARN  = arn:aws:iam::123456789:role/tfc-role
 
 #### Implementation
 
-```hcl
-# Use Vault provider for secrets
-provider "vault" {
-  address = "https://vault.company.com"
-}
-
-data "vault_generic_secret" "db" {
-  path = "secret/production/database"
-}
-
-resource "aws_db_instance" "main" {
-  password = data.vault_generic_secret.db.data["password"]
-}
-```
+{% include pack-code.html vendor="terraform-cloud" section="4.2" %}
 
 ---
 
@@ -258,19 +199,7 @@ resource "aws_db_instance" "main" {
 
 #### Detection Focus
 
-```sql
--- Detect state access
-SELECT user, workspace, action
-FROM tfc_audit_log
-WHERE action = 'state_version.read'
-  AND timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect variable changes
-SELECT user, workspace, variable_name
-FROM tfc_audit_log
-WHERE action LIKE '%variable%'
-  AND timestamp > NOW() - INTERVAL '7 days';
-```
+See the DB pack below for audit detection queries.
 
 ---
 

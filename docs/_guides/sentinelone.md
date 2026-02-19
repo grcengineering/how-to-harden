@@ -345,19 +345,7 @@ Create custom detection rules for organization-specific threats and behaviors.
 
 **Example Rules:**
 
-**Detect Mimikatz Execution:**
-```text
-ProcessName Contains "mimikatz" OR
-ProcessCmdLine Contains "sekurlsa" OR
-ProcessCmdLine Contains "lsadump"
-```
-
-**Detect PowerShell Encoded Commands:**
-```text
-ProcessName = "powershell.exe" AND
-ProcessCmdLine Contains "-enc" OR
-ProcessCmdLine Contains "-encodedcommand"
-```
+{% include pack-code.html vendor="sentinelone" section="3.2" %}
 
 ---
 

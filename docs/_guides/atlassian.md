@@ -381,27 +381,7 @@ Configure and monitor Atlassian audit logs.
 
 #### Detection Queries
 
-```sql
--- Detect bulk data access
-SELECT user_id, action, COUNT(*) as action_count
-FROM atlassian_audit_log
-WHERE action IN ('content.view', 'issue.view')
-  AND timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY user_id, action
-HAVING COUNT(*) > 100;
-
--- Detect permission changes
-SELECT *
-FROM atlassian_audit_log
-WHERE action LIKE '%permission%'
-  AND timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect app installations
-SELECT *
-FROM atlassian_audit_log
-WHERE action = 'app.installed'
-  AND timestamp > NOW() - INTERVAL '7 days';
-```
+{% include pack-code.html vendor="atlassian" section="5.1" %}
 
 ---
 

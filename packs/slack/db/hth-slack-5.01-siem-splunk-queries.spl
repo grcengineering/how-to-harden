@@ -1,0 +1,19 @@
+# =============================================================================
+# HTH Slack SIEM Detection Queries (Splunk SPL)
+# Vendor: slack | Section: 5.1
+# =============================================================================
+
+# HTH Guide Excerpt: begin db-siem-splunk-queries
+# Failed login attempts
+index=slack sourcetype=slack:audit action="user_login_failed"
+| stats count by actor.user.email
+| where count > 5
+
+# Admin role changes
+index=slack sourcetype=slack:audit action="role_change_to_admin"
+| table _time actor.user.email entity.user.email
+
+# App installations
+index=slack sourcetype=slack:audit action="app_installed"
+| table _time actor.user.email entity.app.name
+# HTH Guide Excerpt: end db-siem-splunk-queries

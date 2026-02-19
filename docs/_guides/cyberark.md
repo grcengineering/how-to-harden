@@ -120,18 +120,8 @@ Configure granular safe-level permissions ensuring users only access credentials
 #### ClickOps Implementation
 
 **Step 1: Design Safe Structure**
-```text
-Safes/
-├── Infrastructure/
-│   ├── Windows-DomainAdmins (requires approval)
-│   ├── Linux-Root
-│   └── Network-Devices
-├── Applications/
-│   ├── Database-Credentials
-│   └── API-Keys
-└── Emergency/
-    └── Break-Glass (requires dual approval)
-```
+
+Organize safes into logical categories (Infrastructure, Applications, Emergency) with appropriate approval requirements for each tier.
 
 **Step 2: Configure Safe Permissions**
 1. Navigate to: **PVWA → Policies → Access Control (Safes)**
@@ -199,13 +189,7 @@ Configure secure vault server settings including encryption, communication secur
 #### ClickOps Implementation
 
 **Step 1: Verify Encryption Settings**
-1. Check DBParm.ini:
-```ini
-[MAIN]
-EncryptionMethod=AES256
-ServerKeyAge=365
-BackupKeyAge=365
-```
+1. Check DBParm.ini and verify AES256 encryption is configured with appropriate key age settings.
 
 **Step 2: Configure Secure Communication**
 1. Enable TLS 1.2/1.3 only
@@ -239,13 +223,7 @@ Configure disaster recovery and high availability for vault infrastructure.
 3. Document recovery procedures
 4. Verify backup integrity
 
-```bash
-# Verify vault replication status
-PAReplicate.exe Status
-
-# Test DR failover (non-production)
-PAReplicate.exe Failover /target:DR_VAULT
-```
+Use `PAReplicate.exe` to verify replication status and test DR failover in non-production environments.
 
 {% include pack-code.html vendor="cyberark" section="2.2" %}
 
@@ -286,14 +264,8 @@ Secure CyberArk API access using certificate-based authentication, API key rotat
    - **Hash:** Enable for script authentication
 
 **Step 3: Configure API Rate Limiting**
-```ini
-# In PVConfiguration.xml
-<WebService>
-  <MaxConcurrentRequests>50</MaxConcurrentRequests>
-  <RequestTimeoutSeconds>120</RequestTimeoutSeconds>
-  <EnableRateLimiting>true</EnableRateLimiting>
-</WebService>
-```
+
+Configure rate limiting in PVConfiguration.xml to limit concurrent requests, set request timeouts, and enable rate limiting for API endpoints.
 
 #### Code Implementation
 
@@ -312,13 +284,8 @@ Limit integration accounts to minimum required permissions. Service accounts sho
 #### ClickOps Implementation
 
 **Step 1: Create Purpose-Specific Integration Users**
-```text
-Integration Users:
-├── Svc-Jenkins: Access to Application-Secrets only
-├── Svc-Ansible: Access to Infrastructure-Credentials only
-├── Svc-Terraform: Access to Cloud-Credentials only
-└── Svc-SIEM: Audit log access only
-```
+
+Create dedicated service accounts for each integration (Jenkins, Ansible, Terraform, SIEM) with access restricted to only the safes required for their function.
 
 **Step 2: Configure Minimal Permissions**
 For each integration:
@@ -371,12 +338,8 @@ Secure Privileged Session Manager (PSM) sessions with recording, monitoring, and
    - **Session termination:** Immediate capability
 
 **Step 3: Set Session Timeouts**
-```ini
-# Platform configuration
-MaxSessionDuration=480  # 8 hours maximum
-IdleSessionTimeout=30   # 30 minutes idle
-WarningBeforeTimeout=5  # 5 minute warning
-```
+
+Configure session duration limits (8 hours maximum), idle timeouts (30 minutes), and warning intervals (5 minutes before timeout) in the platform configuration.
 
 #### Code Implementation
 
@@ -434,15 +397,8 @@ Enable CPM (Central Policy Manager) to automatically rotate privileged credentia
    - **Reconcile interval:** Weekly
 
 **Step 2: Configure Password Complexity**
-```ini
-# Platform password policy
-MinLength=20
-RequireUppercase=true
-RequireLowercase=true
-RequireNumbers=true
-RequireSpecial=true
-ExcludedCharacters='"<>;
-```
+
+Set minimum length to 20 characters, require uppercase, lowercase, numbers, and special characters. Exclude characters that may cause parsing issues in scripts.
 
 #### Code Implementation
 
@@ -457,13 +413,7 @@ ExcludedCharacters='"<>;
 #### Description
 Alert on password rotation failures to prevent credential staleness.
 
-```sql
--- Query for rotation failures (via SIEM or reporting)
-SELECT AccountName, SafeName, LastFailReason, LastFailDate
-FROM PasswordVault_Accounts
-WHERE CPMStatus = 'FAILED'
-ORDER BY LastFailDate DESC;
-```
+Query for rotation failures via SIEM or direct database reporting to identify accounts where CPM status indicates failure, ordered by most recent failure date.
 
 {% include pack-code.html vendor="cyberark" section="5.2" %}
 
@@ -481,35 +431,11 @@ Configure CyberArk audit logging and forward to SIEM for security monitoring.
 
 #### Detection Use Cases
 
-**Anomaly 1: Mass Credential Retrieval**
-```sql
-SELECT UserName, COUNT(*) as RetrievalCount
-FROM AuditLog
-WHERE Action = 'Retrieve Password'
-  AND Timestamp > DATEADD(hour, -1, GETDATE())
-GROUP BY UserName
-HAVING COUNT(*) > 20;
-```
+**Anomaly 1: Mass Credential Retrieval** -- Detect users retrieving more than 20 passwords within a one-hour window, indicating potential credential harvesting.
 
-**Anomaly 2: After-Hours Access**
-```sql
-SELECT *
-FROM AuditLog
-WHERE Action IN ('Logon', 'Retrieve Password')
-  AND (DATEPART(hour, Timestamp) < 6 OR DATEPART(hour, Timestamp) > 20)
-  AND DATEPART(dw, Timestamp) IN (1, 7);  -- Weekends
-```
+**Anomaly 2: After-Hours Access** -- Flag logon and password retrieval events occurring outside business hours (before 6 AM or after 8 PM) and on weekends.
 
-**Anomaly 3: Failed Authentication Spike**
-```sql
-SELECT UserName, SourceIP, COUNT(*) as FailedAttempts
-FROM AuditLog
-WHERE Action = 'Logon'
-  AND Status = 'Failed'
-  AND Timestamp > DATEADD(minute, -15, GETDATE())
-GROUP BY UserName, SourceIP
-HAVING COUNT(*) > 5;
-```
+**Anomaly 3: Failed Authentication Spike** -- Identify brute force attempts by detecting more than 5 failed logon attempts from a single user or IP within a 15-minute window.
 
 {% include pack-code.html vendor="cyberark" section="6.1" %}
 

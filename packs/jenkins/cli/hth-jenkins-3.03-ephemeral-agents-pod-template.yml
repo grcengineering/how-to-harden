@@ -1,0 +1,17 @@
+# =============================================================================
+# HTH Jenkins Control 3.3: Use Ephemeral Agents
+# Profile: L2 | Section: 3.3
+# =============================================================================
+
+# HTH Guide Excerpt: begin k8s-pod-template
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+    resources:
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+# HTH Guide Excerpt: end k8s-pod-template

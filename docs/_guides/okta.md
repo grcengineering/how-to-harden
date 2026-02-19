@@ -136,10 +136,7 @@ Configure both Okta Dashboard and Admin Console policies:
 - Alert on authentication attempts that fail FIDO2 requirement
 - Monitor for users bypassing policy via legacy sessions
 
-**Log query:**
-```plaintext
-eventType eq "user.authentication.auth_via_mfa" AND debugContext.debugData.factor eq "FIDO2_WEBAUTHN"
-```
+**Log query:** See Code Pack section 1.1 (cli) above for the System Log filter expression.
 
 **Maintenance schedule:**
 - **Monthly:** Review FIDO2 enrollment completion rates
@@ -623,20 +620,7 @@ Audit and mitigate the risk posed by Okta's immutable Default Authentication Pol
 
 #### Monitoring & Maintenance
 
-**Log query -- detect authentications hitting the Default Policy:**
-```plaintext
-eventType eq "policy.evaluate_sign_on" AND debugContext.debugData.policyType eq "ACCESS_POLICY" AND target.displayName eq "Default Policy"
-```
-
-**SIEM alert rule:**
-```sql
--- Alert: Authentication via Default Policy (MFA bypass)
-SELECT actor.displayName, client.ipAddress, outcome.result, published
-FROM okta_system_log
-WHERE eventType = 'policy.evaluate_sign_on'
-  AND debugContext.debugData.behaviors LIKE '%Default Policy%'
-ORDER BY published DESC
-```
+**Log query and SIEM alert rule:** See Code Pack section 1.9 (cli and db) above for log filter expressions and SIEM detection queries.
 
 **Maintenance schedule:**
 - **Weekly:** Automated script to check for apps on Default Policy (integrate into CI/CD)
@@ -745,28 +729,7 @@ Restrict self-service account recovery to trusted methods and network locations.
 
 #### Monitoring & Maintenance
 
-**Log query -- detect recovery attempts from untrusted networks:**
-```plaintext
-eventType eq "user.account.reset_password" AND securityContext.isProxy eq true
-```
-
-**SIEM alert rules:**
-```sql
--- Alert: Password recovery from non-corporate IP
-SELECT actor.displayName, client.ipAddress, client.geographicalContext.city,
-       client.geographicalContext.country, outcome.result, published
-FROM okta_system_log
-WHERE eventType IN ('user.account.reset_password', 'user.credential.forgot_password')
-  AND client.ipAddress NOT IN (SELECT ip FROM corporate_ip_ranges)
-ORDER BY published DESC
-
--- Alert: SMS/Voice recovery attempt (should not occur after hardening)
-SELECT actor.displayName, client.ipAddress, outcome.result, published
-FROM okta_system_log
-WHERE eventType = 'user.account.reset_password'
-  AND debugContext.debugData.factor IN ('SMS', 'CALL', 'QUESTION')
-ORDER BY published DESC
-```
+**Log query and SIEM alert rules:** See Code Pack section 1.10 (cli and db) above for log filter expressions and SIEM detection queries.
 
 **Maintenance schedule:**
 - **Monthly:** Verify authenticator enrollment policy still disables weak recovery options
@@ -857,38 +820,7 @@ Enable all five end-user security notification types in Okta so that users recei
 
 #### Monitoring & Maintenance
 
-**Log query -- suspicious activity reports from end users:**
-```plaintext
-eventType eq "user.account.report_suspicious_activity_by_enduser"
-```
-
-**Log query -- authenticator changes (correlate with user reports):**
-```plaintext
-eventType sw "user.mfa.factor" OR eventType eq "user.account.update_password"
-```
-
-**SIEM alert rules:**
-```sql
--- HIGH PRIORITY: User reported suspicious activity
-SELECT actor.displayName, actor.alternateId, client.ipAddress,
-       client.geographicalContext.city, client.geographicalContext.country,
-       outcome.result, published
-FROM okta_system_log
-WHERE eventType = 'user.account.report_suspicious_activity_by_enduser'
-ORDER BY published DESC
-
--- MEDIUM PRIORITY: Authenticator enrolled from unrecognized location
--- (Correlate with new sign-on notifications)
-SELECT actor.displayName, target.displayName AS authenticator_type,
-       client.ipAddress, client.userAgent.rawUserAgent, published
-FROM okta_system_log
-WHERE eventType IN (
-  'user.mfa.factor.activate',
-  'user.mfa.factor.enroll',
-  'system.mfa.factor.activate'
-)
-ORDER BY published DESC
-```
+**Log queries and SIEM alert rules:** See Code Pack section 1.11 (cli and db) above for log filter expressions and SIEM detection queries.
 
 **Incident response workflow for suspicious activity reports:**
 1. SIEM receives `user.account.report_suspicious_activity_by_enduser` event
@@ -1045,10 +977,8 @@ Activate Okta's Enhanced Dynamic Zone to automatically block traffic from anonym
 4. [ ] Verify legitimate users on corporate VPN are not affected
 
 #### Monitoring & Maintenance
-**Log query:**
-```plaintext
-eventType eq "security.threat.detected" AND debugContext.debugData.threatSuspected eq "ANONYMIZER"
-```
+
+**Log query:** See Code Pack section 2.3 (cli) above for the System Log filter expression.
 
 **Maintenance schedule:**
 - **Monthly:** Review blocked traffic patterns for false positives
@@ -1102,18 +1032,6 @@ Control which OAuth applications users can authorize and require admin approval 
 
 #### Code Implementation
 
-```bash
-# List all OAuth app grants
-curl -X GET "https://${OKTA_DOMAIN}/api/v1/apps?filter=status%20eq%20%22ACTIVE%22" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-
-  | jq '.[] | {name: .name, signOnMode: .signOnMode, created: .created}'
-
-# Audit OAuth tokens
-curl -X GET "https://${OKTA_DOMAIN}/api/v1/authorizationServers/default/clients" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}"
-```
-
 {% include pack-code.html vendor="okta" section="3.1" %}
 
 ---
@@ -1157,9 +1075,6 @@ Secure SCIM (System for Cross-domain Identity Management) connectors that provis
 3. Enable "Group Push" only for necessary groups
 
 #### Monitoring
-```plaintext
-eventType eq "system.scim.user.create" OR eventType eq "system.scim.user.update"
-```
 
 {% include pack-code.html vendor="okta" section="3.2" %}
 
@@ -1214,27 +1129,6 @@ Restrict which third-party applications can receive OAuth grants from users. OAu
 
 #### Code Implementation
 
-```bash
-# List all active applications with OAuth/OIDC sign-on
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/apps?filter=status%20eq%20%22ACTIVE%22" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '.[] | select(.signOnMode == "OPENID_CONNECT" or .signOnMode == "OAUTH_2_0") | {id: .id, label: .label, signOnMode: .signOnMode}'
-
-# List OAuth grants for a specific user
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/users/${USER_ID}/grants" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '.[] | {id: .id, clientId: .clientId, scopeId: .scopeId, status: .status}'
-
-# Revoke a specific OAuth grant
-curl -X DELETE "https://${OKTA_DOMAIN}/api/v1/users/${USER_ID}/grants/${GRANT_ID}" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}"
-
-# List all clients on the default authorization server
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/authorizationServers/default/clients" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '.[] | {client_id: .client_id, client_name: .client_name}'
-```
-
 {% include pack-code.html vendor="okta" section="3.3" %}
 
 #### Validation & Testing
@@ -1243,10 +1137,8 @@ curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/authorizationServers/default/clien
 3. [ ] Confirm no applications have overly broad scopes (`*.manage`, `*.write`) unless justified
 
 #### Monitoring & Maintenance
-**Log query:**
-```plaintext
-eventType eq "app.oauth2.consent.grant" OR eventType eq "app.oauth2.as.consent.grant"
-```
+
+**Log query:** See Code Pack section 3.3 (cli) above for the System Log filter expression.
 
 **Maintenance schedule:**
 - **Monthly:** Review OAuth consent grants across all users
@@ -1334,49 +1226,6 @@ Implement governance for non-human identities: service accounts, API tokens, aut
 
 #### Code Implementation
 
-```bash
-# List all active API tokens
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/api-tokens" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '.[] | {id: .id, name: .name, userId: .userId, clientName: .clientName, created: .created, lastUpdated: .lastUpdated, network: .network}'
-
-# Create an OAuth 2.0 service app (client credentials)
-curl -X POST "https://${OKTA_DOMAIN}/api/v1/apps" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "oidc_client",
-    "label": "SVC - Automation API Access",
-    "signOnMode": "OPENID_CONNECT",
-    "credentials": {
-      "oauthClient": {
-        "token_endpoint_auth_method": "private_key_jwt",
-        "autoKeyRotation": true
-      }
-    },
-    "settings": {
-      "oauthClient": {
-        "grant_types": ["client_credentials"],
-        "response_types": ["token"],
-        "application_type": "service"
-      }
-    }
-  }'
-
-# Grant specific API scopes to the service app
-curl -X PUT "https://${OKTA_DOMAIN}/api/v1/apps/${APP_ID}/grants" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "scopeId": "okta.users.read",
-    "issuer": "https://${OKTA_DOMAIN}"
-  }'
-
-# Revoke a stale API token
-curl -X DELETE "https://${OKTA_DOMAIN}/api/v1/api-tokens/${TOKEN_ID}" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}"
-```
-
 {% include pack-code.html vendor="okta" section="3.4" %}
 
 #### SSWS to OAuth 2.0 Migration Checklist
@@ -1396,10 +1245,8 @@ curl -X DELETE "https://${OKTA_DOMAIN}/api/v1/api-tokens/${TOKEN_ID}" \
 4. [ ] Verify no SSWS tokens are assigned to personal admin accounts used by humans
 
 #### Monitoring & Maintenance
-**Log query:**
-```plaintext
-eventType eq "system.api_token.create" OR eventType eq "system.api_token.revoke" OR eventType eq "app.oauth2.token.grant"
-```
+
+**Log query:** See Code Pack section 3.4 (cli) above for the System Log filter expression.
 
 **Maintenance schedule:**
 - **Monthly:** Review API token usage (flag tokens with no recent activity)
@@ -1555,22 +1402,6 @@ Harden admin sessions with ASN binding, IP binding, and Protected Actions. These
 
 #### Code Implementation
 
-```bash
-# Check current admin session settings
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/org/settings" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '{adminSessionASNBinding: .adminSessionASNBinding, adminSessionIPBinding: .adminSessionIPBinding}'
-
-# Enable ASN and IP binding
-curl -X PUT "https://${OKTA_DOMAIN}/api/v1/org/settings" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "adminSessionASNBinding": "ENABLED",
-    "adminSessionIPBinding": "ENABLED"
-  }'
-```
-
 {% include pack-code.html vendor="okta" section="4.3" %}
 
 #### Validation & Testing
@@ -1580,15 +1411,8 @@ curl -X PUT "https://${OKTA_DOMAIN}/api/v1/org/settings" \
 4. [ ] Test session invalidation: Log in as admin, change network (e.g., switch from WiFi to VPN) — session should be invalidated if IP binding is enabled
 
 #### Monitoring & Maintenance
-**Log query:**
-```plaintext
-eventType eq "user.session.invalidate" AND debugContext.debugData.reason eq "ADMIN_SESSION_BINDING"
-```
 
-**Log query for Protected Actions:**
-```plaintext
-eventType eq "system.protected_action.challenge" OR eventType eq "system.protected_action.success"
-```
+**Log queries:** See Code Pack section 4.3 (cli) above for session binding and Protected Actions log filter expressions.
 
 **Maintenance schedule:**
 - **Monthly:** Review Protected Actions audit log for any failures or unusual patterns
@@ -1628,27 +1452,6 @@ If your SIEM is not directly supported:
 3. Configure your SIEM to pull logs via the System Log API endpoint
 
 **Step 3: Create Alert Rules (via SIEM)**
-```sql
--- Detect impossible travel
-SELECT user, sourceIp, geo_country, timestamp
-FROM okta_logs
-WHERE eventType = 'user.authentication.sso'
-  AND geo_country_change_within_1hr = true
-
--- Detect brute force
-SELECT user, count(*) as attempts
-FROM okta_logs
-WHERE eventType = 'user.authentication.failed'
-  AND timestamp > now() - interval '5 minutes'
-GROUP BY user
-HAVING count(*) > 10
-
--- Detect admin role changes
-SELECT actor, target, eventType, timestamp
-FROM okta_logs
-WHERE eventType LIKE 'system.role%'
-  OR eventType LIKE 'group.user_membership%admin%'
-```
 
 {% include pack-code.html vendor="okta" section="5.1" %}
 
@@ -1733,20 +1536,6 @@ Enable Identity Threat Protection with Okta AI for continuous post-authenticatio
    - Add source IP to dynamic blocklist
 
 #### Monitoring & Maintenance
-**Log query:**
-```plaintext
-eventType eq "security.threat.detected" OR eventType eq "security.session.risk_change"
-```
-
-**SIEM alert rule:**
-```sql
-SELECT actor.displayName, client.ipAddress, outcome.result,
-       debugContext.debugData.riskLevel, debugContext.debugData.riskReasons
-FROM okta_system_log
-WHERE eventType = 'security.threat.detected'
-  AND debugContext.debugData.riskLevel IN ('HIGH', 'CRITICAL')
-ORDER BY published DESC
-```
 
 {% include pack-code.html vendor="okta" section="5.3" %}
 
@@ -1804,26 +1593,6 @@ Configure Okta's Behavior Detection to identify anomalous user behavior patterns
 
 #### Code Implementation
 
-```bash
-# List all configured behavior detection rules
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/behaviors" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '.[] | {id: .id, name: .name, type: .type, status: .status}'
-
-# Create a new behavior detection rule for new country
-curl -X POST "https://${OKTA_DOMAIN}/api/v1/behaviors" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "New Country Detection",
-    "type": "ANOMALOUS_LOCATION",
-    "status": "ACTIVE",
-    "settings": {
-      "maxEventsUsedForEvaluation": 50
-    }
-  }'
-```
-
 {% include pack-code.html vendor="okta" section="5.4" %}
 
 #### Validation & Testing
@@ -1832,10 +1601,8 @@ curl -X POST "https://${OKTA_DOMAIN}/api/v1/behaviors" \
 3. [ ] Review risk score evaluation: Check system log for `security.behavior_detection.triggered` events
 
 #### Monitoring & Maintenance
-**Log query:**
-```plaintext
-eventType eq "security.behavior_detection.triggered"
-```
+
+**Log query:** See Code Pack section 5.4 (cli) above for the System Log filter expression.
 
 ---
 
@@ -1898,28 +1665,6 @@ Configure alerts in your SIEM for these system log events:
 
 #### Code Implementation
 
-```bash
-# Audit all configured identity providers
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/idps" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '.[] | {id: .id, name: .name, type: .type, status: .status, created: .created, protocol: .protocol.type}'
-
-# Audit IDP discovery (routing) policies
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/policies?type=IDP_DISCOVERY" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '.[] | {id: .id, name: .name, status: .status, created: .created, lastUpdated: .lastUpdated}'
-
-# Get rules for each IDP discovery policy
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/policies/${POLICY_ID}/rules" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '.[] | {id: .id, name: .name, conditions: .conditions, actions: .actions}'
-
-# Search system log for IdP lifecycle events (last 7 days)
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/logs?filter=eventType+sw+%22system.idp.lifecycle%22&since=$(date -d '7 days ago' -u +%Y-%m-%dT%H:%M:%S.000Z)" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '.[] | {eventType: .eventType, actor: .actor.displayName, target: .target[0].displayName, published: .published}'
-```
-
 {% include pack-code.html vendor="okta" section="5.5" %}
 
 #### Validation & Testing
@@ -1929,23 +1674,8 @@ curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/logs?filter=eventType+sw+%22system
 4. [ ] Test alert: Create a test IdP in a sandbox tenant and verify alert fires
 
 #### Monitoring & Maintenance
-**SIEM alert rules (CRITICAL — investigate immediately):**
-```sql
--- Alert: New Identity Provider Created (CRITICAL)
-SELECT actor.displayName, actor.alternateId, target[0].displayName,
-       target[0].type, client.ipAddress, published
-FROM okta_system_log
-WHERE eventType IN (
-  'system.idp.lifecycle.create',
-  'system.idp.lifecycle.activate'
-)
 
--- Alert: Routing Rule Modified (HIGH)
-SELECT actor.displayName, target[0].displayName, published
-FROM okta_system_log
-WHERE eventType IN ('policy.lifecycle.create', 'policy.lifecycle.update')
-  AND debugContext.debugData.policyType = 'IDP_DISCOVERY'
-```
+**SIEM alert rules (CRITICAL -- investigate immediately):** See Code Pack section 5.5 (db) above for IdP creation and routing rule modification detection queries.
 
 **Maintenance schedule:**
 - **Weekly:** Review IdP configuration and routing rules for unauthorized changes
@@ -2112,34 +1842,8 @@ Document a formal policy requiring:
 4. Verify no sensitive tokens remain by searching for common patterns: `sid=`, `sessionToken`, `Bearer`, `SSWS`
 
 **Step 3: Automated Sanitization Script**
-```bash
-#!/bin/bash
-# har-sanitize.sh - Strip sensitive headers from HAR files
-# Usage: ./har-sanitize.sh input.har > sanitized.har
 
-INPUT_FILE="$1"
-if [ -z "$INPUT_FILE" ]; then
-  echo "Usage: $0 <input.har>"
-  exit 1
-fi
-
-jq '
-  .log.entries[].request.headers |= map(
-    if (.name | test("^(Cookie|Authorization|X-CSRF-Token|X-Okta-Session)$"; "i"))
-    then .value = "[REDACTED]"
-    else .
-    end
-  ) |
-  .log.entries[].response.headers |= map(
-    if (.name | test("^(Set-Cookie)$"; "i"))
-    then .value = "[REDACTED]"
-    else .
-    end
-  ) |
-  .log.entries[].request.cookies |= map(.value = "[REDACTED]") |
-  .log.entries[].response.cookies |= map(.value = "[REDACTED]")
-' "$INPUT_FILE"
-```
+{% include pack-code.html vendor="okta" section="7.1" %}
 
 **Step 4: Alternative Tools**
 - **Google HAR Sanitizer Chrome Extension** — browser-based sanitization
@@ -2241,23 +1945,6 @@ Perform periodic access reviews (recertification campaigns) to verify user acces
 
 #### Code Implementation
 
-```bash
-# Find active users who haven't logged in for 90+ days
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/users?filter=status+eq+%22ACTIVE%22&limit=200" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '[.[] | select(.lastLogin != null) | select((.lastLogin | fromdateiso8601) < (now - 7776000))] | length'
-
-# List all admin role assignments
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/iam/assignees/users" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq '.[] | {userId: .userId, role: .role, status: .status}'
-
-# Count Super Admin assignments
-curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/iam/assignees/users?roleType=SUPER_ADMIN" \
-  -H "Authorization: SSWS ${OKTA_API_TOKEN}" \
-  | jq 'length'
-```
-
 {% include pack-code.html vendor="okta" section="7.3" %}
 
 #### Quarterly Access Review Checklist
@@ -2301,12 +1988,7 @@ Establish a change management process for Okta configuration changes. All modifi
 | **Low Risk** | Self-approved (with logging) | User profile updates, non-privileged group changes |
 
 **Step 2: Track Configuration as Code**
-1. Export Okta configuration using Terraform:
-   ```bash
-   # Use okta/okta Terraform provider to manage config as code
-   terraform plan -out=okta-changes.plan
-   terraform apply okta-changes.plan
-   ```
+1. Export Okta configuration using Terraform (see Code Pack section 7.4 cli for commands)
 2. Store Terraform state in version control
 3. Require pull request review for all Okta Terraform changes
 4. Use `terraform plan` diff as the change documentation
@@ -2359,21 +2041,9 @@ Document specific response procedures for identity-based security incidents. The
 #### Incident Response Runbooks
 
 **Runbook 1: Compromised Admin Account**
-1. **Contain:** Immediately suspend the admin account
-   ```bash
-   curl -X POST "https://${OKTA_DOMAIN}/api/v1/users/${USER_ID}/lifecycle/suspend" \
-     -H "Authorization: SSWS ${OKTA_API_TOKEN}"
-   ```
-2. **Revoke:** Clear all active sessions
-   ```bash
-   curl -X DELETE "https://${OKTA_DOMAIN}/api/v1/users/${USER_ID}/sessions" \
-     -H "Authorization: SSWS ${OKTA_API_TOKEN}"
-   ```
-3. **Investigate:** Audit all changes made by the compromised account
-   ```bash
-   curl -s -X GET "https://${OKTA_DOMAIN}/api/v1/logs?filter=actor.id+eq+%22${USER_ID}%22&since=${INCIDENT_START}" \
-     -H "Authorization: SSWS ${OKTA_API_TOKEN}" | jq '.[] | {eventType, target, published}'
-   ```
+1. **Contain:** Immediately suspend the admin account (see api-ir-suspend-admin in Code Pack)
+2. **Revoke:** Clear all active sessions (see api-ir-revoke-sessions in Code Pack)
+3. **Investigate:** Audit all changes made by the compromised account (see api-ir-audit-changes in Code Pack)
 4. **Remediate:** Reset credentials, re-enroll MFA, review all configuration changes
 5. **Restore:** Reactivate account only after re-verification of identity
 
@@ -2384,21 +2054,13 @@ Document specific response procedures for identity-based security incidents. The
 4. **Force** re-authentication for all affected users
 
 **Runbook 3: Malicious IdP Creation**
-1. **Deactivate** the malicious IdP immediately
-   ```bash
-   curl -X POST "https://${OKTA_DOMAIN}/api/v1/idps/${IDP_ID}/lifecycle/deactivate" \
-     -H "Authorization: SSWS ${OKTA_API_TOKEN}"
-   ```
+1. **Deactivate** the malicious IdP immediately (see api-ir-deactivate-idp in Code Pack)
 2. **Audit** all authentications that used the malicious IdP
 3. **Revoke** sessions for all users who authenticated via the malicious IdP
 4. **Investigate** which admin created it and whether their account is compromised
 
 **Runbook 4: Unauthorized MFA Enrollment**
-1. **Remove** the unauthorized factor
-   ```bash
-   curl -X DELETE "https://${OKTA_DOMAIN}/api/v1/users/${USER_ID}/factors/${FACTOR_ID}" \
-     -H "Authorization: SSWS ${OKTA_API_TOKEN}"
-   ```
+1. **Remove** the unauthorized factor (see api-ir-delete-factor in Code Pack)
 2. **Investigate** how the enrollment occurred (account takeover, social engineering of helpdesk)
 3. **Force** password reset and MFA re-enrollment under verified identity
 4. **Review** all account activity since the unauthorized enrollment
@@ -2408,7 +2070,9 @@ Document specific response procedures for identity-based security incidents. The
 2. **Review** lockout logs to identify targeted accounts
 3. **Communicate** to affected users about potential credential exposure
 4. **Force** password reset for accounts that were targeted
-5. **Verify** MFA is enforced — password spray is only effective without MFA
+5. **Verify** MFA is enforced -- password spray is only effective without MFA
+
+{% include pack-code.html vendor="okta" section="7.5" %}
 
 #### Validation & Testing
 1. [ ] All 5 runbooks documented and accessible to security team
@@ -2538,21 +2202,7 @@ For U.S. Government systems, display the Standard Mandatory DOD Notice and Conse
 <details>
 <summary>DOD Banner Text (1300 characters)</summary>
 
-```plaintext
-You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.
-
-By using this IS (which includes any device attached to this IS), you consent to the following conditions:
-
--The USG routinely intercepts and monitors communications on this IS for purposes including, but not limited to, penetration testing, COMSEC monitoring, network operations and defense, personnel misconduct (PM), law enforcement (LE), and counterintelligence (CI) investigations.
-
--At any time, the USG may inspect and seize data stored on this IS.
-
--Communications using, or data stored on, this IS are not private, are subject to routine monitoring, interception, and search, and may be disclosed or used for any USG-authorized purpose.
-
--This IS includes security measures (e.g., authentication and access controls) to protect USG interests--not for your personal benefit or privacy.
-
--Notwithstanding the above, using this IS does not constitute consent to PM, LE or CI investigative searching or monitoring of the content of privileged communications, or work product, related to personal representation or services by attorneys, psychotherapists, or clergy, and their assistants. Such communications and work product are private and confidential. See User Agreement for details.
-```
+{% include pack-code.html vendor="okta" section="8.5" %}
 
 </details>
 

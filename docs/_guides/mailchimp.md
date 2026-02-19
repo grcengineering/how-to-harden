@@ -190,20 +190,7 @@ Manage Mailchimp API keys securely.
 
 #### Detection Focus
 
-```sql
--- Detect bulk exports
-SELECT user_email, export_type, record_count
-FROM mailchimp_activity
-WHERE action = 'export'
-  AND record_count > 1000
-  AND timestamp > NOW() - INTERVAL '24 hours';
-
--- Detect suspicious campaign creation
-SELECT user_email, campaign_name, audience_size
-FROM campaign_log
-WHERE created_at > NOW() - INTERVAL '24 hours'
-  AND audience_size > 10000;
-```
+{% include pack-code.html vendor="mailchimp" section="4.1" %}
 
 ---
 

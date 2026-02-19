@@ -438,11 +438,9 @@ Set organization-wide custom instructions that apply to all conversations, embed
 
 **Step 2: Configure Organization Instructions**
 1. Add security-aware instructions such as:
-```text
-   - Do not request or encourage submission of PII, credentials, or sensitive data
-   - Remind users to sanitize code before sharing
-   - Follow [Company] AI acceptable use policy
-   ```
+
+{% include pack-code.html vendor="chatgpt-enterprise" section="3.3" %}
+
 2. Save and apply to all users
 
 ---

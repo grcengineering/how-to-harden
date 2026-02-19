@@ -160,11 +160,8 @@ Restrict Bitbucket access to approved IP addresses to prevent access from unauth
 3. Document emergency procedures
 
 **Configuration Example:**
-```text
-Corporate Office: 203.0.113.0/24
-VPN Egress: 198.51.100.0/24
-CI/CD Servers: 192.0.2.0/24
-```
+
+{% include pack-code.html vendor="bitbucket" section="1.3" %}
 
 ---
 

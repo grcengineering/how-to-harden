@@ -106,19 +106,10 @@ Configure granular RBAC preventing over-privileged access to Falcon console func
 #### ClickOps Implementation
 
 **Step 1: Design Role Structure**
-```text
-Roles:
-├── Falcon Administrator
-│   └── Full console access (limit to 2-3 users)
-├── Detection Analyst
-│   └── View detections, investigate, NO policy changes
-├── Response Analyst
-│   └── View detections, contain hosts, NO uninstall
-├── Read-Only Auditor
-│   └── View dashboards and reports only
-└── API Administrator
-    └── Manage API clients, NO detection access
-```
+
+See the CLI pack below for the recommended role structure.
+
+{% include pack-code.html vendor="crowdstrike" section="1.2" %}
 
 **Step 2: Create Custom Roles**
 1. Navigate to: **Falcon → Host Setup and Management → Roles**
@@ -208,43 +199,7 @@ For each integration, create dedicated client with minimal scopes:
 
 #### Code Implementation
 
-```python
-#!/usr/bin/env python3
-# crowdstrike-api-audit.py - Audit API clients
-
-from falconpy import APIHarness
-
-def audit_api_clients():
-    """Audit all API clients for over-privileged access"""
-
-    falcon = APIHarness(
-        client_id=os.environ['CS_CLIENT_ID'],
-        client_secret=os.environ['CS_CLIENT_SECRET']
-    )
-
-    # Get API clients (requires appropriate scope)
-    response = falcon.command("QueryAPIClients")
-
-    issues = []
-    for client in response['body']['resources']:
-        # Check for overly broad scopes
-        scopes = client.get('scopes', [])
-
-        dangerous_scopes = ['hosts:write', 'sensor-update-policies:write',
-                           'prevention-policies:write', 'user-management:write']
-
-        for scope in dangerous_scopes:
-            if scope in scopes:
-                issues.append(f"Client '{client['name']}' has dangerous scope: {scope}")
-
-        # Check creation date
-        created = datetime.fromisoformat(client['created_timestamp'])
-        age_days = (datetime.now() - created).days
-        if age_days > 90:
-            issues.append(f"Client '{client['name']}' is {age_days} days old")
-
-    return issues
-```
+{% include pack-code.html vendor="crowdstrike" section="2.1" %}
 
 ---
 
@@ -256,28 +211,7 @@ def audit_api_clients():
 #### Description
 Monitor API usage patterns and implement alerting for anomalous activity.
 
-```python
-# Monitor for unusual API activity
-def detect_api_anomalies(falcon):
-    """Detect unusual API usage patterns"""
-
-    # Check for bulk host queries
-    response = falcon.command("audit_events",
-                             filter="service_name:'hosts' + action:'query'")
-
-    events = response['body']['resources']
-
-    # Group by client
-    client_counts = {}
-    for event in events:
-        client = event.get('audit_key_values', {}).get('client_id', 'unknown')
-        client_counts[client] = client_counts.get(client, 0) + 1
-
-    # Alert on high-volume clients
-    for client, count in client_counts.items():
-        if count > 1000:
-            alert(f"High API volume from {client}: {count} requests")
-```
+{% include pack-code.html vendor="crowdstrike" section="2.2" %}
 
 ---
 
@@ -369,21 +303,7 @@ Organize sensors into logical groups for policy management and staged deployment
 
 #### ClickOps Implementation
 
-```text
-Sensor Groups:
-├── Production-Critical
-│   ├── Domain Controllers
-│   ├── Database Servers
-│   └── Payment Systems
-├── Production-Standard
-│   ├── Application Servers
-│   └── Web Servers
-├── Workstations
-│   ├── Executive
-│   ├── Engineering
-│   └── General
-└── Test-Canary (for update testing)
-```
+See the CLI pack below for the recommended sensor grouping structure.
 
 **Step 1: Create Host Groups**
 1. Navigate to: **Host Setup and Management → Host Groups**
@@ -456,29 +376,7 @@ Deploy content updates in stages to detect issues before full rollout. This cont
 
 #### Monitoring Configuration
 
-```python
-# Monitor for update-related issues
-def monitor_canary_health(falcon):
-    """Detect issues after content updates"""
-
-    canary_group_id = "canary_group_id_here"
-
-    # Get canary hosts
-    hosts = falcon.command("QueryDevicesByFilterScroll",
-                          filter=f"host_group.id:'{canary_group_id}'")
-
-    issues = []
-    for host in hosts['body']['resources']:
-        # Check last seen time
-        last_seen = datetime.fromisoformat(host['last_seen'])
-        if (datetime.now() - last_seen).minutes > 15:
-            issues.append(f"Canary host {host['hostname']} not reporting")
-
-        # Check for crash events
-        # (Would require Windows event log correlation)
-
-    return issues
-```
+See the SDK pack below for canary health monitoring scripts.
 
 {% include pack-code.html vendor="crowdstrike" section="4.1" %}
 
@@ -562,22 +460,8 @@ Stream Falcon events to SIEM for correlation and long-term retention.
    - Generic: Use Falcon Data Replicator
 
 **Step 2: Configure Event Forwarding**
-```python
-from falconpy import EventStreams
 
-def stream_to_siem():
-    falcon = EventStreams(
-        client_id=os.environ['CS_CLIENT_ID'],
-        client_secret=os.environ['CS_CLIENT_SECRET']
-    )
-
-    # List available streams
-    streams = falcon.list_available_streams()
-
-    # Connect to event stream
-    for event in falcon.stream_events(stream_name='main'):
-        forward_to_siem(event)
-```
+{% include pack-code.html vendor="crowdstrike" section="5.2" %}
 
 ---
 

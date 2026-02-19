@@ -1,0 +1,29 @@
+# HTH GitHub Control 7.01: Splunk Detection Queries
+# Profile: L2 | NIST: AU-2, AU-6
+# https://howtoharden.com/guides/github/#71-enable-audit-log-streaming-to-siem
+
+# HTH Guide Excerpt: begin db-splunk-unusual-member-additions
+index=github action=org.add_member
+
+| stats count by actor, user
+| where count > 5
+# HTH Guide Excerpt: end db-splunk-unusual-member-additions
+
+# HTH Guide Excerpt: begin db-splunk-unusual-repo-cloning
+index=github action=git.clone
+
+| stats dc(repo) as unique_repos by actor
+| where unique_repos > 50
+# HTH Guide Excerpt: end db-splunk-unusual-repo-cloning
+
+# HTH Guide Excerpt: begin db-splunk-secret-scanning-dismissed
+index=github action=secret_scanning.dismiss_alert
+
+| table _time, actor, repo, alert_id
+# HTH Guide Excerpt: end db-splunk-secret-scanning-dismissed
+
+# HTH Guide Excerpt: begin db-splunk-branch-protection-removed
+index=github action=protected_branch.destroy
+
+| table _time, actor, repo, branch
+# HTH Guide Excerpt: end db-splunk-branch-protection-removed

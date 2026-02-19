@@ -1,0 +1,35 @@
+# =============================================================================
+# HTH Azure DevOps Control 2.1: Migrate to Workload Identity Federation
+# Profile: L1 | Section: 2.1
+# =============================================================================
+
+# HTH Guide Excerpt: begin workload-identity-pipeline
+# azure-pipelines.yml - Using workload identity federation
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Deploy
+    jobs:
+      - deployment: DeployToAzure
+        environment: 'production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  inputs:
+                    # Uses workload identity federation - no stored credentials
+                    azureSubscription: 'production-oidc-connection'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      az account show
+                      az webapp deployment source config-zip \
+                        --resource-group myRG \
+                        --name myApp \
+                        --src $(Pipeline.Workspace)/drop/app.zip
+# HTH Guide Excerpt: end workload-identity-pipeline

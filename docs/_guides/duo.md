@@ -124,16 +124,6 @@ Protect Duo integration keys, secret keys, and API credentials as highly sensiti
 5. **Use environment variables** instead of hardcoded values
 
 **Secret Key Handling:**
-```bash
-# Bad: Hardcoded in script
-SKEY="your-secret-key"
-
-# Good: Environment variable
-SKEY=$DUO_SECRET_KEY
-
-# Better: Secrets manager
-SKEY=$(vault kv get -field=skey secret/duo/application)
-```
 
 {% include pack-code.html vendor="duo" section="1.2" %}
 

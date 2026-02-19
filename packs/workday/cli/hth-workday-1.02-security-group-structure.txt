@@ -1,0 +1,19 @@
+# HTH Workday Control 1.2: Implement Role-Based Security Groups
+# Profile: L1 | NIST: AC-3, AC-6
+# https://howtoharden.com/guides/workday/#12-implement-role-based-security-groups
+
+# HTH Guide Excerpt: begin cli-security-group-structure
+Security Groups:
+├── HR Business Partner
+│   └── View employee data for assigned organizations
+├── Compensation Administrator
+│   └── Manage compensation (restricted fields)
+├── Benefits Administrator
+│   └── Manage benefits enrollment
+├── Payroll Administrator
+│   └── Process payroll (segregation of duties)
+├── Integration System User
+│   └── API access for specific integrations
+└── Security Administrator
+    └── Manage security configuration
+# HTH Guide Excerpt: end cli-security-group-structure

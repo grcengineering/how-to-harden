@@ -89,21 +89,8 @@ Configure Workday security groups with least-privilege access to HR and financia
 #### ClickOps Implementation
 
 **Step 1: Design Security Group Structure**
-```text
-Security Groups:
-├── HR Business Partner
-│   └── View employee data for assigned organizations
-├── Compensation Administrator
-│   └── Manage compensation (restricted fields)
-├── Benefits Administrator
-│   └── Manage benefits enrollment
-├── Payroll Administrator
-│   └── Process payroll (segregation of duties)
-├── Integration System User
-│   └── API access for specific integrations
-└── Security Administrator
-    └── Manage security configuration
-```
+
+{% include pack-code.html vendor="workday" section="1.2" %}
 
 **Step 2: Configure Domain Security**
 1. Navigate to: **Domain Security Policies**
@@ -168,14 +155,8 @@ Harden Integration System Users that provide API access for third-party integrat
 
 **Step 2: Create Purpose-Specific ISUs**
 For each integration, create dedicated ISU:
-```text
-ISU Architecture:
-├── ISU-ADP-Payroll (payroll data only)
-├── ISU-Benefits-Carrier (benefits data only)
-├── ISU-HRIS-Reporting (read-only reporting)
-├── ISU-Recruiting-ATS (applicant data only)
-└── ISU-IT-Provisioning (worker provisioning)
-```
+
+{% include pack-code.html vendor="workday" section="2.1" %}
 
 **Step 3: Restrict ISU Security Groups**
 1. Create integration-specific security groups
@@ -237,20 +218,8 @@ Restrict access to sensitive fields based on business need.
 #### ClickOps Implementation
 
 **Step 1: Identify Sensitive Fields**
-```text
-High Sensitivity:
-- Social Security Number
-- Bank Account Numbers
-- Salary/Compensation
-- Performance Reviews
-- Medical Information
 
-Medium Sensitivity:
-- Home Address
-- Personal Email
-- Emergency Contacts
-- Birthdates
-```
+{% include pack-code.html vendor="workday" section="3.1" %}
 
 **Step 2: Configure Field Security**
 1. Navigate to: **Domain Security Policies**
@@ -367,29 +336,7 @@ Configure comprehensive audit logging for Workday operations.
 
 #### Detection Queries
 
-```sql
--- Detect bulk data access
-SELECT user_id, COUNT(*) as record_count
-FROM workday_audit_log
-WHERE action = 'View'
-  AND object_type IN ('Worker', 'Compensation')
-  AND timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY user_id
-HAVING COUNT(*) > 100;
-
--- Detect ISU anomalies
-SELECT isu_name, api_endpoint, COUNT(*) as call_count
-FROM api_access_log
-WHERE timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY isu_name, api_endpoint
-HAVING COUNT(*) > 1000;
-
--- Detect sensitive field access
-SELECT user_id, field_name, worker_id
-FROM field_access_log
-WHERE field_name IN ('SSN', 'Bank_Account', 'Salary')
-  AND timestamp > NOW() - INTERVAL '24 hours';
-```
+{% include pack-code.html vendor="workday" section="5.1" %}
 
 ---
 

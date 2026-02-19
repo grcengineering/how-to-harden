@@ -72,7 +72,7 @@ Require MFA for Docker Hub accounts, especially those with push access.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="dockerhub" section="1.1" lang="terraform" %}
+{% include pack-code.html vendor="dockerhub" section="1.1" %}
 
 ---
 
@@ -101,7 +101,7 @@ Use personal access tokens instead of passwords for automation.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="dockerhub" section="1.2" lang="terraform" %}
+{% include pack-code.html vendor="dockerhub" section="1.2" %}
 
 ---
 
@@ -117,17 +117,7 @@ Use Docker Scout for vulnerability scanning.
 
 #### Implementation
 
-```bash
-# Enable Scout for repository
-docker scout recommendations myimage:latest
-
-# Check for vulnerabilities
-docker scout cves myimage:latest
-```
-
-#### Code Implementation
-
-{% include pack-code.html vendor="dockerhub" section="2.1" lang="terraform" %}
+{% include pack-code.html vendor="dockerhub" section="2.1" %}
 
 ---
 
@@ -139,17 +129,7 @@ docker scout cves myimage:latest
 #### Description
 Enable Docker Content Trust for image signing.
 
-```bash
-# Enable content trust
-export DOCKER_CONTENT_TRUST=1
-
-# Sign and push image
-docker push myorg/myimage:latest
-```
-
-#### Code Implementation
-
-{% include pack-code.html vendor="dockerhub" section="2.2" lang="terraform" %}
+{% include pack-code.html vendor="dockerhub" section="2.2" %}
 
 ---
 
@@ -167,7 +147,7 @@ docker push myorg/myimage:latest
 
 #### Code Implementation
 
-{% include pack-code.html vendor="dockerhub" section="3.1" lang="terraform" %}
+{% include pack-code.html vendor="dockerhub" section="3.1" %}
 
 ---
 
@@ -181,18 +161,7 @@ docker push myorg/myimage:latest
 2. Use multi-stage builds
 3. Never include credentials in Dockerfiles
 
-```dockerfile
-# Good: Use build arguments
-ARG API_KEY
-RUN --mount=type=secret,id=api_key ./configure
-
-# Bad: Never do this
-ENV API_KEY=secret123
-```
-
-#### Code Implementation
-
-{% include pack-code.html vendor="dockerhub" section="3.2" lang="terraform" %}
+{% include pack-code.html vendor="dockerhub" section="3.2" %}
 
 ---
 
@@ -205,17 +174,7 @@ ENV API_KEY=secret123
 
 #### Detection Focus
 
-```sql
--- Detect unusual push activity
-SELECT user, repository, COUNT(*) as push_count
-FROM docker_audit_log
-WHERE action = 'push'
-  AND timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY user, repository
-HAVING COUNT(*) > 10;
-```
-
-{% include pack-code.html vendor="dockerhub" section="4.1" lang="terraform" %}
+{% include pack-code.html vendor="dockerhub" section="4.1" %}
 
 ---
 

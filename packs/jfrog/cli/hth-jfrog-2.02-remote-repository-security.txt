@@ -1,0 +1,10 @@
+# HTH JFrog Control 2.2: Remote Repository Security
+# Profile: L1 | NIST: SC-7
+# https://howtoharden.com/guides/jfrog/#22-remote-repository-security
+
+# HTH Guide Excerpt: begin exclude-patterns
+# Block potentially dangerous artifacts
+*.exe
+*.dll
+*.msi
+# HTH Guide Excerpt: end exclude-patterns

@@ -1,0 +1,3 @@
+# HTH Guide Excerpt: begin cli-log-query-behavior-detection
+eventType eq "security.behavior_detection.triggered"
+# HTH Guide Excerpt: end cli-log-query-behavior-detection

@@ -129,15 +129,6 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 - Alert on sign-ins without MFA from Conditional Access exclusions
 - Track MFA registration completion rates
 
-**KQL Query for Azure Sentinel:**
-```kql
-SigninLogs
-| where TimeGenerated > ago(24h)
-| where AuthenticationRequirement == "singleFactorAuthentication"
-| where ResultType == 0
-| project TimeGenerated, UserPrincipalName, AppDisplayName, IPAddress, Location
-```
-
 **Maintenance schedule:**
 - **Weekly:** Review MFA registration status for new users
 - **Monthly:** Audit Conditional Access policy exclusions

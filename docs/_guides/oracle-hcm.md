@@ -75,7 +75,7 @@ Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="oracle-hcm" section="1.1" lang="terraform" %}
+{% include pack-code.html vendor="oracle-hcm" section="1.1" %}
 
 ---
 
@@ -103,7 +103,7 @@ Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="oracle-hcm" section="1.2" lang="terraform" %}
+{% include pack-code.html vendor="oracle-hcm" section="1.2" %}
 
 ---
 
@@ -131,7 +131,7 @@ Implement data-level security using security profiles.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="oracle-hcm" section="1.3" lang="terraform" %}
+{% include pack-code.html vendor="oracle-hcm" section="1.3" %}
 
 ---
 
@@ -159,17 +159,12 @@ Harden REST API integrations for HCM data.
    - Redirect URIs (exact match)
 
 **Step 2: Scope Restrictions**
-```text
-Minimum Scopes:
-├── urn:opc:resource:consumer::all (avoid if possible)
-├── Specific API scopes only:
-│   ├── /hcmRestApi/resources/workers
-│   └── /hcmRestApi/resources/absences
-```
+
+{% include pack-code.html vendor="oracle-hcm" section="2.1" %}
 
 #### Code Implementation
 
-{% include pack-code.html vendor="oracle-hcm" section="2.1" lang="terraform" %}
+{% include pack-code.html vendor="oracle-hcm" section="2.1" %}
 
 ---
 
@@ -195,7 +190,7 @@ Secure bulk data operations via HDL.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="oracle-hcm" section="2.2" lang="terraform" %}
+{% include pack-code.html vendor="oracle-hcm" section="2.2" %}
 
 ---
 
@@ -219,7 +214,7 @@ Secure bulk data operations via HDL.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="oracle-hcm" section="3.1" lang="terraform" %}
+{% include pack-code.html vendor="oracle-hcm" section="3.1" %}
 
 ---
 
@@ -242,7 +237,7 @@ Secure bulk data operations via HDL.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="oracle-hcm" section="3.2" lang="terraform" %}
+{% include pack-code.html vendor="oracle-hcm" section="3.2" %}
 
 ---
 
@@ -269,20 +264,7 @@ Secure bulk data operations via HDL.
 
 #### Detection Focus
 
-```sql
--- Detect bulk employee data access
-SELECT user_name, web_service, COUNT(*) as calls
-FROM fusion_audit_log
-WHERE module = 'HCM'
-  AND operation_type = 'READ'
-  AND timestamp > SYSDATE - 1
-GROUP BY user_name, web_service
-HAVING COUNT(*) > 100;
-```
-
-#### Code Implementation
-
-{% include pack-code.html vendor="oracle-hcm" section="4.1" lang="terraform" %}
+{% include pack-code.html vendor="oracle-hcm" section="4.1" %}
 
 ---
 
@@ -292,23 +274,7 @@ HAVING COUNT(*) > 100;
 
 #### Detection Queries
 
-```sql
--- Detect unusual API patterns
-SELECT client_id, endpoint, COUNT(*) as requests
-FROM api_access_log
-WHERE timestamp > SYSDATE - INTERVAL '1' HOUR
-GROUP BY client_id, endpoint
-HAVING COUNT(*) > 500;
-
--- Detect off-hours HDL activity
-SELECT user_name, file_name, timestamp
-FROM hdl_audit_log
-WHERE EXTRACT(HOUR FROM timestamp) NOT BETWEEN 8 AND 18;
-```
-
-#### Code Implementation
-
-{% include pack-code.html vendor="oracle-hcm" section="4.2" lang="terraform" %}
+{% include pack-code.html vendor="oracle-hcm" section="4.2" %}
 
 ---
 

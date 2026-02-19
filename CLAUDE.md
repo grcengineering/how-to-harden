@@ -28,13 +28,24 @@ Text here
 More text
 ```
 
-### 2. Code Blocks Must Specify Language
+### 2. ZERO Inline Code Blocks in Guides
 
-Always use: ` ```bash `, ` ```hcl `, ` ```sql `, ` ```python `, etc.
+**All code, queries, configs, and examples MUST live in the Code Pack system** — never as inline fenced code blocks in guide markdown files (`docs/_guides/*.md`).
+
+- **No exceptions:** SQL, KQL, SPL, bash, Python, YAML, JSON, HCL, text configs, regex patterns, architecture diagrams — everything goes in packs.
+- **Pack pipeline:** `packs/{vendor}/{type}/` source files → `scripts/sync-packs-to-data.sh` → `docs/_data/packs/{vendor}.yml` → `{% include pack-code.html vendor="{vendor}" section="X.X" %}` in guides.
+- **Pack types (directories):** `terraform/`, `api/`, `cli/`, `sdk/`, `db/`, `siem/sigma/`
+- **Verification:** Run `grep -cE '^ *```' docs/_guides/{vendor}.md` — must return **0** for every guide.
+- To add code to a guide: create a pack file in `packs/{vendor}/{type}/`, run the sync script, then use the include tag in the guide.
+- Do NOT use `lang=` parameter on include tags.
+
+### 3. Code Blocks Must Specify Language (non-guide files only)
+
+In files other than guides (README, AGENTS.md, CONTRIBUTING.md, etc.), always use: ` ```bash `, ` ```hcl `, ` ```sql `, ` ```python `, etc.
 
 Never use bare ` ``` ` without a language.
 
-### 3. Every Control Needs Both Methods
+### 4. Every Control Needs Both Methods
 
 - **ClickOps** - GUI/console steps for manual implementation
 - **Code** - CLI, API, and/or Terraform for automation
@@ -65,8 +76,10 @@ cp templates/vendor-guide-template.md docs/_guides/[vendor-name].md
 
 ## Quality Checks Before Commit
 
+- [ ] **ZERO inline code blocks** in guide files (`grep -cE '^ *```' docs/_guides/*.md` all return 0)
 - [ ] Tables have blank lines before AND after
-- [ ] Code blocks specify language
+- [ ] Code blocks specify language (non-guide files only)
 - [ ] Both ClickOps and Code implementations provided
+- [ ] All code uses pack includes: `{% include pack-code.html vendor="X" section="Y.Z" %}`
 - [ ] Compliance mappings verified
 - [ ] Changelog updated

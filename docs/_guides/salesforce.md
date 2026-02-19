@@ -154,15 +154,7 @@ For each IP address:
 - [ ] Test integration after any changes
 
 **Alert Configuration:**
-If using Salesforce Shield Event Monitoring:
-```sql
--- Query for blocked Gainsight login attempts
-SELECT Id, LoginTime, SourceIp, Status, Application
-FROM LoginHistory
-WHERE Application = 'Gainsight'
-  AND Status = 'Failed'
-  AND LoginTime = LAST_N_DAYS:7
-```
+If using Salesforce Shield Event Monitoring, see the DB Query in the Code Pack for section 2.1 above.
 
 #### Operational Impact
 - **User Experience:** None (users don't interact with integration directly)
@@ -343,37 +335,9 @@ Enable Salesforce Event Monitoring to detect anomalous API usage patterns that c
    - **Report Export** (data exfiltration indicator)
 3. Configure storage: EventLogFile (24hr) or Event Monitoring Analytics (30 days)
 
-#### Detection Use Cases
+#### Detection Queries
 
-**Anomaly 1: Bulk Data Export from Integration**
-```sql
--- Query EventLogFile for large API responses
-SELECT EventTime, Username, SourceIp, ClientId, RequestedEntities, CPU_TIME
-FROM EventLogFile
-WHERE EventType = 'API'
-  AND CPU_TIME > 10000  -- High CPU indicates large query
-  AND EventTime = LAST_N_HOURS:24
-ORDER BY CPU_TIME DESC
-```
-
-**Anomaly 2: API Access from Unexpected IPs**
-```sql
--- Detect API calls from IPs NOT in allowlist
-SELECT EventTime, SourceIp, ClientId, Username, Status
-FROM LoginHistory
-WHERE LoginType = 'Application'
-  AND SourceIp NOT IN ('35.166.202.113', '52.35.87.209', '34.221.135.142')  -- Gainsight IPs
-  AND EventTime = LAST_N_DAYS:7
-```
-
-**Anomaly 3: Unusual Time-of-Day Access**
-```sql
--- Detect API activity during off-hours
-SELECT EventTime, ClientId, Username, SourceIp
-FROM EventLogFile
-WHERE EventType = 'API'
-  AND HOUR(EventTime) NOT IN (9,10,11,12,13,14,15,16,17)  -- Outside 9am-5pm
-```
+{% include pack-code.html vendor="salesforce" section="5.1" %}
 
 #### Alert Configuration
 **Using Salesforce Shield:**
@@ -389,9 +353,6 @@ Export EventLogFile daily to:
 - AWS Security Lake
 
 ---
-
-
-{% include pack-code.html vendor="salesforce" section="5.1" %}
 
 ## 6. Third-Party Integration Security
 

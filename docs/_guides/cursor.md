@@ -6,9 +6,9 @@ slug: "cursor"
 tier: "1"
 category: "DevOps"
 description: "AI code editor security hardening for code privacy, API key management, and workspace trust"
-version: "0.1.0"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2025-12-15"
+last_updated: "2026-02-19"
 ---
 
 
@@ -225,12 +225,7 @@ Configure Cursor's Privacy Mode to prevent code from being sent to third-party A
 For more granular control:
 1. Open a specific workspace/folder
 2. Go to: **Workspace Settings** (.vscode/settings.json)
-3. Add:
-   ```json
-   {
-     "cursor.privacyMode": true
-   }
-   ```
+3. Add `"cursor.privacyMode": true` to the workspace settings (see Code Pack below for full configuration)
 4. Commit `.vscode/settings.json` to repository
 
 **Step 3: Verify Privacy Mode Active**
@@ -423,35 +418,16 @@ Store Cursor AI provider API keys in environment variables or secure credential 
 #### ClickOps Implementation
 
 **Step 1: Remove Hardcoded API Keys from Settings**
-1. Check Cursor settings for hardcoded keys:
-   ```json
-   // BAD - Don't do this
-   {
-     "cursor.openai.apiKey": "sk-proj-abc123..."
-   }
-   ```
-
+1. Check Cursor settings for hardcoded keys (e.g., `"cursor.openai.apiKey": "sk-proj-..."` -- see Code Pack below for the anti-pattern)
 2. Remove any hardcoded API keys
 
 **Step 2: Use Environment Variables**
-1. Add to shell profile (`~/.zshrc` or `~/.bashrc`):
-   ```bash
-   export OPENAI_API_KEY="sk-proj-your-key-here"
-   export ANTHROPIC_API_KEY="sk-ant-your-key-here"
-   ```
-
-2. Reload shell:
-   ```bash
-   source ~/.zshrc
-   ```
-
+1. Add API keys to shell profile (`~/.zshrc` or `~/.bashrc`) as environment variables (see Code Pack below for examples)
+2. Reload shell with `source ~/.zshrc`
 3. Cursor will automatically use environment variables
 
 **Step 3: Verify API Keys Not in Settings**
-1. Check `settings.json`:
-   ```bash
-   grep -r "apiKey" ~/Library/Application\ Support/Cursor/User/
-   ```
+1. Search settings files for hardcoded keys (see Code Pack below for verification command)
 2. Should return no hardcoded keys
 
 **Time to Complete:** ~10 minutes
@@ -511,10 +487,7 @@ For OpenAI:
 1. Visit: https://platform.openai.com/api-keys
 2. Click **Create new secret key**
 3. Copy new key
-4. Update environment variable:
-   ```bash
-   export OPENAI_API_KEY="sk-proj-NEW-KEY"
-   ```
+4. Update environment variable with new key (see Code Pack below)
 5. Restart Cursor
 6. Verify new key works
 7. **Revoke old key** on OpenAI platform
@@ -561,14 +534,7 @@ For Anthropic:
 
 **Detection Queries:**
 
-Unusual usage spike:
-```sql
--- If logging API calls
-SELECT date, count(*) as api_calls, sum(tokens) as total_tokens
-FROM cursor_api_logs
-GROUP BY date
-HAVING count(*) > (SELECT avg(count) * 3 FROM cursor_api_logs)
-```
+{% include pack-code.html vendor="cursor" section="3.3" %}
 
 ---
 
@@ -680,11 +646,7 @@ Use secret scanning tools to detect and remove secrets from code before allowing
 {% include pack-code.html vendor="cursor" section="4.2" %}
 
 **Step 3: Verify Secret Scanning**
-1. Create test file with fake secret:
-   ```python
-   # test.py
-   API_KEY = "sk-proj-1234567890abcdef"
-   ```
+1. Create test file with fake secret (see SDK example in Code Pack above)
 2. Attempt commit - should be blocked
 3. Remove secret and retry
 
@@ -819,23 +781,7 @@ Configure logging of Cursor AI usage for audit and compliance purposes.
 
 #### Monitoring Queries
 
-**Detect excessive AI usage:**
-```sql
-SELECT user, count(*) as ai_requests, date
-FROM cursor_logs
-WHERE event_type = 'ai.completion'
-GROUP BY user, date
-HAVING count(*) > 1000  -- Flag heavy users
-```
-
-**Detect privacy mode bypass:**
-```sql
-SELECT user, workspace, timestamp
-FROM cursor_logs
-WHERE event_type = 'ai.request'
-  AND privacy_mode = false
-  AND workspace LIKE '%confidential%'
-```
+Detection queries for excessive AI usage and privacy mode bypass are provided in the DB Query Code Pack above.
 
 ---
 
@@ -924,6 +870,7 @@ Deploy via MDM (Jamf, Intune, etc.) to all developer machines.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-02-19 | 0.2.0 | draft | Migrate all inline code blocks to Code Packs (sections 2.1, 3.1, 3.2, 3.3, 4.2, 7.1) | Claude Code (Opus 4.6) |
 | 2025-12-15 | 0.1.0 | draft | Initial Cursor hardening guide | Claude Code (Opus 4.5) |
 
 ---

@@ -85,20 +85,8 @@ Configure NetSuite roles with least-privilege access to financial data.
 #### ClickOps Implementation
 
 **Step 1: Design Role Structure**
-```text
-Roles:
-├── Administrator (limit to 2-3 users)
-├── Financial Controller
-│   └── Full financial access, reporting
-├── Accounts Payable
-│   └── Vendor bills, payments (no GL access)
-├── Accounts Receivable
-│   └── Customer invoices, receipts
-├── Sales Representative
-│   └── Quotes, orders (no financial reports)
-└── Integration Role
-    └── API access for specific integrations
-```
+
+{% include pack-code.html vendor="netsuite" section="1.2" %}
 
 **Step 2: Configure Role Permissions**
 1. Navigate to: **Setup → Users/Roles → Manage Roles**
@@ -203,16 +191,7 @@ For new integrations:
 2. Configure short token lifetimes
 3. Implement token refresh
 
-```javascript
-// SuiteScript OAuth configuration
-var oauth = require('N/oauth');
-
-var tokenResponse = oauth.getToken({
-    grantType: oauth.GrantType.AUTHORIZATION_CODE,
-    code: authorizationCode,
-    redirectUri: 'https://app.example.com/callback'
-});
-```
+{% include pack-code.html vendor="netsuite" section="2.2" %}
 
 ---
 
@@ -260,41 +239,7 @@ Secure custom RESTlets and SuiteScripts.
 
 #### Best Practices
 
-```javascript
-// Secure RESTlet example
-/**
- * @NApiVersion 2.x
- * @NScriptType Restlet
- * @NModuleScope SameAccount
- */
-define(['N/record', 'N/runtime'], function(record, runtime) {
-
-    function doGet(requestParams) {
-        // Validate user permissions
-        var user = runtime.getCurrentUser();
-        if (user.role !== AUTHORIZED_ROLE_ID) {
-            throw new Error('Unauthorized');
-        }
-
-        // Validate input parameters
-        if (!requestParams.id || isNaN(requestParams.id)) {
-            throw new Error('Invalid parameters');
-        }
-
-        // Rate limit check (implement externally)
-
-        // Return data with minimal fields
-        return {
-            id: requestParams.id,
-            // Only return necessary fields
-        };
-    }
-
-    return {
-        get: doGet
-    };
-});
-```
+{% include pack-code.html vendor="netsuite" section="3.2" %}
 
 ---
 
@@ -353,29 +298,7 @@ Enable comprehensive audit trails for financial transactions.
 
 #### Detection Queries (via Saved Searches)
 
-```sql
--- Detect unusual transaction volumes
-SELECT entity, COUNT(*) as txn_count
-FROM Transaction
-WHERE trandate >= TODAY - 7
-GROUP BY entity
-HAVING COUNT(*) > 100;
-
--- Detect login anomalies
-SELECT user, ipaddress, COUNT(*) as login_count
-FROM LoginAudit
-WHERE date >= TODAY - 1
-GROUP BY user, ipaddress
-HAVING COUNT(*) > 20;
-
--- Detect bulk data exports
-SELECT user, action, recordtype, COUNT(*) as record_count
-FROM SystemNote
-WHERE date >= TODAY - 1
-  AND action = 'export'
-GROUP BY user, action, recordtype
-HAVING COUNT(*) > 1000;
-```
+{% include pack-code.html vendor="netsuite" section="5.1" %}
 
 ---
 

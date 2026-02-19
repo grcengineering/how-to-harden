@@ -154,15 +154,7 @@ This guide covers Box security configurations including authentication, access c
 
 #### Detection Queries
 
-```sql
--- Detect bulk downloads
-SELECT user_email, COUNT(*) as download_count
-FROM box_events
-WHERE event_type = 'DOWNLOAD'
-  AND created_at > NOW() - INTERVAL '1 hour'
-GROUP BY user_email
-HAVING COUNT(*) > 50;
-```
+{% include pack-code.html vendor="box" section="4.1" %}
 
 ---
 

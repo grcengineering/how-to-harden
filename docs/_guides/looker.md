@@ -103,14 +103,8 @@ Control content access through folder hierarchy.
 #### ClickOps Implementation
 
 **Step 1: Folder Structure**
-```text
-Content Organization:
-├── Shared (company-wide)
-├── Group Folders (team-specific)
-│   ├── Finance (restricted)
-│   └── Marketing (team access)
-└── Personal Folders (individual)
-```
+
+{% include pack-code.html vendor="looker" section="2.1" %}
 
 **Step 2: Configure Access**
 1. Navigate to: **Browse → Folder → Manage Access**
@@ -191,20 +185,7 @@ Content Organization:
 
 #### Detection Focus
 
-```sql
--- Detect bulk query activity
-SELECT user_id, COUNT(*) as query_count
-FROM history
-WHERE created_at > CURRENT_TIMESTAMP - INTERVAL '1 hour'
-GROUP BY user_id
-HAVING COUNT(*) > 100;
-
--- Detect unusual data access
-SELECT user_id, look_id, dashboard_id
-FROM history
-WHERE source = 'api'
-  AND created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours';
-```
+{% include pack-code.html vendor="looker" section="4.1" %}
 
 ---
 

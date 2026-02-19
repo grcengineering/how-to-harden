@@ -1,0 +1,48 @@
+# HTH GitHub Control 3.14: Workflow Permission Examples
+# Profile: L1 | SLSA: Build L2
+# https://howtoharden.com/guides/github/#32-use-least-privilege-workflow-permissions
+
+# HTH Guide Excerpt: begin cli-workflow-explicit-permissions
+# .github/workflows/ci.yml
+
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read       # Read code
+  pull-requests: write # Comment on PRs (if needed)
+  # Omit permissions not needed
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+      - run: npm test
+# HTH Guide Excerpt: end cli-workflow-explicit-permissions
+
+# HTH Guide Excerpt: begin cli-permissions-read-only
+permissions:
+  contents: read
+# HTH Guide Excerpt: end cli-permissions-read-only
+
+# HTH Guide Excerpt: begin cli-permissions-build-test-pr
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+# HTH Guide Excerpt: end cli-permissions-build-test-pr
+
+# HTH Guide Excerpt: begin cli-permissions-release-publish
+permissions:
+  contents: write      # Create releases
+  packages: write      # Publish to GitHub Packages
+  id-token: write      # OIDC token for signing
+# HTH Guide Excerpt: end cli-permissions-release-publish
+
+# HTH Guide Excerpt: begin cli-permissions-security-scanning
+permissions:
+  contents: read
+  security-events: write  # Upload SARIF results
+# HTH Guide Excerpt: end cli-permissions-security-scanning

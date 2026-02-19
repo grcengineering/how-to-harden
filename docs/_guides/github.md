@@ -114,12 +114,8 @@ Require all organization members to enable MFA on their GitHub accounts. This pr
 #### Monitoring & Maintenance
 
 **Alert Configuration:**
-```bash
-# Daily check for non-compliant members
-gh api /orgs/{org}/members?filter=2fa_disabled --jq 'length'
-# Expected: 0
-# If > 0, alert security team
-```
+
+{% include pack-code.html vendor="github" section="1.9" %}
 
 **Maintenance schedule:**
 - **Weekly:** Review new member 2FA status
@@ -247,13 +243,7 @@ Integrate GitHub with your corporate identity provider (Okta, Azure AD, Google W
 
 #### Code Implementation
 
-```bash
-# Enable SAML SSO (requires Enterprise Cloud)
-# Configuration done via GitHub web UI + IdP
-# API can verify status:
-
-gh api /orgs/{org} --jq '.saml_identity_provider'
-```
+{% include pack-code.html vendor="github" section="1.10" %}
 
 {% include pack-code.html vendor="github" section="1.3" %}
 
@@ -332,11 +322,8 @@ Implement least privilege for organization and enterprise administrators. Limit 
 #### Monitoring & Maintenance
 
 **Alert Configuration:**
-```bash
-# Monitor for privilege escalation
-gh api /orgs/{org}/audit-log?phrase=action:org.update_member_role \
-  --jq '.[] | select(.role == "admin") | {actor: .actor, user: .user, created_at: .created_at}'
-```
+
+{% include pack-code.html vendor="github" section="1.11" %}
 
 **Maintenance schedule:**
 - **Monthly:** Review admin roster and remove unnecessary privileges
@@ -459,12 +446,8 @@ Protect `main`, `master`, `production`, and release branches from direct pushes.
 #### Monitoring & Maintenance
 
 **Alert on protection changes:**
-```sql
--- If using audit log analysis
-SELECT * FROM github_audit_log
-WHERE action = 'protected_branch.policy_override'
-   OR action = 'protected_branch.destroy'
-```
+
+{% include pack-code.html vendor="github" section="2.6" %}
 
 **Maintenance:**
 - **Monthly:** Audit repositories missing branch protection
@@ -551,17 +534,7 @@ For organizations requiring deeper code analysis, configure CodeQL with custom q
 
 #### Monitoring Alerts
 
-**Dependabot Alerts:**
-```bash
-# List critical/high severity alerts
-gh api /orgs/{org}/dependabot/alerts --jq '.[] | select(.severity == "critical" or .severity == "high") | {repo: .repository.name, package: .security_advisory.package.name, severity: .severity}'
-```
-
-**Secret Scanning Alerts:**
-```bash
-# List active secret alerts
-gh api /orgs/{org}/secret-scanning/alerts?state=open --jq '.[] | {repo: .repository.name, secret_type: .secret_type, created_at: .created_at}'
-```
+{% include pack-code.html vendor="github" section="2.7" %}
 
 #### Compliance Mappings
 - **SOC 2:** CC7.2 (System monitoring)
@@ -666,19 +639,7 @@ Require cryptographically signed commits to verify commit authenticity and preve
 
 **Developer Setup (local git config):**
 
-```bash
-# Configure Git to sign commits with SSH key
-git config --global gpg.format ssh
-git config --global user.signingkey ~/.ssh/id_ed25519.pub
-git config --global commit.gpgsign true
-
-# Configure Git to sign commits with GPG key
-git config --global user.signingkey YOUR_GPG_KEY_ID
-git config --global commit.gpgsign true
-
-# Verify a signed commit
-git log --show-signature -1
-```
+{% include pack-code.html vendor="github" section="2.8" %}
 
 {% include pack-code.html vendor="github" section="3.7" %}
 
@@ -744,15 +705,10 @@ Prevent use of arbitrary third-party Actions by restricting to GitHub-verified c
 3. Under "Allow specified actions and reusable workflows":
    - **Allow actions created by GitHub** (GitHub-verified)
    - **Allow actions by Marketplace verified creators**
-   - Add specific allow-listed actions:
-```text
-     actions/*,
-     github/*,
-     docker/*,
-     aws-actions/*,
-     hashicorp/*
-     ```
+   - Add specific allow-listed actions (see allowed list in Code Pack below)
 4. Click **"Save"**
+
+{% include pack-code.html vendor="github" section="3.12" %}
 
 **Time to Complete:** ~5 minutes
 
@@ -783,21 +739,11 @@ Prevent use of arbitrary third-party Actions by restricting to GitHub-verified c
 
 **Why:** Tags and branches can be moved to point to malicious code. Commit SHAs are immutable.
 
-**Bad:**
-```yaml
-- uses: actions/checkout@v3  # Tag can be repointed
-```
-
-**Good:**
-```yaml
-- uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # SHA
-```
+{% include pack-code.html vendor="github" section="3.13" %}
 
 **Automation to pin SHAs:**
-```bash
-# Use https://github.com/mheap/pin-github-action
-npx pin-github-action .github/workflows/*.yml
-```
+
+{% include pack-code.html vendor="github" section="3.18" %}
 
 **Automated SHA updates with Dependabot:**
 
@@ -854,27 +800,7 @@ Set GitHub Actions `GITHUB_TOKEN` permissions to read-only by default. Grant wri
 
 **Step 3: Per-Workflow Explicit Permissions**
 
-In each workflow file, explicitly declare required permissions:
-
-```yaml
-# .github/workflows/ci.yml
-
-name: CI
-
-on: [push, pull_request]
-
-permissions:
-  contents: read       # Read code
-  pull-requests: write # Comment on PRs (if needed)
-  # Omit permissions not needed
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
-      - run: npm test
-```
+In each workflow file, explicitly declare required permissions. See the workflow template in the Code Pack below.
 
 **Time to Complete:** ~5 minutes org-wide + per-workflow updates
 
@@ -884,42 +810,13 @@ jobs:
 
 #### Common Permission Combinations
 
-**Read-Only (Most Workflows):**
-```yaml
-permissions:
-  contents: read
-```
-
-**Build & Test with PR Comments:**
-```yaml
-permissions:
-  contents: read
-  pull-requests: write
-  statuses: write
-```
-
-**Release/Publish:**
-```yaml
-permissions:
-  contents: write      # Create releases
-  packages: write      # Publish to GitHub Packages
-  id-token: write      # OIDC token for signing
-```
-
-**Security Scanning:**
-```yaml
-permissions:
-  contents: read
-  security-events: write  # Upload SARIF results
-```
+{% include pack-code.html vendor="github" section="3.14" %}
 
 #### Monitoring
 
 **Audit workflows with excessive permissions:**
-```bash
-# Find workflows with 'write-all' or missing permissions
-find .github/workflows -name "*.yml" -exec grep -L "permissions:" {} \;
-```
+
+{% include pack-code.html vendor="github" section="3.15" %}
 
 #### Compliance Mappings
 - **SLSA:** Build L2 (Least privilege)
@@ -950,10 +847,7 @@ Require manual approval before running workflows triggered by first-time contrib
 
 #### Code Implementation
 
-```bash
-# This setting is per-repository, configured via UI
-# Can be enforced via organization policy requiring repos to enable it
-```
+{% include pack-code.html vendor="github" section="3.16" %}
 
 #### Compliance Mappings
 - **SLSA:** Build L2 (Source code integrity)
@@ -1003,16 +897,8 @@ Secure self-hosted runners to prevent compromise of build environment. Self-host
 {% include pack-code.html vendor="github" section="3.9" %}
 
 **Example ephemeral runner configuration:**
-```yaml
-# .github/workflows/deploy.yml
-jobs:
-  deploy:
-    runs-on: [self-hosted, production, ephemeral]
-    environment: production
-    steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
-      - run: ./deploy.sh
-```
+
+{% include pack-code.html vendor="github" section="3.17" %}
 
 #### Validation & Testing
 1. [ ] Verify ephemeral runners are destroyed after each job
@@ -1073,32 +959,8 @@ Review all OAuth apps with access to your organization. Revoke unnecessary apps,
 {% include pack-code.html vendor="github" section="4.4" %}
 
 **Automation script:**
-```python
-#!/usr/bin/env python3
-# automation/scripts/github/audit-oauth-apps.py
 
-from github import Github
-import os
-
-g = Github(os.environ['GITHUB_TOKEN'])
-org = g.get_organization('your-org')
-
-print("Authorized OAuth Apps:")
-print("=" * 60)
-
-# Note: GitHub API doesn't provide full OAuth app list
-# This must be done via UI or GraphQL API
-# Placeholder for manual review tracking
-
-apps = [
-    {"name": "CircleCI", "last_used": "2025-12-01", "keep": True},
-    {"name": "Old-CI-Tool", "last_used": "2023-06-15", "keep": False},
-]
-
-for app in apps:
-    status = "Keep" if app["keep"] else "Revoke"
-    print(f"{status}: {app['name']} (last used: {app['last_used']})")
-```
+{% include pack-code.html vendor="github" section="4.6" %}
 
 {% include pack-code.html vendor="github" section="4.3" %}
 {% include pack-code.html vendor="github" section="5.4" %}
@@ -1199,10 +1061,7 @@ See the deployment workflow template in the Code Pack below.
 **Secret Rotation:**
 - Rotate secrets quarterly (minimum)
 - Use short-lived credentials where possible (OIDC tokens)
-- Track secret age:
-  ```bash
-  gh secret list --json name,updatedAt
-  ```
+- Track secret age using the Code Pack below
 
 **Secret Sprawl Prevention:**
 - Use organization secrets for widely-used credentials
@@ -1222,10 +1081,8 @@ See the deployment workflow template in the Code Pack below.
 #### Monitoring
 
 **Alert on secret access:**
-```bash
-# Check audit log for secret access
-gh api /orgs/{org}/audit-log?phrase=secrets.read
-```
+
+{% include pack-code.html vendor="github" section="5.9" %}
 
 #### Compliance Mappings
 - **SOC 2:** CC6.1 (Secret management)
@@ -1327,21 +1184,14 @@ Automatically block pull requests that introduce vulnerable or malicious depende
 
 Automated via workflow (see above). Can also use CLI:
 
-```bash
-# Manual dependency review
-gh api /repos/{owner}/{repo}/dependency-graph/compare/main...feature-branch
-```
+{% include pack-code.html vendor="github" section="6.1" %}
 
 {% include pack-code.html vendor="github" section="4.1" %}
 {% include pack-code.html vendor="github" section="4.2" %}
 
 #### Monitoring
 
-**Track introduced vulnerabilities:**
-```bash
-# Check PR for new vulnerabilities
-gh pr view 123 --json reviews
-```
+**Track introduced vulnerabilities:** See dependency review and PR vulnerability check commands in the Code Pack above.
 
 #### Compliance Mappings
 - **SLSA:** Build L2 (Dependency pinning)
@@ -1366,38 +1216,7 @@ Pin all dependencies (npm, pip, go modules, etc.) to specific versions with hash
 
 #### Implementation by Ecosystem
 
-**npm (package-lock.json):**
-```bash
-# Commit package-lock.json (contains hashes)
-git add package-lock.json
-
-# Verify integrity on install
-npm ci --audit
-```
-
-**Python (requirements.txt with hashes):**
-```bash
-# Generate requirements with hashes
-pip-compile --generate-hashes requirements.in > requirements.txt
-
-# Install with verification
-pip install --require-hashes -r requirements.txt
-```
-
-**Go (go.sum):**
-```bash
-# go.sum contains hashes automatically
-go mod verify
-```
-
-**Docker (digest pinning):**
-```dockerfile
-# Bad: tag can change
-FROM node:18
-
-# Good: digest is immutable
-FROM node:18@sha256:a1b2c3d4...
-```
+{% include pack-code.html vendor="github" section="6.2" %}
 
 #### Automated Pinning
 
@@ -1471,35 +1290,7 @@ These events should be prioritized in your SIEM alert rules:
 
 #### Detection Queries
 
-**Splunk -- Unusual member additions:**
-```spl
-index=github action=org.add_member
-
-| stats count by actor, user
-| where count > 5
-```
-
-**Splunk -- Unusual repo cloning:**
-```spl
-index=github action=git.clone
-
-| stats dc(repo) as unique_repos by actor
-| where unique_repos > 50
-```
-
-**Splunk -- Secret scanning alert ignored:**
-```spl
-index=github action=secret_scanning.dismiss_alert
-
-| table _time, actor, repo, alert_id
-```
-
-**Splunk -- Branch protection removed:**
-```spl
-index=github action=protected_branch.destroy
-
-| table _time, actor, repo, branch
-```
+{% include pack-code.html vendor="github" section="7.1" %}
 
 #### Compliance Mappings
 

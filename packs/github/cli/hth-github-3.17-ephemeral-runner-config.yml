@@ -1,0 +1,14 @@
+# HTH GitHub Control 3.17: Ephemeral Runner Configuration
+# Profile: L2 | NIST: CM-6
+# https://howtoharden.com/guides/github/#34-configure-self-hosted-runner-security
+
+# HTH Guide Excerpt: begin cli-ephemeral-runner-config
+# .github/workflows/deploy.yml
+jobs:
+  deploy:
+    runs-on: [self-hosted, production, ephemeral]
+    environment: production
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+      - run: ./deploy.sh
+# HTH Guide Excerpt: end cli-ephemeral-runner-config

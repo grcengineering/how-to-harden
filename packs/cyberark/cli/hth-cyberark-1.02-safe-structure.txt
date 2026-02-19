@@ -1,0 +1,16 @@
+# HTH CyberArk Control 1.2: Vault-Level Access Controls — Safe Structure
+# Profile: L1 | NIST: AC-3, AC-6
+# https://howtoharden.com/guides/cyberark/#12-implement-vault-level-access-controls
+
+# HTH Guide Excerpt: begin cli-safe-structure
+Safes/
+├── Infrastructure/
+│   ├── Windows-DomainAdmins (requires approval)
+│   ├── Linux-Root
+│   └── Network-Devices
+├── Applications/
+│   ├── Database-Credentials
+│   └── API-Keys
+└── Emergency/
+    └── Break-Glass (requires dual approval)
+# HTH Guide Excerpt: end cli-safe-structure

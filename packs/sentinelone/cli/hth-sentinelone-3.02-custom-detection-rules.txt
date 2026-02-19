@@ -1,0 +1,16 @@
+# =============================================================================
+# HTH SentinelOne Custom Detection Rule Examples
+# Vendor: sentinelone | Section: 3.2
+# =============================================================================
+
+# HTH Guide Excerpt: begin cli-detect-mimikatz
+ProcessName Contains "mimikatz" OR
+ProcessCmdLine Contains "sekurlsa" OR
+ProcessCmdLine Contains "lsadump"
+# HTH Guide Excerpt: end cli-detect-mimikatz
+
+# HTH Guide Excerpt: begin cli-detect-powershell-encoded
+ProcessName = "powershell.exe" AND
+ProcessCmdLine Contains "-enc" OR
+ProcessCmdLine Contains "-encodedcommand"
+# HTH Guide Excerpt: end cli-detect-powershell-encoded

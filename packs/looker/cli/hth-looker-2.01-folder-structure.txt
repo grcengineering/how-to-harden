@@ -1,0 +1,13 @@
+# =============================================================================
+# HTH Looker Content Folder Organization
+# Vendor: looker | Section: 2.1
+# =============================================================================
+
+# HTH Guide Excerpt: begin cli-folder-structure
+Content Organization:
+├── Shared (company-wide)
+├── Group Folders (team-specific)
+│   ├── Finance (restricted)
+│   └── Marketing (team access)
+└── Personal Folders (individual)
+# HTH Guide Excerpt: end cli-folder-structure

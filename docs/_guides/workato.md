@@ -1133,14 +1133,8 @@ Deploy and secure Workato On-Premises Agents (OPA) for accessing applications an
 {% include pack-code.html vendor="workato" section="4.3" %}
 
 **Agent Configuration Notes:**
-```bash
-# Agent configuration file (/opt/workato/conf/config.yml)
-# Set connection profiles for on-prem databases
-# Key security settings:
 
-# Restrict agent to specific connection profiles only
-# Do not use wildcard access
-```
+{% include pack-code.html vendor="workato" section="4.3" %}
 
 #### Validation & Testing
 1. [ ] Verify agent status shows "Active" in Workato admin
@@ -1772,23 +1766,7 @@ Configure real-time streaming of Workato audit logs to an external SIEM or log a
 
 #### Code Implementation
 
-**Option 1: Splunk — Workato Event Detection Queries**
-```plaintext
-# Detect admin role changes
-index=workato sourcetype=workato:audit event_type="collaborator_role_change"
-| where new_role="Admin"
-| table _time, user_name, target_user, old_role, new_role
-
-# Detect recipe deployments outside business hours
-index=workato sourcetype=workato:audit event_type="deployment"
-| where date_hour<8 OR date_hour>18
-| table _time, user_name, resource_name, details
-
-# Detect multiple failed logins
-index=workato sourcetype=workato:audit event_type="login_failed"
-| stats count by user_name, src_ip
-| where count > 5
-```
+{% include pack-code.html vendor="workato" section="8.2" %}
 
 #### Validation & Testing
 1. [ ] Verify events stream within expected latency (< 5 minutes)

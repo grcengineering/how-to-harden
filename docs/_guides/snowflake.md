@@ -6,7 +6,7 @@ slug: "snowflake"
 tier: "1"
 category: "Data"
 description: "Data warehouse security including network policies, MFA enforcement, and access controls"
-version: "0.2.0"
+version: "0.3.0"
 maturity: "draft"
 last_updated: "2026-02-19"
 ---
@@ -84,19 +84,8 @@ Require multi-factor authentication for ALL Snowflake users. The 2024 breach was
 2. Create policy requiring MFA regardless of network
 
 **Step 3: Verify MFA Enrollment**
-```sql
--- Check MFA enrollment status
-SELECT
-    name,
-    login_name,
-    ext_authn_duo,
-    ext_authn_uid,
-    disabled,
-    last_success_login
-FROM SNOWFLAKE.ACCOUNT_USAGE.USERS
-WHERE deleted_on IS NULL
-ORDER BY ext_authn_duo DESC;
-```
+
+Run the MFA enrollment verification query from the DB Query Code Pack below to check all active users.
 
 **Time to Complete:** ~15 minutes (policy) + user enrollment time
 
@@ -109,24 +98,8 @@ ORDER BY ext_authn_duo DESC;
 **Expected result:** No user can authenticate with password-only
 
 #### Monitoring & Maintenance
-**Ongoing monitoring:**
-```sql
--- Alert on MFA bypass attempts
-SELECT *
-FROM SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY
-WHERE IS_SUCCESS = 'NO'
-  AND ERROR_MESSAGE LIKE '%MFA%'
-  AND EVENT_TIMESTAMP > DATEADD(hour, -24, CURRENT_TIMESTAMP());
 
--- Weekly MFA compliance check
-SELECT
-    COUNT(CASE WHEN ext_authn_duo = 'TRUE' THEN 1 END) as mfa_enabled,
-    COUNT(CASE WHEN ext_authn_duo = 'FALSE' OR ext_authn_duo IS NULL THEN 1 END) as mfa_disabled,
-    COUNT(*) as total_users
-FROM SNOWFLAKE.ACCOUNT_USAGE.USERS
-WHERE deleted_on IS NULL
-  AND disabled = 'FALSE';
-```
+**Ongoing monitoring:** Use the MFA bypass alert and weekly compliance check queries from the DB Query Code Pack below.
 
 **Maintenance schedule:**
 - **Weekly:** Review MFA enrollment compliance
@@ -142,11 +115,7 @@ WHERE deleted_on IS NULL
 | **Maintenance Burden** | Low | Self-service enrollment |
 | **Rollback Difficulty** | Easy | Can disable policy (not recommended) |
 
-**Rollback Procedure:**
-```sql
--- Emergency MFA disable (NOT RECOMMENDED)
-ALTER ACCOUNT UNSET AUTHENTICATION POLICY;
-```
+**Rollback Procedure:** Emergency MFA disable is available via the DB Query Code Pack below (not recommended).
 
 #### Compliance Mappings
 
@@ -246,23 +215,12 @@ Restrict Snowflake access to known IP ranges (corporate network, VPN, approved B
    - **Blocked IPs:** Known bad ranges (optional)
 
 **Step 2: Apply Network Policy**
-```sql
--- Apply to account (affects all users)
-ALTER ACCOUNT SET NETWORK_POLICY = corporate_access;
 
--- Or apply to specific users only
-ALTER USER external_partner SET NETWORK_POLICY = partner_network_policy;
-```
+Apply the network policy at account level or per-user using the SQL commands in the DB Query Code Pack below.
 
 #### Validation & Testing
-```sql
--- Test from allowed IP - should succeed
-SELECT CURRENT_USER();
 
--- View network policy assignments
-SHOW PARAMETERS LIKE 'NETWORK_POLICY' IN ACCOUNT;
-SHOW PARAMETERS LIKE 'NETWORK_POLICY' IN USER svc_tableau;
-```
+Verify network policy assignments using the validation queries in the DB Query Code Pack below.
 
 ---
 
@@ -289,10 +247,7 @@ Configure private network connectivity to Snowflake, eliminating exposure to pub
 1. Similar process for Azure environments
 2. Configure Private Endpoint in Azure
 
-```sql
--- Verify private connectivity
-SELECT SYSTEM$GET_PRIVATELINK_CONFIG();
-```
+{% include pack-code.html vendor="snowflake" section="2.2" %}
 
 ---
 
@@ -315,13 +270,8 @@ Configure OAuth security integrations with minimum required scopes and short tok
 #### ClickOps Implementation
 
 **Step 1: Audit Existing Security Integrations**
-```sql
--- List all security integrations
-SHOW SECURITY INTEGRATIONS;
 
--- Describe OAuth integration details
-DESC SECURITY INTEGRATION tableau_oauth;
-```
+List and inspect all security integrations using the audit queries in the DB Query Code Pack below.
 
 **Step 2: Configure OAuth Integration**
 1. Create a new OAuth security integration for your BI tool
@@ -398,16 +348,7 @@ Implement row-level security to restrict data visibility based on user attribute
 #### Description
 Audit and control Snowflake data sharing to external accounts. Prevent accidental data exposure via shares.
 
-```sql
--- Audit existing shares
-SHOW SHARES;
-
--- Review who has access
-SHOW GRANTS ON SHARE customer_data_share;
-
--- Remove access
-REVOKE USAGE ON DATABASE customers FROM SHARE customer_data_share;
-```
+{% include pack-code.html vendor="snowflake" section="4.3" %}
 
 ---
 
@@ -537,5 +478,6 @@ Export Snowflake audit logs to SIEM (Splunk, Datadog, Sumo Logic) for real-time 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-02-19 | 0.3.0 | draft | Migrate all remaining inline code to Code Packs (sections 1.1, 2.1, 2.2, 3.1, 4.3); zero inline code blocks remain | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.2.0 | draft | Migrate inline code to Code Packs (sections 1.2, 3.2, 4.2, 5.2, 6.2) | Claude Code (Opus 4.6) |
 | 2025-12-14 | 0.1.0 | draft | Initial Snowflake hardening guide | Claude Code (Opus 4.5) |

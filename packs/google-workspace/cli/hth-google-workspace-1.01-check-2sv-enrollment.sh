@@ -15,3 +15,10 @@ gam print users query "isEnrolledIn2Sv=false" | \
   gam csv - gam user ~primaryEmail sendemail subject "MFA Enrollment Required" \
   message "Please enroll in 2-Step Verification within 7 days."
 # HTH Guide Excerpt: end cli-check-2sv
+
+# HTH Guide Excerpt: begin cli-investigation-tool-2sv
+# Admin Console monitoring query for users without 2SV
+# Navigate to: Security → Investigation Tool
+# Event: Login
+# Filter: 2SV method = None, Login result = Success
+# HTH Guide Excerpt: end cli-investigation-tool-2sv

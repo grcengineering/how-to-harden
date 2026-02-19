@@ -1,0 +1,19 @@
+// =============================================================================
+// HTH Power BI Activity Log Detection Queries (KQL)
+// Vendor: power-bi | Section: 4.1
+// =============================================================================
+
+// HTH Guide Excerpt: begin db-detect-exports
+// Detect report exports
+PowerBIActivity
+| where Activity == "ExportReport"
+| summarize count() by UserId
+| where count_ > 10
+// HTH Guide Excerpt: end db-detect-exports
+
+// HTH Guide Excerpt: begin db-detect-embed-tokens
+// Detect embed token generation
+PowerBIActivity
+| where Activity == "GenerateEmbedToken"
+| project TimeGenerated, UserId, ReportId
+// HTH Guide Excerpt: end db-detect-embed-tokens

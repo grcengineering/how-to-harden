@@ -1,0 +1,26 @@
+# =============================================================================
+# HTH Azure DevOps Control 5.2: Use Runtime Parameters for Secrets
+# Profile: L2 | Section: 5.2
+# =============================================================================
+
+# HTH Guide Excerpt: begin runtime-parameters
+# azure-pipelines.yml
+parameters:
+  - name: deploymentKey
+    type: string
+    default: ''
+
+variables:
+  - group: production-config  # Non-secret config
+  - name: secretKey
+    value: ${{ parameters.deploymentKey }}
+
+stages:
+  - stage: Deploy
+    jobs:
+      - job: Deploy
+        steps:
+          - script: |
+              # Use secret from parameter
+              echo "##vso[task.setvariable variable=SECRET;issecret=true]$(secretKey)"
+# HTH Guide Excerpt: end runtime-parameters

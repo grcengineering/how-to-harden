@@ -187,17 +187,7 @@ Harden OData API integrations.
 
 #### Detection Focus
 
-```sql
--- Detect bulk employee data access
-SELECT user_id, api_endpoint, COUNT(*) as requests
-FROM sf_audit_log
-WHERE api_endpoint LIKE '%Employee%'
-  AND timestamp > NOW() - INTERVAL '1 hour'
-GROUP BY user_id, api_endpoint
-HAVING COUNT(*) > 100;
-```
-
-{% include pack-code.html vendor="sap-successfactors" section="4.1" lang="terraform" %}
+{% include pack-code.html vendor="sap-successfactors" section="4.1" %}
 
 ---
 

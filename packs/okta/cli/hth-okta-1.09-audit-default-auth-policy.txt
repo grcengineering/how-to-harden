@@ -1,0 +1,3 @@
+# HTH Guide Excerpt: begin cli-log-query-default-policy
+eventType eq "policy.evaluate_sign_on" AND debugContext.debugData.policyType eq "ACCESS_POLICY" AND target.displayName eq "Default Policy"
+# HTH Guide Excerpt: end cli-log-query-default-policy

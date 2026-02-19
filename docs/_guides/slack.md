@@ -432,20 +432,7 @@ Configure Slack's native DLP to detect and prevent sharing of sensitive informat
 
 #### Code Implementation
 
-**Example Regex Patterns:**
-```regex
-# Credit Card Numbers
-\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b
-
-# SSN
-\b\d{3}-\d{2}-\d{4}\b
-
-# AWS Access Key
-\bAKIA[A-Z0-9]{16}\b
-
-# Generic API Key
-\b[A-Za-z0-9]{32,}\b
-```
+{% include pack-code.html vendor="slack" section="4.1" %}
 
 #### Validation & Testing
 1. [ ] Send test message with fake credit card number
@@ -586,22 +573,6 @@ Enable and export Slack audit logs for security monitoring, incident investigati
 #### Code Implementation
 
 {% include pack-code.html vendor="slack" section="5.1" %}
-
-**SIEM Query Examples (Splunk)**
-```spl
-# Failed login attempts
-index=slack sourcetype=slack:audit action="user_login_failed"
-| stats count by actor.user.email
-| where count > 5
-
-# Admin role changes
-index=slack sourcetype=slack:audit action="role_change_to_admin"
-| table _time actor.user.email entity.user.email
-
-# App installations
-index=slack sourcetype=slack:audit action="app_installed"
-| table _time actor.user.email entity.app.name
-```
 
 #### Key Events to Monitor
 

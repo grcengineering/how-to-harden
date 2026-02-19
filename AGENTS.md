@@ -46,7 +46,23 @@ These are the most common AI mistakes. The rules themselves are defined in [CONT
 **Next step:**
 ```
 
-### 2. Code Blocks Need Language Specifiers
+### 2. ZERO Inline Code Blocks in Guides
+
+**This is a hard rule.** Guide files (`docs/_guides/*.md`) must contain ZERO fenced code blocks. All code lives in the Code Pack system.
+
+**Instead of inline code:**
+1. Create a pack source file in `packs/{vendor}/{type}/hth-{vendor}-{N.NN}-{slug}.{ext}`
+2. Add `HTH Guide Excerpt: begin/end` markers around the extractable content
+3. Run `bash scripts/sync-packs-to-data.sh` to generate YAML data
+4. Use `{% include pack-code.html vendor="{vendor}" section="X.X" %}` in the guide
+
+**Pack types:** `terraform/` (.tf), `api/` (.sh), `cli/` (.sh, .yml, .txt, .ini), `sdk/` (.py, .js, .groovy), `db/` (.sql, .kql, .spl), `siem/sigma/` (.yml)
+
+**Verify:** `grep -cE '^ *```' docs/_guides/{vendor}.md` must return 0.
+
+### 3. Code Blocks Need Language Specifiers (non-guide files)
+
+In files other than guides (README, AGENTS.md, etc.):
 
 ```markdown
 <!-- WRONG -->
@@ -62,7 +78,7 @@ echo "hello"
 
 Valid languages: `bash`, `hcl`, `python`, `sql`, `yaml`, `json`, `markdown`
 
-### 3. Every Control Needs Both ClickOps AND Code
+### 4. Every Control Needs Both ClickOps AND Code
 
 AI often generates only one method. Always provide:
 - **ClickOps** - GUI/console steps with exact navigation paths
@@ -175,8 +191,9 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 
 | Mistake | How to Avoid |
 |---------|--------------|
+| Inline code blocks in guides | ALL code must be in Code Packs — ZERO fenced blocks in guide files |
 | Missing blank lines around tables | Check EVERY table before committing |
-| Bare code blocks without language | Always specify: `bash`, `hcl`, `sql`, etc. |
+| Bare code blocks without language | Always specify: `bash`, `hcl`, `sql`, etc. (non-guide files) |
 | Only ClickOps OR only Code | Always provide BOTH implementation methods |
 | Skipped heading levels (## → ####) | Use sequential levels: ## → ### → #### |
 | Leaving template placeholders | Replace ALL `[bracketed placeholders]` |

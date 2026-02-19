@@ -6,7 +6,7 @@ slug: "databricks"
 tier: "2"
 category: "Data"
 description: "Data platform security for workspace access, Unity Catalog, and secrets management"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
 last_updated: "2026-02-19"
 ---
@@ -152,44 +152,16 @@ Configure Unity Catalog for centralized data governance.
 #### ClickOps Implementation
 
 **Step 1: Create Catalog Structure**
-```sql
--- Create catalogs by environment
-CREATE CATALOG IF NOT EXISTS production;
-CREATE CATALOG IF NOT EXISTS staging;
-CREATE CATALOG IF NOT EXISTS development;
 
--- Create schemas by domain
-CREATE SCHEMA IF NOT EXISTS production.finance;
-CREATE SCHEMA IF NOT EXISTS production.customer_data;
-CREATE SCHEMA IF NOT EXISTS production.ml_features;
-```
+Create catalogs by environment (production, staging, development) and schemas by domain. See the DB Query Code Pack below for the full SQL.
 
 **Step 2: Configure Granular Permissions**
-```sql
--- Grant specific permissions
-GRANT USE CATALOG ON CATALOG production TO `data_analysts`;
-GRANT USE SCHEMA ON SCHEMA production.finance TO `finance_team`;
-GRANT SELECT ON TABLE production.finance.transactions TO `finance_team`;
 
--- Restrict sensitive tables
-DENY SELECT ON TABLE production.customer_data.pii TO `general_users`;
-```
+Grant specific catalog, schema, and table permissions to functional roles. See the DB Query Code Pack below for permission examples.
 
 **Step 3: Enable Column-Level Security**
-```sql
--- Create row filter function
-CREATE FUNCTION production.filters.region_filter()
-RETURNS STRING
-RETURN CASE
-    WHEN is_account_group_member('us_team') THEN 'region = "US"'
-    WHEN is_account_group_member('eu_team') THEN 'region = "EU"'
-    ELSE 'FALSE'
-END;
 
--- Apply to table
-ALTER TABLE production.customer_data.orders
-SET ROW FILTER production.filters.region_filter ON (region);
-```
+Create row filter functions to restrict data visibility by group membership and apply them to tables. See the DB Query Code Pack below.
 
 {% include pack-code.html vendor="databricks" section="2.1" %}
 
@@ -201,21 +173,7 @@ SET ROW FILTER production.filters.region_filter ON (region);
 **NIST 800-53:** SC-28
 
 #### Description
-Implement dynamic data masking for sensitive columns.
-
-```sql
--- Create masking function
-CREATE FUNCTION production.masks.mask_ssn(ssn STRING)
-RETURNS STRING
-RETURN CASE
-    WHEN is_account_group_member('pii_admin') THEN ssn
-    ELSE CONCAT('XXX-XX-', RIGHT(ssn, 4))
-END;
-
--- Apply mask to column
-ALTER TABLE production.customer_data.customers
-ALTER COLUMN ssn SET MASK production.masks.mask_ssn;
-```
+Implement dynamic data masking for sensitive columns. Create masking functions that return the full value for privileged roles and masked values for all others, then apply them to sensitive columns.
 
 {% include pack-code.html vendor="databricks" section="2.2" %}
 
@@ -237,19 +195,8 @@ Enable comprehensive audit logging for data access.
 3. Configure retention period
 
 **Step 2: Query Audit Logs**
-```sql
--- Query data access audit logs
-SELECT
-    event_time,
-    user_identity.email as user_email,
-    action_name,
-    request_params.full_name_arg as table_accessed,
-    source_ip_address
-FROM system.access.audit
-WHERE action_name IN ('getTable', 'commandSubmit')
-    AND event_time > current_timestamp() - INTERVAL 24 HOURS
-ORDER BY event_time DESC;
-```
+
+Query the `system.access.audit` table to review data access events. See the DB Query Code Pack below for the full audit log query.
 
 {% include pack-code.html vendor="databricks" section="2.3" %}
 
@@ -268,39 +215,8 @@ Implement cluster policies to enforce security configurations.
 #### ClickOps Implementation
 
 **Step 1: Create Secure Cluster Policy**
-1. Navigate to: **Compute → Policies → Create Policy**
-2. Configure:
-
-```json
-{
-  "spark_version": {
-    "type": "allowlist",
-    "values": ["13.3.x-scala2.12", "14.0.x-scala2.12"]
-  },
-  "node_type_id": {
-    "type": "allowlist",
-    "values": ["Standard_DS3_v2", "Standard_DS4_v2"]
-  },
-  "autotermination_minutes": {
-    "type": "range",
-    "minValue": 10,
-    "maxValue": 120,
-    "defaultValue": 30
-  },
-  "custom_tags.Environment": {
-    "type": "fixed",
-    "value": "production"
-  },
-  "spark_conf.spark.databricks.cluster.profile": {
-    "type": "fixed",
-    "value": "serverless"
-  },
-  "init_scripts": {
-    "type": "fixed",
-    "value": []
-  }
-}
-```
+1. Navigate to: **Compute --> Policies --> Create Policy**
+2. Configure the cluster policy JSON to restrict allowed Spark versions, node types, auto-termination, and init scripts. See the Code Pack below for the full policy definition.
 
 **Step 2: Assign Policy to Users**
 1. Navigate to: **Admin Settings → Workspace → Cluster Policies**
@@ -326,27 +242,7 @@ Deploy Databricks with network isolation.
 2. Configure private endpoints
 3. Disable public IP addresses for clusters
 
-```terraform
-# Terraform example - Private workspace
-resource "databricks_mws_workspaces" "this" {
-  account_id     = var.databricks_account_id
-  workspace_name = "secure-workspace"
-  deployment_name = "secure"
-
-  aws_region = var.region
-
-  network_id = databricks_mws_networks.this.network_id
-
-  # Private configuration
-  private_access_settings_id = databricks_mws_private_access_settings.this.private_access_settings_id
-}
-
-resource "databricks_mws_private_access_settings" "this" {
-  private_access_settings_name = "secure-pas"
-  region                       = var.region
-  public_access_enabled        = false
-}
-```
+The account-level Terraform example for private workspace deployment with VPC isolation is included in the Code Pack below.
 
 {% include pack-code.html vendor="databricks" section="3.2" %}
 
@@ -375,13 +271,8 @@ Store credentials in Databricks secret scopes rather than notebooks.
 3. Restrict MANAGE access to administrators only
 
 **Step 3: Use Secrets in Notebooks**
-```python
-# Access secrets in notebook
-db_password = dbutils.secrets.get(scope="production-secrets", key="db-password")
 
-# Secret is redacted in logs
-print(db_password)  # Shows [REDACTED]
-```
+Access secrets via `dbutils.secrets.get()` in notebooks. Secret values are automatically redacted in logs. See the SDK Code Pack below for an example.
 
 {% include pack-code.html vendor="databricks" section="4.1" %}
 
@@ -412,36 +303,7 @@ Create an Azure Key Vault-backed secret scope so secrets are fetched directly fr
 
 #### Detection Queries
 
-```sql
--- Detect bulk data access
-SELECT
-    user_identity.email,
-    request_params.full_name_arg as table_name,
-    COUNT(*) as access_count
-FROM system.access.audit
-WHERE action_name = 'commandSubmit'
-    AND event_time > current_timestamp() - INTERVAL 1 HOUR
-GROUP BY user_identity.email, request_params.full_name_arg
-HAVING COUNT(*) > 100;
-
--- Detect unusual export operations
-SELECT *
-FROM system.access.audit
-WHERE action_name IN ('downloadResults', 'exportResults')
-    AND event_time > current_timestamp() - INTERVAL 24 HOURS
-ORDER BY event_time DESC;
-
--- Detect service principal anomalies
-SELECT
-    user_identity.email,
-    source_ip_address,
-    COUNT(*) as request_count
-FROM system.access.audit
-WHERE user_identity.email LIKE 'svc-%'
-    AND source_ip_address NOT IN (SELECT ip FROM trusted_ips)
-    AND event_time > current_timestamp() - INTERVAL 1 HOUR
-GROUP BY user_identity.email, source_ip_address;
-```
+Detection queries for bulk data access, unusual exports, and service principal anomalies are provided in the DB Query Code Pack below.
 
 {% include pack-code.html vendor="databricks" section="5.1" %}
 
@@ -499,4 +361,5 @@ GROUP BY user_identity.email, source_ip_address;
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
 | 2025-12-14 | 0.1.0 | draft | Initial Databricks hardening guide | Claude Code (Opus 4.5) |
+| 2026-02-19 | 0.2.0 | draft | Migrate all remaining inline code to Code Packs (sections 2.1, 2.2, 2.3, 3.1, 3.2, 4.1, 5.1); zero inline code blocks remain | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.1.1 | draft | Migrate inline CLI code in sections 4.1, 4.2 to Code Pack files | Claude Code (Opus 4.6) |

@@ -30,6 +30,17 @@ echo "Global privacy mode enabled for Cursor"
 # HTH Guide Excerpt: end cli-global-privacy-config
 
 # --------------------------------------------------------------------------
+# Per-Workspace Privacy Setting (minimal JSON for .vscode/settings.json)
+# --------------------------------------------------------------------------
+
+# HTH Guide Excerpt: begin cli-workspace-json-snippet
+# Add to .vscode/settings.json and commit to repository:
+# {
+#   "cursor.privacyMode": true
+# }
+# HTH Guide Excerpt: end cli-workspace-json-snippet
+
+# --------------------------------------------------------------------------
 # Option 2: Workspace Privacy Settings
 # Apply to: .vscode/settings.json in each repository root
 # --------------------------------------------------------------------------

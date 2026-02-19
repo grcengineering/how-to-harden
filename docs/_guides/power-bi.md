@@ -165,11 +165,8 @@ Control report and dashboard sharing.
 #### Implementation
 
 **Step 1: Define RLS Roles**
-```dax
-[Region] = USERPRINCIPALNAME()
--- Or use security groups
-PATHCONTAINS("Finance", USERPRINCIPALNAME())
-```
+
+{% include pack-code.html vendor="power-bi" section="3.2" %}
 
 **Step 2: Test RLS**
 1. Use "View as" feature
@@ -194,20 +191,7 @@ PATHCONTAINS("Finance", USERPRINCIPALNAME())
 
 #### Detection Focus
 
-```kql
-// Detect report exports
-PowerBIActivity
-
-| where Activity == "ExportReport"
-| summarize count() by UserId
-| where count_ > 10
-
-// Detect embed token generation
-PowerBIActivity
-
-| where Activity == "GenerateEmbedToken"
-| project TimeGenerated, UserId, ReportId
-```
+{% include pack-code.html vendor="power-bi" section="4.1" %}
 
 ---
 

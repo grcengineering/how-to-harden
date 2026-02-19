@@ -1,0 +1,19 @@
+# HTH CrowdStrike Control 3.3: Implement Sensor Grouping Strategy
+# Profile: L1 | NIST: CM-2
+# https://howtoharden.com/guides/crowdstrike/#33-implement-sensor-grouping-strategy
+
+# HTH Guide Excerpt: begin sensor-groups
+Sensor Groups:
+  Production-Critical
+    Domain Controllers
+    Database Servers
+    Payment Systems
+  Production-Standard
+    Application Servers
+    Web Servers
+  Workstations
+    Executive
+    Engineering
+    General
+  Test-Canary (for update testing)
+# HTH Guide Excerpt: end sensor-groups

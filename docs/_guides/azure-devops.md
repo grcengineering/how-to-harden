@@ -111,15 +111,8 @@ Configure granular project permissions using Azure DevOps security groups.
 #### ClickOps Implementation
 
 **Step 1: Define Security Group Strategy**
-```text
-Security Groups:
-├── Project Administrators (2-3 users max)
-├── Build Administrators
-├── Release Administrators
-├── Contributors (developers)
-├── Readers (stakeholders)
-└── Service Accounts (pipelines)
-```
+
+See the CLI Code Pack below for the recommended security group hierarchy.
 
 **Step 2: Configure Project Permissions**
 1. Navigate to: **Project Settings → Permissions**
@@ -210,37 +203,6 @@ Replace service connections with stored credentials with workload identity feder
 
 {% include pack-code.html vendor="azure-devops" section="2.1" %}
 
-```yaml
-# azure-pipelines.yml - Using workload identity federation
-trigger:
-  - main
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-stages:
-  - stage: Deploy
-    jobs:
-      - deployment: DeployToAzure
-        environment: 'production'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: AzureCLI@2
-                  inputs:
-                    # Uses workload identity federation - no stored credentials
-                    azureSubscription: 'production-oidc-connection'
-                    scriptType: 'bash'
-                    scriptLocation: 'inlineScript'
-                    inlineScript: |
-                      az account show
-                      az webapp deployment source config-zip \
-                        --resource-group myRG \
-                        --name myApp \
-                        --src $(Pipeline.Workspace)/drop/app.zip
-```
-
 ---
 
 ### 2.2 Audit and Rotate Legacy Service Connections
@@ -327,57 +289,8 @@ Configure secure YAML pipeline practices and restrict classic pipelines.
    - **Minimum reviewers:** 2
 
 **Step 3: Implement Secure Pipeline Template**
-```yaml
-# templates/secure-pipeline.yml
-parameters:
-  - name: environment
-    type: string
-    values:
-      - development
-      - staging
-      - production
 
-stages:
-  - stage: Build
-    jobs:
-      - job: Build
-        pool:
-          vmImage: 'ubuntu-latest'
-        steps:
-          - task: UseDotNet@2
-            inputs:
-              version: '8.x'
-
-          - script: dotnet build --configuration Release
-            displayName: 'Build'
-
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-
-  - stage: SecurityScan
-    dependsOn: Build
-    jobs:
-      - job: Scan
-        steps:
-          - task: CredScan@3
-            displayName: 'Credential Scanner'
-
-          - task: SdtReport@2
-            displayName: 'Security Report'
-
-  - stage: Deploy
-    dependsOn: SecurityScan
-    condition: succeeded()
-    jobs:
-      - deployment: Deploy
-        environment: ${{ parameters.environment }}
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - script: echo "Deploying to ${{ parameters.environment }}"
-```
+See the CLI Code Pack below for a secure pipeline template with build, security scan, and deploy stages.
 
 #### Code Implementation
 
@@ -425,13 +338,10 @@ Configure agent pools with appropriate security controls.
 #### ClickOps Implementation
 
 **Step 1: Create Tiered Agent Pools**
-```text
-Agent Pools:
-├── Azure Pipelines (Microsoft-hosted, ephemeral)
-├── Development-Agents (self-hosted, lower trust)
-├── Production-Agents (self-hosted, restricted)
-└── Security-Agents (isolated, scanning tools)
-```
+1. **Azure Pipelines** -- Microsoft-hosted, ephemeral (built-in)
+2. **Development-Agents** -- self-hosted, lower trust
+3. **Production-Agents** -- self-hosted, restricted access
+4. **Security-Agents** -- isolated, scanning tools only
 
 **Step 2: Configure Pool Permissions**
 1. Navigate to: **Organization Settings → Agent pools**
@@ -493,25 +403,6 @@ Enable Microsoft Security DevOps to detect secrets in repositories.
 
 {% include pack-code.html vendor="azure-devops" section="4.2" %}
 
-```yaml
-# azure-pipelines.yml - Credential scanning
-trigger:
-  - main
-  - feature/*
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-  - task: MicrosoftSecurityDevOps@1
-    displayName: 'Microsoft Security DevOps'
-    inputs:
-      categories: 'secrets,code'
-
-  - task: PublishSecurityAnalysisLogs@3
-    condition: always()
-```
-
 ---
 
 ## 5. Variable & Secret Management
@@ -558,29 +449,7 @@ Configure variable groups with appropriate security controls.
 **NIST 800-53:** SC-28
 
 #### Description
-Pass secrets at runtime rather than storing in pipelines.
-
-```yaml
-# azure-pipelines.yml
-parameters:
-  - name: deploymentKey
-    type: string
-    default: ''
-
-variables:
-  - group: production-config  # Non-secret config
-  - name: secretKey
-    value: ${{ parameters.deploymentKey }}
-
-stages:
-  - stage: Deploy
-    jobs:
-      - job: Deploy
-        steps:
-          - script: |
-              # Use secret from parameter
-              echo "##vso[task.setvariable variable=SECRET;issecret=true]$(secretKey)"
-```
+Pass secrets at runtime rather than storing in pipelines. See the CLI Code Pack below for a pipeline YAML example using runtime parameters.
 
 #### Code Implementation
 
@@ -613,29 +482,7 @@ See the Code Pack below for a PowerShell script that exports audit logs via the 
 
 #### Detection Queries
 
-```kusto
-// Azure Sentinel / Log Analytics queries
-
-// Detect service connection modifications
-AzureDevOpsAuditing
-
-| where OperationName contains "ServiceEndpoint"
-| where OperationName contains "Modified" or OperationName contains "Created"
-| project TimeGenerated, ActorUPN, OperationName, ProjectName, Data
-
-// Detect pipeline permission changes
-AzureDevOpsAuditing
-
-| where OperationName contains "Security" or OperationName contains "Permission"
-| project TimeGenerated, ActorUPN, OperationName, ProjectName, Data
-
-// Detect unusual build activity
-AzureDevOpsAuditing
-
-| where OperationName == "Build.QueueBuild"
-| summarize count() by ActorUPN, bin(TimeGenerated, 1h)
-| where count_ > 50
-```
+See the DB Code Pack below for Azure Sentinel / Log Analytics KQL queries that detect service connection modifications, permission changes, and unusual build activity.
 
 #### Code Implementation
 
@@ -710,4 +557,5 @@ AzureDevOpsAuditing
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
 | 2025-12-14 | 0.1.0 | draft | Initial Azure DevOps hardening guide | Claude Code (Opus 4.5) |
+| 2026-02-19 | 0.1.2 | draft | Migrate all remaining inline code to Code Packs (1.2, 2.1, 3.1, 3.3, 4.2, 5.2, 6.1); zero inline blocks | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.1.1 | draft | Migrate inline PowerShell to CLI Code Packs (1.3, 2.2, 3.3, 6.1) | Claude Code (Opus 4.6) |

@@ -1,0 +1,23 @@
+# =============================================================================
+# HTH GitLab Control 2.1: Protect CI/CD Variables
+# Profile: L1 | Section: 2.1
+# =============================================================================
+
+# HTH Guide Excerpt: begin secure-variable-usage
+# .gitlab-ci.yml - Secure variable usage
+
+variables:
+  # Never hardcode secrets
+  # Reference protected CI/CD variables
+
+deploy_production:
+  stage: deploy
+  script:
+    - echo "Deploying with protected credentials"
+    - ./deploy.sh  # Uses $PROD_API_KEY from CI/CD settings
+  environment:
+    name: production
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  # Only run on protected branch with protected variables
+# HTH Guide Excerpt: end secure-variable-usage

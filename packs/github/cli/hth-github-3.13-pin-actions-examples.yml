@@ -1,0 +1,13 @@
+# HTH GitHub Control 3.13: Pin Actions to Commit SHA Examples
+# Profile: L2 | SLSA: Build L2
+# https://howtoharden.com/guides/github/#31-restrict-third-party-github-actions-to-verified-creators-only
+
+# HTH Guide Excerpt: begin cli-pin-actions-bad-example
+# Bad: Tag can be repointed
+- uses: actions/checkout@v3  # Tag can be repointed
+# HTH Guide Excerpt: end cli-pin-actions-bad-example
+
+# HTH Guide Excerpt: begin cli-pin-actions-good-example
+# Good: SHA is immutable
+- uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # SHA
+# HTH Guide Excerpt: end cli-pin-actions-good-example

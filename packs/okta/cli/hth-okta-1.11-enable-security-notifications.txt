@@ -1,0 +1,7 @@
+# HTH Guide Excerpt: begin cli-log-query-suspicious-activity
+eventType eq "user.account.report_suspicious_activity_by_enduser"
+# HTH Guide Excerpt: end cli-log-query-suspicious-activity
+
+# HTH Guide Excerpt: begin cli-log-query-authenticator-changes
+eventType sw "user.mfa.factor" OR eventType eq "user.account.update_password"
+# HTH Guide Excerpt: end cli-log-query-authenticator-changes
