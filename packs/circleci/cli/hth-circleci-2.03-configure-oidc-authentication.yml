@@ -1,0 +1,24 @@
+# HTH CircleCI Control 2.03: OIDC Token Authentication
+# Profile: L2 | NIST: IA-5
+# https://howtoharden.com/guides/circleci/#23-oidc-token-authentication
+#
+# Deploy: Add to .circleci/config.yml
+
+# HTH Guide Excerpt: begin cli-oidc-authentication
+# .circleci/config.yml - AWS OIDC authentication
+jobs:
+  deploy_to_aws:
+    docker:
+      - image: cimg/aws:2024.01
+    steps:
+      - run:
+          name: Configure AWS credentials via OIDC
+          command: |
+            # No static credentials needed
+            # CircleCI OIDC token is automatically available
+            aws sts assume-role-with-web-identity \
+              --role-arn arn:aws:iam::123456789:role/CircleCI-Deploy \
+              --role-session-name circleci-${CIRCLE_BUILD_NUM} \
+              --web-identity-token ${CIRCLE_OIDC_TOKEN} \
+              --duration-seconds 3600
+# HTH Guide Excerpt: end cli-oidc-authentication

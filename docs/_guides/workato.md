@@ -108,14 +108,7 @@ Configure SAML 2.0 SSO to centralize authentication for all Workato workspace us
 
 #### Code Implementation
 
-**Option 1: Workato API — List Users to Verify SSO Status**
-```bash
-# List all workspace members and check their authentication method
-curl -s "https://www.workato.com/api/managed_users" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" \
-  -H "Content-Type: application/json" | \
-  jq '.result[] | {id: .id, email: .email, name: .name}'
-```
+{% include pack-code.html vendor="workato" section="1.1" %}
 
 > **Note:** SAML SSO configuration itself is performed through the Workato admin UI. The API can be used to manage users post-SSO setup.
 
@@ -390,28 +383,7 @@ Configure SCIM (System for Cross-domain Identity Management) provisioning to aut
 
 #### Code Implementation
 
-**Option 1: Workato API — Manage Users Programmatically**
-```bash
-# List all managed users
-curl -s "https://www.workato.com/api/managed_users" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {id, name, email, external_id}'
-
-# Add a managed user
-curl -s -X POST "https://www.workato.com/api/managed_users" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Jane Doe",
-    "email": "jane.doe@company.com",
-    "external_id": "ext-12345",
-    "role_name": "Analyst"
-  }'
-
-# Delete a managed user (deprovision)
-curl -s -X DELETE "https://www.workato.com/api/managed_users/USER_ID" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN"
-```
+{% include pack-code.html vendor="workato" section="1.5" %}
 
 #### Validation & Testing
 1. [ ] Create a test user in IdP — verify it appears in Workato within sync interval
@@ -535,27 +507,7 @@ Implement least privilege access using Workato's two-level RBAC model: **environ
 
 #### Code Implementation
 
-**Option 1: Workato API — Manage Roles**
-```bash
-# List all custom roles in the workspace
-curl -s "https://www.workato.com/api/roles" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {id, name, description}'
-
-# Get details of a specific role
-curl -s "https://www.workato.com/api/roles/ROLE_ID" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.'
-
-# Create a custom role with specific permissions
-curl -s -X POST "https://www.workato.com/api/roles" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Recipe Developer",
-    "description": "Can build and test recipes but not deploy to production"
-  }'
-```
+{% include pack-code.html vendor="workato" section="2.1" %}
 
 #### Validation & Testing
 1. [ ] Log in as a non-admin user — verify restricted features are inaccessible
@@ -709,17 +661,7 @@ Create custom environment roles with granular permissions tailored to your organ
 
 #### Code Implementation
 
-**Option 1: Workato API — Create Custom Roles**
-```bash
-# Create a custom role with specific permissions
-curl -s -X POST "https://www.workato.com/api/roles" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Deployment Approver",
-    "description": "Can approve and execute deployments to production environments only"
-  }'
-```
+{% include pack-code.html vendor="workato" section="2.4" %}
 
 #### Validation & Testing
 1. [ ] Create a test user with the custom role
@@ -762,14 +704,7 @@ Minimize the number of workspace administrator accounts and implement strict con
 
 #### Code Implementation
 
-**Option 1: Workato API — Audit Admin Users**
-```bash
-# List all workspace collaborators and filter for admins
-curl -s "https://www.workato.com/api/managed_users" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '[.result[] | select(.role_name == "Admin")] |
-    "Admin count: \(length)", .[] | {id, name, email}'
-```
+{% include pack-code.html vendor="workato" section="2.5" %}
 
 #### Validation & Testing
 1. [ ] Count admin accounts — should be 2-3 maximum
@@ -801,17 +736,7 @@ Establish a recurring access review process to verify all Workato workspace coll
 
 #### Code Implementation
 
-**Option 1: Workato API — Generate Access Review Report**
-```bash
-# Export all collaborators with roles for access review
-curl -s "https://www.workato.com/api/managed_users" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq -r '["Name","Email","Role","External ID"],
-    (.result[] | [.name, .email, .role_name, .external_id]) |
-    @csv' > workato_access_review_$(date +%Y%m%d).csv
-
-echo "Access review export complete. Review and verify each entry."
-```
+{% include pack-code.html vendor="workato" section="2.6" %}
 
 #### ClickOps Implementation
 
@@ -887,70 +812,7 @@ Enable Workato's Encryption Key Management (EKM) feature to use your own encrypt
 
 #### Code Implementation
 
-**Option 1: AWS CLI — Create and Configure KMS Key**
-```bash
-# Create a KMS key for Workato EKM
-aws kms create-key \
-  --description "Workato EKM - Workspace encryption key" \
-  --key-usage ENCRYPT_DECRYPT \
-  --origin AWS_KMS \
-  --tags TagKey=Application,TagValue=Workato TagKey=Environment,TagValue=Production
-
-# Enable automatic key rotation
-aws kms enable-key-rotation --key-id KEY_ID
-
-# Verify key rotation is enabled
-aws kms get-key-rotation-status --key-id KEY_ID
-```
-
-**Option 2: Terraform — AWS KMS Key for Workato EKM**
-```hcl
-resource "aws_kms_key" "workato_ekm" {
-  description             = "Workato EKM - Workspace encryption key"
-  deletion_window_in_days = 30
-  enable_key_rotation     = true
-  key_usage               = "ENCRYPT_DECRYPT"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "AllowKeyAdmin"
-        Effect = "Allow"
-        Principal = {
-          AWS = "arn:aws:iam::YOUR_ACCOUNT_ID:root"
-        }
-        Action   = "kms:*"
-        Resource = "*"
-      },
-      {
-        Sid    = "AllowWorkatoAccess"
-        Effect = "Allow"
-        Principal = {
-          AWS = "arn:aws:iam::WORKATO_ACCOUNT_ID:root"
-        }
-        Action = [
-          "kms:Encrypt",
-          "kms:Decrypt",
-          "kms:GenerateDataKey",
-          "kms:DescribeKey"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
-
-  tags = {
-    Application = "Workato"
-    Purpose     = "EKM-BYOK"
-  }
-}
-
-resource "aws_kms_alias" "workato_ekm" {
-  name          = "alias/workato-ekm"
-  target_key_id = aws_kms_key.workato_ekm.key_id
-}
-```
+{% include pack-code.html vendor="workato" section="3.1" %}
 
 #### Validation & Testing
 1. [ ] Verify EKM status in Workato admin settings
@@ -1107,23 +969,7 @@ Secure sensitive values stored as Workato environment properties (account proper
 
 #### Code Implementation
 
-**Option 1: Workato API — Manage Properties**
-```bash
-# List all environment properties
-curl -s "https://www.workato.com/api/properties" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {name, sensitive}'
-
-# Create or update a sensitive property
-curl -s -X POST "https://www.workato.com/api/properties" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "API_SECRET_KEY",
-    "value": "sk-abc123...",
-    "sensitive": true
-  }'
-```
+{% include pack-code.html vendor="workato" section="3.4" %}
 
 #### Validation & Testing
 1. [ ] Verify all properties containing secrets are marked as sensitive
@@ -1180,18 +1026,7 @@ Secure credentials used for connections to external applications. Connections ar
 
 #### Code Implementation
 
-**Option 1: Workato API — Audit Connections**
-```bash
-# List all connections with their status
-curl -s "https://www.workato.com/api/connections" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {id, name, provider, connected: .authorized}'
-
-# List connections in a specific folder/project
-curl -s "https://www.workato.com/api/connections?folder_id=FOLDER_ID" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {id, name, provider}'
-```
+{% include pack-code.html vendor="workato" section="4.1" %}
 
 #### Validation & Testing
 1. [ ] All connections use service accounts (not personal credentials)
@@ -1295,24 +1130,9 @@ Deploy and secure Workato On-Premises Agents (OPA) for accessing applications an
 
 #### Code Implementation
 
-**Option 1: Docker — Deploy OPA in Container**
-```bash
-# Pull the Workato OPA Docker image
-docker pull workato/agent:latest
+{% include pack-code.html vendor="workato" section="4.3" %}
 
-# Run the agent with configuration
-docker run -d \
-  --name workato-opa \
-  --restart unless-stopped \
-  -v /opt/workato/conf:/opt/workato/conf:ro \
-  -v /opt/workato/data:/opt/workato/data \
-  workato/agent:latest
-
-# Verify agent is running and connected
-docker logs workato-opa | grep -i "connected"
-```
-
-**Option 2: Linux — Agent Configuration**
+**Agent Configuration Notes:**
 ```bash
 # Agent configuration file (/opt/workato/conf/config.yml)
 # Set connection profiles for on-prem databases
@@ -1499,27 +1319,7 @@ Secure the Workato API Platform, which allows you to expose recipes as API endpo
 
 #### Code Implementation
 
-**Option 1: Workato API — Manage API Clients**
-```bash
-# List all API clients
-curl -s "https://www.workato.com/api/api_clients" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {id, name, created_at}'
-
-# Create a new API client
-curl -s -X POST "https://www.workato.com/api/api_clients" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "partner-system-prod",
-    "description": "Production API access for Partner System"
-  }'
-
-# List API access profiles
-curl -s "https://www.workato.com/api/api_access_profiles" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {id, name, api_client_id, api_collection_ids}'
-```
+{% include pack-code.html vendor="workato" section="5.1" %}
 
 #### Validation & Testing
 1. [ ] Call API endpoint with valid client token — succeeds
@@ -1665,47 +1465,7 @@ Integrate Workato with an external secrets manager (HashiCorp Vault, AWS Secrets
 
 #### Code Implementation
 
-**Option 1: AWS CLI — Store Workato Connection Secrets**
-```bash
-# Store a connection credential in AWS Secrets Manager
-aws secretsmanager create-secret \
-  --name "workato/connections/salesforce-prod" \
-  --description "Workato Salesforce production connection credentials" \
-  --secret-string '{
-    "client_id": "3MVG9...",
-    "client_secret": "...",
-    "refresh_token": "..."
-  }' \
-  --tags Key=Application,Value=Workato Key=Connection,Value=Salesforce
-
-# Enable automatic rotation (90-day cycle)
-aws secretsmanager rotate-secret \
-  --secret-id "workato/connections/salesforce-prod" \
-  --rotation-rules AutomaticallyAfterDays=90
-```
-
-**Option 2: Terraform — AWS Secrets Manager for Workato**
-```hcl
-resource "aws_secretsmanager_secret" "workato_salesforce" {
-  name        = "workato/connections/salesforce-prod"
-  description = "Workato Salesforce production connection credentials"
-
-  tags = {
-    Application = "Workato"
-    Connection  = "Salesforce"
-    Environment = "Production"
-  }
-}
-
-resource "aws_secretsmanager_secret_rotation" "workato_salesforce" {
-  secret_id           = aws_secretsmanager_secret.workato_salesforce.id
-  rotation_lambda_arn = aws_lambda_function.secret_rotation.arn
-
-  rotation_rules {
-    automatically_after_days = 90
-  }
-}
-```
+{% include pack-code.html vendor="workato" section="6.1" %}
 
 #### Validation & Testing
 1. [ ] Verify connections using secrets manager references work correctly
@@ -1841,24 +1601,7 @@ Configure Workato's Recipe Lifecycle Management (RLCM) to enforce a formal deplo
 
 #### Code Implementation
 
-**Option 1: Workato API — Manage Deployments**
-```bash
-# List deployment packages
-curl -s "https://www.workato.com/api/deployments" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {id, name, state, created_at}'
-
-# Create a deployment package
-curl -s -X POST "https://www.workato.com/api/packages/export/MANIFEST_ID" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" \
-  -H "Content-Type: application/json"
-
-# Import a package into target environment
-curl -s -X POST "https://www.workato.com/api/packages/import/FOLDER_ID" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" \
-  -H "Content-Type: application/octet-stream" \
-  --data-binary @package.zip
-```
+{% include pack-code.html vendor="workato" section="7.2" %}
 
 #### Validation & Testing
 1. [ ] Create a deployment package in DEV — verify it's created successfully
@@ -1897,101 +1640,7 @@ Integrate Workato's deployment process with your CI/CD pipeline to automate test
 
 #### Code Implementation
 
-**Option 1: GitHub Actions — Workato CI/CD Pipeline**
-```yaml
-# .github/workflows/workato-deploy.yml
-name: Workato Recipe Deployment
-on:
-  push:
-    branches: [main]
-    paths: ['workato/**']
-
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Validate recipe package
-        run: |
-          # Verify the export manifest exists and is valid
-          curl -sf "https://www.workato.com/api/packages/export/${{ vars.MANIFEST_ID }}" \
-            -H "Authorization: Bearer ${{ secrets.WORKATO_DEV_TOKEN }}" \
-            -o package.zip
-          # Verify package is not empty
-          test -s package.zip || exit 1
-
-  deploy:
-    needs: validate
-    runs-on: ubuntu-latest
-    environment: production  # Requires manual approval in GitHub
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Export package from DEV
-        run: |
-          curl -sf -X POST \
-            "https://www.workato.com/api/packages/export/${{ vars.MANIFEST_ID }}" \
-            -H "Authorization: Bearer ${{ secrets.WORKATO_DEV_TOKEN }}" \
-            -o package.zip
-
-      - name: Import package to PROD
-        run: |
-          curl -sf -X POST \
-            "https://www.workato.com/api/packages/import/${{ vars.PROD_FOLDER_ID }}" \
-            -H "Authorization: Bearer ${{ secrets.WORKATO_PROD_TOKEN }}" \
-            -H "Content-Type: application/octet-stream" \
-            --data-binary @package.zip
-
-      - name: Verify deployment
-        run: |
-          # Check that recipes in the target folder are active
-          curl -sf "https://www.workato.com/api/recipes?folder_id=${{ vars.PROD_FOLDER_ID }}" \
-            -H "Authorization: Bearer ${{ secrets.WORKATO_PROD_TOKEN }}" | \
-            jq '.result[] | {name, running, updated_at}'
-```
-
-**Option 2: Workato CLI — Connector Development & Testing**
-```bash
-# Install Workato CLI (Ruby gem)
-gem install workato
-
-# Generate a new connector scaffold
-workato generate connector my-connector
-
-# Validate connector code locally
-workato exec actions.my_action \
-  --connector my-connector \
-  --input '{"key": "value"}'
-
-# Run connector test suite
-workato generate test --connector my-connector
-workato exec triggers.my_trigger --connector my-connector
-
-# Push validated connector to Workato workspace
-workato push --connector my-connector --token $WORKATO_API_TOKEN
-```
-
-**Option 3: Workato API — Recipe Management for CI/CD**
-```bash
-# List all recipes in a project folder
-curl -s "https://www.workato.com/api/recipes?folder_id=FOLDER_ID" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {id, name, running, version}'
-
-# Stop a recipe before deployment
-curl -s -X PUT "https://www.workato.com/api/recipes/RECIPE_ID/stop" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN"
-
-# Start a recipe after deployment
-curl -s -X PUT "https://www.workato.com/api/recipes/RECIPE_ID/start" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN"
-
-# Get recipe versions (audit trail)
-curl -s "https://www.workato.com/api/recipes/RECIPE_ID/versions" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {version, created_at, comment}'
-```
+{% include pack-code.html vendor="workato" section="7.3" %}
 
 > **Note on Terraform:** As of early 2026, there is no official Workato Terraform provider. For IaC, use the Workato API via the [Mastercard/restapi](https://registry.terraform.io/providers/Mastercard/restapi/latest) generic REST Terraform provider, or manage deployments through the API-based CI/CD pipeline shown above.
 
@@ -2055,29 +1704,7 @@ Enable and actively monitor Workato's Activity Audit Log, which records signific
 
 #### Code Implementation
 
-**Option 1: Workato API — Query Audit Logs**
-```bash
-# Retrieve recent audit log events
-curl -s "https://www.workato.com/api/activity_logs?page=1&per_page=100" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {
-    timestamp: .created_at,
-    user: .user_name,
-    event: .event_type,
-    resource: .resource_type,
-    details: .details
-  }'
-
-# Filter for admin actions only
-curl -s "https://www.workato.com/api/activity_logs?event_type=admin_action" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {timestamp: .created_at, user: .user_name, details: .details}'
-
-# Export audit logs for compliance archive
-curl -s "https://www.workato.com/api/activity_logs?page=1&per_page=500" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result' > audit_log_$(date +%Y%m%d).json
-```
+{% include pack-code.html vendor="workato" section="8.1" %}
 
 #### Validation & Testing
 1. [ ] Perform a logged action (e.g., start/stop a recipe) — verify it appears in audit log
@@ -2206,22 +1833,7 @@ Configure monitoring for recipe execution errors to detect integration failures,
 
 #### Code Implementation
 
-**Option 1: Workato API — Check Recipe Job Errors**
-```bash
-# List recipes with recent errors
-curl -s "https://www.workato.com/api/recipes?active=true" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | select(.last_run_at != null) | {
-    id, name,
-    last_run: .last_run_at,
-    running: .running
-  }'
-
-# Get recent job history for a specific recipe
-curl -s "https://www.workato.com/api/recipes/RECIPE_ID/jobs?status=failed" \
-  -H "Authorization: Bearer $WORKATO_API_TOKEN" | \
-  jq '.result[] | {id, started_at, completed_at, error}'
-```
+{% include pack-code.html vendor="workato" section="8.3" %}
 
 #### Validation & Testing
 1. [ ] Intentionally trigger a recipe error — verify notification is received

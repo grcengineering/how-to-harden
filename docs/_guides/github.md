@@ -101,25 +101,6 @@ Require all organization members to enable MFA on their GitHub accounts. This pr
 
 #### Code Implementation
 
-**GitHub API (curl):**
-```bash
-ORG="your-org-name"
-TOKEN="your_github_token"
-
-# Enable 2FA requirement
-curl -X PATCH "https://api.github.com/orgs/${ORG}" \
-  -H "Authorization: token ${TOKEN}" \
-  -H "Accept: application/vnd.github+json" \
-  -d '{
-    "two_factor_requirement_enabled": true
-  }'
-
-# Audit members without 2FA
-curl -X GET "https://api.github.com/orgs/${ORG}/members?filter=2fa_disabled" \
-  -H "Authorization: token ${TOKEN}" \
-  -H "Accept: application/vnd.github+json"
-```
-
 {% include pack-code.html vendor="github" section="1.1" %}
 
 #### Validation & Testing
@@ -337,18 +318,7 @@ Implement least privilege for organization and enterprise administrators. Limit 
 
 #### Code Implementation
 
-```bash
-# List enterprise owners (Enterprise Cloud)
-gh api /orgs/{org}/members?role=admin --jq '.[].login'
-
-# Audit admin actions in audit log
-gh api /orgs/{org}/audit-log?phrase=action:org.update_member \
-  --jq '.[] | {actor: .actor, action: .action, created_at: .created_at}'
-
-# Check for users with admin role
-gh api /orgs/{org}/members --jq '.[] | select(.role == "admin") | .login'
-```
-
+{% include pack-code.html vendor="github" section="1.8" %}
 {% include pack-code.html vendor="github" section="1.4" %}
 {% include pack-code.html vendor="github" section="1.5" %}
 {% include pack-code.html vendor="github" section="1.6" %}
@@ -416,22 +386,7 @@ Restrict enterprise access to approved IP addresses using IP allow lists. This l
 
 #### Code Implementation
 
-```bash
-# List current IP allow list entries
-gh api /orgs/{org}/ip-allow-list --jq '.[] | {name: .name, value: .value, is_active: .is_active}'
-
-# Add IP range
-gh api -X POST /orgs/{org}/ip-allow-list \
-  -f name="Corporate Office" \
-  -f value="203.0.113.0/24" \
-  -f is_active=true
-
-# Add CI/CD runner IPs
-gh api -X POST /orgs/{org}/ip-allow-list \
-  -f name="GitHub Actions Runners" \
-  -f value="10.0.0.0/8" \
-  -f is_active=true
-```
+{% include pack-code.html vendor="github" section="1.7" %}
 
 #### Validation & Testing
 1. [ ] Access GitHub from an allowed IP (should succeed)
@@ -490,41 +445,7 @@ Protect `main`, `master`, `production`, and release branches from direct pushes.
 
 #### Code Implementation
 
-**Bulk Protection Script:**
-```python
-#!/usr/bin/env python3
-# automation/scripts/github/protect-all-branches.py
-
-from github import Github
-import os
-
-g = Github(os.environ['GITHUB_TOKEN'])
-org = g.get_organization('your-org')
-
-PROTECTED_BRANCHES = ['main', 'master', 'production', 'release']
-
-for repo in org.get_repos():
-    print(f"Processing: {repo.name}")
-
-    for branch_name in PROTECTED_BRANCHES:
-        try:
-            branch = repo.get_branch(branch_name)
-
-            # Apply protection
-            branch.edit_protection(
-                strict=True,
-                contexts=["ci/test"],
-                enforce_admins=True,
-                dismiss_stale_reviews=True,
-                require_code_owner_reviews=True,
-                required_approving_review_count=1
-            )
-
-            print(f"  Protected: {branch_name}")
-        except Exception as e:
-            print(f"  Skipped {branch_name}: {e}")
-```
-
+{% include pack-code.html vendor="github" section="3.10" %}
 {% include pack-code.html vendor="github" section="3.1" %}
 {% include pack-code.html vendor="github" section="3.6" %}
 {% include pack-code.html vendor="github" section="3.7" %}
@@ -617,60 +538,11 @@ Enable GitHub's native security features to detect vulnerabilities, secrets, and
 
 #### Secret Scanning Push Protection
 
-**L2 Enhancement:** Enable push protection to **block commits** containing secrets:
-
-```bash
-# Enable push protection
-gh api -X PUT "/repos/${ORG}/${REPO}/secret-scanning/push-protection"
-```
-
-This prevents secrets from ever entering Git history (better than post-commit detection).
+**L2 Enhancement:** Enable push protection to **block commits** containing secrets. This prevents secrets from ever entering Git history (better than post-commit detection). See the Code Pack above for API implementation.
 
 #### L2 Enhancement: CodeQL Advanced Configuration
 
-For organizations requiring deeper code analysis, configure CodeQL with custom query suites and scheduled scanning:
-
-```yaml
-# .github/workflows/codeql-analysis.yml
-name: "CodeQL"
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  schedule:
-    - cron: '0 0 * * 1'
-
-jobs:
-  analyze:
-    name: Analyze
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'javascript', 'python' ]
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        queries: security-extended
-
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-```
+For organizations requiring deeper code analysis, configure CodeQL with custom query suites and scheduled scanning. See the advanced CodeQL workflow in the Code Pack above.
 
 **CodeQL Configuration Options:**
 - `security-extended` -- Includes additional security queries beyond default
@@ -737,32 +609,7 @@ Configure organization-wide repository rulesets to enforce consistent branch pro
 
 #### Code Implementation
 
-```bash
-# Create organization ruleset via API
-gh api -X POST /orgs/{org}/rulesets \
-  -f name="Production Branch Protection" \
-  -f enforcement=active \
-  -f target=branch \
-  --input - <<EOF
-{
-  "conditions": {
-    "ref_name": {
-      "include": ["refs/heads/main", "refs/heads/master", "refs/heads/release/*"],
-      "exclude": []
-    }
-  },
-  "rules": [
-    {"type": "deletion"},
-    {"type": "non_fast_forward"},
-    {"type": "pull_request", "parameters": {"required_approving_review_count": 2, "dismiss_stale_reviews_on_push": true, "require_code_owner_review": true}},
-    {"type": "required_signatures"}
-  ]
-}
-EOF
-
-# List existing rulesets
-gh api /orgs/{org}/rulesets --jq '.[] | {name: .name, enforcement: .enforcement}'
-```
+{% include pack-code.html vendor="github" section="2.5" %}
 
 #### Validation & Testing
 1. [ ] Verify ruleset is active and applies to target branches
@@ -817,6 +664,8 @@ Require cryptographically signed commits to verify commit authenticity and preve
 
 #### Code Implementation
 
+**Developer Setup (local git config):**
+
 ```bash
 # Configure Git to sign commits with SSH key
 git config --global gpg.format ssh
@@ -829,10 +678,6 @@ git config --global commit.gpgsign true
 
 # Verify a signed commit
 git log --show-signature -1
-
-# Require signed commits via branch protection API
-gh api -X PUT "/repos/{org}/{repo}/branches/main/protection" \
-  -f required_signatures=true
 ```
 
 {% include pack-code.html vendor="github" section="3.7" %}
@@ -955,27 +800,14 @@ npx pin-github-action .github/workflows/*.yml
 ```
 
 **Automated SHA updates with Dependabot:**
-```yaml
-# .github/dependabot.yml
-version: 2
-updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-```
+
+{% include pack-code.html vendor="github" section="3.11" %}
 
 #### Monitoring & Maintenance
 
 **Alert on unapproved Action usage:**
-```bash
-# Scan all workflows for non-allowed actions
-for repo in $(gh repo list $ORG --json name --jq '.[].name'); do
-  gh api "/repos/${ORG}/${repo}/actions/workflows" --jq '.workflows[].path' | while read workflow; do
-    gh api "/repos/${ORG}/${repo}/contents/${workflow}" --jq '.content' | base64 -d | grep -oP 'uses:\s+\K[^\s]+' | grep -v '^actions/' | grep -v '^github/'
-  done
-done
-```
+
+{% include pack-code.html vendor="github" section="3.8" %}
 
 #### Operational Impact
 
@@ -1168,19 +1000,7 @@ Secure self-hosted runners to prevent compromise of build environment. Self-host
 
 #### Code Implementation
 
-```bash
-# List runner groups
-gh api /orgs/{org}/actions/runner-groups --jq '.runner_groups[] | {name: .name, id: .id, visibility: .visibility}'
-
-# Create a runner group with restricted repository access
-gh api -X POST /orgs/{org}/actions/runner-groups \
-  -f name="production-runners" \
-  -f visibility=selected \
-  -f selected_repository_ids='[12345, 67890]'
-
-# List runners in a group
-gh api /orgs/{org}/actions/runner-groups/{group_id}/runners --jq '.runners[] | {name: .name, status: .status}'
-```
+{% include pack-code.html vendor="github" section="3.9" %}
 
 **Example ephemeral runner configuration:**
 ```yaml
@@ -1250,14 +1070,7 @@ Review all OAuth apps with access to your organization. Revoke unnecessary apps,
 
 #### Code Implementation
 
-**List OAuth apps:**
-```bash
-# List org authorized OAuth apps
-gh api /orgs/{org}/applications --jq '.[] | {name: .name, created_at: .created_at, url: .url}'
-
-# List personal OAuth authorizations (run as each user)
-gh api /user/applications --jq '.[] | {name: .name, scopes: .scopes}'
-```
+{% include pack-code.html vendor="github" section="4.4" %}
 
 **Automation script:**
 ```python
@@ -1367,27 +1180,8 @@ Store sensitive credentials in GitHub Actions secrets (not hardcoded in code). U
 3. Allow deployment from `main` and `develop` branches
 
 **Step 5: Reference Secrets in Workflow**
-```yaml
-name: Deploy
 
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    environment: production  # Requires approval to run
-    steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
-      - name: Deploy
-        env:
-          API_KEY: ${{ secrets.PROD_API_KEY }}
-        run: |
-          # Secret is available in $API_KEY env var
-          # NOT visible in logs
-          deploy.sh
-```
+See the deployment workflow template in the Code Pack below.
 
 **Time to Complete:** ~15 minutes
 
@@ -1472,58 +1266,9 @@ Use GitHub Actions OIDC provider to get short-lived cloud credentials instead of
    - Provider URL: `https://token.actions.githubusercontent.com`
    - Audience: `sts.amazonaws.com`
 
-**Step 2: Create IAM Role**
-2. Create IAM role with trust policy:
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Federated": "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
-      },
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {
-        "StringEquals": {
-          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-          "token.actions.githubusercontent.com:sub": "repo:your-org/your-repo:ref:refs/heads/main"
-        }
-      }
-    }
-  ]
-}
-```
+**Step 2: Create IAM Role and Deploy Workflow**
 
-**Step 3: Use in Workflow**
-```yaml
-name: Deploy to AWS
-
-on:
-  push:
-    branches: [main]
-
-permissions:
-  id-token: write  # Required for OIDC
-  contents: read
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
-        with:
-          role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsRole
-          aws-region: us-east-1
-          # No long-lived credentials needed!
-
-      - name: Deploy
-        run: |
-          aws s3 sync ./build s3://my-bucket/
-```
+{% include pack-code.html vendor="github" section="5.6" %}
 
 **Time to Complete:** ~30 minutes
 
@@ -1573,29 +1318,8 @@ Automatically block pull requests that introduce vulnerable or malicious depende
 2. Enable **Dependency graph** (should already be enabled from Section 2.2)
 
 **Step 2: Add Dependency Review Action**
-Create `.github/workflows/dependency-review.yml`:
 
-```yaml
-name: Dependency Review
-
-on: [pull_request]
-
-permissions:
-  contents: read
-  pull-requests: write
-
-jobs:
-  dependency-review:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
-
-      - name: Dependency Review
-        uses: actions/dependency-review-action@c74b580d73376b7750d3d2a50bfb8adc2c937507
-        with:
-          fail-on-severity: moderate  # Block moderate+ vulnerabilities
-          deny-licenses: GPL-2.0, GPL-3.0  # Optional: block incompatible licenses
-```
+{% include pack-code.html vendor="github" section="4.5" %}
 
 **Time to Complete:** ~10 minutes
 
@@ -1726,14 +1450,7 @@ Stream GitHub audit logs to your SIEM (Splunk, Datadog, AWS Security Lake) for c
 
 #### Code Implementation
 
-```bash
-# Enable audit log streaming via API (Enterprise Cloud)
-gh api -X POST /orgs/{org}/audit-log/streams \
-  -f destination=splunk \
-  -f token=$SPLUNK_HEC_TOKEN \
-  -f endpoint=https://splunk.example.com:8088/services/collector
-```
-
+{% include pack-code.html vendor="github" section="5.7" %}
 {% include pack-code.html vendor="github" section="5.3" %}
 
 #### Key Events to Monitor
@@ -1833,14 +1550,7 @@ Apply GitHub's recommended security configuration to all repositories in the ent
 
 #### Code Implementation
 
-```bash
-# List available security configurations
-gh api /orgs/{org}/code-security/configurations --jq '.[] | {name: .name, target_type: .target_type}'
-
-# Apply configuration to all repositories
-gh api -X POST /orgs/{org}/code-security/configurations/{config_id}/attach \
-  -f scope=all
-```
+{% include pack-code.html vendor="github" section="5.8" %}
 
 #### Validation & Testing
 1. [ ] Verify configuration is applied to all repositories

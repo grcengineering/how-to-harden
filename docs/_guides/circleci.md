@@ -182,18 +182,8 @@ Use CircleCI contexts with security restrictions to limit secret exposure. Conte
    - **Add restrictions:** Enable
 
 **Step 3: Limit Context to Specific Branches**
-```yaml
-# .circleci/config.yml
-workflows:
-  deploy:
-    jobs:
-      - deploy_production:
-          context:
-            - production-secrets
-          filters:
-            branches:
-              only: main  # Only main branch can access production context
-```
+
+{% include pack-code.html vendor="circleci" section="2.1" %}
 
 ---
 
@@ -213,21 +203,8 @@ Configure environment variables with appropriate protection.
 - Never store secrets in repository
 
 **Step 2: Minimize Environment Variable Exposure**
-```yaml
-# .circleci/config.yml
-jobs:
-  build:
-    docker:
-      - image: cimg/base:2024.01
-    steps:
-      - run:
-          name: Build
-          # Only use environment variables when needed
-          command: |
-            # Don't echo secrets
-            # Don't pass secrets as command arguments (visible in ps)
-            ./build.sh
-```
+
+{% include pack-code.html vendor="circleci" section="2.2" %}
 
 **Step 3: Rotate All Secrets Post-Breach**
 Following the 2023 breach, CircleCI recommended:
@@ -248,48 +225,7 @@ Use OIDC tokens instead of static credentials for cloud provider authentication.
 
 #### Implementation
 
-```yaml
-# .circleci/config.yml - AWS OIDC authentication
-jobs:
-  deploy_to_aws:
-    docker:
-      - image: cimg/aws:2024.01
-    steps:
-      - run:
-          name: Configure AWS credentials via OIDC
-          command: |
-            # No static credentials needed
-            # CircleCI OIDC token is automatically available
-            aws sts assume-role-with-web-identity \
-              --role-arn arn:aws:iam::123456789:role/CircleCI-Deploy \
-              --role-session-name circleci-${CIRCLE_BUILD_NUM} \
-              --web-identity-token ${CIRCLE_OIDC_TOKEN} \
-              --duration-seconds 3600
-```
-
-**AWS IAM Trust Policy:**
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Federated": "arn:aws:iam::123456789:oidc-provider/oidc.circleci.com/org/ORG_ID"
-      },
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {
-        "StringEquals": {
-          "oidc.circleci.com/org/ORG_ID:aud": "ORG_ID"
-        },
-        "StringLike": {
-          "oidc.circleci.com/org/ORG_ID:sub": "org/ORG_ID/project/*/user/*"
-        }
-      }
-    }
-  ]
-}
-```
+{% include pack-code.html vendor="circleci" section="2.3" %}
 
 ---
 
@@ -312,36 +248,8 @@ Control who can trigger pipelines and from which sources.
    - **Build forked pull requests:** Disable or restrict
 
 **Step 2: Implement Branch Restrictions**
-```yaml
-# .circleci/config.yml
-workflows:
-  build_and_test:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
 
-  deploy:
-    jobs:
-      - deploy_staging:
-          filters:
-            branches:
-              only: develop
-      - approve_production:
-          type: approval
-          requires:
-            - deploy_staging
-          filters:
-            branches:
-              only: main
-      - deploy_production:
-          requires:
-            - approve_production
-          filters:
-            branches:
-              only: main
-```
+{% include pack-code.html vendor="circleci" section="3.1" %}
 
 ---
 
@@ -353,40 +261,7 @@ workflows:
 #### Description
 Include security scanning in CI/CD pipeline.
 
-```yaml
-# .circleci/config.yml
-jobs:
-  security_scan:
-    docker:
-      - image: cimg/base:2024.01
-    steps:
-      - checkout
-      - run:
-          name: Dependency vulnerability scan
-          command: |
-            # Install and run dependency scanner
-            npm audit --audit-level=high
-            # Or use Snyk, OWASP Dependency-Check, etc.
-      - run:
-          name: Secret detection
-          command: |
-            # Detect secrets in code
-            trufflehog filesystem . --only-verified
-      - run:
-          name: SAST scan
-          command: |
-            # Static analysis
-            semgrep --config=auto .
-
-workflows:
-  security:
-    jobs:
-      - security_scan:
-          # Run on all branches
-          filters:
-            branches:
-              ignore: []
-```
+{% include pack-code.html vendor="circleci" section="3.2" %}
 
 ---
 
@@ -398,23 +273,7 @@ workflows:
 #### Description
 Use verified, pinned Docker images in CI/CD pipelines.
 
-```yaml
-# .circleci/config.yml
-jobs:
-  build:
-    docker:
-      # Good: Use CircleCI convenience images with specific version
-      - image: cimg/node:20.10.0
-      # Better: Pin to digest for immutability
-      - image: cimg/node@sha256:abc123...
-
-      # Bad: Never use :latest
-      # - image: node:latest
-
-    steps:
-      - checkout
-      - run: npm ci  # Use ci instead of install for reproducibility
-```
+{% include pack-code.html vendor="circleci" section="3.3" %}
 
 ---
 
@@ -430,37 +289,7 @@ Secure self-hosted runners for sensitive workloads.
 
 #### Implementation
 
-**Step 1: Runner Isolation**
-```yaml
-# Runner configuration
-resource_class: company/secure-runner
-
-# Use dedicated runners for production deployments
-jobs:
-  deploy_production:
-    machine:
-      image: ubuntu-2204:current
-    resource_class: company/production-runner
-```
-
-**Step 2: Runner Security Configuration**
-```bash
-# Runner machine hardening
-# - Run as non-root user
-# - Enable audit logging
-# - Network isolation
-# - Ephemeral storage
-
-# Example Docker runner setup
-docker run -d \
-  --name circleci-runner \
-  --security-opt no-new-privileges \
-  --read-only \
-  --tmpfs /tmp \
-  -e CIRCLECI_RESOURCE_CLASS="company/secure-runner" \
-  -e CIRCLECI_RUNNER_API_AUTH_TOKEN="${RUNNER_TOKEN}" \
-  circleci/runner:latest
-```
+{% include pack-code.html vendor="circleci" section="4.1" %}
 
 ---
 
@@ -485,13 +314,8 @@ Configure and monitor CircleCI audit logs for security events.
    - API token creation
 
 **Step 2: Export to SIEM**
-```bash
-# CircleCI API - Export audit logs
-curl -X GET "https://circleci.com/api/v2/organization/${ORG_ID}/audit-log?start-time=${START}" \
-  -H "Circle-Token: ${API_TOKEN}" \
 
-  | jq '.items[]'
-```
+{% include pack-code.html vendor="circleci" section="5.1" %}
 
 #### Detection Use Cases
 

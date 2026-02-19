@@ -51,7 +51,7 @@ Every control includes:
 
 ### 2. Code Packs -- Executable Security Controls
 
-**50 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
+**57 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
 
 | Language Type | Directory | What It Does |
 |---------------|-----------|-------------|
@@ -140,7 +140,7 @@ how-to-harden/
 │   └── assets/
 │       └── css/
 │           └── style.css                 # Dark + light theme stylesheet
-├── packs/                                # Code Packs (50 vendors)
+├── packs/                                # Code Packs (57 vendors)
 │   ├── README.md                         # Code Pack Ontology documentation
 │   ├── schema/                           # YAML schema definitions
 │   ├── okta/                             # Example vendor pack

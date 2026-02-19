@@ -1,0 +1,24 @@
+# HTH HashiCorp Vault Control 5.2: GitHub Actions Vault Workflow
+# Profile: L2 | NIST: IA-2, IA-5(2)
+# https://howtoharden.com/guides/hashicorp-vault/#52-implement-oidc-for-github-actions
+#
+# Deploy: Copy to .github/workflows/vault-secrets.yml
+
+# HTH Guide Excerpt: begin cli-github-actions-workflow
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: hashicorp/vault-action@v2
+        with:
+          url: https://vault.company.com
+          method: jwt
+          role: deploy
+          jwtGithubAudience: https://github.com/your-org
+          secrets: |
+            secret/data/deploy/credentials api_key | API_KEY ;
+# HTH Guide Excerpt: end cli-github-actions-workflow

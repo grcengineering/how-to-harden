@@ -90,25 +90,7 @@ Require MFA for all CyberArk console access, including PVWA (Password Vault Web 
 
 #### Code Implementation
 
-**CyberArk REST API:**
-```bash
-# Configure authentication method via API
-curl -X PUT "https://${PVWA_URL}/PasswordVault/API/Configuration/AuthenticationMethods/radius" \
-  -H "Authorization: ${AUTH_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "id": "radius",
-    "displayName": "RADIUS MFA",
-    "enabled": true,
-    "settings": {
-      "server": "mfa.company.com",
-      "port": 1812,
-      "timeout": 60
-    }
-  }'
-```
-
-{% include pack-code.html vendor="cyberark" section="1.1" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="1.1" %}
 
 #### Validation & Testing
 1. [ ] Attempt PVWA login with password only - should fail
@@ -167,41 +149,7 @@ Safes/
 
 #### Code Implementation
 
-```bash
-# Create safe with restricted access via REST API
-curl -X POST "https://${PVWA_URL}/PasswordVault/API/Safes" \
-  -H "Authorization: ${AUTH_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "safeName": "Windows-DomainAdmins",
-    "description": "Domain Administrator credentials - requires approval",
-    "olacEnabled": true,
-    "managingCPM": "PasswordManager",
-    "numberOfVersionsRetention": 10,
-    "numberOfDaysRetention": 30
-  }'
-
-# Add member with limited permissions
-curl -X POST "https://${PVWA_URL}/PasswordVault/API/Safes/Windows-DomainAdmins/Members" \
-  -H "Authorization: ${AUTH_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "memberName": "WindowsAdmins",
-    "memberType": "Group",
-    "permissions": {
-      "useAccounts": true,
-      "retrieveAccounts": true,
-      "listAccounts": true,
-      "addAccounts": false,
-      "updateAccountContent": false,
-      "deleteAccounts": false,
-      "manageSafe": false,
-      "requestsAuthorizationLevel1": true
-    }
-  }'
-```
-
-{% include pack-code.html vendor="cyberark" section="1.2" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="1.2" %}
 
 ---
 
@@ -234,7 +182,7 @@ Implement emergency access procedures for critical scenarios when normal authent
 
 #### Code Implementation
 
-{% include pack-code.html vendor="cyberark" section="1.3" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="1.3" %}
 
 ---
 
@@ -271,7 +219,7 @@ BackupKeyAge=365
 
 #### Code Implementation
 
-{% include pack-code.html vendor="cyberark" section="2.1" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="2.1" %}
 
 ---
 
@@ -299,7 +247,7 @@ PAReplicate.exe Status
 PAReplicate.exe Failover /target:DR_VAULT
 ```
 
-{% include pack-code.html vendor="cyberark" section="2.2" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="2.2" %}
 
 ---
 
@@ -349,42 +297,7 @@ Secure CyberArk API access using certificate-based authentication, API key rotat
 
 #### Code Implementation
 
-```python
-#!/usr/bin/env python3
-# Secure CyberArk API authentication using certificate
-
-import requests
-
-PVWA_URL = "https://pvwa.company.com"
-CERT_FILE = "/path/to/client.crt"
-KEY_FILE = "/path/to/client.key"
-CA_FILE = "/path/to/ca.crt"
-
-def get_api_token():
-    """Authenticate to CyberArk using certificate"""
-    response = requests.post(
-        f"{PVWA_URL}/PasswordVault/API/Auth/CyberArk/Logon",
-        cert=(CERT_FILE, KEY_FILE),
-        verify=CA_FILE,
-        json={
-            "username": "APIUser",
-            "password": ""  # Certificate-based, no password
-        }
-    )
-    return response.text.strip('"')
-
-def get_credential(token, safe, account):
-    """Retrieve credential securely"""
-    response = requests.get(
-        f"{PVWA_URL}/PasswordVault/API/Accounts?filter=safeName eq {safe}",
-        headers={"Authorization": token},
-        cert=(CERT_FILE, KEY_FILE),
-        verify=CA_FILE
-    )
-    return response.json()
-```
-
-{% include pack-code.html vendor="cyberark" section="3.1" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="3.1" %}
 
 ---
 
@@ -415,7 +328,7 @@ For each integration:
 
 #### Code Implementation
 
-{% include pack-code.html vendor="cyberark" section="3.2" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="3.2" %}
 
 ---
 
@@ -427,39 +340,7 @@ For each integration:
 #### Description
 Securely configure integrations with HashiCorp Vault, AWS Secrets Manager, and Azure Key Vault.
 
-#### HashiCorp Vault Integration
-
-```bash
-# Configure Vault to retrieve from CyberArk
-vault write auth/approle/role/cyberark \
-    token_policies="cyberark-read" \
-    token_ttl=1h \
-    token_max_ttl=4h
-
-# CyberArk Secrets Hub configuration
-# Sync secrets to Vault while maintaining CyberArk as source of truth
-```
-
-#### AWS Secrets Manager Integration
-
-```python
-# Sync CyberArk credentials to AWS Secrets Manager
-import boto3
-from cyberark import CyberArkClient
-
-def sync_to_aws_secrets(cyberark_client, aws_region):
-    secrets_client = boto3.client('secretsmanager', region_name=aws_region)
-
-    credentials = cyberark_client.get_credentials(safe="AWS-Credentials")
-
-    for cred in credentials:
-        secrets_client.update_secret(
-            SecretId=cred['name'],
-            SecretString=cred['password']
-        )
-```
-
-{% include pack-code.html vendor="cyberark" section="3.3" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="3.3" %}
 
 ---
 
@@ -499,7 +380,7 @@ WarningBeforeTimeout=5  # 5 minute warning
 
 #### Code Implementation
 
-{% include pack-code.html vendor="cyberark" section="4.1" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="4.1" %}
 
 ---
 
@@ -529,7 +410,7 @@ Configure time-limited access requests with automatic credential rotation after 
 
 #### Code Implementation
 
-{% include pack-code.html vendor="cyberark" section="4.2" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="4.2" %}
 
 ---
 
@@ -565,7 +446,7 @@ ExcludedCharacters='"<>;
 
 #### Code Implementation
 
-{% include pack-code.html vendor="cyberark" section="5.1" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="5.1" %}
 
 ---
 
@@ -584,7 +465,7 @@ WHERE CPMStatus = 'FAILED'
 ORDER BY LastFailDate DESC;
 ```
 
-{% include pack-code.html vendor="cyberark" section="5.2" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="5.2" %}
 
 ---
 
@@ -630,7 +511,7 @@ GROUP BY UserName, SourceIP
 HAVING COUNT(*) > 5;
 ```
 
-{% include pack-code.html vendor="cyberark" section="6.1" lang="terraform" %}
+{% include pack-code.html vendor="cyberark" section="6.1" %}
 
 ---
 

@@ -6,9 +6,9 @@ slug: "bitbucket"
 tier: "2"
 category: "DevOps"
 description: "Code repository security hardening for Bitbucket Cloud including workspace security, branch permissions, and access controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-02-19"
 ---
 
 ## Overview
@@ -470,23 +470,8 @@ Restrict who can trigger deployments to production environments.
    - Restrict who can deploy
 
 **Step 3: Pipeline Configuration**
-```yaml
-# bitbucket-pipelines.yml
-pipelines:
-  branches:
-    main:
-      - step:
-          name: Build
-          script:
-            - npm install
-            - npm run build
-      - step:
-          name: Deploy to Production
-          deployment: production
-          trigger: manual
-          script:
-            - ./deploy.sh
-```
+
+{% include pack-code.html vendor="bitbucket" section="4.2" %}
 
 ---
 
@@ -504,32 +489,7 @@ Implement secret scanning to prevent credentials from being committed.
 
 #### Code Implementation
 
-**Using git-secrets (Pre-commit Hook):**
-```bash
-# Install git-secrets
-brew install git-secrets
-
-# Configure for repository
-cd your-repo
-git secrets --install
-git secrets --register-aws
-
-# Add custom patterns
-git secrets --add 'PRIVATE KEY'
-git secrets --add 'api[_-]?key'
-```
-
-**Using Pipeline-Based Scanning:**
-```yaml
-# bitbucket-pipelines.yml
-pipelines:
-  default:
-    - step:
-        name: Secret Scan
-        script:
-          - pip install trufflehog
-          - trufflehog --regex --entropy=False .
-```
+{% include pack-code.html vendor="bitbucket" section="4.3" %}
 
 ---
 
@@ -676,6 +636,7 @@ Conduct regular security reviews of workspace configuration and access.
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
 | 2025-02-05 | 0.1.0 | draft | Initial guide with workspace security, branch protection, and pipeline security | Claude Code (Opus 4.5) |
+| 2026-02-19 | 0.1.1 | draft | Extract inline code blocks to Code Pack files (sections 4.2, 4.3) | Claude Code (Opus 4.6) |
 
 ---
 

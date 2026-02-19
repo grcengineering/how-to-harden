@@ -1,0 +1,40 @@
+# HTH CircleCI Control 3.02: Implement Pipeline Security Scanning
+# Profile: L1 | NIST: RA-5
+# https://howtoharden.com/guides/circleci/#32-implement-pipeline-security-scanning
+#
+# Deploy: Add to .circleci/config.yml
+
+# HTH Guide Excerpt: begin cli-pipeline-security-scanning
+# .circleci/config.yml
+jobs:
+  security_scan:
+    docker:
+      - image: cimg/base:2024.01
+    steps:
+      - checkout
+      - run:
+          name: Dependency vulnerability scan
+          command: |
+            # Install and run dependency scanner
+            npm audit --audit-level=high
+            # Or use Snyk, OWASP Dependency-Check, etc.
+      - run:
+          name: Secret detection
+          command: |
+            # Detect secrets in code
+            trufflehog filesystem . --only-verified
+      - run:
+          name: SAST scan
+          command: |
+            # Static analysis
+            semgrep --config=auto .
+
+workflows:
+  security:
+    jobs:
+      - security_scan:
+          # Run on all branches
+          filters:
+            branches:
+              ignore: []
+# HTH Guide Excerpt: end cli-pipeline-security-scanning

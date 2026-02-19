@@ -114,61 +114,6 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 
 {% include pack-code.html vendor="microsoft-365" section="1.1" %}
 
-**Option 1: Microsoft Graph PowerShell**
-```powershell
-# Install Microsoft Graph PowerShell module
-Install-Module Microsoft.Graph -Scope CurrentUser
-
-# Connect with required permissions
-Connect-MgGraph -Scopes "Policy.ReadWrite.ConditionalAccess", "Application.Read.All"
-
-# Create Conditional Access policy requiring MFA
-$params = @{
-    displayName = "Require MFA for all users"
-    state = "enabled"
-    conditions = @{
-        users = @{
-            includeUsers = @("All")
-            excludeUsers = @("BREAK_GLASS_ACCOUNT_ID")
-        }
-        applications = @{
-            includeApplications = @("All")
-        }
-    }
-    grantControls = @{
-        operator = "OR"
-        builtInControls = @("mfa")
-    }
-}
-
-New-MgIdentityConditionalAccessPolicy -BodyParameter $params
-```
-
-**Option 2: Azure CLI**
-```bash
-# Create Conditional Access policy via Graph API
-az rest --method POST \
-  --uri "https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies" \
-  --headers "Content-Type=application/json" \
-  --body '{
-    "displayName": "Require MFA for all users",
-    "state": "enabled",
-    "conditions": {
-      "users": {
-        "includeUsers": ["All"],
-        "excludeUsers": ["BREAK_GLASS_ACCOUNT_ID"]
-      },
-      "applications": {
-        "includeApplications": ["All"]
-      }
-    },
-    "grantControls": {
-      "operator": "OR",
-      "builtInControls": ["mfa"]
-    }
-  }'
-```
-
 #### Validation & Testing
 **How to verify the control is working:**
 1. [ ] Sign in as a test user and verify MFA prompt appears
@@ -278,41 +223,6 @@ Block legacy authentication protocols (POP3, IMAP, SMTP AUTH, Basic Auth) that c
 
 {% include pack-code.html vendor="microsoft-365" section="1.2" %}
 
-**Option 1: PowerShell**
-```powershell
-# Connect to Exchange Online
-Connect-ExchangeOnline
-
-# Disable SMTP AUTH for all mailboxes
-Get-Mailbox -ResultSize Unlimited | Set-CASMailbox -SmtpClientAuthenticationDisabled $true
-
-# Verify
-Get-CASMailbox -ResultSize Unlimited | Select-Object DisplayName, SmtpClientAuthenticationDisabled
-```
-
-**Option 2: Conditional Access Policy via Graph**
-```powershell
-$params = @{
-    displayName = "Block legacy authentication"
-    state = "enabled"
-    conditions = @{
-        users = @{
-            includeUsers = @("All")
-        }
-        applications = @{
-            includeApplications = @("All")
-        }
-        clientAppTypes = @("exchangeActiveSync", "other")
-    }
-    grantControls = @{
-        operator = "OR"
-        builtInControls = @("block")
-    }
-}
-
-New-MgIdentityConditionalAccessPolicy -BodyParameter $params
-```
-
 #### Validation & Testing
 1. [ ] Attempt POP3/IMAP connection - should fail
 2. [ ] Review sign-in logs for blocked legacy auth attempts
@@ -383,33 +293,6 @@ Enable just-in-time privileged access using Microsoft Entra Privileged Identity 
 #### Code Implementation
 
 {% include pack-code.html vendor="microsoft-365" section="1.3" %}
-
-**Option 1: Microsoft Graph PowerShell**
-```powershell
-# Connect with PIM permissions
-Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory"
-
-# Get Global Administrator role
-$role = Get-MgRoleManagementDirectoryRoleDefinition -Filter "displayName eq 'Global Administrator'"
-
-# Create eligible assignment (replace user ID)
-$params = @{
-    action = "adminAssign"
-    justification = "Initial PIM setup"
-    roleDefinitionId = $role.Id
-    directoryScopeId = "/"
-    principalId = "USER_OBJECT_ID"
-    scheduleInfo = @{
-        startDateTime = (Get-Date).ToUniversalTime().ToString("o")
-        expiration = @{
-            type = "afterDuration"
-            duration = "P365D"
-        }
-    }
-}
-
-New-MgRoleManagementDirectoryRoleEligibilityScheduleRequest -BodyParameter $params
-```
 
 #### Validation & Testing
 1. [ ] Verify no standing Global Admin assignments (all eligible)
@@ -538,23 +421,6 @@ Define trusted IP ranges (corporate networks, VPN egress) and use them in Condit
 
 {% include pack-code.html vendor="microsoft-365" section="2.1" %}
 
-```powershell
-# Create named location via Graph API
-$params = @{
-    "@odata.type" = "#microsoft.graph.ipNamedLocation"
-    displayName = "Corporate Network"
-    isTrusted = $true
-    ipRanges = @(
-        @{
-            "@odata.type" = "#microsoft.graph.iPv4CidrRange"
-            cidrAddress = "203.0.113.0/24"
-        }
-    )
-}
-
-New-MgIdentityConditionalAccessNamedLocation -BodyParameter $params
-```
-
 ---
 
 ## 3. OAuth & Integration Security
@@ -606,17 +472,6 @@ Prevent users from granting OAuth consent to third-party applications. Require a
 #### Code Implementation
 
 {% include pack-code.html vendor="microsoft-365" section="3.1" %}
-
-```powershell
-# Disable user consent via Graph API
-$params = @{
-    defaultUserRolePermissions = @{
-        permissionGrantPoliciesAssigned = @()
-    }
-}
-
-Update-MgPolicyAuthorizationPolicy -BodyParameter $params
-```
 
 #### Validation & Testing
 1. [ ] Attempt to authorize a third-party app as standard user - should be blocked
@@ -674,21 +529,6 @@ Regularly audit enterprise applications for excessive permissions (especially Ma
 #### Code Implementation
 
 {% include pack-code.html vendor="microsoft-365" section="3.2" %}
-
-```powershell
-# List all applications with Mail.ReadWrite permission
-$apps = Get-MgApplication -All
-
-foreach ($app in $apps) {
-    $permissions = Get-MgApplication -ApplicationId $app.Id -Property RequiredResourceAccess
-    $mailPermissions = $permissions.RequiredResourceAccess.ResourceAccess |
-        Where-Object { $_.Id -eq "e2a3a72e-5f79-4c64-b1b1-878b674786c9" } # Mail.ReadWrite GUID
-
-    if ($mailPermissions) {
-        Write-Host "App: $($app.DisplayName) has Mail.ReadWrite permission"
-    }
-}
-```
 
 ---
 
@@ -768,16 +608,6 @@ Restrict external sharing in SharePoint and OneDrive to prevent unauthorized dat
 
 {% include pack-code.html vendor="microsoft-365" section="4.2" %}
 
-```powershell
-# Connect to SharePoint Online
-Connect-SPOService -Url "https://yourdomain-admin.sharepoint.com"
-
-# Set tenant-level sharing restrictions
-Set-SPOTenant -SharingCapability ExistingExternalUserSharingOnly
-Set-SPOTenant -RequireAcceptingAccountMatchInvitedAccount $true
-Set-SPOTenant -PreventExternalUsersFromResharing $true
-```
-
 ---
 
 ## 5. Monitoring & Detection
@@ -819,20 +649,6 @@ Enable and configure unified audit logging to capture user and admin activities 
 #### Code Implementation
 
 {% include pack-code.html vendor="microsoft-365" section="5.1" %}
-
-```powershell
-# Connect to Exchange Online
-Connect-ExchangeOnline
-
-# Verify audit logging is enabled
-Get-AdminAuditLogConfig | Select-Object UnifiedAuditLogIngestionEnabled
-
-# Enable if not already enabled
-Set-AdminAuditLogConfig -UnifiedAuditLogIngestionEnabled $true
-
-# Enable mailbox auditing for all mailboxes
-Get-Mailbox -ResultSize Unlimited | Set-Mailbox -AuditEnabled $true
-```
 
 #### Key Events to Monitor
 

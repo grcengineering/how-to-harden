@@ -1,0 +1,17 @@
+# HTH CircleCI Control 4.01: Self-Hosted Runner Hardening — Runner Isolation
+# Profile: L2 | NIST: SC-7
+# https://howtoharden.com/guides/circleci/#41-self-hosted-runner-hardening
+#
+# Deploy: Add to .circleci/config.yml
+
+# HTH Guide Excerpt: begin cli-runner-isolation
+# Runner configuration
+resource_class: company/secure-runner
+
+# Use dedicated runners for production deployments
+jobs:
+  deploy_production:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: company/production-runner
+# HTH Guide Excerpt: end cli-runner-isolation

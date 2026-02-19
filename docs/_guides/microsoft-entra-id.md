@@ -110,52 +110,6 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 
 {% include pack-code.html vendor="microsoft-entra-id" section="1.1" %}
 
-**Option 1: Microsoft Graph PowerShell**
-```powershell
-# Connect to Microsoft Graph
-Connect-MgGraph -Scopes "Policy.ReadWrite.AuthenticationMethod"
-
-# Get current authentication method policy
-$policy = Get-MgPolicyAuthenticationMethodPolicy
-
-# Enable FIDO2
-$fido2Config = @{
-    id = "fido2"
-    state = "enabled"
-    includeTargets = @(
-        @{
-            targetType = "group"
-            id = "all_users"
-        }
-    )
-}
-
-Update-MgPolicyAuthenticationMethodPolicyAuthenticationMethodConfiguration `
-    -AuthenticationMethodConfigurationId "fido2" `
-    -BodyParameter $fido2Config
-
-# Configure Microsoft Authenticator with number matching
-$authAppConfig = @{
-    id = "microsoftAuthenticator"
-    state = "enabled"
-    featureSettings = @{
-        displayAppInformationRequiredState = @{
-            state = "enabled"
-        }
-        displayLocationInformationRequiredState = @{
-            state = "enabled"
-        }
-        numberMatchingRequiredState = @{
-            state = "enabled"
-        }
-    }
-}
-
-Update-MgPolicyAuthenticationMethodPolicyAuthenticationMethodConfiguration `
-    -AuthenticationMethodConfigurationId "microsoftAuthenticator" `
-    -BodyParameter $authAppConfig
-```
-
 #### Validation & Testing
 **How to verify the control is working:**
 1. [ ] Sign in as test user - MFA prompt should appear
@@ -242,39 +196,6 @@ Create highly protected emergency access accounts excluded from Conditional Acce
 
 {% include pack-code.html vendor="microsoft-entra-id" section="1.2" %}
 
-**Option 1: PowerShell**
-```powershell
-# Create emergency access account
-$passwordProfile = @{
-    password = [System.Web.Security.Membership]::GeneratePassword(64, 10)
-    forceChangePasswordNextSignIn = $false
-}
-
-$params = @{
-    accountEnabled = $true
-    displayName = "Emergency Admin 01"
-    mailNickname = "emergency-admin-01"
-    userPrincipalName = "emergency-admin-01@yourdomain.onmicrosoft.com"
-    passwordProfile = $passwordProfile
-}
-
-$user = New-MgUser -BodyParameter $params
-
-# Assign Global Administrator role
-$roleId = (Get-MgRoleManagementDirectoryRoleDefinition -Filter "displayName eq 'Global Administrator'").Id
-
-New-MgRoleManagementDirectoryRoleAssignment -BodyParameter @{
-    "@odata.type" = "#microsoft.graph.unifiedRoleAssignment"
-    roleDefinitionId = $roleId
-    principalId = $user.Id
-    directoryScopeId = "/"
-}
-
-# Output password (store securely)
-Write-Host "Password: $($passwordProfile.password)" -ForegroundColor Yellow
-Write-Host "STORE THIS SECURELY AND DELETE FROM TERMINAL HISTORY"
-```
-
 #### Validation & Testing
 1. [ ] Test sign-in with emergency account (then immediately change password)
 2. [ ] Verify bypasses all Conditional Access policies
@@ -325,30 +246,6 @@ Block legacy authentication protocols (Basic Auth, POP, IMAP, SMTP AUTH) that ca
 #### Code Implementation
 
 {% include pack-code.html vendor="microsoft-entra-id" section="2.1" %}
-
-```powershell
-# Create policy to block legacy auth
-$params = @{
-    displayName = "Block legacy authentication"
-    state = "enabled"
-    conditions = @{
-        users = @{
-            includeUsers = @("All")
-            excludeUsers = @("EMERGENCY_ACCOUNT_1_ID", "EMERGENCY_ACCOUNT_2_ID")
-        }
-        applications = @{
-            includeApplications = @("All")
-        }
-        clientAppTypes = @("exchangeActiveSync", "other")
-    }
-    grantControls = @{
-        operator = "OR"
-        builtInControls = @("block")
-    }
-}
-
-New-MgIdentityConditionalAccessPolicy -BodyParameter $params
-```
 
 ---
 
@@ -525,36 +422,6 @@ Implement Privileged Identity Management (PIM) to eliminate standing admin privi
 
 {% include pack-code.html vendor="microsoft-entra-id" section="3.1" %}
 
-**Option 1: Microsoft Graph PowerShell**
-```powershell
-# Connect with PIM permissions
-Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory", "RoleEligibilitySchedule.ReadWrite.Directory"
-
-# Get role definitions
-$globalAdminRole = Get-MgRoleManagementDirectoryRoleDefinition -Filter "displayName eq 'Global Administrator'"
-
-# Create eligible assignment (convert permanent to eligible)
-$params = @{
-    action = "adminAssign"
-    justification = "Converting to PIM eligible assignment"
-    roleDefinitionId = $globalAdminRole.Id
-    directoryScopeId = "/"
-    principalId = "USER_OBJECT_ID"
-    scheduleInfo = @{
-        startDateTime = (Get-Date).ToUniversalTime().ToString("o")
-        expiration = @{
-            type = "afterDuration"
-            duration = "P365D"  # 1 year eligibility
-        }
-    }
-}
-
-New-MgRoleManagementDirectoryRoleEligibilityScheduleRequest -BodyParameter $params
-
-# Configure role settings (requires beta endpoint)
-# Use Microsoft Entra admin center for full settings configuration
-```
-
 #### Validation & Testing
 **How to verify the control is working:**
 1. [ ] Verify no permanent Global Admin assignments (except emergency accounts)
@@ -644,19 +511,6 @@ Prevent users from granting OAuth consent to third-party applications. Require a
 #### Code Implementation
 
 {% include pack-code.html vendor="microsoft-entra-id" section="4.1" %}
-
-```powershell
-# Disable user consent
-$params = @{
-    defaultUserRolePermissions = @{
-        permissionGrantPoliciesAssigned = @()
-    }
-}
-
-Update-MgPolicyAuthorizationPolicy -BodyParameter $params
-
-# Note: Configure admin consent workflow through admin center
-```
 
 ---
 

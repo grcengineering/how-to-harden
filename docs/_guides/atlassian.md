@@ -6,9 +6,9 @@ slug: "atlassian"
 tier: "2"
 category: "Productivity"
 description: "Jira/Confluence security for organization policies, app controls, and data residency"
-version: "0.1.0"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-02-19"
 ---
 
 
@@ -90,26 +90,9 @@ Require SAML SSO with MFA for all Atlassian Cloud access, eliminating local pass
    - **Enforcement:** Required
    - **Grace period:** None (L2)
 
-#### Code Implementation (REST API)
+#### Code Implementation
 
-```bash
-# Atlassian Admin API - Get authentication policies
-curl -X GET "https://api.atlassian.com/admin/v1/orgs/${ORG_ID}/policies/authentication" \
-  -H "Authorization: Bearer ${API_TOKEN}" \
-  -H "Accept: application/json"
-
-# Update authentication policy
-curl -X PUT "https://api.atlassian.com/admin/v1/orgs/${ORG_ID}/policies/authentication/${POLICY_ID}" \
-  -H "Authorization: Bearer ${API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "authentication-policy",
-    "attributes": {
-      "ssoEnforced": true,
-      "passwordAuthEnabled": false
-    }
-  }'
-```
+{% include pack-code.html vendor="atlassian" section="1.1" %}
 
 #### Compliance Mappings
 
@@ -239,13 +222,9 @@ Before approving any app:
 #### Description
 Monitor Marketplace app API calls and data access.
 
-#### Implementation
+#### Code Implementation
 
-```bash
-# Get app audit events
-curl -X GET "https://api.atlassian.com/admin/v1/orgs/${ORG_ID}/audit-events?filter=app" \
-  -H "Authorization: Bearer ${API_TOKEN}"
-```
+{% include pack-code.html vendor="atlassian" section="2.2" %}
 
 ---
 
@@ -299,23 +278,7 @@ Secure webhook configurations to prevent data leakage.
 - Implement webhook signature validation
 - Limit events to necessary minimum
 
-```python
-# Webhook signature validation
-import hmac
-import hashlib
-
-def validate_webhook(request, secret):
-    signature = request.headers.get('X-Hub-Signature')
-    payload = request.body
-
-    expected = 'sha256=' + hmac.new(
-        secret.encode(),
-        payload,
-        hashlib.sha256
-    ).hexdigest()
-
-    return hmac.compare_digest(signature, expected)
-```
+{% include pack-code.html vendor="atlassian" section="3.2" %}
 
 ---
 
@@ -562,3 +525,4 @@ Recent critical vulnerabilities require immediate attention.
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
 | 2025-12-14 | 0.1.0 | draft | Initial Atlassian hardening guide | Claude Code (Opus 4.5) |
+| 2026-02-19 | 0.2.0 | draft | Extract inline code to Code Packs (api, sdk) | Claude Code (Opus 4.6) |

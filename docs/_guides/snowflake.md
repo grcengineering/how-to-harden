@@ -6,9 +6,9 @@ slug: "snowflake"
 tier: "1"
 category: "Data"
 description: "Data warehouse security including network policies, MFA enforcement, and access controls"
-version: "0.1.0"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-02-19"
 ---
 
 
@@ -178,42 +178,13 @@ Replace password authentication for service accounts with RSA key-pair authentic
 
 #### ClickOps Implementation
 
-**Step 1: Generate RSA Key Pair**
-```bash
-# Generate private key (keep secure!)
-openssl genrsa -out rsa_key.pem 2048
+**Step 1: Generate RSA Key Pair** using OpenSSL to create a 2048-bit private key and extract the public key in Snowflake format.
 
-# Generate public key
-openssl rsa -in rsa_key.pem -pubout -out rsa_key.pub
+**Step 2: Configure User with Key-Pair** by assigning the public key to the service account and removing its password.
 
-# Extract public key in Snowflake format
-grep -v "PUBLIC KEY" rsa_key.pub | tr -d '\n'
-```
+**Step 3: Update Application Connection** to use the private key file instead of a password.
 
-**Step 2: Configure User with Key-Pair**
-```sql
--- Remove password from service account
-ALTER USER svc_etl_pipeline
-    SET RSA_PUBLIC_KEY = 'MIIBIjANBgkqhki...'
-    UNSET PASSWORD;
-
--- Verify
-DESC USER svc_etl_pipeline;
-```
-
-**Step 3: Update Application Connection**
-```python
-# Python example using key-pair
-import snowflake.connector
-
-conn = snowflake.connector.connect(
-    account='your_account',
-    user='svc_etl_pipeline',
-    private_key_file='/path/to/rsa_key.pem',
-    warehouse='ETL_WH',
-    database='PRODUCTION'
-)
-```
+{% include pack-code.html vendor="snowflake" section="1.2" %}
 
 ---
 
@@ -376,27 +347,7 @@ Configure External OAuth using your identity provider (Okta, Azure AD) for centr
 
 #### Code Implementation
 
-```sql
--- Create External OAuth integration with Okta
-CREATE OR REPLACE SECURITY INTEGRATION okta_oauth
-    TYPE = EXTERNAL_OAUTH
-    ENABLED = TRUE
-    EXTERNAL_OAUTH_TYPE = OKTA
-    EXTERNAL_OAUTH_ISSUER = 'https://your-org.okta.com/oauth2/default'
-    EXTERNAL_OAUTH_JWS_KEYS_URL = 'https://your-org.okta.com/oauth2/default/v1/keys'
-    EXTERNAL_OAUTH_AUDIENCE_LIST = ('your-snowflake-account')
-    EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM = 'sub'
-    EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'LOGIN_NAME';
-
--- For Azure AD
-CREATE OR REPLACE SECURITY INTEGRATION azure_ad_oauth
-    TYPE = EXTERNAL_OAUTH
-    ENABLED = TRUE
-    EXTERNAL_OAUTH_TYPE = AZURE
-    EXTERNAL_OAUTH_ISSUER = 'https://login.microsoftonline.com/{tenant-id}/v2.0'
-    EXTERNAL_OAUTH_JWS_KEYS_URL = 'https://login.microsoftonline.com/{tenant-id}/discovery/v2.0/keys'
-    EXTERNAL_OAUTH_AUDIENCE_LIST = ('your-snowflake-account');
-```
+{% include pack-code.html vendor="snowflake" section="3.2" %}
 
 ---
 
@@ -435,16 +386,7 @@ Apply dynamic data masking to sensitive columns (PII, financial data) to restric
 #### Description
 Implement row-level security to restrict data visibility based on user attributes (department, region, customer assignment).
 
-```sql
--- Create row access policy
-CREATE OR REPLACE ROW ACCESS POLICY region_access AS (region_col VARCHAR)
-RETURNS BOOLEAN ->
-    CURRENT_ROLE() IN ('DATA_ADMIN')
-    OR region_col = CURRENT_SESSION()::JSON:region;
-
--- Apply to table
-ALTER TABLE sales ADD ROW ACCESS POLICY region_access ON (region);
-```
+{% include pack-code.html vendor="snowflake" section="4.2" %}
 
 ---
 
@@ -500,22 +442,7 @@ Key anomaly detection queries are provided in the code pack below. These cover:
 #### Description
 Export Snowflake audit logs to SIEM (Splunk, Datadog, Sumo Logic) for real-time alerting and correlation.
 
-```sql
--- Create task to export logs to S3/Azure Blob for SIEM ingestion
-CREATE OR REPLACE TASK export_login_history
-    WAREHOUSE = security_wh
-    SCHEDULE = '60 MINUTE'
-AS
-    COPY INTO @security_logs/login_history/
-    FROM (
-        SELECT *
-        FROM SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY
-        WHERE event_timestamp > DATEADD(minute, -60, CURRENT_TIMESTAMP())
-    )
-    FILE_FORMAT = (TYPE = JSON);
-
-ALTER TASK export_login_history RESUME;
-```
+{% include pack-code.html vendor="snowflake" section="5.2" %}
 
 ---
 
@@ -540,23 +467,7 @@ ALTER TASK export_login_history RESUME;
 - ✅ Limit to specific databases/schemas
 - ✅ Enable query tagging for monitoring
 
-```sql
--- Create restricted role for Tableau
-CREATE ROLE tableau_reader;
-GRANT USAGE ON WAREHOUSE bi_warehouse TO ROLE tableau_reader;
-GRANT USAGE ON DATABASE analytics TO ROLE tableau_reader;
-GRANT USAGE ON ALL SCHEMAS IN DATABASE analytics TO ROLE tableau_reader;
-GRANT SELECT ON ALL TABLES IN SCHEMA analytics.dashboards TO ROLE tableau_reader;
-
--- Create service account
-CREATE USER svc_tableau
-    DEFAULT_ROLE = tableau_reader
-    DEFAULT_WAREHOUSE = bi_warehouse
-    RSA_PUBLIC_KEY = 'MIIBIjAN...';
-
--- Apply network policy
-ALTER USER svc_tableau SET NETWORK_POLICY = tableau_only;
-```
+{% include pack-code.html vendor="snowflake" section="6.2" %}
 
 ---
 
@@ -626,4 +537,5 @@ ALTER USER svc_tableau SET NETWORK_POLICY = tableau_only;
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-02-19 | 0.2.0 | draft | Migrate inline code to Code Packs (sections 1.2, 3.2, 4.2, 5.2, 6.2) | Claude Code (Opus 4.6) |
 | 2025-12-14 | 0.1.0 | draft | Initial Snowflake hardening guide | Claude Code (Opus 4.5) |

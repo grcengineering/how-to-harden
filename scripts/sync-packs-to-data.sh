@@ -6,9 +6,11 @@
 # Output: docs/_data/packs/{vendor}.yml for each vendor with pack code
 #
 # Marker syntax in pack files:
-#   # HTH Guide Excerpt: begin <name>
+#   # HTH Guide Excerpt: begin <name>      (bash, python, HCL, YAML)
+#   -- HTH Guide Excerpt: begin <name>     (SQL)
 #   ... extractable code ...
 #   # HTH Guide Excerpt: end <name>
+#   -- HTH Guide Excerpt: end <name>
 
 set -euo pipefail
 
@@ -38,14 +40,15 @@ normalize_section() {
 
 # Extract content between HTH Guide Excerpt markers
 # Returns extracted content via stdout, with consistent minimum 2-space indent
-# to prevent YAML block scalar indentation errors
+# to prevent YAML block scalar indentation errors.
+# Supports both # (bash/python/HCL/YAML) and -- (SQL) comment styles.
 extract_region() {
   local file="$1"
   local region_name="$2"
   local raw
-  raw=$(sed -n "/^[[:space:]]*# HTH Guide Excerpt: begin ${region_name}\$/,/^[[:space:]]*# HTH Guide Excerpt: end ${region_name}\$/{
-    /^[[:space:]]*# HTH Guide Excerpt: begin ${region_name}\$/d
-    /^[[:space:]]*# HTH Guide Excerpt: end ${region_name}\$/d
+  raw=$(sed -n "/^[[:space:]]*[#-][#-]* HTH Guide Excerpt: begin ${region_name}\$/,/^[[:space:]]*[#-][#-]* HTH Guide Excerpt: end ${region_name}\$/{
+    /^[[:space:]]*[#-][#-]* HTH Guide Excerpt: begin ${region_name}\$/d
+    /^[[:space:]]*[#-][#-]* HTH Guide Excerpt: end ${region_name}\$/d
     p
   }" "${file}")
   # Ensure all non-empty lines have at least 2-space indent so YAML block
@@ -55,9 +58,10 @@ extract_region() {
 }
 
 # List all region names in a file
+# Supports both # and -- comment markers
 list_regions() {
   local file="$1"
-  grep -oP '^\s*# HTH Guide Excerpt: begin \K.*' "${file}" 2>/dev/null || true
+  grep -oP '^\s*[#-][#-]* HTH Guide Excerpt: begin \K.*' "${file}" 2>/dev/null || true
 }
 
 # Escape content for YAML literal block scalar
@@ -76,15 +80,17 @@ yaml_content() {
 detect_lang() {
   local file="$1"
   case "${file}" in
-    *.tf)   echo "hcl" ;;
-    *.sh)   echo "bash" ;;
-    *.yml)  echo "yaml" ;;
-    *.py)   echo "python" ;;
-    *.ps1)  echo "powershell" ;;
-    *.sql)  echo "sql" ;;
-    *.js)   echo "javascript" ;;
-    *.go)   echo "go" ;;
-    *)      echo "plaintext" ;;
+    *.tf)    echo "hcl" ;;
+    *.sh)    echo "bash" ;;
+    *.yml)   echo "yaml" ;;
+    *.py)    echo "python" ;;
+    *.ps1)   echo "powershell" ;;
+    *.sql)   echo "sql" ;;
+    *.js)    echo "javascript" ;;
+    *.go)    echo "go" ;;
+    *.rb)    echo "ruby" ;;
+    *.toml)  echo "toml" ;;
+    *)       echo "plaintext" ;;
   esac
 }
 
@@ -374,7 +380,7 @@ for vendor_dir in "${PACKS_DIR}"/*/; do
   # Only process vendors that have code files (not just control YAMLs)
   if ls "${vendor_dir}"/terraform/hth-*.tf 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/api/hth-*.sh 2>/dev/null | head -1 > /dev/null 2>&1 || \
-     ls "${vendor_dir}"/cli/hth-*.sh 2>/dev/null | head -1 > /dev/null 2>&1 || \
+     ls "${vendor_dir}"/cli/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/sdk/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/db/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/siem/sigma/hth-*.yml 2>/dev/null | head -1 > /dev/null 2>&1; then

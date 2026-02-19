@@ -1,0 +1,46 @@
+# HTH GitHub Control 3.05 Extension: Advanced CodeQL Workflow
+# Profile: L2 | NIST: SA-11, SI-7
+# https://howtoharden.com/guides/github/#22-enable-security-features
+#
+# Deploy: Copy to .github/workflows/codeql-analysis.yml
+
+# HTH Guide Excerpt: begin cli-codeql-advanced-workflow
+name: "CodeQL"
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 0 * * 1'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'python' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        queries: security-extended
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+# HTH Guide Excerpt: end cli-codeql-advanced-workflow

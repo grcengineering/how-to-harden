@@ -1,0 +1,18 @@
+# HTH CircleCI Control 2.01: Implement Secure Contexts
+# Profile: L1 | NIST: SC-28, AC-3
+# https://howtoharden.com/guides/circleci/#21-implement-secure-contexts
+#
+# Deploy: Add to .circleci/config.yml
+
+# HTH Guide Excerpt: begin cli-restrict-context-branches
+# .circleci/config.yml
+workflows:
+  deploy:
+    jobs:
+      - deploy_production:
+          context:
+            - production-secrets
+          filters:
+            branches:
+              only: main  # Only main branch can access production context
+# HTH Guide Excerpt: end cli-restrict-context-branches

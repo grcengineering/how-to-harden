@@ -1,0 +1,12 @@
+# HTH GitHub Control 3.11: Dependabot Configuration for GitHub Actions
+# Profile: L2 | NIST: SA-12
+# Deploy: Copy to .github/dependabot.yml in your repository
+
+# HTH Guide Excerpt: begin cli-dependabot-actions
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+# HTH Guide Excerpt: end cli-dependabot-actions

@@ -1,0 +1,18 @@
+# =============================================================================
+# HTH GitLab Control 5.1: HashiCorp Vault CI/CD Integration
+# Profile: L2 | NIST: SC-28
+# =============================================================================
+
+# HTH Guide Excerpt: begin cli-vault-integration
+# .gitlab-ci.yml
+deploy:
+  stage: deploy
+  secrets:
+    DATABASE_PASSWORD:
+      vault: production/db/password@secret
+    API_KEY:
+      vault: production/api/key@secret
+  script:
+    - echo "Using secrets from Vault"
+    - ./deploy.sh
+# HTH Guide Excerpt: end cli-vault-integration

@@ -83,31 +83,9 @@ Require SAML/OIDC SSO with MFA for all GitLab authentication, eliminating passwo
 2. Disable: **Password authentication enabled for web interface**
 3. Disable: **Password authentication enabled for Git over HTTP(S)**
 
-#### Code Implementation (Self-Managed)
+#### Code Implementation
 
-```ruby
-# /etc/gitlab/gitlab.rb
-
-# SAML Configuration
-gitlab_rails['omniauth_enabled'] = true
-gitlab_rails['omniauth_allow_single_sign_on'] = ['saml']
-gitlab_rails['omniauth_block_auto_created_users'] = false
-gitlab_rails['omniauth_providers'] = [
-  {
-    name: 'saml',
-    args: {
-      assertion_consumer_service_url: 'https://gitlab.company.com/users/auth/saml/callback',
-      idp_cert_fingerprint: 'XX:XX:XX...',
-      idp_sso_target_url: 'https://idp.company.com/saml/sso',
-      issuer: 'https://gitlab.company.com',
-      name_identifier_format: 'urn:oasis:names:tc:SAML:2.0:nameid-format:persistent'
-    }
-  }
-]
-
-# Disable password authentication
-gitlab_rails['gitlab_signin_enabled'] = false
-```
+{% include pack-code.html vendor="gitlab" section="1.1" %}
 
 #### Compliance Mappings
 
@@ -352,38 +330,7 @@ Runner Architecture:
     └── Network access to production, limited users
 ```
 
-**Step 2: Register Isolated Runner**
-```bash
-# Register runner with specific tags
-gitlab-runner register \
-  --url "https://gitlab.company.com" \
-  --registration-token "${RUNNER_TOKEN}" \
-  --executor "docker" \
-  --docker-image "alpine:3.18" \
-  --tag-list "isolated,security-sensitive" \
-  --run-untagged="false" \
-  --locked="true"
-```
-
-**Step 3: Configure Runner Security**
-```toml
-# /etc/gitlab-runner/config.toml
-
-[[runners]]
-  name = "secure-runner"
-  executor = "docker"
-  [runners.docker]
-    image = "alpine:3.18"
-    privileged = false  # Never enable unless absolutely required
-    disable_entrypoint_overwrite = true
-    volumes = ["/cache"]
-    # Limit network access
-    network_mode = "bridge"
-    # Read-only root filesystem
-    read_only = true
-    # Drop capabilities
-    cap_drop = ["ALL"]
-```
+{% include pack-code.html vendor="gitlab" section="3.1" %}
 
 ---
 
@@ -402,22 +349,7 @@ Implement regular runner token rotation to limit exposure from compromised token
 2. Click **Reset registration token**
 3. Update runner configuration with new token
 
-**Step 2: Automate Rotation**
-```bash
-#!/bin/bash
-# runner-token-rotation.sh
-
-# Reset project runner token
-curl -X POST -H "PRIVATE-TOKEN: ${ADMIN_TOKEN}" \
-  "https://gitlab.company.com/api/v4/projects/${PROJECT_ID}/runners/reset_registration_token"
-
-# Re-register runner
-gitlab-runner unregister --all-runners
-gitlab-runner register --non-interactive \
-  --url "https://gitlab.company.com" \
-  --registration-token "${NEW_TOKEN}" \
-  --executor "docker"
-```
+{% include pack-code.html vendor="gitlab" section="3.2" %}
 
 ---
 
@@ -495,19 +427,7 @@ Integrate with external secrets managers instead of storing secrets in GitLab.
 
 #### HashiCorp Vault Integration
 
-```yaml
-# .gitlab-ci.yml
-deploy:
-  stage: deploy
-  secrets:
-    DATABASE_PASSWORD:
-      vault: production/db/password@secret
-    API_KEY:
-      vault: production/api/key@secret
-  script:
-    - echo "Using secrets from Vault"
-    - ./deploy.sh
-```
+{% include pack-code.html vendor="gitlab" section="5.1" %}
 
 **Step 1: Configure Vault Integration**
 1. Navigate to: **Project → Settings → CI/CD → Secure Files**
@@ -627,4 +547,5 @@ WHERE entity_type = 'Ci::Variable'
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-02-19 | 0.1.1 | draft | Migrate inline code to CLI Code Packs (1.1, 3.1, 3.2, 5.1) | Claude Code (Opus 4.6) |
 | 2025-12-14 | 0.1.0 | draft | Initial GitLab hardening guide | Claude Code (Opus 4.5) |

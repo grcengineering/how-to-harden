@@ -1,0 +1,23 @@
+# HTH CircleCI Control 3.03: Secure Docker Image Usage
+# Profile: L1 | NIST: CM-7
+# https://howtoharden.com/guides/circleci/#33-secure-docker-image-usage
+#
+# Deploy: Add to .circleci/config.yml
+
+# HTH Guide Excerpt: begin cli-secure-docker-images
+# .circleci/config.yml
+jobs:
+  build:
+    docker:
+      # Good: Use CircleCI convenience images with specific version
+      - image: cimg/node:20.10.0
+      # Better: Pin to digest for immutability
+      - image: cimg/node@sha256:abc123...
+
+      # Bad: Never use :latest
+      # - image: node:latest
+
+    steps:
+      - checkout
+      - run: npm ci  # Use ci instead of install for reproducibility
+# HTH Guide Excerpt: end cli-secure-docker-images

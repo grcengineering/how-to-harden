@@ -8,7 +8,7 @@ category: "Productivity"
 description: "Enterprise security hardening for Slack workspaces, SSO, DLP, and data governance"
 version: "0.1.0"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-02-19"
 ---
 
 ## Overview
@@ -101,53 +101,7 @@ Configure SAML-based SSO to authenticate Slack users through your corporate iden
 
 #### Code Implementation
 
-**Option 1: Slack Admin API (Python)**
-```python
-import requests
-
-# Slack Admin API requires Enterprise Grid
-# Use SCIM API for user provisioning
-
-headers = {
-    'Authorization': f'Bearer {SLACK_ADMIN_TOKEN}',
-    'Content-Type': 'application/json'
-}
-
-# List users via SCIM
-response = requests.get(
-    'https://api.slack.com/scim/v1/Users',
-    headers=headers
-)
-
-users = response.json()
-for user in users.get('Resources', []):
-    print(f"User: {user['userName']}, Active: {user['active']}")
-```
-
-**Option 2: Terraform (Okta Provider)**
-```hcl
-# Configure Slack SAML app in Okta
-resource "okta_app_saml" "slack" {
-  label             = "Slack"
-  preconfigured_app = "slack"
-
-  saml_version = "2.0"
-
-  attribute_statements {
-    name      = "User.Email"
-    type      = "EXPRESSION"
-    values    = ["user.email"]
-  }
-}
-
-resource "okta_app_user_base_schema_property" "slack_user" {
-  app_id      = okta_app_saml.slack.id
-  index       = "userName"
-  title       = "Username"
-  type        = "string"
-  master      = "PROFILE_MASTER"
-}
-```
+{% include pack-code.html vendor="slack" section="1.1" %}
 
 #### Validation & Testing
 **How to verify the control is working:**
@@ -376,31 +330,7 @@ Control which Slack apps and integrations can be installed. Require admin approv
 
 #### Code Implementation
 
-**Option 1: Slack API (Python)**
-```python
-import requests
-
-headers = {
-    'Authorization': f'Bearer {SLACK_ADMIN_TOKEN}',
-    'Content-Type': 'application/json'
-}
-
-# List approved apps
-response = requests.get(
-    'https://slack.com/api/admin.apps.approved.list',
-    headers=headers
-)
-
-approved_apps = response.json()
-for app in approved_apps.get('approved_apps', []):
-    print(f"App: {app['name']}, Scopes: {app.get('scopes', [])}")
-
-# List restricted apps
-response = requests.get(
-    'https://slack.com/api/admin.apps.restricted.list',
-    headers=headers
-)
-```
+{% include pack-code.html vendor="slack" section="3.1" %}
 
 #### Validation & Testing
 1. [ ] Attempt to install unapproved app - verify blocked
@@ -655,34 +585,9 @@ Enable and export Slack audit logs for security monitoring, incident investigati
 
 #### Code Implementation
 
-**Option 1: Slack Audit Logs API (Python)**
-```python
-import requests
+{% include pack-code.html vendor="slack" section="5.1" %}
 
-headers = {
-    'Authorization': f'Bearer {SLACK_AUDIT_TOKEN}',
-    'Content-Type': 'application/json'
-}
-
-# Get audit logs
-params = {
-    'limit': 100,
-    'action': 'user_login',
-    'oldest': 1704067200  # Unix timestamp
-}
-
-response = requests.get(
-    'https://api.slack.com/audit/v1/logs',
-    headers=headers,
-    params=params
-)
-
-logs = response.json()
-for entry in logs.get('entries', []):
-    print(f"Action: {entry['action']}, User: {entry.get('actor', {}).get('user', {}).get('email')}")
-```
-
-**Option 2: SIEM Query Examples (Splunk)**
+**SIEM Query Examples (Splunk)**
 ```spl
 # Failed login attempts
 index=slack sourcetype=slack:audit action="user_login_failed"
@@ -829,6 +734,7 @@ index=slack sourcetype=slack:audit action="app_installed"
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, DLP, retention, and app controls | Claude Code (Opus 4.5) |
+| 2026-02-19 | 0.1.1 | draft | Extract inline code to Code Packs (SDK, Terraform, API) | Claude Code (Opus 4.6) |
 
 ---
 

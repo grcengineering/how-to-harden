@@ -8,7 +8,7 @@ category: "DevOps"
 description: "Microsoft DevOps security for pipelines, service connections, and artifact feeds"
 version: "0.1.0"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-02-19"
 ---
 
 
@@ -157,18 +157,8 @@ Restrict PAT creation and enforce expiration policies.
    - **Restrict global PATs:** Enable
 
 **Step 2: Audit Existing PATs**
-```powershell
-# Azure DevOps REST API - List PATs
-$org = "your-org"
-$pat = $env:AZURE_DEVOPS_PAT
 
-$headers = @{
-    Authorization = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$pat"))
-}
-
-Invoke-RestMethod -Uri "https://vssps.dev.azure.com/$org/_apis/tokens/pats?api-version=7.1-preview.1" `
-    -Headers $headers | ConvertTo-Json
-```
+See the Code Pack below for a PowerShell script that lists all PATs via the Azure DevOps REST API.
 
 #### Code Implementation
 
@@ -280,30 +270,8 @@ Audit service connections with stored credentials and implement rotation schedul
 | Docker Registry | 90 days | [Date] |
 
 **Step 3: Implement Rotation**
-```powershell
-# Rotate service connection credentials
-# 1. Generate new credentials in target service
-# 2. Update service connection
-# 3. Verify pipeline functionality
-# 4. Revoke old credentials
 
-# Azure DevOps API - Update service connection
-$connectionId = "connection-guid"
-$projectId = "project-guid"
-
-$body = @{
-    name = "Updated Connection"
-    authorization = @{
-        parameters = @{
-            serviceprincipalkey = "new-secret-value"
-        }
-    }
-} | ConvertTo-Json
-
-Invoke-RestMethod -Method Put `
-    -Uri "https://dev.azure.com/$org/$projectId/_apis/serviceendpoint/endpoints/$connectionId?api-version=7.1" `
-    -Headers $headers -Body $body -ContentType "application/json"
-```
+See the Code Pack below for a PowerShell script that updates service connection credentials via the Azure DevOps REST API.
 
 #### Code Implementation
 
@@ -472,21 +440,8 @@ Agent Pools:
    - **User permissions:** Administrators only
 
 **Step 3: Self-Hosted Agent Security**
-```powershell
-# Agent installation with security
-# Run as service account (not admin)
-# Limit network access
-# Enable audit logging
 
-.\config.cmd --unattended `
-    --url https://dev.azure.com/your-org `
-    --auth PAT `
-    --token $env:AGENT_PAT `
-    --pool "Production-Agents" `
-    --agent $env:COMPUTERNAME `
-    --runAsService `
-    --windowsLogonAccount "DOMAIN\svc-agent"
-```
+See the Code Pack below for a PowerShell script that installs a self-hosted agent with security best practices (service account, unattended configuration).
 
 #### Code Implementation
 
@@ -653,24 +608,8 @@ Configure and monitor Azure DevOps audit logs.
    - Pipeline modifications
 
 **Step 2: Export to SIEM**
-```powershell
-# Export audit logs via API
-$org = "your-org"
-$continuationToken = ""
 
-do {
-    $response = Invoke-RestMethod `
-        -Uri "https://auditservice.dev.azure.com/$org/_apis/audit/auditlog?api-version=7.1&continuationToken=$continuationToken" `
-        -Headers $headers
-
-    $response.decoratedAuditLogEntries | ForEach-Object {
-        # Send to SIEM
-        Send-ToSiem $_
-    }
-
-    $continuationToken = $response.continuationToken
-} while ($continuationToken)
-```
+See the Code Pack below for a PowerShell script that exports audit logs via the Azure DevOps REST API with pagination support.
 
 #### Detection Queries
 
@@ -771,3 +710,4 @@ AzureDevOpsAuditing
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
 | 2025-12-14 | 0.1.0 | draft | Initial Azure DevOps hardening guide | Claude Code (Opus 4.5) |
+| 2026-02-19 | 0.1.1 | draft | Migrate inline PowerShell to CLI Code Packs (1.3, 2.2, 3.3, 6.1) | Claude Code (Opus 4.6) |

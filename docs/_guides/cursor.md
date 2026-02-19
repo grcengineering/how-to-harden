@@ -241,44 +241,7 @@ For more granular control:
 
 #### Code Implementation
 
-**Option 1: VSCode Settings JSON**
-
-Global settings (`~/Library/Application Support/Cursor/User/settings.json`):
-```json
-{
-  "cursor.privacyMode": true,
-  "cursor.telemetry": false,
-  "cursor.aiProviders.allowOpenAI": false,
-  "cursor.aiProviders.allowAnthropic": false
-}
-```
-
-**Option 2: Workspace Settings (Committed to Repo)**
-
-`.vscode/settings.json`:
-```json
-{
-  "cursor.privacyMode": true,
-  "cursor.chat.enabled": false,
-  "cursor.autocomplete.enabled": false
-}
-```
-
-**Option 3: Policy Enforcement Script**
-
-```bash
-#!/bin/bash
-# scripts/enforce-cursor-privacy.sh
-# Enforce Privacy Mode for all Cursor workspaces
-
-CURSOR_SETTINGS_DIR="$HOME/Library/Application Support/Cursor/User"
-SETTINGS_FILE="$CURSOR_SETTINGS_DIR/settings.json"
-
-# Enable global privacy mode
-jq '.["cursor.privacyMode"] = true' "$SETTINGS_FILE" > tmp.json && mv tmp.json "$SETTINGS_FILE"
-
-echo "✓ Privacy Mode enabled globally for Cursor"
-```
+{% include pack-code.html vendor="cursor" section="2.1" %}
 
 #### Validation & Testing
 1. [ ] With Privacy Mode ON, attempt AI autocomplete - should not trigger
@@ -355,14 +318,8 @@ Restrict which AI providers Cursor can use. Allow only approved providers with a
    - Local Models (if configured)
 
 **Step 2: Restrict to Approved Providers**
-1. Disable unapproved providers:
-   ```json
-   {
-     "cursor.aiProviders.openai.enabled": true,
-     "cursor.aiProviders.anthropic.enabled": false,
-     "cursor.aiProviders.allowCustom": false
-   }
-   ```
+
+{% include pack-code.html vendor="cursor" section="2.2" %}
 
 **Step 3: Verify Provider Restrictions**
 1. Attempt to use disabled provider in chat
@@ -413,37 +370,12 @@ Options:
 - **LM Studio:** Local model management
 - **Custom OpenAI-compatible API:** Self-hosted models
 
-Example with Ollama:
-```bash
-# Install Ollama
-brew install ollama  # macOS
-# or download from https://ollama.ai
-
-# Pull code model
-ollama pull codellama:13b
-
-# Start Ollama server (runs on localhost:11434)
-ollama serve
-```
+{% include pack-code.html vendor="cursor" section="2.3" %}
 
 **Step 2: Configure Cursor to Use Local Model**
 1. Open Cursor → **Settings**
 2. Navigate to: **AI Providers**
-3. Add custom provider:
-   ```json
-   {
-     "cursor.aiProviders.custom": [
-       {
-         "name": "Local Ollama",
-         "endpoint": "http://localhost:11434/v1",
-         "model": "codellama",
-         "type": "openai-compatible"
-       }
-     ],
-     "cursor.aiProviders.openai.enabled": false,
-     "cursor.aiProviders.anthropic.enabled": false
-   }
-   ```
+3. Add custom provider (see Code Pack above for full configuration)
 
 **Step 3: Verify Local Model Usage**
 1. Use Cursor AI chat
@@ -526,34 +458,7 @@ Store Cursor AI provider API keys in environment variables or secure credential 
 
 #### Code Implementation
 
-**Option 1: Environment Variables (Recommended)**
-```bash
-# ~/.zshrc or ~/.bashrc
-export OPENAI_API_KEY="sk-proj-..."
-export ANTHROPIC_API_KEY="sk-ant-..."
-
-# Verify
-echo $OPENAI_API_KEY  # Should print key
-```
-
-**Option 2: Secret Management (Enterprise)**
-```bash
-# Use organization secret manager
-# AWS Secrets Manager
-aws secretsmanager get-secret-value --secret-id cursor/openai-api-key --query SecretString --output text
-
-# HashiCorp Vault
-vault kv get -field=api_key secret/cursor/openai
-```
-
-**Option 3: macOS Keychain**
-```bash
-# Store in Keychain
-security add-generic-password -a "$USER" -s "cursor-openai-key" -w "sk-proj-..."
-
-# Retrieve in shell
-security find-generic-password -a "$USER" -s "cursor-openai-key" -w
-```
+{% include pack-code.html vendor="cursor" section="3.1" %}
 
 #### Validation & Testing
 1. [ ] Search settings files for hardcoded keys - should find none
@@ -624,18 +529,7 @@ For Anthropic:
 
 #### Automation
 
-```bash
-#!/bin/bash
-# scripts/rotate-cursor-api-keys.sh
-
-# Rotate OpenAI API key
-echo "Rotating OpenAI API key..."
-# Generate new key via API (if supported)
-# Update environment
-# Revoke old key
-
-echo "✓ API keys rotated successfully"
-```
+{% include pack-code.html vendor="cursor" section="3.2" %}
 
 ---
 
@@ -708,30 +602,14 @@ Use VSCode/Cursor Workspace Trust to prevent automatic execution of untrusted co
 **Step 1: Enable Workspace Trust**
 1. Open Cursor → **Settings**
 2. Search for: `security.workspace.trust`
-3. Configure:
-   ```json
-   {
-     "security.workspace.trust.enabled": true,
-     "security.workspace.trust.startupPrompt": "always",
-     "security.workspace.trust.emptyWindow": false,
-     "security.workspace.trust.untrustedFiles": "restricted"
-   }
-   ```
+3. Configure (see Code Pack below for full settings)
 
 **Step 2: Configure Trusted Folders**
 1. Add trusted parent directories:
    - Company code: `~/work/company-name/`
    - Personal projects: `~/projects/personal/`
 
-2. In settings:
-   ```json
-   {
-     "security.workspace.trust.trustedFolders": [
-       "~/work/company-name",
-       "~/projects/personal"
-     ]
-   }
-   ```
+{% include pack-code.html vendor="cursor" section="4.1" %}
 
 **Step 3: Verify Trust Prompts**
 1. Clone a new repository outside trusted folders
@@ -798,23 +676,8 @@ Use secret scanning tools to detect and remove secrets from code before allowing
 3. Configure to scan on save
 
 **Step 2: Enable Pre-Commit Hooks**
-```bash
-# Install pre-commit
-pip install pre-commit
 
-# Create .pre-commit-config.yaml
-cat > .pre-commit-config.yaml <<EOF
-repos:
-  - repo: https://github.com/trufflesecurity/trufflehog
-    rev: v3.63.0
-    hooks:
-      - id: trufflehog
-        args: ['--max-depth=1']
-EOF
-
-# Install hook
-pre-commit install
-```
+{% include pack-code.html vendor="cursor" section="4.2" %}
 
 **Step 3: Verify Secret Scanning**
 1. Create test file with fake secret:
@@ -863,16 +726,8 @@ Review all installed VSCode extensions and remove unnecessary or untrusted ones.
    - Extensions requesting network/filesystem permissions unnecessarily
 
 **Step 3: Use Extension Allowlist (Cursor Business)**
-```json
-{
-  "extensions.allowedExtensions": [
-    "github.copilot",
-    "ms-python.python",
-    "esbenp.prettier-vscode"
-  ],
-  "extensions.autoUpdate": false
-}
-```
+
+{% include pack-code.html vendor="cursor" section="5.1" %}
 
 #### Recommended Extensions Security Posture
 
@@ -906,14 +761,9 @@ Disable telemetry data collection and crash reporting to prevent code snippets o
 
 **Step 1: Disable All Telemetry**
 1. Open Cursor → **Settings**
-2. Configure:
-   ```json
-   {
-     "telemetry.telemetryLevel": "off",
-     "cursor.telemetry.enabled": false,
-     "redhat.telemetry.enabled": false
-   }
-   ```
+2. Configure (see Code Pack below for full settings)
+
+{% include pack-code.html vendor="cursor" section="6.1" %}
 
 **Step 2: Verify Telemetry Disabled**
 1. Check network traffic - should not see telemetry endpoints
@@ -961,25 +811,11 @@ Configure logging of Cursor AI usage for audit and compliance purposes.
 #### ClickOps Implementation
 
 **Step 1: Enable Built-in Logging**
-1. Configure Cursor to log AI interactions:
-   ```json
-   {
-     "cursor.logging.enabled": true,
-     "cursor.logging.level": "info",
-     "cursor.logging.outputChannel": true
-   }
-   ```
+1. Configure Cursor to log AI interactions (see Code Pack below for full settings)
 
 **Step 2: Export Logs to SIEM**
-```bash
-# Parse Cursor logs and send to SIEM
-tail -f ~/Library/Logs/Cursor/main.log | grep "ai.request" | \
-  while read line; do
-    curl -X POST https://siem.company.com/cursor-logs \
-      -H "Content-Type: application/json" \
-      -d "$line"
-  done
-```
+
+{% include pack-code.html vendor="cursor" section="7.1" %}
 
 #### Monitoring Queries
 
@@ -1034,16 +870,7 @@ Use Cursor Business edition to enforce organizational policies, manage licenses,
 
 **Step 3: Deploy Managed Settings**
 
-Create organization-wide settings:
-```json
-{
-  "cursor.privacyMode": true,
-  "cursor.aiProviders.openai.enabled": true,
-  "cursor.aiProviders.anthropic.enabled": false,
-  "cursor.telemetry.enabled": false,
-  "security.workspace.trust.enabled": true
-}
-```
+{% include pack-code.html vendor="cursor" section="8.1" %}
 
 Deploy via MDM (Jamf, Intune, etc.) to all developer machines.
 

@@ -99,71 +99,6 @@ Require 2-Step Verification (2SV) for all users with enforcement, not just enrol
 
 #### Code Implementation
 
-**Option 1: Google Admin SDK (Python)**
-```python
-# Enable 2SV enforcement via Admin SDK
-from googleapiclient.discovery import build
-from google.oauth2 import service_account
-
-SCOPES = ['https://www.googleapis.com/auth/admin.directory.user']
-SERVICE_ACCOUNT_FILE = 'service-account.json'
-
-credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-credentials = credentials.with_subject('admin@yourdomain.com')
-
-service = build('admin', 'directory_v1', credentials=credentials)
-
-# Check 2SV enrollment status for users
-results = service.users().list(
-    customer='my_customer',
-    maxResults=100,
-    orderBy='email',
-    projection='full'
-).execute()
-
-users = results.get('users', [])
-for user in users:
-    email = user['primaryEmail']
-    is_enrolled = user.get('isEnrolledIn2Sv', False)
-    is_enforced = user.get('isEnforcedIn2Sv', False)
-    print(f"{email}: Enrolled={is_enrolled}, Enforced={is_enforced}")
-```
-
-**Option 2: GAM (Google Workspace Admin CLI)**
-```bash
-# Install GAM: https://github.com/GAM-team/GAM
-
-# List users not enrolled in 2SV
-gam print users query "isEnrolledIn2Sv=false"
-
-# Generate report of 2SV status
-gam report users parameters accounts:is_2sv_enrolled,accounts:is_2sv_enforced
-
-# Send reminder to users not enrolled
-gam print users query "isEnrolledIn2Sv=false" | \
-  gam csv - gam user ~primaryEmail sendemail subject "MFA Enrollment Required" \
-  message "Please enroll in 2-Step Verification within 7 days."
-```
-
-**Option 3: Terraform (unofficial provider)**
-```hcl
-# Note: Google Workspace Terraform provider has limited support
-# Use GAM or Admin SDK for comprehensive configuration
-
-# Example using google-beta provider for basic settings
-resource "google_organization_policy" "enforce_2sv" {
-  org_id     = var.org_id
-  constraint = "constraints/iam.allowedPolicyMemberDomains"
-
-  list_policy {
-    allow {
-      values = [var.allowed_domain]
-    }
-  }
-}
-```
-
 #### Validation & Testing
 **How to verify the control is working:**
 1. [ ] Sign in as test user - 2SV prompt should appear
@@ -218,7 +153,7 @@ Filter: 2SV method = None, Login result = Success
 | **ISO 27001** | A.9.4.2 | Secure log-on procedures |
 | **CIS Google Workspace** | 1.1 | Ensure 2-Step Verification is enforced |
 
-{% include pack-code.html vendor="google-workspace" section="1.1" lang="terraform" %}
+{% include pack-code.html vendor="google-workspace" section="1.1" %}
 
 ---
 
@@ -276,29 +211,13 @@ Limit Super Admin privileges to 2-4 dedicated accounts, enforce security keys fo
 
 #### Code Implementation
 
-**Option 1: GAM**
-```bash
-# List all Super Admins
-gam print admins role "Super Admin"
-
-# Create delegated admin role
-gam create adminrole "Help Desk Admin" privileges \
-  USERS_RETRIEVE,USERS_UPDATE,USERS_ALIAS
-
-# Assign delegated role
-gam create admin user helpdesk@domain.com role "Help Desk Admin"
-
-# Remove Super Admin from non-essential users
-gam delete admin user bob@domain.com role "Super Admin"
-```
-
 #### Validation & Testing
 1. [ ] Verify only 2-4 Super Admin accounts exist
 2. [ ] Confirm all Super Admins use security keys
 3. [ ] Test delegated admin can perform assigned tasks only
 4. [ ] Verify delegated admin cannot access Super Admin functions
 
-{% include pack-code.html vendor="google-workspace" section="1.2" lang="terraform" %}
+{% include pack-code.html vendor="google-workspace" section="1.2" %}
 
 ---
 
@@ -352,7 +271,7 @@ Implement context-aware access policies that evaluate device, location, and user
 
 #### Code Implementation
 
-{% include pack-code.html vendor="google-workspace" section="1.3" lang="terraform" %}
+{% include pack-code.html vendor="google-workspace" section="1.3" %}
 
 ---
 
@@ -384,7 +303,7 @@ Restrict Admin Console access to specific IP ranges (corporate network, VPN) to 
 
 #### Code Implementation
 
-{% include pack-code.html vendor="google-workspace" section="2.1" lang="terraform" %}
+{% include pack-code.html vendor="google-workspace" section="2.1" %}
 
 ---
 
@@ -448,37 +367,6 @@ Restrict which third-party applications can access Google Workspace data via OAu
 
 #### Code Implementation
 
-**Option 1: GAM**
-```bash
-# List all OAuth tokens in use
-gam all users print tokens
-
-# List apps with specific scopes
-gam all users print tokens scopes "https://mail.google.com/"
-
-# Revoke tokens for specific app
-gam all users deprovision token clientid 1234567890.apps.googleusercontent.com
-
-# Block unverified apps (via Admin SDK)
-# Note: Use Admin Console for comprehensive control
-```
-
-**Option 2: Admin SDK (Python)**
-```python
-# List OAuth tokens for a user
-from googleapiclient.discovery import build
-
-service = build('admin', 'directory_v1', credentials=credentials)
-
-tokens = service.tokens().list(userKey='user@domain.com').execute()
-
-for token in tokens.get('items', []):
-    print(f"App: {token['displayText']}")
-    print(f"Client ID: {token['clientId']}")
-    print(f"Scopes: {token['scopes']}")
-    print("---")
-```
-
 #### Validation & Testing
 1. [ ] Verify blocked apps cannot access data
 2. [ ] Test app approval workflow
@@ -495,7 +383,7 @@ for token in tokens.get('items', []):
 | **NIST 800-53** | AC-3 | Access enforcement |
 | **CIS Google Workspace** | 2.1 | Ensure third-party apps are audited and controlled |
 
-{% include pack-code.html vendor="google-workspace" section="3.1" lang="terraform" %}
+{% include pack-code.html vendor="google-workspace" section="3.1" %}
 
 ---
 
@@ -528,7 +416,7 @@ Disable "Less Secure Apps" access which allows applications to authenticate with
 
 #### Code Implementation
 
-{% include pack-code.html vendor="google-workspace" section="3.2" lang="terraform" %}
+{% include pack-code.html vendor="google-workspace" section="3.2" %}
 
 ---
 
@@ -583,25 +471,13 @@ Restrict external sharing of Google Drive files to prevent unauthorized data exp
 
 #### Code Implementation
 
-**Option 1: GAM**
-```bash
-# Audit files shared externally
-gam all users print filelist query "visibility='anyoneWithLink' or visibility='anyoneCanFind'"
-
-# Find files shared with specific external domains
-gam all users print filelist query "sharedWithExternalUsers"
-
-# Generate sharing report
-gam report drive user all parameters doc_type,visibility,shared_with_user_accounts
-```
-
 #### Validation & Testing
 1. [ ] Create test file and verify default sharing is Restricted
 2. [ ] Attempt to share externally - verify appropriate restrictions apply
 3. [ ] Audit existing files with external sharing
 4. [ ] Confirm allowed external sharing still functions
 
-{% include pack-code.html vendor="google-workspace" section="4.1" lang="terraform" %}
+{% include pack-code.html vendor="google-workspace" section="4.1" %}
 
 ---
 
@@ -639,7 +515,7 @@ Configure Google Workspace DLP rules to detect and prevent sharing of sensitive 
 
 #### Code Implementation
 
-{% include pack-code.html vendor="google-workspace" section="4.2" lang="terraform" %}
+{% include pack-code.html vendor="google-workspace" section="4.2" %}
 
 ---
 
@@ -703,22 +579,7 @@ Enable and configure audit logging across all Google Workspace services. Use the
 
 #### Code Implementation
 
-**Option 1: GAM Reports**
-```bash
-# Generate login report
-gam report login start -7d end today
-
-# Generate admin audit report
-gam report admin start -7d end today
-
-# Export Drive audit events
-gam report drive start -7d end today event download
-
-# Find suspicious logins
-gam report login filter "is_suspicious==True"
-```
-
-**Option 2: BigQuery Queries**
+**BigQuery Detection Queries**
 ```sql
 -- Find failed login attempts by user
 SELECT
@@ -742,7 +603,7 @@ WHERE event_name = 'change_user_access'
   AND _PARTITIONTIME >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR);
 ```
 
-{% include pack-code.html vendor="google-workspace" section="5.1" lang="terraform" %}
+{% include pack-code.html vendor="google-workspace" section="5.1" %}
 
 ---
 

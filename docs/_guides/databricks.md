@@ -6,9 +6,9 @@ slug: "databricks"
 tier: "2"
 category: "Data"
 description: "Data platform security for workspace access, Unity Catalog, and secrets management"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-02-19"
 ---
 
 
@@ -365,23 +365,14 @@ Store credentials in Databricks secret scopes rather than notebooks.
 #### ClickOps Implementation
 
 **Step 1: Create Secret Scope**
-```bash
-# Create secret scope backed by Databricks
-databricks secrets create-scope --scope production-secrets
-
-# Add secrets
-databricks secrets put --scope production-secrets --key db-password
-databricks secrets put --scope production-secrets --key api-key
-```
+1. Navigate to: **Databricks CLI** or **Admin Settings → Secrets**
+2. Create a Databricks-backed secret scope for your environment
+3. Add required secrets (database passwords, API keys)
 
 **Step 2: Configure Access Controls**
-```bash
-# Grant read access to specific group
-databricks secrets put-acl \
-  --scope production-secrets \
-  --principal data_engineers \
-  --permission READ
-```
+1. Set ACLs on the secret scope
+2. Grant READ access to groups that need credential access
+3. Restrict MANAGE access to administrators only
 
 **Step 3: Use Secrets in Notebooks**
 ```python
@@ -406,14 +397,7 @@ Integrate with external secrets managers.
 
 #### Azure Key Vault Integration
 
-```bash
-# Create Key Vault-backed secret scope
-databricks secrets create-scope \
-  --scope azure-kv-scope \
-  --scope-backend-type AZURE_KEYVAULT \
-  --resource-id /subscriptions/.../resourceGroups/.../providers/Microsoft.KeyVault/vaults/my-vault \
-  --dns-name https://my-vault.vault.azure.net/
-```
+Create an Azure Key Vault-backed secret scope so secrets are fetched directly from Key Vault at runtime rather than stored in Databricks. This provides centralized secret lifecycle management and audit logging through Azure.
 
 {% include pack-code.html vendor="databricks" section="4.2" %}
 
@@ -515,3 +499,4 @@ GROUP BY user_identity.email, source_ip_address;
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
 | 2025-12-14 | 0.1.0 | draft | Initial Databricks hardening guide | Claude Code (Opus 4.5) |
+| 2026-02-19 | 0.1.1 | draft | Migrate inline CLI code in sections 4.1, 4.2 to Code Pack files | Claude Code (Opus 4.6) |

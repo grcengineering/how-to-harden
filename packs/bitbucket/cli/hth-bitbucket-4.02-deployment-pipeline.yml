@@ -1,0 +1,20 @@
+# HTH Bitbucket Control 4.2: Secure Deployment Pipeline
+# Profile: L2 | NIST: CM-3
+# https://howtoharden.com/guides/bitbucket/#42-configure-deployment-permissions
+
+# HTH Guide Excerpt: begin cli-deployment-pipeline
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Build
+          script:
+            - npm install
+            - npm run build
+      - step:
+          name: Deploy to Production
+          deployment: production
+          trigger: manual
+          script:
+            - ./deploy.sh
+# HTH Guide Excerpt: end cli-deployment-pipeline

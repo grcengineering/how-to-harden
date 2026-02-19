@@ -1,0 +1,21 @@
+# HTH CircleCI Control 2.02: Environment Variable Security
+# Profile: L1 | NIST: SC-28
+# https://howtoharden.com/guides/circleci/#22-environment-variable-security
+#
+# Deploy: Add to .circleci/config.yml
+
+# HTH Guide Excerpt: begin cli-minimize-env-var-exposure
+# .circleci/config.yml
+jobs:
+  build:
+    docker:
+      - image: cimg/base:2024.01
+    steps:
+      - run:
+          name: Build
+          # Only use environment variables when needed
+          command: |
+            # Don't echo secrets
+            # Don't pass secrets as command arguments (visible in ps)
+            ./build.sh
+# HTH Guide Excerpt: end cli-minimize-env-var-exposure
