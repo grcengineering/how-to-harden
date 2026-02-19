@@ -1,10 +1,13 @@
 # How to Harden: SaaS Security Hardening Guides
 
-> Community-developed, open source information security hardening guides. The initial set of HTH guides are focused on hardenining cloud services, with an emphasis on **integration security and supply chain attack prevention**.
+> Community-developed, open source security hardening guides focused on **integration security and supply chain attack prevention**. Like CIS Benchmarks, but for SaaS platforms, free, and uniquely focused on cross-platform integration controls.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Status: Alpha](https://img.shields.io/badge/Status-Alpha-yellow)](https://github.com/yourproject/how-to-harden/releases)
+[![Guides: 116](https://img.shields.io/badge/Guides-116-blueviolet)](https://howtoharden.com)
+[![Code Packs: 50](https://img.shields.io/badge/Code%20Packs-50-orange)](packs/)
+
+**Website:** [howtoharden.com](https://howtoharden.com) | **Organization:** [GRC Engineering](https://grc.engineering)
 
 ---
 
@@ -25,63 +28,88 @@ This is defense-in-depth done right: **First-party controls you configure** to l
 ## What We Provide
 
 ### 1. Platform-Specific Hardening Guides
-Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls.
 
-- Salesforce, Microsoft 365, GitHub, Google Workspace, Slack, Okta, and more
-- Covers authentication, authorization, API security, data protection
-- Both **ClickOps** (GUI) and **Code** (IaC/API) implementations
+Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **116 guides** across 9 categories:
 
-### 2. Integration-Focused Controls (Our Unique Value)
-Within each vendor guide, we emphasize **how to configure that platform to restrict third-party integrations**.
+| Category | Count | Examples |
+|----------|-------|---------|
+| Productivity | 23 | Slack, Airtable, Asana, Notion |
+| Security | 21 | CrowdStrike, Snyk, Wiz, Zscaler |
+| Data | 17 | Snowflake, Databricks, MongoDB Atlas |
+| DevOps | 16 | GitHub, GitLab, Jenkins, Terraform Cloud |
+| Identity | 13 | Okta, Auth0, Microsoft Entra ID, Duo |
+| HR/Finance | 11 | BambooHR, ADP, Workday, Stripe |
+| Marketing | 9 | HubSpot, Braze, SendGrid, Twilio |
+| IT Operations | 4 | ServiceNow, Jamf, PagerDuty |
+| IaC | 2 | Terraform Cloud, Pulumi |
 
-Example: [Salesforce Hardening Guide](content/salesforce/salesforce%20hardening%20guide.md) includes controls for IP-allowlisting Gainsight, Drift, and HubSpot.
+Every control includes:
+- **ClickOps** (GUI/console) steps for manual implementation
+- **Code** (CLI/API/IaC) for automation and repeatability
+- Three profile levels: **L1** (Baseline), **L2** (Hardened), **L3** (Maximum Security)
+- Compliance mappings to SOC 2, NIST 800-53, ISO 27001, and PCI DSS
+
+### 2. Code Packs -- Executable Security Controls
+
+**50 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
+
+| Language Type | Directory | What It Does |
+|---------------|-----------|-------------|
+| Config-as-Code | `terraform/` | Terraform modules to enforce controls declaratively |
+| API Scripts | `api/` | bash + curl + jq against vendor REST APIs |
+| CLI Scripts | `cli/` | Vendor-native CLIs (`gh`, `okta`, `gcloud`, `az`) |
+| SDK Scripts | `sdk/` | Python, PowerShell, Go vendor SDK integrations |
+| DB Queries | `db/` | SQL queries for Snowflake, Databricks, MongoDB |
+| Detection Rules | `siem/sigma/` | Sigma rules (convert to Splunk, Elastic, Sentinel) |
+
+Code Packs are profile-level gated -- set `HTH_PROFILE_LEVEL=1` for baseline, `2` for hardened, or `3` for maximum security. See [packs/README.md](packs/README.md) for the full Code Pack Ontology.
+
+### 3. Integration-Focused Controls (Our Unique Value)
+
+Within each vendor guide, we emphasize **how to configure that platform to restrict third-party integrations**:
+
+- **Salesforce:** IP-allowlist Gainsight, Drift, and HubSpot API access
+- **GitHub:** Restrict third-party Actions workflows and OAuth app permissions
+- **Microsoft 365:** Limit OAuth app permissions for Zoom/Slack integrations
 
 This integration security focus doesn't exist in CIS Benchmarks or vendor documentation.
 
-### 3. Supply Chain Incident Case Studies
+### 4. Supply Chain Incident Case Studies
+
 Real-world attacks (Drift, Gainsight, CircleCI, Okta) mapped to specific preventive controls that would have blocked or limited the attack.
 
 ---
 
 ## Quick Start
 
-### For Security Practitioners
+### Browse Online
 
-**Scenario 1: You use Salesforce + Gainsight**
+Visit [howtoharden.com](https://howtoharden.com) to search, filter, and read all guides.
+
+### Run Locally
+
 ```bash
-# Option 1: Browse guides online
-Visit: https://how-to-harden.dev
-Search for: Salesforce guide
-Navigate to: IP Allowlisting controls section
-
-# Option 2: View guides locally
-git clone https://github.com/yourproject/how-to-harden
-cd how-to-harden/docs/_guides
-# Read the relevant guide (e.g., salesforce.md)
-# Follow the ClickOps or automation instructions provided
-
-# Estimated time: 10-15 minutes per control
+git clone https://github.com/grcengineering/how-to-harden
+cd how-to-harden/docs
+bundle install
+bundle exec jekyll serve
+# Open http://localhost:4000
 ```
 
-**Scenario 2: Audit your current SaaS stack**
+### Use a Code Pack
+
 ```bash
-# Coming soon: Stack analyzer
-how-to-harden analyze --stack salesforce,gainsight,slack,github
-# Outputs prioritized hardening recommendations for your specific stack
+cd packs/okta/terraform
+export HTH_PROFILE_LEVEL=2
+terraform init && terraform plan
 ```
 
 ### For Contributors
 
-We need your expertise! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - How to propose new platform guides
-- How to add defensive patterns
+- How to add Code Pack implementations
 - Template structure and quality standards
-
-**Priority areas needing contribution:**
-- [ ] Microsoft 365 + third-party app hardening
-- [ ] GitHub Actions supply chain security
-- [ ] Google Workspace default-sharing reduction
-- [ ] Slack OAuth app governance
 
 ---
 
@@ -91,38 +119,46 @@ We need your expertise! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 how-to-harden/
 ├── docs/                                 # Jekyll documentation site
 │   ├── _config.yml                       # Jekyll configuration
-│   ├── Gemfile                          # Ruby dependencies
-│   ├── CNAME                            # Custom domain configuration
-│   ├── index.html                       # Main landing page
-│   ├── about.md                         # About page
-│   ├── _guides/                         # Platform hardening guides (53 guides)
+│   ├── Gemfile                           # Ruby dependencies
+│   ├── CNAME                             # Custom domain (howtoharden.com)
+│   ├── index.html                        # Homepage with search, filter, sort
+│   ├── about.md                          # About page
+│   ├── _guides/                          # Platform hardening guides (116 guides)
 │   │   ├── salesforce.md
-│   │   ├── github.md
 │   │   ├── okta.md
-│   │   ├── microsoft-365.md
-│   │   └── ... (50+ more platform guides)
-│   ├── _layouts/                        # Jekyll layouts
+│   │   ├── github.md
+│   │   └── ... (110+ more platform guides)
+│   ├── _data/
+│   │   └── packs/                        # Auto-generated YAML for code pack rendering
+│   ├── _layouts/                         # Jekyll layouts
 │   │   ├── default.html
 │   │   └── guide.html
-│   ├── _includes/                       # Reusable Jekyll components
+│   ├── _includes/                        # Reusable Jekyll components
 │   │   ├── header.html
-│   │   └── footer.html
-│   └── assets/                          # CSS, images, and other static assets
+│   │   ├── footer.html
+│   │   └── pack-code.html               # Code Pack rendering template
+│   └── assets/
 │       └── css/
+│           └── style.css                 # Dark + light theme stylesheet
+├── packs/                                # Code Packs (50 vendors)
+│   ├── README.md                         # Code Pack Ontology documentation
+│   ├── schema/                           # YAML schema definitions
+│   ├── okta/                             # Example vendor pack
+│   │   ├── terraform/                    # Terraform modules
+│   │   ├── api/                          # API scripts (bash + curl)
+│   │   └── siem/sigma/                   # Sigma detection rules
+│   └── ... (49 more vendor packs)
+├── scripts/
+│   └── sync-packs-to-data.sh            # Sync pack excerpts → Jekyll data YAML
 ├── templates/
-│   └── vendor-guide-template.md         # Template for new vendor guides
-├── README.md                            # This file
-├── PHILOSOPHY.md                        # Project scope and design principles
-├── CONTRIBUTING.md                      # Contribution guidelines
-└── LICENSE                              # MIT License
+│   └── vendor-guide-template.md          # Template for new vendor guides
+├── references/                           # Reference materials (DISA STIGs, etc.)
+├── VERSIONS.md                           # Central version registry for all guides
+├── PHILOSOPHY.md                         # Project scope and design principles
+├── CONTRIBUTING.md                       # Contribution guidelines
+├── AGENTS.md                             # AI agent task procedures
+└── LICENSE                               # MIT License
 ```
-
-**Structure Notes:**
-- Built with Jekyll for easy GitHub Pages deployment
-- Each vendor/product has ONE comprehensive hardening guide in `docs/_guides/`
-- Guides organized by control categories (Auth, Network, OAuth, Data, Monitoring)
-- Integration security controls (e.g., IP allowlisting specific vendors) are sections within guides
-- All guides follow the template in `templates/vendor-guide-template.md`
 
 ---
 
@@ -171,20 +207,20 @@ We maintain independence while accurately representing platform capabilities. We
 
 ## Current Status
 
-**Project Status:** 🟡 **Alpha** (Initial development, seeking co-maintainers and contributors)
+**Guide maturity system:**
+- **Draft** -- AI-generated initial content, structurally complete
+- **Reviewed** -- Expert-validated by a practitioner with platform experience
+- **Verified** -- Production-tested in a real environment
 
-**Coverage:**
-- ✅ 1 platform guide (Salesforce - in progress)
-- ✅ 1 defensive pattern (IP allowlisting)
-- ✅ 1 incident case study (Salesloft/Drift)
-- 🚧 Automation tooling (scripts available, CLI tool planned)
+**Current coverage:**
+- 116 hardening guides across 9 categories (all currently at draft maturity)
+- 50 Code Packs with Terraform, API, CLI, SDK, DB, and Sigma implementations
+- Full Jekyll site with search, category filtering, and dark/light themes
 
-**Roadmap:**
-- **Q1 2026:** Foundation complete (governance docs, 2-3 platform guides, 3 defensive patterns)
-- **Q2 2026:** Expand to 5 platforms, build CLI analyzer tool
-- **Q3-Q4 2026:** CSPM/SSPM vendor partnerships, 10+ platforms, annual SaaS Security report
-
-See [GitHub Projects](https://github.com/yourproject/how-to-harden/projects) for detailed roadmap.
+**What we need:**
+- Expert reviewers to validate draft guides and advance them to **reviewed** maturity
+- Code Pack contributions for CLI, SDK, and DB language types
+- Real-world testing to advance guides to **verified** maturity
 
 ---
 
@@ -193,43 +229,31 @@ See [GitHub Projects](https://github.com/yourproject/how-to-harden/projects) for
 ### Ways to Contribute
 
 **For Security Practitioners:**
-- 🔍 **Review and validate** existing guides (test in your environment, provide feedback)
-- 📝 **Document your stack** (submit defensive patterns for integrations you use)
-- 🐛 **Report issues** (outdated guidance, broken links, vendor product changes)
+- Review and validate existing guides against your platform experience
+- Test controls in your environment and report results
+- Submit new guides for platforms not yet covered
 
 **For Developers:**
-- 🛠️ **Build automation** (audit scripts, Terraform modules, CLI tool)
-- 📊 **Improve tooling** (machine-readable data formats, API integrations)
+- Contribute Code Packs (Terraform, API scripts, CLI scripts, Sigma rules)
+- Improve the sync and rendering pipeline
+- Build audit tooling on top of the structured pack data
 
 **For Researchers:**
-- 📑 **Document incidents** (map breaches to preventive controls)
-- 🔬 **Test controls** (validate effectiveness in lab environments)
+- Document supply chain incidents and map them to preventive controls
+- Test control effectiveness in lab environments
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ### Communication Channels
 
-- **GitHub Discussions:** [General Q&A, ideas, feedback](https://github.com/yourproject/how-to-harden/discussions)
-- **GitHub Issues:** [Bug reports, feature requests, content proposals](https://github.com/yourproject/how-to-harden/issues)
-- **Slack/Discord:** [Coming soon] `#how-to-harden` channel for real-time collaboration
-
----
-
-## Recognition
-
-All contributors are recognized in:
-- [CONTRIBUTORS.md](CONTRIBUTORS.md)
-- Individual guide changelogs
-- Annual project reports
-
-**Current Contributors:**
-- [@your-github-handle] - Project founder, Salesforce guide lead
+- **GitHub Issues:** [Bug reports, feature requests, content proposals](https://github.com/grcengineering/how-to-harden/issues)
+- **GitHub Discussions:** [General Q&A, ideas, feedback](https://github.com/grcengineering/how-to-harden/discussions)
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License** - see [LICENSE](LICENSE) for full text.
+This project is licensed under the **MIT License** -- see [LICENSE](LICENSE) for full text.
 
 You are free to use, modify, and distribute this work for any purpose.
 
@@ -240,40 +264,29 @@ You are free to use, modify, and distribute this work for any purpose.
 **Q: How is this different from CIS Benchmarks?**
 A: CIS focuses on infrastructure (AWS, Azure, Kubernetes). We focus on SaaS platforms and cross-platform integration security. CIS also requires paid membership for automation-friendly formats; we're free and open source.
 
-**Q: I found outdated information. How do I report it?**
-A: Open an issue with tag `content-outdated` and include the guide URL, what's wrong, and corrected information (with vendor documentation link).
+**Q: Why are all guides at "draft" maturity?**
+A: The initial 116 guides were AI-generated to provide comprehensive structural coverage. We need expert practitioners to review and validate them against real platform behavior. This is the highest-impact contribution you can make.
 
 **Q: Can I contribute a guide for a platform not yet covered?**
-A: Yes! Check [CONTRIBUTING.md](CONTRIBUTING.md) for platform selection criteria and use our [recommendation template](templates/recommendation-template.md).
+A: Yes! Check [CONTRIBUTING.md](CONTRIBUTING.md) for platform selection criteria and use our [guide template](templates/vendor-guide-template.md).
 
-**Q: My company wants to sponsor this project. How?**
-A: Email [maintainer contact] to discuss. We're exploring foundation affiliation (OWASP, CSA, Linux Foundation) for transparent governance.
-
-**Q: Do you provide professional services to implement these controls?**
-A: No, this is a community project. Some contributors may offer consulting independently—check their GitHub profiles.
+**Q: What are Code Packs?**
+A: Executable implementations of guide controls. Instead of just reading "enable MFA enforcement," you get Terraform modules, API scripts, and Sigma detection rules that actually implement and monitor the control. See [packs/README.md](packs/README.md).
 
 ---
 
 ## Attribution
 
 Inspired by:
-- **[howtorotate.com](https://howtorotate.com)** by Truffle Security - Elegant simplicity, tight tool integration
-- **[CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks)** - Structured recommendation format, multi-profile approach
-- **[MITRE ATT&CK](https://attack.mitre.org/)** - Relational knowledge framework, real-world attack grounding
-- **[OWASP Projects](https://owasp.org/projects/)** - Community-driven security resources, tiered maturity model
+- **[howtorotate.com](https://howtorotate.com)** by Truffle Security -- Elegant simplicity, tight tool integration
+- **[CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks)** -- Structured recommendation format, multi-profile approach
+- **[MITRE ATT&CK](https://attack.mitre.org/)** -- Relational knowledge framework, real-world attack grounding
+- **[OWASP Projects](https://owasp.org/projects/)** -- Community-driven security resources, tiered maturity model
 
 Special thanks to **Okta's security team** for sharing their Salesloft incident response publicly, demonstrating the effectiveness of IP allowlisting and inspiring this project's focus on first-party controls.
 
 ---
 
-## Security Reporting
+**Built by [GRC Engineering](https://grc.engineering) and contributors who believe third-party risk management needs to be about first-party controls, not questionnaires.**
 
-If you discover a security vulnerability in our automation scripts or recommendations that could actively harm users, please email [security contact] instead of opening a public issue.
-
-For general content corrections or improvements, use GitHub Issues.
-
----
-
-**Built with ❤️ by security practitioners who are tired of third-party risk questionnaires that don't actually reduce risk.**
-
-[⭐ Star this repo](https://github.com/yourproject/how-to-harden) | [📖 Read the docs](https://how-to-harden.dev) | [💬 Join discussions](https://github.com/yourproject/how-to-harden/discussions)
+[Browse Guides](https://howtoharden.com) | [View Code Packs](packs/) | [Contribute](CONTRIBUTING.md)
