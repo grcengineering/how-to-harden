@@ -56,7 +56,7 @@ These are the most common AI mistakes. The rules themselves are defined in [CONT
 3. Run `bash scripts/sync-packs-to-data.sh` to generate YAML data
 4. Use `{% include pack-code.html vendor="{vendor}" section="X.X" %}` in the guide
 
-**Pack types:** `terraform/` (.tf), `api/` (.sh), `cli/` (.sh, .yml, .txt, .ini), `sdk/` (.py, .js, .groovy), `db/` (.sql, .kql, .spl), `siem/sigma/` (.yml)
+**Pack types:** `terraform/` (.tf), `api/` (.sh), `cli/` (.sh, .yml), `sdk/` (.py, .js, .groovy), `db/` (.sql, .kql, .spl), `siem/sigma/` (.yml)
 
 **Verify:** `grep -cE '^ *```' docs/_guides/{vendor}.md` must return 0.
 
@@ -192,6 +192,9 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 | Mistake | How to Avoid |
 |---------|--------------|
 | Inline code blocks in guides | ALL code must be in Code Packs — ZERO fenced blocks in guide files |
+| Fabricated/hallucinated code in packs | EVERY pack file must contain real code verified against official vendor docs. No fabricated SQL tables, no fake API endpoints, no invented CLI commands |
+| Non-code files (.txt) in packs | Packs contain ONLY executable code. No tree diagrams, checklists, or prose. If it's not runnable, it doesn't belong in a pack |
+| SQL for platforms without SQL | Only create `.sql` pack files for vendors with real SQL interfaces (Snowflake, Databricks, Salesforce SOQL, BigQuery, etc.). Most SaaS platforms use REST APIs, not SQL |
 | Missing blank lines around tables | Check EVERY table before committing |
 | Bare code blocks without language | Always specify: `bash`, `hcl`, `sql`, etc. (non-guide files) |
 | Only ClickOps OR only Code | Always provide BOTH implementation methods |

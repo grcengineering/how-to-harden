@@ -314,8 +314,6 @@ Configure Zoom audit logging.
 
 #### Detection Queries
 
-{% include pack-code.html vendor="zoom" section="5.1" %}
-
 ---
 
 ## 6. Compliance Quick Reference

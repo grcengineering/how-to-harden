@@ -154,8 +154,6 @@ Require SSO with MFA for all Dropbox Business access.
 
 #### Detection Queries
 
-{% include pack-code.html vendor="dropbox" section="4.1" %}
-
 ---
 
 ## Appendix A: Edition Compatibility

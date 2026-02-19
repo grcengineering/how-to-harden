@@ -194,8 +194,6 @@ Manage Klaviyo API keys securely.
 
 #### Detection Focus
 
-{% include pack-code.html vendor="klaviyo" section="4.1" %}
-
 ---
 
 ## Appendix A: Edition Compatibility

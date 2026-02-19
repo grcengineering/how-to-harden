@@ -1,3 +1,0 @@
-# HTH Guide Excerpt: begin cli-log-query-anonymizer-detection
-eventType eq "security.threat.detected" AND debugContext.debugData.threatSuspected eq "ANONYMIZER"
-# HTH Guide Excerpt: end cli-log-query-anonymizer-detection

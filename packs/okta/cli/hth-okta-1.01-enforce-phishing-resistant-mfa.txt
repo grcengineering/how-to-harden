@@ -1,3 +1,0 @@
-# HTH Guide Excerpt: begin cli-log-query-fido2-auth
-eventType eq "user.authentication.auth_via_mfa" AND debugContext.debugData.factor eq "FIDO2_WEBAUTHN"
-# HTH Guide Excerpt: end cli-log-query-fido2-auth

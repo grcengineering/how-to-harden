@@ -1,3 +1,0 @@
-# HTH Guide Excerpt: begin cli-log-query-oauth-consent
-eventType eq "app.oauth2.consent.grant" OR eventType eq "app.oauth2.as.consent.grant"
-# HTH Guide Excerpt: end cli-log-query-oauth-consent

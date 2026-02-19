@@ -180,8 +180,6 @@ Manage Freshservice API keys securely.
 
 #### Detection Focus
 
-{% include pack-code.html vendor="freshservice" section="4.1" %}
-
 ---
 
 ## Appendix A: Edition Compatibility

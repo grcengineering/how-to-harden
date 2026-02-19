@@ -150,8 +150,6 @@ Harden SCIM connector configurations.
 
 #### Detection Queries
 
-{% include pack-code.html vendor="sailpoint" section="4.1" %}
-
 ---
 
 ## Appendix B: References

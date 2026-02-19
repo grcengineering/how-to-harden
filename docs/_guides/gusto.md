@@ -165,8 +165,6 @@ Manage Gusto partner integrations securely.
 
 #### Detection Focus
 
-{% include pack-code.html vendor="gusto" section="4.1" %}
-
 ---
 
 ## Appendix A: Edition Compatibility

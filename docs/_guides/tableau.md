@@ -124,8 +124,6 @@ Protect data source credentials and connections.
 
 **Step 1: Implement User Filters**
 
-{% include pack-code.html vendor="tableau" section="2.2" %}
-
 **Step 2: Configure Data Source Filters**
 1. Create user-based filters
 2. Test with different users
@@ -188,8 +186,6 @@ Protect data source credentials and connections.
 3. Review user activity
 
 #### Detection Focus
-
-{% include pack-code.html vendor="tableau" section="4.1" %}
 
 ---
 

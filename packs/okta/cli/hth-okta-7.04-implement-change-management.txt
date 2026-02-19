@@ -1,5 +1,0 @@
-# HTH Guide Excerpt: begin cli-terraform-plan-apply
-# Use okta/okta Terraform provider to manage config as code
-terraform plan -out=okta-changes.plan
-terraform apply okta-changes.plan
-# HTH Guide Excerpt: end cli-terraform-plan-apply

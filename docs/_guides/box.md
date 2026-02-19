@@ -154,8 +154,6 @@ This guide covers Box security configurations including authentication, access c
 
 #### Detection Queries
 
-{% include pack-code.html vendor="box" section="4.1" %}
-
 ---
 
 ## Appendix A: Edition Compatibility

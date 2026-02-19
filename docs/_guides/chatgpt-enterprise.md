@@ -439,8 +439,6 @@ Set organization-wide custom instructions that apply to all conversations, embed
 **Step 2: Configure Organization Instructions**
 1. Add security-aware instructions such as:
 
-{% include pack-code.html vendor="chatgpt-enterprise" section="3.3" %}
-
 2. Save and apply to all users
 
 ---

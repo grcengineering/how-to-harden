@@ -1,3 +1,0 @@
-# HTH Guide Excerpt: begin cli-log-query-recovery-untrusted
-eventType eq "user.account.reset_password" AND securityContext.isProxy eq true
-# HTH Guide Excerpt: end cli-log-query-recovery-untrusted

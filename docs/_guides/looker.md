@@ -104,8 +104,6 @@ Control content access through folder hierarchy.
 
 **Step 1: Folder Structure**
 
-{% include pack-code.html vendor="looker" section="2.1" %}
-
 **Step 2: Configure Access**
 1. Navigate to: **Browse → Folder → Manage Access**
 2. Set appropriate permissions
@@ -184,8 +182,6 @@ Control content access through folder hierarchy.
    - Content Usage
 
 #### Detection Focus
-
-{% include pack-code.html vendor="looker" section="4.1" %}
 
 ---
 

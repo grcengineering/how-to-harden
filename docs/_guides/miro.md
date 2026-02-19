@@ -182,8 +182,6 @@ Control board sharing to prevent data exposure.
 
 #### Detection Focus
 
-{% include pack-code.html vendor="miro" section="4.1" %}
-
 ---
 
 ## Appendix A: Edition Compatibility

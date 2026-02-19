@@ -345,8 +345,6 @@ Create custom detection rules for organization-specific threats and behaviors.
 
 **Example Rules:**
 
-{% include pack-code.html vendor="sentinelone" section="3.2" %}
-
 ---
 
 ### 3.3 Enable Local Upgrade Authorization

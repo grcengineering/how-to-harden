@@ -90,8 +90,6 @@ Configure Workday security groups with least-privilege access to HR and financia
 
 **Step 1: Design Security Group Structure**
 
-{% include pack-code.html vendor="workday" section="1.2" %}
-
 **Step 2: Configure Domain Security**
 1. Navigate to: **Domain Security Policies**
 2. For each functional area:
@@ -154,9 +152,7 @@ Harden Integration System Users that provide API access for third-party integrat
    - Last activity date
 
 **Step 2: Create Purpose-Specific ISUs**
-For each integration, create dedicated ISU:
-
-{% include pack-code.html vendor="workday" section="2.1" %}
+For each integration, create dedicated ISU.
 
 **Step 3: Restrict ISU Security Groups**
 1. Create integration-specific security groups
@@ -218,8 +214,6 @@ Restrict access to sensitive fields based on business need.
 #### ClickOps Implementation
 
 **Step 1: Identify Sensitive Fields**
-
-{% include pack-code.html vendor="workday" section="3.1" %}
 
 **Step 2: Configure Field Security**
 1. Navigate to: **Domain Security Policies**
@@ -335,8 +329,6 @@ Configure comprehensive audit logging for Workday operations.
 3. Retain logs for compliance period
 
 #### Detection Queries
-
-{% include pack-code.html vendor="workday" section="5.1" %}
 
 ---
 

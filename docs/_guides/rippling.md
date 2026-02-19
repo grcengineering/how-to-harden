@@ -181,8 +181,6 @@ Secure Rippling app integrations.
 
 #### Detection Focus
 
-{% include pack-code.html vendor="rippling" section="4.1" %}
-
 ---
 
 ## Appendix A: Feature Availability

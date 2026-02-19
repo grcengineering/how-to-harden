@@ -155,8 +155,6 @@ Implement controls to prevent W-2 data theft.
 
 #### Detection Focus Areas
 
-{% include pack-code.html vendor="adp" section="4.1" %}
-
 ---
 
 ## 5. Compliance Quick Reference

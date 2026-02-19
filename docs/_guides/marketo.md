@@ -153,8 +153,6 @@ Harden REST API integrations.
 
 #### API Best Practices
 
-{% include pack-code.html vendor="marketo" section="2.1" %}
-
 ---
 
 ### 2.2 Webhook Security
@@ -241,8 +239,6 @@ Harden REST API integrations.
 
 #### Detection Focus
 
-{% include pack-code.html vendor="marketo" section="4.1" %}
-
 ---
 
 ### 4.2 Integration Monitoring
@@ -250,8 +246,6 @@ Harden REST API integrations.
 **Profile Level:** L2 (Hardened)
 
 #### Detection Queries
-
-{% include pack-code.html vendor="marketo" section="4.2" %}
 
 ---
 

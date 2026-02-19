@@ -203,8 +203,6 @@ Manage Zendesk API tokens securely.
 
 #### Detection Focus
 
-{% include pack-code.html vendor="zendesk" section="4.1" %}
-
 ---
 
 ## Appendix A: Edition Compatibility

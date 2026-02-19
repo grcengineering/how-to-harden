@@ -184,8 +184,6 @@ Manage BambooHR API keys securely.
 
 #### Detection Focus
 
-{% include pack-code.html vendor="bamboohr" section="4.1" %}
-
 ---
 
 ## Appendix A: Edition Compatibility
