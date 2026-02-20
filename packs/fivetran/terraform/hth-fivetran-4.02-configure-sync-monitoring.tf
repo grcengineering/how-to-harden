@@ -23,40 +23,6 @@ resource "fivetran_webhook" "sync_failure_webhook" {
   ]
 }
 
-# Configure email notifications for sync monitoring
-resource "null_resource" "configure_sync_notifications" {
-  count = length(var.notification_email_addresses) > 0 ? 1 : 0
-
-  triggers = {
-    email_count = length(var.notification_email_addresses)
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      echo "============================================="
-      echo "Sync Monitoring Configuration"
-      echo "============================================="
-      echo ""
-      echo "Email notification recipients configured:"
-      %{ for email in var.notification_email_addresses ~}
-      echo "  - ${email}"
-      %{ endfor ~}
-      echo ""
-      echo "Notification configuration is managed via Fivetran Dashboard:"
-      echo "  Navigate to: Notification Settings"
-      echo "  1. Enable sync failure alerts"
-      echo "  2. Configure email recipients"
-      echo "  3. Set up webhook integrations for monitoring systems"
-      echo ""
-      echo "Sync Health Monitoring Checklist:"
-      echo "  [1] Review sync dashboard regularly"
-      echo "  [2] Investigate failed syncs promptly"
-      echo "  [3] Set up automated alerting via webhooks"
-      echo "  [4] Integrate with incident response workflows"
-    EOT
-  }
-}
-
 # Audit: check current sync health across all connectors
 resource "null_resource" "audit_sync_health" {
   triggers = {

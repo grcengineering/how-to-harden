@@ -39,7 +39,7 @@ resource "zpa_policy_access_rule" "hardened_access" {
       content {
         object_type   = "SCIM_GROUP"
         values        = [operands.value]
-        idp_id        = local.idp_id
+        idp_id        = var.idp_id
       }
     }
   }
