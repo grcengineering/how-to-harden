@@ -2022,6 +2022,10 @@ body {
   color: inherit;
 }
 
+[data-theme="light"] .terminal-table td.term-green { color: #1a7f37; }
+[data-theme="light"] .terminal-table td.term-red { color: #cf222e; }
+[data-theme="light"] .terminal-table td.term-white { color: #1f2328; }
+
 [data-theme="light"] .dot-close { background: #ff5f57; }
 [data-theme="light"] .dot-minimize { background: #ffbd2e; }
 [data-theme="light"] .dot-maximize { background: #28c840; }
