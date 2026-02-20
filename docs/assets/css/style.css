@@ -254,14 +254,19 @@ body {
   font-size: 1.25rem;
   color: var(--color-text-secondary);
   max-width: 600px;
-  margin: 0 auto var(--space-xl);
+  margin: 0 auto;
+}
+
+.hero-stats-section {
+  padding: var(--space-2xl) 0;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .hero-stats {
   display: flex;
   justify-content: center;
   gap: var(--space-2xl);
-  margin-top: var(--space-xl);
 }
 
 .stat {
