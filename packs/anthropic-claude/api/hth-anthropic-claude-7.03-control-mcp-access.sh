@@ -12,6 +12,7 @@ banner "7.3: Control MCP Server Access"
 
 # HTH Guide Excerpt: begin managed-mcp-config
 # managed-mcp.json — exclusive MCP server control
+# Reference: code.claude.com/docs/en/mcp#managed-mcp-configuration
 # When this file exists at the system path, it takes exclusive control:
 # users cannot add, modify, or use any MCP servers not defined here.
 # Deploy alongside managed-settings.json at the same OS-specific path:
@@ -45,9 +46,10 @@ MANAGED_MCP
 
 # HTH Guide Excerpt: begin mcp-allowlist-denylist
 # MCP server allowlist/denylist via managed-settings.json
+# Reference: code.claude.com/docs/en/settings#mcp-configuration-managed
 # Use this when you want guardrails without exclusive MCP control.
 # Deny rules always take precedence over allow rules.
-# An empty allowedMcpServers array blocks ALL MCP servers.
+# undefined = no restrictions; empty array [] = complete lockdown.
 cat << 'MCP_LISTS'
 {
   "allowedMcpServers": [

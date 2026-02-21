@@ -11,7 +11,8 @@ banner "7.2: Restrict Claude Code Permissions and Tools"
 
 # HTH Guide Excerpt: begin permission-deny-rules
 # Example permission deny rules for managed-settings.json
-# Deny rules always take precedence over allow and ask rules.
+# Reference: code.claude.com/docs/en/permissions
+# Evaluation order: deny (first) → ask → allow (last). First match wins.
 # Rule syntax: "Tool" or "Tool(specifier)" with glob patterns.
 #   * matches files in a single directory
 #   ** matches recursively across directories
@@ -78,6 +79,7 @@ ENFORCEMENT
 
 # HTH Guide Excerpt: begin sandbox-config
 # OS-level bash sandbox configuration (L3 — Maximum Security)
+# Reference: code.claude.com/docs/en/sandboxing
 # Sandboxing provides filesystem and network isolation for Bash commands.
 # Platform support:
 #   macOS:     Seatbelt (built-in, no install needed)

@@ -104,15 +104,15 @@ fi
 # HTH Guide Excerpt: end validate-managed-settings
 
 # HTH Guide Excerpt: begin managed-settings-baseline
-# L1 Baseline — managed-settings.json
-# Prevents bypass mode and locks down plugin marketplaces.
+# Anthropic official example: settings-lax.json (L1 Baseline)
+# Source: github.com/anthropics/claude-code/blob/main/examples/settings/settings-lax.json
+# Prevents --dangerously-skip-permissions and blocks plugin marketplaces.
 # Deploy to:
 #   macOS:   /Library/Application Support/ClaudeCode/managed-settings.json
 #   Linux:   /etc/claude-code/managed-settings.json
 #   Windows: C:\Program Files\ClaudeCode\managed-settings.json
 cat << 'BASELINE'
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "disableBypassPermissionsMode": "disable"
   },
@@ -122,66 +122,50 @@ BASELINE
 # HTH Guide Excerpt: end managed-settings-baseline
 
 # HTH Guide Excerpt: begin managed-settings-hardened
-# L2 Hardened — managed-settings.json
-# Disables bypass, enforces managed-only permissions and hooks,
-# blocks web access, and requires confirmation for all Bash commands.
+# Anthropic official example: settings-strict.json (L2 Hardened)
+# Source: github.com/anthropics/claude-code/blob/main/examples/settings/settings-strict.json
+# Blocks bypass, enforces managed-only permissions and hooks,
+# denies web access, requires Bash approval, locks sandbox settings.
 cat << 'HARDENED'
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "disableBypassPermissionsMode": "disable",
-    "defaultMode": "default",
-    "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Read(./secrets/**)",
-      "Bash(curl *)",
-      "Bash(wget *)",
-      "Bash(rm -rf *)",
-      "WebSearch",
-      "WebFetch"
-    ],
     "ask": [
       "Bash"
-    ]
-  },
-  "allowManagedPermissionRulesOnly": true,
-  "allowManagedHooksOnly": true,
-  "strictKnownMarketplaces": []
-}
-HARDENED
-# HTH Guide Excerpt: end managed-settings-hardened
-
-# HTH Guide Excerpt: begin managed-settings-maximum
-# L3 Maximum Security — managed-settings.json
-# Full lockdown with OS-level bash sandboxing, network restrictions,
-# managed-only permissions and hooks, and no plugin marketplaces.
-cat << 'MAXIMUM'
-{
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "permissions": {
-    "disableBypassPermissionsMode": "disable",
-    "defaultMode": "default",
+    ],
     "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Read(./secrets/**)",
-      "Read(./credentials/**)",
-      "Bash(curl *)",
-      "Bash(wget *)",
-      "Bash(rm -rf *)",
-      "Bash(ssh *)",
-      "Bash(scp *)",
       "WebSearch",
       "WebFetch"
-    ],
-    "ask": [
-      "Bash"
     ]
   },
   "allowManagedPermissionRulesOnly": true,
   "allowManagedHooksOnly": true,
   "strictKnownMarketplaces": [],
+  "sandbox": {
+    "autoAllowBashIfSandboxed": false,
+    "excludedCommands": [],
+    "network": {
+      "allowUnixSockets": [],
+      "allowAllUnixSockets": false,
+      "allowLocalBinding": false,
+      "allowedDomains": [],
+      "httpProxyPort": null,
+      "socksProxyPort": null
+    },
+    "enableWeakerNestedSandbox": false
+  }
+}
+HARDENED
+# HTH Guide Excerpt: end managed-settings-hardened
+
+# HTH Guide Excerpt: begin managed-settings-sandbox
+# Anthropic official example: settings-bash-sandbox.json (L3 Sandbox)
+# Source: github.com/anthropics/claude-code/blob/main/examples/settings/settings-bash-sandbox.json
+# Enables OS-level bash sandboxing with no escape hatch.
+# Platform support: macOS (Seatbelt), Linux/WSL2 (bubblewrap).
+cat << 'SANDBOX'
+{
+  "allowManagedPermissionRulesOnly": true,
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": false,
@@ -198,7 +182,86 @@ cat << 'MAXIMUM'
     "enableWeakerNestedSandbox": false
   }
 }
-MAXIMUM
-# HTH Guide Excerpt: end managed-settings-maximum
+SANDBOX
+# HTH Guide Excerpt: end managed-settings-sandbox
+
+# HTH Guide Excerpt: begin managed-settings-comprehensive
+# Comprehensive managed-settings.json — combines all security controls.
+# Reference: code.claude.com/docs/en/settings
+# Extends the official examples with practical deny rules, model
+# restrictions, org login enforcement, and MCP server controls.
+cat << 'COMPREHENSIVE'
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "deny": [
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(rm -rf *)",
+      "Bash(ssh *)",
+      "Bash(scp *)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(./credentials/**)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "ask": [
+      "Bash"
+    ],
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm test)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)"
+    ]
+  },
+  "allowManagedPermissionRulesOnly": true,
+  "allowManagedHooksOnly": true,
+  "strictKnownMarketplaces": [],
+  "env": {
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  },
+  "model": "claude-sonnet-4-6",
+  "availableModels": ["sonnet", "haiku"],
+  "forceLoginMethod": "claudeai",
+  "forceLoginOrgUUID": "REPLACE-WITH-YOUR-ORG-UUID",
+  "cleanupPeriodDays": 7,
+  "allowedMcpServers": [
+    {"serverName": "github"},
+    {"serverName": "memory"}
+  ],
+  "deniedMcpServers": [
+    {"serverName": "filesystem"},
+    {"serverName": "shell"},
+    {"serverName": "puppeteer"}
+  ],
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": false,
+    "allowUnsandboxedCommands": false,
+    "excludedCommands": ["docker"],
+    "network": {
+      "allowUnixSockets": [],
+      "allowAllUnixSockets": false,
+      "allowLocalBinding": false,
+      "allowedDomains": [
+        "github.com",
+        "*.npmjs.org",
+        "registry.yarnpkg.com"
+      ],
+      "httpProxyPort": null,
+      "socksProxyPort": null
+    },
+    "enableWeakerNestedSandbox": false
+  }
+}
+COMPREHENSIVE
+# HTH Guide Excerpt: end managed-settings-comprehensive
 
 summary
