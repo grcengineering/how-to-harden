@@ -67,7 +67,7 @@ fi
 pass "7.1 managed-settings.json is valid JSON"
 
 # Check critical security settings
-BYPASS_DISABLED=$(jq -r '.disableBypassPermissionsMode // "not set"' "${MANAGED_PATH}")
+BYPASS_DISABLED=$(jq -r '(.permissions.disableBypassPermissionsMode // .disableBypassPermissionsMode // "not set")' "${MANAGED_PATH}")
 MANAGED_PERMS_ONLY=$(jq -r '.allowManagedPermissionRulesOnly // "not set"' "${MANAGED_PATH}")
 MANAGED_HOOKS_ONLY=$(jq -r '.allowManagedHooksOnly // "not set"' "${MANAGED_PATH}")
 DEFAULT_MODE=$(jq -r '.permissions.defaultMode // "not set"' "${MANAGED_PATH}")
@@ -102,5 +102,103 @@ else
   warn "7.1 No deny rules configured — consider adding restrictions"
 fi
 # HTH Guide Excerpt: end validate-managed-settings
+
+# HTH Guide Excerpt: begin managed-settings-baseline
+# L1 Baseline — managed-settings.json
+# Prevents bypass mode and locks down plugin marketplaces.
+# Deploy to:
+#   macOS:   /Library/Application Support/ClaudeCode/managed-settings.json
+#   Linux:   /etc/claude-code/managed-settings.json
+#   Windows: C:\Program Files\ClaudeCode\managed-settings.json
+cat << 'BASELINE'
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "disableBypassPermissionsMode": "disable"
+  },
+  "strictKnownMarketplaces": []
+}
+BASELINE
+# HTH Guide Excerpt: end managed-settings-baseline
+
+# HTH Guide Excerpt: begin managed-settings-hardened
+# L2 Hardened — managed-settings.json
+# Disables bypass, enforces managed-only permissions and hooks,
+# blocks web access, and requires confirmation for all Bash commands.
+cat << 'HARDENED'
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "defaultMode": "default",
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(rm -rf *)",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "ask": [
+      "Bash"
+    ]
+  },
+  "allowManagedPermissionRulesOnly": true,
+  "allowManagedHooksOnly": true,
+  "strictKnownMarketplaces": []
+}
+HARDENED
+# HTH Guide Excerpt: end managed-settings-hardened
+
+# HTH Guide Excerpt: begin managed-settings-maximum
+# L3 Maximum Security — managed-settings.json
+# Full lockdown with OS-level bash sandboxing, network restrictions,
+# managed-only permissions and hooks, and no plugin marketplaces.
+cat << 'MAXIMUM'
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "defaultMode": "default",
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(./credentials/**)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(rm -rf *)",
+      "Bash(ssh *)",
+      "Bash(scp *)",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "ask": [
+      "Bash"
+    ]
+  },
+  "allowManagedPermissionRulesOnly": true,
+  "allowManagedHooksOnly": true,
+  "strictKnownMarketplaces": [],
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": false,
+    "allowUnsandboxedCommands": false,
+    "excludedCommands": [],
+    "network": {
+      "allowUnixSockets": [],
+      "allowAllUnixSockets": false,
+      "allowLocalBinding": false,
+      "allowedDomains": [],
+      "httpProxyPort": null,
+      "socksProxyPort": null
+    },
+    "enableWeakerNestedSandbox": false
+  }
+}
+MAXIMUM
+# HTH Guide Excerpt: end managed-settings-maximum
 
 summary

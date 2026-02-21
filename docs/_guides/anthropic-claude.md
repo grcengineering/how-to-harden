@@ -6,7 +6,7 @@ slug: "anthropic-claude"
 tier: "1"
 category: "Productivity"
 description: "AI platform security hardening for Claude API, Console, SSO, workspace isolation, and admin controls"
-version: "0.2.0"
+version: "0.3.0"
 maturity: "draft"
 last_updated: "2026-02-21"
 ---
@@ -1040,6 +1040,10 @@ Configure granular permission rules in managed settings to control which tools C
 
 **Time to Complete:** ~20 minutes
 
+#### Code Implementation
+
+{% include pack-code.html vendor="anthropic-claude" section="7.2" %}
+
 #### Validation & Testing
 1. [ ] Attempt to read a `.env` file via Claude Code — should be denied
 2. [ ] Attempt to run `curl` via Claude Code — should be denied
@@ -1117,6 +1121,10 @@ When this file exists, it takes **exclusive control** — users cannot add, modi
 3. URL wildcards are supported (e.g., `https://*.company.com/*`)
 
 **Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="anthropic-claude" section="7.3" %}
 
 #### Validation & Testing
 1. [ ] Verify managed-mcp.json is deployed (if using exclusive control)
@@ -1336,6 +1344,7 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 |------|---------|----------|---------|--------|
 | 2026-02-21 | 0.1.0 | draft | Initial guide: 12 controls across 6 categories, API pack scripts for Admin API | `Claude Code (Opus 4.6)` |
 | 2026-02-21 | 0.2.0 | draft | Added Section 7: Claude Code Enterprise Controls — MDM managed settings, permission restrictions, MCP server control, developer analytics | `Claude Code (Opus 4.6)` |
+| 2026-02-21 | 0.3.0 | draft | Added MDM config templates (L1/L2/L3 profiles), permission deny rule examples, sandbox config, managed-mcp.json template, MCP allowlist/denylist config | `Claude Code (Opus 4.6)` |
 
 ---
 
