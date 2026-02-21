@@ -38,6 +38,23 @@
 </div>
 {% endif %}
 
+{% if control.config %}
+<div class="pack-code-section">
+<details class="pack-details">
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: Config</span></summary>
+<div class="pack-details-content">
+<div class="pack-file-header">
+<span class="pack-file-type pack-type-config">{{ control.config.filename }}</span>
+<a href="{{ control.config.source_url }}" target="_blank" rel="noopener noreferrer" class="pack-source-link">View source on GitHub &nearr;</a>
+</div>
+{% for excerpt in control.config.excerpts %}
+<pre><code class="language-{{ control.config.lang }}">{{ excerpt[1].content | strip | xml_escape }}</code></pre>
+{% endfor %}
+</div>
+</details>
+</div>
+{% endif %}
+
 {% if control.api %}
 <div class="pack-code-section">
 <details class="pack-details">

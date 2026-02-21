@@ -10,63 +10,7 @@ source "$(dirname "$0")/common.sh"
 
 banner "7.3: Control MCP Server Access"
 
-# HTH Guide Excerpt: begin managed-mcp-config
-# managed-mcp.json — exclusive MCP server control
-# Reference: code.claude.com/docs/en/mcp#managed-mcp-configuration
-# When this file exists at the system path, it takes exclusive control:
-# users cannot add, modify, or use any MCP servers not defined here.
-# Deploy alongside managed-settings.json at the same OS-specific path:
-#   macOS:   /Library/Application Support/ClaudeCode/managed-mcp.json
-#   Linux:   /etc/claude-code/managed-mcp.json
-#   Windows: C:\Program Files\ClaudeCode\managed-mcp.json
-#
-# Note: Server-managed settings cannot distribute MCP server configs —
-# this file must be deployed via MDM, Group Policy, or Ansible.
-cat << 'MANAGED_MCP'
-{
-  "mcpServers": {
-    "approved-github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
-      }
-    },
-    "approved-postgres": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-postgres"],
-      "env": {
-        "DATABASE_URL": "${APPROVED_DB_URL}"
-      }
-    }
-  }
-}
-MANAGED_MCP
-# HTH Guide Excerpt: end managed-mcp-config
-
-# HTH Guide Excerpt: begin mcp-allowlist-denylist
-# MCP server allowlist/denylist via managed-settings.json
-# Reference: code.claude.com/docs/en/settings#mcp-configuration-managed
-# Use this when you want guardrails without exclusive MCP control.
-# Deny rules always take precedence over allow rules.
-# undefined = no restrictions; empty array [] = complete lockdown.
-cat << 'MCP_LISTS'
-{
-  "allowedMcpServers": [
-    {"serverName": "github"},
-    {"serverName": "memory"},
-    {"serverName": "postgres"}
-  ],
-  "deniedMcpServers": [
-    {"serverName": "filesystem"},
-    {"serverName": "shell"},
-    {"serverName": "puppeteer"}
-  ],
-  "enableAllProjectMcpServers": false
-}
-MCP_LISTS
-# HTH Guide Excerpt: end mcp-allowlist-denylist
-
+# HTH Guide Excerpt: begin validate-mcp-access
 # Validate MCP configuration on this machine
 MCP_PATH=""
 MANAGED_PATH=""
@@ -125,5 +69,6 @@ if [[ -n "${MANAGED_PATH}" ]] && [[ -f "${MANAGED_PATH}" ]]; then
     pass "7.3 Project MCP servers require explicit approval"
   fi
 fi
+# HTH Guide Excerpt: end validate-mcp-access
 
 summary

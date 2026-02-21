@@ -90,7 +90,7 @@ detect_lang() {
     *.go)         echo "go" ;;
     *.rb)         echo "ruby" ;;
     *.toml)       echo "toml" ;;
-    *.json)       echo "json" ;;
+    *.json|*.jsonc) echo "json" ;;
     *.kql)        echo "kql" ;;
     *.spl)        echo "spl" ;;
     *.graphql)    echo "graphql" ;;
@@ -113,6 +113,7 @@ detect_type() {
     */cli/*)        echo "cli" ;;
     */sdk/*)        echo "sdk" ;;
     */db/*)         echo "db" ;;
+    */config/*)     echo "config" ;;
     */siem/sigma/*) echo "sigma" ;;
     */scripts/*)    echo "scripts" ;;
     *)              echo "other" ;;
@@ -164,6 +165,7 @@ process_vendor() {
   declare -A section_cli
   declare -A section_sdk
   declare -A section_db
+  declare -A section_config
   declare -A section_sigma
 
   for file in "${marked_files[@]}"; do
@@ -199,6 +201,9 @@ process_vendor() {
         ;;
       db)
         section_db["${section}"]="${file}|${rel_path}|${basename}"
+        ;;
+      config)
+        section_config["${section}"]="${file}|${rel_path}|${basename}"
         ;;
       sigma)
         # Sigma can have multiple files per section (-b, -c, etc.)
@@ -236,6 +241,29 @@ process_vendor() {
       for region in ${regions}; do
         local content
         content=$(extract_region "${tf_file}" "${region}")
+        echo "      ${region}:" >> "${tmp_file}"
+        echo "        content: |" >> "${tmp_file}"
+        echo "${content}" | sed 's/^/          /' >> "${tmp_file}"
+      done
+    fi
+
+    # Config
+    if [ -n "${section_config[${section}]+x}" ]; then
+      IFS='|' read -r cfg_file cfg_rel cfg_basename <<< "${section_config[${section}]}"
+      local cfg_lang
+      cfg_lang=$(detect_lang "${cfg_basename}")
+
+      echo "  config:" >> "${tmp_file}"
+      echo "    lang: \"${cfg_lang}\"" >> "${tmp_file}"
+      echo "    filename: \"${cfg_basename}\"" >> "${tmp_file}"
+      echo "    source_url: \"${GITHUB_BASE}/${cfg_rel}\"" >> "${tmp_file}"
+      echo "    excerpts:" >> "${tmp_file}"
+
+      local regions
+      regions=$(list_regions "${cfg_file}")
+      for region in ${regions}; do
+        local content
+        content=$(extract_region "${cfg_file}" "${region}")
         echo "      ${region}:" >> "${tmp_file}"
         echo "        content: |" >> "${tmp_file}"
         echo "${content}" | sed 's/^/          /' >> "${tmp_file}"
@@ -393,6 +421,7 @@ for vendor_dir in "${PACKS_DIR}"/*/; do
      ls "${vendor_dir}"/cli/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/sdk/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/db/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
+     ls "${vendor_dir}"/config/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/siem/sigma/hth-*.yml 2>/dev/null | head -1 > /dev/null 2>&1; then
     process_vendor "${vendor}"
   fi

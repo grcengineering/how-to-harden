@@ -9,109 +9,7 @@ source "$(dirname "$0")/common.sh"
 
 banner "7.2: Restrict Claude Code Permissions and Tools"
 
-# HTH Guide Excerpt: begin permission-deny-rules
-# Example permission deny rules for managed-settings.json
-# Reference: code.claude.com/docs/en/permissions
-# Evaluation order: deny (first) → ask → allow (last). First match wins.
-# Rule syntax: "Tool" or "Tool(specifier)" with glob patterns.
-#   * matches files in a single directory
-#   ** matches recursively across directories
-cat << 'DENY_RULES'
-{
-  "permissions": {
-    "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Read(./secrets/**)",
-      "Read(./credentials/**)",
-      "Read(~/.ssh/**)",
-      "Read(~/.aws/**)",
-      "Bash(curl *)",
-      "Bash(wget *)",
-      "Bash(rm -rf *)",
-      "Bash(ssh *)",
-      "Bash(scp *)",
-      "Bash(nc *)",
-      "Bash(base64 *)",
-      "WebSearch",
-      "WebFetch"
-    ],
-    "ask": [
-      "Bash",
-      "Bash(git push *)",
-      "Bash(git commit *)",
-      "Bash(docker *)",
-      "Bash(kubectl *)"
-    ],
-    "allow": [
-      "Bash(npm run *)",
-      "Bash(npm test)",
-      "Bash(git status)",
-      "Bash(git diff *)",
-      "Bash(git log *)",
-      "Bash(ls *)",
-      "Bash(cat package.json)",
-      "Read",
-      "Edit"
-    ]
-  }
-}
-DENY_RULES
-# HTH Guide Excerpt: end permission-deny-rules
-
-# HTH Guide Excerpt: begin permission-enforcement
-# Enforce managed-only permission rules
-# When allowManagedPermissionRulesOnly is true, user and project
-# settings cannot define allow, ask, or deny rules — only rules
-# from managed settings apply.
-cat << 'ENFORCEMENT'
-{
-  "permissions": {
-    "disableBypassPermissionsMode": "disable",
-    "defaultMode": "default"
-  },
-  "allowManagedPermissionRulesOnly": true,
-  "allowManagedHooksOnly": true,
-  "disableAllHooks": false
-}
-ENFORCEMENT
-# HTH Guide Excerpt: end permission-enforcement
-
-# HTH Guide Excerpt: begin sandbox-config
-# OS-level bash sandbox configuration (L3 — Maximum Security)
-# Reference: code.claude.com/docs/en/sandboxing
-# Sandboxing provides filesystem and network isolation for Bash commands.
-# Platform support:
-#   macOS:     Seatbelt (built-in, no install needed)
-#   Linux/WSL2: bubblewrap (apt install bubblewrap socat)
-#   Windows:   Not yet supported
-cat << 'SANDBOX'
-{
-  "sandbox": {
-    "enabled": true,
-    "autoAllowBashIfSandboxed": false,
-    "allowUnsandboxedCommands": false,
-    "excludedCommands": [
-      "docker"
-    ],
-    "network": {
-      "allowUnixSockets": [],
-      "allowAllUnixSockets": false,
-      "allowLocalBinding": false,
-      "allowedDomains": [
-        "*.npmjs.org",
-        "registry.npmjs.org",
-        "github.com"
-      ],
-      "httpProxyPort": null,
-      "socksProxyPort": null
-    },
-    "enableWeakerNestedSandbox": false
-  }
-}
-SANDBOX
-# HTH Guide Excerpt: end sandbox-config
-
+# HTH Guide Excerpt: begin validate-permissions
 # Validate permission configuration on this machine
 MANAGED_PATH=""
 case "$(uname -s)" in
@@ -156,5 +54,6 @@ if [[ "${SANDBOX_ENABLED}" == "true" ]]; then
 else
   info "7.2 Bash sandbox is not enabled (optional L3 control)"
 fi
+# HTH Guide Excerpt: end validate-permissions
 
 summary

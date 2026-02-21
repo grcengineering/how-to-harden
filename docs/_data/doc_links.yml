@@ -29,6 +29,12 @@ amplitude:
   api_docs: "https://www.docs.developers.amplitude.com/analytics/apis/"
   hardening_docs: "https://amplitude.com/security-and-privacy"
 
+anthropic-claude:
+  product_docs: "https://docs.anthropic.com/"
+  api_docs: "https://docs.anthropic.com/en/api/"
+  hardening_docs: "https://code.claude.com/docs/en/security"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
+
 asana:
   product_docs: "https://help.asana.com/s/"
   api_docs: "https://developers.asana.com/"

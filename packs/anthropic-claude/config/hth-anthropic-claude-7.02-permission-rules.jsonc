@@ -1,0 +1,103 @@
+// HTH Anthropic Claude Control 7.2: Restrict Claude Code Permissions and Tools
+// Profile: L2 | NIST: AC-3, CM-7 | SOC 2: CC6.1, CC6.3
+// https://howtoharden.com/guides/anthropic-claude/#72-restrict-claude-code-permissions-and-tools
+//
+// Permission rules for managed-settings.json
+// Reference: code.claude.com/docs/en/permissions
+// Evaluation order: deny (first) → ask → allow (last). First match wins.
+// Rule syntax: "Tool" or "Tool(specifier)" with glob patterns.
+
+// HTH Guide Excerpt: begin permission-deny-rules
+// Example permission deny/ask/allow rules for managed-settings.json
+// Deny blocks access. Ask prompts the user. Allow auto-approves.
+// Glob patterns: * matches files in one directory, ** matches recursively.
+  {
+    "permissions": {
+      "deny": [
+        "Read(./.env)",
+        "Read(./.env.*)",
+        "Read(./secrets/**)",
+        "Read(./credentials/**)",
+        "Read(~/.ssh/**)",
+        "Read(~/.aws/**)",
+        "Bash(curl *)",
+        "Bash(wget *)",
+        "Bash(rm -rf *)",
+        "Bash(ssh *)",
+        "Bash(scp *)",
+        "Bash(nc *)",
+        "Bash(base64 *)",
+        "WebSearch",
+        "WebFetch"
+      ],
+      "ask": [
+        "Bash",
+        "Bash(git push *)",
+        "Bash(git commit *)",
+        "Bash(docker *)",
+        "Bash(kubectl *)"
+      ],
+      "allow": [
+        "Bash(npm run *)",
+        "Bash(npm test)",
+        "Bash(git status)",
+        "Bash(git diff *)",
+        "Bash(git log *)",
+        "Bash(ls *)",
+        "Bash(cat package.json)",
+        "Read",
+        "Edit"
+      ]
+    }
+  }
+// HTH Guide Excerpt: end permission-deny-rules
+
+// HTH Guide Excerpt: begin permission-enforcement
+// Enforce managed-only permission rules
+// Reference: code.claude.com/docs/en/settings
+// When allowManagedPermissionRulesOnly is true, user and project
+// settings cannot define allow, ask, or deny rules — only rules
+// from managed settings apply.
+  {
+    "permissions": {
+      "disableBypassPermissionsMode": "disable",
+      "defaultMode": "default"
+    },
+    "allowManagedPermissionRulesOnly": true,
+    "allowManagedHooksOnly": true,
+    "disableAllHooks": false
+  }
+// HTH Guide Excerpt: end permission-enforcement
+
+// HTH Guide Excerpt: begin sandbox-config
+// OS-level bash sandbox configuration (L3 — Maximum Security)
+// Reference: code.claude.com/docs/en/sandboxing
+// Sandboxing provides filesystem and network isolation for Bash commands.
+// Platform support:
+//   macOS:     Seatbelt (built-in, no install needed)
+//   Linux/WSL2: bubblewrap (apt install bubblewrap socat)
+//   Windows:   Not yet supported
+  {
+    "sandbox": {
+      "enabled": true,
+      "autoAllowBashIfSandboxed": false,
+      "allowUnsandboxedCommands": false,
+      "excludedCommands": [
+        "docker"
+      ],
+      "network": {
+        "allowUnixSockets": [],
+        "allowAllUnixSockets": false,
+        "allowLocalBinding": false,
+        "allowedDomains": [
+          "*.npmjs.org",
+          "registry.npmjs.org",
+          "github.com"
+        ],
+        "httpProxyPort": null,
+        "socksProxyPort": null
+      },
+      "enableWeakerNestedSandbox": false
+    }
+  }
+// HTH Guide Excerpt: end sandbox-config

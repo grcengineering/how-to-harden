@@ -96,10 +96,6 @@ Configure SAML-based SSO to authenticate 1Password users through your corporate 
 
 **Time to Complete:** ~1 hour
 
-#### Code Implementation
-
-{% include pack-code.html vendor="1password" section="1.1" %}
-
 ---
 
 ### 1.2 Configure SCIM Provisioning
@@ -137,10 +133,6 @@ Configure SCIM for automatic user provisioning and deprovisioning synced with yo
 2. Verify user appears in 1Password
 3. Test deactivation removes 1Password access
 
-#### Code Implementation
-
-{% include pack-code.html vendor="1password" section="1.2" %}
-
 ---
 
 ## 2. Admin & Team Policies
@@ -177,10 +169,6 @@ Configure master password requirements for 1Password accounts.
 
 **Time to Complete:** ~10 minutes
 
-#### Code Implementation
-
-{% include pack-code.html vendor="1password" section="2.1" %}
-
 ---
 
 ### 2.2 Configure Firewall Rules
@@ -207,10 +195,6 @@ Configure IP-based access restrictions for 1Password access.
    - **Allow IPs:** Whitelist corporate IPs (L3)
    - **Deny IPs:** Block known bad IPs
 2. Configure rule priority
-
-**Example Configuration:**
-
-{% include pack-code.html vendor="1password" section="2.2" %}
 
 ---
 
@@ -251,10 +235,6 @@ Configure policies for team member permissions and capabilities.
 
 **Time to Complete:** ~30 minutes
 
-#### Code Implementation
-
-{% include pack-code.html vendor="1password" section="2.3" %}
-
 ---
 
 ### 2.4 Implement Role-Based Access
@@ -283,10 +263,6 @@ Configure role-based access for team administration.
 1. Limit Owner role to essential personnel
 2. Assign Admin role for IT administrators
 3. Use custom roles for specific needs (Enterprise)
-
-#### Code Implementation
-
-{% include pack-code.html vendor="1password" section="2.4" %}
 
 ---
 
@@ -326,10 +302,6 @@ Configure vault access permissions following least privilege principles.
 | Infrastructure | Server/API credentials | IT group |
 | Executive | Sensitive business | Executives only |
 
-#### Code Implementation
-
-{% include pack-code.html vendor="1password" section="3.1" %}
-
 ---
 
 ### 3.2 Configure Item Sharing Policies
@@ -357,10 +329,6 @@ Configure how items can be shared within and outside the organization.
 1. Enable/disable share links
 2. Configure link expiration defaults
 3. Require view limits
-
-#### Code Implementation
-
-{% include pack-code.html vendor="1password" section="3.2" %}
 
 ---
 
@@ -396,10 +364,6 @@ Enable audit logging for security monitoring and compliance.
    - Generic webhook
 3. Select events to stream
 
-#### Code Implementation
-
-{% include pack-code.html vendor="1password" section="4.1" %}
-
 ---
 
 ### 4.2 Monitor Security Dashboard
@@ -428,10 +392,6 @@ Monitor the security dashboard for insights and recommendations.
 1. Notify users of compromised passwords
 2. Enforce password updates for weak items
 3. Track 2FA adoption progress
-
-#### Code Implementation
-
-{% include pack-code.html vendor="1password" section="4.2" %}
 
 ---
 

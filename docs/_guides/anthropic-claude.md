@@ -6,7 +6,7 @@ slug: "anthropic-claude"
 tier: "1"
 category: "Productivity"
 description: "AI platform security hardening for Claude API, Console, SSO, workspace isolation, and admin controls"
-version: "0.3.0"
+version: "0.4.0"
 maturity: "draft"
 last_updated: "2026-02-21"
 ---
@@ -1345,6 +1345,7 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 | 2026-02-21 | 0.1.0 | draft | Initial guide: 12 controls across 6 categories, API pack scripts for Admin API | `Claude Code (Opus 4.6)` |
 | 2026-02-21 | 0.2.0 | draft | Added Section 7: Claude Code Enterprise Controls — MDM managed settings, permission restrictions, MCP server control, developer analytics | `Claude Code (Opus 4.6)` |
 | 2026-02-21 | 0.3.0 | draft | Added MDM config templates (L1/L2/L3 profiles), permission deny rule examples, sandbox config, managed-mcp.json template, MCP allowlist/denylist config | `Claude Code (Opus 4.6)` |
+| 2026-02-21 | 0.4.0 | draft | Added Config-as-Code pack type with standalone .jsonc config files; added code pack buttons, doc links; moved JSON configs from API scripts to config/ directory | `Claude Code (Opus 4.6)` |
 
 ---
 

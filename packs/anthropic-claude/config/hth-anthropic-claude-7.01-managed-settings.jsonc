@@ -1,0 +1,158 @@
+// HTH Anthropic Claude Control 7.1: Deploy Managed Settings via MDM
+// Profile: L1 | NIST: CM-6, CM-7 | SOC 2: CC6.1, CC8.1
+// https://howtoharden.com/guides/anthropic-claude/#71-deploy-managed-settings-via-mdm
+//
+// managed-settings.json — MDM-deployed enterprise configuration
+// Deploy to OS-specific system path:
+//   macOS:   /Library/Application Support/ClaudeCode/managed-settings.json
+//   Linux:   /etc/claude-code/managed-settings.json
+//   Windows: C:\Program Files\ClaudeCode\managed-settings.json
+
+// HTH Guide Excerpt: begin managed-settings-baseline
+// Anthropic official example: settings-lax.json (L1 Baseline)
+// Source: github.com/anthropics/claude-code/blob/main/examples/settings/settings-lax.json
+// Prevents --dangerously-skip-permissions and blocks plugin marketplaces.
+  {
+    "permissions": {
+      "disableBypassPermissionsMode": "disable"
+    },
+    "strictKnownMarketplaces": []
+  }
+// HTH Guide Excerpt: end managed-settings-baseline
+
+// HTH Guide Excerpt: begin managed-settings-hardened
+// Anthropic official example: settings-strict.json (L2 Hardened)
+// Source: github.com/anthropics/claude-code/blob/main/examples/settings/settings-strict.json
+// Blocks bypass, enforces managed-only permissions and hooks,
+// denies web access, requires Bash approval, locks sandbox settings.
+  {
+    "permissions": {
+      "disableBypassPermissionsMode": "disable",
+      "ask": [
+        "Bash"
+      ],
+      "deny": [
+        "WebSearch",
+        "WebFetch"
+      ]
+    },
+    "allowManagedPermissionRulesOnly": true,
+    "allowManagedHooksOnly": true,
+    "strictKnownMarketplaces": [],
+    "sandbox": {
+      "autoAllowBashIfSandboxed": false,
+      "excludedCommands": [],
+      "network": {
+        "allowUnixSockets": [],
+        "allowAllUnixSockets": false,
+        "allowLocalBinding": false,
+        "allowedDomains": [],
+        "httpProxyPort": null,
+        "socksProxyPort": null
+      },
+      "enableWeakerNestedSandbox": false
+    }
+  }
+// HTH Guide Excerpt: end managed-settings-hardened
+
+// HTH Guide Excerpt: begin managed-settings-sandbox
+// Anthropic official example: settings-bash-sandbox.json (L3 Sandbox)
+// Source: github.com/anthropics/claude-code/blob/main/examples/settings/settings-bash-sandbox.json
+// Enables OS-level bash sandboxing with no escape hatch.
+// Platform support: macOS (Seatbelt), Linux/WSL2 (bubblewrap).
+  {
+    "allowManagedPermissionRulesOnly": true,
+    "sandbox": {
+      "enabled": true,
+      "autoAllowBashIfSandboxed": false,
+      "allowUnsandboxedCommands": false,
+      "excludedCommands": [],
+      "network": {
+        "allowUnixSockets": [],
+        "allowAllUnixSockets": false,
+        "allowLocalBinding": false,
+        "allowedDomains": [],
+        "httpProxyPort": null,
+        "socksProxyPort": null
+      },
+      "enableWeakerNestedSandbox": false
+    }
+  }
+// HTH Guide Excerpt: end managed-settings-sandbox
+
+// HTH Guide Excerpt: begin managed-settings-comprehensive
+// Comprehensive managed-settings.json — combines all security controls.
+// Reference: code.claude.com/docs/en/settings
+// Extends the official examples with practical deny rules, model
+// restrictions, org login enforcement, and MCP server controls.
+  {
+    "$schema": "https://json.schemastore.org/claude-code-settings.json",
+    "permissions": {
+      "disableBypassPermissionsMode": "disable",
+      "deny": [
+        "Bash(curl *)",
+        "Bash(wget *)",
+        "Bash(rm -rf *)",
+        "Bash(ssh *)",
+        "Bash(scp *)",
+        "Read(./.env)",
+        "Read(./.env.*)",
+        "Read(./secrets/**)",
+        "Read(./credentials/**)",
+        "Read(~/.ssh/**)",
+        "Read(~/.aws/**)",
+        "WebSearch",
+        "WebFetch"
+      ],
+      "ask": [
+        "Bash"
+      ],
+      "allow": [
+        "Bash(npm run *)",
+        "Bash(npm test)",
+        "Bash(git status)",
+        "Bash(git diff *)",
+        "Bash(git log *)"
+      ]
+    },
+    "allowManagedPermissionRulesOnly": true,
+    "allowManagedHooksOnly": true,
+    "strictKnownMarketplaces": [],
+    "env": {
+      "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+    },
+    "model": "claude-sonnet-4-6",
+    "availableModels": ["sonnet", "haiku"],
+    "forceLoginMethod": "claudeai",
+    "forceLoginOrgUUID": "REPLACE-WITH-YOUR-ORG-UUID",
+    "cleanupPeriodDays": 7,
+    "allowedMcpServers": [
+      {"serverName": "github"},
+      {"serverName": "memory"}
+    ],
+    "deniedMcpServers": [
+      {"serverName": "filesystem"},
+      {"serverName": "shell"},
+      {"serverName": "puppeteer"}
+    ],
+    "sandbox": {
+      "enabled": true,
+      "autoAllowBashIfSandboxed": false,
+      "allowUnsandboxedCommands": false,
+      "excludedCommands": ["docker"],
+      "network": {
+        "allowUnixSockets": [],
+        "allowAllUnixSockets": false,
+        "allowLocalBinding": false,
+        "allowedDomains": [
+          "github.com",
+          "*.npmjs.org",
+          "registry.yarnpkg.com"
+        ],
+        "httpProxyPort": null,
+        "socksProxyPort": null
+      },
+      "enableWeakerNestedSandbox": false
+    }
+  }
+// HTH Guide Excerpt: end managed-settings-comprehensive
