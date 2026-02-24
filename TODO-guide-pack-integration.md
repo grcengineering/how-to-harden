@@ -57,6 +57,7 @@ Implemented marker-based extraction: pack files contain `# hth:begin`/`# hth:end
 ### Future Enhancements
 - [ ] GitHub Action to auto-run `sync-packs-to-data.sh` when pack files change
 - [ ] Jekyll build verification in CI (requires Ruby/Jekyll in CI)
+- [ ] **Automated Source Doc Staleness Detection (CI):** Scheduled CI jobs that check if a vendor's source documentation (hardening guides, product docs, API docs, Terraform provider docs, CLI docs) has been updated since the HTH guide's `last_updated` date. If changes detected, trigger Claude Code + PAI to analyze the delta and update the HTH guide accordingly. This keeps HTH guides perpetually current with vendor-provided security guidance. Implementation approach: store source doc URLs + last-known hashes/dates in `doc_links.yml` or a separate `doc_freshness.yml`, schedule weekly/monthly checks, use HTTP Last-Modified/ETag or content hashing, generate PRs with proposed guide updates.
 
 ## Architecture Reference
 

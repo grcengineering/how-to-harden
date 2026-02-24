@@ -941,9 +941,39 @@ body {
   color: #06b6d4;
 }
 
+.code-pack-sigma:hover {
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
 .code-pack-siem:hover {
   border-color: #f59e0b;
   color: #f59e0b;
+}
+
+.code-pack-cli:hover {
+  border-color: #ec4899;
+  color: #ec4899;
+}
+
+.code-pack-sdk:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+.code-pack-db:hover {
+  border-color: #14b8a6;
+  color: #14b8a6;
+}
+
+.code-pack-controls:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.code-pack-scripts:hover {
+  border-color: #64748b;
+  color: #64748b;
 }
 
 .code-pack-label {
