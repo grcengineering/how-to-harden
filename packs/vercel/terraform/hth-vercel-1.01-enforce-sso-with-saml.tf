@@ -1,8 +1,8 @@
 # =============================================================================
-# HTH Vercel Control 1.1: Enforce SSO with MFA
+# HTH Vercel Control 1.1: Enforce SSO with SAML
 # Profile Level: L1 (Baseline)
-# Frameworks: NIST IA-2(1)
-# Source: https://howtoharden.com/guides/vercel/#11-enforce-sso-with-mfa
+# Frameworks: NIST IA-2(1), IA-8
+# Source: https://howtoharden.com/guides/vercel/#11-enforce-sso-with-saml
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform

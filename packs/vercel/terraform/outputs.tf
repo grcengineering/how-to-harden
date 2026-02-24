@@ -7,7 +7,7 @@
 
 
 # -----------------------------------------------------------------------------
-# Section 1.1: SSO with MFA
+# Section 1.1: SSO with SAML
 # -----------------------------------------------------------------------------
 
 output "saml_enforced" {
@@ -17,7 +17,7 @@ output "saml_enforced" {
 
 
 # -----------------------------------------------------------------------------
-# Section 1.2: Team Access Controls
+# Section 1.3: RBAC
 # -----------------------------------------------------------------------------
 
 output "team_members_configured" {
@@ -32,7 +32,7 @@ output "team_members_configured" {
 
 
 # -----------------------------------------------------------------------------
-# Section 2.1: Secure Deployments
+# Section 2.1: Deployment Protection
 # -----------------------------------------------------------------------------
 
 output "hardened_project_id" {
@@ -52,7 +52,27 @@ output "preview_deployments_disabled" {
 
 
 # -----------------------------------------------------------------------------
-# Section 3.1: Environment Variables
+# Section 3.1: WAF
+# -----------------------------------------------------------------------------
+
+output "firewall_enabled" {
+  description = "Whether the Web Application Firewall is enabled"
+  value       = var.firewall_enabled
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 4.2: Attack Challenge Mode
+# -----------------------------------------------------------------------------
+
+output "attack_challenge_mode" {
+  description = "Whether Attack Challenge Mode is active"
+  value       = var.attack_challenge_mode_enabled
+}
+
+
+# -----------------------------------------------------------------------------
+# Section 6.1: Environment Variables
 # -----------------------------------------------------------------------------
 
 output "environment_variables_configured" {
@@ -67,27 +87,12 @@ output "sensitive_env_policy_enabled" {
 
 
 # -----------------------------------------------------------------------------
-# Section 3.2: Access Token Security
-# -----------------------------------------------------------------------------
-
-output "trusted_ips_configured" {
-  description = "Whether trusted IP allowlisting is configured (L2+)"
-  value       = var.profile_level >= 2 && length(var.trusted_ip_addresses) > 0
-}
-
-
-# -----------------------------------------------------------------------------
-# Section 4.1: Audit Log & Monitoring
+# Section 8.1: Log Drains
 # -----------------------------------------------------------------------------
 
 output "log_drain_id" {
   description = "ID of the security log drain"
   value       = var.log_drain_endpoint != "" ? vercel_log_drain.security_logging[0].id : null
-}
-
-output "firewall_enabled" {
-  description = "Whether the Web Application Firewall is enabled (L2+)"
-  value       = var.profile_level >= 2 && var.firewall_enabled
 }
 
 
@@ -111,11 +116,13 @@ output "hardening_summary" {
     team_members_managed         = length(var.team_members) > 0
     git_fork_protection          = var.git_fork_protection_enabled
     preview_deployments_disabled = var.profile_level >= 2
+    firewall_enabled             = var.firewall_enabled
+    waf_owasp_action             = var.waf_owasp_action
+    attack_challenge_mode        = var.attack_challenge_mode_enabled
     sensitive_env_policy         = var.profile_level >= 2 ? "enforced" : "default"
-    trusted_ip_allowlisting      = var.profile_level >= 2 && length(var.trusted_ip_addresses) > 0
+    trusted_ip_allowlisting      = var.profile_level >= 3 && length(var.trusted_ip_addresses) > 0
+    secure_compute               = var.profile_level >= 3 && var.secure_compute_enabled
     log_drain_configured         = var.log_drain_endpoint != ""
-    firewall_enabled             = var.profile_level >= 2 && var.firewall_enabled
     ip_privacy_hardening         = var.profile_level >= 2
-    automation_bypass_disabled   = var.profile_level >= 3
   }
 }

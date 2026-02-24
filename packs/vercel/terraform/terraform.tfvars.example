@@ -16,8 +16,8 @@
 # -----------------------------------------------------------------------------
 # Profile Level
 # 1 = Baseline (L1) -- essential controls for all organizations
-# 2 = Hardened (L2) -- adds preview protection, IP allowlisting, WAF
-# 3 = Maximum Security (L3) -- strictest controls for regulated industries
+# 2 = Hardened (L2) -- adds WAF, rate limiting, retention policies, SCIM
+# 3 = Maximum Security (L3) -- Secure Compute, trusted IPs, automation bypass
 # -----------------------------------------------------------------------------
 profile_level = 1
 
@@ -36,26 +36,39 @@ vercel_team_id = "team_..."
 
 
 # -----------------------------------------------------------------------------
-# Section 1.1: SSO with MFA (Enterprise)
-# Requires Vercel Enterprise plan
+# Section 1.1: Enforce SSO with SAML (Enterprise)
 # -----------------------------------------------------------------------------
 saml_enforced = true
 
 
 # -----------------------------------------------------------------------------
-# Section 1.2: Team Access Controls
-# Map of team members with email and role
-# Roles: OWNER, MEMBER, DEVELOPER, VIEWER (VIEWER requires Enterprise)
+# Section 1.3: Enforce Least-Privilege RBAC
+# Roles: OWNER, MEMBER, DEVELOPER, SECURITY, BILLING, VIEWER, CONTRIBUTOR
 # -----------------------------------------------------------------------------
 team_members = {
   # "alice" = { email = "alice@example.com", role = "MEMBER" }
   # "bob"   = { email = "bob@example.com",   role = "DEVELOPER" }
+  # "carol" = { email = "carol@example.com", role = "SECURITY" }
+}
+
+# Access Groups (Enterprise, L2+)
+access_groups = {
+  # "frontend-team" = {}
+  # "platform-team" = {}
+}
+
+# Access Group project assignments (Enterprise, L2+)
+access_group_projects = {
+  # "frontend-web-app" = {
+  #   group_name = "frontend-team"
+  #   project_id = "prj_..."
+  #   role       = "DEVELOPER"
+  # }
 }
 
 
 # -----------------------------------------------------------------------------
-# Section 2.1: Secure Deployments
-# Project ID to apply hardening controls
+# Section 2.1: Configure Deployment Protection
 # -----------------------------------------------------------------------------
 project_id = "prj_..."
 
@@ -73,21 +86,71 @@ production_branch = "main"
 #   export TF_VAR_preview_password="your-password"
 preview_password = ""
 
+# Trusted IPs (L3 only -- Enterprise)
+trusted_ip_addresses = [
+  # { value = "203.0.113.0/24", note = "Office egress" },
+  # { value = "198.51.100.0/24", note = "VPN egress" },
+]
+
 
 # -----------------------------------------------------------------------------
-# Section 2.2: Git Integration Security
+# Section 2.2: Harden Git Integration
 # -----------------------------------------------------------------------------
-
-# Block deployments from forked repositories
 git_fork_protection_enabled = true
-
-# Require signed/verified commits for deployments (L2+ recommended)
-require_verified_commits = false
+require_verified_commits    = false
 
 
 # -----------------------------------------------------------------------------
-# Section 3.1: Environment Variables
-# Manage environment variables with sensitivity flags and environment scoping
+# Section 3.1: Enable WAF with Managed Rulesets
+# Start with "log" action to monitor, then switch to "deny" after tuning.
+# -----------------------------------------------------------------------------
+firewall_enabled = false
+waf_owasp_action = "log"
+
+
+# -----------------------------------------------------------------------------
+# Section 3.2: IP Blocking and Rate Limiting
+# -----------------------------------------------------------------------------
+blocked_ip_addresses = [
+  # { value = "192.0.2.0/24", note = "Known malicious range" },
+]
+
+# Rate limiting rules (L2+ only)
+rate_limit_rules = [
+  # {
+  #   name             = "auth-rate-limit"
+  #   path             = "/api/auth"
+  #   limit            = 10
+  #   window           = 60
+  #   follow_up_action = "deny"
+  # },
+  # {
+  #   name             = "registration-rate-limit"
+  #   path             = "/api/register"
+  #   limit            = 5
+  #   window           = 60
+  #   follow_up_action = "deny"
+  # },
+]
+
+
+# -----------------------------------------------------------------------------
+# Section 4.1: Secure Compute (L3 -- Enterprise, $6,500/yr)
+# -----------------------------------------------------------------------------
+secure_compute_enabled = false
+secure_compute_name    = "hth-secure-network"
+secure_compute_region  = "us-east-1"
+
+
+# -----------------------------------------------------------------------------
+# Section 4.2: Attack Challenge Mode
+# Enable during active attacks -- challenges ALL visitors with JS check
+# -----------------------------------------------------------------------------
+attack_challenge_mode_enabled = false
+
+
+# -----------------------------------------------------------------------------
+# Section 6.1: Environment Variable Security
 # -----------------------------------------------------------------------------
 environment_variables = {
   # "DATABASE_URL" = {
@@ -104,19 +167,17 @@ environment_variables = {
 
 
 # -----------------------------------------------------------------------------
-# Section 3.2: Access Token Security (L2+)
-# Trusted IP addresses for IP allowlisting
-# Only applied when profile_level >= 2
+# Section 6.2: Deployment Retention Policy (L2+)
 # -----------------------------------------------------------------------------
-trusted_ip_addresses = [
-  # { value = "203.0.113.0/24", note = "Office egress" },
-  # { value = "198.51.100.0/24", note = "VPN egress" },
-]
+deployments_to_keep                   = 10
+deployment_expiration_days            = 30
+deployment_expiration_days_canceled   = 7
+deployment_expiration_days_errored    = 7
+deployment_expiration_days_production = 365
 
 
 # -----------------------------------------------------------------------------
-# Section 4.1: Audit Log & Monitoring
-# Log drain configuration for forwarding logs to your SIEM
+# Section 8.1: Log Drains for SIEM
 # -----------------------------------------------------------------------------
 
 # HTTPS endpoint for receiving logs (leave empty to skip)
@@ -132,6 +193,3 @@ log_drain_sources = ["static", "edge", "external", "build", "lambda"]
 
 # Environments to collect logs from
 log_drain_environments = ["production", "preview"]
-
-# Enable Web Application Firewall (L2+ only, requires Pro/Enterprise)
-firewall_enabled = false
