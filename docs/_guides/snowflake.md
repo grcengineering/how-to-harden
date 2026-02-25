@@ -67,9 +67,9 @@ Require multi-factor authentication for ALL Snowflake users. The 2024 breach was
 - **2024 Snowflake Breach:** UNC5537 threat actor used stolen credentials to access 165+ customer accounts. AT&T, Ticketmaster, Santander, LendingTree, and others affected. $370,000 ransom paid by AT&T. 500+ million individuals had data exposed.
 
 #### Prerequisites
-- [ ] ACCOUNTADMIN role access
-- [ ] User inventory for enrollment tracking
-- [ ] Communication plan for MFA rollout
+- ACCOUNTADMIN role access
+- User inventory for enrollment tracking
+- Communication plan for MFA rollout
 
 #### ClickOps Implementation
 

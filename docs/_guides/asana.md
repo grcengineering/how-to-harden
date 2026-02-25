@@ -56,9 +56,9 @@ This guide covers Asana Admin Console security including SAML SSO, authenticatio
 Configure SAML SSO to centralize authentication for Asana users.
 
 #### Prerequisites
-- [ ] Asana Enterprise or Enterprise+ subscription
-- [ ] SAML 2.0 compatible IdP (Okta, Azure AD, Google Workspace)
-- [ ] Super Admin access
+- Asana Enterprise or Enterprise+ subscription
+- SAML 2.0 compatible IdP (Okta, Azure AD, Google Workspace)
+- Super Admin access
 
 #### ClickOps Implementation
 

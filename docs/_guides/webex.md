@@ -452,7 +452,7 @@ Configure DLP controls for data protection.
 Configure Pro Pack for advanced security controls.
 
 #### Prerequisites
-- [ ] Webex Pro Pack license
+- Webex Pro Pack license
 
 #### ClickOps Implementation
 

@@ -56,9 +56,9 @@ This guide covers Coupa security including SAML SSO, role-based access control, 
 Configure SAML SSO to centralize authentication for Coupa users.
 
 #### Prerequisites
-- [ ] Coupa admin access
-- [ ] SAML 2.0 compatible identity provider
-- [ ] IdP metadata or configuration details
+- Coupa admin access
+- SAML 2.0 compatible identity provider
+- IdP metadata or configuration details
 
 #### ClickOps Implementation
 

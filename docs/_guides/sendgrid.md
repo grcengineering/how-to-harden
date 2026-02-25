@@ -63,7 +63,7 @@ Enable and enforce two-factor authentication for all SendGrid users.
 - API endpoints reject basic auth without 2FA
 
 #### Prerequisites
-- [ ] Phone number for SMS or Authy app installed
+- Phone number for SMS or Authy app installed
 
 #### ClickOps Implementation
 
@@ -105,9 +105,9 @@ Enable and enforce two-factor authentication for all SendGrid users.
 Configure SAML SSO for centralized authentication.
 
 #### Prerequisites
-- [ ] SendGrid Email API Pro, Premier, or Marketing Campaigns Advanced plan
-- [ ] Account administrator credentials
-- [ ] SAML 2.0 compatible IdP
+- SendGrid Email API Pro, Premier, or Marketing Campaigns Advanced plan
+- Account administrator credentials
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

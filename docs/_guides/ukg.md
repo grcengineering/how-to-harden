@@ -56,9 +56,9 @@ This guide covers UKG Pro security including SAML SSO, authentication features, 
 Configure SAML SSO to centralize authentication for UKG Pro users.
 
 #### Prerequisites
-- [ ] Contact UKG Pro support to enable SAML SSO
-- [ ] Include UFSSO@ukg.com in communications
-- [ ] Obtain ACS URL and Entity ID from UKG
+- Contact UKG Pro support to enable SAML SSO
+- Include UFSSO@ukg.com in communications
+- Obtain ACS URL and Entity ID from UKG
 
 #### ClickOps Implementation
 

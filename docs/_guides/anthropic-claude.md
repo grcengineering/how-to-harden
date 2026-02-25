@@ -68,10 +68,10 @@ Configure SAML 2.0 or OIDC-based SSO to authenticate Claude users through your c
 **Attack Prevented:** Credential theft, unauthorized access, orphaned accounts
 
 #### Prerequisites
-- [ ] Claude Team or Enterprise subscription
-- [ ] SAML 2.0 or OIDC compatible identity provider (Okta, Azure AD, OneLogin, Google Workspace)
-- [ ] Organization Admin access to Claude Console
-- [ ] Domain ownership for domain verification
+- Claude Team or Enterprise subscription
+- SAML 2.0 or OIDC compatible identity provider (Okta, Azure AD, OneLogin, Google Workspace)
+- Organization Admin access to Claude Console
+- Domain ownership for domain verification
 
 #### ClickOps Implementation
 
@@ -166,8 +166,8 @@ Assign the minimum necessary organization role to each user. Anthropic provides 
 **Attack Prevented:** Privilege escalation, unauthorized admin key provisioning, insider threat
 
 #### Prerequisites
-- [ ] Organization Admin access
-- [ ] Current member inventory with role justifications
+- Organization Admin access
+- Current member inventory with role justifications
 
 #### ClickOps Implementation
 
@@ -241,8 +241,8 @@ Admin API keys (`sk-ant-admin...`) grant organization-wide management access. Th
 **Attack Prevented:** Organization takeover, unauthorized workspace creation, data exfiltration via usage APIs
 
 #### Prerequisites
-- [ ] Organization Admin access
-- [ ] Secrets management solution (Vault, AWS Secrets Manager, etc.)
+- Organization Admin access
+- Secrets management solution (Vault, AWS Secrets Manager, etc.)
 
 #### ClickOps Implementation
 
@@ -308,8 +308,8 @@ Every standard API key in Anthropic Claude is scoped to a single workspace. Leve
 **Attack Prevented:** Lateral movement from development to production, blast radius of key compromise
 
 #### Prerequisites
-- [ ] Organization Admin or Workspace Admin access
-- [ ] Workspace naming convention established
+- Organization Admin or Workspace Admin access
+- Workspace naming convention established
 
 #### ClickOps Implementation
 
@@ -368,8 +368,8 @@ Establish a 90-day rotation schedule for all API keys. Since API keys can only b
 **Attack Prevented:** Stale credential exploitation, leaked key abuse
 
 #### Prerequisites
-- [ ] API key inventory with creation dates
-- [ ] Deployment pipeline that supports key rotation (secrets manager integration)
+- API key inventory with creation dates
+- Deployment pipeline that supports key rotation (secrets manager integration)
 
 #### ClickOps Implementation
 
@@ -432,8 +432,8 @@ Create separate workspaces for development, staging, and production environments
 **Attack Prevented:** Cross-environment contamination, production data exposure via development keys
 
 #### Prerequisites
-- [ ] Organization Admin access
-- [ ] Environment naming convention (e.g., `engineering-prod`, `engineering-dev`, `analytics-prod`)
+- Organization Admin access
+- Environment naming convention (e.g., `engineering-prod`, `engineering-dev`, `analytics-prod`)
 
 #### ClickOps Implementation
 
@@ -496,8 +496,8 @@ Assign users to only the workspaces they need. Workspace roles (`workspace_user`
 **Attack Prevented:** Unauthorized workspace access, privilege creep, insider threat
 
 #### Prerequisites
-- [ ] Workspace Admin or Organization Admin access
-- [ ] Team-to-workspace mapping documented
+- Workspace Admin or Organization Admin access
+- Team-to-workspace mapping documented
 
 #### ClickOps Implementation
 
@@ -557,9 +557,9 @@ Configure data residency at the workspace level to control where Claude processe
 **Attack Prevented:** Data sovereignty violations, regulatory non-compliance
 
 #### Prerequisites
-- [ ] Organization Admin access
-- [ ] Data residency requirements documented per team/workspace
-- [ ] Legal/compliance approval for geo settings
+- Organization Admin access
+- Data residency requirements documented per team/workspace
+- Legal/compliance approval for geo settings
 
 #### ClickOps Implementation
 
@@ -620,9 +620,9 @@ Understand and configure Anthropic's data retention policies. By default, API in
 **Attack Prevented:** Post-breach data exposure, regulatory non-compliance for data minimization
 
 #### Prerequisites
-- [ ] Claude Enterprise plan (for custom retention or ZDR)
-- [ ] Data classification policy for content sent to Claude
-- [ ] Legal review of Anthropic's data handling agreement
+- Claude Enterprise plan (for custom retention or ZDR)
+- Data classification policy for content sent to Claude
+- Legal review of Anthropic's data handling agreement
 
 #### ClickOps Implementation
 
@@ -683,8 +683,8 @@ Use Anthropic's Admin API usage and cost reporting endpoints to monitor token co
 **Attack Prevented:** API key abuse, cryptocurrency mining via API, unauthorized bulk data extraction
 
 #### Prerequisites
-- [ ] Admin API key provisioned
-- [ ] Monitoring infrastructure (Datadog, Grafana, etc.) or cron job for regular checks
+- Admin API key provisioned
+- Monitoring infrastructure (Datadog, Grafana, etc.) or cron job for regular checks
 
 #### ClickOps Implementation
 
@@ -746,8 +746,8 @@ Set per-workspace spend limits and rate limits to prevent cost overruns and abus
 **Attack Prevented:** Denial-of-wallet attacks, runaway cost from compromised keys or bugs
 
 #### Prerequisites
-- [ ] Organization Admin or Workspace Admin access
-- [ ] Budget allocation per workspace/team
+- Organization Admin or Workspace Admin access
+- Budget allocation per workspace/team
 
 #### ClickOps Implementation
 
@@ -809,7 +809,7 @@ Regularly audit pending organization invites. Invites in Anthropic expire after 
 **Attack Prevented:** Unauthorized organization access via intercepted/forwarded invites
 
 #### Prerequisites
-- [ ] Organization Admin access
+- Organization Admin access
 
 #### ClickOps Implementation
 
@@ -920,9 +920,9 @@ Deploy a `managed-settings.json` file to all developer workstations via MDM (Jam
 **Attack Prevented:** Permission bypass, unauthorized tool execution, malicious hook injection
 
 #### Prerequisites
-- [ ] MDM solution deployed to developer machines (Jamf, Intune, Kandji), OR Claude Team/Enterprise plan for server-managed settings
-- [ ] Security team consensus on default permission mode and deny rules
-- [ ] Inventory of approved MCP servers and tools
+- MDM solution deployed to developer machines (Jamf, Intune, Kandji), OR Claude Team/Enterprise plan for server-managed settings
+- Security team consensus on default permission mode and deny rules
+- Inventory of approved MCP servers and tools
 
 #### ClickOps Implementation
 
@@ -1015,8 +1015,8 @@ Configure granular permission rules in managed settings to control which tools C
 **Attack Prevented:** Secret exfiltration via AI agent, unauthorized file access, command injection
 
 #### Prerequisites
-- [ ] Managed settings deployment (Control 7.1)
-- [ ] Inventory of sensitive file patterns and restricted commands
+- Managed settings deployment (Control 7.1)
+- Inventory of sensitive file patterns and restricted commands
 
 #### ClickOps Implementation
 
@@ -1093,8 +1093,8 @@ Restrict which Model Context Protocol (MCP) servers Claude Code can connect to u
 **Attack Prevented:** Supply chain attack via malicious MCP server, unauthorized system access, data exfiltration through MCP tools
 
 #### Prerequisites
-- [ ] MDM deployment capability (for managed-mcp.json) or managed settings access
-- [ ] Inventory of approved MCP servers and their security posture
+- MDM deployment capability (for managed-mcp.json) or managed settings access
+- Inventory of approved MCP servers and their security posture
 
 #### ClickOps Implementation
 
@@ -1175,9 +1175,9 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 **Attack Prevented:** Unauthorized bulk code generation, cost abuse, shadow AI usage detection
 
 #### Prerequisites
-- [ ] Admin API key provisioned
-- [ ] Claude Team or Enterprise plan with Claude Code enabled
-- [ ] Monitoring infrastructure for alert thresholds
+- Admin API key provisioned
+- Claude Team or Enterprise plan with Claude Code enabled
+- Monitoring infrastructure for alert thresholds
 
 #### ClickOps Implementation
 

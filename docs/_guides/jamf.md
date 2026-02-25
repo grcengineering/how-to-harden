@@ -320,9 +320,9 @@ Deploy CIS macOS Benchmark security configurations using Jamf Compliance Editor.
 - Supports both Level 1 and Level 2 hardening
 
 #### Prerequisites
-- [ ] Download Jamf Compliance Editor from GitHub
-- [ ] Review CIS macOS Benchmark requirements
-- [ ] Test in non-production environment
+- Download Jamf Compliance Editor from GitHub
+- Review CIS macOS Benchmark requirements
+- Test in non-production environment
 
 #### Implementation
 

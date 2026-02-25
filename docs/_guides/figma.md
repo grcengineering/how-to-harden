@@ -56,9 +56,9 @@ This guide covers Figma Organization and Enterprise security including SAML SSO,
 Configure SAML SSO to centralize authentication and enforce organizational security policies.
 
 #### Prerequisites
-- [ ] Figma Organization or Enterprise plan
-- [ ] SAML 2.0 compatible identity provider
-- [ ] Verified domain in Figma
+- Figma Organization or Enterprise plan
+- SAML 2.0 compatible identity provider
+- Verified domain in Figma
 
 #### ClickOps Implementation
 
@@ -384,7 +384,7 @@ Monitor user activity through activity logs.
 Enable Governance+ for advanced security controls.
 
 #### Prerequisites
-- [ ] Figma Enterprise with Governance+ add-on
+- Figma Enterprise with Governance+ add-on
 
 #### ClickOps Implementation
 

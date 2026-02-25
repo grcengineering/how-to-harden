@@ -55,9 +55,9 @@ This guide covers Gong security including SAML SSO, user permissions, data acces
 Configure SAML SSO for Gong access.
 
 #### Prerequisites
-- [ ] Gong admin access
-- [ ] Enterprise plan
-- [ ] SAML 2.0 compatible IdP
+- Gong admin access
+- Enterprise plan
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

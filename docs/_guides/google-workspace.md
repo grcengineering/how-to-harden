@@ -71,9 +71,9 @@ Require 2-Step Verification (2SV) for all users with enforcement, not just enrol
 - **Colonial Pipeline (2021):** VPN credentials without MFA enabled ransomware deployment
 
 #### Prerequisites
-- [ ] Super Admin access to Google Admin Console
-- [ ] User communication plan for 2SV enrollment
-- [ ] Security keys for privileged users (recommended)
+- Super Admin access to Google Admin Console
+- User communication plan for 2SV enrollment
+- Security keys for privileged users (recommended)
 
 #### ClickOps Implementation
 
@@ -174,9 +174,9 @@ Limit Super Admin privileges to 2-4 dedicated accounts, enforce security keys fo
 **Attack Prevented:** Privilege escalation, lateral movement, admin account compromise
 
 #### Prerequisites
-- [ ] Inventory of current Super Admin accounts
-- [ ] Security keys for all Super Admins
-- [ ] Defined delegated admin roles
+- Inventory of current Super Admin accounts
+- Security keys for all Super Admins
+- Defined delegated admin roles
 
 #### ClickOps Implementation
 
@@ -235,9 +235,9 @@ Implement context-aware access policies that evaluate device, location, and user
 - Provides additional layer beyond authentication
 
 #### Prerequisites
-- [ ] Google Workspace Enterprise Standard or Plus
-- [ ] BeyondCorp Enterprise (for advanced features)
-- [ ] Endpoint Verification deployed to managed devices
+- Google Workspace Enterprise Standard or Plus
+- BeyondCorp Enterprise (for advanced features)
+- Endpoint Verification deployed to managed devices
 
 #### ClickOps Implementation
 
@@ -330,9 +330,9 @@ Restrict which third-party applications can access Google Workspace data via OAu
 - Multiple incidents of data-stealing apps masquerading as productivity tools
 
 #### Prerequisites
-- [ ] Inventory of currently authorized OAuth apps
-- [ ] Business justification for each approved app
-- [ ] User communication about approval process
+- Inventory of currently authorized OAuth apps
+- Business justification for each approved app
+- User communication about approval process
 
 #### ClickOps Implementation
 
@@ -439,8 +439,8 @@ Restrict external sharing of Google Drive files to prevent unauthorized data exp
 **Attack Prevented:** Data exfiltration, accidental data exposure, insider threats
 
 #### Prerequisites
-- [ ] Inventory of current sharing policies
-- [ ] Business requirements for external collaboration
+- Inventory of current sharing policies
+- Business requirements for external collaboration
 
 #### ClickOps Implementation
 
@@ -489,8 +489,8 @@ Restrict external sharing of Google Drive files to prevent unauthorized data exp
 Configure Google Workspace DLP rules to detect and prevent sharing of sensitive information like credit cards, SSNs, and confidential documents.
 
 #### Prerequisites
-- [ ] Google Workspace Enterprise Standard or Plus
-- [ ] Defined sensitive data types for your organization
+- Google Workspace Enterprise Standard or Plus
+- Defined sensitive data types for your organization
 
 #### ClickOps Implementation
 

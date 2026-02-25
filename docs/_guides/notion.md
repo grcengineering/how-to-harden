@@ -56,9 +56,9 @@ This guide covers Notion workspace and organization security including SAML SSO,
 Configure SAML SSO to centralize authentication for Notion users.
 
 #### Prerequisites
-- [ ] Notion Business or Enterprise plan
-- [ ] At least one verified domain
-- [ ] SAML 2.0 compatible IdP
+- Notion Business or Enterprise plan
+- At least one verified domain
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

@@ -55,8 +55,8 @@ This guide covers Abnormal portal security including SSO, admin access, and inte
 Configure SAML SSO for Abnormal portal access.
 
 #### Prerequisites
-- [ ] Abnormal admin access
-- [ ] SAML 2.0 compatible IdP
+- Abnormal admin access
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

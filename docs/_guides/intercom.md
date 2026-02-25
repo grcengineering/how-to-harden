@@ -56,9 +56,9 @@ This guide covers Intercom security including SAML SSO, workspace access, conver
 Configure SAML SSO to centralize authentication for Intercom teammates.
 
 #### Prerequisites
-- [ ] Intercom admin access
-- [ ] Enterprise or Pro plan
-- [ ] SAML 2.0 compatible IdP
+- Intercom admin access
+- Enterprise or Pro plan
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

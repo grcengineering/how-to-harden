@@ -56,9 +56,9 @@ This guide covers Monday.com security including SAML SSO, authentication policie
 Configure SAML SSO to centralize authentication for Monday.com users.
 
 #### Prerequisites
-- [ ] Monday.com Enterprise plan
-- [ ] SAML 2.0 compatible IdP
-- [ ] Account administrator access
+- Monday.com Enterprise plan
+- SAML 2.0 compatible IdP
+- Account administrator access
 
 #### ClickOps Implementation
 

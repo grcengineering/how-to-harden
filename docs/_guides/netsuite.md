@@ -214,11 +214,11 @@ Implement approval process for SuiteApp installations.
 
 **Step 2: Create Approval Process**
 Before installing any SuiteApp:
-- [ ] Review bundle permissions
-- [ ] Check vendor security certifications
-- [ ] Evaluate data access requirements
-- [ ] Document business justification
-- [ ] Test in sandbox first
+- Review bundle permissions
+- Check vendor security certifications
+- Evaluate data access requirements
+- Document business justification
+- Test in sandbox first
 
 **Step 3: Restrict Installation**
 1. Limit bundle installation to Administrators

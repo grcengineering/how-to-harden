@@ -524,12 +524,12 @@ Regularly audit and review Mimecast policies for effectiveness.
 3. Tune policies as needed
 
 **Quarterly Checklist:**
-- [ ] Review impersonation protection settings
-- [ ] Verify VIP list is current
-- [ ] Audit permitted sender lists
-- [ ] Review URL/Attachment block rates
-- [ ] Check admin access list
-- [ ] Verify MX record configuration
+- Review impersonation protection settings
+- Verify VIP list is current
+- Audit permitted sender lists
+- Review URL/Attachment block rates
+- Check admin access list
+- Verify MX record configuration
 
 ---
 

@@ -211,7 +211,7 @@ Enable SmartFactor Authentication for risk-based adaptive MFA.
 - Protects against brute force and phishing attacks
 
 #### Prerequisites
-- [ ] OneLogin Expert plan or higher
+- OneLogin Expert plan or higher
 
 #### ClickOps Implementation
 

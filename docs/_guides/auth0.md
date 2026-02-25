@@ -64,8 +64,8 @@ Brute force protection blocks IP addresses that repeatedly fail to authenticate 
 - Default threshold of 10 may be too high for sensitive applications
 
 #### Prerequisites
-- [ ] Auth0 Dashboard access with admin privileges
-- [ ] Secondary admin account (for recovery)
+- Auth0 Dashboard access with admin privileges
+- Secondary admin account (for recovery)
 
 #### ClickOps Implementation
 

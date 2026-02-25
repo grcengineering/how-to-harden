@@ -190,12 +190,12 @@ Require admin approval for Marketplace app installation. Apps have broad access 
 
 **Step 3: Create App Evaluation Checklist**
 Before approving any app:
-- [ ] Review requested permissions (OAuth scopes)
-- [ ] Check vendor security certifications (SOC 2, ISO 27001)
-- [ ] Review app update frequency
-- [ ] Check for known vulnerabilities
-- [ ] Evaluate data access requirements
-- [ ] Document business justification
+- Review requested permissions (OAuth scopes)
+- Check vendor security certifications (SOC 2, ISO 27001)
+- Review app update frequency
+- Check for known vulnerabilities
+- Evaluate data access requirements
+- Document business justification
 
 #### Marketplace App Risk Assessment
 

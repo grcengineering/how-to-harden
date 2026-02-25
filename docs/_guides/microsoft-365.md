@@ -71,10 +71,10 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 - **October 2024 Midnight Blizzard Phishing Campaign:** Targeted thousands of users across 100+ organizations using RDP configuration file attachments
 
 #### Prerequisites
-- [ ] Microsoft Entra ID P1 or P2 license (for Conditional Access)
-- [ ] FIDO2-compatible security keys for privileged users
-- [ ] Global Administrator or Security Administrator role
-- [ ] User inventory for phased rollout planning
+- Microsoft Entra ID P1 or P2 license (for Conditional Access)
+- FIDO2-compatible security keys for privileged users
+- Global Administrator or Security Administrator role
+- User inventory for phased rollout planning
 
 #### ClickOps Implementation
 
@@ -187,8 +187,8 @@ Block legacy authentication protocols (POP3, IMAP, SMTP AUTH, Basic Auth) that c
 - **Midnight Blizzard (2024):** Initial access via password spray would have been blocked if legacy auth was disabled
 
 #### Prerequisites
-- [ ] Inventory of applications using legacy auth
-- [ ] Migration plan for legacy applications to modern auth (OAuth 2.0)
+- Inventory of applications using legacy auth
+- Migration plan for legacy applications to modern auth (OAuth 2.0)
 
 #### ClickOps Implementation
 
@@ -256,9 +256,9 @@ Enable just-in-time privileged access using Microsoft Entra Privileged Identity 
 - **Midnight Blizzard:** Persistent OAuth app permissions allowed extended access; time-limited roles would have reduced blast radius
 
 #### Prerequisites
-- [ ] Microsoft Entra ID P2 license
-- [ ] Global Administrator or Privileged Role Administrator
-- [ ] Defined approval workflow owners
+- Microsoft Entra ID P2 license
+- Global Administrator or Privileged Role Administrator
+- Defined approval workflow owners
 
 #### ClickOps Implementation
 
@@ -330,9 +330,9 @@ Create and secure emergency access accounts that are excluded from Conditional A
 - Monitored for any usage
 
 #### Prerequisites
-- [ ] Global Administrator access
-- [ ] Secure offline storage for credentials (safe, vault)
-- [ ] Monitoring/alerting configured
+- Global Administrator access
+- Secure offline storage for credentials (safe, vault)
+- Monitoring/alerting configured
 
 #### ClickOps Implementation
 
@@ -441,8 +441,8 @@ Prevent users from granting OAuth consent to third-party applications. Require a
 - **Midnight Blizzard:** Leveraged OAuth applications to gain elevated access and create malicious apps with full mailbox access
 
 #### Prerequisites
-- [ ] Application Administrator or Global Administrator
-- [ ] Defined application approval workflow
+- Application Administrator or Global Administrator
+- Defined application approval workflow
 
 #### ClickOps Implementation
 

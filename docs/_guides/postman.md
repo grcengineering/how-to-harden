@@ -63,8 +63,8 @@ Configure SAML SSO to centralize authentication and enforce organizational secur
 - Supports regulatory compliance requirements
 
 #### Prerequisites
-- [ ] Postman Enterprise plan
-- [ ] SAML 2.0 compatible identity provider
+- Postman Enterprise plan
+- SAML 2.0 compatible identity provider
 
 #### ClickOps Implementation
 
@@ -356,7 +356,7 @@ Configure Postman API key expiration to limit credential lifetime.
 Centrally manage team API keys with visibility and revocation capabilities.
 
 #### Prerequisites
-- [ ] Postman Enterprise plan
+- Postman Enterprise plan
 
 #### ClickOps Implementation
 

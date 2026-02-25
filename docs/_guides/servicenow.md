@@ -62,9 +62,9 @@ Configure SAML SSO to centralize authentication for ServiceNow users.
 - Required for enterprise security
 
 #### Prerequisites
-- [ ] ServiceNow admin access
-- [ ] SAML 2.0 or OIDC compatible IdP
-- [ ] Multi-Provider SSO plugin activated
+- ServiceNow admin access
+- SAML 2.0 or OIDC compatible IdP
+- Multi-Provider SSO plugin activated
 
 #### ClickOps Implementation
 

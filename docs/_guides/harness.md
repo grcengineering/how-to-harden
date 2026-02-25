@@ -56,9 +56,9 @@ This guide covers Harness security including SAML SSO, RBAC, secret management, 
 Configure SAML SSO to centralize authentication for Harness users.
 
 #### Prerequisites
-- [ ] Harness admin access
-- [ ] SAML 2.0 compatible IdP
-- [ ] Enterprise tier (for some features)
+- Harness admin access
+- SAML 2.0 compatible IdP
+- Enterprise tier (for some features)
 
 #### ClickOps Implementation
 

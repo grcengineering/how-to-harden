@@ -67,10 +67,10 @@ Configure Vault authentication methods appropriate to each use case. Avoid using
 - **Codecov Breach (2021):** Compromised CI environment extracted secrets, including HashiCorp's GPG signing key
 
 #### Prerequisites
-- [ ] Vault cluster deployed and initialized
-- [ ] Authentication backends configured
-- [ ] Policy structure designed
-- [ ] Identity provider integration (for OIDC)
+- Vault cluster deployed and initialized
+- Authentication backends configured
+- Policy structure designed
+- Identity provider integration (for OIDC)
 
 #### ClickOps Implementation
 

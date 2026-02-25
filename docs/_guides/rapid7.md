@@ -63,9 +63,9 @@ Configure SAML SSO for centralized authentication to the Rapid7 Command Platform
 - Required for enterprise security compliance
 
 #### Prerequisites
-- [ ] Rapid7 Insight Platform subscription
-- [ ] Command Platform Administrator role
-- [ ] SAML 2.0 compatible IdP
+- Rapid7 Insight Platform subscription
+- Command Platform Administrator role
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

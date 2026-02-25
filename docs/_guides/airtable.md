@@ -56,9 +56,9 @@ This guide covers Airtable Enterprise Admin Panel security including SSO configu
 Configure SAML SSO to centralize authentication for Airtable users.
 
 #### Prerequisites
-- [ ] Airtable Enterprise plan
-- [ ] Verified domain in Admin Panel
-- [ ] SAML 2.0 compatible identity provider
+- Airtable Enterprise plan
+- Verified domain in Admin Panel
+- SAML 2.0 compatible identity provider
 
 #### ClickOps Implementation
 
@@ -108,7 +108,7 @@ Configure SAML SSO to centralize authentication for Airtable users.
 Require 2FA for organization members.
 
 #### Prerequisites
-- [ ] Enterprise Scale plan for enforced 2FA
+- Enterprise Scale plan for enforced 2FA
 
 #### ClickOps Implementation
 

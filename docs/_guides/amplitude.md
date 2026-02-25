@@ -56,9 +56,9 @@ This guide covers Amplitude security including SAML SSO, organization/project ac
 Configure SAML SSO to centralize authentication for Amplitude users.
 
 #### Prerequisites
-- [ ] Amplitude admin access
-- [ ] Enterprise or Growth plan
-- [ ] SAML 2.0 compatible IdP
+- Amplitude admin access
+- Enterprise or Growth plan
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

@@ -64,8 +64,8 @@ Secure Duo Admin Panel access with MFA, role-based access, and monitoring. Admin
 - Admin actions should be audited and limited
 
 #### Prerequisites
-- [ ] Duo Admin Panel access
-- [ ] Organization with defined admin roles
+- Duo Admin Panel access
+- Organization with defined admin roles
 
 #### ClickOps Implementation
 
@@ -383,8 +383,8 @@ Configure secure user enrollment processes that verify identity before granting 
 Configure Duo's Trusted Endpoints feature to verify device compliance before granting access.
 
 #### Prerequisites
-- [ ] Duo Beyond or Duo Advantage plan
-- [ ] Device management solution (Intune, JAMF, etc.)
+- Duo Beyond or Duo Advantage plan
+- Device management solution (Intune, JAMF, etc.)
 
 #### ClickOps Implementation
 

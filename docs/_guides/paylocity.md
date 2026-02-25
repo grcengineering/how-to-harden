@@ -56,9 +56,9 @@ This guide covers Paylocity security including SAML SSO, MFA, role-based access 
 Configure SAML SSO to centralize authentication for Paylocity users.
 
 #### Prerequisites
-- [ ] Paylocity account with SSO feature enabled
-- [ ] Contact Paylocity Support (service@paylocity.com) to enable SAML 2.0
-- [ ] SAML 2.0 compatible identity provider
+- Paylocity account with SSO feature enabled
+- Contact Paylocity Support (service@paylocity.com) to enable SAML 2.0
+- SAML 2.0 compatible identity provider
 
 #### ClickOps Implementation
 

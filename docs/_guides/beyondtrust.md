@@ -67,9 +67,9 @@ Require MFA for all BeyondTrust console access, remote support sessions, and API
 - **December 2024 BeyondTrust Breach:** Chinese APT (Salt Typhoon suspected) used stolen Remote Support API key to access U.S. Treasury Department workstations and unclassified documents
 
 #### Prerequisites
-- [ ] BeyondTrust console admin access
-- [ ] MFA provider integration (RADIUS, SAML)
-- [ ] User inventory for enrollment
+- BeyondTrust console admin access
+- MFA provider integration (RADIUS, SAML)
+- User inventory for enrollment
 
 #### ClickOps Implementation
 

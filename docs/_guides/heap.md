@@ -55,9 +55,9 @@ This guide covers Heap security including SAML SSO, environment access, API secu
 Configure SAML SSO to centralize authentication for Heap users.
 
 #### Prerequisites
-- [ ] Heap admin access
-- [ ] Business or Enterprise plan
-- [ ] SAML 2.0 compatible IdP
+- Heap admin access
+- Business or Enterprise plan
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

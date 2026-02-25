@@ -55,10 +55,10 @@ This guide covers Clari security including SAML SSO, user permissions, forecast 
 Configure SAML SSO for Clari access. Clari integrates with SSO/MFA solutions via SAML 2.0.
 
 #### Prerequisites
-- [ ] Clari admin access
-- [ ] Enterprise tier subscription
-- [ ] Contact Clari support to enable SAML (no self-service)
-- [ ] SAML 2.0 compatible IdP
+- Clari admin access
+- Enterprise tier subscription
+- Contact Clari support to enable SAML (no self-service)
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

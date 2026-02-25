@@ -63,9 +63,9 @@ Configure SAML SSO to centralize authentication for Fivetran users.
 - Simplifies user lifecycle management
 
 #### Prerequisites
-- [ ] Fivetran account with Account Administrator role
-- [ ] SAML 2.0 compatible identity provider
-- [ ] IdP SuperAdmin or AppAdmin access
+- Fivetran account with Account Administrator role
+- SAML 2.0 compatible identity provider
+- IdP SuperAdmin or AppAdmin access
 
 #### ClickOps Implementation
 
@@ -190,7 +190,7 @@ Enable automatic user provisioning on first login.
 Configure session timeout for dashboard access.
 
 #### Prerequisites
-- [ ] Enterprise or Business Critical plan (for custom timeout)
+- Enterprise or Business Critical plan (for custom timeout)
 
 #### ClickOps Implementation
 

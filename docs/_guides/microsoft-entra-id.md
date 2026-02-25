@@ -71,9 +71,9 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 - **CVE-2025-55241:** Critical Entra ID privilege escalation vulnerability (CVSS 10.0) could compromise any tenant
 
 #### Prerequisites
-- [ ] Microsoft Entra ID P1 or P2 license
-- [ ] FIDO2 security keys for privileged users
-- [ ] Security Administrator or Global Administrator role
+- Microsoft Entra ID P1 or P2 license
+- FIDO2 security keys for privileged users
+- Security Administrator or Global Administrator role
 
 #### ClickOps Implementation
 
@@ -156,9 +156,9 @@ Create highly protected emergency access accounts excluded from Conditional Acce
 - Monitored for any sign-in activity
 
 #### Prerequisites
-- [ ] Global Administrator access
-- [ ] Secure offline storage (safe, vault)
-- [ ] Alerting configured for emergency account usage
+- Global Administrator access
+- Secure offline storage (safe, vault)
+- Alerting configured for emergency account usage
 
 #### ClickOps Implementation
 
@@ -325,7 +325,7 @@ Require privileged users to access admin portals only from Intune-compliant or H
 Use Entra ID Protection to automatically block sign-ins classified as high risk based on machine learning detection of suspicious patterns.
 
 #### Prerequisites
-- [ ] Microsoft Entra ID P2 license
+- Microsoft Entra ID P2 license
 
 #### ClickOps Implementation
 
@@ -379,8 +379,8 @@ Implement Privileged Identity Management (PIM) to eliminate standing admin privi
 - **Midnight Blizzard:** Time-limited OAuth permissions would have reduced attack duration
 
 #### Prerequisites
-- [ ] Microsoft Entra ID P2 license
-- [ ] Global Administrator or Privileged Role Administrator
+- Microsoft Entra ID P2 license
+- Global Administrator or Privileged Role Administrator
 
 #### ClickOps Implementation
 

@@ -111,9 +111,9 @@ Configure Salesforce Network Access to restrict API calls from third-party integ
 ### 2.1.1 IP Allowlisting: Restricting Gainsight
 
 #### Prerequisites
-- [ ] Salesforce Enterprise Edition or higher
-- [ ] Gainsight's current static egress IP addresses
-- [ ] System Administrator access
+- Salesforce Enterprise Edition or higher
+- Gainsight's current static egress IP addresses
+- System Administrator access
 
 #### Gainsight IP Addresses
 As of 2025-12-12, Gainsight uses these production egress IPs:
@@ -148,10 +148,10 @@ For each IP address:
 #### Monitoring & Maintenance
 
 **Quarterly Review Checklist:**
-- [ ] Verify Gainsight IPs haven't changed (contact CSM or check documentation)
-- [ ] Update description fields with new verification date
-- [ ] Review Event Monitoring logs for blocked attempts
-- [ ] Test integration after any changes
+- Verify Gainsight IPs haven't changed (contact CSM or check documentation)
+- Update description fields with new verification date
+- Review Event Monitoring logs for blocked attempts
+- Test integration after any changes
 
 **Alert Configuration:**
 If using Salesforce Shield Event Monitoring, see the DB Query in the Code Pack for section 2.1 above.

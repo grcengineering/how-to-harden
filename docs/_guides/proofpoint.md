@@ -56,9 +56,9 @@ This guide covers Proofpoint administration security including SAML SSO, admin a
 Configure SAML SSO for Proofpoint administration console.
 
 #### Prerequisites
-- [ ] Proofpoint admin access
-- [ ] SAML 2.0 compatible IdP
-- [ ] Organization ID from Proofpoint
+- Proofpoint admin access
+- SAML 2.0 compatible IdP
+- Organization ID from Proofpoint
 
 #### ClickOps Implementation
 

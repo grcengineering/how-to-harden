@@ -56,9 +56,9 @@ This guide covers SAP Concur security including SAML SSO, expense policies, appr
 Configure SAML SSO to centralize authentication for Concur users.
 
 #### Prerequisites
-- [ ] SAP Concur admin access
-- [ ] SAP Cloud Identity Services or external IdP
-- [ ] SAML 2.0 configuration details
+- SAP Concur admin access
+- SAP Cloud Identity Services or external IdP
+- SAML 2.0 configuration details
 
 #### ClickOps Implementation
 

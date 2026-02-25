@@ -55,9 +55,9 @@ This guide covers Stripe Dashboard security including SSO, team permissions, API
 Configure SAML SSO for Stripe Dashboard access.
 
 #### Prerequisites
-- [ ] Stripe account with SSO support
-- [ ] Account owner access
-- [ ] SAML 2.0 compatible IdP
+- Stripe account with SSO support
+- Account owner access
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

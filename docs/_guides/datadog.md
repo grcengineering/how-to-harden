@@ -63,9 +63,9 @@ Configure SAML SSO to centralize authentication for Datadog users.
 - Required for SAML strict mode
 
 #### Prerequisites
-- [ ] Datadog Administrator access
-- [ ] SAML 2.0 compatible identity provider
-- [ ] IdP admin credentials
+- Datadog Administrator access
+- SAML 2.0 compatible identity provider
+- IdP admin credentials
 
 #### ClickOps Implementation
 

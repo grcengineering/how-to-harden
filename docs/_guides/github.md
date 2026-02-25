@@ -80,8 +80,8 @@ Require all organization members to enable MFA on their GitHub accounts. This pr
 **Why This Matters:** GitHub accounts with write access can inject malicious code into your supply chain affecting all downstream users.
 
 #### Prerequisites
-- [ ] GitHub organization owner/admin access
-- [ ] Member communication plan (give 30-day notice before enforcement)
+- GitHub organization owner/admin access
+- Member communication plan (give 30-day notice before enforcement)
 
 #### ClickOps Implementation
 

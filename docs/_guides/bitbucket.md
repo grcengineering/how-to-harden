@@ -63,7 +63,7 @@ Require two-step verification (2SV) for all workspace members to protect against
 - Security keys (FIDO U2F) provide phishing-resistant authentication
 
 #### Prerequisites
-- [ ] Bitbucket Premium or Atlassian Guard subscription
+- Bitbucket Premium or Atlassian Guard subscription
 
 #### ClickOps Implementation
 
@@ -143,7 +143,7 @@ Restrict Bitbucket access to approved IP addresses to prevent access from unauth
 - Required for Premium/Atlassian Guard
 
 #### Prerequisites
-- [ ] Bitbucket Premium subscription
+- Bitbucket Premium subscription
 
 #### ClickOps Implementation
 
@@ -544,16 +544,16 @@ Conduct regular security reviews of workspace configuration and access.
 #### Review Checklist
 
 **Monthly Reviews:**
-- [ ] Review workspace member list
-- [ ] Audit admin access
-- [ ] Review installed apps
-- [ ] Check for public repositories
+- Review workspace member list
+- Audit admin access
+- Review installed apps
+- Check for public repositories
 
 **Quarterly Reviews:**
-- [ ] Full access review
-- [ ] Branch protection audit
-- [ ] Pipeline security review
-- [ ] Secret rotation check
+- Full access review
+- Branch protection audit
+- Pipeline security review
+- Secret rotation check
 
 ---
 

@@ -399,8 +399,8 @@ Configure secure account recovery options.
 Integrate Keeper with your SAML identity provider for centralized authentication.
 
 #### Prerequisites
-- [ ] Keeper SSO Connect Cloud license
-- [ ] SAML 2.0 compatible identity provider
+- Keeper SSO Connect Cloud license
+- SAML 2.0 compatible identity provider
 
 #### ClickOps Implementation
 

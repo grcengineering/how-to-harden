@@ -56,9 +56,9 @@ This guide covers Sentry security including SAML SSO, team access, data scrubbin
 Configure SAML SSO to centralize authentication for Sentry users.
 
 #### Prerequisites
-- [ ] Sentry organization owner access
-- [ ] Business or Enterprise tier
-- [ ] SAML 2.0 compatible IdP
+- Sentry organization owner access
+- Business or Enterprise tier
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

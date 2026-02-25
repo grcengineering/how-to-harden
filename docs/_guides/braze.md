@@ -56,9 +56,9 @@ This guide covers Braze security including SAML SSO, permission sets, API key ma
 Configure SAML SSO to centralize authentication for Braze users.
 
 #### Prerequisites
-- [ ] Braze admin access
-- [ ] SAML 2.0 compatible IdP
-- [ ] SSO feature enabled (enterprise plans)
+- Braze admin access
+- SAML 2.0 compatible IdP
+- SSO feature enabled (enterprise plans)
 
 #### ClickOps Implementation
 

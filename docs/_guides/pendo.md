@@ -55,9 +55,9 @@ This guide covers Pendo security including SAML SSO, subscription access, API se
 Configure SAML SSO to centralize authentication for Pendo users.
 
 #### Prerequisites
-- [ ] Pendo admin access
-- [ ] Enterprise plan
-- [ ] SAML 2.0 compatible IdP
+- Pendo admin access
+- Enterprise plan
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

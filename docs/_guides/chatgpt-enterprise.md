@@ -66,9 +66,9 @@ Configure SAML-based SSO to authenticate ChatGPT Enterprise users through your c
 **Attack Prevented:** Credential theft, unauthorized access, orphaned accounts
 
 #### Prerequisites
-- [ ] ChatGPT Enterprise subscription
-- [ ] SAML 2.0 compatible identity provider
-- [ ] Workspace Owner access
+- ChatGPT Enterprise subscription
+- SAML 2.0 compatible identity provider
+- Workspace Owner access
 
 #### ClickOps Implementation
 
@@ -291,8 +291,8 @@ Configure data retention policies to balance compliance requirements with data m
 Deploy Enterprise Key Management to use your own encryption keys for ChatGPT data, providing customer-controlled encryption.
 
 #### Prerequisites
-- [ ] ChatGPT Enterprise with EKM add-on
-- [ ] AWS KMS or compatible key management system
+- ChatGPT Enterprise with EKM add-on
+- AWS KMS or compatible key management system
 
 #### ClickOps Implementation
 
@@ -487,8 +487,8 @@ Monitor ChatGPT Enterprise usage through the admin console analytics dashboard f
 For organizations using Microsoft 365, integrate ChatGPT Enterprise with Microsoft Purview for advanced data governance and compliance controls.
 
 #### Prerequisites
-- [ ] Microsoft 365 E5 or Purview add-on
-- [ ] ChatGPT Enterprise
+- Microsoft 365 E5 or Purview add-on
+- ChatGPT Enterprise
 
 #### Implementation
 1. Configure Purview connector for ChatGPT

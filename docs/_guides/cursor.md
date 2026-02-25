@@ -77,9 +77,9 @@ Require all developers to authenticate with a Cursor account instead of using th
 **Attack Prevented:** Unauthorized tool usage, lack of accountability
 
 #### Prerequisites
-- [ ] Cursor account for each developer
-- [ ] Decision on authentication method (email/password, GitHub OAuth, Google OAuth)
-- [ ] Communication plan for mandatory account creation
+- Cursor account for each developer
+- Decision on authentication method (email/password, GitHub OAuth, Google OAuth)
+- Communication plan for mandatory account creation
 
 #### ClickOps Implementation
 
@@ -206,9 +206,9 @@ Configure Cursor's Privacy Mode to prevent code from being sent to third-party A
 - Multiple organizations restrict AI coding assistants due to IP concerns
 
 #### Prerequisites
-- [ ] Classification of codebases (public, internal, confidential)
-- [ ] Decision on which repos require Privacy Mode
-- [ ] Communication to developers about Privacy Mode policies
+- Classification of codebases (public, internal, confidential)
+- Decision on which repos require Privacy Mode
+- Communication to developers about Privacy Mode policies
 
 #### ClickOps Implementation
 
@@ -542,8 +542,8 @@ Use VSCode/Cursor Workspace Trust to prevent automatic execution of untrusted co
 - VSCode introduced Workspace Trust after security research showed attack vectors
 
 #### Prerequisites
-- [ ] Understanding of which repositories are trusted (internal, verified sources)
-- [ ] Communication to developers about trust prompts
+- Understanding of which repositories are trusted (internal, verified sources)
+- Communication to developers about trust prompts
 
 #### ClickOps Implementation
 

@@ -56,9 +56,9 @@ This guide covers Buildkite security including SAML SSO, team permissions, agent
 Configure SAML SSO to centralize authentication for Buildkite users.
 
 #### Prerequisites
-- [ ] Buildkite organization admin access
-- [ ] Enterprise or Business tier
-- [ ] SAML 2.0 compatible IdP
+- Buildkite organization admin access
+- Enterprise or Business tier
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

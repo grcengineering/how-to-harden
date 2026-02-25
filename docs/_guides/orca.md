@@ -55,8 +55,8 @@ This guide covers Orca platform security including SSO, RBAC, cloud account inte
 Configure SAML SSO for Orca platform access.
 
 #### Prerequisites
-- [ ] Orca admin access
-- [ ] SAML 2.0 compatible IdP
+- Orca admin access
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

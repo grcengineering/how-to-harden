@@ -110,8 +110,8 @@ Configure private connectivity via VPC peering or private endpoints to eliminate
 - More secure than IP allowlisting alone
 
 #### Prerequisites
-- [ ] MongoDB Atlas M10 tier or higher
-- [ ] AWS VPC, Azure VNet, or GCP VPC configured
+- MongoDB Atlas M10 tier or higher
+- AWS VPC, Azure VNet, or GCP VPC configured
 
 #### ClickOps Implementation
 
@@ -338,8 +338,8 @@ Configure customer-managed encryption keys for additional control over data encr
 - Enables key rotation policies
 
 #### Prerequisites
-- [ ] MongoDB Atlas M10 tier or higher
-- [ ] Cloud provider KMS (AWS KMS, Azure Key Vault, GCP Cloud KMS)
+- MongoDB Atlas M10 tier or higher
+- Cloud provider KMS (AWS KMS, Azure Key Vault, GCP Cloud KMS)
 
 #### ClickOps Implementation
 

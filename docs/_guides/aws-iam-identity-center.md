@@ -56,9 +56,9 @@ This guide covers AWS IAM Identity Center security including MFA enforcement, pe
 Require MFA for all IAM Identity Center users.
 
 #### Prerequisites
-- [ ] IAM Identity Center enabled in management account
-- [ ] AWS Organizations configured
-- [ ] Admin access to IAM Identity Center
+- IAM Identity Center enabled in management account
+- AWS Organizations configured
+- Admin access to IAM Identity Center
 
 #### ClickOps Implementation
 

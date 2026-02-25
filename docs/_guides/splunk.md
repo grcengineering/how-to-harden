@@ -56,9 +56,9 @@ This guide covers Splunk Cloud Platform security including SAML SSO, role-based 
 Configure SAML SSO to centralize authentication for Splunk Cloud users.
 
 #### Prerequisites
-- [ ] Administrator access with change_authentication capability
-- [ ] SAML 2.0 compliant IdP with SHA-256 signatures
-- [ ] Contact Splunk Cloud Support to enable SAML
+- Administrator access with change_authentication capability
+- SAML 2.0 compliant IdP with SHA-256 signatures
+- Contact Splunk Cloud Support to enable SAML
 
 #### ClickOps Implementation
 

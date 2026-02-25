@@ -55,9 +55,9 @@ This guide covers Fullstory security including SAML SSO, privacy controls, acces
 Configure SAML SSO to centralize authentication for Fullstory users.
 
 #### Prerequisites
-- [ ] Fullstory admin access
-- [ ] Enterprise plan
-- [ ] SAML 2.0 compatible IdP
+- Fullstory admin access
+- Enterprise plan
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

@@ -79,9 +79,9 @@ Configure SAML Single Sign-On to centralize authentication through your identity
 
 #### Prerequisites
 
-- [ ] Vercel Enterprise plan (or Pro with SSO add-on)
-- [ ] SAML-compatible IdP (Okta, Entra ID, Google, OneLogin, etc. -- 24+ supported)
-- [ ] Team Owner access in Vercel
+- Vercel Enterprise plan (or Pro with SSO add-on)
+- SAML-compatible IdP (Okta, Entra ID, Google, OneLogin, etc. -- 24+ supported)
+- Team Owner access in Vercel
 
 #### ClickOps Implementation
 
@@ -155,9 +155,9 @@ Enable SCIM-based directory synchronization to automatically provision and depro
 
 #### Prerequisites
 
-- [ ] Vercel Enterprise plan
-- [ ] SAML SSO configured (Section 1.1)
-- [ ] IdP supports SCIM (Okta, Entra ID, etc.)
+- Vercel Enterprise plan
+- SAML SSO configured (Section 1.1)
+- IdP supports SCIM (Okta, Entra ID, etc.)
 
 #### ClickOps Implementation
 
@@ -549,8 +549,8 @@ Enable the Vercel Web Application Firewall with OWASP managed rulesets, bot prot
 
 #### Prerequisites
 
-- [ ] Vercel Enterprise plan for managed rulesets
-- [ ] Pro plan for custom rules (up to 40)
+- Vercel Enterprise plan for managed rulesets
+- Pro plan for custom rules (up to 40)
 
 #### ClickOps Implementation
 
@@ -683,9 +683,9 @@ Deploy Serverless Functions within dedicated private networks with static IPs, V
 
 #### Prerequisites
 
-- [ ] Vercel Enterprise plan
-- [ ] Secure Compute add-on ($6,500/year + $0.15/GB data transfer)
-- [ ] Backend services supporting IP allowlisting
+- Vercel Enterprise plan
+- Secure Compute add-on ($6,500/year + $0.15/GB data transfer)
+- Backend services supporting IP allowlisting
 
 #### ClickOps Implementation
 
@@ -1136,8 +1136,8 @@ Forward Vercel runtime, build, and firewall logs to your SIEM via log drains for
 
 #### Prerequisites
 
-- [ ] Vercel Pro or Enterprise plan
-- [ ] SIEM endpoint accepting HTTPS POST with JSON payloads
+- Vercel Pro or Enterprise plan
+- SIEM endpoint accepting HTTPS POST with JSON payloads
 
 #### ClickOps Implementation
 
@@ -1205,7 +1205,7 @@ Enable enterprise audit logging with real-time SIEM streaming to track all admin
 
 #### Prerequisites
 
-- [ ] Vercel Enterprise plan
+- Vercel Enterprise plan
 
 #### ClickOps Implementation
 

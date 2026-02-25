@@ -65,9 +65,9 @@ Integrate Cloudflare Zero Trust with your corporate identity provider to enable 
 - Enables user and group-based policies
 
 #### Prerequisites
-- [ ] Cloudflare Zero Trust account
-- [ ] Identity provider with OIDC or SAML support
-- [ ] Admin access to Zero Trust dashboard
+- Cloudflare Zero Trust account
+- Identity provider with OIDC or SAML support
+- Admin access to Zero Trust dashboard
 
 #### ClickOps Implementation
 
@@ -477,7 +477,7 @@ Configure Gateway network policies to control non-HTTP traffic based on IP, port
 Enable Cloudflare Browser Isolation to execute web sessions in a secure cloud environment, preventing malware execution on endpoints.
 
 #### Prerequisites
-- [ ] Browser Isolation add-on license
+- Browser Isolation add-on license
 
 #### ClickOps Implementation
 

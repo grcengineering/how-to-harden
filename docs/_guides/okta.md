@@ -73,10 +73,10 @@ Require phishing-resistant authenticators (FIDO2 security keys or platform authe
 - **January 2022 LAPSUS$ Breach:** Third-party support engineer compromised via social engineering
 
 #### Prerequisites
-- [ ] Okta tenant with MFA capabilities
-- [ ] FIDO2-compatible security keys (YubiKey 5 series, Google Titan)
-- [ ] Super Admin access for policy configuration
-- [ ] User inventory for phased rollout
+- Okta tenant with MFA capabilities
+- FIDO2-compatible security keys (YubiKey 5 series, Google Titan)
+- Super Admin access for policy configuration
+- User inventory for phased rollout
 
 #### ClickOps Implementation
 
@@ -277,8 +277,8 @@ Configure Okta to bind session tokens to specific devices using device trust and
 Configure comprehensive password policies with appropriate complexity, age, and history requirements. These controls protect against weak passwords, password reuse, and rapid password cycling.
 
 #### Prerequisites
-- [ ] Super Admin access
-- [ ] Okta-mastered users (not applicable if using external directory services)
+- Super Admin access
+- Okta-mastered users (not applicable if using external directory services)
 
 #### Specification Requirements
 
@@ -399,8 +399,8 @@ Automatically disable user accounts after a period of inactivity to reduce the r
 | Action | Suspend | Suspend |
 
 #### Prerequisites
-- [ ] Okta Workflows license (required for Automations)
-- [ ] Super Admin or Org Admin access
+- Okta Workflows license (required for Automations)
+- Super Admin or Org Admin access
 
 #### ClickOps Implementation
 
@@ -458,9 +458,9 @@ Automatically disable user accounts after a period of inactivity to reduce the r
 Configure Okta to accept Personal Identity Verification (PIV) credentials and Common Access Cards (CAC) for authentication. This enables hardware-based multifactor authentication using approved certificate authorities.
 
 #### Prerequisites
-- [ ] Super Admin access
-- [ ] Approved certificate chain (root and intermediate CA certificates)
-- [ ] Smart Card IdP capability in your Okta edition
+- Super Admin access
+- Approved certificate chain (root and intermediate CA certificates)
+- Smart Card IdP capability in your Okta edition
 
 #### ClickOps Implementation
 
@@ -515,9 +515,9 @@ Configure Okta to accept Personal Identity Verification (PIV) credentials and Co
 Configure Okta Verify to only connect with FIPS-compliant devices. This ensures that authentication uses FIPS 140-2 validated cryptographic modules.
 
 #### Prerequisites
-- [ ] Super Admin access
-- [ ] Okta Verify authenticator enabled
-- [ ] Users with FIPS-compliant devices (devices that support FIPS 140-2 mode)
+- Super Admin access
+- Okta Verify authenticator enabled
+- Users with FIPS-compliant devices (devices that support FIPS 140-2 mode)
 
 #### ClickOps Implementation
 
@@ -656,10 +656,10 @@ Restrict self-service account recovery to trusted methods and network locations.
 - **Obsidian Security Research:** Identified that recovery flows from untrusted networks are a top account hijack technique, especially when SMS or security questions are enabled as recovery options
 
 #### Prerequisites
-- [ ] Super Admin access
-- [ ] Network zones configured (see Section 2.1)
-- [ ] Corporate network zone defined with VPN egress IPs
-- [ ] Okta Verify or email-based authenticator deployed to users
+- Super Admin access
+- Network zones configured (see Section 2.1)
+- Corporate network zone defined with VPN egress IPs
+- Okta Verify or email-based authenticator deployed to users
 
 #### ClickOps Implementation
 
@@ -1229,14 +1229,14 @@ Implement governance for non-human identities: service accounts, API tokens, aut
 {% include pack-code.html vendor="okta" section="3.4" %}
 
 #### SSWS to OAuth 2.0 Migration Checklist
-- [ ] Inventory all active SSWS tokens and their consumers
-- [ ] Create OAuth 2.0 service app for each integration
-- [ ] Generate and distribute private keys to consuming services
-- [ ] Update consuming services to use OAuth 2.0 client credentials flow
-- [ ] Test each integration with OAuth 2.0 tokens
-- [ ] Add IP restrictions to SSWS tokens during transition (as fallback)
-- [ ] Revoke SSWS tokens after successful migration verification
-- [ ] Document new OAuth 2.0 credentials and rotation schedule
+- Inventory all active SSWS tokens and their consumers
+- Create OAuth 2.0 service app for each integration
+- Generate and distribute private keys to consuming services
+- Update consuming services to use OAuth 2.0 client credentials flow
+- Test each integration with OAuth 2.0 tokens
+- Add IP restrictions to SSWS tokens during transition (as fallback)
+- Revoke SSWS tokens after successful migration verification
+- Document new OAuth 2.0 credentials and rotation schedule
 
 #### Validation & Testing
 1. [ ] Verify all API tokens have network restrictions applied
@@ -1497,9 +1497,9 @@ Enable Identity Threat Protection with Okta AI for continuous post-authenticatio
 **Attack Prevented:** Session hijacking detected post-authentication, compromised credential use, anomalous session behavior
 
 #### Prerequisites
-- [ ] Okta Identity Threat Protection license (add-on to Okta Identity Engine)
-- [ ] Super Admin access
-- [ ] SIEM integration configured (to receive ITP events)
+- Okta Identity Threat Protection license (add-on to Okta Identity Engine)
+- Super Admin access
+- SIEM integration configured (to receive ITP events)
 
 #### ClickOps Implementation
 
@@ -1948,13 +1948,13 @@ Perform periodic access reviews (recertification campaigns) to verify user acces
 {% include pack-code.html vendor="okta" section="7.3" %}
 
 #### Quarterly Access Review Checklist
-- [ ] All admin accounts verified against current employee list
-- [ ] Super Admin count is < 5
-- [ ] No orphaned accounts (users who left but weren't deprovisioned)
-- [ ] No accounts with last login > 90 days (unless exempted)
-- [ ] Privileged group memberships reviewed and justified
-- [ ] Sensitive application assignments reviewed
-- [ ] Review documented with date, reviewer, and findings
+- All admin accounts verified against current employee list
+- Super Admin count is < 5
+- No orphaned accounts (users who left but weren't deprovisioned)
+- No accounts with last login > 90 days (unless exempted)
+- Privileged group memberships reviewed and justified
+- Sensitive application assignments reviewed
+- Review documented with date, reviewer, and findings
 
 #### Monitoring & Maintenance
 **Maintenance schedule:**
@@ -2213,53 +2213,53 @@ For U.S. Government systems, display the Standard Mandatory DOD Notice and Conse
 Use this checklist to verify controls are implemented for your compliance requirements.
 
 #### HIGH Priority Controls (DISA STIG)
-- [ ] MFA required for Admin Console (V-273193) — Section 1.1
-- [ ] MFA required for Dashboard (V-273194) — Section 1.1
-- [ ] Audit logs forwarded to SIEM (V-273202) — Section 5.1
+- MFA required for Admin Console (V-273193) — Section 1.1
+- MFA required for Dashboard (V-273194) — Section 1.1
+- Audit logs forwarded to SIEM (V-273202) — Section 5.1
 
 #### Authentication Controls
-- [ ] Phishing-resistant authentication enabled (1.1)
-- [ ] Admin role separation implemented (1.2)
-- [ ] Password policy configured per requirements (1.4)
-- [ ] Account lockout configured (1.5)
-- [ ] Account inactivity automation active (1.6)
-- [ ] Default authentication policy audited — zero apps assigned (1.9)
-- [ ] Self-service recovery hardened — SMS/voice/questions disabled (1.10)
-- [ ] End-user security notifications enabled — all five types (1.11)
-- [ ] Suspicious activity reporting enabled (1.11)
-- [ ] PIV/CAC Smart Card configured (if applicable) (1.7)
-- [ ] FIPS compliance enabled (if applicable) (1.8)
+- Phishing-resistant authentication enabled (1.1)
+- Admin role separation implemented (1.2)
+- Password policy configured per requirements (1.4)
+- Account lockout configured (1.5)
+- Account inactivity automation active (1.6)
+- Default authentication policy audited — zero apps assigned (1.9)
+- Self-service recovery hardened — SMS/voice/questions disabled (1.10)
+- End-user security notifications enabled — all five types (1.11)
+- Suspicious activity reporting enabled (1.11)
+- PIV/CAC Smart Card configured (if applicable) (1.7)
+- FIPS compliance enabled (if applicable) (1.8)
 
 #### Network & Integration Controls
-- [ ] Network zones configured (2.1)
-- [ ] Admin console access restricted by IP (2.2)
-- [ ] Anonymizer/Tor blocking active (2.3)
-- [ ] OAuth app allowlisting enforced (3.3)
-- [ ] Non-human identity governance implemented (3.4)
-- [ ] SSWS to OAuth 2.0 migration planned/completed (3.4)
+- Network zones configured (2.1)
+- Admin console access restricted by IP (2.2)
+- Anonymizer/Tor blocking active (2.3)
+- OAuth app allowlisting enforced (3.3)
+- Non-human identity governance implemented (3.4)
+- SSWS to OAuth 2.0 migration planned/completed (3.4)
 
 #### Session Management
-- [ ] Global session idle timeout configured (4.1)
-- [ ] Admin Console session timeout configured (4.1)
-- [ ] Global session lifetime limited (4.1)
-- [ ] Persistent session cookies disabled (4.2)
-- [ ] Admin session ASN binding verified active (4.3)
-- [ ] Protected Actions enabled for critical operations (4.3)
+- Global session idle timeout configured (4.1)
+- Admin Console session timeout configured (4.1)
+- Global session lifetime limited (4.1)
+- Persistent session cookies disabled (4.2)
+- Admin session ASN binding verified active (4.3)
+- Protected Actions enabled for critical operations (4.3)
 
 #### Monitoring & Detection
-- [ ] Log streaming or API integration active (5.1)
-- [ ] ThreatInsight enabled (5.2)
-- [ ] Identity Threat Protection configured (5.3) — if licensed
-- [ ] Behavior detection rules active (5.4)
-- [ ] Cross-tenant impersonation monitoring alerts configured (5.5)
-- [ ] HealthInsight reviewed — all 16 checks passed (5.6)
+- Log streaming or API integration active (5.1)
+- ThreatInsight enabled (5.2)
+- Identity Threat Protection configured (5.3) — if licensed
+- Behavior detection rules active (5.4)
+- Cross-tenant impersonation monitoring alerts configured (5.5)
+- HealthInsight reviewed — all 16 checks passed (5.6)
 
 #### Operational Security
-- [ ] HAR file sanitization procedure documented (7.1)
-- [ ] Security advisory monitoring assigned (7.2)
-- [ ] Quarterly access reviews scheduled (7.3)
-- [ ] Change management process for Okta config (7.4)
-- [ ] Identity incident response procedures documented (7.5)
+- HAR file sanitization procedure documented (7.1)
+- Security advisory monitoring assigned (7.2)
+- Quarterly access reviews scheduled (7.3)
+- Change management process for Okta config (7.4)
+- Identity incident response procedures documented (7.5)
 
 ---
 

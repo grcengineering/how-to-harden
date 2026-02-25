@@ -56,9 +56,9 @@ This guide covers Segment security including SAML SSO, workspace access, source/
 Configure SAML SSO to centralize authentication for Segment users.
 
 #### Prerequisites
-- [ ] Segment admin access
-- [ ] Business tier or higher
-- [ ] SAML 2.0 compatible IdP
+- Segment admin access
+- Business tier or higher
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

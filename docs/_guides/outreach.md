@@ -55,8 +55,8 @@ This guide covers Outreach security including SAML SSO, user permissions, data a
 Configure SAML SSO for Outreach access.
 
 #### Prerequisites
-- [ ] Outreach admin access
-- [ ] SAML 2.0 compatible IdP
+- Outreach admin access
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

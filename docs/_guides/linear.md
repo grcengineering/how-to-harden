@@ -56,9 +56,9 @@ This guide covers Linear security including SAML SSO, workspace access, team per
 Configure SAML SSO to centralize authentication for Linear users.
 
 #### Prerequisites
-- [ ] Linear workspace admin access
-- [ ] Enterprise tier
-- [ ] SAML 2.0 compatible IdP
+- Linear workspace admin access
+- Enterprise tier
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

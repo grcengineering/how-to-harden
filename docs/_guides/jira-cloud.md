@@ -56,10 +56,10 @@ This guide covers Atlassian Jira Cloud security including SAML SSO, organization
 Configure SAML SSO to centralize authentication for Jira Cloud users.
 
 #### Prerequisites
-- [ ] Atlassian organization with verified domain
-- [ ] Atlassian Guard Standard subscription
-- [ ] Organization admin access
-- [ ] SAML 2.0 compatible IdP
+- Atlassian organization with verified domain
+- Atlassian Guard Standard subscription
+- Organization admin access
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

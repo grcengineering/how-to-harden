@@ -102,8 +102,8 @@ Enable authentication to prevent anonymous access to Jenkins. By default, older 
 Configure centralized authentication using LDAP or SAML SSO for enterprise identity management.
 
 #### Prerequisites
-- [ ] LDAP directory or SAML IdP available
-- [ ] LDAP Plugin or SAML Plugin installed
+- LDAP directory or SAML IdP available
+- LDAP Plugin or SAML Plugin installed
 
 #### ClickOps Implementation (SAML)
 
@@ -236,7 +236,7 @@ Configure Matrix-based security for fine-grained permission control. This is rec
 Enable project-based authorization for per-project access control.
 
 #### Prerequisites
-- [ ] Matrix Authorization Strategy Plugin installed
+- Matrix Authorization Strategy Plugin installed
 
 #### ClickOps Implementation
 
@@ -272,7 +272,7 @@ Enable project-based authorization for per-project access control.
 Implement role-based access control for scalable permission management.
 
 #### Prerequisites
-- [ ] Role-based Authorization Strategy Plugin installed
+- Role-based Authorization Strategy Plugin installed
 
 #### ClickOps Implementation
 
@@ -626,7 +626,7 @@ See the SDK Code Pack below for a secure Jenkinsfile template demonstrating hard
 Enable comprehensive audit logging for security monitoring.
 
 #### Prerequisites
-- [ ] Audit Trail Plugin installed
+- Audit Trail Plugin installed
 
 #### ClickOps Implementation
 

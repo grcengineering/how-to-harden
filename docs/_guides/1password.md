@@ -63,9 +63,9 @@ Configure SAML-based SSO to authenticate 1Password users through your corporate 
 - Provides consistent access policies
 
 #### Prerequisites
-- [ ] 1Password Business plan
-- [ ] SAML 2.0 compatible identity provider
-- [ ] Admin access to 1Password
+- 1Password Business plan
+- SAML 2.0 compatible identity provider
+- Admin access to 1Password
 
 #### ClickOps Implementation
 

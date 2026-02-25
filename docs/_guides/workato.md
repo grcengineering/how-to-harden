@@ -71,10 +71,10 @@ Configure SAML 2.0 SSO to centralize authentication for all Workato workspace us
 **Attack Prevented:** Credential stuffing, password spray, phishing attacks against standalone Workato accounts.
 
 #### Prerequisites
-- [ ] Workato workspace with admin access
-- [ ] SAML 2.0 compatible identity provider (Okta, Microsoft Entra ID, OneLogin, CyberArk Identity)
-- [ ] Workspace handle configured (max 20 characters, lowercase)
-- [ ] IdP metadata XML or manual configuration values
+- Workato workspace with admin access
+- SAML 2.0 compatible identity provider (Okta, Microsoft Entra ID, OneLogin, CyberArk Identity)
+- Workspace handle configured (max 20 characters, lowercase)
+- IdP metadata XML or manual configuration values
 
 #### ClickOps Implementation
 
@@ -173,8 +173,8 @@ Require two-factor authentication (2FA) for all workspace users. When SSO is con
 **Attack Prevented:** Account takeover via credential theft, phishing, or password reuse.
 
 #### Prerequisites
-- [ ] Workato workspace with admin access
-- [ ] Users have authenticator app installed (Google Authenticator, Microsoft Authenticator, Authy)
+- Workato workspace with admin access
+- Users have authenticator app installed (Google Authenticator, Microsoft Authenticator, Authy)
 
 #### ClickOps Implementation
 
@@ -240,9 +240,9 @@ After configuring SAML SSO (Control 1.1), enforce SSO as the **only** authentica
 **Attack Prevented:** Password-based attacks, orphaned accounts retaining access after offboarding.
 
 #### Prerequisites
-- [ ] SAML SSO configured and tested (Control 1.1)
-- [ ] All active users can authenticate via SSO
-- [ ] Emergency break-glass access procedure documented
+- SAML SSO configured and tested (Control 1.1)
+- All active users can authenticate via SSO
+- Emergency break-glass access procedure documented
 
 #### ClickOps Implementation
 
@@ -351,9 +351,9 @@ Configure SCIM (System for Cross-domain Identity Management) provisioning to aut
 **Attack Prevented:** Orphaned account exploitation, unauthorized access via stale credentials.
 
 #### Prerequisites
-- [ ] SAML SSO configured and operational (Control 1.1)
-- [ ] IdP that supports SCIM 2.0 (Okta, Microsoft Entra ID, OneLogin)
-- [ ] Workato plan that supports SCIM provisioning
+- SAML SSO configured and operational (Control 1.1)
+- IdP that supports SCIM 2.0 (Okta, Microsoft Entra ID, OneLogin)
+- Workato plan that supports SCIM provisioning
 
 #### ClickOps Implementation
 
@@ -475,8 +475,8 @@ Implement least privilege access using Workato's two-level RBAC model: **environ
 **Attack Prevented:** Privilege escalation, unauthorized data access through overpermissioned integration accounts.
 
 #### Prerequisites
-- [ ] Workato workspace with admin access
-- [ ] Understanding of team structure and responsibilities
+- Workato workspace with admin access
+- Understanding of team structure and responsibilities
 
 #### ClickOps Implementation
 
@@ -788,9 +788,9 @@ Enable Workato's Encryption Key Management (EKM) feature to use your own encrypt
 **Attack Prevented:** Data exposure from infrastructure breach at Workato's cloud layer, insider threat at the platform provider level.
 
 #### Prerequisites
-- [ ] Workato Enterprise plan with EKM add-on
-- [ ] AWS KMS key (Workato EKM uses AWS KMS)
-- [ ] Key administrator access in AWS
+- Workato Enterprise plan with EKM add-on
+- AWS KMS key (Workato EKM uses AWS KMS)
+- Key administrator access in AWS
 
 #### ClickOps Implementation
 
@@ -1104,9 +1104,9 @@ Deploy and secure Workato On-Premises Agents (OPA) for accessing applications an
 **Attack Prevented:** Exposure of on-premises systems to the internet, unauthorized network access.
 
 #### Prerequisites
-- [ ] On-premises server or VM for the agent (Linux or Windows)
-- [ ] Outbound HTTPS (443) access to Workato's cloud
-- [ ] Workato plan that includes OPA feature
+- On-premises server or VM for the agent (Linux or Windows)
+- Outbound HTTPS (443) access to Workato's cloud
+- Workato plan that includes OPA feature
 
 #### ClickOps Implementation
 
@@ -1283,8 +1283,8 @@ Secure the Workato API Platform, which allows you to expose recipes as API endpo
 - Without proper access control, anyone who discovers the API URL can access it
 
 #### Prerequisites
-- [ ] Workato plan that includes API Platform feature
-- [ ] Understanding of which recipes need to be exposed as APIs
+- Workato plan that includes API Platform feature
+- Understanding of which recipes need to be exposed as APIs
 
 #### ClickOps Implementation
 
@@ -1436,9 +1436,9 @@ Integrate Workato with an external secrets manager (HashiCorp Vault, AWS Secrets
 **Attack Prevented:** Credential exposure from Workato platform compromise, credential sprawl across multiple systems.
 
 #### Prerequisites
-- [ ] External secrets manager deployed and configured (HashiCorp Vault, AWS Secrets Manager, etc.)
-- [ ] Workato plan that supports secrets manager integration
-- [ ] Network connectivity between Workato (or OPA) and the secrets manager
+- External secrets manager deployed and configured (HashiCorp Vault, AWS Secrets Manager, etc.)
+- Workato plan that supports secrets manager integration
+- Network connectivity between Workato (or OPA) and the secrets manager
 
 #### ClickOps Implementation
 
@@ -1520,8 +1520,8 @@ Configure separate Workato environments (DEV, TEST, PROD) to isolate recipe deve
 - Required by PCI DSS, SOC 2, and most enterprise security policies
 
 #### Prerequisites
-- [ ] Workato plan that supports multiple environments (Workspace plan or higher)
-- [ ] Environments provisioned by Workato (DEV, TEST, PROD)
+- Workato plan that supports multiple environments (Workspace plan or higher)
+- Environments provisioned by Workato (DEV, TEST, PROD)
 
 #### ClickOps Implementation
 

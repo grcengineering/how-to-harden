@@ -63,9 +63,9 @@ Configure SAML SSO to centralize authentication and enforce organizational secur
 - Critical for SOC 2 and ISO 27001 compliance
 
 #### Prerequisites
-- [ ] DocuSign Enterprise plan
-- [ ] Domain verified in DocuSign Admin
-- [ ] SAML 2.0 compatible IdP
+- DocuSign Enterprise plan
+- Domain verified in DocuSign Admin
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

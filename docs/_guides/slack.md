@@ -67,9 +67,9 @@ Configure SAML-based SSO to authenticate Slack users through your corporate iden
 **Attack Prevented:** Credential theft, password reuse, orphaned accounts
 
 #### Prerequisites
-- [ ] Slack Business+ or Enterprise Grid plan
-- [ ] SAML 2.0 compatible identity provider
-- [ ] Workspace Owner or Org Admin access
+- Slack Business+ or Enterprise Grid plan
+- SAML 2.0 compatible identity provider
+- Workspace Owner or Org Admin access
 
 #### ClickOps Implementation
 
@@ -145,9 +145,9 @@ Enable SCIM (System for Cross-domain Identity Management) to automatically provi
 **Attack Prevented:** Orphaned account abuse, unauthorized access after termination
 
 #### Prerequisites
-- [ ] Slack Enterprise Grid
-- [ ] SCIM-compatible identity provider
-- [ ] Org Admin access
+- Slack Enterprise Grid
+- SCIM-compatible identity provider
+- Org Admin access
 
 #### ClickOps Implementation
 
@@ -258,8 +258,8 @@ Configure session duration controls to automatically log out inactive users and 
 Restrict Slack access to approved IP ranges (corporate network, VPN) to prevent unauthorized access from unknown locations.
 
 #### Prerequisites
-- [ ] Slack Enterprise Grid
-- [ ] Known corporate egress IP ranges
+- Slack Enterprise Grid
+- Known corporate egress IP ranges
 
 #### ClickOps Implementation
 
@@ -298,9 +298,9 @@ Control which Slack apps and integrations can be installed. Require admin approv
 **Attack Prevented:** Malicious app installation, data exfiltration, unauthorized integrations
 
 #### Prerequisites
-- [ ] Slack Business+ or Enterprise Grid
-- [ ] Workspace Owner or Admin access
-- [ ] App approval workflow defined
+- Slack Business+ or Enterprise Grid
+- Workspace Owner or Admin access
+- App approval workflow defined
 
 #### ClickOps Implementation
 
@@ -404,8 +404,8 @@ Configure Slack's native DLP to detect and prevent sharing of sensitive informat
 - Consider third-party DLP for advanced capabilities
 
 #### Prerequisites
-- [ ] Slack Enterprise Grid with GovSlack or Compliance add-on
-- [ ] DLP Admin role
+- Slack Enterprise Grid with GovSlack or Compliance add-on
+- DLP Admin role
 
 #### ClickOps Implementation
 
@@ -461,8 +461,8 @@ Configure message and file retention policies to balance compliance requirements
 - Legal holds prevent destruction of relevant evidence
 
 #### Prerequisites
-- [ ] Slack Business+ or Enterprise Grid
-- [ ] Defined retention requirements per regulation
+- Slack Business+ or Enterprise Grid
+- Defined retention requirements per regulation
 
 #### ClickOps Implementation
 
@@ -503,9 +503,9 @@ Configure message and file retention policies to balance compliance requirements
 Deploy Slack Enterprise Key Management to use your own AWS KMS keys for encrypting Slack messages and files, providing customer-controlled encryption.
 
 #### Prerequisites
-- [ ] Slack Enterprise Grid
-- [ ] AWS account with KMS
-- [ ] Additional licensing for EKM
+- Slack Enterprise Grid
+- AWS account with KMS
+- Additional licensing for EKM
 
 #### ClickOps Implementation
 
@@ -543,8 +543,8 @@ Enable and export Slack audit logs for security monitoring, incident investigati
 - Required for most compliance frameworks
 
 #### Prerequisites
-- [ ] Slack Enterprise Grid
-- [ ] SIEM or log management platform
+- Slack Enterprise Grid
+- SIEM or log management platform
 
 #### ClickOps Implementation
 

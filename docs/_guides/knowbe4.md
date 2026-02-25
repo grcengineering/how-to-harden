@@ -55,9 +55,9 @@ This guide covers KnowBe4 console security including SAML SSO, admin access, cam
 Configure SAML SSO for KnowBe4 console access.
 
 #### Prerequisites
-- [ ] KnowBe4 admin access
-- [ ] Platinum or Diamond subscription
-- [ ] SAML 2.0 compatible IdP
+- KnowBe4 admin access
+- Platinum or Diamond subscription
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

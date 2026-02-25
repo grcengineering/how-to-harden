@@ -55,9 +55,9 @@ This guide covers Shopify Plus security including SAML SSO, organization managem
 Configure SAML SSO for Shopify Plus organization users.
 
 #### Prerequisites
-- [ ] Shopify Plus plan
-- [ ] Organization owner access
-- [ ] SAML 2.0 compatible IdP
+- Shopify Plus plan
+- Organization owner access
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

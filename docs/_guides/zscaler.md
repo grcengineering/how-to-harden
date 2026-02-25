@@ -65,9 +65,9 @@ Configure SAML-based SSO for Zscaler Admin Portal and Client Connector authentic
 - Eliminates standalone Zscaler passwords
 
 #### Prerequisites
-- [ ] Zscaler ZIA or ZPA subscription
-- [ ] SAML 2.0 compatible identity provider
-- [ ] Super Admin access to Zscaler Admin Portal
+- Zscaler ZIA or ZPA subscription
+- SAML 2.0 compatible identity provider
+- Super Admin access to Zscaler Admin Portal
 
 #### ClickOps Implementation
 
@@ -509,9 +509,9 @@ Enable SSL/TLS inspection to decrypt, inspect, and re-encrypt HTTPS traffic for 
 - Required for effective DLP and malware detection
 
 #### Prerequisites
-- [ ] SSL certificate deployed to endpoints
-- [ ] Certificate pinning exceptions documented
-- [ ] Testing plan for application compatibility
+- SSL certificate deployed to endpoints
+- Certificate pinning exceptions documented
+- Testing plan for application compatibility
 
 #### ClickOps Implementation
 
@@ -555,16 +555,16 @@ Thoroughly test SSL inspection before production deployment to identify and reso
 #### Testing Checklist
 
 **Pre-Deployment Testing:**
-- [ ] Test major business applications
-- [ ] Verify certificate chain validity
-- [ ] Test certificate-pinned applications
-- [ ] Validate mobile app functionality
+- Test major business applications
+- Verify certificate chain validity
+- Test certificate-pinned applications
+- Validate mobile app functionality
 
 **Post-Deployment Validation:**
-- [ ] Monitor for user-reported issues
-- [ ] Check for certificate errors in logs
-- [ ] Verify malware detection is working
-- [ ] Confirm DLP policies are applied
+- Monitor for user-reported issues
+- Check for certificate errors in logs
+- Verify malware detection is working
+- Confirm DLP policies are applied
 
 {% include pack-code.html vendor="zscaler" section="5.2" %}
 

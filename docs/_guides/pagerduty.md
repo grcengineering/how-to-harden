@@ -62,8 +62,8 @@ Configure SAML SSO to centralize authentication for PagerDuty users.
 - Simplifies access revocation
 
 #### Prerequisites
-- [ ] PagerDuty Professional, Business, or Enterprise plan
-- [ ] SAML 2.0 compatible IdP
+- PagerDuty Professional, Business, or Enterprise plan
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

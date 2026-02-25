@@ -143,11 +143,11 @@ Require approval for marketplace app installations.
 3. Remove unused apps
 
 **Step 3: Create App Evaluation Checklist**
-- [ ] Review OAuth scopes requested
-- [ ] Check vendor security certifications
-- [ ] Evaluate data access requirements
-- [ ] Document business justification
-- [ ] Verify app is from verified publisher
+- Review OAuth scopes requested
+- Check vendor security certifications
+- Evaluate data access requirements
+- Document business justification
+- Verify app is from verified publisher
 
 ---
 

@@ -56,9 +56,9 @@ This guide covers Mixpanel security including SAML SSO, organization/project acc
 Configure SAML SSO to centralize authentication for Mixpanel users.
 
 #### Prerequisites
-- [ ] Mixpanel organization admin access
-- [ ] Enterprise plan
-- [ ] SAML 2.0 compatible IdP
+- Mixpanel organization admin access
+- Enterprise plan
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

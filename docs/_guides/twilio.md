@@ -55,9 +55,9 @@ This guide covers Twilio Console security including SSO, account permissions, AP
 Configure SAML SSO for Twilio Console access.
 
 #### Prerequisites
-- [ ] Twilio Enterprise or custom plan
-- [ ] Account owner access
-- [ ] SAML 2.0 compatible IdP
+- Twilio Enterprise or custom plan
+- Account owner access
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 

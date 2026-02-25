@@ -55,9 +55,9 @@ This guide covers Square Dashboard security including SSO, team permissions, dev
 Configure SSO for Square Dashboard access (Square for Enterprise).
 
 #### Prerequisites
-- [ ] Square for Enterprise plan
-- [ ] Account owner access
-- [ ] SAML 2.0 compatible IdP
+- Square for Enterprise plan
+- Account owner access
+- SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 
