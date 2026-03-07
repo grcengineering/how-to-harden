@@ -1,0 +1,48 @@
+# HTH GitHub Control 3.22: Actions Security Scanning Workflow
+# Profile: L1 | NIST: SA-11, CM-6
+# https://howtoharden.com/guides/github/#37-recommended-open-source-security-tools
+#
+# This workflow runs zizmor and actionlint on pull requests to catch
+# workflow security issues before they reach the default branch.
+# SARIF output integrates with GitHub Code Scanning.
+#
+# Docs:
+#   - https://github.com/woodruffw/zizmor
+#   - https://github.com/rhysd/actionlint
+
+# HTH Guide Excerpt: begin workflow-actions-security-scan
+name: Actions Security Scan
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  zizmor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: woodruffw/zizmor-action@v2
+        with:
+          min-severity: medium
+
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Run actionlint
+        uses: rhysd/actionlint@v1
+# HTH Guide Excerpt: end workflow-actions-security-scan
