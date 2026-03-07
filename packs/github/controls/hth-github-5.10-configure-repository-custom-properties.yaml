@@ -1,0 +1,52 @@
+id: "github-5.10"
+vendor: "github"
+title: "Configure Repository Custom Properties for Security Classification"
+section: "5.10"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#56-configure-repository-custom-properties-for-security-classification"
+description: >
+  Use GitHub repository custom properties to classify repositories by security
+  sensitivity, data classification, compliance requirements, and ownership. Custom
+  properties enable organization-wide tagging of repositories with structured metadata
+  that can be used to enforce rulesets, target code security configurations, and
+  generate compliance reports. Without classification, organizations cannot
+  systematically apply different security policies to repositories of different
+  risk levels.
+compliance:
+  soc2: ["CC3.1", "CC6.1"]
+  nist_800_53: ["RA-2", "SC-16", "CM-8"]
+  iso_27001: ["A.8.1.1", "A.8.2.1"]
+audit:
+  - id: "custom-properties-defined"
+    description: "Verify security classification custom properties are defined in the organization"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/properties/schema"
+      check: '. | length > 0'
+    expected: true
+  - id: "repos-have-properties"
+    description: "Verify repositories have security classification properties assigned"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/properties/values"
+      check: '. | length > 0'
+    expected: true
+remediate:
+  api:
+    - description: "Create a security-tier custom property for the organization"
+      method: POST
+      endpoint: "/orgs/{org}/properties/schema"
+      body:
+        - property_name: "security-tier"
+          value_type: "single_select"
+          required: true
+          default_value: "standard"
+          description: "Security classification tier for the repository"
+          allowed_values:
+            - "critical"
+            - "high"
+            - "standard"
+            - "low"
+      condition: "!custom-properties-defined"
+tags: ["custom-properties", "classification", "metadata", "governance", "risk-management"]

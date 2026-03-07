@@ -1,0 +1,50 @@
+# =============================================================================
+# HTH GitHub Control 4.07: Artifact Attestations Workflow
+# Profile Level: L2 (Hardened)
+# Frameworks: NIST SA-12, SI-7
+# Source: https://howtoharden.com/guides/github/#44-enable-artifact-attestations-for-supply-chain-provenance
+# =============================================================================
+
+# HTH Guide Excerpt: begin attestation-workflow
+name: Build and Attest
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+  packages: write
+
+jobs:
+  build-and-attest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build artifact
+        run: |
+          # Replace with your actual build command
+          make build
+          sha256sum dist/artifact > dist/artifact.sha256
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: 'dist/artifact'
+
+      - name: Build and push container image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+
+      - name: Generate container attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ghcr.io/${{ github.repository }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+# HTH Guide Excerpt: end attestation-workflow

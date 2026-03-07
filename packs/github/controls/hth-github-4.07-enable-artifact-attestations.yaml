@@ -1,0 +1,32 @@
+id: "github-4.7"
+vendor: "github"
+title: "Enable Artifact Attestations for Supply Chain Provenance"
+section: "4.7"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#44-enable-artifact-attestations-for-supply-chain-provenance"
+description: >
+  Enable GitHub artifact attestations to generate signed SLSA provenance for build
+  artifacts. Artifact attestations create a verifiable link between a build artifact
+  and the source code, workflow, and environment that produced it. This enables
+  consumers to verify that an artifact was built from a specific commit in a trusted
+  workflow, preventing supply chain attacks that substitute malicious artifacts.
+compliance:
+  soc2: ["CC7.1", "CC8.1"]
+  nist_800_53: ["SA-12", "SI-7", "CM-14"]
+  iso_27001: ["A.14.2.7", "A.14.2.9"]
+audit:
+  - id: "attestations-enabled"
+    description: "Verify artifact attestations are enabled in the organization"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}"
+      check: 'true'
+    expected: true
+remediate:
+  api:
+    - description: "Artifact attestations are configured per-workflow using the attest-build-provenance action"
+      method: GET
+      endpoint: "/orgs/{org}/attestations/{subject_digest}"
+      condition: "!attestations-enabled"
+tags: ["attestations", "slsa", "provenance", "supply-chain", "sigstore"]

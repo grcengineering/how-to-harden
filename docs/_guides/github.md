@@ -6,9 +6,9 @@ slug: "github"
 tier: "1"
 category: "DevOps"
 description: "Comprehensive source control and CI/CD security hardening for GitHub organizations, Actions, supply chain protection, and Enterprise Cloud/Server"
-version: "0.2.0"
+version: "0.3.0"
 maturity: "draft"
-last_updated: "2026-02-12"
+last_updated: "2026-03-07"
 ---
 
 
@@ -54,7 +54,7 @@ This guide covers GitHub.com and GitHub Enterprise Cloud/Server security configu
 4. [OAuth & Third-Party App Security](#4-oauth--third-party-app-security)
 5. [Secret Management](#5-secret-management)
 6. [Dependency & Supply Chain Security](#6-dependency--supply-chain-security)
-7. [Monitoring & Audit Logging](#7-monitoring--audit-logging)
+7. [Monitoring & Governance](#7-monitoring--governance)
 8. [Third-Party Integration Security](#8-third-party-integration-security)
 
 ---
@@ -392,6 +392,70 @@ Restrict enterprise access to approved IP addresses using IP allow lists. This l
 
 ---
 
+### 1.6 Enforce Fine-Grained Personal Access Token Policies
+
+**Profile Level:** L2 (Hardened)
+**NIST 800-53:** AC-6 (Least Privilege), IA-4 (Identifier Management), IA-5 (Authenticator Management)
+**CIS Controls:** 6.2
+
+#### Description
+Configure organization-level policies for personal access tokens (PATs) to require approval for fine-grained tokens and restrict or disable classic PATs. Fine-grained PATs offer scoped repository access, mandatory expiration, and organization policy enforcement. Classic PATs grant broad, long-lived access that cannot be scoped to specific repositories.
+
+#### Rationale
+**Attack Prevented:** Overprivileged token theft, lateral movement via stolen credentials
+
+**Real-World Incidents:**
+- **GitHub Code Signing Certificate Theft (January 2023):** Attacker used a compromised classic PAT to access repositories and steal encrypted code-signing certificates for GitHub Desktop and Atom.
+- **Fake Dependabot Commits (July 2023):** Stolen classic PATs used to inject malicious commits disguised as Dependabot contributions across hundreds of repositories.
+- **SpotBugs PAT Theft (2025):** Attacker exploited a `pull_request_target` workflow to steal a maintainer's classic PAT, then pivoted to compromise the tj-actions/changed-files Action affecting 23,000+ repositories.
+
+**Why This Matters:** Classic PATs have no repository scoping, no expiration requirement, and no approval workflow -- a single stolen classic PAT can grant access to every repository in an organization.
+
+#### ClickOps Implementation
+
+**Step 1: Configure PAT Policies**
+1. Navigate to: **Organization Settings** -> **Personal access tokens** -> **Settings**
+2. Under "Fine-grained personal access tokens":
+   - Select **"Require administrator approval"** for fine-grained tokens
+3. Under "Personal access tokens (classic)":
+   - Select **"Restrict access via personal access tokens (classic)"** to block classic PATs from accessing the organization
+
+**Step 2: Review Existing Tokens**
+1. Navigate to: **Organization Settings** -> **Personal access tokens** -> **Active tokens**
+2. Review all active fine-grained tokens for:
+   - Appropriate repository scope
+   - Reasonable expiration dates
+   - Minimal permissions
+3. Revoke any overprivileged or unused tokens
+
+**Step 3: Approve Token Requests**
+1. Navigate to: **Organization Settings** -> **Personal access tokens** -> **Pending requests**
+2. Review each request for appropriate scope and permissions
+3. Approve or deny based on least-privilege requirements
+
+**Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="1.12" %}
+
+#### Validation & Testing
+1. [ ] Verify classic PATs are restricted from accessing the organization
+2. [ ] Create a fine-grained PAT and verify it requires approval
+3. [ ] Verify fine-grained PATs can only access specified repositories
+4. [ ] Confirm existing classic PATs are blocked (or plan migration timeline)
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC6.3 | Logical access security, token management |
+| **NIST 800-53** | AC-6, IA-4, IA-5 | Least privilege, identifier and authenticator management |
+| **ISO 27001** | A.9.2.3, A.9.4.1 | Management of privileged access rights |
+| **PCI DSS** | 7.1, 8.6 | Restrict access, application and system account management |
+
+---
+
 ## 2. Repository Security
 
 ### 2.1 Enable Branch Protection for All Critical Branches
@@ -665,6 +729,58 @@ Require cryptographically signed commits to verify commit authenticity and preve
 | **NIST 800-53** | SI-7 | Software and information integrity |
 | **ISO 27001** | A.14.2.7 | Outsourced development integrity |
 | **CIS Controls** | 16.9 | Secure application development |
+
+---
+
+### 2.5 Enable Private Vulnerability Reporting
+
+**Profile Level:** L1 (Baseline)
+**NIST 800-53:** SI-2 (Flaw Remediation), SI-5 (Security Alerts), IR-6 (Incident Reporting)
+
+#### Description
+Enable private vulnerability reporting on all repositories to allow security researchers to confidentially report vulnerabilities. Without this feature, researchers may publicly disclose vulnerabilities or not report them at all, leaving your organization exposed.
+
+#### Rationale
+**Attack Prevented:** Uncoordinated public disclosure, zero-day exploitation
+
+**Why This Matters:**
+- Security researchers discovering vulnerabilities in your code need a private channel to report them
+- Without private reporting, researchers may open public issues (exposing the vulnerability) or simply not report
+- Private vulnerability reporting creates GitHub Security Advisories that can be triaged and patched before disclosure
+- Demonstrates organizational commitment to responsible disclosure practices
+
+#### ClickOps Implementation
+
+**Step 1: Enable for a Single Repository**
+1. Navigate to: **Repository Settings** -> **Code security and analysis**
+2. Under "Private vulnerability reporting":
+   - Click **Enable**
+
+**Step 2: Enable Organization-Wide**
+1. Navigate to: **Organization Settings** -> **Code security and analysis**
+2. Under "Private vulnerability reporting":
+   - Click **Enable all** to enable for all existing repositories
+   - Check **"Automatically enable for new repositories"**
+
+**Time to Complete:** ~5 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="2.9" %}
+
+#### Validation & Testing
+1. [ ] Navigate to a repository's Security tab and verify "Report a vulnerability" button appears
+2. [ ] Submit a test vulnerability report to verify the workflow
+3. [ ] Verify organization admins receive notification of the report
+4. [ ] Confirm new repositories automatically have the feature enabled
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.1, CC7.4 | Security event identification and response |
+| **NIST 800-53** | SI-2, SI-5, IR-6 | Flaw remediation, security alerts, incident reporting |
+| **ISO 27001** | A.16.1.2, A.16.1.3 | Reporting information security events |
 
 ---
 
@@ -1148,6 +1264,65 @@ Use GitHub Actions OIDC provider to get short-lived cloud credentials instead of
 
 ---
 
+### 5.3 Configure Secret Scanning Delegated Bypass
+
+**Profile Level:** L2 (Hardened)
+**Requires:** GitHub Enterprise Cloud with GHAS
+**NIST 800-53:** AC-3 (Access Enforcement), AC-6 (Least Privilege), IA-5(7) (No Embedded Authenticators)
+
+#### Description
+Configure delegated bypass for secret scanning push protection to control who can bypass push protection when a secret is detected. By default, any developer can bypass push protection by providing a reason. Delegated bypass requires a designated reviewer (typically the security team) to approve bypass requests before a detected secret can be committed.
+
+#### Rationale
+**Attack Prevented:** Unauthorized secret commits, accidental credential exposure
+
+**Why This Matters:**
+- Default push protection allows any developer to bypass with a reason, providing no real enforcement
+- Delegated bypass ensures the security team is aware of and approves every secret that enters the codebase
+- Creates an audit trail of bypass requests and approvals
+- Prevents developers from routinely bypassing push protection without review
+
+#### ClickOps Implementation
+
+**Step 1: Access Code Security Configuration**
+1. Navigate to: **Organization Settings** -> **Code security** -> **Configurations**
+2. Select your active security configuration (or create one)
+
+**Step 2: Enable Delegated Bypass**
+1. Under "Push protection":
+   - Set bypass to **"Delegated bypass"**
+2. Under "Bypass reviewers":
+   - Add your security team as designated reviewers
+   - Optionally add specific roles (e.g., Security Managers)
+
+**Step 3: Configure Bypass Request Settings**
+1. Set bypass request timeout (recommended: 7 days)
+2. Configure notification preferences for reviewers
+3. Apply the configuration to target repositories
+
+**Time to Complete:** ~10 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="2.10" %}
+
+#### Validation & Testing
+1. [ ] Attempt to push a test secret (use a revoked key) to a protected repository
+2. [ ] Verify push is blocked and bypass request is created
+3. [ ] Verify designated reviewers receive the bypass request notification
+4. [ ] Approve the request and verify the push succeeds
+5. [ ] Deny a request and verify the push remains blocked
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC7.1 | Logical access security, monitoring |
+| **NIST 800-53** | AC-3, AC-6, IA-5(7) | Access enforcement, least privilege |
+| **ISO 27001** | A.10.1.2, A.9.2.3 | Key management, privileged access |
+
+---
+
 ## 6. Dependency & Supply Chain Security
 
 ### 6.1 Enable Dependency Review for Pull Requests
@@ -1231,7 +1406,113 @@ Use Dependabot or Renovate to keep pins up-to-date while maintaining hash verifi
 
 ---
 
-## 7. Monitoring & Audit Logging
+### 6.3 Enable Artifact Attestations for Supply Chain Provenance
+
+**Profile Level:** L2 (Hardened)
+**SLSA:** Build L2-L3
+**NIST 800-53:** SA-12 (Supply Chain Protection), SI-7 (Software Integrity)
+
+#### Description
+Enable GitHub artifact attestations to generate signed SLSA provenance for build artifacts. Artifact attestations create a cryptographically verifiable link between a build artifact and the source code, workflow, and environment that produced it. Consumers can verify that an artifact was built from a specific commit in a trusted workflow.
+
+#### Rationale
+**Attack Prevented:** Artifact substitution, build system compromise, supply chain tampering
+
+**Real-World Incidents:**
+- **tj-actions/changed-files (March 2025):** Attacker repointed mutable version tags to malicious commits, exfiltrating CI/CD secrets from 23,000+ repositories. Artifact attestations would have allowed consumers to verify build provenance.
+- **SolarWinds (2020):** Build system compromise injected malicious code into signed artifacts. SLSA provenance with attestations would have detected the discrepancy between source and build output.
+
+**Why This Matters:**
+- Attestations are signed by Sigstore using the OIDC identity of the GitHub Actions workflow
+- Consumers can verify the exact source commit, repository, and workflow that produced an artifact
+- Supports SLSA Build L2 (provenance) and L3 (build platform hardening) requirements
+- GitHub CLI provides built-in verification via `gh attestation verify`
+
+#### ClickOps Implementation
+
+**Step 1: Enable Artifact Attestations in Organization**
+1. Navigate to: **Organization Settings** -> **Actions** -> **General**
+2. Ensure GitHub Actions is enabled for the organization
+
+**Step 2: Add Attestation Step to Workflows**
+1. Open your release workflow file (e.g., `.github/workflows/release.yml`)
+2. Add the `actions/attest-build-provenance` action after build steps
+3. Ensure the workflow has `id-token: write` and `attestations: write` permissions
+
+**Time to Complete:** ~20 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="4.7" %}
+
+#### Validation & Testing
+1. [ ] Trigger a build that generates an attestation
+2. [ ] Verify attestation appears in the Actions workflow run summary
+3. [ ] Run `gh attestation verify` against the produced artifact
+4. [ ] Verify the attestation includes correct source commit and workflow information
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SLSA** | Build L2, L3 | Provenance and build platform integrity |
+| **SOC 2** | CC7.1, CC8.1 | Security monitoring and change management |
+| **NIST 800-53** | SA-12, SI-7 | Supply chain protection, software integrity |
+| **ISO 27001** | A.14.2.7, A.14.2.9 | Outsourced development, system acceptance testing |
+
+---
+
+### 6.4 Configure Dependabot Grouped Security Updates
+
+**Profile Level:** L2 (Hardened)
+**NIST 800-53:** SI-2 (Flaw Remediation), SA-12 (Supply Chain Protection), RA-5 (Vulnerability Scanning)
+
+#### Description
+Configure Dependabot grouped security updates to combine related dependency updates into a single pull request. Without grouping, Dependabot creates individual PRs for each vulnerability, leading to PR fatigue and delayed remediation.
+
+#### Rationale
+**Why This Matters:**
+- Organizations with many repositories can receive hundreds of individual Dependabot PRs per week
+- PR fatigue leads to developers ignoring or delaying security updates
+- Grouped updates reduce noise by combining related updates (e.g., all patch-level npm updates)
+- Accelerates mean time to remediation by making review more efficient
+- Can be configured per ecosystem, dependency type, and severity
+
+#### ClickOps Implementation
+
+**Step 1: Create Dependabot Configuration**
+1. In your repository, create `.github/dependabot.yml`
+2. Define package ecosystems to monitor
+3. Add `groups` configuration to combine related updates
+
+**Step 2: Configure Grouping Strategy**
+1. Group by dependency type (production vs. development)
+2. Group by update type (patch, minor)
+3. Optionally group by pattern (e.g., all `@aws-sdk/*` packages together)
+
+**Time to Complete:** ~10 minutes per repository
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="4.8" %}
+
+#### Validation & Testing
+1. [ ] Verify `dependabot.yml` is present and valid
+2. [ ] Trigger a Dependabot run and verify grouped PRs are created
+3. [ ] Verify grouped PRs include all expected dependency updates
+4. [ ] Confirm individual PRs are no longer created for grouped dependencies
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.1, CC7.2 | Security monitoring and response |
+| **NIST 800-53** | SI-2, SA-12, RA-5 | Flaw remediation, supply chain, vulnerability scanning |
+| **ISO 27001** | A.12.6.1, A.14.2.2 | Technical vulnerability management |
+
+---
+
+## 7. Monitoring & Governance
 
 ### 7.1 Enable Audit Log Streaming to SIEM
 
@@ -1359,6 +1640,128 @@ Apply GitHub's recommended security configuration to all repositories in the ent
 
 ---
 
+### 7.3 Enable Organization-Level Code Security Configurations
+
+**Profile Level:** L1 (Baseline)
+**Requires:** GitHub Enterprise Cloud
+**NIST 800-53:** CM-2 (Baseline Configuration), CM-6 (Configuration Settings), SA-11 (Developer Security Testing)
+
+#### Description
+Use GitHub code security configurations to define and enforce security feature settings at the organization level. Security configurations allow you to create named policies that enable Dependabot, secret scanning, code scanning, and other security features, then apply them uniformly across repositories. This eliminates configuration drift and ensures new repositories automatically receive the organization's security baseline.
+
+#### Rationale
+**Why This Matters:**
+- Without centralized configurations, each repository must be individually configured
+- Repository admins may disable security features, creating gaps
+- New repositories may not receive security features until manually configured
+- Code security configurations provide a single pane of glass for security posture management
+- Configurations can be enforced so repository admins cannot disable them
+
+#### ClickOps Implementation
+
+**Step 1: Access Security Configurations**
+1. Navigate to: **Organization Settings** -> **Code security** -> **Configurations**
+
+**Step 2: Create Custom Configuration**
+1. Click **New configuration**
+2. Name: `hth-hardened` (or your preferred name)
+3. Enable the following features:
+   - Dependency graph: Enabled
+   - Dependabot alerts: Enabled
+   - Dependabot security updates: Enabled
+   - Secret scanning: Enabled
+   - Push protection: Enabled
+   - Code scanning default setup: Enabled
+   - Private vulnerability reporting: Enabled
+4. Set enforcement level to **Enforced** for critical features
+
+**Step 3: Apply Configuration**
+1. Select target repositories (all or specific sets)
+2. Apply the configuration
+3. Verify all repositories show the correct security posture
+
+**Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="3.19" %}
+
+#### Validation & Testing
+1. [ ] Verify configuration is applied to all target repositories
+2. [ ] Spot-check individual repositories for expected security features
+3. [ ] Create a new repository and verify it automatically receives the configuration
+4. [ ] Attempt to disable an enforced feature at the repository level (should be blocked)
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.1, CC8.1 | Security monitoring and change management |
+| **NIST 800-53** | CM-2, CM-6, SA-11 | Baseline configuration, configuration settings |
+| **ISO 27001** | A.12.1.1, A.14.2.1 | Documented procedures, development policy |
+
+---
+
+### 7.4 Configure Repository Custom Properties for Security Classification
+
+**Profile Level:** L2 (Hardened)
+**NIST 800-53:** RA-2 (Security Categorization), SC-16 (Transmission of Security Attributes), CM-8 (Information System Component Inventory)
+
+#### Description
+Use GitHub repository custom properties to classify repositories by security sensitivity, data classification, compliance requirements, and ownership. Custom properties enable organization-wide tagging of repositories with structured metadata that can drive ruleset targeting, security configuration assignment, and compliance reporting.
+
+#### Rationale
+**Why This Matters:**
+- Without classification, organizations cannot systematically apply different security policies to repositories of different risk levels
+- Custom properties can be used as conditions in repository rulesets (e.g., stricter rules for "critical" repositories)
+- Enables automated compliance reporting by querying repositories by classification
+- Supports data governance requirements for knowing where sensitive data resides
+- Properties are required and can have default values, ensuring no repository is unclassified
+
+#### ClickOps Implementation
+
+**Step 1: Define Custom Properties**
+1. Navigate to: **Organization Settings** -> **Custom properties**
+2. Click **New property**
+3. Create classification properties:
+   - `security-tier`: single_select (critical, high, standard, low)
+   - `data-classification`: single_select (public, internal, confidential, restricted)
+   - `compliance-scope`: multi_select (soc2, pci-dss, hipaa, fedramp, none)
+4. Set `security-tier` and `data-classification` as required with defaults
+
+**Step 2: Classify Repositories**
+1. Navigate to: **Organization Settings** -> **Repositories**
+2. Select repositories to classify
+3. Set property values based on repository sensitivity
+4. Prioritize classifying repositories with production code and customer data
+
+**Step 3: Use Properties in Rulesets**
+1. Navigate to: **Organization Settings** -> **Repository** -> **Rulesets**
+2. Create rulesets that target repositories by custom property values
+3. Example: Require additional reviewers for `security-tier: critical` repositories
+
+**Time to Complete:** ~30 minutes for setup, ongoing for classification
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="5.10" %}
+
+#### Validation & Testing
+1. [ ] Verify custom properties are defined in the organization
+2. [ ] Verify critical repositories have correct property values assigned
+3. [ ] Verify rulesets correctly target repositories by property values
+4. [ ] Confirm new repositories receive default property values
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC3.1, CC6.1 | Risk assessment, logical access |
+| **NIST 800-53** | RA-2, SC-16, CM-8 | Security categorization, asset inventory |
+| **ISO 27001** | A.8.1.1, A.8.2.1 | Inventory of assets, classification of information |
+
+---
+
 ## 8. Third-Party Integration Security
 
 ### 8.1 Integration Risk Assessment Matrix
@@ -1467,6 +1870,12 @@ Check CircleCI documentation for current static IPs for webhook allowlisting.
 | Audit Log Streaming | No | No | Yes | Yes |
 | Required Workflows | No | No | Yes | Yes |
 | Self-Hosted Runner Groups | No | No | Yes | Yes |
+| Fine-Grained PAT Policies | Yes | Yes | Yes | Yes |
+| Private Vulnerability Reporting | Yes | Yes | Yes | Yes |
+| Delegated Bypass (Push Protection) | No | No | Yes | No |
+| Artifact Attestations | Yes | Yes | Yes | Yes |
+| Code Security Configurations | No | No | Yes | No |
+| Custom Properties | No | No | Yes | Yes |
 
 ---
 
@@ -1524,6 +1933,7 @@ Check CircleCI documentation for current static IPs for webhook allowlisting.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-03-07 | 0.3.0 | draft | Added 7 new controls: fine-grained PAT policies, private vulnerability reporting, secret scanning delegated bypass, artifact attestations, Dependabot grouped updates, code security configurations, repository custom properties | Claude Code (Opus 4.6) |
 | 2026-02-12 | 0.2.0 | draft | Merged enterprise guide, added code pack integration, comprehensive controls | Claude Code (Opus 4.6) |
 | 2025-12-13 | 0.1.0 | draft | Initial GitHub hardening guide with supply chain security focus | Claude Code (Opus 4.5) |
 

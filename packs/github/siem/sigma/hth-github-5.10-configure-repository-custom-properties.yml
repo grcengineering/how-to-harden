@@ -1,0 +1,36 @@
+title: GitHub Repository Custom Property Modified
+id: a8b9c0d1-e2f3-4a4b-5c6d-7e8f90123456
+status: test
+description: |
+    Detects when repository custom properties are modified. Changes to security
+    classification properties could affect which security policies apply to
+    a repository, potentially downgrading its protection level.
+    This corresponds to HTH GitHub control hth-github-5.10-configure-repository-custom-properties (section 5.10, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/managing-organization-settings/managing-custom-properties-for-repositories-in-your-organization
+author: How to Harden
+date: 2026/03/07
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action:
+            - 'custom_property.update'
+            - 'custom_property_values.update'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Routine repository reclassification during reviews
+level: medium

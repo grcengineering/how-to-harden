@@ -1,0 +1,32 @@
+id: "github-4.8"
+vendor: "github"
+title: "Configure Dependabot Grouped Security Updates"
+section: "4.8"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#45-configure-dependabot-grouped-security-updates"
+description: >
+  Configure Dependabot grouped security updates to combine related dependency updates
+  into a single pull request. Without grouping, Dependabot creates individual PRs for
+  each vulnerability, leading to PR fatigue and delayed remediation. Grouped updates
+  reduce noise, accelerate review cycles, and improve mean time to remediation for
+  dependency vulnerabilities.
+compliance:
+  soc2: ["CC7.1", "CC7.2"]
+  nist_800_53: ["SI-2", "SA-12", "RA-5"]
+  iso_27001: ["A.12.6.1", "A.14.2.2"]
+audit:
+  - id: "dependabot-config-exists"
+    description: "Verify dependabot.yml configuration file exists in the repository"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/contents/.github/dependabot.yml"
+      check: '.name == "dependabot.yml"'
+    expected: true
+remediate:
+  api:
+    - description: "Dependabot grouped updates are configured via .github/dependabot.yml in the repository"
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/contents/.github/dependabot.yml"
+      condition: "!dependabot-config-exists"
+tags: ["dependabot", "grouped-updates", "dependency-management", "vulnerability-remediation"]

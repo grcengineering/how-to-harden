@@ -1,0 +1,48 @@
+# =============================================================================
+# HTH GitHub Control 4.08: Dependabot Grouped Security Updates
+# Profile Level: L2 (Hardened)
+# Frameworks: NIST SI-2, SA-12
+# Source: https://howtoharden.com/guides/github/#45-configure-dependabot-grouped-security-updates
+# =============================================================================
+
+# HTH Guide Excerpt: begin dependabot-grouped-config
+# .github/dependabot.yml - Dependabot configuration with grouped security updates
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "patch"
+          - "minor"
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions-updates:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      pip-all:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+# HTH Guide Excerpt: end dependabot-grouped-config
