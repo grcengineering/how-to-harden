@@ -1,0 +1,47 @@
+id: "github-3.1"
+vendor: "github"
+title: "Restrict Third-Party GitHub Actions to Verified Creators Only"
+section: "3.1"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#31-restrict-third-party-github-actions-to-verified-creators-only"
+description: >
+  Prevent use of arbitrary third-party Actions by restricting to GitHub-verified
+  creators and specific allow-listed actions. Malicious GitHub Actions can exfiltrate
+  secrets, modify build artifacts to inject backdoors, and steal source code.
+compliance:
+  soc2: ["CC9.2"]
+  nist_800_53: ["SA-12"]
+  iso_27001: ["A.14.2.7"]
+audit:
+  - id: "org-actions-restricted"
+    description: "Verify organization-level Actions are not set to allow all actions"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/actions/permissions"
+      check: '.allowed_actions != "all"'
+    expected: true
+  - id: "repo-actions-not-unrestricted"
+    description: "Verify repository-level Actions are not set to allow all actions"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/actions/permissions"
+      check: '.allowed_actions != "all" or .enabled == false'
+    expected: true
+remediate:
+  api:
+    - description: "Restrict Actions to GitHub-authored and verified marketplace creators at org level"
+      method: PUT
+      endpoint: "/orgs/{org}/actions/permissions"
+      body:
+        enabled_repositories: "all"
+        allowed_actions: "selected"
+      condition: "!org-actions-restricted"
+  terraform:
+    resources:
+      - type: "github_actions_organization_permissions"
+        name: "actions_policy"
+        config:
+          allowed_actions: "selected"
+          enabled_repositories: "all"
+tags: ["actions", "supply-chain", "third-party", "verified-creators"]

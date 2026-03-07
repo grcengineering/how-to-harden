@@ -1,0 +1,37 @@
+id: "github-7.2"
+vendor: "github"
+title: "Apply GitHub-Recommended Security Configuration"
+section: "7.2"
+profile_level: 1
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#72-apply-github-recommended-security-configuration"
+description: >
+  Apply GitHub's recommended security configuration to all repositories in the
+  enterprise. This provides a baseline security posture with dependency graph,
+  Dependabot alerts, secret scanning, push protection, and CodeQL code scanning.
+  Requires GitHub Enterprise Cloud.
+compliance:
+  soc2: ["CC7.1"]
+  nist_800_53: ["CM-6"]
+  iso_27001: ["A.12.1.1"]
+audit:
+  - id: "security-configs-exist"
+    description: "Verify code security configurations are defined for the organization"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/code-security/configurations"
+      check: '. | length > 0'
+    expected: true
+  - id: "default-config-applied"
+    description: "Verify at least one security configuration is applied as default"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/code-security/configurations"
+      check: '[.[] | select(.default_for_new_repos != "none")] | length > 0'
+    expected: true
+remediate:
+  note: >
+    Navigate to Enterprise Settings > Code security > Configurations. Select the
+    GitHub recommended configuration and apply to all repositories. Create custom
+    configurations for stricter requirements on sensitive repositories.
+tags: ["security-configuration", "baseline", "enterprise", "governance"]

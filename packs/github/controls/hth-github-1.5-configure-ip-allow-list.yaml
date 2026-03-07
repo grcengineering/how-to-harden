@@ -1,0 +1,30 @@
+id: "github-1.5"
+vendor: "github"
+title: "Configure Enterprise IP Allow List"
+section: "1.5"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#15-configure-enterprise-ip-allow-list"
+description: >
+  Restrict enterprise access to approved IP addresses using IP allow lists. Even with
+  stolen credentials or tokens, attackers outside your corporate network cannot access
+  GitHub resources. Requires GitHub Enterprise Cloud.
+compliance:
+  soc2: ["CC6.6"]
+  nist_800_53: ["AC-17", "SC-7"]
+  iso_27001: ["A.13.1.1"]
+audit:
+  - id: "ip-allow-list-check"
+    description: "Verify organization metadata is accessible (IP allow list requires Enterprise Cloud GraphQL API)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}"
+      check: '.plan.name == "enterprise"'
+    expected: true
+remediate:
+  note: >
+    IP allow lists must be configured via the GitHub Enterprise UI or GraphQL API
+    (not REST API). Navigate to Enterprise Settings > Authentication security >
+    IP allow list. Add corporate network IPs, VPN egress IPs, and CI/CD runner IPs.
+    The REST API does not expose IP allow list configuration.
+tags: ["ip-allowlist", "network-security", "enterprise", "defense-in-depth"]

@@ -1,0 +1,38 @@
+id: "github-7.1"
+vendor: "github"
+title: "Enable Audit Log Streaming to SIEM"
+section: "7.1"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#71-enable-audit-log-streaming-to-siem"
+description: >
+  Stream GitHub audit logs to your SIEM (Splunk, Datadog, AWS Security Lake) for
+  centralized monitoring and alerting. Enables detection of unusual authentication
+  patterns, privilege escalation, data exfiltration, and supply chain attacks.
+  Requires GitHub Enterprise Cloud.
+compliance:
+  soc2: ["CC7.2"]
+  nist_800_53: ["AU-2", "AU-6"]
+  iso_27001: ["A.12.4.1"]
+audit:
+  - id: "audit-log-accessible"
+    description: "Verify the organization audit log is accessible via API"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/audit-log?per_page=1"
+      check: '. | length >= 0'
+    expected: true
+  - id: "recent-audit-events"
+    description: "Verify the organization has recent audit log events (log is active)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/audit-log?per_page=1"
+      check: '. | length > 0'
+    expected: true
+remediate:
+  note: >
+    Audit log streaming must be configured via the Enterprise Settings UI.
+    Navigate to Enterprise Settings > Audit log > Log streaming > Configure stream.
+    Supported destinations: Amazon S3, Azure Blob/Event Hubs, Datadog, Google Cloud
+    Storage, Splunk. Enable Git events for repository activity.
+tags: ["audit-log", "siem", "monitoring", "detection", "enterprise"]

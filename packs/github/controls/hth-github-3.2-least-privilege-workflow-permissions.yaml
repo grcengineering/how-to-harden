@@ -1,0 +1,41 @@
+id: "github-3.2"
+vendor: "github"
+title: "Use Least-Privilege Workflow Permissions"
+section: "3.2"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#32-use-least-privilege-workflow-permissions"
+description: >
+  Set GitHub Actions GITHUB_TOKEN permissions to read-only by default. Grant write
+  permissions only when explicitly needed per workflow. By default, GITHUB_TOKEN has
+  write access to repository contents, packages, and pull requests — a compromised
+  workflow can modify code.
+compliance:
+  soc2: ["CC6.2"]
+  nist_800_53: ["AC-6"]
+  iso_27001: ["A.9.4.1"]
+audit:
+  - id: "org-workflow-permissions-read"
+    description: "Verify organization default workflow permissions are set to read-only"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/actions/permissions/workflow"
+      check: '.default_workflow_permissions == "read"'
+    expected: true
+  - id: "org-no-pr-approval-by-actions"
+    description: "Verify GitHub Actions cannot create and approve pull requests"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/actions/permissions/workflow"
+      check: '.can_approve_pull_request_reviews == false'
+    expected: true
+remediate:
+  api:
+    - description: "Set default workflow permissions to read-only at org level"
+      method: PUT
+      endpoint: "/orgs/{org}/actions/permissions/workflow"
+      body:
+        default_workflow_permissions: "read"
+        can_approve_pull_request_reviews: false
+      condition: "!org-workflow-permissions-read"
+tags: ["actions", "permissions", "least-privilege", "github-token", "slsa"]
