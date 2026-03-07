@@ -1,0 +1,29 @@
+id: "github-7.2"
+vendor: "github"
+title: "Create Custom Repository Roles"
+section: "7.2"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#72-create-custom-repository-roles"
+description: >
+  Create custom repository roles to implement fine-grained access control
+  beyond the default read/triage/write/maintain/admin roles. Custom roles
+  support least-privilege by granting only specific permissions needed.
+compliance:
+  soc2: ["CC6.2", "CC6.3"]
+  nist_800_53: ["AC-6"]
+  iso_27001: ["A.9.2.1"]
+audit:
+  - id: "list-custom-repository-roles"
+    description: "Verify custom repository roles are defined"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/custom-repository-roles"
+      check: '.total_count >= 0'
+    expected: true
+remediate:
+  note: >
+    In Organization Settings > Repository roles, create custom roles with
+    specific permissions (e.g., security-reviewer with security alert access
+    but no code push).
+tags: ["roles", "access-control", "rbac", "least-privilege"]

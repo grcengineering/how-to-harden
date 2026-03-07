@@ -1,0 +1,28 @@
+id: "github-7.1"
+vendor: "github"
+title: "Configure Copilot Governance"
+section: "7.1"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#71-configure-copilot-governance"
+description: >
+  Configure Copilot governance policies including content exclusions to prevent
+  Copilot from accessing sensitive files, enable audit logging, and manage
+  feature policies at the organization level.
+compliance:
+  soc2: ["CC6.1", "CC7.2"]
+  nist_800_53: ["AC-3", "AU-2"]
+  iso_27001: ["A.9.4.1"]
+audit:
+  - id: "check-copilot-settings"
+    description: "Verify Copilot billing/settings are configured"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/copilot/billing"
+      check: '.seat_management_setting != null'
+    expected: true
+remediate:
+  note: >
+    In Organization Settings > Copilot, configure seat management policies,
+    content exclusions for sensitive repositories, and enable audit logging.
+tags: ["copilot", "ai", "governance", "content-exclusions"]

@@ -1,0 +1,35 @@
+id: "github-4.3"
+vendor: "github"
+title: "Enforce Fine-Grained Personal Access Tokens"
+section: "4.3"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#43-enforce-fine-grained-personal-access-tokens"
+description: >
+  Enforce fine-grained personal access tokens over classic tokens to ensure
+  least-privilege access with repository-scoped permissions and mandatory
+  expiration dates.
+compliance:
+  soc2: ["CC6.1", "CC6.2"]
+  nist_800_53: ["AC-6", "IA-5"]
+  iso_27001: ["A.9.2.1", "A.9.4.2"]
+audit:
+  - id: "list-active-pats"
+    description: "Verify personal access tokens are enumerable for review"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/personal-access-tokens"
+      check: '. | length >= 0'
+    expected: true
+  - id: "list-pending-pat-requests"
+    description: "Verify pending PAT requests are tracked"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/personal-access-token-requests"
+      check: '. | length >= 0'
+    expected: true
+remediate:
+  note: >
+    In Organization Settings > Personal access tokens, set the policy to require
+    fine-grained tokens and require admin approval for new tokens.
+tags: ["pat", "tokens", "authentication", "access-control"]

@@ -1,0 +1,28 @@
+id: "github-7.3"
+vendor: "github"
+title: "Enforce Required Workflows via Organization Rulesets"
+section: "7.3"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#73-enforce-required-workflows-via-organization-rulesets"
+description: >
+  Use organization rulesets to enforce required workflows across all
+  repositories, ensuring security checks like SAST, dependency review,
+  and compliance gates run on every pull request.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["SA-11", "CM-3"]
+  iso_27001: ["A.14.2.1"]
+audit:
+  - id: "check-org-rulesets-required-workflows"
+    description: "Verify organization rulesets enforce required workflows"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/rulesets"
+      check: '. | length > 0'
+    expected: true
+remediate:
+  note: >
+    In Organization Settings > Rulesets, create a ruleset targeting all
+    repositories with required status checks for security workflows.
+tags: ["rulesets", "workflows", "required-checks", "ci-cd"]

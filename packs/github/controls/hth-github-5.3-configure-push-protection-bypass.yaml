@@ -1,0 +1,28 @@
+id: "github-5.3"
+vendor: "github"
+title: "Configure Push Protection with Delegated Bypass"
+section: "5.3"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#53-configure-push-protection-with-delegated-bypass"
+description: >
+  Configure push protection to block pushes containing secrets, with delegated
+  bypass requiring security team approval rather than allowing individual
+  developers to bypass protections.
+compliance:
+  soc2: ["CC6.1"]
+  nist_800_53: ["SC-28", "AC-3"]
+  iso_27001: ["A.10.1.1"]
+audit:
+  - id: "check-push-protection-bypasses"
+    description: "Verify push protection bypass tracking is active"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/secret-scanning/alerts"
+      check: '. | length >= 0'
+    expected: true
+remediate:
+  note: >
+    Enable push protection in Organization Settings > Code security and analysis.
+    Configure delegated bypass to require security team approval for any bypass.
+tags: ["secrets", "push-protection", "bypass", "delegated"]

@@ -1,7 +1,7 @@
-id: "github-3.19"
+id: "github-8.3"
 vendor: "github"
-title: "Enable Organization-Level Code Security Configurations"
-section: "3.19"
+title: "Apply GitHub-Recommended Security Configuration"
+section: "8.3"
 profile_level: 1
 severity: "high"
 guide_url: "https://howtoharden.com/guides/github/#38-enable-organization-level-code-security-configurations"

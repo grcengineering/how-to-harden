@@ -1,0 +1,28 @@
+id: "github-6.5"
+vendor: "github"
+title: "Enforce Dependency Review Across the Organization"
+section: "6.5"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#65-enforce-dependency-review-across-the-organization"
+description: >
+  Enforce dependency review at the organization level using repository rulesets
+  to block PRs that introduce known-vulnerable dependencies across all
+  repositories.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["SA-12", "RA-5"]
+  iso_27001: ["A.14.2.1"]
+audit:
+  - id: "check-org-rulesets-dependency-review"
+    description: "Verify organization rulesets exist for dependency review"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/rulesets"
+      check: '. | length > 0'
+    expected: true
+remediate:
+  note: >
+    Create an organization ruleset with a required workflow that runs
+    dependency-review-action on all pull requests.
+tags: ["supply-chain", "dependencies", "dependency-review", "rulesets"]

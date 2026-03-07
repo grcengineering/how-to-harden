@@ -1,7 +1,7 @@
-id: "github-7.1"
+id: "github-8.1"
 vendor: "github"
 title: "Enable Audit Log Streaming to SIEM"
-section: "7.1"
+section: "8.1"
 profile_level: 2
 severity: "high"
 guide_url: "https://howtoharden.com/guides/github/#71-enable-audit-log-streaming-to-siem"

@@ -1,7 +1,7 @@
-id: "github-4.8"
+id: "github-6.3"
 vendor: "github"
 title: "Configure Dependabot Grouped Security Updates"
-section: "4.8"
+section: "6.3"
 profile_level: 2
 severity: "medium"
 guide_url: "https://howtoharden.com/guides/github/#45-configure-dependabot-grouped-security-updates"

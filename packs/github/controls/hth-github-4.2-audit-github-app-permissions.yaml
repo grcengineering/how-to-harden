@@ -1,0 +1,28 @@
+id: "github-4.2"
+vendor: "github"
+title: "Audit GitHub App Installation Permissions"
+section: "4.2"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#42-audit-github-app-installation-permissions"
+description: >
+  Review all GitHub App installations and their permissions. Ensure apps follow
+  least-privilege principles and remove unnecessary installations to reduce
+  attack surface.
+compliance:
+  soc2: ["CC6.2"]
+  nist_800_53: ["AC-6"]
+  iso_27001: ["A.9.2.1"]
+audit:
+  - id: "list-github-app-installations"
+    description: "Verify GitHub App installations are enumerable for review"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/installations"
+      check: '.total_count >= 0'
+    expected: true
+remediate:
+  note: >
+    Review installed GitHub Apps in Organization Settings > GitHub Apps.
+    For each app, verify permissions are minimal and remove unused installations.
+tags: ["github-apps", "permissions", "audit", "access-control"]

@@ -1,0 +1,28 @@
+id: "github-6.4"
+vendor: "github"
+title: "Enable Build Provenance and npm Provenance"
+section: "6.4"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#64-enable-build-provenance-and-npm-provenance"
+description: >
+  Enable build provenance to generate verifiable SLSA attestations for build
+  artifacts. For npm packages, enable npm provenance to link published packages
+  to their source repository and build workflow.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["SA-12"]
+  iso_27001: ["A.14.2.7"]
+audit:
+  - id: "check-actions-permissions"
+    description: "Verify Actions permissions allow attestation workflows"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/actions/permissions"
+      check: '.enabled_repositories != "none"'
+    expected: true
+remediate:
+  note: >
+    Add attestation steps to CI workflows using actions/attest-build-provenance.
+    For npm, set provenance: true in package.json publish config.
+tags: ["supply-chain", "provenance", "slsa", "attestations", "npm"]

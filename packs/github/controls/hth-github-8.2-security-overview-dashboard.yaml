@@ -1,0 +1,35 @@
+id: "github-8.2"
+vendor: "github"
+title: "Use Security Overview Dashboard"
+section: "8.2"
+profile_level: 1
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#82-use-security-overview-dashboard"
+description: >
+  Use GitHub's Security Overview dashboard to monitor security alert trends,
+  coverage gaps, and remediation progress across the organization's
+  repositories.
+compliance:
+  soc2: ["CC7.2", "CC7.3"]
+  nist_800_53: ["RA-5", "SI-4"]
+  iso_27001: ["A.12.4.1"]
+audit:
+  - id: "check-dependabot-alerts-accessible"
+    description: "Verify Dependabot alerts are accessible for dashboard"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/dependabot/alerts"
+      check: '. | length >= 0'
+    expected: true
+  - id: "check-secret-scanning-alerts-accessible"
+    description: "Verify secret scanning alerts are accessible for dashboard"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/secret-scanning/alerts"
+      check: '. | length >= 0'
+    expected: true
+remediate:
+  note: >
+    Navigate to Organization > Security tab to view the Security Overview
+    dashboard. Review coverage, risk, and alert trends regularly.
+tags: ["monitoring", "dashboard", "security-overview", "alerts"]
