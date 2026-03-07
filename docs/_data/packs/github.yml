@@ -2170,3 +2170,262 @@
           
             | table _time, actor, repo, branch
 
+
+"1.12":
+  api:
+    lang: "bash"
+    filename: "hth-github-1.12-enforce-pat-policies.sh"
+    source_url: "https://github.com/grcengineering/how-to-harden/blob/main/packs/github/api/hth-github-1.12-enforce-pat-policies.sh"
+    excerpts:
+      api-audit-fine-grained-pats:
+        content: |
+            # List all fine-grained PATs with access to the organization
+            info "1.12 Listing fine-grained PATs with org access..."
+            PATS=$(gh_get "/orgs/${GITHUB_ORG}/personal-access-tokens?per_page=100") || {
+              fail "1.12 Unable to list fine-grained PATs (requires org admin permissions)"
+              increment_failed
+              summary
+              exit 0
+            }
+            
+            PAT_COUNT=$(echo "${PATS}" | jq '. | length')
+            info "1.12 Found ${PAT_COUNT} fine-grained PAT(s) with org access"
+            
+            # Check for PATs with excessive permissions
+            echo "${PATS}" | jq -r '.[] | "\(.owner.login) | \(.token_name) | expires: \(.token_expired_at // "never") | repos: \(.repository_selection)"'
+            
+            # List pending PAT requests requiring approval
+            info "1.12 Listing pending fine-grained PAT requests..."
+            REQUESTS=$(gh_get "/orgs/${GITHUB_ORG}/personal-access-token-requests?per_page=100") || {
+              warn "1.12 Unable to list PAT requests"
+            }
+            
+            if [ -n "${REQUESTS}" ]; then
+              REQ_COUNT=$(echo "${REQUESTS}" | jq '. | length')
+              if [ "${REQ_COUNT}" -gt "0" ]; then
+                warn "1.12 ${REQ_COUNT} pending PAT request(s) awaiting approval"
+                echo "${REQUESTS}" | jq -r '.[] | "\(.owner.login) | \(.token_name) | requested: \(.created_at)"'
+              else
+                pass "1.12 No pending PAT requests"
+              fi
+            fi
+
+"2.9":
+  api:
+    lang: "bash"
+    filename: "hth-github-2.09-configure-push-rules.sh"
+    source_url: "https://github.com/grcengineering/how-to-harden/blob/main/packs/github/api/hth-github-2.09-configure-push-rules.sh"
+    excerpts:
+      api-create-push-rules:
+        content: |
+            # Create organization push ruleset to restrict dangerous file types
+            info "2.09 Creating push rules ruleset..."
+            RESPONSE=$(gh_post "/orgs/${GITHUB_ORG}/rulesets" '{
+              "name": "File Protection Push Rules",
+              "enforcement": "active",
+              "target": "push",
+              "bypass_actors": [
+                {"actor_id": 1, "actor_type": "OrganizationAdmin", "bypass_mode": "always"}
+              ],
+              "conditions": {
+                "repository_name": {
+                  "include": ["~ALL"],
+                  "exclude": []
+                }
+              },
+              "rules": [
+                {
+                  "type": "file_extension_restriction",
+                  "parameters": {
+                    "restricted_file_extensions": [".exe", ".dll", ".so", ".dylib", ".bin", ".jar", ".war", ".class"]
+                  }
+                },
+                {
+                  "type": "max_file_size",
+                  "parameters": {
+                    "max_file_size": 10
+                  }
+                },
+                {
+                  "type": "file_path_restriction",
+                  "parameters": {
+                    "restricted_file_paths": [".github/workflows/**"]
+                  }
+                }
+              ]
+            }') || {
+              fail "2.09 Failed to create push rules ruleset"
+              increment_failed
+              summary
+              exit 0
+            }
+            
+            # List rulesets to confirm creation
+            info "2.09 Current rulesets:"
+            gh_get "/orgs/${GITHUB_ORG}/rulesets" \
+              | jq '.[] | {name: .name, enforcement: .enforcement, target: .target}'
+
+"2.10":
+  api:
+    lang: "bash"
+    filename: "hth-github-2.10-enable-delegated-bypass.sh"
+    source_url: "https://github.com/grcengineering/how-to-harden/blob/main/packs/github/api/hth-github-2.10-enable-delegated-bypass.sh"
+    excerpts:
+      api-check-push-protection-bypasses:
+        content: |
+            # Audit push protection bypass events via secret scanning alerts
+            info "2.10 Listing push protection bypass alerts..."
+            ALERTS=$(gh_get "/repos/${GITHUB_ORG}/${REPO}/secret-scanning/alerts?state=open&per_page=100") || {
+              warn "2.10 Unable to list secret scanning alerts (may require GHAS license)"
+            }
+            
+            if [ -n "${ALERTS}" ]; then
+              BYPASS_COUNT=$(echo "${ALERTS}" | jq '[.[] | select(.push_protection_bypassed == true)] | length')
+              if [ "${BYPASS_COUNT}" -gt "0" ]; then
+                warn "2.10 ${BYPASS_COUNT} alert(s) with push protection bypass detected"
+                echo "${ALERTS}" | jq -r '.[] | select(.push_protection_bypassed == true) | "\(.secret_type) | bypassed by: \(.push_protection_bypassed_by.login // "unknown") | \(.created_at)"'
+              else
+                pass "2.10 No push protection bypasses detected"
+              fi
+            fi
+            
+            # Check org-level security configuration for push protection
+            info "2.10 Checking organization code security configuration..."
+            ORG_SECURITY=$(gh_get "/orgs/${GITHUB_ORG}/code-security/configurations") || {
+              warn "2.10 Unable to retrieve org security configurations"
+            }
+            
+            if [ -n "${ORG_SECURITY}" ]; then
+              echo "${ORG_SECURITY}" | jq '.[] | {name: .name, secret_scanning_push_protection: .secret_scanning_push_protection}'
+            fi
+
+"3.19":
+  cli:
+    lang: "yaml"
+    filename: "hth-github-3.19-artifact-attestation-workflow.yml"
+    source_url: "https://github.com/grcengineering/how-to-harden/blob/main/packs/github/cli/hth-github-3.19-artifact-attestation-workflow.yml"
+    excerpts:
+      workflow-artifact-attestation:
+        content: |
+            name: Build and Attest
+            on:
+              push:
+                branches: [main]
+              release:
+                types: [published]
+            
+            permissions:
+              id-token: write
+              contents: read
+              attestations: write
+            
+            jobs:
+              build-and-attest:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+            
+                  - name: Build artifact
+                    run: |
+                      # Replace with your build steps
+                      make build
+                      echo "ARTIFACT_PATH=dist/my-app" >> "$GITHUB_ENV"
+            
+                  - name: Generate artifact attestation
+                    uses: actions/attest-build-provenance@v2
+                    with:
+                      subject-path: ${{ env.ARTIFACT_PATH }}
+      workflow-container-attestation:
+        content: |
+              build-and-attest-container:
+                runs-on: ubuntu-latest
+                permissions:
+                  id-token: write
+                  contents: read
+                  attestations: write
+                  packages: write
+                steps:
+                  - uses: actions/checkout@v4
+            
+                  - name: Log in to GHCR
+                    uses: docker/login-action@v3
+                    with:
+                      registry: ghcr.io
+                      username: ${{ github.actor }}
+                      password: ${{ secrets.GITHUB_TOKEN }}
+            
+                  - name: Build and push image
+                    id: build
+                    uses: docker/build-push-action@v6
+                    with:
+                      push: true
+                      tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+            
+                  - name: Generate container attestation
+                    uses: actions/attest-build-provenance@v2
+                    with:
+                      subject-name: ghcr.io/${{ github.repository }}
+                      subject-digest: ${{ steps.build.outputs.digest }}
+                      push-to-registry: true
+
+"3.20":
+  api:
+    lang: "bash"
+    filename: "hth-github-3.20-verify-attestations.sh"
+    source_url: "https://github.com/grcengineering/how-to-harden/blob/main/packs/github/api/hth-github-3.20-verify-attestations.sh"
+    excerpts:
+      api-verify-attestation:
+        content: |
+            # Verify a binary artifact attestation using the GitHub CLI
+            # Usage: Replace PATH/TO/ARTIFACT with your build artifact
+            gh attestation verify PATH/TO/ARTIFACT \
+              -R "${GITHUB_ORG}/${REPO}"
+            
+            # Verify a container image attestation
+            gh attestation verify oci://ghcr.io/${GITHUB_ORG}/${REPO}:latest \
+              -R "${GITHUB_ORG}/${REPO}"
+            
+            # Verify with specific SBOM predicate type (SPDX)
+            gh attestation verify PATH/TO/ARTIFACT \
+              -R "${GITHUB_ORG}/${REPO}" \
+              --predicate-type https://spdx.dev/Document/v2.3
+
+"3.21":
+  api:
+    lang: "bash"
+    filename: "hth-github-3.21-configure-oidc-claims.sh"
+    source_url: "https://github.com/grcengineering/how-to-harden/blob/main/packs/github/api/hth-github-3.21-configure-oidc-claims.sh"
+    excerpts:
+      api-customize-oidc-claims:
+        content: |
+            # Customize OIDC subject claims to include repository, environment, and job_workflow_ref
+            # This restricts which workflows can assume cloud roles
+            info "3.21 Customizing OIDC subject claims for ${GITHUB_ORG}/${REPO}..."
+            RESPONSE=$(gh_put "/repos/${GITHUB_ORG}/${REPO}/actions/oidc/customization/sub" '{
+              "use_default": false,
+              "include_claim_keys": [
+                "repo",
+                "context",
+                "job_workflow_ref"
+              ]
+            }') || {
+              fail "3.21 Failed to customize OIDC claims"
+              increment_failed
+              summary
+              exit 0
+            }
+            
+            # Verify the customization
+            info "3.21 Current OIDC subject claim template:"
+            gh_get "/repos/${GITHUB_ORG}/${REPO}/actions/oidc/customization/sub" \
+              | jq '.'
+            
+            # Set organization-level OIDC defaults
+            info "3.21 Setting organization OIDC subject claim template..."
+            gh_put "/orgs/${GITHUB_ORG}/actions/oidc/customization/sub" '{
+              "include_claim_keys": [
+                "repo",
+                "context",
+                "job_workflow_ref"
+              ]
+            }'
