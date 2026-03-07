@@ -1,7 +1,7 @@
-id: "github-1.6"
+id: "github-1.7"
 vendor: "github"
 title: "Enforce Fine-Grained Personal Access Token (PAT) Policies"
-section: "1.6"
+section: "1.7"
 profile_level: 2
 severity: "high"
 guide_url: "https://howtoharden.com/guides/github/#16-enforce-fine-grained-pat-policies"

@@ -392,7 +392,7 @@ Restrict enterprise access to approved IP addresses using IP allow lists. This l
 
 ---
 
-### 1.6 Enforce Fine-Grained Personal Access Token (PAT) Policies
+### 1.7 Enforce Fine-Grained Personal Access Token (PAT) Policies
 
 **Profile Level:** L2 (Hardened)
 **NIST 800-53:** IA-5, AC-6
