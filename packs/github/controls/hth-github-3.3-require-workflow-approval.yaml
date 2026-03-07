@@ -1,0 +1,37 @@
+id: "github-3.3"
+vendor: "github"
+title: "Require Workflow Approval for First-Time Contributors"
+section: "3.3"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#33-require-workflow-approval-for-first-time-contributors"
+description: >
+  Require manual approval before running workflows triggered by first-time
+  contributors. Prevents malicious PR attacks where an attacker forks your public
+  repo, modifies the workflow to exfiltrate secrets, and opens a PR.
+compliance:
+  soc2: ["CC6.1"]
+  nist_800_53: ["AC-3"]
+  iso_27001: ["A.9.4.1"]
+audit:
+  - id: "actions-permissions-configured"
+    description: "Verify GitHub Actions permissions are configured (not using default unrestricted policy)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/actions/permissions"
+      check: '.enabled_repositories != null'
+    expected: true
+  - id: "org-workflow-permissions-restricted"
+    description: "Verify default workflow permissions are not set to write (defense in depth)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/actions/permissions/workflow"
+      check: '.default_workflow_permissions == "read"'
+    expected: true
+remediate:
+  note: >
+    Fork pull request workflow approval settings must be configured via the GitHub UI.
+    Navigate to Repository Settings > Actions > General > Fork pull request workflows
+    from outside collaborators. Select "Require approval for first-time contributors"
+    (L2) or "Require approval for all outside collaborators" (L3).
+tags: ["actions", "fork-protection", "workflow-approval", "contributors"]

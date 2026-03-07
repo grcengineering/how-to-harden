@@ -1,0 +1,38 @@
+id: "github-3.4"
+vendor: "github"
+title: "Configure Self-Hosted Runner Security"
+section: "3.4"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#34-configure-self-hosted-runner-security"
+description: >
+  Secure self-hosted runners to prevent compromise of the build environment.
+  Self-hosted runners persist between jobs, so a compromised runner can steal secrets
+  from subsequent jobs. Runners on the corporate network can pivot to internal systems.
+  Requires GitHub Enterprise Cloud/Server for runner groups.
+compliance:
+  soc2: ["CC6.1"]
+  nist_800_53: ["CM-6"]
+  iso_27001: ["A.12.1.4"]
+audit:
+  - id: "runner-groups-configured"
+    description: "Verify the organization has runner groups configured for isolation"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/actions/runner-groups"
+      check: '.total_count > 0'
+    expected: true
+  - id: "runner-groups-restricted"
+    description: "Verify runner groups restrict which repositories can access them"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/actions/runner-groups"
+      check: '[.runner_groups[] | select(.allows_public_repositories == true)] | length == 0'
+    expected: true
+remediate:
+  note: >
+    Configure runner groups via Organization Settings > Actions > Runner groups.
+    Create separate groups for production, general, and public workloads. Use
+    ephemeral runners (new VM per job) for maximum security. Never run self-hosted
+    runners on public repositories.
+tags: ["runners", "self-hosted", "ci-cd", "isolation", "enterprise"]

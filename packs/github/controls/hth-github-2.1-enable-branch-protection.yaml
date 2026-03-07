@@ -1,28 +1,39 @@
-id: "github-3.1"
+id: "github-2.1"
 vendor: "github"
-title: "Enable Branch Protection on Default Branch"
-section: "3.1"
+title: "Enable Branch Protection for All Critical Branches"
+section: "2.1"
 profile_level: 1
 severity: "critical"
-guide_url: "https://howtoharden.com/guides/github/#31-enable-branch-protection"
+guide_url: "https://howtoharden.com/guides/github/#21-enable-branch-protection-for-all-critical-branches"
 description: >
-  Enable branch protection rules on the default branch (typically 'main') of all
-  repositories. Without branch protection, any collaborator can push directly to
-  the default branch, bypassing code review, status checks, and approval requirements.
-  This is the foundation of secure software delivery — all changes must go through
-  a controlled review process.
+  Protect main, master, production, and release branches from direct pushes. Require
+  pull requests, reviews, and status checks before merging. Without branch protection,
+  any collaborator can push directly to the default branch, bypassing code review.
 compliance:
   soc2: ["CC8.1"]
   nist_800_53: ["CM-3", "CM-5"]
   iso_27001: ["A.12.1.2", "A.14.2.2"]
-  pci_dss: ["6.3.2"]
 audit:
   - id: "default-branch-protected"
-    description: "Verify the default branch has branch protection rules enabled (check how-to-harden repo)"
+    description: "Verify the default branch has branch protection rules enabled"
     api:
       method: GET
       endpoint: "/repos/{org}/how-to-harden/branches/main/protection"
       check: 'has("url")'
+    expected: true
+  - id: "pr-reviews-required"
+    description: "Verify pull request reviews are required before merging"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/branches/main/protection"
+      check: '.required_pull_request_reviews != null'
+    expected: true
+  - id: "enforce-admins"
+    description: "Verify branch protection is enforced for admins (no bypass)"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/branches/main/protection"
+      check: '.enforce_admins.enabled == true'
     expected: true
 remediate:
   api:

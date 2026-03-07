@@ -1,0 +1,44 @@
+id: "github-4.1"
+vendor: "github"
+title: "Audit and Restrict OAuth App Access"
+section: "4.1"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#41-audit-and-restrict-oauth-app-access"
+description: >
+  Review all OAuth apps and GitHub Apps with access to your organization. Revoke
+  unnecessary apps, restrict scopes for remaining apps. When CircleCI was breached,
+  attackers exfiltrated GitHub OAuth tokens with broad permissions, allowing
+  repository access.
+compliance:
+  soc2: ["CC6.2", "CC9.2"]
+  nist_800_53: ["AC-6"]
+  iso_27001: ["A.9.2.1"]
+audit:
+  - id: "audit-github-app-installations"
+    description: "Verify all GitHub App installations are reviewed (list for audit)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/installations"
+      check: '.total_count >= 0'
+    expected: true
+  - id: "no-outside-collaborators"
+    description: "Verify no unreviewed outside collaborators have access"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/outside_collaborators"
+      check: '. | length == 0'
+    expected: true
+  - id: "no-insecure-webhooks"
+    description: "Verify no organization webhooks use insecure HTTP URLs"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/hooks"
+      check: '[.[] | select(.config.url | startswith("http://"))] | length == 0'
+    expected: true
+remediate:
+  note: >
+    Review OAuth apps in Organization Settings > OAuth application policy. Restrict
+    installation of new OAuth Apps to require admin approval. For each app, verify
+    when it was last used, check permissions, and revoke unnecessary apps.
+tags: ["oauth", "third-party", "apps", "access-control", "supply-chain"]

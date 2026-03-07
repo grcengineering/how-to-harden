@@ -1,10 +1,10 @@
 id: "github-1.1"
 vendor: "github"
-title: "Enforce Two-Factor Authentication for All Organization Members"
+title: "Enforce Multi-Factor Authentication (MFA) for All Organization Members"
 section: "1.1"
 profile_level: 1
 severity: "critical"
-guide_url: "https://howtoharden.com/guides/github/#11-enforce-two-factor-authentication"
+guide_url: "https://howtoharden.com/guides/github/#11-enforce-multi-factor-authentication-mfa-for-all-organization-members"
 description: >
   Require two-factor authentication (2FA) for all members of the GitHub organization.
   This prevents account takeover attacks that could grant adversaries access to source
@@ -32,7 +32,7 @@ audit:
     expected: true
 remediate:
   api:
-    - description: "Note: 2FA requirement must be enabled via GitHub UI (Settings > Authentication security)"
+    - description: "Enable 2FA requirement for the organization"
       method: PATCH
       endpoint: "/orgs/{org}"
       body:

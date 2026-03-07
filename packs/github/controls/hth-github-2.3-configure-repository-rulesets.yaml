@@ -1,0 +1,38 @@
+id: "github-2.3"
+vendor: "github"
+title: "Configure Repository Rulesets"
+section: "2.3"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#23-configure-repository-rulesets"
+description: >
+  Configure organization-wide repository rulesets to enforce consistent branch
+  protection across all repositories. Rulesets are managed at the organization level
+  and enforce consistent policies that cannot be overridden at the repository level,
+  unlike individual branch protection rules. Requires GitHub Enterprise Cloud/Server.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["CM-3"]
+  iso_27001: ["A.12.1.2"]
+audit:
+  - id: "org-rulesets-exist"
+    description: "Verify the organization has at least one active ruleset configured"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/rulesets"
+      check: '. | length > 0'
+    expected: true
+  - id: "active-ruleset-enforced"
+    description: "Verify at least one ruleset has enforcement status set to active"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/rulesets"
+      check: '[.[] | select(.enforcement == "active")] | length > 0'
+    expected: true
+remediate:
+  note: >
+    Organization rulesets must be created via the GitHub UI or REST API.
+    Navigate to Organization Settings > Repository > Rulesets > New branch ruleset.
+    Configure: target main/master/release branches, require pull requests,
+    require status checks, block force pushes, restrict deletions.
+tags: ["rulesets", "branch-protection", "governance", "enterprise"]
