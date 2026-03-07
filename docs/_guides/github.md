@@ -1275,6 +1275,115 @@ Customize GitHub Actions OIDC subject claims to include repository, environment,
 
 ---
 
+### 3.7 Recommended Open Source Security Tools
+
+**Profile Level:** L1 (Baseline)
+**NIST 800-53:** SA-11, CM-6
+**CIS Controls:** 16.4
+
+#### Description
+Deploy a layered set of open source tools to continuously harden GitHub Actions workflows. These tools address different phases of the security lifecycle: static analysis before merge, one-time configuration hardening, continuous runtime monitoring, and periodic organization-wide governance audits.
+
+#### Rationale
+**Attack Prevented:** Workflow injection, action supply chain compromise, excessive permissions, runtime tampering
+
+**Real-World Incident:**
+- **tj-actions/changed-files (March 2025, CVE-2025-30066):** A compromised GitHub Action affected 23,000+ repositories by rewriting a mutable tag to point at malicious code. This incident validated the layered approach: SHA pinning (Layer 2) would have prevented the tag-rewriting vector, and harden-runner (Layer 3) detected the attack at runtime via anomalous network egress.
+
+**Why This Matters:** No single tool covers all attack surfaces. Static linters catch injection patterns before merge, pinning tools eliminate mutable tag risks, runtime agents detect zero-day compromises, and governance scanners enforce organization-wide policy compliance.
+
+#### Tool Inventory
+
+**Recommended implementation order:** Layer 1 (static analysis) first for immediate visibility, then Layer 2 (hardening) for quick wins, then Layer 3 (monitoring) for ongoing protection, and finally Layer 4 (governance) for periodic audits.
+
+| Tool | Category | Stars | License | Integration |
+|------|----------|-------|---------|-------------|
+| **zizmor** | Static Analysis | 3,700+ | MIT | CLI, Action, SARIF |
+| **actionlint** | Static Analysis | 3,600+ | MIT | CLI, Action, Docker |
+| **Gato-X** | Static Analysis | 480+ | Apache-2.0 | CLI |
+| **secure-repo** | Config Hardening | 300+ | AGPL-3.0 | Web, CLI |
+| **pin-github-action** | Config Hardening | 140+ | MIT | CLI (npx) |
+| **actions-permissions** | Config Hardening | 350+ | MIT | Action |
+| **harden-runner** | Runtime Monitoring | 980+ | Apache-2.0 | Action |
+| **Allstar** | Continuous Policy | 1,390+ | Apache-2.0 | GitHub App |
+| **OpenSSF Scorecard** | Continuous Policy | 5,290+ | Apache-2.0 | Action, CLI |
+| **Legitify** | Org Governance | 830+ | Apache-2.0 | CLI, Action |
+
+#### Layer 1: Static Analysis (Pre-Merge)
+
+Run these tools in CI to catch workflow security issues before they reach the default branch.
+
+- **zizmor** -- Security linter with 24+ audit rules covering injection, credential exposure, and Actions anti-patterns. Produces SARIF output for GitHub Code Scanning integration.
+- **actionlint** -- Type-checker for workflow files that detects template injection vulnerabilities, invalid glob patterns, and runner label mismatches.
+- **Gato-X** -- Offensive security tool that enumerates exploitable Actions misconfigurations including self-hosted runner attacks, pull_request_target abuse, and GITHUB_TOKEN over-permissions.
+
+#### Layer 2: Configuration Hardening (One-Time)
+
+Apply these tools once (then periodically re-run) to harden workflow configurations.
+
+- **secure-repo** -- Automatically pins actions to commit SHAs, sets minimal permissions, and adds harden-runner steps. Provides a web UI at app.stepsecurity.io for one-click PRs.
+- **pin-github-action** -- Converts mutable action version tags (e.g., `@v4`) to pinned commit SHAs. Run via `npx pin-github-action .github/workflows/*.yml`.
+- **actions-permissions** -- Monitors actual GITHUB_TOKEN usage across workflows and recommends minimum required permission scopes.
+
+#### Layer 3: Continuous Monitoring (Always-On)
+
+Deploy these tools for ongoing runtime protection and posture scoring.
+
+- **harden-runner** -- EDR-like runtime agent that monitors network egress, file system access, and process execution within Actions runners. Detected the tj-actions compromise via anomalous outbound connections.
+- **Allstar** -- OpenSSF project that continuously enforces security policies (branch protection, security file presence, binary artifacts) across all organization repositories via a GitHub App.
+- **OpenSSF Scorecard** -- Scores repository security posture across 18 checks on a 0-10 scale. Run as a GitHub Action on a schedule to track security improvements over time.
+
+#### Layer 4: Organization Governance (Periodic)
+
+Run these tools periodically to audit organization-wide security posture.
+
+- **Legitify** -- Scans GitHub (and GitLab) organizations for misconfigurations including unprotected branches, missing MFA enforcement, stale PATs, and overly permissive webhook configurations.
+
+#### ClickOps Implementation
+
+**Step 1: Add Static Analysis to CI**
+1. Create a workflow file `.github/workflows/actions-security.yml`
+2. Add zizmor and actionlint as steps (see Code Pack below)
+3. Configure SARIF upload for GitHub Code Scanning integration
+
+**Step 2: Run Configuration Hardening**
+1. Visit app.stepsecurity.io and connect your repository
+2. Review the generated PR that pins actions and adds harden-runner
+3. Alternatively, run `npx pin-github-action` locally on your workflow files
+
+**Step 3: Enable Runtime Monitoring**
+1. Add the `step-security/harden-runner@v2` step as the **first step** in each job
+2. Start in `audit-mode` to observe before switching to `block` mode
+
+**Step 4: Deploy Organization Governance**
+1. Install the Allstar GitHub App from the GitHub Marketplace
+2. Configure policies in an `.allstar` repository
+3. Schedule monthly Legitify scans via CI or run manually
+
+**Time to Complete:** ~30 minutes for initial setup
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="3.22" %}
+
+#### Validation & Testing
+1. [ ] zizmor and actionlint run on PRs and report findings
+2. [ ] All actions in workflows are pinned to commit SHAs
+3. [ ] harden-runner is present as the first step in critical workflows
+4. [ ] OpenSSF Scorecard produces a score for the repository
+5. [ ] Legitify scan shows no critical findings at the org level
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.1, CC8.1 | Detection and monitoring, change management |
+| **NIST 800-53** | SA-11, CM-6 | Developer security testing, configuration management |
+| **ISO 27001** | A.14.2.8 | System security testing |
+| **CIS Controls** | 16.4 | Establish and manage an inventory of third-party software |
+
+---
+
 ## 4. OAuth & Third-Party App Security
 
 ### 4.1 Audit and Restrict OAuth App Access

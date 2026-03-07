@@ -1,0 +1,30 @@
+id: "github-3.7"
+vendor: "github"
+title: "Recommended Open Source Security Tools"
+section: "3.7"
+profile_level: 1
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#37-recommended-open-source-security-tools"
+description: >
+  Deploy a layered set of open source tools to continuously harden GitHub Actions
+  workflows. Static analysis tools (zizmor, actionlint) catch issues pre-merge,
+  configuration hardening tools (secure-repo, pin-github-action) eliminate mutable
+  tag risks, runtime monitoring (harden-runner) detects compromise, and governance
+  scanners (Scorecard, Legitify) enforce organization-wide policy.
+compliance:
+  soc2: ["CC7.1", "CC8.1"]
+  nist_800_53: ["SA-11", "CM-6"]
+  iso_27001: ["A.14.2.8"]
+  cis_controls: ["16.4"]
+audit:
+  - id: "security-scanning-workflow-exists"
+    description: "Verify an Actions security scanning workflow exists"
+    api:
+      method: GET
+      endpoint: "/repos/{owner}/{repo}/contents/.github/workflows"
+      check: '[.[] | select(.name | test("security|zizmor|actionlint"))] | length > 0'
+    expected: true
+remediate:
+  manual:
+    - description: "Add a security scanning workflow with zizmor and actionlint, pin actions to SHAs, and deploy harden-runner"
+tags: ["actions", "security-tools", "static-analysis", "supply-chain", "monitoring", "open-source"]

@@ -2429,3 +2429,46 @@
                 "job_workflow_ref"
               ]
             }'
+
+"3.22":
+  cli:
+    lang: "yaml"
+    filename: "hth-github-3.22-actions-security-scanning.yml"
+    source_url: "https://github.com/grcengineering/how-to-harden/blob/main/packs/github/cli/hth-github-3.22-actions-security-scanning.yml"
+    excerpts:
+      workflow-actions-security-scan:
+        content: |
+            name: Actions Security Scan
+            on:
+              pull_request:
+                paths:
+                  - '.github/workflows/**'
+              push:
+                branches: [main]
+
+            permissions:
+              contents: read
+              security-events: write
+
+            jobs:
+              zizmor:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+                    with:
+                      persist-credentials: false
+
+                  - name: Run zizmor
+                    uses: woodruffw/zizmor-action@v2
+                    with:
+                      min-severity: medium
+
+              actionlint:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+                    with:
+                      persist-credentials: false
+
+                  - name: Run actionlint
+                    uses: rhysd/actionlint@v1
