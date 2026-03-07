@@ -1,0 +1,36 @@
+id: "github-1.7"
+vendor: "github"
+title: "Enforce Fine-Grained Personal Access Token (PAT) Policies"
+section: "1.7"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#16-enforce-fine-grained-pat-policies"
+description: >
+  Enforce fine-grained personal access token policies at the organization and enterprise
+  level. Restrict or block classic PATs, require approval for fine-grained PATs, and set
+  maximum token lifetimes. Fine-grained PATs provide repository-level scoping and mandatory
+  expiration, reducing blast radius compared to classic tokens.
+compliance:
+  soc2: ["CC6.1", "CC6.2"]
+  nist_800_53: ["IA-5", "AC-6"]
+  iso_27001: ["A.9.4.3"]
+  cis_controls: ["6.2"]
+audit:
+  - id: "fine-grained-pats-listed"
+    description: "List fine-grained PATs with access to the organization"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/personal-access-tokens"
+      check: '. | length >= 0'
+    expected: true
+  - id: "pat-requests-reviewed"
+    description: "Verify no pending PAT requests are stale"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/personal-access-token-requests"
+      check: '. | length == 0'
+    expected: true
+remediate:
+  manual:
+    - description: "Configure PAT policies in Organization Settings > Personal access tokens > Settings"
+tags: ["authentication", "pat", "tokens", "least-privilege", "access-control"]

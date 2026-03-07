@@ -1,0 +1,32 @@
+# HTH GitHub Control 6.04: npm Provenance Publishing Workflow
+# Profile: L2 | NIST: SA-12, SA-15
+# Deploy: Copy to .github/workflows/publish.yml in your repository
+
+# HTH Guide Excerpt: begin cli-npm-provenance-workflow
+name: Publish with Provenance
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - run: npm ci
+
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+# HTH Guide Excerpt: end cli-npm-provenance-workflow

@@ -1,0 +1,35 @@
+id: "github-3.6"
+vendor: "github"
+title: "Harden Actions OIDC Subject Claims"
+section: "3.6"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#36-harden-actions-oidc-claims"
+description: >
+  Customize GitHub Actions OIDC subject claims to include repository, environment,
+  and job_workflow_ref for fine-grained cloud provider trust policies. This prevents
+  OIDC token spoofing where a workflow in one repository impersonates another. The
+  check_run_id claim (added Nov 2025) improves auditability for external integrations.
+compliance:
+  soc2: ["CC6.1"]
+  nist_800_53: ["IA-2", "IA-8"]
+  iso_27001: ["A.9.4.2"]
+  cis_controls: ["6.3"]
+audit:
+  - id: "oidc-claims-customized"
+    description: "Verify OIDC subject claims are customized beyond defaults"
+    api:
+      method: GET
+      endpoint: "/repos/{owner}/{repo}/actions/oidc/customization/sub"
+      check: '.use_default == false'
+    expected: true
+remediate:
+  api:
+    - description: "Customize OIDC subject claims"
+      method: PUT
+      endpoint: "/repos/{owner}/{repo}/actions/oidc/customization/sub"
+      body:
+        use_default: false
+        include_claim_keys: ["repo", "context", "job_workflow_ref"]
+      condition: "!oidc-claims-customized"
+tags: ["actions", "oidc", "cloud-credentials", "least-privilege", "supply-chain"]
