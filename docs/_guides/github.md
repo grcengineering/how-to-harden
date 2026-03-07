@@ -54,8 +54,9 @@ This guide covers GitHub.com and GitHub Enterprise Cloud/Server security configu
 4. [OAuth & Third-Party App Security](#4-oauth--third-party-app-security)
 5. [Secret Management](#5-secret-management)
 6. [Dependency & Supply Chain Security](#6-dependency--supply-chain-security)
-7. [Monitoring & Governance](#7-monitoring--governance)
-8. [Third-Party Integration Security](#8-third-party-integration-security)
+7. [Modern Platform Features](#7-modern-platform-features)
+8. [Monitoring & Audit Logging](#8-monitoring--audit-logging)
+9. [Third-Party Integration Security](#9-third-party-integration-security)
 
 ---
 
@@ -392,67 +393,84 @@ Restrict enterprise access to approved IP addresses using IP allow lists. This l
 
 ---
 
-### 1.6 Enforce Fine-Grained Personal Access Token Policies
+### 1.7 Enforce Fine-Grained Personal Access Token (PAT) Policies
 
 **Profile Level:** L2 (Hardened)
-**NIST 800-53:** AC-6 (Least Privilege), IA-4 (Identifier Management), IA-5 (Authenticator Management)
+**NIST 800-53:** IA-5, AC-6
 **CIS Controls:** 6.2
 
 #### Description
-Configure organization-level policies for personal access tokens (PATs) to require approval for fine-grained tokens and restrict or disable classic PATs. Fine-grained PATs offer scoped repository access, mandatory expiration, and organization policy enforcement. Classic PATs grant broad, long-lived access that cannot be scoped to specific repositories.
+Enforce fine-grained personal access token policies at the organization and enterprise level. Restrict or block classic PATs, require approval for fine-grained PATs, and set maximum token lifetimes. Fine-grained PATs (GA since March 2025) provide repository-level scoping and mandatory expiration, dramatically reducing blast radius compared to classic tokens.
 
 #### Rationale
 **Attack Prevented:** Overprivileged token theft, lateral movement via stolen credentials
 
-**Real-World Incidents:**
-- **GitHub Code Signing Certificate Theft (January 2023):** Attacker used a compromised classic PAT to access repositories and steal encrypted code-signing certificates for GitHub Desktop and Atom.
-- **Fake Dependabot Commits (July 2023):** Stolen classic PATs used to inject malicious commits disguised as Dependabot contributions across hundreds of repositories.
-- **SpotBugs PAT Theft (2025):** Attacker exploited a `pull_request_target` workflow to steal a maintainer's classic PAT, then pivoted to compromise the tj-actions/changed-files Action affecting 23,000+ repositories.
+**Real-World Incident:**
+- **Fake Dependabot Commits (July 2023):** Attackers used stolen classic PATs to inject malicious commits disguised as Dependabot contributions. Fine-grained PATs with repository-level scoping and mandatory expiration would have limited the blast radius.
 
-**Why This Matters:** Classic PATs have no repository scoping, no expiration requirement, and no approval workflow -- a single stolen classic PAT can grant access to every repository in an organization.
+**Why This Matters:** Classic PATs grant broad access across all repositories a user can access. Fine-grained PATs enforce least privilege with repository-specific scoping, mandatory expiration, and admin approval workflows.
+
+#### Prerequisites
+- GitHub organization owner/admin access
+- Enterprise Cloud for enterprise-level enforcement
 
 #### ClickOps Implementation
 
-**Step 1: Configure PAT Policies**
+**Step 1: Restrict Classic PATs**
 1. Navigate to: **Organization Settings** -> **Personal access tokens** -> **Settings**
-2. Under "Fine-grained personal access tokens":
-   - Select **"Require administrator approval"** for fine-grained tokens
-3. Under "Personal access tokens (classic)":
-   - Select **"Restrict access via personal access tokens (classic)"** to block classic PATs from accessing the organization
+2. Select the **Tokens (classic)** tab
+3. Under "Restrict personal access tokens (classic) from accessing your organizations":
+   - Select **"Do not allow access via personal access tokens (classic)"**
+4. Click **Save**
 
-**Step 2: Review Existing Tokens**
-1. Navigate to: **Organization Settings** -> **Personal access tokens** -> **Active tokens**
-2. Review all active fine-grained tokens for:
-   - Appropriate repository scope
-   - Reasonable expiration dates
-   - Minimal permissions
-3. Revoke any overprivileged or unused tokens
+**Step 2: Require Approval for Fine-Grained PATs**
+1. Navigate to: **Organization Settings** -> **Personal access tokens** -> **Settings**
+2. Select the **Fine-grained tokens** tab
+3. Under "Require approval of fine-grained personal access tokens":
+   - Select **"Require administrator approval"**
+4. Click **Save**
 
-**Step 3: Approve Token Requests**
-1. Navigate to: **Organization Settings** -> **Personal access tokens** -> **Pending requests**
-2. Review each request for appropriate scope and permissions
-3. Approve or deny based on least-privilege requirements
+**Step 3: Set Maximum Token Lifetime**
+1. On the same settings page, under "Set maximum lifetimes for personal access tokens":
+   - Set to **90 days** (recommended) or per your organization's policy
+2. Click **Save**
 
-**Time to Complete:** ~15 minutes
+**Step 4: Enterprise-Level Enforcement** (Enterprise Cloud)
+1. Navigate to: **Enterprise Settings** -> **Policies** -> **Personal access tokens**
+2. Under **Tokens (classic)** tab:
+   - Select **"Restrict access via personal access tokens (classic)"**
+3. Under **Fine-grained tokens** tab:
+   - Select **"Require approval"**
+   - Set maximum lifetime policy
+4. Click **Save**
+
+**Time to Complete:** ~10 minutes
 
 #### Code Implementation
 
 {% include pack-code.html vendor="github" section="1.12" %}
 
 #### Validation & Testing
-1. [ ] Verify classic PATs are restricted from accessing the organization
-2. [ ] Create a fine-grained PAT and verify it requires approval
-3. [ ] Verify fine-grained PATs can only access specified repositories
-4. [ ] Confirm existing classic PATs are blocked (or plan migration timeline)
+1. [ ] Attempt to create a classic PAT and access the organization (should fail if restricted)
+2. [ ] Create a fine-grained PAT and verify it requires admin approval
+3. [ ] Verify PAT expiration is enforced within the maximum lifetime
+4. [ ] Confirm enterprise policy overrides are applied to all organizations
+
+#### Monitoring & Maintenance
+
+**Maintenance schedule:**
+- **Weekly:** Review pending fine-grained PAT approval requests
+- **Monthly:** Audit active fine-grained PATs for excessive permissions
+- **Quarterly:** Review and rotate long-lived PATs approaching expiration
 
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
-| **SOC 2** | CC6.1, CC6.3 | Logical access security, token management |
-| **NIST 800-53** | AC-6, IA-4, IA-5 | Least privilege, identifier and authenticator management |
-| **ISO 27001** | A.9.2.3, A.9.4.1 | Management of privileged access rights |
-| **PCI DSS** | 7.1, 8.6 | Restrict access, application and system account management |
+| **SOC 2** | CC6.1, CC6.2 | Identity and access management, least privilege |
+| **NIST 800-53** | IA-5, AC-6 | Authenticator management, least privilege |
+| **ISO 27001** | A.9.4.3 | Password management system |
+| **CIS Controls** | 6.2 | Establish an access revoking process |
 
 ---
 
@@ -474,9 +492,19 @@ Protect `main`, `master`, `production`, and release branches from direct pushes.
 
 #### ClickOps Implementation
 
-**Step 1: Enable Branch Protection**
-1. Navigate to: **Repository** -> **Settings** -> **Branches**
-2. Under "Branch protection rules", click **"Add rule"**
+**Option A: Repository Rulesets (Recommended)**
+
+Rulesets are now the primary mechanism for branch protection, replacing legacy branch protection rules. They provide centralized governance at the organization level (see Section 2.3).
+
+1. Navigate to: **Repository Settings** -> **Rules** -> **Rulesets**
+2. Click **New ruleset** -> **New branch ruleset**
+3. Configure branch targeting: `main`, `master`, `release/*`
+4. Enable rules (see Section 2.3 for full details)
+
+**Option B: Legacy Branch Protection Rules**
+
+1. Navigate to: **Repository Settings** -> **Branches**
+2. Under "Branch protection rules", click **"Add branch protection rule"**
 3. Branch name pattern: `main` (or `master`, `production`)
 4. Enable these protections:
    - **Require a pull request before merging**
@@ -557,14 +585,17 @@ Enable GitHub's native security features to detect vulnerabilities, secrets, and
    - **Dependency graph** (free)
    - **Dependabot alerts** (free)
    - **Dependabot security updates** (free)
-   - **Secret scanning** (free for public repos, requires Advanced Security for private)
-   - **Code scanning** (requires Actions, free for public repos)
+   - **Secret scanning** (free for public repos; requires GitHub Secret Protection for private repos)
+   - **Push protection** (enabled by default for public repos; enable for private repos)
+   - **Code scanning** (requires Actions, free for public repos; requires GitHub Code Security for private repos)
 3. Enable **Automatically enable for new repositories** for each feature
 
+**Note:** As of April 2025, GitHub Advanced Security has been split into two standalone products: **GitHub Secret Protection** and **GitHub Code Security**, now available to GitHub Team plan customers.
+
 **Step 2: Configure Per-Repository (if needed)**
-1. Navigate to: **Repository** -> **Settings** -> **Code security and analysis**
+1. Navigate to: **Repository Settings** -> **Code security and analysis**
 2. Enable same features
-3. For **Code scanning**, click "Set up" -> Choose "CodeQL Analysis" workflow
+3. For **Code scanning**, click "Set up" -> Choose **"Default setup"** (recommended) or "Advanced setup" for custom CodeQL configuration
 
 **Step 3: Configure Custom Secret Scanning Patterns (Enterprise)**
 1. Navigate to: **Organization Settings** -> **Code security** -> **Secret scanning**
@@ -572,6 +603,7 @@ Enable GitHub's native security features to detect vulnerabilities, secrets, and
    - Internal API keys
    - Database connection strings
    - Custom tokens
+3. Enable **"Include in push protection"** for each custom pattern (GA since August 2025)
 
 **Time to Complete:** ~15 minutes
 
@@ -585,7 +617,7 @@ Enable GitHub's native security features to detect vulnerabilities, secrets, and
 
 #### Secret Scanning Push Protection
 
-**L2 Enhancement:** Enable push protection to **block commits** containing secrets. This prevents secrets from ever entering Git history (better than post-commit detection). See the Code Pack above for API implementation.
+**L2 Enhancement:** Enable push protection to **block commits** containing secrets. This prevents secrets from ever entering Git history (better than post-commit detection). Push protection is now **enabled by default for all public repositories**. For private repositories, enable it via the organization settings or API (see Code Pack above). For delegated bypass and custom patterns, see Section 2.6.
 
 #### L2 Enhancement: CodeQL Advanced Configuration
 
@@ -638,11 +670,14 @@ Configure organization-wide repository rulesets to enforce consistent branch pro
 **Step 3: Configure Rules**
 1. Enable:
    - Restrict deletions
-   - Require pull request
+   - Require pull request (with required approvals and code owner review)
    - Require signed commits
-   - Require status checks
+   - Require status checks to pass
+   - Require code scanning results
+   - Require linear history (optional -- prevents merge commits)
    - Block force pushes
 2. Configure bypass list (limit to emergency access only)
+3. **Note:** Tag protection should also be managed via rulesets (legacy tag protection rules are deprecated)
 
 #### Code Implementation
 
@@ -732,55 +767,134 @@ Require cryptographically signed commits to verify commit authenticity and preve
 
 ---
 
-### 2.5 Enable Private Vulnerability Reporting
+### 2.5 Configure Push Rules in Repository Rulesets
 
-**Profile Level:** L1 (Baseline)
-**NIST 800-53:** SI-2 (Flaw Remediation), SI-5 (Security Alerts), IR-6 (Incident Reporting)
+**Profile Level:** L2 (Hardened)
+**Requires:** GitHub Team (private/internal repos) or Enterprise Cloud
+**NIST 800-53:** CM-3, SI-7
+**CIS Controls:** 16.9
 
 #### Description
-Enable private vulnerability reporting on all repositories to allow security researchers to confidentially report vulnerabilities. Without this feature, researchers may publicly disclose vulnerabilities or not report them at all, leaving your organization exposed.
+Configure push rules within repository rulesets to restrict file types, file sizes, and file paths across the organization. Unlike branch protection rules, push rules apply to the **entire fork network**, ensuring every entry point to the repository is protected regardless of where a push originates.
 
 #### Rationale
-**Attack Prevented:** Uncoordinated public disclosure, zero-day exploitation
+**Attack Prevented:** Binary injection, large file denial-of-service, unauthorized workflow modifications
 
 **Why This Matters:**
-- Security researchers discovering vulnerabilities in your code need a private channel to report them
-- Without private reporting, researchers may open public issues (exposing the vulnerability) or simply not report
-- Private vulnerability reporting creates GitHub Security Advisories that can be triaged and patched before disclosure
-- Demonstrates organizational commitment to responsible disclosure practices
+- Push rules block dangerous file types (executables, compiled binaries) from entering repositories
+- File size limits prevent repository bloat and potential denial-of-service via large files
+- File path restrictions prevent unauthorized modification of CI/CD workflows (`.github/workflows/`)
+- Fork network enforcement closes a common bypass vector where attackers push to forks
 
 #### ClickOps Implementation
 
-**Step 1: Enable for a Single Repository**
-1. Navigate to: **Repository Settings** -> **Code security and analysis**
-2. Under "Private vulnerability reporting":
-   - Click **Enable**
+**Step 1: Create Push Ruleset**
+1. Navigate to: **Organization Settings** -> **Repository** -> **Rulesets**
+2. Click **New ruleset** -> **New push ruleset**
 
-**Step 2: Enable Organization-Wide**
-1. Navigate to: **Organization Settings** -> **Code security and analysis**
-2. Under "Private vulnerability reporting":
-   - Click **Enable all** to enable for all existing repositories
-   - Check **"Automatically enable for new repositories"**
+**Step 2: Configure Targets**
+1. Name: `File Protection Push Rules`
+2. Enforcement status: **Active**
+3. Target repositories: **All repositories** or selected
+4. Configure bypass list (limit to org admins only)
 
-**Time to Complete:** ~5 minutes
+**Step 3: Add Push Rules**
+1. **Restrict file extensions:** Add `.exe`, `.dll`, `.so`, `.dylib`, `.bin`, `.jar`, `.war`, `.class`
+2. **Restrict file size:** Set maximum to **10 MB** (adjust per your needs)
+3. **Restrict file paths:** Add `.github/workflows/**` to prevent unauthorized workflow changes
+
+**Time to Complete:** ~10 minutes
 
 #### Code Implementation
 
 {% include pack-code.html vendor="github" section="2.9" %}
 
 #### Validation & Testing
-1. [ ] Navigate to a repository's Security tab and verify "Report a vulnerability" button appears
-2. [ ] Submit a test vulnerability report to verify the workflow
-3. [ ] Verify organization admins receive notification of the report
-4. [ ] Confirm new repositories automatically have the feature enabled
+1. [ ] Attempt to push an `.exe` file (should be blocked)
+2. [ ] Attempt to push a file larger than the size limit (should be blocked)
+3. [ ] Attempt to push workflow changes from a fork (should be blocked if path-restricted)
+4. [ ] Verify bypass actors can still push restricted content when needed
 
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
-| **SOC 2** | CC7.1, CC7.4 | Security event identification and response |
-| **NIST 800-53** | SI-2, SI-5, IR-6 | Flaw remediation, security alerts, incident reporting |
-| **ISO 27001** | A.16.1.2, A.16.1.3 | Reporting information security events |
+| **SOC 2** | CC8.1 | Change management |
+| **NIST 800-53** | CM-3, SI-7 | Configuration change control, integrity |
+| **ISO 27001** | A.12.1.2 | Change management |
+| **CIS Controls** | 16.9 | Secure application development |
+
+---
+
+### 2.6 Enable Secret Scanning Delegated Bypass
+
+**Profile Level:** L2 (Hardened)
+**Requires:** GitHub Advanced Security (or GitHub Secret Protection standalone)
+**NIST 800-53:** SA-11, IA-5(7)
+
+#### Description
+Configure delegated bypass for secret scanning push protection to require security team approval before developers can bypass push protection blocks. Additionally, add custom patterns to push protection for organization-specific secrets. Push protection is now enabled by default for all public repositories.
+
+#### Rationale
+**Attack Prevented:** Accidental secret leakage, unauthorized bypass of security controls
+
+**Why This Matters:**
+- By default, developers can self-approve bypasses of push protection with a reason (false positive, used in tests, will fix later)
+- Delegated bypass requires a designated security reviewer to approve each bypass request
+- Custom patterns extend push protection beyond the 200+ default patterns to cover organization-specific secrets
+- Configuring custom patterns in push protection is now GA (August 2025)
+
+#### ClickOps Implementation
+
+**Step 1: Enable Push Protection** (if not already enabled)
+1. Navigate to: **Organization Settings** -> **Code security and analysis**
+2. Under "Secret scanning":
+   - Enable **Secret scanning** for all repositories
+   - Enable **Push protection** for all repositories
+
+**Step 2: Configure Delegated Bypass**
+1. Navigate to: **Organization Settings** -> **Code security** -> **Global settings**
+2. Under "Push protection":
+   - Select **"Require approval to bypass push protection"**
+   - Add your security team as designated reviewers
+3. Click **Save**
+
+**Step 3: Add Custom Patterns to Push Protection**
+1. Navigate to: **Organization Settings** -> **Code security** -> **Secret scanning**
+2. Click **New pattern**
+3. Define pattern:
+   - Name: e.g., `Internal API Key`
+   - Secret format: regex pattern matching your internal key format
+   - Enable **"Include in push protection"**
+4. Test pattern with sample data
+5. Click **Publish pattern**
+
+**Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="2.10" %}
+
+#### Validation & Testing
+1. [ ] Attempt to push a commit containing a known secret (should be blocked)
+2. [ ] Attempt to bypass push protection (should require reviewer approval if delegated bypass enabled)
+3. [ ] Verify custom patterns detect organization-specific secrets
+4. [ ] Confirm bypass alerts are visible in the Security tab
+
+#### Monitoring & Maintenance
+
+**Maintenance schedule:**
+- **Weekly:** Review push protection bypass requests and approvals
+- **Monthly:** Audit custom patterns for accuracy (false positive rate)
+- **Quarterly:** Review bypass trends and update patterns
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.2, CC6.1 | System monitoring, logical access |
+| **NIST 800-53** | SA-11, IA-5(7) | Security testing, credential management |
+| **ISO 27001** | A.12.6.1 | Technical vulnerability management |
 
 ---
 
@@ -990,10 +1104,12 @@ Secure self-hosted runners to prevent compromise of build environment. Self-host
 
 #### ClickOps Implementation
 
-**Step 1: Isolate Runners**
-1. Use ephemeral runners (new VM per job) -- this is the single most impactful security measure
-2. Never run on controller/sensitive systems
-3. Use dedicated runner network segment with firewall rules
+**Step 1: Use Ephemeral Runners (Critical)**
+1. Use ephemeral runners (new VM per job) -- this is the **single most impactful security measure**
+2. Configure runners with `--ephemeral` flag so they deregister after one job
+3. Never run on controller/sensitive systems
+4. Use dedicated runner network segment with firewall rules
+5. **Why ephemeral matters:** In the PyTorch supply chain attack, attackers persisted on non-ephemeral runners between jobs, accessing secrets from subsequent workflow runs
 
 **Step 2: Configure Runner Groups**
 1. Navigate to: **Organization Settings** -> **Actions** -> **Runner groups**
@@ -1033,40 +1149,178 @@ Secure self-hosted runners to prevent compromise of build environment. Self-host
 
 ---
 
+### 3.5 Generate and Verify Artifact Attestations
+
+**Profile Level:** L2 (Hardened)
+**SLSA:** Build L2 (L3 with reusable workflows)
+**NIST 800-53:** SI-7, SA-12
+
+#### Description
+Generate cryptographically signed build provenance attestations for CI/CD artifacts using GitHub's artifact attestation feature (GA May 2024). Attestations use Sigstore to create unforgeable links between artifacts and the workflows that built them. This achieves SLSA v1.0 Build Level 2 by default, and Build Level 3 when combined with reusable workflows that isolate the build process.
+
+#### Rationale
+**Attack Prevented:** Supply chain compromise, artifact tampering, build system manipulation
+
+**Real-World Incident:**
+- **SolarWinds SUNBURST (2020):** Attackers modified the build system to inject a backdoor into signed software updates affecting 18,000+ organizations. Artifact attestations with verified build provenance would have detected that the build did not originate from the expected workflow.
+- **tj-actions/changed-files (March 2025):** Compromised GitHub Action affected 23,000+ repositories. Artifact attestations would have allowed consumers to verify the provenance of artifacts built with this action.
+
+**Why This Matters:** Attestations provide a cryptographic chain of custody from source code to built artifact. Consumers can verify that artifacts were built by trusted workflows from trusted repositories.
+
+#### Prerequisites
+- GitHub Actions enabled
+- Repository must be public, or organization must have GitHub Enterprise Cloud
+
+#### ClickOps Implementation
+
+**No GUI configuration required.** Artifact attestations are implemented via workflow YAML using the `actions/attest-build-provenance` action.
+
+**Step 1: Add Attestation to Build Workflow**
+1. Edit your build workflow file (e.g., `.github/workflows/build.yml`)
+2. Add required permissions: `id-token: write`, `contents: read`, `attestations: write`
+3. Add the `actions/attest-build-provenance` step after your build step
+4. See the workflow template in the Code Pack below
+
+**Step 2: Verify Attestations**
+1. After a build completes, use the GitHub CLI to verify:
+   - For binaries: `gh attestation verify PATH/TO/ARTIFACT -R OWNER/REPO`
+   - For container images: `gh attestation verify oci://ghcr.io/OWNER/IMAGE:TAG -R OWNER/REPO`
+
+**Step 3: Achieve SLSA Build Level 3** (optional)
+1. Move build logic into a reusable workflow (`.github/workflows/build-reusable.yml`)
+2. Call the reusable workflow from your main workflow
+3. The reusable workflow provides isolation between the calling workflow and the build process
+
+**Time to Complete:** ~15 minutes per workflow
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="3.19" %}
+
+{% include pack-code.html vendor="github" section="3.20" %}
+
+#### Validation & Testing
+1. [ ] Run the attestation workflow and confirm it succeeds
+2. [ ] Verify the attestation using `gh attestation verify`
+3. [ ] Confirm attestation metadata includes correct repository and workflow references
+4. [ ] For container images, verify attestation is pushed to the registry
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC8.1 | Change management - artifact integrity |
+| **NIST 800-53** | SI-7, SA-12 | Integrity, supply chain protection |
+| **ISO 27001** | A.14.2.7 | Outsourced development integrity |
+| **SLSA** | Build L2/L3 | Build provenance and isolation |
+
+---
+
+### 3.6 Harden Actions OIDC Subject Claims
+
+**Profile Level:** L2 (Hardened)
+**NIST 800-53:** IA-2, IA-8
+**CIS Controls:** 6.3
+
+#### Description
+Customize GitHub Actions OIDC subject claims to include repository, environment, and `job_workflow_ref` for fine-grained cloud provider trust policies. By default, the OIDC subject claim only includes the repository and ref, which may allow unintended workflows to assume cloud roles. Customizing claims prevents OIDC token spoofing across repositories and workflows. The `check_run_id` claim (added November 2025) further improves auditability.
+
+#### Rationale
+**Attack Prevented:** OIDC token spoofing, cross-repository credential theft
+
+**Why This Matters:**
+- Default OIDC subject claims use `repo:ORG/REPO:ref:refs/heads/BRANCH` format
+- Any workflow in that repo/branch can assume the cloud role -- not just your deploy workflow
+- Customizing claims to include `job_workflow_ref` restricts access to specific reusable workflows
+- Environment-based claims restrict access to workflows targeting specific deployment environments
+- Colons in environment names are now URL-encoded to prevent claim injection attacks
+
+#### ClickOps Implementation
+
+**Step 1: Configure at Repository Level**
+1. Navigate to: **Repository Settings** -> **Environments** -> Select environment
+2. Under "OpenID Connect":
+   - Click **"Use custom template"** (if available via API)
+3. Alternatively, use the API to set custom claims (see Code Pack below)
+
+**Step 2: Configure at Organization Level**
+1. Use the REST API to set organization-wide OIDC claim defaults
+2. Include `repo`, `context`, and `job_workflow_ref` in the subject claim
+3. See the Code Pack below for API implementation
+
+**Step 3: Update Cloud Provider Trust Policies**
+1. Update AWS IAM, GCP Workload Identity, or Azure trust policies to match new claim format
+2. Test with a non-production environment first
+3. Gradually roll out to production
+
+**Time to Complete:** ~20 minutes + cloud provider policy updates
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="3.21" %}
+
+#### Validation & Testing
+1. [ ] Verify OIDC claims are customized using the API
+2. [ ] Test that only the intended workflow can assume the cloud role
+3. [ ] Verify that a different workflow in the same repo is denied access
+4. [ ] Confirm `check_run_id` appears in OIDC tokens for audit purposes
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security |
+| **NIST 800-53** | IA-2, IA-8 | Identification and authentication |
+| **ISO 27001** | A.9.4.2 | Secure log-on procedures |
+| **CIS Controls** | 6.3 | Require MFA for externally-exposed applications |
+
+---
+
 ## 4. OAuth & Third-Party App Security
 
 ### 4.1 Audit and Restrict OAuth App Access
 
 **Profile Level:** L1 (Baseline)
+**NIST 800-53:** AC-6, AC-17
+**CIS Controls:** 6.8
 
 #### Description
-Review all OAuth apps with access to your organization. Revoke unnecessary apps, restrict scopes for remaining apps.
+Review all OAuth apps and GitHub Apps with access to your organization. Revoke unnecessary apps, restrict scopes for remaining apps, and enable OAuth app access restrictions to require admin approval for new installations.
 
 #### Rationale
-**Attack Vector:** When CircleCI was breached, attackers exfiltrated GitHub OAuth tokens. These tokens had broad permissions, allowing attackers to access private repositories and secrets.
+**Attack Vector:** OAuth tokens remain valid until manually revoked. Most organizations have no visibility into which apps retain access or what scopes they hold.
 
-**Real-World Incident:**
-- **CircleCI Breach (January 2023):** Tokens for GitHub, AWS, and other services stolen. GitHub OAuth tokens allowed repository access.
-- **Heroku/Travis CI (April 2022):** GitHub OAuth tokens leaked, used for unauthorized repository access.
+**Real-World Incidents:**
+- **CircleCI Breach (January 2023):** Tokens for GitHub, AWS, and other services stolen. GitHub OAuth tokens allowed repository access across customer organizations.
+- **Heroku/Travis CI (April 2022):** GitHub OAuth tokens leaked, used for unauthorized repository access affecting npm packages.
+- **GitHub SSO Bypass (CVE-2024-6337, July 2024):** GitHub App installation tokens could read private repository contents even when SAML SSO hadn't authorized the app, allowing unauthorized data access.
 
 #### ClickOps Implementation
 
-**Step 1: Audit Installed Apps**
-1. **Organization Settings** -> **OAuth Apps** (or **GitHub Apps**)
-2. Review each app:
-   - When was it last used?
-   - What permissions does it have?
-   - Is it still needed?
-3. Click app -> "Review" -> Check granted permissions
+**Step 1: Enable OAuth App Access Restrictions**
+1. **Organization Settings** -> **Third-party access** -> **OAuth application policy**
+2. Click **"Setup application access restrictions"**
+3. Review pending requests and approve only necessary apps
+4. This ensures unapproved OAuth apps cannot access organization data
 
-**Step 2: Revoke Unnecessary Apps**
-- Click "Revoke" for unused apps
-- For remaining apps, click "Restrict access" to limit to specific repositories
+**Step 2: Audit Installed Apps**
+1. **Organization Settings** -> **GitHub Apps** (for GitHub Apps)
+2. **Organization Settings** -> **OAuth Apps** (for OAuth apps)
+3. For each app, review:
+   - Last used date
+   - Granted permissions and scopes
+   - Repository access (all repos vs. selected)
+4. Click app -> **"Configure"** -> Review repository access and permissions
 
-**Step 3: Restrict New App Installation**
-1. **Organization Settings** -> **OAuth application policy**
-2. Select **"Restrict installation of OAuth Apps"**
-3. Require admin approval for new app installations
+**Step 3: Revoke Unnecessary Apps**
+- Click **"Revoke"** for unused OAuth apps
+- For GitHub Apps, click **"Suspend"** or **"Uninstall"**
+- For remaining apps, restrict repository access to minimum necessary
+
+**Step 4: Limit Access Requests**
+1. **Organization Settings** -> **Third-party access** -> **Access requests**
+2. Configure whether outside collaborators can request app access
+3. Set notification preferences for pending requests
 
 **Time to Complete:** ~30 minutes for initial audit
 
@@ -1074,41 +1328,138 @@ Review all OAuth apps with access to your organization. Revoke unnecessary apps,
 
 {% include pack-code.html vendor="github" section="4.4" %}
 
-**Automation script:**
-
 {% include pack-code.html vendor="github" section="4.6" %}
 
 {% include pack-code.html vendor="github" section="4.3" %}
-{% include pack-code.html vendor="github" section="5.4" %}
 
 #### Recommended Scope Restrictions
 
 | App Type | Recommended Scopes | Avoid |
 |----------|-------------------|-------|
-| **CI/CD (CircleCI, Travis)** | `repo` (read), `status` (write), `write:packages` (if needed) | `admin:org`, `delete_repo` |
+| **CI/CD (CircleCI, Jenkins)** | `repo` (read), `status` (write), `write:packages` (if needed) | `admin:org`, `delete_repo` |
 | **Code Analysis (SonarQube)** | `repo:read`, `statuses:write` | `repo:write` |
 | **Project Management (Jira)** | `repo:status`, `read:org` | `repo` (full) |
-| **Dependency Tools (Snyk, Dependabot)** | `repo:read`, `security_events:write` | `repo:write` |
-
-#### Monitoring
-
-**Monthly Review:**
-- Export list of OAuth apps
-- Check for apps not used in >90 days
-- Verify scope grants haven't increased
-
-#### Operational Impact
-
-| Aspect | Impact Level | Details |
-|--------|-------------|----------|
-| **Developer Workflow** | Low | Apps still work with scoped access |
-| **Integration Functionality** | Low | May need to re-authorize apps after scope changes |
-| **Security Incidents** | High Reduction | Limits blast radius of token theft |
+| **Dependency Tools (Snyk)** | `repo:read`, `security_events:write` | `repo:write` |
 
 #### Compliance Mappings
+- **CIS Controls:** 6.8 (Define and maintain role-based access control)
+- **NIST 800-53:** AC-6 (Least Privilege), AC-17 (Remote Access)
 - **SOC 2:** CC6.2 (Least privilege), CC9.2 (Third-party access)
-- **NIST 800-53:** AC-6
 - **ISO 27001:** A.9.2.1
+
+---
+
+### 4.2 Audit GitHub App Installation Permissions
+
+**Profile Level:** L1 (Baseline)
+**NIST 800-53:** AC-6, CM-8
+**CIS Controls:** 2.1
+
+#### Description
+Audit all installed GitHub Apps in the organization, review their granted permissions, and flag apps with excessive access. GitHub Apps have replaced OAuth apps as the preferred integration method due to finer-grained permission controls.
+
+#### Rationale
+**Why GitHub Apps Over OAuth Apps:**
+- GitHub Apps request only specific permissions (not broad scopes)
+- Can be installed on specific repositories (not all-or-nothing)
+- Use short-lived installation tokens (expire after 1 hour)
+- Each permission can be set to read-only, read-write, or no access
+
+**Risk:** Apps with `administration: write` or `organization_administration: write` permissions can modify org settings, manage teams, and change repository visibility.
+
+#### ClickOps Implementation
+
+**Step 1: Review Installed GitHub Apps**
+1. Navigate to: **Organization Settings** -> **GitHub Apps**
+2. For each installed app, click **"Configure"**
+3. Review:
+   - **Repository access:** All repositories vs. specific repositories
+   - **Permissions:** Which permissions were granted at install time
+   - **Events:** What webhook events the app receives
+
+**Step 2: Restrict Repository Access**
+1. For each app, change from "All repositories" to "Only select repositories"
+2. Select only the repositories the app actually needs
+3. Click **"Save"**
+
+**Step 3: Flag Excessive Permissions**
+- Apps should not have `administration: write` unless they manage repo settings
+- Apps should not have `organization_administration: write` unless they manage org-level config
+- Review `members: write` -- apps generally should not manage team membership
+
+**Time to Complete:** ~20 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="4.7" %}
+
+#### Compliance Mappings
+- **CIS Controls:** 2.1 (Establish and maintain a software inventory)
+- **NIST 800-53:** AC-6 (Least Privilege), CM-8 (Information system component inventory)
+- **SOC 2:** CC6.2
+
+---
+
+### 4.3 Enforce Fine-Grained Personal Access Tokens
+
+**Profile Level:** L2 (Hardened)
+**Requires:** GitHub Enterprise Cloud
+**NIST 800-53:** IA-4, IA-5
+**CIS Controls:** 6.3
+
+#### Description
+Require fine-grained personal access tokens (PATs) instead of classic PATs. Fine-grained PATs have mandatory expiration dates, scoped repository access, and specific permissions -- eliminating the risks of overly permissive classic tokens.
+
+#### Rationale
+**Classic PAT Risks:**
+- No mandatory expiration -- tokens can live forever
+- Broad scope -- `repo` grants full access to ALL repositories
+- No granular permissions -- cannot restrict to specific API operations
+- No approval workflow -- any user can create tokens with any scope
+
+**Fine-Grained PAT Benefits:**
+- Mandatory expiration (max 1 year)
+- Repository-specific access (select individual repos)
+- Granular permissions per API category
+- Organization can require admin approval before tokens take effect
+
+**Real-World Incident:**
+- **Code Signing Certificate Theft (January 2023):** Attacker used a compromised PAT to access GitHub repositories and steal encrypted code-signing certificates for GitHub Desktop and Atom.
+- **Fake Dependabot Commits (July 2023):** Stolen GitHub PATs used to inject malicious commits disguised as Dependabot contributions across hundreds of repositories.
+
+#### ClickOps Implementation
+
+**Step 1: Set PAT Policy**
+1. Navigate to: **Organization Settings** -> **Personal access tokens**
+2. Under **"Fine-grained personal access tokens"**:
+   - Set to **"Allow access via fine-grained personal access tokens"**
+   - Enable **"Require approval of fine-grained personal access tokens"**
+3. Under **"Personal access tokens (classic)"**:
+   - Set to **"Restrict access via personal access tokens (classic)"**
+
+**Step 2: Review Pending Requests**
+1. **Organization Settings** -> **Personal access tokens** -> **Pending requests**
+2. Review each request: owner, repositories, permissions, expiration
+3. Approve or deny based on least-privilege principle
+
+**Step 3: Audit Active Tokens**
+1. **Organization Settings** -> **Personal access tokens** -> **Active tokens**
+2. Review all active fine-grained PATs
+3. Revoke tokens that are no longer needed or have excessive permissions
+
+**Time to Complete:** ~10 minutes for policy, ongoing for reviews
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="4.8" %}
+
+**Note:** No Terraform provider support exists for fine-grained PAT policies at this time.
+
+#### Compliance Mappings
+- **CIS Controls:** 6.3 (Require MFA for externally-exposed applications)
+- **NIST 800-53:** IA-4 (Identifier management), IA-5 (Authenticator management)
+- **SOC 2:** CC6.1 (Logical access security)
+- **ISO 27001:** A.9.4.2
 
 ---
 
@@ -1117,6 +1468,8 @@ Review all OAuth apps with access to your organization. Revoke unnecessary apps,
 ### 5.1 Use GitHub Actions Secrets with Environment Protection
 
 **Profile Level:** L1 (Baseline)
+**NIST 800-53:** SC-12, SC-28
+**CIS Controls:** 3.11
 
 #### Description
 Store sensitive credentials in GitHub Actions secrets (not hardcoded in code). Use environment protection rules to require approval for production secret access. Structure secrets at organization, repository, and environment levels for proper access control.
@@ -1126,6 +1479,9 @@ Store sensitive credentials in GitHub Actions secrets (not hardcoded in code). U
 - Secrets in code -> exposed in Git history forever
 - Secrets in logs -> leaked via CI/CD output
 - Secrets in unprotected workflows -> stolen via malicious PR
+
+**Real-World Incident:**
+- **tj-actions/changed-files Compromise (March 2025):** Supply chain attack on popular GitHub Action (23,000+ repositories). The malicious Action extracted secrets from Runner Worker process memory and dumped them to workflow logs, which were then exfiltrated.
 
 **Environment Protection:** Require manual approval before workflows can access production secrets.
 
@@ -1157,10 +1513,6 @@ Store sensitive credentials in GitHub Actions secrets (not hardcoded in code). U
 2. Add staging-specific secrets
 3. Allow deployment from `main` and `develop` branches
 
-**Step 5: Reference Secrets in Workflow**
-
-See the deployment workflow template in the Code Pack below.
-
 **Time to Complete:** ~15 minutes
 
 #### Code Implementation
@@ -1176,18 +1528,8 @@ See the deployment workflow template in the Code Pack below.
 
 **Secret Rotation:**
 - Rotate secrets quarterly (minimum)
-- Use short-lived credentials where possible (OIDC tokens)
+- Use short-lived credentials where possible (OIDC tokens -- see 5.2)
 - Track secret age using the Code Pack below
-
-**Secret Sprawl Prevention:**
-- Use organization secrets for widely-used credentials
-- Limit repository-specific secrets
-- Document what each secret is for
-
-**Audit Secret Usage:**
-1. Review workflows accessing secrets regularly
-2. Remove unused secrets
-3. Rotate secrets on a documented schedule
 
 **Never Do:**
 - Echo secrets in workflow logs: `echo {% raw %}${{ secrets.API_KEY }}{% endraw %}`
@@ -1196,20 +1538,21 @@ See the deployment workflow template in the Code Pack below.
 
 #### Monitoring
 
-**Alert on secret access:**
-
 {% include pack-code.html vendor="github" section="5.9" %}
 
 #### Compliance Mappings
+- **CIS Controls:** 3.11 (Encrypt sensitive data at rest)
+- **NIST 800-53:** SC-12 (Cryptographic key management), SC-28 (Protection of information at rest)
 - **SOC 2:** CC6.1 (Secret management)
-- **NIST 800-53:** SC-12 (Cryptographic key management)
-- **PCI DSS:** 8.2.1 (Strong cryptography for secrets)
+- **PCI DSS:** 8.2.1
 
 ---
 
 ### 5.2 Use OpenID Connect (OIDC) Instead of Long-Lived Credentials
 
 **Profile Level:** L2 (Hardened)
+**NIST 800-53:** IA-5(1)
+**SLSA:** Build L3
 
 #### Description
 Use GitHub Actions OIDC provider to get short-lived cloud credentials instead of storing long-lived access keys as secrets.
@@ -1245,18 +1588,6 @@ Use GitHub Actions OIDC provider to get short-lived cloud credentials instead of
 
 **Time to Complete:** ~30 minutes
 
-#### Benefits
-
-**Security:**
-- No secrets in GitHub
-- Credentials expire in 15 minutes
-- Per-repository/branch access control
-- Full AWS CloudTrail audit log
-
-**Operations:**
-- No credential rotation needed
-- No secret management overhead
-
 #### Compliance Mappings
 - **SLSA:** Build L3 (Short-lived credentials)
 - **NIST 800-53:** IA-5(1) (Authenticator management)
@@ -1264,62 +1595,102 @@ Use GitHub Actions OIDC provider to get short-lived cloud credentials instead of
 
 ---
 
-### 5.3 Configure Secret Scanning Delegated Bypass
+### 5.3 Configure Push Protection with Delegated Bypass
 
 **Profile Level:** L2 (Hardened)
-**Requires:** GitHub Enterprise Cloud with GHAS
-**NIST 800-53:** AC-3 (Access Enforcement), AC-6 (Least Privilege), IA-5(7) (No Embedded Authenticators)
+**Requires:** GitHub Advanced Security (Secret Protection, $19/month per committer as of April 2025)
+**NIST 800-53:** IA-5, CM-3
 
 #### Description
-Configure delegated bypass for secret scanning push protection to control who can bypass push protection when a secret is detected. By default, any developer can bypass push protection by providing a reason. Delegated bypass requires a designated reviewer (typically the security team) to approve bypass requests before a detected secret can be committed.
+Enable push protection to block commits containing secrets before they reach the repository. Configure delegated bypass so that only designated security reviewers can approve exceptions, rather than allowing any developer to bypass push protection.
 
 #### Rationale
-**Attack Prevented:** Unauthorized secret commits, accidental credential exposure
+**Why Delegated Bypass:**
+- Default push protection allows any developer to bypass the block with a reason
+- Delegated bypass routes bypass requests to designated reviewers (security team)
+- Creates an audit trail of all bypass decisions
+- Prevents developers from routinely bypassing push protection without oversight
 
-**Why This Matters:**
-- Default push protection allows any developer to bypass with a reason, providing no real enforcement
-- Delegated bypass ensures the security team is aware of and approves every secret that enters the codebase
-- Creates an audit trail of bypass requests and approvals
-- Prevents developers from routinely bypassing push protection without review
+**GHAS Unbundling (April 2025):** Secret scanning and push protection are now available as "Secret Protection" ($19/month per committer) separately from Code Security ($30/month). This makes push protection accessible to GitHub Team plan organizations.
 
 #### ClickOps Implementation
 
-**Step 1: Access Code Security Configuration**
-1. Navigate to: **Organization Settings** -> **Code security** -> **Configurations**
-2. Select your active security configuration (or create one)
+**Step 1: Enable Push Protection**
+1. **Organization Settings** -> **Code security** -> **Configurations**
+2. Edit your security configuration (or create a new one)
+3. Under **Secret scanning**, enable **Push protection**
+4. Apply to all repositories
 
-**Step 2: Enable Delegated Bypass**
-1. Under "Push protection":
-   - Set bypass to **"Delegated bypass"**
-2. Under "Bypass reviewers":
-   - Add your security team as designated reviewers
-   - Optionally add specific roles (e.g., Security Managers)
+**Step 2: Configure Delegated Bypass**
+1. **Organization Settings** -> **Code security** -> **Configurations**
+2. Under push protection settings, set bypass mode to **"Require bypass request"**
+3. Designate bypass reviewers (security team or specific users)
+4. Set notification preferences for bypass requests
 
-**Step 3: Configure Bypass Request Settings**
-1. Set bypass request timeout (recommended: 7 days)
-2. Configure notification preferences for reviewers
-3. Apply the configuration to target repositories
+**Step 3: Monitor Bypass Requests**
+1. **Organization Settings** -> **Code security** -> **Secret scanning**
+2. Review pending bypass requests
+3. Approve or deny based on the secret type and context
 
-**Time to Complete:** ~10 minutes
+**Time to Complete:** ~15 minutes
 
 #### Code Implementation
 
-{% include pack-code.html vendor="github" section="2.10" %}
+{% include pack-code.html vendor="github" section="5.10" %}
 
-#### Validation & Testing
-1. [ ] Attempt to push a test secret (use a revoked key) to a protected repository
-2. [ ] Verify push is blocked and bypass request is created
-3. [ ] Verify designated reviewers receive the bypass request notification
-4. [ ] Approve the request and verify the push succeeds
-5. [ ] Deny a request and verify the push remains blocked
+**Note:** No Terraform provider support exists for delegated bypass configuration at this time.
 
 #### Compliance Mappings
+- **CIS Controls:** 16.12 (Implement code-level security checks)
+- **NIST 800-53:** IA-5 (Authenticator management), CM-3 (Configuration change control)
+- **SOC 2:** CC6.1
 
-| Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **SOC 2** | CC6.1, CC7.1 | Logical access security, monitoring |
-| **NIST 800-53** | AC-3, AC-6, IA-5(7) | Access enforcement, least privilege |
-| **ISO 27001** | A.10.1.2, A.9.2.3 | Key management, privileged access |
+---
+
+### 5.4 Define Custom Secret Scanning Patterns
+
+**Profile Level:** L2 (Hardened)
+**Requires:** GitHub Advanced Security
+**NIST 800-53:** IA-5, SI-4
+
+#### Description
+Define organization-level custom secret scanning patterns to detect internal API keys, proprietary tokens, and other secrets specific to your organization that GitHub's built-in patterns don't cover. Custom patterns can also be configured for push protection (GA August 2025).
+
+#### Rationale
+**Why Custom Patterns:**
+- GitHub's built-in secret scanning covers 200+ provider patterns
+- Internal API keys, service tokens, and custom credentials are not detected by default
+- Custom patterns extend coverage to organization-specific secret formats
+- Patterns can be enforced in push protection to block commits containing internal secrets
+
+#### ClickOps Implementation
+
+**Step 1: Create Custom Pattern**
+1. **Organization Settings** -> **Code security** -> **Secret scanning**
+2. Click **"New pattern"**
+3. Configure:
+   - **Pattern name:** e.g., "Internal API Key"
+   - **Secret format:** Regex pattern (e.g., `internal_api_key_[a-zA-Z0-9]{32}`)
+   - **Before secret:** Optional context regex
+   - **After secret:** Optional context regex
+   - **Test string:** Provide sample matches for validation
+4. Click **"Save and dry run"** to test against existing repositories
+
+**Step 2: Enable in Push Protection**
+1. After validating the pattern, edit it
+2. Enable **"Include in push protection"** (GA August 2025)
+3. This blocks commits containing matches for the custom pattern
+
+**Time to Complete:** ~15 minutes per pattern
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="5.11" %}
+
+#### Compliance Mappings
+- **CIS Controls:** 16.12 (Implement code-level security checks)
+- **NIST 800-53:** IA-5 (Authenticator management), SI-4 (Information system monitoring)
+- **SOC 2:** CC6.1
 
 ---
 
@@ -1329,9 +1700,10 @@ Configure delegated bypass for secret scanning push protection to control who ca
 
 **Profile Level:** L1 (Baseline)
 **SLSA:** Build L2
+**NIST 800-53:** SA-12
 
 #### Description
-Automatically block pull requests that introduce vulnerable or malicious dependencies.
+Automatically block pull requests that introduce vulnerable or malicious dependencies using the dependency-review-action.
 
 #### Rationale
 **Attack Vector:** Typosquatting, dependency confusion, compromised packages
@@ -1340,8 +1712,6 @@ Automatically block pull requests that introduce vulnerable or malicious depende
 - **event-stream (2018):** Popular npm package hijacked, malicious code added to steal Bitcoin wallet credentials
 - **ua-parser-js (2021):** Maintainer account compromised, cryptominer injected
 - **codecov (2021):** Bash uploader modified to exfiltrate environment variables
-
-**Dependency Review:** Catches these attacks before they merge.
 
 #### ClickOps Implementation
 
@@ -1357,16 +1727,10 @@ Automatically block pull requests that introduce vulnerable or malicious depende
 
 #### Code Implementation
 
-Automated via workflow (see above). Can also use CLI:
-
 {% include pack-code.html vendor="github" section="6.1" %}
 
 {% include pack-code.html vendor="github" section="4.1" %}
 {% include pack-code.html vendor="github" section="4.2" %}
-
-#### Monitoring
-
-**Track introduced vulnerabilities:** See dependency review and PR vulnerability check commands in the Code Pack above.
 
 #### Compliance Mappings
 - **SLSA:** Build L2 (Dependency pinning)
@@ -1406,115 +1770,313 @@ Use Dependabot or Renovate to keep pins up-to-date while maintaining hash verifi
 
 ---
 
-### 6.3 Enable Artifact Attestations for Supply Chain Provenance
+### 6.3 Configure Dependabot Grouped Security Updates
 
-**Profile Level:** L2 (Hardened)
-**SLSA:** Build L2-L3
-**NIST 800-53:** SA-12 (Supply Chain Protection), SI-7 (Software Integrity)
-
-#### Description
-Enable GitHub artifact attestations to generate signed SLSA provenance for build artifacts. Artifact attestations create a cryptographically verifiable link between a build artifact and the source code, workflow, and environment that produced it. Consumers can verify that an artifact was built from a specific commit in a trusted workflow.
-
-#### Rationale
-**Attack Prevented:** Artifact substitution, build system compromise, supply chain tampering
-
-**Real-World Incidents:**
-- **tj-actions/changed-files (March 2025):** Attacker repointed mutable version tags to malicious commits, exfiltrating CI/CD secrets from 23,000+ repositories. Artifact attestations would have allowed consumers to verify build provenance.
-- **SolarWinds (2020):** Build system compromise injected malicious code into signed artifacts. SLSA provenance with attestations would have detected the discrepancy between source and build output.
-
-**Why This Matters:**
-- Attestations are signed by Sigstore using the OIDC identity of the GitHub Actions workflow
-- Consumers can verify the exact source commit, repository, and workflow that produced an artifact
-- Supports SLSA Build L2 (provenance) and L3 (build platform hardening) requirements
-- GitHub CLI provides built-in verification via `gh attestation verify`
-
-#### ClickOps Implementation
-
-**Step 1: Enable Artifact Attestations in Organization**
-1. Navigate to: **Organization Settings** -> **Actions** -> **General**
-2. Ensure GitHub Actions is enabled for the organization
-
-**Step 2: Add Attestation Step to Workflows**
-1. Open your release workflow file (e.g., `.github/workflows/release.yml`)
-2. Add the `actions/attest-build-provenance` action after build steps
-3. Ensure the workflow has `id-token: write` and `attestations: write` permissions
-
-**Time to Complete:** ~20 minutes
-
-#### Code Implementation
-
-{% include pack-code.html vendor="github" section="4.7" %}
-
-#### Validation & Testing
-1. [ ] Trigger a build that generates an attestation
-2. [ ] Verify attestation appears in the Actions workflow run summary
-3. [ ] Run `gh attestation verify` against the produced artifact
-4. [ ] Verify the attestation includes correct source commit and workflow information
-
-#### Compliance Mappings
-
-| Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **SLSA** | Build L2, L3 | Provenance and build platform integrity |
-| **SOC 2** | CC7.1, CC8.1 | Security monitoring and change management |
-| **NIST 800-53** | SA-12, SI-7 | Supply chain protection, software integrity |
-| **ISO 27001** | A.14.2.7, A.14.2.9 | Outsourced development, system acceptance testing |
-
----
-
-### 6.4 Configure Dependabot Grouped Security Updates
-
-**Profile Level:** L2 (Hardened)
-**NIST 800-53:** SI-2 (Flaw Remediation), SA-12 (Supply Chain Protection), RA-5 (Vulnerability Scanning)
+**Profile Level:** L1 (Baseline)
+**NIST 800-53:** SA-12, SI-2
 
 #### Description
-Configure Dependabot grouped security updates to combine related dependency updates into a single pull request. Without grouping, Dependabot creates individual PRs for each vulnerability, leading to PR fatigue and delayed remediation.
+Configure Dependabot with grouped updates to reduce PR noise while keeping dependencies current. Group minor and patch updates by dependency type (production vs. development) to create fewer, more manageable pull requests.
 
 #### Rationale
-**Why This Matters:**
-- Organizations with many repositories can receive hundreds of individual Dependabot PRs per week
-- PR fatigue leads to developers ignoring or delaying security updates
-- Grouped updates reduce noise by combining related updates (e.g., all patch-level npm updates)
-- Accelerates mean time to remediation by making review more efficient
-- Can be configured per ecosystem, dependency type, and severity
+**Why Grouped Updates:**
+- Individual PRs per dependency overwhelm teams with hundreds of PRs
+- Grouped updates combine related updates into a single PR for easier review
+- Reduces CI/CD load by running fewer pipeline executions
+- Teams are more likely to review and merge timely updates
 
 #### ClickOps Implementation
 
 **Step 1: Create Dependabot Configuration**
 1. In your repository, create `.github/dependabot.yml`
-2. Define package ecosystems to monitor
-3. Add `groups` configuration to combine related updates
+2. Define package ecosystems to monitor (npm, pip, GitHub Actions, etc.)
+3. Configure grouped updates with `groups:` section
 
-**Step 2: Configure Grouping Strategy**
-1. Group by dependency type (production vs. development)
-2. Group by update type (patch, minor)
-3. Optionally group by pattern (e.g., all `@aws-sdk/*` packages together)
+**Step 2: Configure Groups**
+- Group by dependency type (`production` vs `development`)
+- Group by update type (`minor` and `patch` together, `major` separately)
+- Use patterns to group related packages (e.g., all `@aws-sdk/*` packages)
 
-**Time to Complete:** ~10 minutes per repository
+**Step 3: Set Limits**
+- Set `open-pull-requests-limit` to control PR volume (default: 5)
+- Major version updates should remain individual PRs for careful review
+
+**Time to Complete:** ~10 minutes
 
 #### Code Implementation
 
-{% include pack-code.html vendor="github" section="4.8" %}
-
-#### Validation & Testing
-1. [ ] Verify `dependabot.yml` is present and valid
-2. [ ] Trigger a Dependabot run and verify grouped PRs are created
-3. [ ] Verify grouped PRs include all expected dependency updates
-4. [ ] Confirm individual PRs are no longer created for grouped dependencies
+{% include pack-code.html vendor="github" section="6.3" %}
 
 #### Compliance Mappings
-
-| Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **SOC 2** | CC7.1, CC7.2 | Security monitoring and response |
-| **NIST 800-53** | SI-2, SA-12, RA-5 | Flaw remediation, supply chain, vulnerability scanning |
-| **ISO 27001** | A.12.6.1, A.14.2.2 | Technical vulnerability management |
+- **NIST 800-53:** SA-12 (Supply chain protection), SI-2 (Flaw remediation)
+- **SOC 2:** CC7.1
 
 ---
 
-## 7. Monitoring & Governance
+### 6.4 Enable Build Provenance and npm Provenance
 
-### 7.1 Enable Audit Log Streaming to SIEM
+**Profile Level:** L2 (Hardened)
+**SLSA:** Build L2+
+**NIST 800-53:** SA-12, SA-15
+
+#### Description
+Generate SLSA build provenance attestations for artifacts and publish npm packages with provenance. Build provenance creates a verifiable link between an artifact and its source code, build instructions, and build environment using Sigstore signing.
+
+#### Rationale
+**Why Build Provenance:**
+- Consumers can verify artifacts were built from the claimed source code
+- Detects tampering between build and distribution
+- npm provenance connects packages to their source repository and CI/CD workflow
+- Required for SLSA Build Level 2+ compliance
+
+**npm Trusted Publishing (2025+):** When using OIDC-based trusted publishing, provenance attestations are automatically generated without requiring the `--provenance` flag, and long-lived npm tokens are eliminated entirely.
+
+#### ClickOps Implementation
+
+**Step 1: Enable Artifact Attestations**
+1. **Repository Settings** -> **Code security and analysis**
+2. Enable **Artifact attestations** (if not already enabled)
+3. For public repos, attestations use the public Sigstore instance
+4. For private repos, attestations use GitHub's private Sigstore instance (requires Enterprise Cloud)
+
+**Step 2: Add Provenance to CI/CD**
+- Add `actions/attest-build-provenance` to your release workflow
+- For npm packages, add `--provenance` flag to `npm publish`
+- Ensure workflow has `id-token: write` and `attestations: write` permissions
+
+**Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+**npm Provenance Publishing:**
+
+{% include pack-code.html vendor="github" section="6.4" %}
+
+**SLSA Build Provenance Attestation:**
+
+{% include pack-code.html vendor="github" section="6.5" %}
+
+#### Compliance Mappings
+- **SLSA:** Build L2 (Provenance), Build L3 (Signed provenance)
+- **NIST 800-53:** SA-12 (Supply chain protection), SA-15 (Development process, standards, and tools)
+- **SOC 2:** CC7.2
+
+---
+
+### 6.5 Enforce Dependency Review Across the Organization
+
+**Profile Level:** L2 (Hardened)
+**Requires:** GitHub Enterprise Cloud
+**NIST 800-53:** SA-12, SA-11
+
+#### Description
+Use organization rulesets to enforce the dependency-review-action as a required workflow across all repositories. This ensures no repository can merge PRs with vulnerable dependencies without review, regardless of individual repository settings.
+
+#### Rationale
+**Why Organization-Wide Enforcement:**
+- Individual repository setup is inconsistent -- some repos may skip dependency review
+- Organization rulesets enforce policies uniformly across all repos
+- Prevents teams from disabling security checks on their own repositories
+- Provides centralized visibility into dependency review compliance
+
+#### ClickOps Implementation
+
+**Step 1: Create Required Workflow**
+1. Create a `.github/workflows/dependency-review.yml` in a central repository (e.g., `.github` repo)
+2. Configure with your organization's severity threshold and license policy
+
+**Step 2: Create Organization Ruleset**
+1. **Organization Settings** -> **Rules** -> **Rulesets**
+2. Click **"New ruleset"** -> **"New branch ruleset"**
+3. Set target branches: `main`, `master`
+4. Set target repositories: **All repositories** (or select specific ones)
+5. Under **Rules**, add **"Require workflows to pass before merging"**
+6. Select the dependency-review workflow from your central repository
+7. Set enforcement to **Active**
+
+**Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="6.6" %}
+
+#### Compliance Mappings
+- **NIST 800-53:** SA-12 (Supply chain protection), SA-11 (Developer testing and evaluation)
+- **SOC 2:** CC7.2
+- **SLSA:** Build L2
+
+---
+
+## 7. Modern Platform Features
+
+### 7.1 Configure Copilot Governance
+
+**Profile Level:** L1 (Baseline)
+**Requires:** GitHub Copilot Business or Enterprise
+**NIST 800-53:** AC-3, AU-2
+
+#### Description
+Configure Copilot governance policies including content exclusions to prevent Copilot from accessing sensitive files, enable audit logging for Copilot usage, and manage Copilot feature policies at the organization and enterprise level.
+
+#### Rationale
+**Why Copilot Governance Matters:**
+- Copilot reads file context to generate suggestions -- sensitive files (secrets, credentials, PII) should be excluded
+- Content exclusions prevent Copilot from processing files matching specified patterns
+- Audit logging tracks Copilot usage for compliance and security monitoring
+- Enterprise-level policies (GA February 2026) control which Copilot features are available
+
+**Content Exclusion Scope:**
+- IDE-level content exclusions are GA
+- GitHub.com content exclusions are in preview (January 2025)
+- Exclusions prevent Copilot from using file content for suggestions but do not prevent developers from opening the files
+
+#### ClickOps Implementation
+
+**Step 1: Configure Copilot Policies**
+1. Navigate to: **Organization Settings** -> **Copilot** -> **Policies**
+2. Configure feature access:
+   - **Suggestions matching public code:** Block or allow
+   - **Chat in IDE:** Enable or disable
+   - **Chat in GitHub.com:** Enable or disable
+   - **CLI:** Enable or disable
+
+**Step 2: Set Content Exclusions**
+1. **Organization Settings** -> **Copilot** -> **Content exclusion**
+2. Add paths to exclude from Copilot context:
+   - `**/.env*` -- Environment files
+   - `**/secrets/**` -- Secret directories
+   - `**/*.pem` -- Certificate files
+   - `**/*.key` -- Private keys
+   - `**/credentials/**` -- Credential files
+3. Apply per-repository or organization-wide
+
+**Step 3: Review Audit Logs**
+1. **Organization Settings** -> **Audit log**
+2. Filter by `action:copilot` to see Copilot-related events
+3. Monitor for unusual Copilot usage patterns
+
+**Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="7.2" %}
+
+**Note:** No Terraform provider support exists for Copilot policies at this time.
+
+#### Compliance Mappings
+- **CIS Controls:** 3.3 (Configure data access control lists)
+- **NIST 800-53:** AC-3 (Access enforcement), AU-2 (Audit events)
+- **SOC 2:** CC6.1
+
+---
+
+### 7.2 Create Custom Repository Roles
+
+**Profile Level:** L2 (Hardened)
+**Requires:** GitHub Enterprise Cloud
+**NIST 800-53:** AC-2, AC-3
+**CIS Controls:** 6.8
+
+#### Description
+Create custom repository roles to define fine-grained permission sets beyond the built-in Read, Triage, Write, Maintain, and Admin roles. Custom roles allow precise access control -- for example, a "Security Reviewer" role that can view and dismiss security alerts without write access to code.
+
+#### Rationale
+**Why Custom Roles:**
+- Built-in roles don't cover all access patterns (e.g., security-only access)
+- Reduces over-permissioning by providing exact permissions needed
+- Supports separation of duties between development and security teams
+- Each custom role inherits from a base role (Read, Triage, Write, or Maintain) and adds specific permissions
+
+#### ClickOps Implementation
+
+**Step 1: Create Custom Role**
+1. Navigate to: **Organization Settings** -> **Repository roles**
+2. Click **"Create a role"**
+3. Set role name and description (e.g., "Security Reviewer")
+4. Select base role (e.g., Read)
+5. Add additional permissions:
+   - **Security events** -- View and manage security alerts
+   - **View secret scanning alerts** -- See detected secrets
+   - **Dismiss secret scanning alerts** -- Close false positives
+   - **View Dependabot alerts** -- See vulnerable dependencies
+   - **Dismiss Dependabot alerts** -- Close resolved alerts
+6. Click **"Create role"**
+
+**Step 2: Assign Custom Role**
+1. **Repository Settings** -> **Collaborators and teams**
+2. Add team or user
+3. Select the custom role from the dropdown
+
+**Time to Complete:** ~10 minutes per role
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="7.3" %}
+
+#### Compliance Mappings
+- **CIS Controls:** 6.8 (Define and maintain role-based access control)
+- **NIST 800-53:** AC-2 (Account management), AC-3 (Access enforcement)
+- **SOC 2:** CC6.1, CC6.2
+
+---
+
+### 7.3 Enforce Required Workflows via Organization Rulesets
+
+**Profile Level:** L2 (Hardened)
+**Requires:** GitHub Enterprise Cloud
+**NIST 800-53:** SA-11, CM-3
+
+#### Description
+Use organization rulesets to enforce required workflows (security scans, code quality checks, dependency review) across all or selected repositories. This ensures security gates cannot be bypassed at the repository level.
+
+#### Rationale
+**Why Required Workflows:**
+- Repository-level branch protection can be disabled by repo admins
+- Organization rulesets are managed centrally and cannot be overridden by repo admins
+- Ensures consistent security checks across the entire organization
+- Supports compliance by guaranteeing that all code changes pass required checks
+
+#### ClickOps Implementation
+
+**Step 1: Prepare Central Workflows**
+1. Create a `.github` repository in your organization (if it doesn't exist)
+2. Add required workflow files (e.g., `security-scan.yml`, `dependency-review.yml`)
+3. These workflows will be referenced by the organization ruleset
+
+**Step 2: Create Organization Ruleset**
+1. Navigate to: **Organization Settings** -> **Rules** -> **Rulesets**
+2. Click **"New ruleset"** -> **"New branch ruleset"**
+3. Set name: "Required Security Workflows"
+4. Set enforcement: **Active**
+5. Set target branches: `refs/heads/main`, `refs/heads/master`
+6. Set target repositories: **All repositories** (exclude `.github` repo)
+7. Under **Rules**, add **"Require workflows to pass before merging"**
+8. Select each required workflow and its source repository
+9. Click **"Create"**
+
+**Step 3: Test Enforcement**
+1. Create a test PR in a target repository
+2. Verify the required workflow runs automatically
+3. Confirm the PR cannot be merged until the workflow passes
+
+**Time to Complete:** ~20 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="7.4" %}
+
+**Note:** No Terraform provider support exists for required workflow rulesets at this time.
+
+#### Compliance Mappings
+- **CIS Controls:** 16.12 (Implement code-level security checks)
+- **NIST 800-53:** SA-11 (Developer testing and evaluation), CM-3 (Configuration change control)
+- **SOC 2:** CC7.1, CC8.1
+
+---
+
+## 8. Monitoring & Audit Logging
+
+### 8.1 Enable Audit Log Streaming to SIEM
 
 **Profile Level:** L2 (Hardened)
 **Requires:** GitHub Enterprise Cloud
@@ -1553,6 +2115,8 @@ Stream GitHub audit logs to your SIEM (Splunk, Datadog, AWS Security Lake) for c
 {% include pack-code.html vendor="github" section="5.7" %}
 {% include pack-code.html vendor="github" section="5.3" %}
 
+**Note:** No Terraform provider support exists for audit log streaming configuration at this time.
+
 #### Key Events to Monitor
 
 These events should be prioritized in your SIEM alert rules:
@@ -1560,14 +2124,14 @@ These events should be prioritized in your SIEM alert rules:
 | Event | Description | Alert Priority |
 |-------|-------------|----------------|
 | `org.add_member` | New member added to org | Medium |
-| `org.remove_member` | Member removed from org | Low |
-| `repo.create` | New repository created | Low |
 | `repo.destroy` | Repository deleted | High |
-| `protected_branch.create` | Branch protection added | Low |
 | `protected_branch.destroy` | Branch protection removed | Critical |
+| `protected_branch.policy_override` | Admin bypassed branch protection | High |
 | `oauth_authorization.create` | New OAuth app authorized | Medium |
 | `personal_access_token.create` | New PAT created | Medium |
-| `protected_branch.policy_override` | Admin bypassed branch protection | High |
+| `copilot.content_exclusion_changed` | Copilot exclusion rules modified | Medium |
+| `secret_scanning_push_protection.bypass` | Push protection bypassed | High |
+| `org.update_member_repository_creation_permission` | Repo creation permissions changed | Medium |
 
 #### Detection Queries
 
@@ -1584,24 +2148,72 @@ These events should be prioritized in your SIEM alert rules:
 
 ---
 
-### 7.2 Apply GitHub-Recommended Security Configuration
+### 8.2 Use Security Overview Dashboard
+
+**Profile Level:** L1 (Baseline)
+**Requires:** GitHub Enterprise Cloud with GHAS
+**NIST 800-53:** RA-5, SI-4
+
+#### Description
+Use the Security Overview dashboard to get a consolidated view of security alert status across all repositories in the organization. Monitor Dependabot, secret scanning, and code scanning alerts from a single interface with filtering and trend analysis.
+
+#### Rationale
+**Why Security Overview:**
+- Provides organization-wide visibility into security posture without checking each repo individually
+- Tracks alert trends over time to measure security improvement
+- Identifies repositories with the most critical vulnerabilities
+- Enables security teams to prioritize remediation efforts
+
+#### ClickOps Implementation
+
+**Step 1: Access Security Overview**
+1. Navigate to: **Organization page** -> **Security** tab
+2. Review the overview dashboard showing:
+   - Total open alerts by type (Dependabot, secret scanning, code scanning)
+   - Alert trends over time
+   - Repositories with most alerts
+
+**Step 2: Filter and Prioritize**
+1. Filter by severity: Focus on **Critical** and **High** alerts first
+2. Filter by repository: Identify highest-risk repositories
+3. Filter by alert type: Address secret scanning alerts immediately (active credentials)
+
+**Step 3: Export and Report**
+1. Use the Security Overview API to extract metrics for reporting
+2. Track key metrics: mean time to remediation, open critical alerts, coverage percentage
+
+**Time to Complete:** ~5 minutes for initial review, ongoing monitoring
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="8.1" %}
+
+#### Compliance Mappings
+- **CIS Controls:** 7.5 (Perform automated vulnerability scans)
+- **NIST 800-53:** RA-5 (Vulnerability monitoring and scanning), SI-4 (Information system monitoring)
+- **SOC 2:** CC7.1, CC7.2
+
+---
+
+### 8.3 Apply GitHub-Recommended Security Configuration
 
 **Profile Level:** L1 (Baseline)
 **Requires:** GitHub Enterprise Cloud
 
 #### Description
-Apply GitHub's recommended security configuration to all repositories in the enterprise. This provides a baseline security posture that can be customized for stricter requirements.
+Apply GitHub's code security configurations to all repositories in the organization. Security configurations (GA July 2024) are named profiles that bundle security feature settings and can be applied to repository groups for consistent coverage.
 
 #### Rationale
-**Why This Matters:**
-- GitHub maintains a curated set of security defaults based on best practices
-- Applying this configuration ensures no repository is left without basic security features
-- Custom configurations can layer additional requirements on top of the baseline
+**Why Security Configurations:**
+- Ensures no repository is left without basic security features
+- Named profiles allow different tiers (e.g., "Standard" and "High Security")
+- New repositories automatically receive the assigned configuration
+- Custom configurations can layer stricter requirements on top of GitHub's defaults
 
 #### ClickOps Implementation
 
 **Step 1: Access Security Configurations**
-1. Navigate to: **Enterprise Settings** -> **Code security** -> **Configurations**
+1. Navigate to: **Organization Settings** -> **Code security** -> **Configurations**
 
 **Step 2: Apply GitHub Recommended**
 1. Select **GitHub recommended** configuration
@@ -1613,21 +2225,22 @@ Apply GitHub's recommended security configuration to all repositories in the ent
 3. Apply to all repositories
 
 **Step 3: Create Custom Configuration (Optional)**
-1. For stricter requirements, create custom configuration
-2. Enable additional settings:
+1. For stricter requirements, click **"New configuration"**
+2. Name it (e.g., "High Security")
+3. Enable additional settings:
    - Grouped security updates
    - Custom secret scanning patterns
    - Security-extended CodeQL queries
-3. Apply to specific repository sets based on sensitivity
+   - Non-provider pattern scanning
+4. Apply to specific repository sets based on sensitivity
+
+**Time to Complete:** ~15 minutes
 
 #### Code Implementation
 
 {% include pack-code.html vendor="github" section="5.8" %}
 
-#### Validation & Testing
-1. [ ] Verify configuration is applied to all repositories
-2. [ ] Spot-check individual repositories for expected security features
-3. [ ] Verify new repositories automatically receive the configuration
+**Note:** No Terraform provider support exists for code security configurations at this time.
 
 #### Compliance Mappings
 
@@ -1640,178 +2253,53 @@ Apply GitHub's recommended security configuration to all repositories in the ent
 
 ---
 
-### 7.3 Enable Organization-Level Code Security Configurations
+## 9. Third-Party Integration Security
 
-**Profile Level:** L1 (Baseline)
-**Requires:** GitHub Enterprise Cloud
-**NIST 800-53:** CM-2 (Baseline Configuration), CM-6 (Configuration Settings), SA-11 (Developer Security Testing)
-
-#### Description
-Use GitHub code security configurations to define and enforce security feature settings at the organization level. Security configurations allow you to create named policies that enable Dependabot, secret scanning, code scanning, and other security features, then apply them uniformly across repositories. This eliminates configuration drift and ensures new repositories automatically receive the organization's security baseline.
-
-#### Rationale
-**Why This Matters:**
-- Without centralized configurations, each repository must be individually configured
-- Repository admins may disable security features, creating gaps
-- New repositories may not receive security features until manually configured
-- Code security configurations provide a single pane of glass for security posture management
-- Configurations can be enforced so repository admins cannot disable them
-
-#### ClickOps Implementation
-
-**Step 1: Access Security Configurations**
-1. Navigate to: **Organization Settings** -> **Code security** -> **Configurations**
-
-**Step 2: Create Custom Configuration**
-1. Click **New configuration**
-2. Name: `hth-hardened` (or your preferred name)
-3. Enable the following features:
-   - Dependency graph: Enabled
-   - Dependabot alerts: Enabled
-   - Dependabot security updates: Enabled
-   - Secret scanning: Enabled
-   - Push protection: Enabled
-   - Code scanning default setup: Enabled
-   - Private vulnerability reporting: Enabled
-4. Set enforcement level to **Enforced** for critical features
-
-**Step 3: Apply Configuration**
-1. Select target repositories (all or specific sets)
-2. Apply the configuration
-3. Verify all repositories show the correct security posture
-
-**Time to Complete:** ~15 minutes
-
-#### Code Implementation
-
-{% include pack-code.html vendor="github" section="3.19" %}
-
-#### Validation & Testing
-1. [ ] Verify configuration is applied to all target repositories
-2. [ ] Spot-check individual repositories for expected security features
-3. [ ] Create a new repository and verify it automatically receives the configuration
-4. [ ] Attempt to disable an enforced feature at the repository level (should be blocked)
-
-#### Compliance Mappings
-
-| Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **SOC 2** | CC7.1, CC8.1 | Security monitoring and change management |
-| **NIST 800-53** | CM-2, CM-6, SA-11 | Baseline configuration, configuration settings |
-| **ISO 27001** | A.12.1.1, A.14.2.1 | Documented procedures, development policy |
-
----
-
-### 7.4 Configure Repository Custom Properties for Security Classification
-
-**Profile Level:** L2 (Hardened)
-**NIST 800-53:** RA-2 (Security Categorization), SC-16 (Transmission of Security Attributes), CM-8 (Information System Component Inventory)
-
-#### Description
-Use GitHub repository custom properties to classify repositories by security sensitivity, data classification, compliance requirements, and ownership. Custom properties enable organization-wide tagging of repositories with structured metadata that can drive ruleset targeting, security configuration assignment, and compliance reporting.
-
-#### Rationale
-**Why This Matters:**
-- Without classification, organizations cannot systematically apply different security policies to repositories of different risk levels
-- Custom properties can be used as conditions in repository rulesets (e.g., stricter rules for "critical" repositories)
-- Enables automated compliance reporting by querying repositories by classification
-- Supports data governance requirements for knowing where sensitive data resides
-- Properties are required and can have default values, ensuring no repository is unclassified
-
-#### ClickOps Implementation
-
-**Step 1: Define Custom Properties**
-1. Navigate to: **Organization Settings** -> **Custom properties**
-2. Click **New property**
-3. Create classification properties:
-   - `security-tier`: single_select (critical, high, standard, low)
-   - `data-classification`: single_select (public, internal, confidential, restricted)
-   - `compliance-scope`: multi_select (soc2, pci-dss, hipaa, fedramp, none)
-4. Set `security-tier` and `data-classification` as required with defaults
-
-**Step 2: Classify Repositories**
-1. Navigate to: **Organization Settings** -> **Repositories**
-2. Select repositories to classify
-3. Set property values based on repository sensitivity
-4. Prioritize classifying repositories with production code and customer data
-
-**Step 3: Use Properties in Rulesets**
-1. Navigate to: **Organization Settings** -> **Repository** -> **Rulesets**
-2. Create rulesets that target repositories by custom property values
-3. Example: Require additional reviewers for `security-tier: critical` repositories
-
-**Time to Complete:** ~30 minutes for setup, ongoing for classification
-
-#### Code Implementation
-
-{% include pack-code.html vendor="github" section="5.10" %}
-
-#### Validation & Testing
-1. [ ] Verify custom properties are defined in the organization
-2. [ ] Verify critical repositories have correct property values assigned
-3. [ ] Verify rulesets correctly target repositories by property values
-4. [ ] Confirm new repositories receive default property values
-
-#### Compliance Mappings
-
-| Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **SOC 2** | CC3.1, CC6.1 | Risk assessment, logical access |
-| **NIST 800-53** | RA-2, SC-16, CM-8 | Security categorization, asset inventory |
-| **ISO 27001** | A.8.1.1, A.8.2.1 | Inventory of assets, classification of information |
-
----
-
-## 8. Third-Party Integration Security
-
-### 8.1 Integration Risk Assessment Matrix
+### 9.1 Integration Risk Assessment Matrix
 
 Before allowing any third-party integration access to GitHub, assess risk:
 
-| Risk Factor | Low | Medium | High |
-|-------------|-----|--------|------|
+| Risk Factor | Low (1 pt) | Medium (2 pts) | High (3 pts) |
+|-------------|------------|----------------|--------------|
 | **Repository Access** | Public repos only | Read private repos | Write access to repos |
 | **OAuth Scopes** | `read:user`, `public_repo` | `repo:status`, `read:org` | `repo`, `admin:org` |
 | **Token Lifetime** | Session-based (hours) | Days | Persistent/no expiration |
-| **Vendor Security** | SOC 2 Type II, penetration tested | SOC 2 Type I | No certifications |
+| **Vendor Security** | SOC 2 Type II, pen tested | SOC 2 Type I | No certifications |
 | **Data Sensitivity** | Non-production data | Some prod access | Full prod/secrets access |
+| **Runner Access** | None | GitHub-hosted only | Self-hosted runners |
 
 **Decision Matrix:**
-- **0-5 points:** Approve with standard OAuth scope restrictions
-- **6-10 points:** Approve with enhanced monitoring + restricted repos
-- **11-15 points:** Require security review, minimize scope, or reject
+- **6-8 points:** Approve with standard OAuth scope restrictions
+- **9-12 points:** Approve with enhanced monitoring + restricted repos
+- **13-18 points:** Require security review, minimize scope, or reject
 
 ---
 
-### 8.2 Common Integrations and Recommended Controls
+### 9.2 Common Integrations and Recommended Controls
 
-#### CircleCI (CI/CD Platform)
+#### CI/CD Platforms (CircleCI, Jenkins, Travis CI)
 
-**Data Access:** High (needs read/write to repos, access to secrets)
+**Data Access:** High (read/write repos, access to secrets)
 
 **Recommended Controls:**
-- OAuth scope: `repo`, `user:email`, `write:repo_hook` ONLY (not `admin:org`)
+- Use GitHub App integration (scoped permissions) instead of OAuth tokens
 - Restrict to specific repositories (not all org repos)
-- Use CircleCI OIDC for cloud credentials (not long-lived secrets)
-- Enable IP allowlisting if CircleCI provides static IPs
-- **Note:** CircleCI was breached in January 2023 - high-risk integration
-- Rotate GitHub OAuth tokens quarterly
-- Monitor audit logs for bulk repository access
-
-**CircleCI IP Addresses (if available):**
-Check CircleCI documentation for current static IPs for webhook allowlisting.
+- Use OIDC for cloud credentials (see Section 5.2) -- never store long-lived cloud keys
+- **Note:** CircleCI was breached in January 2023 -- high-risk integration
+- Rotate any remaining OAuth tokens quarterly
+- Monitor audit logs for bulk repository access and unusual clone patterns
 
 ---
 
-#### Snyk (Dependency Scanning)
+#### Dependency Scanning (Snyk, Mend, Socket)
 
 **Data Access:** Medium (read repos, write security alerts)
 
 **Recommended Controls:**
-- OAuth scope: `repo:read`, `security_events:write`
-- Use Snyk's GitHub App (scoped permissions) instead of OAuth app
-- Enable only for repos with dependencies (not docs/config repos)
-- Review Snyk alerts weekly, don't let them accumulate
+- Use vendor's GitHub App (scoped permissions) instead of OAuth app
+- Scope to repos with actual dependencies (not docs/config repos)
+- Review security alerts weekly -- don't let them accumulate
+- For Snyk: OAuth scope `repo:read`, `security_events:write`
 
 ---
 
@@ -1820,35 +2308,48 @@ Check CircleCI documentation for current static IPs for webhook allowlisting.
 **Data Access:** Medium-High (read repos, create PRs, update dependencies)
 
 **Recommended Controls:**
-- Use GitHub-native Dependabot (preferred, built-in)
-- If using Renovate: Scope to `repo` only
-- Require PR reviews for Dependabot/Renovate PRs (don't auto-merge)
+- Use GitHub-native Dependabot (preferred -- built-in, no external access)
+- If using Renovate: Scope to `repo` only, self-host if possible
+- Require PR reviews for dependency update PRs (don't auto-merge major versions)
 - Enable branch protection to require status checks before merge
-- Review dependency update PRs for unusual changes
 
 ---
 
-#### Slack/Microsoft Teams (Notifications)
+#### Communication (Slack, Microsoft Teams)
 
 **Data Access:** Low-Medium (read repos, post notifications)
 
 **Recommended Controls:**
-- OAuth scope: `repo:read`, `notifications` (minimal)
-- Use GitHub App with narrow repository selection
+- Use the vendor's GitHub App with narrow repository selection
 - Avoid granting write permissions
-- Filter notifications to avoid leaking sensitive data in public Slack channels
+- Filter notifications to avoid leaking sensitive data in public channels
+- Review connected channels quarterly
 
 ---
 
-#### SonarQube / SonarCloud (Code Quality)
+#### Code Quality (SonarQube, SonarCloud, CodeClimate)
 
-**Data Access:** Medium (read repos, write code analysis results)
+**Data Access:** Medium (read repos, write analysis results)
 
 **Recommended Controls:**
+- Use vendor's GitHub App for scoped permissions
 - OAuth scope: `repo:read`, `statuses:write`, `checks:write`
-- Use SonarCloud GitHub App for scoped permissions
+- Ensure the tool doesn't store secrets from scanned code
 - Review code analysis results before merging
-- Ensure SonarQube doesn't store secrets from scanned code
+
+---
+
+#### Security Tooling (OpenSSF Scorecard, StepSecurity, Allstar)
+
+**Data Access:** Low-Medium (read repos, write check results)
+
+**Recommended Controls:**
+- **OpenSSF Scorecard:** Use `ossf/scorecard-action` to assess repository security posture
+- **StepSecurity Harden-Runner:** Use `step-security/harden-runner` to detect and block exfiltration from GitHub Actions workflows
+- **Allstar:** Install the Allstar GitHub App to enforce security policies across repos
+- These tools improve security posture -- prioritize adoption over risk mitigation
+
+**Self-Hosted Runner Risk:** Research in 2024 found 43,803 public repositories with exposed self-hosted runners. If your integrations use self-hosted runners, ensure they are ephemeral (see Section 3.4) and restricted to private repository workflows only.
 
 ---
 
@@ -1862,20 +2363,18 @@ Check CircleCI documentation for current static IPs for webhook allowlisting.
 | SAML SSO | No | No | Yes | Yes |
 | SCIM Provisioning | No | No | Yes | Yes |
 | IP Allow List | No | No | Yes | Yes |
-| Secret Scanning (public repos) | Yes | Yes | Yes | Yes |
-| Secret Scanning (private repos) | No | No | Yes | Yes |
-| Code Scanning (public repos) | Yes | Yes | Yes | Yes |
-| Code Scanning (private repos) | No | No | Yes | Yes (add-on) |
-| GHAS (CodeQL + Secret Scanning) | Public repos | Public repos | Yes | Yes (add-on) |
+| Secret Protection ($19/committer/mo) | Public repos | Public repos | Yes | Yes (add-on) |
+| Code Security ($30/committer/mo) | Public repos | Public repos | Yes | Yes (add-on) |
+| Push Protection | Public repos | Public repos | Yes | Yes |
+| Custom Secret Patterns | No | No | Yes | Yes |
+| Delegated Bypass for Push Protection | No | No | Yes | Yes |
+| Dependency Review Action | Yes | Yes | Yes | Yes |
+| Copilot (Business/Enterprise) | No | No | Yes | Yes |
+| Custom Repository Roles | No | No | Yes | No |
 | Audit Log Streaming | No | No | Yes | Yes |
-| Required Workflows | No | No | Yes | Yes |
+| Required Workflows (org rulesets) | No | No | Yes | Yes |
+| Security Overview Dashboard | No | No | Yes | Yes |
 | Self-Hosted Runner Groups | No | No | Yes | Yes |
-| Fine-Grained PAT Policies | Yes | Yes | Yes | Yes |
-| Private Vulnerability Reporting | Yes | Yes | Yes | Yes |
-| Delegated Bypass (Push Protection) | No | No | Yes | No |
-| Artifact Attestations | Yes | Yes | Yes | Yes |
-| Code Security Configurations | No | No | Yes | No |
-| Custom Properties | No | No | Yes | Yes |
 
 ---
 
@@ -1902,11 +2401,22 @@ Check CircleCI documentation for current static IPs for webhook allowlisting.
 - [GitHub CLI (gh)](https://cli.github.com/)
 - [Accessing Compliance Reports for Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/overview/accessing-compliance-reports-for-your-enterprise)
 
+**GHAS Product Changes (April 2025):**
+- [Secret Protection](https://docs.github.com/en/code-security/secret-scanning/introduction/about-secret-scanning) -- $19/committer/month (standalone)
+- [Code Security](https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning) -- $30/committer/month (standalone)
+- [GHAS Unbundling Announcement](https://github.blog/news-insights/product-news/github-availability-report-march-2025/)
+
 **Supply Chain Security Frameworks:**
 - [SLSA Framework](https://slsa.dev/)
 - [SLSA GitHub Generator](https://github.com/slsa-framework/slsa-github-generator)
 - [OpenSSF Supply Chain Integrity WG](https://github.com/ossf/wg-supply-chain-integrity)
 - [Achieving SLSA 3 with GitHub Actions](https://github.blog/security/supply-chain-security/slsa-3-compliance-with-github-actions/)
+- [npm Provenance](https://docs.npmjs.com/generating-provenance-statements)
+- [GitHub Attestations](https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds)
+
+**Copilot Governance:**
+- [Managing Copilot Policies](https://docs.github.com/en/copilot/managing-copilot/managing-github-copilot-in-your-organization/managing-policies-for-copilot-in-your-organization)
+- [Content Exclusions for Copilot](https://docs.github.com/en/copilot/managing-copilot/managing-github-copilot-in-your-organization/configuring-content-exclusions-for-github-copilot)
 
 **Compliance Frameworks:**
 - SOC 1 Type II, SOC 2 Type II, ISO/IEC 27001:2013, CSA CAIQ Level 1, CSA STAR Level 2 -- via [Trust Center](https://ghec.github.trust.page/)
@@ -1933,7 +2443,7 @@ Check CircleCI documentation for current static IPs for webhook allowlisting.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-03-07 | 0.3.0 | draft | Added 7 new controls: fine-grained PAT policies, private vulnerability reporting, secret scanning delegated bypass, artifact attestations, Dependabot grouped updates, code security configurations, repository custom properties | Claude Code (Opus 4.6) |
+| 2026-03-07 | 0.3.0 | draft | Revamp sections 4-9: OAuth app auditing, GHAS unbundling, push protection delegated bypass, custom secret patterns, OIDC, build provenance, Copilot governance, custom roles, required workflows, security overview dashboard | Claude Code (Opus 4.6) |
 | 2026-02-12 | 0.2.0 | draft | Merged enterprise guide, added code pack integration, comprehensive controls | Claude Code (Opus 4.6) |
 | 2025-12-13 | 0.1.0 | draft | Initial GitHub hardening guide with supply chain security focus | Claude Code (Opus 4.5) |
 

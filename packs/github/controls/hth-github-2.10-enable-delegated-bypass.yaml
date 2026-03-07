@@ -1,0 +1,30 @@
+id: "github-2.6"
+vendor: "github"
+title: "Enable Secret Scanning Delegated Bypass"
+section: "2.6"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#26-enable-secret-scanning-delegated-bypass"
+description: >
+  Configure delegated bypass for secret scanning push protection to require security
+  team approval before developers can bypass push protection blocks. This ensures
+  oversight of all push protection exceptions and creates an audit trail of bypass
+  decisions. Custom patterns can also be added to push protection for organization-specific
+  secrets.
+compliance:
+  soc2: ["CC7.2", "CC6.1"]
+  nist_800_53: ["SA-11", "IA-5(7)"]
+  iso_27001: ["A.12.6.1"]
+  cis_controls: ["16.12"]
+audit:
+  - id: "push-protection-bypasses-reviewed"
+    description: "Check for unresolved push protection bypass alerts"
+    api:
+      method: GET
+      endpoint: "/repos/{owner}/{repo}/secret-scanning/alerts?state=open"
+      check: '[.[] | select(.push_protection_bypassed == true)] | length == 0'
+    expected: true
+remediate:
+  manual:
+    - description: "Configure delegated bypass in Organization Settings > Code security > Secret scanning > Push protection"
+tags: ["secret-scanning", "push-protection", "delegated-bypass", "custom-patterns"]
