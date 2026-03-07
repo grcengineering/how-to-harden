@@ -1,0 +1,38 @@
+title: GitHub Audit Log Streaming Configuration Changed
+id: d5e6f7a8-b9c0-4123-d4e5-f67890123456
+status: test
+description: |
+    Detects when audit log streaming configuration is created, updated, or deleted.
+    Audit log streaming is essential for security monitoring. Disabling or modifying
+    the stream could allow an attacker to operate undetected by preventing log
+    forwarding to SIEM systems.
+    This corresponds to HTH GitHub control hth-github-5.07-configure-audit-log-streaming (section 5.7, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562.002
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action:
+            - 'audit_log_streaming.create'
+            - 'audit_log_streaming.update'
+            - 'audit_log_streaming.destroy'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized SIEM migration or log stream reconfiguration
+level: critical

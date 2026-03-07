@@ -1,0 +1,33 @@
+# HTH GitHub Control 3.12: Allowed GitHub Actions List
+# Profile: L1 | NIST: CM-7, SA-12
+# Deploy: Configure in Organization Settings > Actions > General > Allow specified actions
+
+# HTH Guide Excerpt: begin cli-actions-allowlist
+# Tier 1 - GitHub Official (Always Allow)
+# actions/*
+# github/*
+
+# Tier 2 - Verified Cloud Vendors
+# aws-actions/*
+# azure/*
+# google-github-actions/*
+# hashicorp/*
+# docker/*
+
+# Tier 3 - Common Verified Actions
+# codecov/codecov-action@*
+# snyk/actions/*
+# sonatype-nexus-community/*
+
+# Configure via gh CLI:
+gh api --method PUT /orgs/{org}/actions/permissions/selected-actions \
+  -f 'github_owned_allowed=true' \
+  -f 'verified_allowed=true' \
+  -f 'patterns_allowed[]=actions/*' \
+  -f 'patterns_allowed[]=github/*' \
+  -f 'patterns_allowed[]=aws-actions/*' \
+  -f 'patterns_allowed[]=azure/*' \
+  -f 'patterns_allowed[]=google-github-actions/*' \
+  -f 'patterns_allowed[]=hashicorp/*' \
+  -f 'patterns_allowed[]=docker/*'
+# HTH Guide Excerpt: end cli-actions-allowlist

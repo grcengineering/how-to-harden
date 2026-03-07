@@ -1,0 +1,38 @@
+title: GitHub Security Configuration Applied or Changed
+id: e6f7a8b9-c0d1-4234-e5f6-789012345678
+status: test
+description: |
+    Detects when a GitHub-recommended security configuration is applied to or
+    removed from repositories. Security configurations bundle multiple security
+    features (secret scanning, Dependabot, code scanning). Unexpected changes
+    may weaken the security posture across repositories.
+    This corresponds to HTH GitHub control hth-github-5.08-apply-security-configuration (section 5.8, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action:
+            - 'org.enable_security_configuration'
+            - 'org.disable_security_configuration'
+            - 'org.update_security_configuration'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized security configuration rollout to new repositories
+level: high

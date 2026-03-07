@@ -1,0 +1,38 @@
+title: GitHub Branch Protection Rule Modified
+id: a2b3c4d5-e6f7-4890-a1b2-c3d4e5f67890
+status: test
+description: |
+    Detects when branch protection rules are created, updated, or deleted. Changes
+    to branch protection can weaken code review requirements and allow unreviewed
+    code to be merged. Unexpected changes may indicate an attacker disabling
+    security controls prior to injecting malicious code.
+    This corresponds to HTH GitHub control hth-github-2.06-alert-branch-protection-changes (section 2.6, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action|startswith: 'protected_branch.'
+    filter_expected:
+        action: 'protected_branch.create'
+    condition: selection and not filter_expected
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized branch protection policy updates
+    - Repository lifecycle changes (archiving, renaming)
+level: high
