@@ -677,7 +677,11 @@ Configure organization-wide repository rulesets to enforce consistent branch pro
    - Require linear history (optional -- prevents merge commits)
    - Block force pushes
 2. Configure bypass list (limit to emergency access only)
-3. **Note:** Tag protection should also be managed via rulesets (legacy tag protection rules are deprecated)
+3. **Tag Protection via Repository Rules:**
+   - Legacy tag protection rules are deprecated -- use rulesets instead
+   - In the same ruleset, add a **Tag ruleset** targeting `v*` and `release-*` patterns
+   - Enable: Restrict creations, Restrict deletions, Block force pushes
+   - This prevents unauthorized release tagging and protects release integrity
 
 #### Code Implementation
 
@@ -1363,10 +1367,6 @@ Run these tools periodically to audit organization-wide security posture.
 
 **Time to Complete:** ~30 minutes for initial setup
 
-#### Code Implementation
-
-{% include pack-code.html vendor="github" section="3.22" %}
-
 #### Validation & Testing
 1. [ ] zizmor and actionlint run on PRs and report findings
 2. [ ] All actions in workflows are pinned to commit SHAs
@@ -1691,11 +1691,15 @@ Use GitHub Actions OIDC provider to get short-lived cloud credentials instead of
    - Provider URL: `https://token.actions.githubusercontent.com`
    - Audience: `sts.amazonaws.com`
 
-**Step 2: Create IAM Role and Deploy Workflow**
-
-{% include pack-code.html vendor="github" section="5.6" %}
+**Step 2: Create IAM Role with Trust Policy**
+1. Create IAM role with trust policy for `token.actions.githubusercontent.com`
+2. Restrict the `sub` claim to your repository and branch
 
 **Time to Complete:** ~30 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="5.6" %}
 
 #### Compliance Mappings
 - **SLSA:** Build L3 (Short-lived credentials)
@@ -1862,11 +1866,21 @@ Pin all dependencies (npm, pip, go modules, etc.) to specific versions with hash
 - Hash verification ensures package hasn't been tampered with
 - Reproducible builds
 
-#### Implementation by Ecosystem
+#### ClickOps Implementation
+
+**Step 1: Review Current Dependencies**
+1. Navigate to repository **Insights** -> **Dependency graph**
+2. Review all dependencies for version pinning status
+
+**Step 2: Enable Dependabot for Automated Pin Updates**
+1. Navigate to repository **Settings** -> **Code security and analysis**
+2. Enable **Dependabot version updates**
+
+#### Code Implementation
 
 {% include pack-code.html vendor="github" section="6.2" %}
 
-#### Automated Pinning
+**Automated Pinning:**
 
 Use Dependabot or Renovate to keep pins up-to-date while maintaining hash verification.
 
@@ -2034,10 +2048,11 @@ Configure Copilot governance policies including content exclusions to prevent Co
 - Audit logging tracks Copilot usage for compliance and security monitoring
 - Enterprise-level policies (GA February 2026) control which Copilot features are available
 
-**Content Exclusion Scope:**
+**Content Exclusion Scope (ISC: Copilot Content Exclusions):**
 - IDE-level content exclusions are GA
 - GitHub.com content exclusions are in preview (January 2025)
 - Exclusions prevent Copilot from using file content for suggestions but do not prevent developers from opening the files
+- Organizations MUST configure content exclusions for sensitive paths (secrets, credentials, PII) before enabling Copilot
 
 #### ClickOps Implementation
 
