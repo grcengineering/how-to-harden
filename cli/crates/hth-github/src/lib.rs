@@ -31,15 +31,30 @@ impl GitHubProvider {
                 message: "Set GITHUB_ORG or GH_ORG environment variable".to_string(),
             })?;
 
-        Ok(Self {
-            client: GitHubApiClient::new(auth, org),
-        })
+        // Optional: configure a specific repo via GITHUB_REPO / GH_REPO.
+        // Defaults to "how-to-harden" for backwards compatibility.
+        let client = if let Ok(repo) = std::env::var("GITHUB_REPO")
+            .or_else(|_| std::env::var("GH_REPO"))
+        {
+            GitHubApiClient::with_repo(auth, org, repo)
+        } else {
+            GitHubApiClient::new(auth, org)
+        };
+
+        Ok(Self { client })
     }
 
     /// Create a new GitHub provider with explicit values.
     pub fn new(token: SecretString, org: String) -> Self {
         Self {
             client: GitHubApiClient::new(GitHubAuth::from_token(token), org),
+        }
+    }
+
+    /// Create a new GitHub provider with explicit values including repo.
+    pub fn with_repo(token: SecretString, org: String, repo: String) -> Self {
+        Self {
+            client: GitHubApiClient::with_repo(GitHubAuth::from_token(token), org, repo),
         }
     }
 }
@@ -55,7 +70,9 @@ impl VendorProvider for GitHubProvider {
     }
 
     fn resolve_url(&self, endpoint: &str) -> String {
-        let resolved = endpoint.replace("{org}", self.client.org());
+        let resolved = endpoint
+            .replace("{org}", self.client.org())
+            .replace("{repo}", self.client.repo());
         format!("https://api.github.com{resolved}")
     }
 

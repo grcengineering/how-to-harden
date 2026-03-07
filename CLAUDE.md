@@ -95,3 +95,27 @@ cp templates/vendor-guide-template.md docs/_guides/[vendor-name].md
 - [ ] All code uses pack includes: `{% include pack-code.html vendor="X" section="Y.Z" %}`
 - [ ] Compliance mappings verified
 - [ ] Changelog updated
+
+
+<!-- SECURITY_RULES_START -->
+# Security Rules
+
+Auto-generated from [TikiTribe/claude-secure-coding-rules](https://github.com/TikiTribe/claude-secure-coding-rules)
+
+## Detected Stack
+
+- **Languages**: javascript, python, ruby, rust, sql
+- **Infrastructure**: github-actions, terraform
+
+## Fetched Rules
+
+- `_core/owasp-2025.md`
+- `cicd/github-actions/CLAUDE.md`
+- `iac/terraform/CLAUDE.md`
+- `languages/javascript/CLAUDE.md`
+- `languages/python/CLAUDE.md`
+- `languages/ruby/CLAUDE.md`
+- `languages/rust/CLAUDE.md`
+- `languages/sql/CLAUDE.md`
+
+<!-- SECURITY_RULES_END -->
