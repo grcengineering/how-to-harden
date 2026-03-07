@@ -1,0 +1,95 @@
+id: "github-2.2"
+vendor: "github"
+title: "Enable Security Features: Dependabot, Code Scanning, Secret Scanning"
+section: "2.2"
+profile_level: 1
+severity: "critical"
+guide_url: "https://howtoharden.com/guides/github/#22-enable-security-features-dependabot-code-scanning-secret-scanning"
+description: >
+  Enable GitHub's native security features to detect vulnerabilities, secrets, and
+  code quality issues automatically. Secret scanning detects committed API keys,
+  Dependabot identifies vulnerable dependencies, and CodeQL finds security
+  vulnerabilities in code.
+compliance:
+  soc2: ["CC7.2"]
+  nist_800_53: ["RA-5", "SA-11"]
+  iso_27001: ["A.12.6.1"]
+audit:
+  - id: "secret-scanning-enabled"
+    description: "Verify secret scanning is enabled on the repository"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden"
+      check: '.security_and_analysis.secret_scanning.status == "enabled"'
+    expected: true
+  - id: "secret-scanning-push-protection"
+    description: "Verify secret scanning push protection is enabled"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden"
+      check: '.security_and_analysis.secret_scanning_push_protection.status == "enabled"'
+    expected: true
+  - id: "dependabot-security-updates-enabled"
+    description: "Verify Dependabot security updates are enabled"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden"
+      check: '.security_and_analysis.dependabot_security_updates.status == "enabled"'
+    expected: true
+  - id: "code-scanning-enabled"
+    description: "Verify CodeQL code scanning default setup is configured"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/code-scanning/default-setup"
+      check: '.state == "configured"'
+    expected: true
+  - id: "no-open-secret-alerts"
+    description: "Verify no open secret scanning alerts exist"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/secret-scanning/alerts?state=open&per_page=1"
+      check: '. | length == 0'
+    expected: true
+  - id: "no-critical-dependabot-alerts"
+    description: "Verify no critical severity Dependabot alerts are open"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/dependabot/alerts?state=open&severity=critical&per_page=1"
+      check: '. | length == 0'
+    expected: true
+remediate:
+  api:
+    - description: "Enable secret scanning and push protection"
+      method: PATCH
+      endpoint: "/repos/{org}/how-to-harden"
+      body:
+        security_and_analysis:
+          secret_scanning:
+            status: "enabled"
+          secret_scanning_push_protection:
+            status: "enabled"
+      condition: "!secret-scanning-enabled"
+    - description: "Enable Dependabot vulnerability alerts"
+      method: PUT
+      endpoint: "/repos/{org}/how-to-harden/vulnerability-alerts"
+      condition: "!dependabot-security-updates-enabled"
+    - description: "Enable CodeQL code scanning default setup"
+      method: PATCH
+      endpoint: "/repos/{org}/how-to-harden/code-scanning/default-setup"
+      body:
+        state: "configured"
+        query_suite: "default"
+      condition: "!code-scanning-enabled"
+  terraform:
+    resources:
+      - type: "github_repository"
+        name: "how_to_harden_security"
+        config:
+          name: "how-to-harden"
+          security_and_analysis:
+            secret_scanning:
+              status: "enabled"
+            secret_scanning_push_protection:
+              status: "enabled"
+          vulnerability_alerts: true
+tags: ["secret-scanning", "dependabot", "code-scanning", "codeql", "supply-chain"]

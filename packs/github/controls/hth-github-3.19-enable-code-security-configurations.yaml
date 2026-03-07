@@ -1,0 +1,50 @@
+id: "github-3.19"
+vendor: "github"
+title: "Enable Organization-Level Code Security Configurations"
+section: "3.19"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#38-enable-organization-level-code-security-configurations"
+description: >
+  Use GitHub code security configurations to define and enforce security feature
+  settings at the organization level. Security configurations allow you to create
+  named policies that enable Dependabot, secret scanning, code scanning, and other
+  security features, then apply them uniformly across repositories. This eliminates
+  configuration drift and ensures new repositories automatically receive the
+  organization's security baseline.
+compliance:
+  soc2: ["CC7.1", "CC8.1"]
+  nist_800_53: ["CM-2", "CM-6", "SA-11"]
+  iso_27001: ["A.12.1.1", "A.14.2.1"]
+audit:
+  - id: "code-security-config-exists"
+    description: "Verify at least one code security configuration exists in the organization"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/code-security/configurations"
+      check: '. | length > 0'
+    expected: true
+  - id: "repos-attached-to-config"
+    description: "Verify repositories are attached to a code security configuration"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/code-security/configurations"
+      check: '[.[] | select(.attached_count > 0)] | length > 0'
+    expected: true
+remediate:
+  api:
+    - description: "Create a hardened code security configuration for the organization"
+      method: POST
+      endpoint: "/orgs/{org}/code-security/configurations"
+      body:
+        name: "hardened-security"
+        description: "HTH hardened security configuration"
+        dependency_graph: "enabled"
+        dependabot_alerts: "enabled"
+        dependabot_security_updates: "enabled"
+        secret_scanning: "enabled"
+        secret_scanning_push_protection: "enabled"
+        code_scanning_default_setup: "enabled"
+        private_vulnerability_reporting: "enabled"
+      condition: "!code-security-config-exists"
+tags: ["code-security", "configuration", "organization", "baseline", "policy"]

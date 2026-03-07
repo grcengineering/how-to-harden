@@ -1,0 +1,42 @@
+title: GitHub OAuth Application Authorization Changed
+id: b3c4d5e6-f7a8-4901-b2c3-d4e5f6789012
+status: test
+description: |
+    Detects when an OAuth application is authorized or its access is revoked in
+    the organization. Unauthorized OAuth apps can exfiltrate repository data or
+    act on behalf of users. Monitoring authorization changes helps detect
+    unauthorized third-party access grants.
+    This corresponds to HTH GitHub control hth-github-4.04-audit-oauth-apps (section 4.4, L1).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.credential_access
+    - attack.t1550
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_install:
+        action:
+            - 'integration_installation.create'
+            - 'integration_installation.destroy'
+    selection_oauth:
+        action:
+            - 'oauth_authorization.create'
+            - 'oauth_authorization.destroy'
+    condition: selection_install or selection_oauth
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized installation of approved integrations
+    - Routine access token rotation
+level: medium

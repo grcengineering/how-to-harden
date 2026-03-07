@@ -1,0 +1,36 @@
+id: "github-1.4"
+vendor: "github"
+title: "Configure Admin Access Controls"
+section: "1.4"
+profile_level: 1
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#14-configure-admin-access-controls"
+description: >
+  Implement least privilege for organization administrators. Limit the number of
+  organization owners, enforce MFA for all admins, and use separate admin accounts
+  for privileged operations. Each admin account is a high-value target for attackers.
+compliance:
+  soc2: ["CC6.2"]
+  nist_800_53: ["AC-6(1)"]
+  iso_27001: ["A.9.2.3"]
+audit:
+  - id: "limited-org-admins"
+    description: "Verify the organization has a reasonable number of admins (5 or fewer)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/members?role=admin"
+      check: '. | length <= 5'
+    expected: true
+  - id: "all-admins-have-2fa"
+    description: "Verify all organization admins have 2FA enabled (no admins in 2fa_disabled filter)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/members?role=admin&filter=2fa_disabled"
+      check: '. | length == 0'
+    expected: true
+remediate:
+  note: >
+    Review organization owners and remove unnecessary admin privileges. Navigate to
+    Organization Settings > People > Members, filter by role=Owner. Limit to 2-3
+    essential personnel. Create separate admin accounts for privileged operations.
+tags: ["admin", "access-control", "least-privilege", "owners"]

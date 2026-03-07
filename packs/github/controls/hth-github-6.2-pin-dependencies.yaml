@@ -1,0 +1,37 @@
+id: "github-6.2"
+vendor: "github"
+title: "Pin Dependencies to Specific Versions (Hash Verification)"
+section: "6.2"
+profile_level: 2
+severity: "medium"
+guide_url: "https://howtoharden.com/guides/github/#62-pin-dependencies-to-specific-versions-hash-verification"
+description: >
+  Pin all dependencies to specific versions with hash verification. Prevents
+  dependency confusion and version confusion attacks. Ensures reproducible builds
+  and prevents automatic pulling of compromised new versions.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["SA-12"]
+  iso_27001: ["A.14.2.7"]
+audit:
+  - id: "actions-sha-pinning"
+    description: "Verify Actions are restricted at the organization level (prerequisite for SHA pinning)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/actions/permissions"
+      check: '.allowed_actions != "all"'
+    expected: true
+  - id: "codeowners-exists"
+    description: "Verify a CODEOWNERS file exists for dependency review routing"
+    api:
+      method: GET
+      endpoint: "/repos/{org}/how-to-harden/contents/.github/CODEOWNERS"
+      check: 'has("name")'
+    expected: true
+remediate:
+  note: >
+    SHA pinning for GitHub Actions must be applied per-workflow file. Use tools like
+    'pin-github-action' (npx pin-github-action .github/workflows/*.yml) to convert
+    tag references to full commit SHAs. Configure Dependabot to keep pinned versions
+    up-to-date.
+tags: ["dependency-pinning", "sha-pinning", "supply-chain", "reproducible-builds", "slsa"]

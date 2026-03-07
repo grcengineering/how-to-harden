@@ -1,0 +1,37 @@
+title: GitHub Actions OIDC Configuration Changed
+id: c4d5e6f7-a8b9-4012-c3d4-e5f678901234
+status: test
+description: |
+    Detects when the GitHub Actions OIDC subject claim customization is modified.
+    OIDC subject claims control which workflows can assume cloud provider roles.
+    Unauthorized changes could allow workflows to access cloud resources they
+    should not have permission to reach.
+    This corresponds to HTH GitHub control hth-github-5.06-configure-oidc (section 5.6, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/organizations/keeping-your-organization-secure
+author: How to Harden
+date: 2026/02/14
+tags:
+    - attack.privilege_escalation
+    - attack.t1078
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action:
+            - 'org.set_actions_oidc_custom_claims_policy'
+            - 'repo.set_actions_oidc_custom_claims_policy'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Authorized OIDC policy configuration by platform engineers
+level: high

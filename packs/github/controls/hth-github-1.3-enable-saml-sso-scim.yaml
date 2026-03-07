@@ -1,0 +1,37 @@
+id: "github-1.3"
+vendor: "github"
+title: "Enable SAML Single Sign-On (SSO) and SCIM Provisioning"
+section: "1.3"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#13-enable-saml-single-sign-on-sso-and-scim-provisioning"
+description: >
+  Integrate GitHub with your corporate identity provider via SAML SSO and configure
+  SCIM provisioning for automated user lifecycle management. Centralizes authentication
+  and enables conditional access policies. Requires GitHub Enterprise Cloud.
+compliance:
+  soc2: ["CC6.1"]
+  nist_800_53: ["IA-2", "IA-4", "IA-8"]
+  iso_27001: ["A.9.2.1"]
+audit:
+  - id: "saml-sso-enabled"
+    description: "Verify SAML SSO is configured for the organization (members require SSO authentication)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}"
+      check: '.plan.name == "enterprise"'
+    expected: true
+  - id: "no-non-sso-members"
+    description: "Verify all organization members authenticate via SSO (no members with only password auth)"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/members?filter=2fa_disabled"
+      check: '. | length == 0'
+    expected: true
+remediate:
+  note: >
+    SAML SSO must be configured via the GitHub UI (Enterprise Settings > Authentication
+    security > SAML authentication). This cannot be fully automated via REST API.
+    Configure your IdP (Okta, Azure AD, Google Workspace), test with pilot users,
+    then require SAML for all members.
+tags: ["sso", "saml", "scim", "identity", "enterprise", "authentication"]
