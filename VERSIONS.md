@@ -95,7 +95,7 @@ Last updated: 2025-12-27
 | Guide | Version | Maturity | Last Updated |
 |-------|---------|----------|--------------|
 | [Okta](docs/_guides/okta.md) | v0.3.0 | draft | 2026-02-10 |
-| [GitHub](docs/_guides/github.md) | v0.2.0 | draft | 2026-02-12 |
+| [GitHub](docs/_guides/github.md) | v0.4.0 | draft | 2026-03-07 |
 | [Salesforce](docs/_guides/salesforce.md) | v0.1.0 | draft | 2025-12-13 |
 | [Snowflake](docs/_guides/snowflake.md) | v0.1.0 | draft | 2025-12-13 |
 | [Workday](docs/_guides/workday.md) | v0.1.0 | draft | 2025-12-13 |
@@ -180,6 +180,7 @@ Last updated: 2025-12-27
 
 | Milestone | Date | Description |
 |-----------|------|-------------|
+| GitHub guide v0.4.0 | 2026-03-07 | Major revamp: 33 controls, control YAML alignment, new sections 7-8 |
 | Versioning model introduced | 2025-12-27 | Extended SemVer with maturity qualifiers adopted |
 | Initial guides created | 2025-12-13 | 53 AI-drafted guides published |
 

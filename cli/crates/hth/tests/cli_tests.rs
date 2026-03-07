@@ -158,8 +158,8 @@ fn test_validate_all_packs() {
     );
     let text = full_output(&output);
     assert!(
-        text.contains("67 controls validated"),
-        "expected '67 controls validated' in output, got: {text}"
+        text.contains("73 controls validated"),
+        "expected '73 controls validated' in output, got: {text}"
     );
     assert!(
         text.contains("All controls valid"),
@@ -472,8 +472,8 @@ fn test_scan_dry_run_shows_control_count() {
     ]);
     let text = full_output(&output);
     assert!(
-        text.contains("Scanning 33 controls"),
-        "dry-run should report 'Scanning 33 controls' for github, got: {text}"
+        text.contains("Scanning 39 controls"),
+        "dry-run should report 'Scanning 39 controls' for github, got: {text}"
     );
 }
 
@@ -825,7 +825,7 @@ fn test_packs_resolution_from_non_repo_dir() {
     );
     let text = full_output(&output);
     assert!(
-        text.contains("67 controls validated"),
+        text.contains("73 controls validated"),
         "should validate all 67 controls from non-repo dir, got: {text}"
     );
 }
@@ -932,7 +932,7 @@ fn test_env_packs_dir_variable() {
     );
     let text = full_output(&output);
     assert!(
-        text.contains("67 controls validated"),
+        text.contains("73 controls validated"),
         "should validate all 67 controls via env var, got: {text}"
     );
 }
