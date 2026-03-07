@@ -6,9 +6,9 @@ slug: "github"
 tier: "1"
 category: "DevOps"
 description: "Comprehensive source control and CI/CD security hardening for GitHub organizations, Actions, supply chain protection, and Enterprise Cloud/Server"
-version: "0.2.0"
+version: "0.3.0"
 maturity: "draft"
-last_updated: "2026-02-12"
+last_updated: "2026-03-07"
 ---
 
 
@@ -392,6 +392,87 @@ Restrict enterprise access to approved IP addresses using IP allow lists. This l
 
 ---
 
+### 1.6 Enforce Fine-Grained Personal Access Token (PAT) Policies
+
+**Profile Level:** L2 (Hardened)
+**NIST 800-53:** IA-5, AC-6
+**CIS Controls:** 6.2
+
+#### Description
+Enforce fine-grained personal access token policies at the organization and enterprise level. Restrict or block classic PATs, require approval for fine-grained PATs, and set maximum token lifetimes. Fine-grained PATs (GA since March 2025) provide repository-level scoping and mandatory expiration, dramatically reducing blast radius compared to classic tokens.
+
+#### Rationale
+**Attack Prevented:** Overprivileged token theft, lateral movement via stolen credentials
+
+**Real-World Incident:**
+- **Fake Dependabot Commits (July 2023):** Attackers used stolen classic PATs to inject malicious commits disguised as Dependabot contributions. Fine-grained PATs with repository-level scoping and mandatory expiration would have limited the blast radius.
+
+**Why This Matters:** Classic PATs grant broad access across all repositories a user can access. Fine-grained PATs enforce least privilege with repository-specific scoping, mandatory expiration, and admin approval workflows.
+
+#### Prerequisites
+- GitHub organization owner/admin access
+- Enterprise Cloud for enterprise-level enforcement
+
+#### ClickOps Implementation
+
+**Step 1: Restrict Classic PATs**
+1. Navigate to: **Organization Settings** -> **Personal access tokens** -> **Settings**
+2. Select the **Tokens (classic)** tab
+3. Under "Restrict personal access tokens (classic) from accessing your organizations":
+   - Select **"Do not allow access via personal access tokens (classic)"**
+4. Click **Save**
+
+**Step 2: Require Approval for Fine-Grained PATs**
+1. Navigate to: **Organization Settings** -> **Personal access tokens** -> **Settings**
+2. Select the **Fine-grained tokens** tab
+3. Under "Require approval of fine-grained personal access tokens":
+   - Select **"Require administrator approval"**
+4. Click **Save**
+
+**Step 3: Set Maximum Token Lifetime**
+1. On the same settings page, under "Set maximum lifetimes for personal access tokens":
+   - Set to **90 days** (recommended) or per your organization's policy
+2. Click **Save**
+
+**Step 4: Enterprise-Level Enforcement** (Enterprise Cloud)
+1. Navigate to: **Enterprise Settings** -> **Policies** -> **Personal access tokens**
+2. Under **Tokens (classic)** tab:
+   - Select **"Restrict access via personal access tokens (classic)"**
+3. Under **Fine-grained tokens** tab:
+   - Select **"Require approval"**
+   - Set maximum lifetime policy
+4. Click **Save**
+
+**Time to Complete:** ~10 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="1.12" %}
+
+#### Validation & Testing
+1. [ ] Attempt to create a classic PAT and access the organization (should fail if restricted)
+2. [ ] Create a fine-grained PAT and verify it requires admin approval
+3. [ ] Verify PAT expiration is enforced within the maximum lifetime
+4. [ ] Confirm enterprise policy overrides are applied to all organizations
+
+#### Monitoring & Maintenance
+
+**Maintenance schedule:**
+- **Weekly:** Review pending fine-grained PAT approval requests
+- **Monthly:** Audit active fine-grained PATs for excessive permissions
+- **Quarterly:** Review and rotate long-lived PATs approaching expiration
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC6.2 | Identity and access management, least privilege |
+| **NIST 800-53** | IA-5, AC-6 | Authenticator management, least privilege |
+| **ISO 27001** | A.9.4.3 | Password management system |
+| **CIS Controls** | 6.2 | Establish an access revoking process |
+
+---
+
 ## 2. Repository Security
 
 ### 2.1 Enable Branch Protection for All Critical Branches
@@ -410,9 +491,19 @@ Protect `main`, `master`, `production`, and release branches from direct pushes.
 
 #### ClickOps Implementation
 
-**Step 1: Enable Branch Protection**
-1. Navigate to: **Repository** -> **Settings** -> **Branches**
-2. Under "Branch protection rules", click **"Add rule"**
+**Option A: Repository Rulesets (Recommended)**
+
+Rulesets are now the primary mechanism for branch protection, replacing legacy branch protection rules. They provide centralized governance at the organization level (see Section 2.3).
+
+1. Navigate to: **Repository Settings** -> **Rules** -> **Rulesets**
+2. Click **New ruleset** -> **New branch ruleset**
+3. Configure branch targeting: `main`, `master`, `release/*`
+4. Enable rules (see Section 2.3 for full details)
+
+**Option B: Legacy Branch Protection Rules**
+
+1. Navigate to: **Repository Settings** -> **Branches**
+2. Under "Branch protection rules", click **"Add branch protection rule"**
 3. Branch name pattern: `main` (or `master`, `production`)
 4. Enable these protections:
    - **Require a pull request before merging**
@@ -493,14 +584,17 @@ Enable GitHub's native security features to detect vulnerabilities, secrets, and
    - **Dependency graph** (free)
    - **Dependabot alerts** (free)
    - **Dependabot security updates** (free)
-   - **Secret scanning** (free for public repos, requires Advanced Security for private)
-   - **Code scanning** (requires Actions, free for public repos)
+   - **Secret scanning** (free for public repos; requires GitHub Secret Protection for private repos)
+   - **Push protection** (enabled by default for public repos; enable for private repos)
+   - **Code scanning** (requires Actions, free for public repos; requires GitHub Code Security for private repos)
 3. Enable **Automatically enable for new repositories** for each feature
 
+**Note:** As of April 2025, GitHub Advanced Security has been split into two standalone products: **GitHub Secret Protection** and **GitHub Code Security**, now available to GitHub Team plan customers.
+
 **Step 2: Configure Per-Repository (if needed)**
-1. Navigate to: **Repository** -> **Settings** -> **Code security and analysis**
+1. Navigate to: **Repository Settings** -> **Code security and analysis**
 2. Enable same features
-3. For **Code scanning**, click "Set up" -> Choose "CodeQL Analysis" workflow
+3. For **Code scanning**, click "Set up" -> Choose **"Default setup"** (recommended) or "Advanced setup" for custom CodeQL configuration
 
 **Step 3: Configure Custom Secret Scanning Patterns (Enterprise)**
 1. Navigate to: **Organization Settings** -> **Code security** -> **Secret scanning**
@@ -508,6 +602,7 @@ Enable GitHub's native security features to detect vulnerabilities, secrets, and
    - Internal API keys
    - Database connection strings
    - Custom tokens
+3. Enable **"Include in push protection"** for each custom pattern (GA since August 2025)
 
 **Time to Complete:** ~15 minutes
 
@@ -521,7 +616,7 @@ Enable GitHub's native security features to detect vulnerabilities, secrets, and
 
 #### Secret Scanning Push Protection
 
-**L2 Enhancement:** Enable push protection to **block commits** containing secrets. This prevents secrets from ever entering Git history (better than post-commit detection). See the Code Pack above for API implementation.
+**L2 Enhancement:** Enable push protection to **block commits** containing secrets. This prevents secrets from ever entering Git history (better than post-commit detection). Push protection is now **enabled by default for all public repositories**. For private repositories, enable it via the organization settings or API (see Code Pack above). For delegated bypass and custom patterns, see Section 2.6.
 
 #### L2 Enhancement: CodeQL Advanced Configuration
 
@@ -574,11 +669,14 @@ Configure organization-wide repository rulesets to enforce consistent branch pro
 **Step 3: Configure Rules**
 1. Enable:
    - Restrict deletions
-   - Require pull request
+   - Require pull request (with required approvals and code owner review)
    - Require signed commits
-   - Require status checks
+   - Require status checks to pass
+   - Require code scanning results
+   - Require linear history (optional -- prevents merge commits)
    - Block force pushes
 2. Configure bypass list (limit to emergency access only)
+3. **Note:** Tag protection should also be managed via rulesets (legacy tag protection rules are deprecated)
 
 #### Code Implementation
 
@@ -665,6 +763,137 @@ Require cryptographically signed commits to verify commit authenticity and preve
 | **NIST 800-53** | SI-7 | Software and information integrity |
 | **ISO 27001** | A.14.2.7 | Outsourced development integrity |
 | **CIS Controls** | 16.9 | Secure application development |
+
+---
+
+### 2.5 Configure Push Rules in Repository Rulesets
+
+**Profile Level:** L2 (Hardened)
+**Requires:** GitHub Team (private/internal repos) or Enterprise Cloud
+**NIST 800-53:** CM-3, SI-7
+**CIS Controls:** 16.9
+
+#### Description
+Configure push rules within repository rulesets to restrict file types, file sizes, and file paths across the organization. Unlike branch protection rules, push rules apply to the **entire fork network**, ensuring every entry point to the repository is protected regardless of where a push originates.
+
+#### Rationale
+**Attack Prevented:** Binary injection, large file denial-of-service, unauthorized workflow modifications
+
+**Why This Matters:**
+- Push rules block dangerous file types (executables, compiled binaries) from entering repositories
+- File size limits prevent repository bloat and potential denial-of-service via large files
+- File path restrictions prevent unauthorized modification of CI/CD workflows (`.github/workflows/`)
+- Fork network enforcement closes a common bypass vector where attackers push to forks
+
+#### ClickOps Implementation
+
+**Step 1: Create Push Ruleset**
+1. Navigate to: **Organization Settings** -> **Repository** -> **Rulesets**
+2. Click **New ruleset** -> **New push ruleset**
+
+**Step 2: Configure Targets**
+1. Name: `File Protection Push Rules`
+2. Enforcement status: **Active**
+3. Target repositories: **All repositories** or selected
+4. Configure bypass list (limit to org admins only)
+
+**Step 3: Add Push Rules**
+1. **Restrict file extensions:** Add `.exe`, `.dll`, `.so`, `.dylib`, `.bin`, `.jar`, `.war`, `.class`
+2. **Restrict file size:** Set maximum to **10 MB** (adjust per your needs)
+3. **Restrict file paths:** Add `.github/workflows/**` to prevent unauthorized workflow changes
+
+**Time to Complete:** ~10 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="2.9" %}
+
+#### Validation & Testing
+1. [ ] Attempt to push an `.exe` file (should be blocked)
+2. [ ] Attempt to push a file larger than the size limit (should be blocked)
+3. [ ] Attempt to push workflow changes from a fork (should be blocked if path-restricted)
+4. [ ] Verify bypass actors can still push restricted content when needed
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC8.1 | Change management |
+| **NIST 800-53** | CM-3, SI-7 | Configuration change control, integrity |
+| **ISO 27001** | A.12.1.2 | Change management |
+| **CIS Controls** | 16.9 | Secure application development |
+
+---
+
+### 2.6 Enable Secret Scanning Delegated Bypass
+
+**Profile Level:** L2 (Hardened)
+**Requires:** GitHub Advanced Security (or GitHub Secret Protection standalone)
+**NIST 800-53:** SA-11, IA-5(7)
+
+#### Description
+Configure delegated bypass for secret scanning push protection to require security team approval before developers can bypass push protection blocks. Additionally, add custom patterns to push protection for organization-specific secrets. Push protection is now enabled by default for all public repositories.
+
+#### Rationale
+**Attack Prevented:** Accidental secret leakage, unauthorized bypass of security controls
+
+**Why This Matters:**
+- By default, developers can self-approve bypasses of push protection with a reason (false positive, used in tests, will fix later)
+- Delegated bypass requires a designated security reviewer to approve each bypass request
+- Custom patterns extend push protection beyond the 200+ default patterns to cover organization-specific secrets
+- Configuring custom patterns in push protection is now GA (August 2025)
+
+#### ClickOps Implementation
+
+**Step 1: Enable Push Protection** (if not already enabled)
+1. Navigate to: **Organization Settings** -> **Code security and analysis**
+2. Under "Secret scanning":
+   - Enable **Secret scanning** for all repositories
+   - Enable **Push protection** for all repositories
+
+**Step 2: Configure Delegated Bypass**
+1. Navigate to: **Organization Settings** -> **Code security** -> **Global settings**
+2. Under "Push protection":
+   - Select **"Require approval to bypass push protection"**
+   - Add your security team as designated reviewers
+3. Click **Save**
+
+**Step 3: Add Custom Patterns to Push Protection**
+1. Navigate to: **Organization Settings** -> **Code security** -> **Secret scanning**
+2. Click **New pattern**
+3. Define pattern:
+   - Name: e.g., `Internal API Key`
+   - Secret format: regex pattern matching your internal key format
+   - Enable **"Include in push protection"**
+4. Test pattern with sample data
+5. Click **Publish pattern**
+
+**Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="2.10" %}
+
+#### Validation & Testing
+1. [ ] Attempt to push a commit containing a known secret (should be blocked)
+2. [ ] Attempt to bypass push protection (should require reviewer approval if delegated bypass enabled)
+3. [ ] Verify custom patterns detect organization-specific secrets
+4. [ ] Confirm bypass alerts are visible in the Security tab
+
+#### Monitoring & Maintenance
+
+**Maintenance schedule:**
+- **Weekly:** Review push protection bypass requests and approvals
+- **Monthly:** Audit custom patterns for accuracy (false positive rate)
+- **Quarterly:** Review bypass trends and update patterns
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.2, CC6.1 | System monitoring, logical access |
+| **NIST 800-53** | SA-11, IA-5(7) | Security testing, credential management |
+| **ISO 27001** | A.12.6.1 | Technical vulnerability management |
 
 ---
 
@@ -874,10 +1103,12 @@ Secure self-hosted runners to prevent compromise of build environment. Self-host
 
 #### ClickOps Implementation
 
-**Step 1: Isolate Runners**
-1. Use ephemeral runners (new VM per job) -- this is the single most impactful security measure
-2. Never run on controller/sensitive systems
-3. Use dedicated runner network segment with firewall rules
+**Step 1: Use Ephemeral Runners (Critical)**
+1. Use ephemeral runners (new VM per job) -- this is the **single most impactful security measure**
+2. Configure runners with `--ephemeral` flag so they deregister after one job
+3. Never run on controller/sensitive systems
+4. Use dedicated runner network segment with firewall rules
+5. **Why ephemeral matters:** In the PyTorch supply chain attack, attackers persisted on non-ephemeral runners between jobs, accessing secrets from subsequent workflow runs
 
 **Step 2: Configure Runner Groups**
 1. Navigate to: **Organization Settings** -> **Actions** -> **Runner groups**
@@ -914,6 +1145,133 @@ Secure self-hosted runners to prevent compromise of build environment. Self-host
 | **NIST 800-53** | CM-6 | Configuration settings |
 | **ISO 27001** | A.12.1.4 | Separation of development, testing, and operational environments |
 | **CIS Controls** | 4.1 | Secure configuration of enterprise assets |
+
+---
+
+### 3.5 Generate and Verify Artifact Attestations
+
+**Profile Level:** L2 (Hardened)
+**SLSA:** Build L2 (L3 with reusable workflows)
+**NIST 800-53:** SI-7, SA-12
+
+#### Description
+Generate cryptographically signed build provenance attestations for CI/CD artifacts using GitHub's artifact attestation feature (GA May 2024). Attestations use Sigstore to create unforgeable links between artifacts and the workflows that built them. This achieves SLSA v1.0 Build Level 2 by default, and Build Level 3 when combined with reusable workflows that isolate the build process.
+
+#### Rationale
+**Attack Prevented:** Supply chain compromise, artifact tampering, build system manipulation
+
+**Real-World Incident:**
+- **SolarWinds SUNBURST (2020):** Attackers modified the build system to inject a backdoor into signed software updates affecting 18,000+ organizations. Artifact attestations with verified build provenance would have detected that the build did not originate from the expected workflow.
+- **tj-actions/changed-files (March 2025):** Compromised GitHub Action affected 23,000+ repositories. Artifact attestations would have allowed consumers to verify the provenance of artifacts built with this action.
+
+**Why This Matters:** Attestations provide a cryptographic chain of custody from source code to built artifact. Consumers can verify that artifacts were built by trusted workflows from trusted repositories.
+
+#### Prerequisites
+- GitHub Actions enabled
+- Repository must be public, or organization must have GitHub Enterprise Cloud
+
+#### ClickOps Implementation
+
+**No GUI configuration required.** Artifact attestations are implemented via workflow YAML using the `actions/attest-build-provenance` action.
+
+**Step 1: Add Attestation to Build Workflow**
+1. Edit your build workflow file (e.g., `.github/workflows/build.yml`)
+2. Add required permissions: `id-token: write`, `contents: read`, `attestations: write`
+3. Add the `actions/attest-build-provenance` step after your build step
+4. See the workflow template in the Code Pack below
+
+**Step 2: Verify Attestations**
+1. After a build completes, use the GitHub CLI to verify:
+   - For binaries: `gh attestation verify PATH/TO/ARTIFACT -R OWNER/REPO`
+   - For container images: `gh attestation verify oci://ghcr.io/OWNER/IMAGE:TAG -R OWNER/REPO`
+
+**Step 3: Achieve SLSA Build Level 3** (optional)
+1. Move build logic into a reusable workflow (`.github/workflows/build-reusable.yml`)
+2. Call the reusable workflow from your main workflow
+3. The reusable workflow provides isolation between the calling workflow and the build process
+
+**Time to Complete:** ~15 minutes per workflow
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="3.19" %}
+
+{% include pack-code.html vendor="github" section="3.20" %}
+
+#### Validation & Testing
+1. [ ] Run the attestation workflow and confirm it succeeds
+2. [ ] Verify the attestation using `gh attestation verify`
+3. [ ] Confirm attestation metadata includes correct repository and workflow references
+4. [ ] For container images, verify attestation is pushed to the registry
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC8.1 | Change management - artifact integrity |
+| **NIST 800-53** | SI-7, SA-12 | Integrity, supply chain protection |
+| **ISO 27001** | A.14.2.7 | Outsourced development integrity |
+| **SLSA** | Build L2/L3 | Build provenance and isolation |
+
+---
+
+### 3.6 Harden Actions OIDC Subject Claims
+
+**Profile Level:** L2 (Hardened)
+**NIST 800-53:** IA-2, IA-8
+**CIS Controls:** 6.3
+
+#### Description
+Customize GitHub Actions OIDC subject claims to include repository, environment, and `job_workflow_ref` for fine-grained cloud provider trust policies. By default, the OIDC subject claim only includes the repository and ref, which may allow unintended workflows to assume cloud roles. Customizing claims prevents OIDC token spoofing across repositories and workflows. The `check_run_id` claim (added November 2025) further improves auditability.
+
+#### Rationale
+**Attack Prevented:** OIDC token spoofing, cross-repository credential theft
+
+**Why This Matters:**
+- Default OIDC subject claims use `repo:ORG/REPO:ref:refs/heads/BRANCH` format
+- Any workflow in that repo/branch can assume the cloud role -- not just your deploy workflow
+- Customizing claims to include `job_workflow_ref` restricts access to specific reusable workflows
+- Environment-based claims restrict access to workflows targeting specific deployment environments
+- Colons in environment names are now URL-encoded to prevent claim injection attacks
+
+#### ClickOps Implementation
+
+**Step 1: Configure at Repository Level**
+1. Navigate to: **Repository Settings** -> **Environments** -> Select environment
+2. Under "OpenID Connect":
+   - Click **"Use custom template"** (if available via API)
+3. Alternatively, use the API to set custom claims (see Code Pack below)
+
+**Step 2: Configure at Organization Level**
+1. Use the REST API to set organization-wide OIDC claim defaults
+2. Include `repo`, `context`, and `job_workflow_ref` in the subject claim
+3. See the Code Pack below for API implementation
+
+**Step 3: Update Cloud Provider Trust Policies**
+1. Update AWS IAM, GCP Workload Identity, or Azure trust policies to match new claim format
+2. Test with a non-production environment first
+3. Gradually roll out to production
+
+**Time to Complete:** ~20 minutes + cloud provider policy updates
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="3.21" %}
+
+#### Validation & Testing
+1. [ ] Verify OIDC claims are customized using the API
+2. [ ] Test that only the intended workflow can assume the cloud role
+3. [ ] Verify that a different workflow in the same repo is denied access
+4. [ ] Confirm `check_run_id` appears in OIDC tokens for audit purposes
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security |
+| **NIST 800-53** | IA-2, IA-8 | Identification and authentication |
+| **ISO 27001** | A.9.4.2 | Secure log-on procedures |
+| **CIS Controls** | 6.3 | Require MFA for externally-exposed applications |
 
 ---
 

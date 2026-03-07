@@ -1,0 +1,73 @@
+# HTH GitHub Control 3.19: Artifact Attestation Workflow
+# Profile: L2 | SLSA: Build L2/L3
+# https://howtoharden.com/guides/github/#35-generate-and-verify-artifact-attestations
+#
+# This workflow generates build provenance attestations using GitHub's
+# artifact attestation feature, achieving SLSA v1.0 Build Level 2.
+# For Build Level 3, call this as a reusable workflow.
+#
+# Docs: https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations
+
+# HTH Guide Excerpt: begin workflow-artifact-attestation
+name: Build and Attest
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+
+jobs:
+  build-and-attest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build artifact
+        run: |
+          # Replace with your build steps
+          make build
+          echo "ARTIFACT_PATH=dist/my-app" >> "$GITHUB_ENV"
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ${{ env.ARTIFACT_PATH }}
+# HTH Guide Excerpt: end workflow-artifact-attestation
+
+# HTH Guide Excerpt: begin workflow-container-attestation
+  build-and-attest-container:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      - name: Generate container attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ghcr.io/${{ github.repository }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+# HTH Guide Excerpt: end workflow-container-attestation
