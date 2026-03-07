@@ -1,0 +1,35 @@
+title: GitHub Actions Artifact Attestation Workflow Missing
+id: f7a8b9c0-d1e2-4f3a-4b5c-6d7e8f901234
+status: test
+description: |
+    Detects when a release is published without an associated artifact attestation,
+    indicating the build may lack SLSA provenance verification. Organizations requiring
+    supply chain integrity should ensure all releases include signed attestations.
+    This corresponds to HTH GitHub control hth-github-4.07-enable-artifact-attestations (section 4.7, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds
+author: How to Harden
+date: 2026/03/07
+tags:
+    - attack.defense_evasion
+    - attack.t1195.002
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'release.publish'
+    condition: selection
+fields:
+    - actor
+    - action
+    - org
+    - repo
+    - created_at
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Documentation-only releases
+    - Pre-release versions
+level: medium

@@ -1,0 +1,36 @@
+title: GitHub Classic Personal Access Token Created
+id: b3c4d5e6-f7a8-4b9c-0d1e-2f3a4b5c6d7e
+status: test
+description: |
+    Detects when a classic personal access token is created. Classic PATs grant broad,
+    long-lived access that cannot be scoped to specific repositories. Organizations
+    should migrate to fine-grained PATs for better security controls.
+    This corresponds to HTH GitHub control hth-github-1.12-enforce-fine-grained-pat-policies (section 1.12, L2).
+references:
+    - https://howtoharden.com/guides/github/
+    - https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+author: How to Harden
+date: 2026/03/07
+tags:
+    - attack.persistence
+    - attack.t1098.001
+logsource:
+    product: github
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        action: 'personal_access_token.create'
+    filter_fine_grained:
+        programmatic_access_grant_type: 'fine_grained'
+    condition: selection and not filter_fine_grained
+fields:
+    - actor
+    - action
+    - org
+    - created_at
+    - programmatic_access_grant_type
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Legacy integrations still requiring classic PATs
+level: high
