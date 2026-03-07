@@ -1,0 +1,32 @@
+id: "github-2.5"
+vendor: "github"
+title: "Configure Push Rules in Repository Rulesets"
+section: "2.5"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#25-configure-push-rules-in-rulesets"
+description: >
+  Configure push rules within repository rulesets to restrict file types, file sizes,
+  and file paths across the organization. Push rules apply to the entire fork network,
+  ensuring every entry point is protected. This prevents binary artifacts, large files,
+  and unauthorized workflow modifications from being pushed.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["CM-3", "SI-7"]
+  iso_27001: ["A.12.1.2"]
+  cis_controls: ["16.9"]
+audit:
+  - id: "push-rulesets-exist"
+    description: "Verify push rulesets are configured at the organization level"
+    api:
+      method: GET
+      endpoint: "/orgs/{org}/rulesets"
+      check: '[.[] | select(.target == "push")] | length > 0'
+    expected: true
+remediate:
+  api:
+    - description: "Create push rules ruleset via API"
+      method: POST
+      endpoint: "/orgs/{org}/rulesets"
+      condition: "!push-rulesets-exist"
+tags: ["repository-security", "rulesets", "push-rules", "supply-chain", "file-restrictions"]

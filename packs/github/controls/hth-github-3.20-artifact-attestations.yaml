@@ -1,0 +1,29 @@
+id: "github-3.5"
+vendor: "github"
+title: "Generate and Verify Artifact Attestations"
+section: "3.5"
+profile_level: 2
+severity: "high"
+guide_url: "https://howtoharden.com/guides/github/#35-generate-and-verify-artifact-attestations"
+description: >
+  Generate cryptographically signed build provenance attestations for CI/CD artifacts
+  using GitHub's artifact attestation feature. Attestations provide SLSA v1.0 Build
+  Level 2 by default, and Build Level 3 when combined with reusable workflows. Consumers
+  can verify attestations using the GitHub CLI to confirm artifact origin and integrity.
+compliance:
+  soc2: ["CC8.1"]
+  nist_800_53: ["SI-7", "SA-12"]
+  iso_27001: ["A.14.2.7"]
+  slsa: ["Build L2", "Build L3"]
+audit:
+  - id: "attestation-workflow-exists"
+    description: "Verify that attestation generation is included in build workflows"
+    api:
+      method: GET
+      endpoint: "/repos/{owner}/{repo}/attestations/latest"
+      check: '.attestations | length > 0'
+    expected: true
+remediate:
+  manual:
+    - description: "Add actions/attest-build-provenance to build workflows with id-token: write and attestations: write permissions"
+tags: ["supply-chain", "attestations", "slsa", "provenance", "sigstore"]
