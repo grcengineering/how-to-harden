@@ -826,7 +826,7 @@ fn test_packs_resolution_from_non_repo_dir() {
     let text = full_output(&output);
     assert!(
         text.contains("64 controls validated"),
-        "should validate all 59 controls from non-repo dir, got: {text}"
+        "should validate all 64 controls from non-repo dir, got: {text}"
     );
 }
 
@@ -933,6 +933,6 @@ fn test_env_packs_dir_variable() {
     let text = full_output(&output);
     assert!(
         text.contains("64 controls validated"),
-        "should validate all 59 controls via env var, got: {text}"
+        "should validate all 64 controls via env var, got: {text}"
     );
 }
