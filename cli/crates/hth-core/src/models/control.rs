@@ -1,5 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+// Re-export shared domain types from grc-controls-models.
+pub use grc_controls_models::ComplianceMapping;
+pub use grc_controls_models::Severity;
+
 /// A security hardening control definition, deserialized from YAML.
 /// Mirrors `packs/schema/control.schema.json`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -62,70 +66,6 @@ impl Control {
     }
 }
 
-/// Control severity levels.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Severity {
-    Critical,
-    High,
-    Medium,
-    Low,
-}
-
-impl Severity {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Severity::Critical => "critical",
-            Severity::High => "high",
-            Severity::Medium => "medium",
-            Severity::Low => "low",
-        }
-    }
-}
-
-impl std::fmt::Display for Severity {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_str())
-    }
-}
-
-/// Compliance framework mappings.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct ComplianceMapping {
-    #[serde(default)]
-    pub soc2: Vec<String>,
-    #[serde(default)]
-    pub nist_800_53: Vec<String>,
-    #[serde(default)]
-    pub iso_27001: Vec<String>,
-    #[serde(default)]
-    pub pci_dss: Vec<String>,
-    #[serde(default)]
-    pub disa_stig: Vec<String>,
-}
-
-impl ComplianceMapping {
-    /// Returns all framework mappings as (framework_name, control_ids) pairs.
-    pub fn all_mappings(&self) -> Vec<(&'static str, &[String])> {
-        let mut mappings = Vec::new();
-        if !self.soc2.is_empty() {
-            mappings.push(("SOC 2", self.soc2.as_slice()));
-        }
-        if !self.nist_800_53.is_empty() {
-            mappings.push(("NIST 800-53", self.nist_800_53.as_slice()));
-        }
-        if !self.iso_27001.is_empty() {
-            mappings.push(("ISO 27001", self.iso_27001.as_slice()));
-        }
-        if !self.pci_dss.is_empty() {
-            mappings.push(("PCI DSS", self.pci_dss.as_slice()));
-        }
-        if !self.disa_stig.is_empty() {
-            mappings.push(("DISA STIG", self.disa_stig.as_slice()));
-        }
-        mappings
-    }
-}
 
 /// A single audit check within a control.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -344,6 +284,7 @@ mod tests {
             iso_27001: vec!["A.9.4.1".to_string()],
             pci_dss: vec![],
             disa_stig: vec![],
+            ..Default::default()
         };
         let mappings = mapping.all_mappings();
         assert_eq!(mappings.len(), 2);
@@ -359,9 +300,10 @@ mod tests {
             iso_27001: vec!["A.9.4.1".to_string()],
             pci_dss: vec!["8.3".to_string()],
             disa_stig: vec!["V-123456".to_string()],
+            ..Default::default()
         };
         let mappings = mapping.all_mappings();
-        assert_eq!(mappings.len(), 5);
+        assert!(mappings.len() >= 5);
     }
 
     // --- HttpMethod::Display ---

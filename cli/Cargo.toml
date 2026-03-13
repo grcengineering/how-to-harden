@@ -70,6 +70,9 @@ hcl-rs = "0.18"
 # Testing
 wiremock = "0.6"
 
+# Shared GRC types
+grc-controls-models = { path = "../../grc-controls/grc-controls-models" }
+
 # Workspace crates
 hth-core = { path = "crates/hth-core" }
 hth-github = { path = "crates/hth-github" }

@@ -114,13 +114,7 @@ pub async fn run(
                 continue;
             }
 
-            let mappings = match framework {
-                Framework::Soc2 => &control.compliance.soc2,
-                Framework::Nist80053 => &control.compliance.nist_800_53,
-                Framework::Iso27001 => &control.compliance.iso_27001,
-                Framework::PciDss => &control.compliance.pci_dss,
-                Framework::DisaStig => &control.compliance.disa_stig,
-            };
+            let mappings = control.compliance.controls_for(*framework);
 
             if mappings.is_empty() {
                 continue;

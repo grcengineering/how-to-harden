@@ -952,6 +952,7 @@ async fn test_control_result_preserves_metadata() {
         iso_27001: vec![],
         pci_dss: vec![],
         disa_stig: vec![],
+        ..Default::default()
     };
 
     let result = engine.audit_control(&control, &provider).await;

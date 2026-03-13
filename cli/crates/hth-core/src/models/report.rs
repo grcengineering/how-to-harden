@@ -1,7 +1,9 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use super::control::{ComplianceMapping, Severity};
+// Re-export shared domain types from grc-controls-models.
+pub use grc_controls_models::{CheckResult, CheckStatus, ControlResult, ControlStatus};
+
 
 /// Complete scan report for a vendor.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -32,70 +34,6 @@ impl ScanReport {
             1
         } else {
             0
-        }
-    }
-}
-
-/// Result for a single control.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ControlResult {
-    pub control_id: String,
-    pub title: String,
-    pub severity: Severity,
-    pub profile_level: u8,
-    pub status: ControlStatus,
-    pub checks: Vec<CheckResult>,
-    pub compliance: ComplianceMapping,
-}
-
-/// Result for a single audit check within a control.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CheckResult {
-    pub check_id: String,
-    pub description: String,
-    pub status: CheckStatus,
-    pub actual: Option<serde_json::Value>,
-    pub expected: bool,
-    pub error: Option<String>,
-    pub duration_ms: u64,
-}
-
-/// Status of a control (aggregate of its checks).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum ControlStatus {
-    Pass,
-    Fail,
-    Skip,
-    Error,
-}
-
-impl std::fmt::Display for ControlStatus {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ControlStatus::Pass => write!(f, "PASS"),
-            ControlStatus::Fail => write!(f, "FAIL"),
-            ControlStatus::Skip => write!(f, "SKIP"),
-            ControlStatus::Error => write!(f, "ERROR"),
-        }
-    }
-}
-
-/// Status of an individual check.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum CheckStatus {
-    Pass,
-    Fail,
-    Error,
-}
-
-impl std::fmt::Display for CheckStatus {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            CheckStatus::Pass => write!(f, "PASS"),
-            CheckStatus::Fail => write!(f, "FAIL"),
-            CheckStatus::Error => write!(f, "ERROR"),
         }
     }
 }
@@ -134,6 +72,7 @@ impl ScanSummary {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::models::{ComplianceMapping, Severity};
 
     /// Helper to build a ControlResult with a given status.
     fn make_control_result(id: &str, status: ControlStatus) -> ControlResult {

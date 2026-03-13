@@ -7,6 +7,7 @@ license.workspace = true
 description = "Core engine, traits, and models for the HTH security hardening CLI"
 
 [dependencies]
+grc-controls-models.workspace = true
 tokio.workspace = true
 reqwest.workspace = true
 serde.workspace = true
