@@ -403,10 +403,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
   searchInput.addEventListener('input', function() {
     filterGuides();
-    // On mobile, scroll to guides so results are visible
+    // On mobile, scroll to guides so results are visible.
+    // Disarm scroll-blur first so the programmatic scroll
+    // doesn't dismiss the virtual keyboard.
     if (window.innerWidth <= 640) {
       var guidesEl = document.getElementById('guides');
-      if (guidesEl) guidesEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (guidesEl) {
+        scrollArmed = false;
+        guidesEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        clearTimeout(scrollArmTimer);
+        scrollArmTimer = setTimeout(function() {
+          scrollArmed = true;
+        }, 600);
+      }
     }
   });
 
