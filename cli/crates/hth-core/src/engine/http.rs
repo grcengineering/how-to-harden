@@ -5,6 +5,8 @@ pub fn build_http_client(timeout_secs: u64) -> reqwest::Client {
     reqwest::Client::builder()
         .timeout(Duration::from_secs(timeout_secs))
         .connect_timeout(Duration::from_secs(10))
+        .pool_max_idle_per_host(5)
+        .pool_idle_timeout(Duration::from_secs(30))
         .user_agent(format!(
             "hth/{} (https://howtoharden.com)",
             env!("CARGO_PKG_VERSION")

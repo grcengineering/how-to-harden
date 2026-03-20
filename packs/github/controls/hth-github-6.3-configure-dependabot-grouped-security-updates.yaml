@@ -20,13 +20,13 @@ audit:
     description: "Verify dependabot.yml configuration file exists in the repository"
     api:
       method: GET
-      endpoint: "/repos/{org}/how-to-harden/contents/.github/dependabot.yml"
+      endpoint: "/repos/{org}/{repo}/contents/.github/dependabot.yml"
       check: '.name == "dependabot.yml"'
     expected: true
 remediate:
   api:
     - description: "Dependabot grouped updates are configured via .github/dependabot.yml in the repository"
       method: GET
-      endpoint: "/repos/{org}/how-to-harden/contents/.github/dependabot.yml"
+      endpoint: "/repos/{org}/{repo}/contents/.github/dependabot.yml"
       condition: "!dependabot-config-exists"
 tags: ["dependabot", "grouped-updates", "dependency-management", "vulnerability-remediation"]

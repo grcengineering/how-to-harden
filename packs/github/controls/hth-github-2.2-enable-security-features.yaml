@@ -19,28 +19,28 @@ audit:
     description: "Verify secret scanning is enabled on the repository"
     api:
       method: GET
-      endpoint: "/repos/{org}/how-to-harden"
+      endpoint: "/repos/{org}/{repo}"
       check: '.security_and_analysis.secret_scanning.status == "enabled"'
     expected: true
   - id: "secret-scanning-push-protection"
     description: "Verify secret scanning push protection is enabled"
     api:
       method: GET
-      endpoint: "/repos/{org}/how-to-harden"
+      endpoint: "/repos/{org}/{repo}"
       check: '.security_and_analysis.secret_scanning_push_protection.status == "enabled"'
     expected: true
   - id: "dependabot-security-updates-enabled"
     description: "Verify Dependabot security updates are enabled"
     api:
       method: GET
-      endpoint: "/repos/{org}/how-to-harden"
+      endpoint: "/repos/{org}/{repo}"
       check: '.security_and_analysis.dependabot_security_updates.status == "enabled"'
     expected: true
   - id: "code-scanning-enabled"
     description: "Verify CodeQL code scanning default setup is configured"
     api:
       method: GET
-      endpoint: "/repos/{org}/how-to-harden/code-scanning/default-setup"
+      endpoint: "/repos/{org}/{repo}/code-scanning/default-setup"
       check: '.state == "configured"'
     expected: true
   - id: "no-open-secret-alerts"
@@ -61,7 +61,7 @@ remediate:
   api:
     - description: "Enable secret scanning and push protection"
       method: PATCH
-      endpoint: "/repos/{org}/how-to-harden"
+      endpoint: "/repos/{org}/{repo}"
       body:
         security_and_analysis:
           secret_scanning:
@@ -71,11 +71,11 @@ remediate:
       condition: "!secret-scanning-enabled"
     - description: "Enable Dependabot vulnerability alerts"
       method: PUT
-      endpoint: "/repos/{org}/how-to-harden/vulnerability-alerts"
+      endpoint: "/repos/{org}/{repo}/vulnerability-alerts"
       condition: "!dependabot-security-updates-enabled"
     - description: "Enable CodeQL code scanning default setup"
       method: PATCH
-      endpoint: "/repos/{org}/how-to-harden/code-scanning/default-setup"
+      endpoint: "/repos/{org}/{repo}/code-scanning/default-setup"
       body:
         state: "configured"
         query_suite: "default"

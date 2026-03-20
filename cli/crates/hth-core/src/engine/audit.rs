@@ -1,5 +1,6 @@
 use std::time::Instant;
 
+use crate::error::HthError;
 use crate::models::{
     AuditCheck, CheckResult, CheckStatus, Control, ControlResult, ControlStatus, HttpMethod,
     ScanReport,
@@ -115,6 +116,20 @@ impl AuditEngine {
         {
             Ok(json) => json,
             Err(e) => {
+                // Treat 403 Forbidden as a check failure with a permissions
+                // note rather than an error — the control cannot be verified
+                // but it is not a bug in the scan itself.
+                if let HthError::HttpStatus { status: 403, .. } = &e {
+                    return CheckResult {
+                        check_id: check.id.clone(),
+                        description: check.description.clone(),
+                        status: CheckStatus::Fail,
+                        actual: Some(serde_json::json!("insufficient permissions (HTTP 403)")),
+                        expected: check.expected,
+                        error: None,
+                        duration_ms: start.elapsed().as_millis() as u64,
+                    };
+                }
                 return CheckResult {
                     check_id: check.id.clone(),
                     description: check.description.clone(),
@@ -126,6 +141,21 @@ impl AuditEngine {
                 };
             }
         };
+
+        // If the API returned a 404 "Not Found" response, the resource is not
+        // configured.  Treat this as a check failure rather than trying to run
+        // a jq expression on the synthetic JSON.
+        if response.get("status").and_then(|v| v.as_str()) == Some("404") {
+            return CheckResult {
+                check_id: check.id.clone(),
+                description: check.description.clone(),
+                status: CheckStatus::Fail,
+                actual: Some(serde_json::json!("not configured (HTTP 404)")),
+                expected: check.expected,
+                error: None,
+                duration_ms: start.elapsed().as_millis() as u64,
+            };
+        }
 
         // Evaluate the jq expression
         match self.jq.check(&check.api.check, &response, check.expected) {

@@ -1,0 +1,88 @@
+# HTH GitHub Control 3.23: Runner Process and Network Isolation
+# Profile: L2 | NIST: SC-7, SC-39
+# https://howtoharden.com/guides/github/#39-enforce-runner-process-and-network-isolation
+
+# HTH Guide Excerpt: begin cli-runner-process-network-isolation
+# PATTERN 1: Harden-Runner with egress enforcement
+# Add as FIRST step in every workflow job
+# File: .github/workflows/ci.yml
+name: CI with Egress Enforcement
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf  # v2.11.1
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            pypi.org:443
+            files.pythonhosted.org:443
+            ghcr.io:443
+            docker.io:443
+            registry-1.docker.io:443
+            auth.docker.io:443
+            production.cloudflare.docker.com:443
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - run: npm ci
+      - run: npm test
+
+---
+# PATTERN 2: Kubernetes ephemeral runner with security context
+# Blocks /proc/*/mem access and restricts syscalls
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerDeployment
+metadata:
+  name: hardened-ephemeral-runners
+  namespace: github-runners
+spec:
+  template:
+    spec:
+      ephemeral: true
+      containers:
+        - name: runner
+          image: ghcr.io/actions/actions-runner:latest
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: Localhost
+              localhostProfile: profiles/runner-restricted.json
+          volumeMounts:
+            - name: work
+              mountPath: /home/runner/_work
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: work
+          emptyDir: {}
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+
+---
+# PATTERN 3: Seccomp profile blocking /proc memory access
+# File: /var/lib/kubelet/seccomp/profiles/runner-restricted.json
+# Prevents TeamPCP attack vector (reading /proc/*/mem)
+{
+  "defaultAction": "SCMP_ACT_ALLOW",
+  "syscalls": [
+    {
+      "names": ["ptrace", "process_vm_readv", "process_vm_writev"],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1
+    }
+  ]
+}
+# HTH Guide Excerpt: end cli-runner-process-network-isolation

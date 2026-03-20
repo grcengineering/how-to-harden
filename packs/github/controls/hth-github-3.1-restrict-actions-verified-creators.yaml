@@ -25,7 +25,7 @@ audit:
     description: "Verify repository-level Actions are not set to allow all actions"
     api:
       method: GET
-      endpoint: "/repos/{org}/how-to-harden/actions/permissions"
+      endpoint: "/repos/{org}/{repo}/actions/permissions"
       check: '.allowed_actions != "all" or .enabled == false'
     expected: true
 remediate:

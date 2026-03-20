@@ -1,0 +1,89 @@
+# HTH GitHub Control 3.22: Secure pull_request_target Workflow Patterns
+# Profile: L1 | NIST: AC-3, SI-7
+# https://howtoharden.com/guides/github/#38-secure-pull_request_target-workflows-against-pwn-requests
+
+# HTH Guide Excerpt: begin cli-secure-pull-request-target
+# PATTERN 1: SAFE — Untrusted build in pull_request (no secrets)
+# File: .github/workflows/pr-build.yml
+name: PR Build (Untrusted)
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+---
+# PATTERN 2: SAFE — Trusted labeling via pull_request_target
+# Runs in BASE repo context with secrets, but NEVER checks out PR code.
+# File: .github/workflows/pr-label.yml
+name: PR Label (Trusted — Metadata Only)
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v7.0.1
+        with:
+          script: |
+            const files = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            const hasDocs = files.data.some(f => f.filename.startsWith('docs/'));
+            if (hasDocs) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['documentation']
+              });
+            }
+
+---
+# PATTERN 3: SAFE — Expression injection prevention
+# Pass untrusted PR fields through env vars, not ${{ }} in run blocks
+# File: .github/workflows/pr-comment.yml
+name: PR Comment (Safe Input Handling)
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v7.0.1
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        with:
+          script: |
+            const title = process.env.PR_TITLE;
+            const author = process.env.PR_AUTHOR;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Thanks @${author} for "${title}". A maintainer will review shortly.`
+            });
+# HTH Guide Excerpt: end cli-secure-pull-request-target

@@ -6,9 +6,9 @@ slug: "github"
 tier: "1"
 category: "DevOps"
 description: "Comprehensive source control and CI/CD security hardening for GitHub organizations, Actions, supply chain protection, and Enterprise Cloud/Server"
-version: "0.4.0"
+version: "0.5.0"
 maturity: "draft"
-last_updated: "2026-03-07"
+last_updated: "2026-03-20"
 ---
 
 
@@ -922,6 +922,8 @@ Prevent use of arbitrary third-party Actions by restricting to GitHub-verified c
 - **Dependency Confusion:** Attackers create Actions with similar names to popular ones
 - **Typosquatting:** `actions/checkout` vs `actions/check-out` (malicious)
 - **Compromised Maintainer:** Legitimate Action author's account taken over
+- **Tag Poisoning:** trivy-action (March 2026) had 75 of 76 tags poisoned with credential-stealing malware; tj-actions/changed-files (March 2025, CVE-2025-30066) had all tags rewritten, affecting 23,000+ repos. See Section 3.10 for detection controls.
+- **Imposter Commits:** GitHub's fork network shares Git objects between parent and fork repos. A commit pushed to a *fork* of an allowed action can be referenced via the parent's path, bypassing allow-list restrictions. Use `clank` (Section 3.10) to verify pinned SHAs originate from parent branches.
 
 #### ClickOps Implementation
 
@@ -1069,7 +1071,7 @@ Require manual approval before running workflows triggered by first-time contrib
 #### Rationale
 **Attack:** Attacker forks your public repo, modifies workflow to exfiltrate secrets, opens PR. Workflow runs automatically and steals `{% raw %}${{ secrets }}{% endraw %}`.
 
-**Prevention:** Require maintainer to review and approve workflow runs from new contributors.
+**Prevention:** Require maintainer to review and approve workflow runs from new contributors. For deeper `pull_request_target` workflow hardening patterns (split-workflow, artifact handoff, expression injection prevention), see Section 3.8.
 
 #### ClickOps Implementation
 
@@ -1292,8 +1294,9 @@ Deploy a layered set of open source tools to continuously harden GitHub Actions 
 #### Rationale
 **Attack Prevented:** Workflow injection, action supply chain compromise, excessive permissions, runtime tampering
 
-**Real-World Incident:**
+**Real-World Incidents:**
 - **tj-actions/changed-files (March 2025, CVE-2025-30066):** A compromised GitHub Action affected 23,000+ repositories by rewriting a mutable tag to point at malicious code. This incident validated the layered approach: SHA pinning (Layer 2) would have prevented the tag-rewriting vector, and harden-runner (Layer 3) detected the attack at runtime via anomalous network egress.
+- **trivy-action / TeamPCP (March 2026):** 75 release tags poisoned with a three-stage credential stealer that read `/proc/*/mem` and exfiltrated cloud credentials to a typosquat domain. Harden-Runner detected the anomalous C2 callout to `scan.aquasecurtiy.org` within hours. zizmor would have flagged the pre-existing `pull_request_target` vulnerability (CVE-2026-26189) that enabled the initial PAT theft.
 
 **Why This Matters:** No single tool covers all attack surfaces. Static linters catch injection patterns before merge, pinning tools eliminate mutable tag risks, runtime agents detect zero-day compromises, and governance scanners enforce organization-wide policy compliance.
 
@@ -1309,6 +1312,7 @@ Deploy a layered set of open source tools to continuously harden GitHub Actions 
 | **secure-repo** | Config Hardening | 300+ | AGPL-3.0 | Web, CLI |
 | **pin-github-action** | Config Hardening | 140+ | MIT | CLI (npx) |
 | **actions-permissions** | Config Hardening | 350+ | MIT | Action |
+| **clank** | Static Analysis | 200+ | Apache-2.0 | CLI |
 | **harden-runner** | Runtime Monitoring | 980+ | Apache-2.0 | Action |
 | **Allstar** | Continuous Policy | 1,390+ | Apache-2.0 | GitHub App |
 | **OpenSSF Scorecard** | Continuous Policy | 5,290+ | Apache-2.0 | Action, CLI |
@@ -1321,6 +1325,7 @@ Run these tools in CI to catch workflow security issues before they reach the de
 - **zizmor** -- Security linter with 24+ audit rules covering injection, credential exposure, and Actions anti-patterns. Produces SARIF output for GitHub Code Scanning integration.
 - **actionlint** -- Type-checker for workflow files that detects template injection vulnerabilities, invalid glob patterns, and runner label mismatches.
 - **Gato-X** -- Offensive security tool that enumerates exploitable Actions misconfigurations including self-hosted runner attacks, pull_request_target abuse, and GITHUB_TOKEN over-permissions.
+- **clank** -- Chainguard's imposter commit detector (`chainguard-dev/clank`). Scans workflow files to verify that pinned action SHAs are reachable from the parent repository's branches, not just resolvable via GitHub's fork network. Catches SHAs that originate from forks and could bypass allow-list policies. See Section 3.10.
 
 #### Layer 2: Configuration Hardening (One-Time)
 
@@ -1382,6 +1387,210 @@ Run these tools periodically to audit organization-wide security posture.
 | **NIST 800-53** | SA-11, CM-6 | Developer security testing, configuration management |
 | **ISO 27001** | A.14.2.8 | System security testing |
 | **CIS Controls** | 16.4 | Establish and manage an inventory of third-party software |
+
+---
+
+### 3.8 Secure `pull_request_target` Workflows Against Pwn Requests
+
+**Profile Level:** L1 (Baseline)
+**NIST 800-53:** AC-3, SI-7
+**CIS Controls:** 16.1
+
+#### Description
+Prevent `pull_request_target` workflows from executing untrusted PR code with elevated privileges. The `pull_request_target` event runs in the context of the **base repository** with access to secrets and write permissions — if the workflow checks out and executes code from the PR head, an attacker controls what runs with those privileges.
+
+#### Rationale
+**Attack Vector:** Pwn Request — a forked PR triggers a `pull_request_target` workflow that checks out the attacker's code, which then runs with the base repository's secrets and permissions.
+
+**Real-World Incidents:**
+- **hackerbot-claw / Trivy (February 2026):** An AI-powered bot exploited `pull_request_target` workflows across 7 Aqua Security repositories including `aquasecurity/trivy`. The bot opened PRs that triggered workflows checking out untrusted code, enabling theft of a Personal Access Token (PAT) that was later used to privatize the trivy repository and poison 75 release tags.
+- **SpotBugs → reviewdog → tj-actions chain (2024-2025):** The root cause of the tj-actions/changed-files compromise (CVE-2025-30066, 23,000+ repos affected) was a `pull_request_target` vulnerability in SpotBugs, which gave attackers a PAT used to compromise reviewdog, then tj-actions.
+
+**Why This Matters:** `pull_request_target` is the single most exploited GitHub Actions attack surface. Unlike `pull_request`, it gives forked PR code access to repository secrets. A single unsafe workflow can compromise the entire repository and its downstream supply chain.
+
+#### ClickOps Implementation
+
+**Step 1: Audit Existing Workflows**
+1. Search your `.github/workflows/` directory for `pull_request_target`
+2. For each workflow found, verify it does NOT checkout PR head code:
+   - Check for `actions/checkout` with `ref: {% raw %}${{ github.event.pull_request.head.sha }}{% endraw %}`
+   - Check for `actions/checkout` with `ref: {% raw %}${{ github.event.pull_request.head.ref }}{% endraw %}`
+   - Either of these patterns is UNSAFE when combined with `pull_request_target`
+3. Verify no `run:` blocks interpolate `{% raw %}${{ github.event.pull_request.title }}{% endraw %}`, `{% raw %}${{ github.event.pull_request.body }}{% endraw %}`, or other attacker-controlled fields directly (expression injection)
+
+**Step 2: Apply Safe Patterns**
+1. **Split-workflow pattern (recommended):** Run untrusted builds in `pull_request` (no secrets), perform trusted operations (labeling, commenting, deploying) in a separate `pull_request_target` workflow that never checks out PR code
+2. **Artifact handoff pattern:** Build artifacts in `pull_request`, upload them, then download and consume in `pull_request_target`
+3. **Metadata-only pattern:** If `pull_request_target` only needs PR metadata (title, labels, author), use `actions/github-script` to read the API instead of checking out code
+
+**Step 3: Prevent Expression Injection**
+1. Never use `{% raw %}${{ github.event.pull_request.* }}{% endraw %}` directly in `run:` blocks
+2. Pass untrusted values through environment variables instead
+3. Use `actions/github-script` for operations that need PR content
+
+**Time to Complete:** ~30 minutes to audit + refactor workflows
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="3.22" %}
+
+#### Validation & Testing
+1. [ ] No `pull_request_target` workflow checks out PR head code
+2. [ ] No `run:` blocks directly interpolate `{% raw %}${{ github.event.pull_request.* }}{% endraw %}`
+3. [ ] zizmor audit passes with no `pull_request_target` findings
+4. [ ] Fork the repo, submit a test PR, verify the workflow does not expose secrets
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security |
+| **NIST 800-53** | AC-3, SI-7 | Access enforcement, software integrity |
+| **SLSA** | Build L2 | Scripted build, version controlled |
+| **CIS Controls** | 16.1 | Establish secure coding practices |
+
+---
+
+### 3.9 Enforce Runner Process and Network Isolation
+
+**Profile Level:** L2 (Hardened)
+**NIST 800-53:** SC-7, SC-39
+**CIS Controls:** 13.4
+
+#### Description
+Harden GitHub Actions runners against credential theft from process memory and unauthorized network exfiltration. This control addresses attacks where malicious action code reads secrets from the runner's process memory (`/proc/*/mem`) and exfiltrates them to attacker-controlled infrastructure.
+
+#### Rationale
+**Attack Vector:** Process memory harvesting and C2 exfiltration — malicious action code reads `/proc/*/mem` to extract secrets from the `Runner.Worker` process, then exfiltrates credentials over HTTPS to typosquat domains.
+
+**Real-World Incident:**
+- **TeamPCP Cloud Stealer / trivy-action (March 2026):** After poisoning 75 trivy-action tags, attackers deployed a three-stage payload: (1) a base64-encoded Python script decoded and executed at runtime, (2) read `/proc/*/mem` from the `Runner.Worker` process to harvest cloud credentials, SSH keys, and tokens, (3) exfiltrated stolen secrets to `scan.aquasecurtiy.org` (typosquat of `aquasecurity.org`). The payload also attempted to create a repo named `tpcp-docs` in the victim's account as a fallback exfiltration channel.
+
+**Why This Matters:** GitHub-hosted runners do not restrict `/proc` access or network egress by default. Any action running in the workflow can read the process memory of the runner itself — where decrypted secrets are held during execution. Without egress controls, exfiltrated data leaves the runner undetected.
+
+#### ClickOps Implementation
+
+**Step 1: Deploy Harden-Runner with Egress Enforcement**
+1. Add `step-security/harden-runner` as the **first step** in every workflow job
+2. Start with `egress-policy: audit` to observe legitimate network connections
+3. After 1-2 weeks, review the StepSecurity dashboard for the allow-list
+4. Switch to `egress-policy: block` with an explicit `allowed-endpoints` list
+5. Only allow endpoints your workflow actually needs (GitHub APIs, package registries)
+
+**Step 2: Harden Self-Hosted Runner Containers (if applicable)**
+1. Run runner containers as non-root with `runAsUser: 1000`
+2. Set `readOnlyRootFilesystem: true` with writable tmpfs for `_work` and `/tmp`
+3. Drop ALL Linux capabilities: `capabilities: { drop: ["ALL"] }`
+4. Apply a seccomp profile that blocks `ptrace`, `process_vm_readv`, and `process_vm_writev` syscalls
+5. Set `allowPrivilegeEscalation: false`
+
+**Step 3: Enable Harden-Runner Advanced Policies**
+1. **Compromised Actions Policy:** Automatically cancels workflow jobs before compromised action code can execute. Harden-Runner maintains a database of known-compromised action SHAs and blocks them at job start.
+2. **Lockdown Mode:** Blocks job execution when suspicious process events are detected, such as a process reading `Runner.Worker` memory via `/proc/<pid>/mem`. In the Trivy v0.69.4 attack, Harden-Runner detected `python3` (PID 2538) reading `/proc/2167/mem` to extract secrets.
+3. **Secret Exfiltration Policy:** Automatically cancels job runs when a newly added or modified workflow step accesses secrets — catches cases where a compromised action introduces secret-harvesting behavior not present in previous versions.
+
+**Step 4: Apply Network Policies (self-hosted runners)**
+1. Create a Kubernetes NetworkPolicy restricting runner pod egress
+2. Allow only DNS (port 53) and HTTPS (port 443) to known endpoints
+3. Block all other outbound traffic including SSH, HTTP, and non-standard ports
+4. Monitor blocked connections for anomaly detection
+
+**Time to Complete:** ~45 minutes (Harden-Runner); ~2 hours (K8s runner hardening)
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="3.23" %}
+
+#### Validation & Testing
+1. [ ] Harden-Runner is the first step in all critical workflow jobs
+2. [ ] Egress policy is set to `block` (not `audit`) in production workflows
+3. [ ] Allowed endpoints list contains only necessary domains
+4. [ ] Self-hosted runner containers run as non-root with dropped capabilities
+5. [ ] Seccomp profile blocks `ptrace` and `/proc` memory access syscalls
+6. [ ] Test: a workflow step attempting `curl https://evil.example.com` is blocked
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC6.6 | Logical access, system boundaries |
+| **NIST 800-53** | SC-7, SC-39 | Boundary protection, process isolation |
+| **ISO 27001** | A.13.1.1 | Network controls |
+| **CIS Controls** | 13.4 | Perform traffic filtering between network segments |
+
+---
+
+### 3.10 Detect and Prevent Action Tag Poisoning
+
+**Profile Level:** L1 (Baseline)
+**NIST 800-53:** SI-7, SA-12
+**CIS Controls:** 2.5
+
+#### Description
+Detect and prevent attacks where an adversary force-pushes Git tags in an action repository to point at malicious commits. Tag poisoning silently replaces trusted action code with attacker-controlled payloads for every consumer using mutable tag references (e.g., `@v1`, `@v2`).
+
+#### Rationale
+**Attack Vector:** Git tags are mutable pointers. An attacker with push access to a repository (via stolen PAT, compromised maintainer, or `pull_request_target` exploit) can force-push any tag to point at a different commit containing malicious code.
+
+**Real-World Incidents:**
+- **trivy-action (March 2026):** Attackers poisoned 75 of 76 release tags (all except the latest `v0.62.1`) to point at malicious commits containing the TeamPCP Cloud Stealer. The poisoned commits were "imposter commits" — reachable via tags but not on any branch, with fabricated commit dates to appear legitimate. None of the poisoned tags had GPG signatures, unlike the legitimate originals.
+- **tj-actions/changed-files (March 2025, CVE-2025-30066):** All mutable tags were rewritten to point at a malicious commit that exfiltrated CI secrets to a GitHub Gist. The attack affected 23,000+ repositories before detection.
+
+**Fork Network Bypass (Imposter Commits):** GitHub shares Git objects between forks and parent repositories via "alternates." This means a commit pushed to a *fork* of an allowed action can be referenced using the parent repository's path (e.g., `actions/checkout@<fork-commit-sha>`), and GitHub resolves it as if it belongs to the parent. This bypasses organization-level Actions allow-list policies that restrict to "GitHub-verified creators only." Even SHA-pinned references are vulnerable if the SHA originates from a fork rather than the parent's branch history.
+
+**Why This Matters:** Most workflow files reference actions by mutable tag (`@v4`). When a tag is poisoned, every workflow run automatically picks up the malicious code — no PR, no review, no notification. SHA pinning is the primary defense, but the pinned SHA must be verified as reachable from a known branch or tag in the parent repository — not just resolvable via the GitHub API.
+
+#### ClickOps Implementation
+
+**Step 1: Pin All Actions to Full Commit SHAs**
+1. Run `npx pin-github-action .github/workflows/*.yml` to convert tag references to SHA pins
+2. Add version comments after each SHA for readability: `@abc123  # v4.1.1`
+3. Configure Dependabot or Renovate to automatically propose SHA updates when new versions release
+
+**Step 2: Enable Dependabot for GitHub Actions**
+1. Create or update `.github/dependabot.yml` in your repository
+2. Add a `github-actions` ecosystem entry with weekly update schedule
+3. Dependabot will propose PRs when pinned SHAs become outdated
+
+**Step 3: Monitor for Tag Poisoning and Imposter Commits**
+1. **Imposter commits:** Tags pointing to commits not reachable from any branch — use Chainguard's `clank` tool (`chainguard-dev/clank`) to automatically detect imposter commits in workflow files
+2. **Missing signatures:** Tags that previously had GPG signatures suddenly lack them
+3. **Timestamp anomalies:** Tag commits with dates significantly different from surrounding commits
+4. **Unexpected tag updates:** GitHub audit log entries for `git.push` events on tag refs
+5. **Fork-origin SHAs:** Verify pinned SHAs are reachable from the parent repo's default branch, not just resolvable via the API (the API returns fork commits without warning)
+6. Run the SHA verification audit script (see Code Pack) on a schedule
+
+**Step 4: Sign Action Release Tags**
+1. Use Sigstore **Gitsign** for keyless, transparent signing of Git tags and commits in action repositories you maintain
+2. Per-repository signing identities ensure consumers can verify tag authenticity
+3. Treat published actions as release artifacts — sign them with the same rigor as container images or packages
+
+**Step 5: Deploy Runtime Detection**
+1. Add StepSecurity Harden-Runner to detect anomalous network egress from action steps
+2. Harden-Runner detected the Trivy compromise within hours via unexpected outbound connections to `scan.aquasecurtiy.org`
+
+**Time to Complete:** ~20 minutes (SHA pinning); ~10 minutes (Dependabot config)
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="3.24" %}
+
+#### Validation & Testing
+1. [ ] All action references use full 40-character commit SHAs
+2. [ ] Dependabot or Renovate is configured for `github-actions` ecosystem
+3. [ ] SHA verification audit runs on a schedule (weekly minimum)
+4. [ ] No SHA mismatches detected between pinned values and tag targets
+5. [ ] `clank` scan confirms no imposter commits (SHAs reachable from parent branches only)
+6. [ ] Harden-Runner is deployed for runtime anomaly detection
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.1, CC8.1 | Detection and monitoring, change management |
+| **NIST 800-53** | SI-7, SA-12 | Software integrity verification, supply chain protection |
+| **SLSA** | Build L2 | Pinned dependencies |
+| **CIS Controls** | 2.5 | Allowlist authorized software |
 
 ---
 
@@ -1816,15 +2025,16 @@ Define organization-level custom secret scanning patterns to detect internal API
 **NIST 800-53:** SA-12
 
 #### Description
-Automatically block pull requests that introduce vulnerable or malicious dependencies using the dependency-review-action.
+Automatically block pull requests that introduce vulnerable or malicious dependencies using the dependency-review-action. This applies to both package dependencies (npm, pip, go modules) **and** GitHub Actions dependencies — actions referenced in workflow files are also part of your supply chain.
 
 #### Rationale
-**Attack Vector:** Typosquatting, dependency confusion, compromised packages
+**Attack Vector:** Typosquatting, dependency confusion, compromised packages, compromised Actions
 
 **Real-World Incidents:**
 - **event-stream (2018):** Popular npm package hijacked, malicious code added to steal Bitcoin wallet credentials
 - **ua-parser-js (2021):** Maintainer account compromised, cryptominer injected
 - **codecov (2021):** Bash uploader modified to exfiltrate environment variables
+- **trivy-action (2026) / tj-actions (2025):** GitHub Actions themselves are dependencies — when their tags were poisoned, every consuming workflow was compromised. Dependency review should cover Actions references alongside package manifests. See Section 3.10 for action-specific detection and Section 6.6 for incident response.
 
 #### ClickOps Implementation
 
@@ -2027,6 +2237,99 @@ Use organization rulesets to enforce the dependency-review-action as a required 
 - **NIST 800-53:** SA-12 (Supply chain protection), SA-11 (Developer testing and evaluation)
 - **SOC 2:** CC7.2
 - **SLSA:** Build L2
+
+---
+
+### 6.6 Respond to CI/CD Supply Chain Compromises
+
+**Profile Level:** L1 (Baseline)
+**NIST 800-53:** IR-4, IR-5, IR-6
+**CIS Controls:** 17.1, 17.3
+
+#### Description
+Establish an incident response playbook for when a GitHub Action or CI/CD dependency is discovered to be compromised. Speed of response directly determines blast radius — the tj-actions compromise was active for 3+ days before detection, and the trivy-action poisoning affected builds within hours of tag manipulation.
+
+#### Rationale
+**Why an IR Playbook for Actions:**
+- Compromised actions can exfiltrate every secret accessible to every workflow that uses them
+- The blast radius grows exponentially with time — each workflow run exposes more credentials
+- Standard application IR playbooks do not cover CI/CD-specific artifacts (workflow runs, OIDC tokens, artifact registries)
+- Credential rotation must be comprehensive — any secret accessible to the affected workflow is potentially compromised, not just secrets explicitly used by the compromised action
+
+**Real-World Response Timelines:**
+- **tj-actions/changed-files (March 2025):** Malicious tag pushed ~March 14, detected ~March 16, GitHub removed action ~March 16. Window of exposure: ~3 days. StepSecurity Harden-Runner detected anomalous egress early but broad notification took days.
+- **trivy-action (March 2026):** 75 tags poisoned on March 19, Socket.dev published advisory same day. The TeamPCP payload exfiltrated cloud credentials, SSH keys, and tokens to `scan.aquasecurtiy.org` (typosquat domain). A fallback mechanism attempted to create `tpcp-docs` repos in victim GitHub accounts.
+
+#### ClickOps Implementation
+
+**Step 1: Immediate Triage (First 30 Minutes)**
+1. Identify the compromised action name, affected versions/tags, and the advisory source
+2. Search all organization repositories for references to the compromised action
+3. Determine which workflows ran the compromised version and when
+4. Assess the secrets, OIDC roles, and artifact registries accessible to those workflows
+
+**Step 2: Containment (First 2 Hours)**
+1. Pin the affected action to a known-good SHA in all repositories, or disable affected workflows entirely
+2. Block the compromised action version at the organization level (Actions allow-list)
+3. If using Harden-Runner, check the StepSecurity dashboard for anomalous egress from recent runs
+4. Disable any OIDC trust relationships that could be exploited with stolen tokens
+
+**Step 3: Credential Rotation (First 4 Hours)**
+1. Rotate ALL organization-level secrets, not just those "used by" the compromised action
+2. Rotate ALL repository-level secrets in affected repositories
+3. Rotate ALL environment secrets accessible to affected workflows
+4. Revoke and regenerate any OIDC-based cloud role sessions (AWS STS, Azure, GCP)
+5. Rotate GitHub PATs, deploy keys, and app installation tokens that may have been exposed
+6. Rotate any package registry tokens (npm, PyPI, Docker Hub) accessible to workflows
+
+**Step 4: Check ALL Distribution Channels (Not Just Actions)**
+1. Supply chain compromises often propagate beyond GitHub Actions — the Trivy v0.69.4 attack compromised the compiled binary itself, which propagated via Homebrew (auto-updated), Helm chart automation (bumped in PR), and documentation deployment systems
+2. Check package managers (Homebrew, apt, yum, Chocolatey) for compromised tool versions
+3. Check container registries for images built with the compromised tool
+4. Check Helm chart repositories for version bumps referencing compromised releases
+5. Homebrew executed an emergency downgrade for Trivy, reverting v0.69.4 to v0.69.3 with special CI labels to bypass normal audit
+
+**Step 5: Forensic Analysis**
+1. Review workflow run logs for the compromised period — look for base64-encoded payloads, unexpected `curl`/`wget` commands, or `/proc` access patterns
+2. Check GitHub audit logs for suspicious API calls during the compromise window
+3. Search for attacker-created repositories (e.g., `tpcp-docs` for TeamPCP attacks)
+4. Check artifact registries for builds produced during the compromise — these may contain backdoored code
+5. Review network logs for connections to known malicious domains (C2: `scan.aquasecurtiy.org` resolving to `45.148.10.212`)
+6. Use incident-specific scanning tools when available (e.g., `trivy-compromise-scanner` which checks workflow runs against known-compromised commit SHAs)
+
+**Step 6: Anticipate Anti-Response TTPs**
+1. In the Trivy attack, the attacker deleted the original incident disclosure discussion (#10265) to slow community response — monitor for deletion of security-related issues and discussions
+2. The attacker deployed 17 coordinated spam bot accounts that posted generic praise comments within a single second to bury the legitimate security discussion (#10420) — be prepared for discussion flooding as an obstruction technique
+3. Maintain out-of-band communication channels (Slack, email lists) for incident coordination — do not rely solely on GitHub Discussions for security response
+
+**Step 7: Recovery and Communication**
+1. Verify all secrets have been rotated and test that systems function with new credentials
+2. Re-enable workflows with the action pinned to a verified-safe SHA
+3. If your organization publishes packages or actions consumed by others, notify downstream users that builds during the compromise window may be tainted
+4. File a GitHub Advisory if you discover new IOCs
+5. Conduct a post-incident review — update your action allow-list and SHA pinning practices
+
+**Time to Complete:** Initial triage ~30 minutes; full response ~4-8 hours depending on organization size
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="6.7" %}
+
+#### Validation & Testing
+1. [ ] IR playbook is documented and accessible to the security team
+2. [ ] Audit script can enumerate all repos using a specific action across the org
+3. [ ] Secret rotation runbook covers org, repo, and environment secrets
+4. [ ] Team has practiced the playbook with a tabletop exercise
+5. [ ] Harden-Runner or equivalent provides runtime egress alerting
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.3, CC7.4 | Incident response, incident recovery |
+| **NIST 800-53** | IR-4, IR-5, IR-6 | Incident handling, monitoring, reporting |
+| **ISO 27001** | A.16.1.5 | Response to information security incidents |
+| **CIS Controls** | 17.1, 17.3 | Incident response process, incident response exercises |
 
 ---
 

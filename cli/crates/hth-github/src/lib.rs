@@ -72,6 +72,7 @@ impl VendorProvider for GitHubProvider {
     fn resolve_url(&self, endpoint: &str) -> String {
         let resolved = endpoint
             .replace("{org}", self.client.org())
+            .replace("{owner}", self.client.org())
             .replace("{repo}", self.client.repo());
         format!("https://api.github.com{resolved}")
     }

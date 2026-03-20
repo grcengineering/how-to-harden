@@ -239,6 +239,7 @@ impl GitHubApiClient {
     fn resolve_url(&self, endpoint: &str) -> String {
         let resolved = endpoint
             .replace("{org}", &self.org)
+            .replace("{owner}", &self.org)
             .replace("{repo}", &self.repo);
         format!("https://api.github.com{resolved}")
     }

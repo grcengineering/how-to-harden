@@ -25,7 +25,7 @@ audit:
     description: "Verify a CODEOWNERS file exists for dependency review routing"
     api:
       method: GET
-      endpoint: "/repos/{org}/how-to-harden/contents/.github/CODEOWNERS"
+      endpoint: "/repos/{org}/{repo}/contents/.github/CODEOWNERS"
       check: 'has("name")'
     expected: true
 remediate:

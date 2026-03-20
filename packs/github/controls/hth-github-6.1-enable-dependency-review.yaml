@@ -18,21 +18,21 @@ audit:
     description: "Verify the dependency graph is enabled on the repository"
     api:
       method: GET
-      endpoint: "/repos/{org}/how-to-harden"
-      check: '.security_and_analysis.dependency_graph.status == "enabled" or .has_issues == true'
+      endpoint: "/repos/{org}/{repo}"
+      check: 'if (.security_and_analysis | has("dependency_graph")) then .security_and_analysis.dependency_graph.status == "enabled" else true end'
     expected: true
   - id: "vulnerability-alerts-enabled"
     description: "Verify vulnerability alerts (Dependabot alerts) are enabled"
     api:
       method: GET
-      endpoint: "/repos/{org}/how-to-harden/vulnerability-alerts"
+      endpoint: "/repos/{org}/{repo}/vulnerability-alerts"
       check: '. == null or . == ""'
     expected: true
 remediate:
   api:
     - description: "Enable vulnerability alerts on the repository"
       method: PUT
-      endpoint: "/repos/{org}/how-to-harden/vulnerability-alerts"
+      endpoint: "/repos/{org}/{repo}/vulnerability-alerts"
       condition: "!vulnerability-alerts-enabled"
   terraform:
     resources:
