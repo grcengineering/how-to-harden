@@ -51,6 +51,31 @@ impl RemediationEngine {
         Ok(results)
     }
 
+    /// Execute remediation steps for a specific repo, replacing `{repo}` in endpoints.
+    pub async fn execute_for_repo(
+        &self,
+        steps: &[&RemediationStep],
+        provider: &dyn VendorProvider,
+        repo: &str,
+    ) -> HthResult<Vec<RemediationResult>> {
+        let mut results = Vec::new();
+
+        for step in steps {
+            let endpoint = step.endpoint.replace("{repo}", repo);
+            let result = provider
+                .execute_request(step.method, &endpoint, step.body.as_ref())
+                .await;
+
+            results.push(RemediationResult {
+                description: step.description.clone(),
+                success: result.is_ok(),
+                error: result.err().map(|e| e.to_string()),
+            });
+        }
+
+        Ok(results)
+    }
+
     /// Check if a remediation step should execute based on its condition.
     fn should_execute(&self, step: &RemediationStep, scan_result: &ControlResult) -> bool {
         let condition = match &step.condition {

@@ -103,9 +103,33 @@ pub async fn run(
         }
     }
 
-    // Execute API remediation if requested
-    if (args.mode == "api" || args.mode == "both") && args.apply {
+    // Plan remediation steps for all failing controls
+    if args.mode == "api" || args.mode == "both" {
         let remediation_engine = RemediationEngine::new();
+
+        // Collect all org repos for multi-repo remediation
+        let org_repos = if args.apply {
+            match provider
+                .execute_request(
+                    hth_core::models::HttpMethod::GET,
+                    "/orgs/{org}/repos?per_page=100&type=all",
+                    None,
+                )
+                .await
+            {
+                Ok(repos) => repos
+                    .as_array()
+                    .map(|arr| {
+                        arr.iter()
+                            .filter_map(|r| r.get("name").and_then(|n| n.as_str()).map(String::from))
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or_default(),
+                Err(_) => Vec::new(),
+            }
+        } else {
+            Vec::new()
+        };
 
         for failing_result in &failing {
             let control = pack
@@ -125,34 +149,107 @@ pub async fn run(
                     continue;
                 }
 
-                eprintln!(
-                    "  {} {} — {} step(s) to execute",
-                    style("→").cyan(),
-                    control.id,
-                    steps.len()
-                );
+                // Check if any step targets a repo-level endpoint
+                let has_repo_endpoint = steps.iter().any(|s| s.endpoint.contains("{repo}"));
+                let repo_count = if has_repo_endpoint && !org_repos.is_empty() {
+                    org_repos.len()
+                } else {
+                    1
+                };
 
-                let results = remediation_engine.execute(&steps, provider).await?;
+                if args.apply {
+                    eprintln!(
+                        "  {} {} — {} step(s){}",
+                        style("→").cyan(),
+                        control.id,
+                        steps.len(),
+                        if repo_count > 1 {
+                            format!(" × {} repos", repo_count)
+                        } else {
+                            String::new()
+                        }
+                    );
 
-                for result in &results {
-                    if result.success {
-                        eprintln!("    {} {}", style("✓").green(), result.description);
+                    if has_repo_endpoint && !org_repos.is_empty() {
+                        // Execute repo-level steps against ALL repos in the org
+                        for repo in &org_repos {
+                            let results = remediation_engine
+                                .execute_for_repo(&steps, provider, repo)
+                                .await?;
+
+                            let any_fail = results.iter().any(|r| !r.success);
+                            if any_fail {
+                                for result in &results {
+                                    if !result.success {
+                                        eprintln!(
+                                            "    {} {}/{} — {}",
+                                            style("✗").red(),
+                                            repo,
+                                            result.description,
+                                            result.error.as_deref().unwrap_or("unknown error")
+                                        );
+                                    }
+                                }
+                            } else {
+                                eprintln!(
+                                    "    {} {}",
+                                    style("✓").green(),
+                                    repo
+                                );
+                            }
+                        }
                     } else {
+                        // Org-level steps: execute once
+                        let results = remediation_engine.execute(&steps, provider).await?;
+
+                        for result in &results {
+                            if result.success {
+                                eprintln!("    {} {}", style("✓").green(), result.description);
+                            } else {
+                                eprintln!(
+                                    "    {} {} — {}",
+                                    style("✗").red(),
+                                    result.description,
+                                    result.error.as_deref().unwrap_or("unknown error")
+                                );
+                            }
+                        }
+                    }
+                } else {
+                    // Dry-run: show what would happen
+                    eprintln!(
+                        "  {} {} — {} step(s) planned{}",
+                        style("▸").cyan(),
+                        control.id,
+                        steps.len(),
+                        if has_repo_endpoint {
+                            " (per-repo)"
+                        } else {
+                            ""
+                        }
+                    );
+                    for step in &steps {
                         eprintln!(
-                            "    {} {} — {}",
-                            style("✗").red(),
-                            result.description,
-                            result.error.as_deref().unwrap_or("unknown error")
+                            "    {} {} {}",
+                            style("→").dim(),
+                            style(format!("{}", step.method)).yellow(),
+                            provider.resolve_url(&step.endpoint)
+                        );
+                        eprintln!(
+                            "      {}",
+                            style(&step.description).dim()
                         );
                     }
                 }
             }
         }
-    } else if !args.apply {
-        eprintln!(
-            "\n{}",
-            style("  [DRY RUN] Use --apply to execute remediation").yellow()
-        );
+
+        if !args.apply {
+            eprintln!(
+                "\n{}",
+                style("  [DRY RUN] Use --apply to execute remediation").yellow()
+            );
+        }
     }
 
     Ok(())

@@ -62,11 +62,18 @@ pub async fn run(
         bail!("No controls found for vendor '{vendor}' in {packs_dir}/{vendor}/controls/");
     }
 
+    // Filter controls if --controls was specified (for display count)
+    let control_count = if let Some(ref ids) = args.controls {
+        pack.controls.iter().filter(|c| ids.iter().any(|id| c.id == *id)).count()
+    } else {
+        pack.controls.len()
+    };
+
     eprintln!(
         "{}",
         style(format!(
             "  Scanning {} controls for {} at L{} ...",
-            pack.controls.len(),
+            control_count,
             vendor,
             profile
         ))
@@ -108,9 +115,20 @@ pub async fn run(
          Okta:   OKTA_API_TOKEN + OKTA_DOMAIN"
     ))?;
 
+    // Filter controls if --controls was specified
+    let controls_to_scan: Vec<_> = if let Some(ref ids) = args.controls {
+        pack.controls
+            .iter()
+            .filter(|c| ids.iter().any(|id| c.id == *id))
+            .cloned()
+            .collect()
+    } else {
+        pack.controls.clone()
+    };
+
     // Run the scan
     let engine = AuditEngine::new();
-    let report = engine.scan(&pack.controls, provider, profile).await;
+    let report = engine.scan(&controls_to_scan, provider, profile).await;
 
     // Render output
     let rendered = output::render_report(&report, format);
