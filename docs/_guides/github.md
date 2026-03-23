@@ -1538,6 +1538,8 @@ Detect and prevent attacks where an adversary force-pushes Git tags in an action
 
 **Fork Network Bypass (Imposter Commits):** GitHub shares Git objects between forks and parent repositories via "alternates." This means a commit pushed to a *fork* of an allowed action can be referenced using the parent repository's path (e.g., `actions/checkout@<fork-commit-sha>`), and GitHub resolves it as if it belongs to the parent. This bypasses organization-level Actions allow-list policies that restrict to "GitHub-verified creators only." Even SHA-pinned references are vulnerable if the SHA originates from a fork rather than the parent's branch history.
 
+**Cross-Channel Propagation:** The Trivy attack demonstrated that poisoning a single source artifact cascades across multiple distribution channels simultaneously. After the `trivy` binary was poisoned, it auto-propagated to Docker Hub (`aquasec/trivy:0.69.5`, `0.69.6` pushed with no GitHub release — `0.69.6` tagged as `latest`), Homebrew (auto-pulled v0.69.4 before emergency downgrade), and Helm charts (automated bump PR). Container images referenced in workflows via mutable tags (e.g., `container: aquasec/trivy:latest`) are equally vulnerable to tag manipulation — pin Docker images by digest in workflow files, not just Actions by SHA. See the [Docker Hub Hardening Guide](/guides/dockerhub/#23-pin-images-by-digest-not-tag) for container-specific controls.
+
 **Why This Matters:** Most workflow files reference actions by mutable tag (`@v4`). When a tag is poisoned, every workflow run automatically picks up the malicious code — no PR, no review, no notification. SHA pinning is the primary defense, but the pinned SHA must be verified as reachable from a known branch or tag in the parent repository — not just resolvable via the GitHub API.
 
 #### ClickOps Implementation
@@ -2285,7 +2287,7 @@ Establish an incident response playbook for when a GitHub Action or CI/CD depend
 **Step 4: Check ALL Distribution Channels (Not Just Actions)**
 1. Supply chain compromises often propagate beyond GitHub Actions — the Trivy v0.69.4 attack compromised the compiled binary itself, which propagated via Homebrew (auto-updated), Helm chart automation (bumped in PR), and documentation deployment systems
 2. Check package managers (Homebrew, apt, yum, Chocolatey) for compromised tool versions
-3. Check container registries for images built with the compromised tool
+3. Check container registries for images built with the compromised tool — and for "ghost" images pushed directly without a build (e.g., `aquasec/trivy:0.69.5` and `0.69.6` were pushed to Docker Hub with no GitHub release, and `0.69.6` hijacked the `latest` tag). See the [Docker Hub Hardening Guide](/guides/dockerhub/#42-detect-unauthorized-and-ghost-image-pushes) for detection scripts
 4. Check Helm chart repositories for version bumps referencing compromised releases
 5. Homebrew executed an emergency downgrade for Trivy, reverting v0.69.4 to v0.69.3 with special CI labels to bypass normal audit
 
