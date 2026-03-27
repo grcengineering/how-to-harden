@@ -59,9 +59,10 @@ extract_region() {
 
 # List all region names in a file
 # Supports #, --, and // comment markers
+# Uses sed instead of grep -P for macOS BSD compatibility
 list_regions() {
   local file="$1"
-  grep -oP 'HTH Guide Excerpt: begin \K.*' "${file}" 2>/dev/null || true
+  sed -n 's/.*HTH Guide Excerpt: begin //p' "${file}" 2>/dev/null || true
 }
 
 # Escape content for YAML literal block scalar
