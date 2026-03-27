@@ -1612,6 +1612,14 @@ body {
 
 .pack-details-content pre {
   margin-top: 0;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* Scrollable code blocks for non-Monaco fallback */
+.guide-body pre {
+  max-height: 500px;
+  overflow-y: auto;
 }
 
 /* Light theme overrides for pack code type badges */

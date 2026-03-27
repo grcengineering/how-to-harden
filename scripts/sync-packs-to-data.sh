@@ -39,8 +39,9 @@ normalize_section() {
 }
 
 # Extract content between HTH Guide Excerpt markers
-# Returns extracted content via stdout, with consistent minimum 2-space indent
-# to prevent YAML block scalar indentation errors.
+# Returns extracted content via stdout with minimum indent stripped so content
+# starts at column 0. This ensures YAML block scalars render correctly regardless
+# of the original indentation level in the source file.
 # Supports #, --, and // comment styles for bash/python/HCL, SQL, and KQL/Groovy.
 extract_region() {
   local file="$1"
@@ -51,10 +52,15 @@ extract_region() {
     /HTH Guide Excerpt: end ${region_name}\$/d
     p
   }" "${file}")
-  # Ensure all non-empty lines have at least 2-space indent so YAML block
-  # scalars don't break from inconsistent indentation in source code.
-  # Lines starting with a non-space character get 2 spaces prepended.
-  echo "${raw}" | sed '/^[^[:space:]]/s/^/  /'
+  # Strip the minimum common leading whitespace from all non-empty lines
+  # so the least-indented line starts at column 0.
+  local min_indent
+  min_indent=$(echo "${raw}" | grep -v '^$' | sed 's/[^ ].*//' | awk '{ print length }' | sort -n | head -1)
+  if [ -n "${min_indent}" ] && [ "${min_indent}" -gt 0 ] 2>/dev/null; then
+    echo "${raw}" | sed "s/^.\{${min_indent}\}//"
+  else
+    echo "${raw}"
+  fi
 }
 
 # List all region names in a file
@@ -243,7 +249,7 @@ process_vendor() {
         local content
         content=$(extract_region "${tf_file}" "${region}")
         echo "      ${region}:" >> "${tmp_file}"
-        echo "        content: |" >> "${tmp_file}"
+        echo "        content: |2" >> "${tmp_file}"
         echo "${content}" | sed 's/^/          /' >> "${tmp_file}"
       done
     fi
@@ -266,7 +272,7 @@ process_vendor() {
         local content
         content=$(extract_region "${cfg_file}" "${region}")
         echo "      ${region}:" >> "${tmp_file}"
-        echo "        content: |" >> "${tmp_file}"
+        echo "        content: |2" >> "${tmp_file}"
         echo "${content}" | sed 's/^/          /' >> "${tmp_file}"
       done
     fi
@@ -289,7 +295,7 @@ process_vendor() {
         local content
         content=$(extract_region "${api_file}" "${region}")
         echo "      ${region}:" >> "${tmp_file}"
-        echo "        content: |" >> "${tmp_file}"
+        echo "        content: |2" >> "${tmp_file}"
         echo "${content}" | sed 's/^/          /' >> "${tmp_file}"
       done
     fi
@@ -312,7 +318,7 @@ process_vendor() {
         local content
         content=$(extract_region "${cli_file}" "${region}")
         echo "      ${region}:" >> "${tmp_file}"
-        echo "        content: |" >> "${tmp_file}"
+        echo "        content: |2" >> "${tmp_file}"
         echo "${content}" | sed 's/^/          /' >> "${tmp_file}"
       done
     fi
@@ -335,7 +341,7 @@ process_vendor() {
         local content
         content=$(extract_region "${sdk_file}" "${region}")
         echo "      ${region}:" >> "${tmp_file}"
-        echo "        content: |" >> "${tmp_file}"
+        echo "        content: |2" >> "${tmp_file}"
         echo "${content}" | sed 's/^/          /' >> "${tmp_file}"
       done
     fi
@@ -358,7 +364,7 @@ process_vendor() {
         local content
         content=$(extract_region "${db_file}" "${region}")
         echo "      ${region}:" >> "${tmp_file}"
-        echo "        content: |" >> "${tmp_file}"
+        echo "        content: |2" >> "${tmp_file}"
         echo "${content}" | sed 's/^/          /' >> "${tmp_file}"
       done
     fi
@@ -384,7 +390,7 @@ process_vendor() {
           local content
           content=$(extract_region "${sigma_file}" "${region}")
           echo "        ${region}:" >> "${tmp_file}"
-          echo "          content: |" >> "${tmp_file}"
+          echo "          content: |2" >> "${tmp_file}"
           echo "${content}" | sed 's/^/            /' >> "${tmp_file}"
         done
       done <<< "${section_sigma[${section}]}"

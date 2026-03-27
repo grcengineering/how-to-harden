@@ -374,7 +374,20 @@ document.addEventListener('DOMContentLoaded', function() {
               'editorLineNumber.foreground':  '#4a5568',
               'editorLineNumber.activeForeground': '#718096',
               'editor.selectionBackground':   '#264f78',
-              'editorGutter.background':      '#0d1117'
+              'editorGutter.background':      '#0d1117',
+              'editorIndentGuide.background':  '#1e293b',
+              'editorIndentGuide.activeBackground': '#334155',
+              'editorBracketMatch.background': '#264f7844',
+              'editorBracketMatch.border':    '#60a5fa66',
+              'editorBracketHighlight.foreground1': '#60a5fa',
+              'editorBracketHighlight.foreground2': '#fbbf24',
+              'editorBracketHighlight.foreground3': '#c084fc',
+              'editorBracketHighlight.foreground4': '#34d399',
+              'editorBracketHighlight.foreground5': '#f472b6',
+              'editorBracketHighlight.foreground6': '#22d3ee',
+              'editorBracketPairGuide.activeBackground1': '#60a5fa44',
+              'editorBracketPairGuide.activeBackground2': '#fbbf2444',
+              'editorBracketPairGuide.activeBackground3': '#c084fc44'
             }
           });
 
@@ -412,7 +425,20 @@ document.addEventListener('DOMContentLoaded', function() {
               'editorLineNumber.foreground':  '#9ca3af',
               'editorLineNumber.activeForeground': '#6b7280',
               'editor.selectionBackground':   '#b4d5fe',
-              'editorGutter.background':      '#f6f8fa'
+              'editorGutter.background':      '#f6f8fa',
+              'editorIndentGuide.background':  '#e2e8f0',
+              'editorIndentGuide.activeBackground': '#cbd5e1',
+              'editorBracketMatch.background': '#b4d5fe44',
+              'editorBracketMatch.border':    '#1e40af66',
+              'editorBracketHighlight.foreground1': '#1e40af',
+              'editorBracketHighlight.foreground2': '#d97706',
+              'editorBracketHighlight.foreground3': '#7c3aed',
+              'editorBracketHighlight.foreground4': '#059669',
+              'editorBracketHighlight.foreground5': '#be185d',
+              'editorBracketHighlight.foreground6': '#0891b2',
+              'editorBracketPairGuide.activeBackground1': '#1e40af22',
+              'editorBracketPairGuide.activeBackground2': '#d9770622',
+              'editorBracketPairGuide.activeBackground3': '#7c3aed22'
             }
           });
 
@@ -440,10 +466,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var lineCount = codeText.split('\n').length;
 
-    // Create Monaco container
+    // Create Monaco container with max-height scroll for tall blocks
     var container = document.createElement('div');
     container.className = 'monaco-code-container';
-    var height = Math.max(lineCount * 19 + 16, 40);
+    var lineHeight = 19;
+    var padding = 16;
+    var naturalHeight = lineCount * lineHeight + padding;
+    var maxHeight = 500; // ~26 lines before scrolling
+    var height = Math.max(Math.min(naturalHeight, maxHeight), 40);
     container.style.height = height + 'px';
 
     loadMonaco().then(function(monaco) {
@@ -474,16 +504,23 @@ document.addEventListener('DOMContentLoaded', function() {
         hideCursorInOverviewRuler: true,
         overviewRulerLanes: 0,
         scrollbar: {
-          vertical: 'hidden',
+          vertical: naturalHeight > maxHeight ? 'auto' : 'hidden',
           horizontal: 'auto',
-          useShadows: false
+          useShadows: false,
+          verticalScrollbarSize: 8
         },
         guides: {
-          indentation: false,
-          bracketPairs: false
+          indentation: true,
+          bracketPairs: true,
+          highlightActiveBracketPair: true,
+          highlightActiveIndentation: true
         },
         renderWhitespace: 'none',
-        matchBrackets: 'never'
+        matchBrackets: 'always',
+        bracketPairColorization: {
+          enabled: true,
+          independentColorPoolPerBracketType: true
+        }
       });
 
       editors.push(editor);
