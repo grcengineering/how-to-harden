@@ -214,6 +214,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // SVG icons
   var COPY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
   var CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+  var WRAP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h15a3 3 0 1 1 0 6h-4"></path><polyline points="13 16 11 18 13 20"></polyline></svg>';
+  var NOWRAP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"></path></svg>';
 
   var monacoPromise = null;
   var editors = [];
@@ -293,9 +295,33 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
 
+    // Word wrap toggle button
+    var wrapBtn = document.createElement('button');
+    wrapBtn.className = 'monaco-wrap-btn active';
+    // WRAP_ICON is a static SVG constant defined above — safe, not user input
+    wrapBtn.innerHTML = WRAP_ICON + ' Wrap';
+    wrapBtn.setAttribute('aria-label', 'Toggle word wrap');
+    wrapBtn.setAttribute('title', 'Toggle word wrap');
+
+    var headerRight = document.createElement('div');
+    headerRight.className = 'monaco-header-actions';
+    headerRight.appendChild(wrapBtn);
+    headerRight.appendChild(copyBtn);
+
     header.appendChild(langLabel);
-    header.appendChild(copyBtn);
+    header.appendChild(headerRight);
     wrapper.appendChild(header);
+
+    // Tier 1 wrap toggle: controls CSS white-space on the <pre> block
+    var isWrapped = true;
+    wrapBtn.addEventListener('click', function() {
+      isWrapped = !isWrapped;
+      codeEl.style.whiteSpace = isWrapped ? 'pre-wrap' : 'pre';
+      codeEl.style.wordBreak = isWrapped ? 'break-all' : 'normal';
+      // WRAP_ICON / NOWRAP_ICON are static SVG constants — safe, not user input
+      wrapBtn.innerHTML = (isWrapped ? WRAP_ICON + ' Wrap' : NOWRAP_ICON + ' No wrap');
+      wrapBtn.classList.toggle('active', isWrapped);
+    });
 
     // Move the original <pre> block (or Rouge wrapper) inside
     var replaceTarget = findReplaceTarget(preEl);
@@ -307,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
     preEl.style.borderRadius = '0 0 8px 8px';
     preEl.style.border = 'none';
 
-    return { wrapper: wrapper, preEl: preEl, codeEl: codeEl, language: language, codeText: codeText };
+    return { wrapper: wrapper, preEl: preEl, codeEl: codeEl, language: language, codeText: codeText, wrapBtn: wrapBtn };
   }
 
   // ─── TIER 2: Monaco Editor upgrade (self-hosted) ────────────────────
@@ -525,12 +551,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
       editors.push(editor);
 
-      // Auto-size height after content is laid out
-      requestAnimationFrame(function() {
+      // Auto-size height after content is laid out, respecting max-height
+      function resizeEditor() {
         var contentHeight = editor.getContentHeight();
-        container.style.height = contentHeight + 'px';
+        var cappedHeight = Math.max(Math.min(contentHeight, maxHeight), 40);
+        container.style.height = cappedHeight + 'px';
+        editor.updateOptions({
+          scrollbar: { vertical: contentHeight > maxHeight ? 'auto' : 'hidden' }
+        });
         editor.layout();
-      });
+      }
+      requestAnimationFrame(resizeEditor);
+
+      // Wire up wrap toggle to Monaco editor
+      var wrapBtn = blockInfo.wrapBtn;
+      if (wrapBtn) {
+        var monacoWrapped = true;
+        // Replace the Tier 1 click handler with Monaco-aware one
+        var newWrapBtn = wrapBtn.cloneNode(true);
+        wrapBtn.parentNode.replaceChild(newWrapBtn, wrapBtn);
+        newWrapBtn.addEventListener('click', function() {
+          monacoWrapped = !monacoWrapped;
+          editor.updateOptions({ wordWrap: monacoWrapped ? 'on' : 'off' });
+          // Static SVG constants — safe, not user input
+          newWrapBtn.innerHTML = (monacoWrapped ? WRAP_ICON + ' Wrap' : NOWRAP_ICON + ' No wrap');
+          newWrapBtn.classList.toggle('active', monacoWrapped);
+          requestAnimationFrame(resizeEditor);
+        });
+      }
     }).catch(function() {
       // Monaco failed — remove container, original pre stays visible inside wrapper
       container.remove();

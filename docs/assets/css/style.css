@@ -1173,6 +1173,44 @@ body {
   transition: all 0.15s ease;
 }
 
+.monaco-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.monaco-wrap-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.15s ease;
+}
+
+.monaco-wrap-btn:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-light);
+  background: var(--color-bg-tertiary);
+}
+
+.monaco-wrap-btn.active {
+  color: var(--color-link);
+}
+
+.monaco-wrap-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
 .monaco-copy-btn:hover {
   color: var(--color-text-primary);
   border-color: var(--color-border-light);
