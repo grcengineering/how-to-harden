@@ -1,0 +1,53 @@
+// HTH Anthropic Claude Control 7.6: Lock Down Hooks and Plugins
+// Profile: L2 | NIST: CM-7, SI-7 | SOC 2: CC6.1, CC8.1
+// https://howtoharden.com/guides/anthropic-claude/#76-lock-down-hooks-and-plugins
+//
+// Hook and plugin governance settings for managed-settings.json.
+// Prevents untrusted hooks, restricts plugin marketplaces,
+// and controls HTTP hook destinations.
+// Reference: code.claude.com/docs/en/hooks, code.claude.com/docs/en/plugin-marketplaces
+
+// HTH Guide Excerpt: begin hooks-plugins-hardened
+// L2 Hardened hook and plugin lockdown.
+// Only managed hooks execute; plugin installs restricted to
+// approved marketplaces; HTTP hooks limited to internal URLs.
+  {
+    "allowManagedHooksOnly": true,
+    "allowedHttpHookUrls": [
+      "https://hooks.example.com/*",
+      "https://security.example.com/api/*"
+    ],
+    "httpHookAllowedEnvVars": [
+      "HOOK_AUTH_TOKEN"
+    ],
+    "strictKnownMarketplaces": [
+      {
+        "source": "github",
+        "repo": "your-org/approved-plugins"
+      }
+    ],
+    "blockedMarketplaces": [
+      {
+        "source": "github",
+        "repo": "untrusted-org/plugins"
+      }
+    ],
+    "pluginTrustMessage": "Only plugins approved by the security team are permitted. Contact #security-approvals for new plugin requests."
+  }
+// HTH Guide Excerpt: end hooks-plugins-hardened
+
+// HTH Guide Excerpt: begin hooks-plugins-maximum
+// L3 Maximum Security — no plugins, no hooks, no HTTP hook URLs.
+// Complete lockdown of extensibility surface.
+  {
+    "allowManagedHooksOnly": true,
+    "disableAllHooks": false,
+    "allowedHttpHookUrls": [],
+    "httpHookAllowedEnvVars": [],
+    "strictKnownMarketplaces": [],
+    "blockedMarketplaces": [],
+    "pluginTrustMessage": "Plugin installation is disabled by organizational policy.",
+    "allowManagedMcpServersOnly": true,
+    "allowManagedPermissionRulesOnly": true
+  }
+// HTH Guide Excerpt: end hooks-plugins-maximum

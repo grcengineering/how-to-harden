@@ -2,11 +2,18 @@
 // Profile: L1 | NIST: CM-6, CM-7 | SOC 2: CC6.1, CC8.1
 // https://howtoharden.com/guides/anthropic-claude/#71-deploy-managed-settings-via-mdm
 //
-// managed-settings.json — MDM-deployed enterprise configuration
-// Deploy to OS-specific system path:
-//   macOS:   /Library/Application Support/ClaudeCode/managed-settings.json
-//   Linux:   /etc/claude-code/managed-settings.json
-//   Windows: C:\Program Files\ClaudeCode\managed-settings.json
+// managed-settings.json — Enterprise configuration deployed via:
+//   1. Server-managed settings (Claude.ai admin console, Team/Enterprise)
+//   2. MDM/OS-level policies:
+//      macOS:   com.anthropic.claudecode managed preferences domain (Jamf/Kandji)
+//      Windows: HKLM\SOFTWARE\Policies\ClaudeCode registry key (GPO/Intune)
+//   3. File-based deployment to system paths:
+//      macOS:   /Library/Application Support/ClaudeCode/managed-settings.json
+//      Linux:   /etc/claude-code/managed-settings.json
+//      Windows: C:\Program Files\ClaudeCode\managed-settings.json
+//   4. Drop-in directory (managed-settings.d/*.json) for modular policy fragments
+//      Files are sorted alphabetically and deep-merged on top of base config.
+//      Use numeric prefixes: 10-telemetry.json, 20-security.json
 
 // HTH Guide Excerpt: begin managed-settings-baseline
 // Anthropic official example: settings-lax.json (L1 Baseline)
@@ -135,11 +142,24 @@
       {"serverName": "shell"},
       {"serverName": "puppeteer"}
     ],
+    "allowManagedMcpServersOnly": true,
+    "channelsEnabled": false,
+    "disableAutoMode": "disable",
+    "blockedMarketplaces": [],
+    "pluginTrustMessage": "Only IT-approved plugins are permitted.",
+    "allowedHttpHookUrls": ["https://hooks.example.com/*"],
+    "httpHookAllowedEnvVars": ["HOOK_AUTH_TOKEN"],
     "sandbox": {
       "enabled": true,
+      "failIfUnavailable": true,
       "autoAllowBashIfSandboxed": false,
       "allowUnsandboxedCommands": false,
       "excludedCommands": ["docker"],
+      "filesystem": {
+        "denyRead": ["~/.aws/credentials", "~/.ssh/id_*"],
+        "denyWrite": ["/etc", "/usr/local/bin"],
+        "allowWrite": ["/tmp/build"]
+      },
       "network": {
         "allowUnixSockets": [],
         "allowAllUnixSockets": false,
@@ -149,6 +169,7 @@
           "*.npmjs.org",
           "registry.yarnpkg.com"
         ],
+        "allowManagedDomainsOnly": true,
         "httpProxyPort": null,
         "socksProxyPort": null
       },

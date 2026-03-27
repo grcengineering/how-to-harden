@@ -6,9 +6,9 @@ slug: "anthropic-claude"
 tier: "1"
 category: "Productivity"
 description: "AI platform security hardening for Claude API, Console, SSO, workspace isolation, and admin controls"
-version: "0.4.0"
+version: "0.5.0"
 maturity: "draft"
-last_updated: "2026-02-21"
+last_updated: "2026-03-27"
 ---
 
 ## Overview
@@ -27,7 +27,7 @@ Anthropic Claude is an AI assistant platform serving organizations through both 
 - **L3 (Maximum Security):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Anthropic Claude security configurations including authentication (SSO/SCIM), organization role management, API key lifecycle, workspace segmentation, data residency, usage monitoring, integration security, and Claude Code enterprise controls (MDM managed settings, permission restrictions, MCP server governance, developer analytics). Model behavior configuration (system prompts, safety settings) is out of scope. This guide applies to Claude API, Claude Team, and Claude Enterprise plans.
+This guide covers Anthropic Claude security configurations including authentication (SSO/SCIM), organization role management, API key lifecycle, workspace segmentation, data residency, usage monitoring, integration security, and comprehensive Claude Code and Cowork enterprise controls — MDM/server-managed settings (including drop-in directory and OS-level policy delivery), permission restrictions, MCP server governance, developer analytics, bash sandbox isolation (Seatbelt/bubblewrap), hook and plugin supply chain security, prompt injection and rules file attack defense, CI/CD pipeline hardening (harden-runner, security review actions), external sandbox tooling (nono, NVIDIA OpenShell), and Cowork collaborative session governance. Model behavior configuration (system prompts, safety settings) is out of scope. This guide applies to Claude API, Claude Team, and Claude Enterprise plans.
 
 ---
 
@@ -40,6 +40,16 @@ This guide covers Anthropic Claude security configurations including authenticat
 5. [Monitoring & Usage Controls](#5-monitoring--usage-controls)
 6. [Third-Party Integration Security](#6-third-party-integration-security)
 7. [Claude Code Enterprise Controls](#7-claude-code-enterprise-controls)
+   - [7.1 Deploy Managed Settings via MDM](#71-deploy-managed-settings-via-mdm)
+   - [7.2 Restrict Claude Code Permissions and Tools](#72-restrict-claude-code-permissions-and-tools)
+   - [7.3 Control MCP Server Access](#73-control-mcp-server-access)
+   - [7.4 Monitor Claude Code Developer Metrics](#74-monitor-claude-code-developer-metrics)
+   - [7.5 Enforce Bash Sandbox Isolation](#75-enforce-bash-sandbox-isolation)
+   - [7.6 Lock Down Hooks and Plugins](#76-lock-down-hooks-and-plugins)
+   - [7.7 Defend Against Prompt Injection and Rules File Attacks](#77-defend-against-prompt-injection-and-rules-file-attacks)
+   - [7.8 Harden Claude Code in CI/CD Pipelines](#78-harden-claude-code-in-cicd-pipelines)
+   - [7.9 Deploy External Sandbox Tooling](#79-deploy-external-sandbox-tooling)
+   - [7.10 Govern Claude Cowork and Collaborative Sessions](#710-govern-claude-cowork-and-collaborative-sessions)
 8. [Compliance Quick Reference](#8-compliance-quick-reference)
 
 ---
@@ -908,7 +918,7 @@ Assess the security posture of applications and services that consume your Claud
 | SOC 2 | CC6.1, CC8.1 |
 
 #### Description
-Deploy a `managed-settings.json` file to all developer workstations via MDM (Jamf, Intune, Kandji) to enforce organization-wide Claude Code security policies. Managed settings cannot be overridden by user or project settings. Alternatively, use server-managed settings via the Claude.ai admin console (Team v2.1.38+ / Enterprise v2.1.30+), which requires no MDM infrastructure.
+Deploy organization-wide Claude Code security policies using one of four managed settings delivery mechanisms. Managed settings cannot be overridden by user or project settings. Options include: (1) **Server-managed settings** via the Claude.ai admin console (Team v2.1.38+ / Enterprise v2.1.30+), requiring no MDM; (2) **MDM/OS-level policies** via macOS managed preferences (`com.anthropic.claudecode` domain in Jamf/Kandji) or Windows registry (`HKLM\SOFTWARE\Policies\ClaudeCode` via GPO/Intune); (3) **File-based** `managed-settings.json` deployed to system paths; (4) **Drop-in directory** (`managed-settings.d/*.json`) for modular policy fragments that deep-merge onto the base config.
 
 #### Rationale
 **Why This Matters:**
@@ -941,11 +951,13 @@ Deploy a `managed-settings.json` file to all developer workstations via MDM (Jam
 
 Deploy to the correct OS-specific path:
 
-| OS | Path |
-|----|------|
-| macOS | `/Library/Application Support/ClaudeCode/managed-settings.json` |
-| Linux / WSL | `/etc/claude-code/managed-settings.json` |
-| Windows | `C:\Program Files\ClaudeCode\managed-settings.json` |
+| OS | File Path | MDM/Policy Path |
+|----|-----------|-----------------|
+| macOS | `/Library/Application Support/ClaudeCode/managed-settings.json` | `com.anthropic.claudecode` preferences domain (Jamf/Kandji profile) |
+| Linux / WSL | `/etc/claude-code/managed-settings.json` | N/A |
+| Windows | `C:\Program Files\ClaudeCode\managed-settings.json` | `HKLM\SOFTWARE\Policies\ClaudeCode` → `Settings` (REG_SZ with JSON) |
+
+For modular policies, create a `managed-settings.d/` directory alongside the base file. Use numeric prefixes to control merge order (e.g., `10-telemetry.json`, `20-security.json`). Files are sorted alphabetically, deep-merged onto the base — arrays are concatenated and de-duplicated, objects are deep-merged, and later files override earlier ones for scalar values.
 
 **Step 3: Verify Deployment**
 1. On a test machine, run `claude --version` to confirm Claude Code sees the managed settings
@@ -1234,19 +1246,622 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 
 ---
 
+### 7.5 Enforce Bash Sandbox Isolation
+
+**Profile Level:** L2 (Hardened)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | SC-39, CM-7 |
+| SOC 2 | CC6.1, CC6.8 |
+
+#### Description
+Enable OS-level bash command sandboxing to isolate Claude Code's subprocess execution. The sandbox restricts filesystem access to the current working directory, routes network traffic through a validating proxy with domain allowlisting, and enforces restrictions at the kernel level using Seatbelt (macOS) or bubblewrap (Linux/WSL2). Set `failIfUnavailable: true` to prevent Claude Code from starting if sandboxing cannot be established.
+
+#### Rationale
+**Why This Matters:**
+- Without sandboxing, Claude Code bash commands have full access to the developer's filesystem and network
+- A prompt injection or confused agent could read credentials (`~/.aws/credentials`, `~/.ssh/`), exfiltrate data via `curl`, or modify system files
+- Kernel-level enforcement cannot be bypassed by the AI agent — restrictions are irrevocable for the process
+- `allowManagedDomainsOnly: true` prevents developers from approving new network domains at runtime
+
+**Attack Prevented:** Credential theft via filesystem access, data exfiltration via network, unauthorized file modification, supply chain attacks via package manager hijacking
+
+#### Prerequisites
+- Managed settings deployment (Control 7.1)
+- macOS: Seatbelt available (built-in on all supported macOS versions)
+- Linux/WSL2: bubblewrap (`bwrap`) and `socat` installed
+- Inventory of required network domains for development workflows
+
+#### ClickOps Implementation
+
+**Step 1: Enable Sandbox**
+1. Navigate to: **claude.ai** → **Admin Settings** → **Claude Code** → **Managed settings**
+2. Add `"sandbox": { "enabled": true, "failIfUnavailable": true }` to your managed settings JSON
+3. Set `"allowUnsandboxedCommands": false` to close the `dangerouslyDisableSandbox` escape hatch
+
+**Step 2: Configure Network Allowlist**
+1. Identify required domains: `github.com`, package registries (`*.npmjs.org`, `pypi.org`), internal services
+2. Add to `sandbox.network.allowedDomains` array
+3. Set `"allowManagedDomainsOnly": true` to prevent user overrides
+4. Non-allowed domains are blocked automatically without prompting
+
+**Step 3: Configure Filesystem Restrictions**
+1. Add sensitive paths to `sandbox.filesystem.denyRead`: `~/.aws/credentials`, `~/.ssh/id_*`, `~/.gnupg/`
+2. Add critical system paths to `sandbox.filesystem.denyWrite`: `/etc`, `/usr/local/bin`
+3. Optionally set `"allowManagedReadPathsOnly": true` for L3 environments
+
+**Step 4: Install Linux Dependencies (if needed)**
+1. On Ubuntu/Debian: `sudo apt install bubblewrap socat`
+2. On Fedora/RHEL: `sudo dnf install bubblewrap socat`
+3. Verify: Run `/sandbox` in Claude Code — should report "Sandbox active"
+
+**Time to Complete:** ~20 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="anthropic-claude" section="7.5" %}
+
+#### Validation & Testing
+1. [ ] Run Claude Code with sandbox enabled — verify `/sandbox` shows active status
+2. [ ] Attempt to read `~/.aws/credentials` via Claude Code — should be denied
+3. [ ] Attempt to `curl` a non-allowlisted domain — should be blocked
+4. [ ] Set `failIfUnavailable: true` and remove bubblewrap (Linux) — Claude Code should refuse to start
+5. [ ] Verify `allowManagedDomainsOnly` prevents user domain approval prompts
+
+**Expected result:** All bash commands execute in kernel-enforced sandbox; credential paths are unreadable; network limited to approved domains
+
+#### Monitoring & Maintenance
+**Ongoing monitoring:**
+- Monitor for sandbox startup failures via OpenTelemetry metrics
+- Track domain approval requests that hit the managed-only block
+
+**Maintenance schedule:**
+- **Monthly:** Review and update `allowedDomains` as development tooling evolves
+- **Quarterly:** Audit `denyRead`/`denyWrite` paths against new credential storage patterns
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|----------|
+| **User Experience** | Medium | Some commands may fail if domains not allowlisted |
+| **System Performance** | Low | Proxy adds <5ms latency per network request |
+| **Maintenance Burden** | Medium | Domain allowlist needs updating as tooling changes |
+| **Rollback Difficulty** | Easy | Set `sandbox.enabled: false` in managed settings |
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC6.8 | Logical access security; system boundaries |
+| **NIST 800-53** | SC-39, CM-7 | Process isolation; least functionality |
+| **ISO 27001** | A.13.1.3 | Network segregation |
+
+---
+
+### 7.6 Lock Down Hooks and Plugins
+
+**Profile Level:** L2 (Hardened)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | CM-7, SI-7 |
+| SOC 2 | CC6.1, CC8.1 |
+
+#### Description
+Restrict the Claude Code extensibility surface by enforcing managed-only hooks, controlling plugin marketplace access, and allowlisting HTTP hook destinations. Hooks execute at lifecycle events (PreToolUse, PostToolUse, SessionStart, etc.) and can run arbitrary commands — a malicious hook can exfiltrate data or modify tool behavior. Plugins extend Claude Code with skills, agents, commands, and hooks from external sources.
+
+#### Rationale
+**Why This Matters:**
+- CVE-2025-59536 (CVSS 8.7) demonstrated RCE via malicious hooks in `.claude/settings.json`, executing commands before the trust dialog appeared
+- The Snyk ToxicSkills study (February 2026) found 30+ malicious skills on ClawHub, with 91% combining prompt injection and malicious code
+- Publishing a new skill requires only a SKILL.md file and a one-week-old GitHub account — no code signing or security review
+- HTTP hooks can exfiltrate session data to attacker-controlled servers if URLs are not restricted
+- `allowManagedHooksOnly` prevents user/project/plugin hooks from executing — only admin-deployed hooks run
+
+**Attack Prevented:** Malicious hook execution, plugin supply chain compromise, HTTP-based data exfiltration, unauthorized skill installation
+
+**Real-World Incidents:**
+- CVE-2025-59536 (October 2025): RCE via `.claude/settings.json` hook injection, patched in Claude Code update
+- Snyk ToxicSkills (February 2026): 30+ malicious skills distributed via ClawHub marketplace targeting Claude Code and OpenClaw users
+
+#### Prerequisites
+- Managed settings deployment (Control 7.1)
+- Inventory of approved internal plugin marketplaces
+- List of authorized HTTP webhook endpoints
+
+#### ClickOps Implementation
+
+**Step 1: Lock Hooks to Managed-Only**
+1. Navigate to: **claude.ai** → **Admin Settings** → **Claude Code** → **Managed settings**
+2. Add `"allowManagedHooksOnly": true` — blocks all user, project, and plugin hooks
+3. Define any required hooks directly in managed settings under the `"hooks"` key
+
+**Step 2: Restrict Plugin Marketplaces**
+1. Add `"strictKnownMarketplaces"` with your approved marketplace repos only
+2. Set to empty array `[]` to block all marketplace plugin installations
+3. Add `"blockedMarketplaces"` for explicitly banned sources — checked before download
+4. Optionally set `"pluginTrustMessage"` with org-specific guidance for developers
+
+**Step 3: Allowlist HTTP Hook URLs**
+1. Add `"allowedHttpHookUrls": ["https://hooks.example.com/*"]` with approved webhook endpoints
+2. Set to empty array `[]` to block all HTTP hooks
+3. Add `"httpHookAllowedEnvVars": ["HOOK_AUTH_TOKEN"]` to restrict which env vars hooks can access
+
+**Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="anthropic-claude" section="7.6" %}
+
+#### Validation & Testing
+1. [ ] Create a hook in `.claude/settings.json` — verify it does not execute when `allowManagedHooksOnly` is true
+2. [ ] Attempt to install a plugin from a non-approved marketplace — should be blocked
+3. [ ] Verify `blockedMarketplaces` entries are rejected before download
+4. [ ] Create an HTTP hook targeting a non-allowlisted URL — verify it is blocked
+5. [ ] Verify `pluginTrustMessage` appears during plugin trust prompts
+
+**Expected result:** Only managed hooks execute; plugins limited to approved sources; HTTP hooks restricted to approved endpoints
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|----------|
+| **User Experience** | High | Developers cannot install arbitrary plugins or create hooks |
+| **System Performance** | None | Settings evaluated once at startup |
+| **Maintenance Burden** | Medium | Approved marketplace and webhook lists need updates |
+| **Rollback Difficulty** | Easy | Remove restrictive settings from managed config |
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC8.1 | Logical access security; change management |
+| **NIST 800-53** | CM-7, SI-7 | Least functionality; software integrity |
+| **ISO 27001** | A.12.5.1, A.12.6.1 | Software installation controls; technical vulnerability management |
+
+---
+
+### 7.7 Defend Against Prompt Injection and Rules File Attacks
+
+**Profile Level:** L2 (Hardened)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | SI-10, SI-7 |
+| SOC 2 | CC6.1, CC7.2 |
+
+#### Description
+Implement defenses against prompt injection attacks that target Claude Code through repository files. Attackers embed malicious instructions in CLAUDE.md, AGENTS.md, SKILL.md, and other rules files that Claude Code reads as context. These "rules file backdoor" attacks can instruct the AI to exfiltrate data, disable safety features, or execute malicious commands. Deploy automated scanning of rules files and use open-source security tools to detect threats before they execute.
+
+#### Rationale
+**Why This Matters:**
+- Claude Code automatically reads CLAUDE.md, AGENTS.md, and `.claude/` directory contents as trusted instructions
+- Pillar Security's "Rules File Backdoor" research demonstrated that invisible Unicode characters and carefully crafted instructions in rules files can hijack AI agent behavior
+- Lasso Security found that indirect prompt injection through code context can cause Claude to exfiltrate user data via Anthropic's own APIs
+- The InversePrompt attack (CVE-2025-54794, CVE-2025-54795) showed Claude could be turned against itself through crafted prompts
+- Open-source tools like claude-code-safety-net provide PreToolUse hooks that catch destructive commands before the permission system evaluates them
+
+**Attack Prevented:** Data exfiltration via injected instructions, credential theft through rules file manipulation, destructive commands via confused agent, supply chain compromise through malicious skills
+
+**Real-World Incidents:**
+- Pillar Security "Rules File Backdoor" (March 2025): Demonstrated invisible instruction injection in AI agent config files using hidden Unicode characters
+- CVE-2025-54794/54795 InversePrompt (2025): Claude turned into data exfiltration tool via crafted prompts, CVSS 8.7
+- CVE-2025-59536 (October 2025): RCE via malicious hooks in `.claude/settings.json`, CVSS 8.7 — fixed in v1.0.111
+- CVE-2025-59828/65099 (2025): Pre-trust-dialog RCE via Yarn config files, CVSS 7.7 — fixed in v1.0.39
+- CVE-2026-21852 (January 2026): API key exfiltration via `ANTHROPIC_BASE_URL` override in repo settings, CVSS 5.3 — fixed in v2.0.65
+- Lasso Security (2026): Indirect prompt injection causing 30MB data uploads via Anthropic APIs
+- Snyk ToxicSkills (February 2026): 534 skills (13.4%) with critical issues, 76 confirmed malicious payloads on ClawHub; 12% of entire registry compromised during ClawHavoc campaign
+- PromptArmor / Cowork (January 2026): File exfiltration from Claude Cowork via prompt injection using Anthropic's own whitelisted API as exfil channel
+- Oasis Security "Claudy Day" (March 2026): Chained invisible prompt injection, Anthropic Files API exfil, and open redirect for complete attack pipeline
+- Postmark-MCP (September 2025): Malicious MCP server on npm BCC'd all outgoing emails to attacker — 1,643 downloads affected
+
+#### Prerequisites
+- Git pre-commit hook infrastructure or CI/CD pipeline
+- Familiarity with Claude Code rules file locations (CLAUDE.md, AGENTS.md, `.claude/` directory)
+
+#### ClickOps Implementation
+
+**Step 1: Scan Rules Files Before Trusting Repositories**
+1. Before opening any new repository with Claude Code, review `CLAUDE.md` and `.claude/` directory contents
+2. Look for: encoded payloads (base64), invisible Unicode characters, instruction override patterns, network exfiltration commands
+3. Check for files with hidden characters: `cat -v CLAUDE.md | grep -c '\^'`
+
+**Step 2: Install Protective Hooks**
+1. Install claude-code-safety-net via Claude Code plugin marketplace:
+   - Run `/plugin marketplace add kenryu42/cc-marketplace`
+   - Run `/plugin install safety-net@cc-marketplace`
+   - Run `/reload-plugins`
+2. Safety Net acts as a PreToolUse hook that catches destructive git and filesystem commands before execution
+3. It inspects commands before the permission system, providing a fallback layer
+
+**Step 3: Deploy Rules File Scanning in CI**
+1. Add the HTH rules file scanner script as a pre-commit hook or CI step
+2. The scanner checks for: data exfiltration patterns, encoded payloads, invisible Unicode, instruction override attempts, safety bypass requests
+3. Configure to run on every PR that modifies `CLAUDE.md`, `AGENTS.md`, or `.claude/` directory
+
+**Step 4: Use Security Scanner Plugins (Optional)**
+1. Install vexscan for comprehensive plugin/skill scanning: Detects malicious patterns in plugins, skills, MCP servers, and hooks using pattern detection and AI-powered analysis. Source: `github.com/edimuj/vexscan-claude-code`
+2. Use Snyk agent-scan to audit MCP server configurations for vulnerabilities. Source: `github.com/snyk/agent-scan` (Apache-2.0)
+3. Use Cisco mcp-scanner to scan MCP servers for tool poisoning, excessive permissions, and SSRF risks. Source: `github.com/cisco-ai-defense/mcp-scanner` (Apache-2.0)
+4. Deploy Wiz secure-rules-files as baseline CLAUDE.md templates that enforce secure coding patterns. Source: `github.com/wiz-sec-public/secure-rules-files`
+
+**Time to Complete:** ~30 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="anthropic-claude" section="7.7" %}
+
+#### Validation & Testing
+1. [ ] Run the rules file scanner against a clean repository — should return exit code 0
+2. [ ] Create a test CLAUDE.md with `ignore all previous instructions` — scanner should flag it
+3. [ ] Create a test file with invisible Unicode (zero-width space) — scanner should detect it
+4. [ ] Verify claude-code-safety-net blocks `git reset --hard` and `rm -rf /` commands
+5. [ ] Verify scanner runs in CI on PRs modifying rules files
+
+**Expected result:** Malicious rules files detected before Claude Code processes them; destructive commands caught by safety-net hook
+
+#### Monitoring & Maintenance
+**Ongoing monitoring:**
+- CI pipeline alerts when rules file scanner finds suspicious patterns
+- Review safety-net hook blocks in Claude Code session logs
+
+**Maintenance schedule:**
+- **Monthly:** Update scanner patterns as new attack techniques emerge
+- **Quarterly:** Review security research for new prompt injection vectors
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|----------|
+| **User Experience** | Low | Scanner runs in background; safety-net is transparent for safe commands |
+| **System Performance** | Low | Scanner adds <5s to pre-commit; safety-net adds negligible latency |
+| **Maintenance Burden** | Low | Scanner patterns updated infrequently |
+| **Rollback Difficulty** | Easy | Remove pre-commit hook or uninstall plugin |
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC7.2 | Logical access security; system monitoring |
+| **NIST 800-53** | SI-10, SI-7 | Information input validation; software integrity |
+| **ISO 27001** | A.12.2.1, A.14.2.8 | Controls against malware; system security testing |
+
+---
+
+### 7.8 Harden Claude Code in CI/CD Pipelines
+
+**Profile Level:** L2 (Hardened)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | SA-11, SA-15 |
+| SOC 2 | CC7.1, CC8.1 |
+
+#### Description
+Secure Claude Code when used in CI/CD pipelines via GitHub Actions. Unlike GitHub Copilot which includes a network firewall by default, `anthropics/claude-code-action` operates without network restrictions, giving unrestricted access to external resources. Use `step-security/harden-runner` to monitor and control network egress, and `anthropics/claude-code-security-review` for automated security analysis of pull requests.
+
+#### Rationale
+**Why This Matters:**
+- Claude Code in GitHub Actions has unrestricted network access by default — a compromised or confused agent can exfiltrate secrets to any external server
+- The `ANTHROPIC_API_KEY` secret is available to the action and could be stolen via network exfiltration
+- `harden-runner` builds a baseline of allowed outbound connections and can block or alert on anomalous network calls
+- `claude-code-security-review` provides AI-powered security analysis but is not hardened against prompt injection — only use on trusted PRs
+- Tool restrictions (`allowed_tools`/`disallowed_tools`) limit what Claude Code can do in CI context
+
+**Attack Prevented:** Secret exfiltration via CI network access, unauthorized API calls from CI, malicious code generation in automated PRs, supply chain attacks through CI/CD
+
+**Real-World Incidents:**
+- StepSecurity research (2026): Documented unrestricted network access in claude-code-action as a security gap vs. GitHub Copilot's default firewall
+
+#### Prerequisites
+- GitHub Actions workflow infrastructure
+- Anthropic API key stored as GitHub Actions secret
+- Understanding of `anthropics/claude-code-action` and `anthropics/claude-code-security-review` Actions
+
+#### ClickOps Implementation
+
+**Step 1: Add Harden-Runner to Claude Code Workflows**
+1. Add `step-security/harden-runner` as the first step in any job using Claude Code
+2. Start with `egress-policy: audit` to build a baseline of expected network connections
+3. After baseline is established, switch to `egress-policy: block` with explicit `allowed-endpoints`
+4. Required endpoints: `api.anthropic.com:443`, `github.com:443`, `api.github.com:443`
+
+**Step 2: Configure Claude Code Action with Tool Restrictions**
+1. Use `allowed_tools` to restrict Claude Code to safe operations: `Read`, `Glob`, `Grep`, `Agent`
+2. Use `disallowed_tools` to block dangerous tools: `Bash`, `WebFetch`, `WebSearch`
+3. Set `max_turns` to limit agent loops (recommended: 10-20 for review tasks)
+4. Pin the action by SHA, not tag (see Control 7.8 CI/CD workflow example)
+
+**Step 3: Add Security Review to PR Workflows**
+1. Add `anthropics/claude-code-security-review` action to PR workflows
+2. **WARNING:** Only use on trusted PRs from your organization — the action is not hardened against prompt injection
+3. Do not enable on fork PRs or PRs from external contributors
+
+**Step 4: Set Minimal Permissions**
+1. Set workflow-level `permissions: {}` (no permissions by default)
+2. Grant only required permissions per job: `contents: read`, `pull-requests: write`
+3. Never use `permissions: write-all` for Claude Code workflows
+
+**Time to Complete:** ~20 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="anthropic-claude" section="7.8" %}
+
+#### Validation & Testing
+1. [ ] Verify harden-runner is the first step in Claude Code CI jobs
+2. [ ] Run workflow in audit mode — review network connection baseline
+3. [ ] Verify `allowed_tools`/`disallowed_tools` restrict Claude Code capabilities
+4. [ ] Verify `max_turns` limits agent execution length
+5. [ ] Confirm security review action runs only on trusted PRs (not forks)
+
+**Expected result:** Claude Code CI workflows have monitored network egress, restricted tool access, and automated security review
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|----------|
+| **User Experience** | Low | Security checks run automatically in CI |
+| **System Performance** | Low | Harden-runner adds <10s to job startup |
+| **Maintenance Burden** | Medium | Network baseline needs updating when new endpoints are added |
+| **Rollback Difficulty** | Easy | Remove harden-runner step from workflow |
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.1, CC8.1 | Vulnerability management; change management |
+| **NIST 800-53** | SA-11, SA-15 | Developer security testing; development process |
+| **ISO 27001** | A.14.2.1, A.14.2.8 | Secure development policy; system security testing |
+
+---
+
+### 7.9 Deploy External Sandbox Tooling
+
+**Profile Level:** L3 (Maximum Security)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | SC-39, SC-7 |
+| SOC 2 | CC6.1, CC6.8 |
+
+#### Description
+Deploy kernel-enforced sandbox tools that wrap Claude Code in an isolation layer independent of Claude's own built-in sandbox. These tools provide defense-in-depth: even if Claude Code's sandbox is bypassed, kernel-level restrictions (Landlock, Seatbelt) or container-level isolation remain enforced. Recommended open-source options: **nono** (kernel-enforced sandbox with credential protection and atomic rollback), **NVIDIA OpenShell** (container-based sandbox with network policy enforcement), **Trail of Bits devcontainer** (Docker-based sandboxed environment for security audits), and **Stacklok CodeGate** (security proxy/gateway intercepting AI assistant requests to detect secrets leakage and malicious packages).
+
+#### Rationale
+**Why This Matters:**
+- Claude Code's built-in sandbox is controlled by Claude Code itself — a vulnerability in Claude Code could theoretically bypass its own sandbox
+- External sandboxes operate at the kernel or container level, outside Claude Code's control
+- nono uses Landlock (Linux) and Seatbelt (macOS) to create irrevocable restrictions — once applied, not even nono itself can remove them
+- OpenShell provides container-based isolation where API keys never touch disk and network egress is policy-controlled
+- Both tools provide cryptographic audit trails for compliance and incident response
+
+**Attack Prevented:** Sandbox escape, credential exposure via filesystem, network exfiltration bypassing built-in controls, unauthorized privilege escalation
+
+#### Prerequisites
+- **nono:** macOS or Linux, Homebrew (optional, for easy install)
+- **OpenShell:** Linux with container runtime support, `curl` for installer
+- Understanding that these are complementary to (not replacements for) Claude Code's built-in sandbox
+
+#### ClickOps Implementation
+
+**Option A: nono (Kernel-Enforced Sandbox)**
+
+**Step 1: Install nono**
+1. macOS/Linux: `brew install nono`
+2. Verify: `nono --version`
+
+**Step 2: Run Claude Code in nono**
+1. Basic: `nono run --profile claude-code -- claude`
+2. Hardened: Add `--rollback` for filesystem snapshots, `--supervised` for interactive approval, `--proxy-credential` to inject API keys without disk exposure
+3. The `claude-code` profile grants read/write to CWD only, network via allowlisted proxy, credential injection without disk exposure
+
+**Step 3: Review Audit Trail**
+1. `nono audit list` — view all recorded sessions
+2. `nono audit show <session-id> --json` — detailed session audit
+3. `nono rollback list` — view available restore points
+4. `nono rollback restore` — restore to pre-session state
+
+**Option B: NVIDIA OpenShell (Container Sandbox)**
+
+**Step 1: Install OpenShell**
+1. `curl -LsSf https://raw.githubusercontent.com/NVIDIA/OpenShell/main/install.sh | sh`
+2. Verify: `openshell --version`
+
+**Step 2: Launch Claude Code in Sandbox**
+1. `openshell sandbox create -- claude`
+2. OpenShell auto-detects `ANTHROPIC_API_KEY`, creates a provider, and injects credentials without persisting to disk
+3. Filesystem is locked at creation, network blocked by default
+
+**Step 3: Apply Security Policy**
+1. Create a YAML policy file defining filesystem, network, and process restrictions
+2. `openshell policy set hardened-claude --policy ./claude-policy.yaml`
+3. Static policies (filesystem, process) locked at creation; dynamic policies (network) hot-reloadable
+
+**Step 4: Monitor**
+1. `openshell term` — real-time terminal UI
+2. `openshell logs --tail` — stream sandbox logs
+
+**Time to Complete:** ~15 minutes per tool
+
+#### Code Implementation
+
+{% include pack-code.html vendor="anthropic-claude" section="7.9" %}
+
+#### Validation & Testing
+1. [ ] Install nono — verify `nono --version` returns version
+2. [ ] Run `nono run --profile claude-code -- claude` — verify sandbox active
+3. [ ] Attempt to read `~/.ssh/id_rsa` from within nono sandbox — should be denied
+4. [ ] Install OpenShell — verify `openshell --version` returns version
+5. [ ] Run `openshell sandbox create -- claude` — verify isolated container launches
+6. [ ] Verify `nono audit list` shows session history
+
+**Expected result:** Claude Code runs inside kernel-enforced or container-enforced sandbox with full audit trail
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|----------|
+| **User Experience** | Medium | Developers must launch Claude Code through wrapper command |
+| **System Performance** | Low | Kernel sandbox adds negligible overhead; container adds ~1s startup |
+| **Maintenance Burden** | Low | Profiles maintained by tool projects; custom policies need occasional updates |
+| **Rollback Difficulty** | Easy | Stop using the wrapper; Claude Code runs normally |
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC6.8 | Logical access security; system boundaries |
+| **NIST 800-53** | SC-39, SC-7 | Process isolation; boundary protection |
+| **ISO 27001** | A.13.1.3, A.13.1.1 | Network segregation; network controls |
+
+---
+
+### 7.10 Govern Claude Cowork and Collaborative Sessions
+
+**Profile Level:** L2 (Hardened)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-3, AU-6 |
+| SOC 2 | CC6.1, CC7.2 |
+
+#### Description
+Configure governance controls for Claude Cowork collaborative sessions, including channel restrictions, session retention policies, organizational login enforcement, and auto-mode restrictions. Claude Cowork enables multi-user collaborative AI sessions — without governance, sensitive data may be shared across session boundaries and audit trails may be incomplete.
+
+#### Rationale
+**Why This Matters:**
+- Cowork activity does not currently appear in audit logs, the Compliance API, or data exports — this is a significant visibility gap across all tiers
+- Without `forceLoginMethod` and `forceLoginOrgUUID`, developers can use personal Claude accounts, bypassing organizational security policies
+- Channels enable external message delivery to Claude Code sessions — without restrictions, unauthorized plugins could push messages
+- `cleanupPeriodDays: 0` deletes all transcripts at startup and disables session persistence entirely — critical for environments handling classified or regulated data
+- `disableAutoMode` prevents the auto-mode classifier from running, ensuring all tool operations require explicit permission evaluation
+
+**Attack Prevented:** Data leakage through uncontrolled collaboration, shadow AI usage via personal accounts, unauthorized channel message injection, session transcript exposure, data exfiltration via Chrome automation, unattended scheduled task abuse
+
+**Critical Limitations (as of March 2026):**
+- Cowork activity is excluded from audit logs, the Compliance API, and data exports — a complete visibility blind spot across all tiers
+- All conversation history is stored locally on user machines with no centralized management or admin export
+- Cowork access is all-or-nothing at the organization level — no per-user or per-role controls during research preview
+- Scheduled tasks run unattended while the app is open with no built-in approval workflows
+- Chrome automation can screenshot, click, fill forms, and execute JavaScript on any non-blocked site
+- A demonstrated attack (reported October 2025) showed prompt injection in documents could trigger `curl` to `api.anthropic.com` file upload using attacker credentials, exfiltrating victim files via a whitelisted domain
+
+#### Prerequisites
+- Claude Team or Enterprise plan
+- Managed settings deployment (Control 7.1)
+- Organization UUID (found in Claude.ai admin settings)
+
+#### ClickOps Implementation
+
+**Step 1: Enforce Organizational Login**
+1. Navigate to: **claude.ai** → **Admin Settings** → **Claude Code** → **Managed settings**
+2. Add `"forceLoginMethod": "claudeai"` to require Claude.ai account login
+3. Add `"forceLoginOrgUUID": "your-org-uuid"` to auto-select the organization
+4. This prevents developers from using personal accounts or switching organizations
+
+**Step 2: Disable Channels (L2)**
+1. Add `"channelsEnabled": false` to block channel message delivery
+2. Add `"allowedChannelPlugins": []` to block all channel plugins
+3. For L2 environments that need channels: use `allowedChannelPlugins` with specific approved plugins only
+
+**Step 3: Configure Session Retention**
+1. Set `"cleanupPeriodDays": 7` for standard environments (7-day retention)
+2. Set `"cleanupPeriodDays": 0` for maximum security (no transcript retention, no session persistence)
+3. Note: Setting to 0 disables `/resume` functionality
+
+**Step 4: Restrict Auto-Mode**
+1. For L2: Add `"disableAutoMode": "disable"` to prevent auto-mode activation entirely. This ensures all tool operations go through explicit permission evaluation and removes `auto` from the `Shift+Tab` permission mode cycle
+2. For organizations that choose to allow auto-mode: configure `autoMode.environment` with trusted infrastructure descriptions (repos, domains, cloud buckets), `autoMode.soft_deny` with natural-language block rules, and `autoMode.allow` with explicit exceptions. Use `claude auto-mode critique` to get AI feedback on custom rules before deployment
+
+**Step 5: Disable Chrome in Cowork (L2)**
+1. Navigate to: **claude.ai** → **Admin Settings** → **Capabilities**
+2. Disable "Chrome in Cowork" — this prevents Claude from automating browser actions (screenshots, clicks, form fills, JavaScript execution)
+3. Note: Chrome is disabled by default on Enterprise but enabled by default on Team — verify your tier's default
+4. If Chrome is required: Create a domain allowlist for approved sites only; financial services, banking, and crypto sites are blocked by default but healthcare portals, cloud consoles, and HR systems are not
+
+**Step 6: Configure Company Announcements**
+1. Add `"companyAnnouncements"` with security policy reminders
+2. Messages display at startup; multiple announcements are cycled randomly
+
+**Step 7: Restrict Connector Write Access**
+1. Review all enabled connectors (Google Drive, Gmail, Slack, GitHub, etc.) in Admin Settings
+2. For each connector, set per-tool permissions: **Allow** (runs automatically), **Ask** (requires confirmation), or **Block** (never runs)
+3. Block all write-access connector tools (`send_email`, `post_message`, `create_file`) unless explicitly justified
+4. Keep read-only access where needed; disable connectors not required by your workflows
+
+**Step 8: Implement Tenant Restrictions (L3)**
+1. Configure network proxy with TLS inspection to inject `anthropic-allowed-org-ids` HTTP header to block personal account access
+2. Without tenant restrictions, developers can switch to personal Claude accounts and bypass all organizational controls
+3. Tenant restrictions are Enterprise-only and require network proxy configuration
+
+**Step 9: Address Local Storage Risks**
+1. All Cowork conversation history and project data is stored locally on each user's machine — there is no centralized storage or admin export capability
+2. Ensure endpoint disk encryption (FileVault on macOS, BitLocker on Windows) is enforced via MDM
+3. Deploy EDR on all machines running Claude Desktop to detect anomalous file access patterns
+4. Set `cleanupPeriodDays` to minimize transcript retention exposure
+
+**Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="anthropic-claude" section="7.10" %}
+
+#### Validation & Testing
+1. [ ] Verify `forceLoginMethod` restricts login to Claude.ai accounts only
+2. [ ] Verify `forceLoginOrgUUID` auto-selects the correct organization
+3. [ ] Verify channels are disabled — no external messages delivered
+4. [ ] Set `cleanupPeriodDays: 0` — verify no `.jsonl` transcripts are written
+5. [ ] Verify `disableAutoMode` removes auto from permission mode options
+6. [ ] Verify company announcements display at startup
+
+**Expected result:** Collaborative sessions governed by organizational policy; personal account access blocked; session retention controlled
+
+#### Monitoring & Maintenance
+**Ongoing monitoring:**
+- Monitor for login attempts outside the forced organization
+- Track channel message delivery attempts (if channels selectively enabled)
+- Note: Cowork audit logs are currently limited — plan for enhanced logging when Anthropic adds support
+
+**Maintenance schedule:**
+- **Monthly:** Review company announcements for relevance
+- **Quarterly:** Audit organization UUID and login enforcement settings
+- **Ongoing:** Monitor Anthropic documentation for Cowork audit log improvements
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|----------|
+| **User Experience** | Medium | Developers cannot use personal accounts or auto-mode |
+| **System Performance** | None | Settings evaluated once at startup |
+| **Maintenance Burden** | Low | Settings rarely change once configured |
+| **Rollback Difficulty** | Easy | Remove governance settings from managed config |
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC7.2 | Logical access security; system monitoring |
+| **NIST 800-53** | AC-3, AU-6 | Access enforcement; audit record review |
+| **ISO 27001** | A.9.4.1, A.12.4.1 | Information access restriction; event logging |
+
+---
+
 ## 8. Compliance Quick Reference
 
 ### SOC 2 Trust Services Criteria Mapping
 
 | Control ID | Anthropic Claude Control | Guide Section |
 |-----------|--------------------------|---------------|
-| CC6.1 | Enforce SSO, Least-Privilege Roles, API Key Scoping, Managed Settings | 1.1, 1.2, 1.3, 2.1, 2.2, 7.1, 7.2 |
+| CC6.1 | Enforce SSO, Least-Privilege Roles, API Key Scoping, Managed Settings, Sandbox, Hooks/Plugins, Prompt Injection Defense, Cowork Governance | 1.1, 1.2, 1.3, 2.1, 2.2, 7.1, 7.2, 7.5, 7.6, 7.7, 7.10 |
 | CC6.2 | Invite Management, Workspace Membership | 3.2, 6.1 |
 | CC6.3 | Role-Based Access, Workspace Scoping | 1.2, 2.1, 3.2 |
 | CC6.6 | Workspace Segmentation, Data Residency | 1.3, 3.1, 4.1 |
-| CC6.8 | Spend Limits and Rate Limits | 5.2 |
-| CC7.2 | Usage Monitoring, Cost Monitoring | 5.1, 5.2 |
-| CC8.1 | Managed Settings, Change Management | 7.1 |
+| CC6.8 | Spend Limits, Sandbox Boundaries, External Sandbox | 5.2, 7.5, 7.9 |
+| CC7.1 | CI/CD Pipeline Security | 7.8 |
+| CC7.2 | Usage Monitoring, Cost Monitoring, Prompt Injection Detection, Cowork Audit | 5.1, 5.2, 7.7, 7.10 |
+| CC8.1 | Managed Settings, Change Management, Hook/Plugin Governance, CI/CD Hardening | 7.1, 7.6, 7.8 |
 | CC9.2 | Integration Risk Assessment, MCP Server Control | 6.2, 7.3 |
 
 ### NIST 800-53 Rev 5 Mapping
@@ -1266,7 +1881,13 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 | SC-7 | Workspace Boundaries, Data Residency | 3.1, 4.1 |
 | SI-4 | System Monitoring | 5.1, 5.2 |
 | CM-6 | Managed Configuration Settings | 7.1 |
-| CM-7 | Least Functionality, Tool Restrictions, MCP Control | 7.1, 7.2, 7.3 |
+| CM-7 | Least Functionality, Tool Restrictions, MCP Control, Sandbox, Hooks/Plugins | 7.1, 7.2, 7.3, 7.5, 7.6 |
+| SA-11 | Developer Security Testing, CI/CD Hardening | 7.8 |
+| SA-15 | Development Process Security | 7.8 |
+| SC-7 | Boundary Protection, External Sandbox | 3.1, 4.1, 7.9 |
+| SC-39 | Process Isolation, Sandbox Enforcement | 7.5, 7.9 |
+| SI-7 | Software Integrity, Hook/Plugin Validation | 7.6, 7.7 |
+| SI-10 | Information Input Validation, Prompt Injection Defense | 7.7 |
 | SI-12 | Data Retention | 4.2 |
 
 ### ISO 27001:2022 Mapping
@@ -1282,7 +1903,13 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 | A.9.4.3 | Password/Key Management | 1.3 |
 | A.12.1.3 | Capacity Management | 5.2 |
 | A.12.4.1 | Event Logging | 5.1 |
-| A.13.1.3 | Network Segregation | 3.1 |
+| A.12.2.1 | Controls Against Malware | 7.7 |
+| A.12.5.1 | Software Installation Controls | 7.6 |
+| A.12.6.1 | Technical Vulnerability Management | 7.6 |
+| A.13.1.1 | Network Controls | 7.9 |
+| A.13.1.3 | Network Segregation | 3.1, 7.5, 7.9 |
+| A.14.2.1 | Secure Development Policy | 7.8 |
+| A.14.2.8 | System Security Testing | 7.7, 7.8 |
 | A.15.1.2 | Supplier Security | 6.2 |
 | A.18.1.4 | Privacy Protection | 4.1 |
 
@@ -1311,6 +1938,12 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 | 7.2 Permission Restrictions | ✅ (MDM only) | ✅ | ✅ |
 | 7.3 MCP Server Control | ✅ (MDM only) | ✅ | ✅ |
 | 7.4 Claude Code Analytics | ✅ | ✅ | ✅ |
+| 7.5 Bash Sandbox Isolation | ✅ (MDM only) | ✅ | ✅ |
+| 7.6 Hooks & Plugin Lockdown | ✅ (MDM only) | ✅ | ✅ |
+| 7.7 Prompt Injection Defense | ✅ (open-source tools) | ✅ | ✅ |
+| 7.8 CI/CD Pipeline Hardening | ✅ (GitHub Actions) | ✅ | ✅ |
+| 7.9 External Sandbox (nono/OpenShell) | ✅ (open-source tools) | ✅ | ✅ |
+| 7.10 Cowork Governance | ❌ | ✅ | ✅ |
 | SCIM Provisioning | ❌ | ❌ | ✅ |
 | Audit Logs | ❌ | ❌ | ✅ |
 
@@ -1332,8 +1965,55 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 - [SCIM Provisioning Guide](https://support.anthropic.com/en/articles/13133195-setting-up-jit-or-scim-provisioning)
 - [Console Roles and Permissions](https://support.anthropic.com/en/articles/10186004-api-console-roles-and-permissions)
 
+**Claude Code Security:**
+- [Claude Code Security Best Practices](https://code.claude.com/docs/en/security)
+- [Claude Code Sandboxing](https://code.claude.com/docs/en/sandboxing)
+- [Claude Code Permissions](https://code.claude.com/docs/en/permissions)
+- [Claude Code Settings Reference](https://code.claude.com/docs/en/settings)
+- [Claude Code Hooks](https://code.claude.com/docs/en/hooks)
+- [Claude Code MCP Configuration](https://code.claude.com/docs/en/mcp)
+- [Claude Code Monitoring (OpenTelemetry)](https://code.claude.com/docs/en/monitoring-usage)
+- [Claude Code GitHub Actions](https://code.claude.com/docs/en/github-actions)
+
+**Open-Source Security Tools:**
+- [nono — Kernel-Enforced Agent Sandbox](https://github.com/always-further/nono) (Apache-2.0)
+- [NVIDIA OpenShell — Container Agent Sandbox](https://github.com/NVIDIA/OpenShell) (Apache-2.0)
+- [claude-code-safety-net — Destructive Command Hook](https://github.com/kenryu42/claude-code-safety-net) (MIT)
+- [claude-code-security-review — AI Security Review Action](https://github.com/anthropics/claude-code-security-review) (MIT)
+- [claude-code-action — GitHub Actions Integration](https://github.com/anthropics/claude-code-action) (MIT)
+- [step-security/harden-runner — CI/CD Network Egress Control](https://github.com/step-security/harden-runner) (Apache-2.0)
+- [snyk/agent-scan — AI Agent and MCP Server Security Scanner](https://github.com/snyk/agent-scan) (Apache-2.0)
+- [stacklok/toolhive — Enterprise MCP Server Management](https://github.com/stacklok/toolhive) (Apache-2.0)
+- [cisco-ai-defense/mcp-scanner — MCP Threat Scanner](https://github.com/cisco-ai-defense/mcp-scanner) (Apache-2.0)
+- [stacklok/codegate — AI Coding Assistant Security Gateway](https://github.com/stacklok/codegate) (Apache-2.0)
+- [trailofbits/claude-code-devcontainer — Sandboxed Devcontainer](https://github.com/trailofbits/claude-code-devcontainer) (Apache-2.0)
+- [wiz-sec-public/secure-rules-files — Baseline Secure CLAUDE.md Files](https://github.com/wiz-sec-public/secure-rules-files)
+- [seojoonkim/prompt-guard — Prompt Injection Defense System](https://github.com/seojoonkim/prompt-guard) (MIT)
+- [vexscan — Plugin/Skill Security Scanner](https://github.com/edimuj/vexscan-claude-code)
+
+**Security Research:**
+- [Pillar Security: Rules File Backdoor Attack](https://www.pillar.security/blog/new-vulnerability-in-github-copilot-and-cursor-how-hackers-can-weaponize-code-agents) (2025)
+- [Snyk: ToxicSkills — Malicious AI Agent Skills Study](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/) (February 2026)
+- [Lasso Security: Indirect Prompt Injection in Claude Code](https://www.lasso.security/blog/the-hidden-backdoor-in-claude-coding-assistant) (2026)
+- [Cymulate: InversePrompt (CVE-2025-54794, CVE-2025-54795)](https://cymulate.com/blog/cve-2025-547954-54795-claude-inverseprompt/) (2025)
+- [StepSecurity: Securing claude-code-action in GitHub Actions](https://www.stepsecurity.io/blog/anthropics-claude-code-action-security-how-to-secure-claude-code-in-github-actions-with-harden-runner) (2026)
+- [Check Point: RCE and API Token Exfiltration via Claude Code (CVE-2025-59536)](https://research.checkpoint.com/2026/rce-and-api-token-exfiltration-through-claude-code-project-files-cve-2025-59536/) (2026)
+- [PromptArmor: Claude Cowork File Exfiltration](https://www.promptarmor.com/resources/claude-cowork-exfiltrates-files) (2026)
+- [Oasis Security: Claudy Day — Claude.ai Prompt Injection Chain](https://www.oasis.security/blog/claude-ai-prompt-injection-data-exfiltration-vulnerability) (2026)
+- [Invariant Labs: MCP Tool Poisoning Attacks](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks) (2025)
+- [OWASP Top 10 for Agentic Applications 2026](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/)
+- [Redguard: Arbitrary Code Execution in Claude Code (CVE-2025-59828)](https://www.redguard.ch/blog/2025/12/19/advisory-anthropic-claude-code/) (2025)
+
+**Claude Cowork:**
+- [Use Cowork on Team and Enterprise Plans](https://support.claude.com/en/articles/13455879-use-cowork-on-team-and-enterprise-plans)
+- [Use Cowork Safely](https://support.claude.com/en/articles/13364135-use-cowork-safely)
+- [Use Plugins in Cowork](https://support.claude.com/en/articles/13837440-use-plugins-in-cowork)
+- [Securing Claude Cowork — Harmonic Security](https://www.harmonic.security/resources/securing-claude-cowork-a-security-practitioners-guide)
+- [Claude Cowork Security — MintMCP](https://www.mintmcp.com/blog/claude-cowork-security)
+
 **Security and Compliance:**
 - [Anthropic Usage Policy](https://www.anthropic.com/policies/usage-policy)
+- [Anthropic Trust Center](https://trust.anthropic.com)
 - [Custom Data Retention (Enterprise)](https://support.anthropic.com/en/articles/10440198-custom-data-retention-controls-for-claude-enterprise)
 
 ---
@@ -1346,6 +2026,7 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 | 2026-02-21 | 0.2.0 | draft | Added Section 7: Claude Code Enterprise Controls — MDM managed settings, permission restrictions, MCP server control, developer analytics | `Claude Code (Opus 4.6)` |
 | 2026-02-21 | 0.3.0 | draft | Added MDM config templates (L1/L2/L3 profiles), permission deny rule examples, sandbox config, managed-mcp.json template, MCP allowlist/denylist config | `Claude Code (Opus 4.6)` |
 | 2026-02-21 | 0.4.0 | draft | Added Config-as-Code pack type with standalone .jsonc config files; added code pack buttons, doc links; moved JSON configs from API scripts to config/ directory | `Claude Code (Opus 4.6)` |
+| 2026-03-27 | 0.5.0 | draft | Major expansion: Added 6 new controls (7.5-7.10) — Bash sandbox isolation, hook/plugin lockdown, prompt injection defense, CI/CD pipeline hardening, external sandbox tooling (nono, OpenShell), Cowork governance. Updated 7.1 with drop-in directory, plist/registry delivery, new managed settings. Added comprehensive references for security research (ToxicSkills, Rules File Backdoor, InversePrompt CVEs) and open-source tools. Updated all compliance mappings. | `Claude Code (Opus 4.6)` |
 
 ---
 

@@ -1,0 +1,52 @@
+// HTH Anthropic Claude Control 7.10: Govern Claude Cowork and Collaborative Sessions
+// Profile: L2 | NIST: AC-3, AU-6 | SOC 2: CC6.1, CC7.2
+// https://howtoharden.com/guides/anthropic-claude/#710-govern-claude-cowork-and-collaborative-sessions
+//
+// Managed settings governing Cowork collaborative features,
+// channel controls, and session cleanup.
+// Reference: code.claude.com/docs/en/settings, code.claude.com/docs/en/channels
+
+// HTH Guide Excerpt: begin cowork-hardened
+// L2 Hardened Cowork governance configuration.
+// Disables channels by default, enforces org login,
+// restricts session retention, and controls auto-mode.
+  {
+    "channelsEnabled": false,
+    "allowedChannelPlugins": [],
+    "forceLoginMethod": "claudeai",
+    "forceLoginOrgUUID": "REPLACE-WITH-YOUR-ORG-UUID",
+    "cleanupPeriodDays": 7,
+    "disableAutoMode": "disable",
+    "env": {
+      "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+    },
+    "companyAnnouncements": [
+      "Reminder: All Claude Code sessions are subject to organizational security policies. Report suspicious behavior with /feedback."
+    ]
+  }
+// HTH Guide Excerpt: end cowork-hardened
+
+// HTH Guide Excerpt: begin cowork-maximum
+// L3 Maximum Security Cowork configuration.
+// Zero session retention, channels disabled, auto-mode disabled,
+// org-locked login, and full managed-only lockdown.
+  {
+    "channelsEnabled": false,
+    "allowedChannelPlugins": [],
+    "forceLoginMethod": "claudeai",
+    "forceLoginOrgUUID": "REPLACE-WITH-YOUR-ORG-UUID",
+    "cleanupPeriodDays": 0,
+    "disableAutoMode": "disable",
+    "allowManagedPermissionRulesOnly": true,
+    "allowManagedHooksOnly": true,
+    "allowManagedMcpServersOnly": true,
+    "strictKnownMarketplaces": [],
+    "availableModels": ["sonnet"],
+    "env": {
+      "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+    },
+    "companyAnnouncements": [
+      "This environment operates under maximum security policy. Session transcripts are not retained. All extensions are disabled."
+    ]
+  }
+// HTH Guide Excerpt: end cowork-maximum

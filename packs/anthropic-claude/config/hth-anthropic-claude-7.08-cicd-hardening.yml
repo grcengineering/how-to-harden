@@ -1,0 +1,89 @@
+# HTH Anthropic Claude Control 7.8: Harden Claude Code in CI/CD Pipelines
+# Profile: L2 | NIST: SA-11, SA-15 | SOC 2: CC7.1, CC8.1
+# https://howtoharden.com/guides/anthropic-claude/#78-harden-claude-code-in-cicd-pipelines
+#
+# GitHub Actions workflow demonstrating hardened Claude Code usage
+# with step-security/harden-runner for network egress control and
+# anthropics/claude-code-security-review for automated security review.
+# References:
+#   github.com/anthropics/claude-code-action
+#   github.com/anthropics/claude-code-security-review
+#   github.com/step-security/harden-runner
+
+# HTH Guide Excerpt: begin cicd-hardened-workflow
+name: Hardened Claude Code CI
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions: {}
+
+jobs:
+  security-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+    steps:
+      # Network egress monitoring via StepSecurity Harden-Runner.
+      # Builds a baseline of allowed outbound connections and blocks
+      # any future calls not in the baseline.
+      # Source: github.com/step-security/harden-runner (Apache-2.0)
+      - name: Harden Runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0  # v2.12.0
+        with:
+          egress-policy: audit
+          allowed-endpoints: >
+            api.anthropic.com:443
+            github.com:443
+            api.github.com:443
+            objects.githubusercontent.com:443
+
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          fetch-depth: 0
+
+      # Claude Code security review analyzes PR diffs for vulnerabilities.
+      # Source: github.com/anthropics/claude-code-security-review (MIT)
+      # WARNING: Only use on trusted PRs — not hardened against prompt injection.
+      - name: Claude Security Review
+        uses: anthropics/claude-code-security-review@4c30e5b23b045e24fc98a810f318f8ad4aad1539  # v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-sonnet-4-6
+# HTH Guide Excerpt: end cicd-hardened-workflow
+
+# HTH Guide Excerpt: begin cicd-claude-code-action
+  claude-code-task:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0  # v2.12.0
+        with:
+          egress-policy: audit
+          allowed-endpoints: >
+            api.anthropic.com:443
+            github.com:443
+            api.github.com:443
+
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      # Claude Code Action runs Claude as a CI agent.
+      # Source: github.com/anthropics/claude-code-action (MIT)
+      # Use allowed_tools and disallowed_tools to restrict capabilities.
+      - name: Claude Code
+        uses: anthropics/claude-code-action@3e460685e1084c53f5a6ddd25eab3a0d3fa4b9a6  # v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-sonnet-4-6
+          allowed_tools: "Read,Glob,Grep,Agent"
+          disallowed_tools: "Bash,WebFetch,WebSearch"
+          max_turns: "10"
+# HTH Guide Excerpt: end cicd-claude-code-action

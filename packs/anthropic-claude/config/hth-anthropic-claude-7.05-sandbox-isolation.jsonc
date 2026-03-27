@@ -1,0 +1,99 @@
+// HTH Anthropic Claude Control 7.5: Enforce Bash Sandbox Isolation
+// Profile: L2 | NIST: SC-39, CM-7 | SOC 2: CC6.1, CC6.8
+// https://howtoharden.com/guides/anthropic-claude/#75-enforce-bash-sandbox-isolation
+//
+// Sandbox settings for managed-settings.json
+// Enforces OS-level filesystem and network isolation for all Bash commands.
+// macOS: Seatbelt (built-in), Linux/WSL2: bubblewrap (requires install).
+// Reference: code.claude.com/docs/en/sandboxing
+
+// HTH Guide Excerpt: begin sandbox-hardened
+// L2 Hardened sandbox configuration.
+// Locks filesystem to CWD, denies sensitive credential paths,
+// restricts network to approved domains only.
+  {
+    "sandbox": {
+      "enabled": true,
+      "failIfUnavailable": true,
+      "autoAllowBashIfSandboxed": false,
+      "allowUnsandboxedCommands": false,
+      "excludedCommands": ["docker", "git"],
+      "filesystem": {
+        "denyRead": [
+          "~/.aws/credentials",
+          "~/.ssh/id_*",
+          "~/.gnupg/",
+          "~/.config/gcloud/",
+          "~/.kube/config"
+        ],
+        "denyWrite": [
+          "/etc",
+          "/usr/local/bin",
+          "~/.claude/managed-settings.json"
+        ],
+        "allowWrite": [
+          "/tmp/build"
+        ]
+      },
+      "network": {
+        "allowedDomains": [
+          "github.com",
+          "*.githubusercontent.com",
+          "*.npmjs.org",
+          "registry.yarnpkg.com",
+          "pypi.org",
+          "files.pythonhosted.org"
+        ],
+        "allowManagedDomainsOnly": true,
+        "allowAllUnixSockets": false,
+        "allowUnixSockets": [],
+        "allowLocalBinding": false
+      },
+      "enableWeakerNestedSandbox": false
+    }
+  }
+// HTH Guide Excerpt: end sandbox-hardened
+
+// HTH Guide Excerpt: begin sandbox-maximum
+// L3 Maximum Security sandbox configuration.
+// No unsandboxed commands, no excluded commands, strict filesystem
+// and network lockdown. Suitable for regulated environments.
+  {
+    "sandbox": {
+      "enabled": true,
+      "failIfUnavailable": true,
+      "autoAllowBashIfSandboxed": false,
+      "allowUnsandboxedCommands": false,
+      "excludedCommands": [],
+      "filesystem": {
+        "denyRead": [
+          "~/.aws/",
+          "~/.ssh/",
+          "~/.gnupg/",
+          "~/.config/gcloud/",
+          "~/.kube/",
+          "~/.docker/config.json",
+          "~/.npmrc",
+          "~/.pypirc"
+        ],
+        "allowManagedReadPathsOnly": true,
+        "denyWrite": [
+          "/etc",
+          "/usr",
+          "/var",
+          "~/.claude/"
+        ],
+        "allowWrite": []
+      },
+      "network": {
+        "allowedDomains": [],
+        "allowManagedDomainsOnly": true,
+        "allowAllUnixSockets": false,
+        "allowUnixSockets": [],
+        "allowLocalBinding": false
+      },
+      "enableWeakerNestedSandbox": false,
+      "enableWeakerNetworkIsolation": false
+    }
+  }
+// HTH Guide Excerpt: end sandbox-maximum
