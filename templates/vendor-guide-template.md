@@ -62,9 +62,9 @@ What this guide covers and what it doesn't.
 - [Incident name/date]: [How this control would have helped]
 
 #### Prerequisites
-- [ ] [Access/permissions needed]
-- [ ] [Product edition/tier required]
-- [ ] [Information to gather]
+- [Access/permissions needed]
+- [Product edition/tier required]
+- [Information to gather]
 
 #### ClickOps Implementation
 
@@ -112,8 +112,8 @@ resource "vendor_resource_type" "name" {
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] [Test step 1]
-2. [ ] [Test step 2]
+1. [Test step 1]
+2. [Test step 2]
 
 **Expected result:** [What success looks like]
 
@@ -417,16 +417,16 @@ HTH uses Extended SemVer with Maturity Qualifiers, aligned with [CIS Benchmarks]
 
 **Quality Checklist:**
 
-- [ ] Tested all ClickOps steps in real product environment
-- [ ] Tested all Code examples (CLI, API, IaC all work)
-- [ ] Compliance mappings verified against official framework documents
-- [ ] Links to vendor documentation verified (not broken)
-- [ ] Real-world incident examples included and sourced
-- [ ] Integration-specific controls include current vendor IPs/settings with verification date
-- [ ] At least 2 reviewers with hands-on product experience
-- [ ] All Markdown tables have blank lines before and after them (required for Jekyll rendering)
-- [ ] Version number updated in YAML front matter and changelog
-- [ ] VERSIONS.md registry updated with new version
+- Tested all ClickOps steps in real product environment
+- Tested all Code examples (CLI, API, IaC all work)
+- Compliance mappings verified against official framework documents
+- Links to vendor documentation verified (not broken)
+- Real-world incident examples included and sourced
+- Integration-specific controls include current vendor IPs/settings with verification date
+- At least 2 reviewers with hands-on product experience
+- All Markdown tables have blank lines before and after them (required for Jekyll rendering)
+- Version number updated in YAML front matter and changelog
+- VERSIONS.md registry updated with new version
 
 **Markdown Formatting Requirements:**
 

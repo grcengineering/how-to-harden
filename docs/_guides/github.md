@@ -6,9 +6,9 @@ slug: "github"
 tier: "1"
 category: "DevOps"
 description: "Comprehensive source control and CI/CD security hardening for GitHub organizations, Actions, supply chain protection, and Enterprise Cloud/Server"
-version: "0.5.0"
+version: "0.5.2"
 maturity: "draft"
-last_updated: "2026-03-20"
+last_updated: "2026-03-23"
 ---
 
 
@@ -105,10 +105,10 @@ Require all organization members to enable MFA on their GitHub accounts. This pr
 {% include pack-code.html vendor="github" section="1.1" %}
 
 #### Validation & Testing
-1. [ ] Create test user account, add to organization
-2. [ ] Verify test user is prompted to enable 2FA
-3. [ ] Confirm user cannot access org resources without 2FA setup
-4. [ ] After grace period, verify non-compliant users are removed
+1. Create test user account, add to organization
+2. Verify test user is prompted to enable 2FA
+3. Confirm user cannot access org resources without 2FA setup
+4. After grace period, verify non-compliant users are removed
 
 **Expected result:** All org members have 2FA enabled or are automatically removed.
 
@@ -315,10 +315,10 @@ Implement least privilege for organization and enterprise administrators. Limit 
 {% include pack-code.html vendor="github" section="1.6" %}
 
 #### Validation & Testing
-1. [ ] Verify enterprise owner count is 2-3 maximum
-2. [ ] Confirm all admin accounts have MFA enabled
-3. [ ] Test that non-admin members cannot access admin settings
-4. [ ] Verify audit logging captures admin actions
+1. Verify enterprise owner count is 2-3 maximum
+2. Confirm all admin accounts have MFA enabled
+3. Test that non-admin members cannot access admin settings
+4. Verify audit logging captures admin actions
 
 #### Monitoring & Maintenance
 
@@ -377,10 +377,10 @@ Restrict enterprise access to approved IP addresses using IP allow lists. This l
 {% include pack-code.html vendor="github" section="1.7" %}
 
 #### Validation & Testing
-1. [ ] Access GitHub from an allowed IP (should succeed)
-2. [ ] Access GitHub from a non-allowed IP (should fail)
-3. [ ] Verify CI/CD pipelines still function with runner IPs allowed
-4. [ ] Test emergency access procedures
+1. Access GitHub from an allowed IP (should succeed)
+2. Access GitHub from a non-allowed IP (should fail)
+3. Verify CI/CD pipelines still function with runner IPs allowed
+4. Test emergency access procedures
 
 #### Compliance Mappings
 
@@ -451,10 +451,10 @@ Enforce fine-grained personal access token policies at the organization and ente
 {% include pack-code.html vendor="github" section="1.12" %}
 
 #### Validation & Testing
-1. [ ] Attempt to create a classic PAT and access the organization (should fail if restricted)
-2. [ ] Create a fine-grained PAT and verify it requires admin approval
-3. [ ] Verify PAT expiration is enforced within the maximum lifetime
-4. [ ] Confirm enterprise policy overrides are applied to all organizations
+1. Attempt to create a classic PAT and access the organization (should fail if restricted)
+2. Create a fine-grained PAT and verify it requires admin approval
+3. Verify PAT expiration is enforced within the maximum lifetime
+4. Confirm enterprise policy overrides are applied to all organizations
 
 #### Monitoring & Maintenance
 
@@ -471,6 +471,75 @@ Enforce fine-grained personal access token policies at the organization and ente
 | **NIST 800-53** | IA-5, AC-6 | Authenticator management, least privilege |
 | **ISO 27001** | A.9.4.3 | Password management system |
 | **CIS Controls** | 6.2 | Establish an access revoking process |
+
+---
+
+### 1.8 Restrict Service Account Cross-Organization Access
+
+**Profile Level:** L2 (Hardened)
+**NIST 800-53:** AC-6(3), AC-6(5)
+**CIS Controls:** 6.8
+
+#### Description
+Audit and restrict service accounts (bot accounts, machine users, GitHub App installations) to a single GitHub organization. Service accounts with membership or admin access across multiple organizations create a blast radius bridge — compromise of one organization grants the attacker access to all connected organizations.
+
+#### Rationale
+**Attack Prevented:** Cross-organization lateral movement via shared service accounts
+
+**Real-World Incident:**
+- **TeamPCP / Aqua Security (March 2026):** The `Argon-DevOps-Mgt` service account (GitHub ID 139343333) had write/admin access to both the public `aquasecurity` organization and the internal `aquasec-com` organization. After compromising the public org via a `pull_request_target` exploit, attackers used this shared account to pivot to the internal org and deface all 44 internal repositories in a scripted 2-minute burst (20:31:07–20:32:26 UTC on March 22). Each repo was renamed with a `tpcp-docs-` prefix, descriptions changed to "TeamPCP Owns Aqua Security," and made public — exposing proprietary source code, CI/CD pipelines, Kubernetes operators, and team knowledge bases.
+
+**Why This Matters:** A service account that bridges organizations turns a single-org compromise into a multi-org breach. The attacker doesn't need to find a second vulnerability — the shared credential IS the vulnerability. This is especially dangerous when the shared account bridges public (open-source) and private (internal/commercial) organizations.
+
+#### Prerequisites
+- GitHub organization owner access for all organizations to audit
+- Enterprise Cloud for cross-org visibility (recommended)
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Service Accounts**
+1. Navigate to: **Organization Settings** -> **People**
+2. Filter by role to identify non-human accounts (look for naming patterns like `*-bot`, `*-mgt`, `*-ci`, `*-automation`, `*-svc`)
+3. For each identified service account, check: **User Profile** -> **Organizations** to see which other orgs the account belongs to
+4. Document all service accounts with access to more than one organization
+
+**Step 2: Isolate Service Accounts Per Organization**
+1. For each cross-org service account, create a separate, dedicated account per organization
+2. Transfer repository access, team memberships, and secrets to the new per-org accounts
+3. Remove the cross-org account from all but one organization
+4. If a workflow genuinely requires cross-org access, use GitHub App installations scoped to specific repositories rather than a user account with broad org membership
+
+**Step 3: Replace User-Based Service Accounts with GitHub Apps**
+1. Create a GitHub App for each automation use case
+2. GitHub Apps can be installed on specific repositories within an organization — they cannot inherently access other organizations
+3. Use installation tokens (short-lived, 1-hour expiry) instead of PATs
+4. GitHub Apps provide granular permission scoping that user accounts cannot match
+
+**Step 4: Enforce Credential Rotation Atomicity**
+1. Minimize the window where both old and new credentials are live — set the old credential to expire within hours, not days (see Section 6.6 Step 3 for detailed incident response context)
+2. The Trivy Phase 2 compromise occurred because credential rotation after Phase 1 was non-atomic — attackers accessed refreshed tokens during the rotation window
+3. For GitHub App private keys: generate the new key, update all consumers, verify they work, THEN delete the old key — but set the old key to expire within hours, not days
+
+**Time to Complete:** ~2 hours for initial audit; ~4 hours for remediation per cross-org account
+
+#### Code Implementation
+
+This control is primarily organizational — no API or Terraform automation exists for cross-org service account restriction. Use the CLI audit check (`hth scan github --controls github-1.8`) to identify admin members matching service account naming patterns.
+
+#### Validation & Testing
+1. All service accounts are inventoried with org membership documented
+2. No service account has admin/write access to more than one organization
+3. Cross-org automation uses GitHub App installations, not shared user accounts
+4. Credential rotation procedures include atomic revocation steps
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC6.3 | Logical access, role-based access |
+| **NIST 800-53** | AC-6(3), AC-6(5) | Least privilege - network access, privileged accounts |
+| **ISO 27001** | A.9.2.3 | Management of privileged access rights |
+| **CIS Controls** | 6.8 | Define and maintain role-based access control |
 
 ---
 
@@ -530,10 +599,10 @@ Rulesets are now the primary mechanism for branch protection, replacing legacy b
 {% include pack-code.html vendor="github" section="3.7" %}
 
 #### Validation & Testing
-1. [ ] Attempt to push directly to protected branch (should fail)
-2. [ ] Create PR without required status checks (should block merge)
-3. [ ] Create PR without required approvals (should block merge)
-4. [ ] Verify admin cannot bypass (if enforce_admins enabled)
+1. Attempt to push directly to protected branch (should fail)
+2. Create PR without required status checks (should block merge)
+3. Create PR without required approvals (should block merge)
+4. Verify admin cannot bypass (if enforce_admins enabled)
 
 #### Monitoring & Maintenance
 
@@ -688,10 +757,10 @@ Configure organization-wide repository rulesets to enforce consistent branch pro
 {% include pack-code.html vendor="github" section="2.5" %}
 
 #### Validation & Testing
-1. [ ] Verify ruleset is active and applies to target branches
-2. [ ] Attempt direct push to protected branch (should fail)
-3. [ ] Verify bypass list is limited to emergency accounts only
-4. [ ] Test that new repositories automatically inherit rulesets
+1. Verify ruleset is active and applies to target branches
+2. Attempt direct push to protected branch (should fail)
+3. Verify bypass list is limited to emergency accounts only
+4. Test that new repositories automatically inherit rulesets
 
 #### Compliance Mappings
 
@@ -737,6 +806,23 @@ Require cryptographically signed commits to verify commit authenticity and preve
 - GPG keys
 - SSH keys (recommended for ease of use)
 - S/MIME certificates
+- **Sigstore Gitsign** (keyless, OIDC-based — recommended for teams adopting zero-trust)
+
+**Gitsign (Sigstore Keyless Signing):**
+
+Gitsign eliminates key management entirely by using Sigstore's Fulcio CA to issue short-lived (~10 min) X.509 certificates tied to developer OIDC identity (GitHub, Google, or Microsoft login). Signatures are recorded in Sigstore's Rekor transparency log for tamperproof audit.
+
+**Developer setup:** Install Gitsign (`brew install gitsign`), then configure git:
+1. `git config --local gpg.x509.program gitsign`
+2. `git config --local gpg.format x509`
+3. `git config --local commit.gpgsign true`
+4. Signing a commit opens a browser for OIDC authentication; use `gitsign-credential-cache` to persist credentials for their 10-minute lifetime
+
+**GitHub Limitation:** GitHub's "Require signed commits" branch protection rule **does not recognize Gitsign/Sigstore signatures** — it only supports GPG, SSH, and S/MIME. Gitsign-signed commits appear as "Unverified" in GitHub's UI because Sigstore's CA root is not in GitHub's trust roots, and Gitsign's ephemeral certificates expire before GitHub's standard X.509 verification checks them. This is despite GitHub using Sigstore internally for Artifact Attestations (Section 3.5).
+
+**Workaround — Custom Verification via GitHub Actions:** Since GitHub's branch protection cannot verify Gitsign signatures, enforce verification with a required status check workflow that runs `gitsign verify --certificate-oidc-issuer=ISSUER --certificate-identity-regexp=PATTERN` against each commit in a PR. Combined with branch protection's "Require status checks to pass," this effectively replaces the native signed commits check for Gitsign users.
+
+**CI/CD Signing with Gitsign:** Set `GITSIGN_TOKEN_PROVIDER=github-actions` in workflow environment to use the workflow's OIDC token for signing — no browser required. The signing identity becomes the workflow identity (e.g., `repo:org/repo:ref:refs/heads/main`).
 
 #### Code Implementation
 
@@ -747,16 +833,17 @@ Require cryptographically signed commits to verify commit authenticity and preve
 {% include pack-code.html vendor="github" section="3.7" %}
 
 #### Validation & Testing
-1. [ ] Create an unsigned commit and attempt to push (should fail if required)
-2. [ ] Create a signed commit and verify it shows as "Verified" in GitHub UI
-3. [ ] Verify vigilant mode flags unsigned commits from other contributors
+1. Create an unsigned commit and attempt to push (should fail if required)
+2. Create a signed commit and verify it shows as "Verified" in GitHub UI
+3. Verify vigilant mode flags unsigned commits from other contributors
+4. If using Gitsign: verify signature with `gitsign verify` and confirm Rekor log inclusion
 
 #### Operational Impact
 
 | Aspect | Impact Level | Details |
 |--------|-------------|----------|
-| **Developer Setup** | Medium | Developers must configure GPG or SSH signing |
-| **CI/CD Commits** | Medium | Bot accounts need signing keys configured |
+| **Developer Setup** | Medium | Developers must configure GPG, SSH, or Gitsign |
+| **CI/CD Commits** | Medium | Bot accounts need signing keys or Gitsign with OIDC token provider |
 | **Onboarding** | Medium | New developers must set up commit signing |
 | **Rollback** | Easy | Disable in branch protection or ruleset |
 
@@ -814,10 +901,10 @@ Configure push rules within repository rulesets to restrict file types, file siz
 {% include pack-code.html vendor="github" section="2.9" %}
 
 #### Validation & Testing
-1. [ ] Attempt to push an `.exe` file (should be blocked)
-2. [ ] Attempt to push a file larger than the size limit (should be blocked)
-3. [ ] Attempt to push workflow changes from a fork (should be blocked if path-restricted)
-4. [ ] Verify bypass actors can still push restricted content when needed
+1. Attempt to push an `.exe` file (should be blocked)
+2. Attempt to push a file larger than the size limit (should be blocked)
+3. Attempt to push workflow changes from a fork (should be blocked if path-restricted)
+4. Verify bypass actors can still push restricted content when needed
 
 #### Compliance Mappings
 
@@ -880,10 +967,10 @@ Configure delegated bypass for secret scanning push protection to require securi
 {% include pack-code.html vendor="github" section="2.10" %}
 
 #### Validation & Testing
-1. [ ] Attempt to push a commit containing a known secret (should be blocked)
-2. [ ] Attempt to bypass push protection (should require reviewer approval if delegated bypass enabled)
-3. [ ] Verify custom patterns detect organization-specific secrets
-4. [ ] Confirm bypass alerts are visible in the Security tab
+1. Attempt to push a commit containing a known secret (should be blocked)
+2. Attempt to bypass push protection (should require reviewer approval if delegated bypass enabled)
+3. Verify custom patterns detect organization-specific secrets
+4. Confirm bypass alerts are visible in the Security tab
 
 #### Monitoring & Maintenance
 
@@ -1139,10 +1226,10 @@ Secure self-hosted runners to prevent compromise of build environment. Self-host
 {% include pack-code.html vendor="github" section="3.17" %}
 
 #### Validation & Testing
-1. [ ] Verify ephemeral runners are destroyed after each job
-2. [ ] Test that public repos cannot access production runner groups
-3. [ ] Verify network segmentation between runner groups
-4. [ ] Confirm secrets are not accessible from public runner groups
+1. Verify ephemeral runners are destroyed after each job
+2. Test that public repos cannot access production runner groups
+3. Verify network segmentation between runner groups
+4. Confirm secrets are not accessible from public runner groups
 
 #### Compliance Mappings
 
@@ -1206,10 +1293,10 @@ Generate cryptographically signed build provenance attestations for CI/CD artifa
 {% include pack-code.html vendor="github" section="3.20" %}
 
 #### Validation & Testing
-1. [ ] Run the attestation workflow and confirm it succeeds
-2. [ ] Verify the attestation using `gh attestation verify`
-3. [ ] Confirm attestation metadata includes correct repository and workflow references
-4. [ ] For container images, verify attestation is pushed to the registry
+1. Run the attestation workflow and confirm it succeeds
+2. Verify the attestation using `gh attestation verify`
+3. Confirm attestation metadata includes correct repository and workflow references
+4. For container images, verify attestation is pushed to the registry
 
 #### Compliance Mappings
 
@@ -1266,10 +1353,10 @@ Customize GitHub Actions OIDC subject claims to include repository, environment,
 {% include pack-code.html vendor="github" section="3.21" %}
 
 #### Validation & Testing
-1. [ ] Verify OIDC claims are customized using the API
-2. [ ] Test that only the intended workflow can assume the cloud role
-3. [ ] Verify that a different workflow in the same repo is denied access
-4. [ ] Confirm `check_run_id` appears in OIDC tokens for audit purposes
+1. Verify OIDC claims are customized using the API
+2. Test that only the intended workflow can assume the cloud role
+3. Verify that a different workflow in the same repo is denied access
+4. Confirm `check_run_id` appears in OIDC tokens for audit purposes
 
 #### Compliance Mappings
 
@@ -1373,11 +1460,11 @@ Run these tools periodically to audit organization-wide security posture.
 **Time to Complete:** ~30 minutes for initial setup
 
 #### Validation & Testing
-1. [ ] zizmor and actionlint run on PRs and report findings
-2. [ ] All actions in workflows are pinned to commit SHAs
-3. [ ] harden-runner is present as the first step in critical workflows
-4. [ ] OpenSSF Scorecard produces a score for the repository
-5. [ ] Legitify scan shows no critical findings at the org level
+1. zizmor and actionlint run on PRs and report findings
+2. All actions in workflows are pinned to commit SHAs
+3. harden-runner is present as the first step in critical workflows
+4. OpenSSF Scorecard produces a score for the repository
+5. Legitify scan shows no critical findings at the org level
 
 #### Compliance Mappings
 
@@ -1435,10 +1522,10 @@ Prevent `pull_request_target` workflows from executing untrusted PR code with el
 {% include pack-code.html vendor="github" section="3.22" %}
 
 #### Validation & Testing
-1. [ ] No `pull_request_target` workflow checks out PR head code
-2. [ ] No `run:` blocks directly interpolate `{% raw %}${{ github.event.pull_request.* }}{% endraw %}`
-3. [ ] zizmor audit passes with no `pull_request_target` findings
-4. [ ] Fork the repo, submit a test PR, verify the workflow does not expose secrets
+1. No `pull_request_target` workflow checks out PR head code
+2. No `run:` blocks directly interpolate `{% raw %}${{ github.event.pull_request.* }}{% endraw %}`
+3. zizmor audit passes with no `pull_request_target` findings
+4. Fork the repo, submit a test PR, verify the workflow does not expose secrets
 
 #### Compliance Mappings
 
@@ -1502,12 +1589,12 @@ Harden GitHub Actions runners against credential theft from process memory and u
 {% include pack-code.html vendor="github" section="3.23" %}
 
 #### Validation & Testing
-1. [ ] Harden-Runner is the first step in all critical workflow jobs
-2. [ ] Egress policy is set to `block` (not `audit`) in production workflows
-3. [ ] Allowed endpoints list contains only necessary domains
-4. [ ] Self-hosted runner containers run as non-root with dropped capabilities
-5. [ ] Seccomp profile blocks `ptrace` and `/proc` memory access syscalls
-6. [ ] Test: a workflow step attempting `curl https://evil.example.com` is blocked
+1. Harden-Runner is the first step in all critical workflow jobs
+2. Egress policy is set to `block` (not `audit`) in production workflows
+3. Allowed endpoints list contains only necessary domains
+4. Self-hosted runner containers run as non-root with dropped capabilities
+5. Seccomp profile blocks `ptrace` and `/proc` memory access syscalls
+6. Test: a workflow step attempting `curl https://evil.example.com` is blocked
 
 #### Compliance Mappings
 
@@ -1545,16 +1632,26 @@ Detect and prevent attacks where an adversary force-pushes Git tags in an action
 #### ClickOps Implementation
 
 **Step 1: Pin All Actions to Full Commit SHAs**
-1. Run `npx pin-github-action .github/workflows/*.yml` to convert tag references to SHA pins
+1. Run `frizbee ghactions .github/workflows/*.yml` or `npx pin-github-action .github/workflows/*.yml` to convert tag references to SHA pins
 2. Add version comments after each SHA for readability: `@abc123  # v4.1.1`
-3. Configure Dependabot or Renovate to automatically propose SHA updates when new versions release
+3. Pin container images in `container:` and `services:` directives by digest (e.g., `node:18@sha256:a1b2c3...`) — use `frizbee containers .github/workflows/*.yml` to automate this
+4. Configure Dependabot or Renovate to automatically propose SHA and digest updates when new versions release
+5. Enable GitHub's organization-level SHA pinning policy (Settings > Actions > Policies > "Require actions to use full-length commit SHAs") to block new unpinned references
 
-**Step 2: Enable Dependabot for GitHub Actions**
+**Step 2: Audit Composite Action and Reusable Workflow Transitive Dependencies**
+1. SHA-pinning an outer action does NOT pin its internal dependencies — a composite action pinned by SHA may internally reference `actions/checkout@v4` (a mutable tag), which is resolved at runtime and can be poisoned independently
+2. Use `poutine` (BoostSecurity) to detect unpinned transitive dependencies inside composite actions: `docker run ghcr.io/boostsecurityio/poutine:latest analyze_repo --token $GITHUB_TOKEN org/repo`
+3. Use `octopin` to list all transitive action dependencies including those inside composite actions: `octopin list --transitive .github/workflows/`
+4. For actions with unpinned internal dependencies: fork and pin internally, file an upstream PR, or use `gh-actions-lockfile` to generate and verify a lockfile with SHA-256 integrity hashes for the full transitive tree
+5. Reusable workflows have the same problem — if a reusable workflow you call internally uses unpinned actions, those are vulnerable even if you pin the workflow itself by SHA
+6. Docker-based actions that reference `docker://image:tag` in their `action.yml` are "unpinnable" — the container image is resolved at runtime regardless of the action's SHA pin. Research by Palo Alto found 32% of top 1,000 Marketplace actions are unpinnable for this reason. Mitigations: fork and pin the Docker image digest, or use runtime monitoring (Harden-Runner) to detect anomalous behavior
+
+**Step 3: Enable Dependabot for GitHub Actions**
 1. Create or update `.github/dependabot.yml` in your repository
-2. Add a `github-actions` ecosystem entry with weekly update schedule
-3. Dependabot will propose PRs when pinned SHAs become outdated
+2. Add both `github-actions` and `docker` ecosystem entries with weekly update schedule
+3. Dependabot will propose PRs when pinned SHAs and image digests become outdated
 
-**Step 3: Monitor for Tag Poisoning and Imposter Commits**
+**Step 5: Monitor for Tag Poisoning and Imposter Commits**
 1. **Imposter commits:** Tags pointing to commits not reachable from any branch — use Chainguard's `clank` tool (`chainguard-dev/clank`) to automatically detect imposter commits in workflow files
 2. **Missing signatures:** Tags that previously had GPG signatures suddenly lack them
 3. **Timestamp anomalies:** Tag commits with dates significantly different from surrounding commits
@@ -1562,12 +1659,12 @@ Detect and prevent attacks where an adversary force-pushes Git tags in an action
 5. **Fork-origin SHAs:** Verify pinned SHAs are reachable from the parent repo's default branch, not just resolvable via the API (the API returns fork commits without warning)
 6. Run the SHA verification audit script (see Code Pack) on a schedule
 
-**Step 4: Sign Action Release Tags**
-1. Use Sigstore **Gitsign** for keyless, transparent signing of Git tags and commits in action repositories you maintain
+**Step 6: Sign Action Release Tags**
+1. Use Sigstore **Gitsign** for keyless, transparent signing of Git tags and commits in action repositories you maintain (see Section 2.4 for Gitsign setup)
 2. Per-repository signing identities ensure consumers can verify tag authenticity
 3. Treat published actions as release artifacts — sign them with the same rigor as container images or packages
 
-**Step 5: Deploy Runtime Detection**
+**Step 7: Deploy Runtime Detection**
 1. Add StepSecurity Harden-Runner to detect anomalous network egress from action steps
 2. Harden-Runner detected the Trivy compromise within hours via unexpected outbound connections to `scan.aquasecurtiy.org`
 
@@ -1578,12 +1675,14 @@ Detect and prevent attacks where an adversary force-pushes Git tags in an action
 {% include pack-code.html vendor="github" section="3.24" %}
 
 #### Validation & Testing
-1. [ ] All action references use full 40-character commit SHAs
-2. [ ] Dependabot or Renovate is configured for `github-actions` ecosystem
-3. [ ] SHA verification audit runs on a schedule (weekly minimum)
-4. [ ] No SHA mismatches detected between pinned values and tag targets
-5. [ ] `clank` scan confirms no imposter commits (SHAs reachable from parent branches only)
-6. [ ] Harden-Runner is deployed for runtime anomaly detection
+1. All action references use full 40-character commit SHAs
+2. All `container:` and `services:` images pinned by digest
+3. Composite action transitive dependencies audited with `poutine` or `octopin`
+4. Dependabot or Renovate is configured for `github-actions` and `docker` ecosystems
+5. SHA verification audit runs on a schedule (weekly minimum)
+6. No SHA mismatches detected between pinned values and tag targets
+7. `clank` scan confirms no imposter commits (SHAs reachable from parent branches only)
+8. Harden-Runner is deployed for runtime anomaly detection
 
 #### Compliance Mappings
 
@@ -1895,6 +1994,23 @@ Use GitHub Actions OIDC provider to get short-lived cloud credentials instead of
 - Azure (Federated Credentials)
 - HashiCorp Vault
 
+**Container Registries:**
+- **GHCR:** Uses `GITHUB_TOKEN` (auto-provisioned per workflow run, no static secret) — best zero-config option
+- **AWS ECR / ECR Public:** OIDC via AWS IAM → `aws ecr get-login-password`
+- **GCP Artifact Registry:** OIDC via Workload Identity → `gcloud auth configure-docker`
+- **Azure ACR:** OIDC via Entra ID → `az acr login`
+- **Docker Hub: NO OIDC support.** Docker Hub still requires a static username + PAT for pushes. If you use Docker Hub, you cannot eliminate static credentials. Migrate to GHCR, ECR, or Artifact Registry to achieve fully keyless CI/CD. See the [Docker Hub Hardening Guide](/guides/dockerhub/) for migration considerations.
+
+**Package Registries:**
+- **PyPI:** Full OIDC trusted publishing — zero static tokens. Configure trusted publishers at pypi.org linking your GitHub repo/workflow, then use `pypa/gh-action-pypi-publish` with `id-token: write` permission.
+- **RubyGems:** OIDC trusted publishing supported — configure at rubygems.org.
+- **npm: OIDC is provenance-only, NOT authentication.** npm uses the OIDC token for Sigstore provenance attestation (`--provenance` flag) but still requires a static `NPM_TOKEN` for publishing. No OIDC alternative exists for npm auth.
+- **GitHub Packages (npm/Maven/NuGet):** Uses `GITHUB_TOKEN` — no static secrets needed.
+
+**Irreducible Static Secrets:** Even with full OIDC adoption, some credentials cannot be eliminated: GitHub App private keys (for cross-repo token minting), npm access tokens, Docker Hub PATs (if you cannot migrate away), and some Dependabot private registry credentials. For cross-repo operations, prefer GitHub Apps over PATs — Apps generate short-lived installation tokens (1-hour expiry) scoped to specific repositories and permissions.
+
+**Subject Claim Customization:** Customize the OIDC subject claim to include `job_workflow_ref` for fine-grained cloud provider trust policies. The default `sub` claim uses `repo:ORG/REPO:ref:refs/heads/BRANCH`, but any workflow in that repo/branch can assume the cloud role. Adding `job_workflow_ref` restricts trust to specific deployment workflows. See Section 3.6 for configuration details.
+
 #### ClickOps Implementation (AWS Example)
 
 **Step 1: Configure AWS IAM OIDC Provider**
@@ -1905,8 +2021,14 @@ Use GitHub Actions OIDC provider to get short-lived cloud credentials instead of
 **Step 2: Create IAM Role with Trust Policy**
 1. Create IAM role with trust policy for `token.actions.githubusercontent.com`
 2. Restrict the `sub` claim to your repository and branch
+3. For maximum security, include `job_workflow_ref` in the condition to restrict to specific deployment workflows
 
-**Time to Complete:** ~30 minutes
+**Step 3: Eliminate Docker Hub Static Credentials**
+1. If using Docker Hub for image hosting, migrate to GHCR (re-tag images as `ghcr.io/org/image:tag`, update workflow push targets, update Kubernetes/deployment manifests)
+2. GHCR uses `GITHUB_TOKEN` — zero static secrets to manage
+3. If Docker Hub migration is not feasible, store the PAT in a GitHub Actions environment with required reviewers to limit exposure
+
+**Time to Complete:** ~30 minutes per cloud provider; ~2 hours for Docker Hub migration
 
 #### Code Implementation
 
@@ -2277,12 +2399,14 @@ Establish an incident response playbook for when a GitHub Action or CI/CD depend
 4. Disable any OIDC trust relationships that could be exploited with stolen tokens
 
 **Step 3: Credential Rotation (First 4 Hours)**
-1. Rotate ALL organization-level secrets, not just those "used by" the compromised action
-2. Rotate ALL repository-level secrets in affected repositories
-3. Rotate ALL environment secrets accessible to affected workflows
-4. Revoke and regenerate any OIDC-based cloud role sessions (AWS STS, Azure, GCP)
-5. Rotate GitHub PATs, deploy keys, and app installation tokens that may have been exposed
-6. Rotate any package registry tokens (npm, PyPI, Docker Hub) accessible to workflows
+1. **Use atomic rotation: revoke old credentials BEFORE issuing new ones.** In the Trivy attack, non-atomic credential rotation after Phase 1 (February 2026) enabled Phase 2 (March 19) — attackers accessed refreshed tokens during the rotation window because old credentials were not revoked before new ones were issued. If a hard cutover is not feasible, set old credentials to expire within hours, not days.
+2. Rotate ALL organization-level secrets, not just those "used by" the compromised action
+3. Rotate ALL repository-level secrets in affected repositories
+4. Rotate ALL environment secrets accessible to affected workflows
+5. Revoke and regenerate any OIDC-based cloud role sessions (AWS STS, Azure, GCP)
+6. Rotate GitHub PATs, deploy keys, and app installation tokens that may have been exposed
+7. Rotate any package registry tokens (npm, PyPI, Docker Hub) accessible to workflows
+8. Check for service accounts with cross-organization access (see Section 1.8) — a compromised credential for a cross-org account extends the blast radius to every connected organization
 
 **Step 4: Check ALL Distribution Channels (Not Just Actions)**
 1. Supply chain compromises often propagate beyond GitHub Actions — the Trivy v0.69.4 attack compromised the compiled binary itself, which propagated via Homebrew (auto-updated), Helm chart automation (bumped in PR), and documentation deployment systems
@@ -2318,11 +2442,11 @@ Establish an incident response playbook for when a GitHub Action or CI/CD depend
 {% include pack-code.html vendor="github" section="6.7" %}
 
 #### Validation & Testing
-1. [ ] IR playbook is documented and accessible to the security team
-2. [ ] Audit script can enumerate all repos using a specific action across the org
-3. [ ] Secret rotation runbook covers org, repo, and environment secrets
-4. [ ] Team has practiced the playbook with a tabletop exercise
-5. [ ] Harden-Runner or equivalent provides runtime egress alerting
+1. IR playbook is documented and accessible to the security team
+2. Audit script can enumerate all repos using a specific action across the org
+3. Secret rotation runbook covers org, repo, and environment secrets
+4. Team has practiced the playbook with a tabletop exercise
+5. Harden-Runner or equivalent provides runtime egress alerting
 
 #### Compliance Mappings
 
@@ -2852,6 +2976,10 @@ Before allowing any third-party integration access to GitHub, assess risk:
 - GitHub Copilot included in SOC 2 Type 1 and ISO 27001 certification scope (June 2024)
 
 **Security Incidents:**
+- **February–March 2026 TeamPCP / Aqua Security Trivy Compromise (Three-Phase Campaign):** Most sophisticated GitHub supply chain attack to date — a cascading campaign across GitHub Actions, Docker Hub, npm, VS Code extensions, and Kubernetes. GHSA-69fq-xp46-6x23. See Sections 1.8, 3.8, 3.9, 3.10, and 6.6 for hardening controls.
+  - **Phase 1 (Feb 27–28):** AI-powered bot `hackerbot-claw` exploited `pull_request_target` misconfiguration to steal a PAT, privatize the trivy repo, delete 178 releases, and push malicious VS Code extension versions to OpenVSX that spawned AI coding tools in permissive modes.
+  - **Phase 2 (Mar 19):** Non-atomic credential rotation enabled TeamPCP to access refreshed tokens, poisoning 75/76 trivy-action tags and the v0.69.4 binary with a three-stage credential stealer that scraped `/proc/*/mem` and exfiltrated to `scan.aquasecurtiy.org`.
+  - **Phase 3 (Mar 22):** Cross-org `Argon-DevOps-Mgt` service account used to deface all 44 internal `aquasec-com` repos in a 2-minute burst, push malicious Docker Hub images v0.69.5/v0.69.6 (v0.69.6 hijacked `latest` tag), deploy self-propagating npm worm (`CanisterWorm` — 141 packages, ICP blockchain C2), and launch geotargeted Kubernetes wiper.
 - **March 2025 tj-actions/changed-files Compromise:** Supply chain attack modified the popular GitHub Action (23,000+ repositories), retroactively repointing version tags to a malicious commit that exfiltrated CI/CD secrets from workflow logs.
 - **March-June 2025 Salesloft/Drift Breach (UNC6395):** Threat actor accessed Salesloft GitHub account, downloaded repository content, and established workflows -- affecting 700+ organizations including Cloudflare, Zscaler, and Palo Alto Networks.
 - **November 2025 Service Outage:** Expired internal TLS certificate caused failures on all Git operations.
@@ -2872,6 +3000,8 @@ Before allowing any third-party integration access to GitHub, assess risk:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-03-23 | 0.5.2 | draft | Expand section 2.4 with Gitsign/Sigstore keyless signing, GitHub verification limitations, and CI signing; expand section 3.10 with composite action transitive dependency auditing, container image digest pinning, poutine/frizbee/octopin tools; expand section 5.2 with Docker Hub OIDC gap, GHCR migration path, PyPI/npm OIDC status, irreducible static secrets | Claude Code (Opus 4.6) |
+| 2026-03-23 | 0.5.1 | draft | Add section 1.8 (service account cross-org isolation) from TeamPCP Phase 3 findings; update section 6.6 with atomic credential rotation requirement; expand Security Incidents with full three-phase TeamPCP campaign (CanisterWorm, ICP C2, VS Code extension, org defacement) | Claude Code (Opus 4.6) |
 | 2026-03-07 | 0.3.0 | draft | Revamp sections 4-9: OAuth app auditing, GHAS unbundling, push protection delegated bypass, custom secret patterns, OIDC, build provenance, Copilot governance, custom roles, required workflows, security overview dashboard | Claude Code (Opus 4.6) |
 | 2026-02-12 | 0.2.0 | draft | Merged enterprise guide, added code pack integration, comprehensive controls | Claude Code (Opus 4.6) |
 | 2025-12-13 | 0.1.0 | draft | Initial GitHub hardening guide with supply chain security focus | Claude Code (Opus 4.5) |

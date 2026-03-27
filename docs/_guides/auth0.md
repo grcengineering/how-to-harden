@@ -90,10 +90,10 @@ Brute force protection blocks IP addresses that repeatedly fail to authenticate 
 **Time to Complete:** ~15 minutes
 
 #### Validation & Testing
-1. [ ] Verify protection is enabled in Dashboard
-2. [ ] Test by exceeding threshold (in test environment)
-3. [ ] Confirm block occurs and notification sent
-4. [ ] Verify admin can unblock accounts
+1. Verify protection is enabled in Dashboard
+2. Test by exceeding threshold (in test environment)
+3. Confirm block occurs and notification sent
+4. Verify admin can unblock accounts
 
 ---
 

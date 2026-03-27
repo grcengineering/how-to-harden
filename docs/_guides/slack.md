@@ -105,10 +105,10 @@ Configure SAML-based SSO to authenticate Slack users through your corporate iden
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Attempt to sign in - should redirect to IdP
-2. [ ] Verify MFA prompt from IdP
-3. [ ] Confirm password-only sign-in is blocked
-4. [ ] Test user deprovisioning from IdP removes Slack access
+1. Attempt to sign in - should redirect to IdP
+2. Verify MFA prompt from IdP
+3. Confirm password-only sign-in is blocked
+4. Test user deprovisioning from IdP removes Slack access
 
 **Expected result:** All users authenticate via SSO with MFA enforced by IdP
 
@@ -170,10 +170,10 @@ Enable SCIM (System for Cross-domain Identity Management) to automatically provi
 **Time to Complete:** ~30 minutes
 
 #### Validation & Testing
-1. [ ] Create user in IdP - verify appears in Slack
-2. [ ] Update user in IdP - verify changes sync
-3. [ ] Deactivate user in IdP - verify Slack access removed
-4. [ ] Verify deprovisioned users cannot sign in
+1. Create user in IdP - verify appears in Slack
+2. Update user in IdP - verify changes sync
+3. Deactivate user in IdP - verify Slack access removed
+4. Verify deprovisioned users cannot sign in
 
 ---
 
@@ -333,10 +333,10 @@ Control which Slack apps and integrations can be installed. Require admin approv
 {% include pack-code.html vendor="slack" section="3.1" %}
 
 #### Validation & Testing
-1. [ ] Attempt to install unapproved app - verify blocked
-2. [ ] Submit app approval request - verify workflow triggers
-3. [ ] Verify pre-approved apps can be installed
-4. [ ] Audit existing apps for excessive permissions
+1. Attempt to install unapproved app - verify blocked
+2. Submit app approval request - verify workflow triggers
+3. Verify pre-approved apps can be installed
+4. Audit existing apps for excessive permissions
 
 ---
 
@@ -435,10 +435,10 @@ Configure Slack's native DLP to detect and prevent sharing of sensitive informat
 {% include pack-code.html vendor="slack" section="4.1" %}
 
 #### Validation & Testing
-1. [ ] Send test message with fake credit card number
-2. [ ] Verify DLP rule triggers
-3. [ ] Confirm admin receives alert
-4. [ ] Test that legitimate content is not blocked
+1. Send test message with fake credit card number
+2. Verify DLP rule triggers
+3. Confirm admin receives alert
+4. Test that legitimate content is not blocked
 
 ---
 

@@ -89,10 +89,10 @@ Require MFA for all CyberArk console access, including PVWA (Password Vault Web 
    - **Remember device:** Disabled (L2/L3)
 
 #### Validation & Testing
-1. [ ] Attempt PVWA login with password only - should fail
-2. [ ] Complete login with password + MFA - should succeed
-3. [ ] Verify MFA logged in audit trail
-4. [ ] Test PSM connection with MFA requirement
+1. Attempt PVWA login with password only - should fail
+2. Complete login with password + MFA - should succeed
+3. Verify MFA logged in audit trail
+4. Test PSM connection with MFA requirement
 
 #### Compliance Mappings
 

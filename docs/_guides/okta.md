@@ -124,10 +124,10 @@ Configure both Okta Dashboard and Admin Console policies:
 {% include pack-code.html vendor="okta" section="1.1" %}
 
 #### Validation & Testing
-1. [ ] Attempt admin login with only password - should be blocked
-2. [ ] Attempt admin login with TOTP - should be blocked (if FIDO2 required)
-3. [ ] Complete admin login with FIDO2 key - should succeed
-4. [ ] Review System Log for successful WebAuthn authentications
+1. Attempt admin login with only password - should be blocked
+2. Attempt admin login with TOTP - should be blocked (if FIDO2 required)
+3. Complete admin login with FIDO2 key - should succeed
+4. Review System Log for successful WebAuthn authentications
 
 **Expected result:** Only FIDO2-authenticated sessions can access admin console
 
@@ -609,12 +609,12 @@ Audit and mitigate the risk posed by Okta's immutable Default Authentication Pol
 {% include pack-code.html vendor="okta" section="1.9" %}
 
 #### Validation & Testing
-1. [ ] Run API query to list all apps assigned to the Default Policy -- result should be **zero applications**
-2. [ ] Attempt login to a test application with password only -- should be denied by catch-all rule
-3. [ ] Attempt login to a test application with password + MFA -- should succeed
-4. [ ] Add a new test application and verify it is **not** automatically assigned to the Default Policy
-5. [ ] Review System Log for `policy.evaluate_sign_on` events referencing the Default Policy -- should show no recent hits
-6. [ ] Verify each custom policy has a catch-all deny rule as the second-to-last rule
+1. Run API query to list all apps assigned to the Default Policy -- result should be **zero applications**
+2. Attempt login to a test application with password only -- should be denied by catch-all rule
+3. Attempt login to a test application with password + MFA -- should succeed
+4. Add a new test application and verify it is **not** automatically assigned to the Default Policy
+5. Review System Log for `policy.evaluate_sign_on` events referencing the Default Policy -- should show no recent hits
+6. Verify each custom policy has a catch-all deny rule as the second-to-last rule
 
 **Expected result:** Zero applications assigned to the Default Policy; all authentication flows require MFA through explicit custom policies.
 
@@ -717,13 +717,13 @@ Restrict self-service account recovery to trusted methods and network locations.
 {% include pack-code.html vendor="okta" section="1.10" %}
 
 #### Validation & Testing
-1. [ ] Navigate to **Security → Authenticators** and verify Security Question shows **Inactive**
-2. [ ] Navigate to **Security → Authenticators → Password → Edit** and verify SMS, Voice, and Security Question are disabled for recovery
-3. [ ] Initiate a password reset from a **corporate network IP** -- verify only Email and Okta Verify options appear
-4. [ ] Initiate a password reset from an **external/untrusted IP** -- verify the request is blocked or requires additional verification
-5. [ ] Attempt to enroll a security question as a user -- should not be available
-6. [ ] Review System Log for `user.account.reset_password` events and verify they originate only from trusted network zones
-7. [ ] Verify recovery token lifetime is set to 10 minutes or less
+1. Navigate to **Security → Authenticators** and verify Security Question shows **Inactive**
+2. Navigate to **Security → Authenticators → Password → Edit** and verify SMS, Voice, and Security Question are disabled for recovery
+3. Initiate a password reset from a **corporate network IP** -- verify only Email and Okta Verify options appear
+4. Initiate a password reset from an **external/untrusted IP** -- verify the request is blocked or requires additional verification
+5. Attempt to enroll a security question as a user -- should not be available
+6. Review System Log for `user.account.reset_password` events and verify they originate only from trusted network zones
+7. Verify recovery token lifetime is set to 10 minutes or less
 
 **Expected result:** Self-service recovery limited to email and authenticator-based methods; no SMS, voice, or security question options; recovery blocked from untrusted networks.
 
@@ -807,14 +807,14 @@ Enable all five end-user security notification types in Okta so that users recei
 {% include pack-code.html vendor="okta" section="1.11" %}
 
 #### Validation & Testing
-1. [ ] Navigate to **Settings → Account → End-User Notifications** and verify all five notification types are **Enabled**
-2. [ ] Navigate to **Security → General → Suspicious Activity Reporting** and verify it is **Enabled**
-3. [ ] Sign in with a test user from a new device/browser -- verify "New sign-on" email is received
-4. [ ] Enroll a new authenticator for a test user -- verify "Authenticator enrolled" email is received
-5. [ ] Reset an authenticator for a test user -- verify "Authenticator reset" email is received
-6. [ ] Change a test user's password -- verify "Password changed" email is received
-7. [ ] In a notification email, click **"Report Suspicious Activity"** -- verify the system log event `user.account.report_suspicious_activity_by_enduser` is created
-8. [ ] Verify SIEM alert fires for the suspicious activity report event
+1. Navigate to **Settings → Account → End-User Notifications** and verify all five notification types are **Enabled**
+2. Navigate to **Security → General → Suspicious Activity Reporting** and verify it is **Enabled**
+3. Sign in with a test user from a new device/browser -- verify "New sign-on" email is received
+4. Enroll a new authenticator for a test user -- verify "Authenticator enrolled" email is received
+5. Reset an authenticator for a test user -- verify "Authenticator reset" email is received
+6. Change a test user's password -- verify "Password changed" email is received
+7. In a notification email, click **"Report Suspicious Activity"** -- verify the system log event `user.account.report_suspicious_activity_by_enduser` is created
+8. Verify SIEM alert fires for the suspicious activity report event
 
 **Expected result:** All five notification types active; users receive timely emails for security-relevant account changes; suspicious activity reports generate system log events that trigger SIEM alerts.
 
@@ -971,10 +971,10 @@ Activate Okta's Enhanced Dynamic Zone to automatically block traffic from anonym
 {% include pack-code.html vendor="okta" section="2.3" %}
 
 #### Validation & Testing
-1. [ ] Navigate to **Security → Networks** and verify DefaultEnhancedDynamicZone shows **Active** status
-2. [ ] Verify zone usage is set to **Blocklist**
-3. [ ] Test access from a Tor exit node or known anonymizing proxy — should be denied
-4. [ ] Verify legitimate users on corporate VPN are not affected
+1. Navigate to **Security → Networks** and verify DefaultEnhancedDynamicZone shows **Active** status
+2. Verify zone usage is set to **Blocklist**
+3. Test access from a Tor exit node or known anonymizing proxy — should be denied
+4. Verify legitimate users on corporate VPN are not affected
 
 #### Monitoring & Maintenance
 
@@ -1132,9 +1132,9 @@ Restrict which third-party applications can receive OAuth grants from users. OAu
 {% include pack-code.html vendor="okta" section="3.3" %}
 
 #### Validation & Testing
-1. [ ] Verify admin approval is required for new app integrations
-2. [ ] Attempt to add an unauthorized OAuth application as a standard user — should require admin approval
-3. [ ] Confirm no applications have overly broad scopes (`*.manage`, `*.write`) unless justified
+1. Verify admin approval is required for new app integrations
+2. Attempt to add an unauthorized OAuth application as a standard user — should require admin approval
+3. Confirm no applications have overly broad scopes (`*.manage`, `*.write`) unless justified
 
 #### Monitoring & Maintenance
 
@@ -1239,10 +1239,10 @@ Implement governance for non-human identities: service accounts, API tokens, aut
 - Document new OAuth 2.0 credentials and rotation schedule
 
 #### Validation & Testing
-1. [ ] Verify all API tokens have network restrictions applied
-2. [ ] Confirm no tokens are older than 90 days without documented exception
-3. [ ] Test OAuth 2.0 service app authentication using client credentials flow
-4. [ ] Verify no SSWS tokens are assigned to personal admin accounts used by humans
+1. Verify all API tokens have network restrictions applied
+2. Confirm no tokens are older than 90 days without documented exception
+3. Test OAuth 2.0 service app authentication using client credentials flow
+4. Verify no SSWS tokens are assigned to personal admin accounts used by humans
 
 #### Monitoring & Maintenance
 
@@ -1405,10 +1405,10 @@ Harden admin sessions with ASN binding, IP binding, and Protected Actions. These
 {% include pack-code.html vendor="okta" section="4.3" %}
 
 #### Validation & Testing
-1. [ ] Verify ASN binding is active: Navigate to **Security → General → Admin Session Settings**
-2. [ ] Verify IP binding is active (if applicable)
-3. [ ] Test Protected Actions: Attempt to modify an IdP — should prompt for step-up authentication
-4. [ ] Test session invalidation: Log in as admin, change network (e.g., switch from WiFi to VPN) — session should be invalidated if IP binding is enabled
+1. Verify ASN binding is active: Navigate to **Security → General → Admin Session Settings**
+2. Verify IP binding is active (if applicable)
+3. Test Protected Actions: Attempt to modify an IdP — should prompt for step-up authentication
+4. Test session invalidation: Log in as admin, change network (e.g., switch from WiFi to VPN) — session should be invalidated if IP binding is enabled
 
 #### Monitoring & Maintenance
 
@@ -1596,9 +1596,9 @@ Configure Okta's Behavior Detection to identify anomalous user behavior patterns
 {% include pack-code.html vendor="okta" section="5.4" %}
 
 #### Validation & Testing
-1. [ ] Verify all behavior detection rules are active: **Security → Behavior Detection**
-2. [ ] Test new device detection: Log in from an unrecognized browser — should trigger MFA challenge
-3. [ ] Review risk score evaluation: Check system log for `security.behavior_detection.triggered` events
+1. Verify all behavior detection rules are active: **Security → Behavior Detection**
+2. Test new device detection: Log in from an unrecognized browser — should trigger MFA challenge
+3. Review risk score evaluation: Check system log for `security.behavior_detection.triggered` events
 
 #### Monitoring & Maintenance
 
@@ -1668,10 +1668,10 @@ Configure alerts in your SIEM for these system log events:
 {% include pack-code.html vendor="okta" section="5.5" %}
 
 #### Validation & Testing
-1. [ ] Verify IdP management is restricted to minimum necessary administrators
-2. [ ] Confirm all existing IdPs have documented business justification
-3. [ ] Verify SIEM alerts are configured for `system.idp.lifecycle.*` events
-4. [ ] Test alert: Create a test IdP in a sandbox tenant and verify alert fires
+1. Verify IdP management is restricted to minimum necessary administrators
+2. Confirm all existing IdPs have documented business justification
+3. Verify SIEM alerts are configured for `system.idp.lifecycle.*` events
+4. Test alert: Create a test IdP in a sandbox tenant and verify alert fires
 
 #### Monitoring & Maintenance
 
@@ -1742,10 +1742,10 @@ Run Okta HealthInsight regularly to assess your tenant's security posture agains
 3. Include HealthInsight review in your quarterly security review process
 
 #### Validation & Testing
-1. [ ] Navigate to **Security → HealthInsight** and verify it loads
-2. [ ] Document current posture score as baseline
-3. [ ] Verify all 16 checks have been reviewed
-4. [ ] Remediate any Failed checks and confirm they move to Passed
+1. Navigate to **Security → HealthInsight** and verify it loads
+2. Document current posture score as baseline
+3. Verify all 16 checks have been reviewed
+4. Remediate any Failed checks and confirm they move to Passed
 
 #### Monitoring & Maintenance
 **Maintenance schedule:**
@@ -1851,9 +1851,9 @@ Document a formal policy requiring:
 - **mitmproxy** — can export sanitized HAR during capture
 
 #### Validation & Testing
-1. [ ] Sanitization script is available and tested
-2. [ ] Policy documented and communicated to all IT/engineering staff
-3. [ ] Test: Generate a HAR file, sanitize it, verify no tokens remain by searching for `sid=`, `Bearer`, `SSWS`
+1. Sanitization script is available and tested
+2. Policy documented and communicated to all IT/engineering staff
+3. Test: Generate a HAR file, sanitize it, verify no tokens remain by searching for `sid=`, `Bearer`, `SSWS`
 
 ---
 
@@ -1899,9 +1899,9 @@ Establish a process to monitor Okta security advisories and ensure all Okta clie
 2. Include Okta dependency monitoring in your vulnerability management program
 
 #### Validation & Testing
-1. [ ] Security advisory monitoring is assigned to a specific team member
-2. [ ] Client update policy is documented and enforced via MDM
-3. [ ] Verify all Okta Verify installations are on the latest version
+1. Security advisory monitoring is assigned to a specific team member
+2. Client update policy is documented and enforced via MDM
+3. Verify all Okta Verify installations are on the latest version
 
 ---
 
@@ -2019,10 +2019,10 @@ Key events to track:
 {% include pack-code.html vendor="okta" section="7.4" %}
 
 #### Validation & Testing
-1. [ ] Change management process documented
-2. [ ] Configuration tracked in version control (Terraform or equivalent)
-3. [ ] SIEM alerts configured for unauthorized configuration changes
-4. [ ] Separation of duties enforced for critical changes
+1. Change management process documented
+2. Configuration tracked in version control (Terraform or equivalent)
+3. SIEM alerts configured for unauthorized configuration changes
+4. Separation of duties enforced for critical changes
 
 ---
 
@@ -2075,10 +2075,10 @@ Document specific response procedures for identity-based security incidents. The
 {% include pack-code.html vendor="okta" section="7.5" %}
 
 #### Validation & Testing
-1. [ ] All 5 runbooks documented and accessible to security team
-2. [ ] API commands tested in sandbox environment
-3. [ ] Security team trained on runbook execution
-4. [ ] Runbooks integrated into broader incident response plan
+1. All 5 runbooks documented and accessible to security team
+2. API commands tested in sandbox environment
+3. Security team trained on runbook execution
+4. Runbooks integrated into broader incident response plan
 
 #### Monitoring & Maintenance
 **Maintenance schedule:**

@@ -101,10 +101,10 @@ Require 2-Step Verification (2SV) for all users with enforcement, not just enrol
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Sign in as test user - 2SV prompt should appear
-2. [ ] Check Admin Console → Reports → User Reports → Security
-3. [ ] Verify 2SV enrollment percentage approaches 100%
-4. [ ] Attempt sign-in with only password - should fail after enforcement
+1. Sign in as test user - 2SV prompt should appear
+2. Check Admin Console → Reports → User Reports → Security
+3. Verify 2SV enrollment percentage approaches 100%
+4. Attempt sign-in with only password - should fail after enforcement
 
 **Expected result:** All users prompted for second factor, enforcement active
 
@@ -207,10 +207,10 @@ Limit Super Admin privileges to 2-4 dedicated accounts, enforce security keys fo
 #### Code Implementation
 
 #### Validation & Testing
-1. [ ] Verify only 2-4 Super Admin accounts exist
-2. [ ] Confirm all Super Admins use security keys
-3. [ ] Test delegated admin can perform assigned tasks only
-4. [ ] Verify delegated admin cannot access Super Admin functions
+1. Verify only 2-4 Super Admin accounts exist
+2. Confirm all Super Admins use security keys
+3. Test delegated admin can perform assigned tasks only
+4. Verify delegated admin cannot access Super Admin functions
 
 {% include pack-code.html vendor="google-workspace" section="1.2" %}
 
@@ -363,10 +363,10 @@ Restrict which third-party applications can access Google Workspace data via OAu
 #### Code Implementation
 
 #### Validation & Testing
-1. [ ] Verify blocked apps cannot access data
-2. [ ] Test app approval workflow
-3. [ ] Review Security Investigation Tool for blocked app attempts
-4. [ ] Confirm whitelisted apps function correctly
+1. Verify blocked apps cannot access data
+2. Test app approval workflow
+3. Review Security Investigation Tool for blocked app attempts
+4. Confirm whitelisted apps function correctly
 
 **Expected result:** Only approved apps can access organizational data
 
@@ -467,10 +467,10 @@ Restrict external sharing of Google Drive files to prevent unauthorized data exp
 #### Code Implementation
 
 #### Validation & Testing
-1. [ ] Create test file and verify default sharing is Restricted
-2. [ ] Attempt to share externally - verify appropriate restrictions apply
-3. [ ] Audit existing files with external sharing
-4. [ ] Confirm allowed external sharing still functions
+1. Create test file and verify default sharing is Restricted
+2. Attempt to share externally - verify appropriate restrictions apply
+3. Audit existing files with external sharing
+4. Confirm allowed external sharing still functions
 
 {% include pack-code.html vendor="google-workspace" section="4.1" %}
 

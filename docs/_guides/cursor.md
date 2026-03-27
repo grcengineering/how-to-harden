@@ -104,9 +104,9 @@ Require all developers to authenticate with a Cursor account instead of using th
 **Time to Complete:** ~5 minutes per user
 
 #### Validation & Testing
-1. [ ] Attempt to use Cursor features without authentication
-2. [ ] Verify AI features require authenticated account
-3. [ ] Confirm account shows in Cursor status bar
+1. Attempt to use Cursor features without authentication
+2. Verify AI features require authenticated account
+3. Confirm account shows in Cursor status bar
 
 **Expected result:** All Cursor features require authenticated account
 
@@ -166,9 +166,9 @@ Require MFA for Cursor account authentication to prevent account takeover via co
 **Time to Complete:** ~10 minutes
 
 #### Validation & Testing
-1. [ ] Attempt login with only password - should prompt for MFA
-2. [ ] Test authenticator app generates valid codes
-3. [ ] Verify recovery codes work for MFA bypass
+1. Attempt login with only password - should prompt for MFA
+2. Test authenticator app generates valid codes
+3. Verify recovery codes work for MFA bypass
 
 **Expected result:** All logins require MFA verification
 
@@ -235,10 +235,10 @@ For more granular control:
 **Time to Complete:** ~5 minutes per workspace
 
 #### Validation & Testing
-1. [ ] With Privacy Mode ON, attempt AI autocomplete - should not trigger
-2. [ ] Check network traffic - no requests to OpenAI/Anthropic APIs
-3. [ ] Verify privacy indicator in Cursor status bar
-4. [ ] Test that local features (syntax highlighting, search) still work
+1. With Privacy Mode ON, attempt AI autocomplete - should not trigger
+2. Check network traffic - no requests to OpenAI/Anthropic APIs
+3. Verify privacy indicator in Cursor status bar
+4. Test that local features (syntax highlighting, search) still work
 
 **Expected result:** No code sent to external AI services
 
@@ -427,9 +427,9 @@ Store Cursor AI provider API keys in environment variables or secure credential 
 **Time to Complete:** ~10 minutes
 
 #### Validation & Testing
-1. [ ] Search settings files for hardcoded keys - should find none
-2. [ ] Verify Cursor can access API keys from environment
-3. [ ] Check Git history for accidentally committed keys
+1. Search settings files for hardcoded keys - should find none
+2. Verify Cursor can access API keys from environment
+3. Check Git history for accidentally committed keys
 
 **Expected result:** API keys only in environment variables or secure stores
 
@@ -566,9 +566,9 @@ Use VSCode/Cursor Workspace Trust to prevent automatic execution of untrusted co
 **Time to Complete:** ~5 minutes
 
 #### Validation & Testing
-1. [ ] Clone untrusted repo - should trigger trust prompt
-2. [ ] Verify restricted mode prevents task execution
-3. [ ] Trust workspace and verify features enabled
+1. Clone untrusted repo - should trigger trust prompt
+2. Verify restricted mode prevents task execution
+3. Trust workspace and verify features enabled
 
 **Expected result:** All untrusted workspaces open in restricted mode
 

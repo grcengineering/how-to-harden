@@ -118,10 +118,10 @@ Configure SAML 2.0 or OIDC-based SSO to authenticate Claude users through your c
 {% include pack-code.html vendor="anthropic-claude" section="1.1" %}
 
 #### Validation & Testing
-1. [ ] Attempt login without SSO — should be redirected to IdP
-2. [ ] Complete SSO login — should succeed and land in Claude
-3. [ ] Remove user from IdP group — should lose Claude access
-4. [ ] Cross-reference org member list (API) with IdP directory
+1. Attempt login without SSO — should be redirected to IdP
+2. Complete SSO login — should succeed and land in Claude
+3. Remove user from IdP group — should lose Claude access
+4. Cross-reference org member list (API) with IdP directory
 
 **Expected result:** All users authenticate via SSO; no standalone password logins
 
@@ -204,10 +204,10 @@ Assign the minimum necessary organization role to each user. Anthropic provides 
 {% include pack-code.html vendor="anthropic-claude" section="1.2" %}
 
 #### Validation & Testing
-1. [ ] List all org members via Admin API — count admins <= 3
-2. [ ] Verify no user has admin role without documented justification
-3. [ ] Attempt to assign admin role via API — should fail (by design)
-4. [ ] Verify billing role holders match authorized finance contacts
+1. List all org members via Admin API — count admins <= 3
+2. Verify no user has admin role without documented justification
+3. Attempt to assign admin role via API — should fail (by design)
+4. Verify billing role holders match authorized finance contacts
 
 **Expected result:** Admin role limited to 2-3 operators; all other users at minimum necessary privilege
 
@@ -278,9 +278,9 @@ Admin API keys (`sk-ant-admin...`) grant organization-wide management access. Th
 {% include pack-code.html vendor="anthropic-claude" section="1.3" %}
 
 #### Validation & Testing
-1. [ ] Validate admin key works via `/v1/organizations/me` endpoint
-2. [ ] Verify admin key is stored in secrets manager (not plaintext)
-3. [ ] Confirm admin key naming convention is followed
+1. Validate admin key works via `/v1/organizations/me` endpoint
+2. Verify admin key is stored in secrets manager (not plaintext)
+3. Confirm admin key naming convention is followed
 
 **Expected result:** All admin keys are named, stored securely, and have documented owners
 
@@ -341,9 +341,9 @@ Every standard API key in Anthropic Claude is scoped to a single workspace. Leve
 {% include pack-code.html vendor="anthropic-claude" section="2.1" %}
 
 #### Validation & Testing
-1. [ ] List all API keys via Admin API — verify each has a workspace assignment
-2. [ ] Verify no unnamed keys exist
-3. [ ] Test that a key scoped to Workspace A cannot be used with Workspace B resources
+1. List all API keys via Admin API — verify each has a workspace assignment
+2. Verify no unnamed keys exist
+3. Test that a key scoped to Workspace A cannot be used with Workspace B resources
 
 **Expected result:** All API keys have descriptive names and are assigned to appropriate workspaces
 
@@ -402,9 +402,9 @@ Establish a 90-day rotation schedule for all API keys. Since API keys can only b
 {% include pack-code.html vendor="anthropic-claude" section="2.2" %}
 
 #### Validation & Testing
-1. [ ] Run stale key audit script — zero keys older than 90 days
-2. [ ] Verify disabled keys return 401 when used
-3. [ ] Confirm application functionality with rotated keys
+1. Run stale key audit script — zero keys older than 90 days
+2. Verify disabled keys return 401 when used
+3. Confirm application functionality with rotated keys
 
 **Expected result:** No API key is older than 90 days; old keys are archived
 
@@ -469,9 +469,9 @@ Create separate workspaces for development, staging, and production environments
 {% include pack-code.html vendor="anthropic-claude" section="3.1" %}
 
 #### Validation & Testing
-1. [ ] List all workspaces via Admin API — verify naming convention adherence
-2. [ ] Verify production workspaces have data residency configured
-3. [ ] Confirm workspace count is within the 100-workspace limit
+1. List all workspaces via Admin API — verify naming convention adherence
+2. Verify production workspaces have data residency configured
+3. Confirm workspace count is within the 100-workspace limit
 
 **Expected result:** Separate workspaces exist for each team/environment; naming convention followed
 
@@ -528,9 +528,9 @@ Assign users to only the workspaces they need. Workspace roles (`workspace_user`
 {% include pack-code.html vendor="anthropic-claude" section="3.2" %}
 
 #### Validation & Testing
-1. [ ] List workspace members via Admin API for each workspace
-2. [ ] Verify no workspace has more than 2 `workspace_admin` members (excluding inherited org admins)
-3. [ ] Confirm removed users cannot access workspace resources
+1. List workspace members via Admin API for each workspace
+2. Verify no workspace has more than 2 `workspace_admin` members (excluding inherited org admins)
+3. Confirm removed users cannot access workspace resources
 
 **Expected result:** Each workspace has only authorized members at appropriate role levels
 
@@ -593,9 +593,9 @@ Configure data residency at the workspace level to control where Claude processe
 {% include pack-code.html vendor="anthropic-claude" section="4.1" %}
 
 #### Validation & Testing
-1. [ ] List all workspaces via Admin API — verify `workspace_geo` and `allowed_inference_geos`
-2. [ ] Attempt a request with `inference_geo: "global"` against a US-restricted workspace — should fail
-3. [ ] Verify new workspaces are created with correct geo from the start
+1. List all workspaces via Admin API — verify `workspace_geo` and `allowed_inference_geos`
+2. Attempt a request with `inference_geo: "global"` against a US-restricted workspace — should fail
+3. Verify new workspaces are created with correct geo from the start
 
 **Expected result:** Regulated workspaces have explicit data residency configuration; inference geo restrictions enforced
 
@@ -653,9 +653,9 @@ Understand and configure Anthropic's data retention policies. By default, API in
 **Time to Complete:** ~30 minutes (policy review) + vendor coordination for custom retention
 
 #### Validation & Testing
-1. [ ] Confirm retention period with Anthropic account team (Enterprise)
-2. [ ] Verify client-side PII redaction is in place for sensitive workloads
-3. [ ] Review data classification guidelines with engineering team
+1. Confirm retention period with Anthropic account team (Enterprise)
+2. Verify client-side PII redaction is in place for sensitive workloads
+3. Review data classification guidelines with engineering team
 
 **Expected result:** Data retention policy documented and aligned with organizational requirements
 
@@ -719,9 +719,9 @@ Use Anthropic's Admin API usage and cost reporting endpoints to monitor token co
 {% include pack-code.html vendor="anthropic-claude" section="5.1" %}
 
 #### Validation & Testing
-1. [ ] Run usage report API script — verify data returns for all active workspaces
-2. [ ] Run cost report API script — verify cost data is accurate
-3. [ ] Confirm observability integration is receiving data
+1. Run usage report API script — verify data returns for all active workspaces
+2. Run cost report API script — verify cost data is accurate
+3. Confirm observability integration is receiving data
 
 **Expected result:** Usage and cost data is monitored regularly with alerts for anomalies
 
@@ -780,9 +780,9 @@ Set per-workspace spend limits and rate limits to prevent cost overruns and abus
 {% include pack-code.html vendor="anthropic-claude" section="5.2" %}
 
 #### Validation & Testing
-1. [ ] Verify spend limits are set for every workspace via Console
-2. [ ] Run cost anomaly detection script to validate monitoring
-3. [ ] Test that requests return 429 when rate limits are exceeded (check `retry-after` header)
+1. Verify spend limits are set for every workspace via Console
+2. Run cost anomaly detection script to validate monitoring
+3. Test that requests return 429 when rate limits are exceeded (check `retry-after` header)
 
 **Expected result:** Every workspace has explicit spend and rate limits configured
 
@@ -840,9 +840,9 @@ Regularly audit pending organization invites. Invites in Anthropic expire after 
 {% include pack-code.html vendor="anthropic-claude" section="6.1" %}
 
 #### Validation & Testing
-1. [ ] Run invite audit script — verify no stale pending invites
-2. [ ] Attempt to create invite with admin role via API — should fail (by design)
-3. [ ] Confirm expired invites cannot be accepted
+1. Run invite audit script — verify no stale pending invites
+2. Attempt to create invite with admin role via API — should fail (by design)
+3. Confirm expired invites cannot be accepted
 
 **Expected result:** All pending invites are reviewed, authorized, and time-bound
 
@@ -890,9 +890,9 @@ Assess the security posture of applications and services that consume your Claud
 - **11-15 points:** Reject or isolate (dedicated workspace with minimum limits, frequent rotation, monitoring)
 
 #### Validation & Testing
-1. [ ] Maintain inventory of all applications using Claude API keys
-2. [ ] Verify each application's key is in an appropriately scoped workspace
-3. [ ] Confirm keys are stored in secrets managers, not in source code
+1. Maintain inventory of all applications using Claude API keys
+2. Verify each application's key is in an appropriately scoped workspace
+3. Confirm keys are stored in secrets managers, not in source code
 
 **Expected result:** All API key consumers are inventoried with risk ratings and appropriate controls
 
@@ -970,10 +970,10 @@ For modular policies, create a `managed-settings.d/` directory alongside the bas
 {% include pack-code.html vendor="anthropic-claude" section="7.1" %}
 
 #### Validation & Testing
-1. [ ] Run validation script — managed-settings.json exists at correct OS path
-2. [ ] Verify `disableBypassPermissionsMode` is set to `"disable"`
-3. [ ] Attempt `--dangerously-skip-permissions` — should be rejected
-4. [ ] Verify deny rules block restricted operations
+1. Run validation script — managed-settings.json exists at correct OS path
+2. Verify `disableBypassPermissionsMode` is set to `"disable"`
+3. Attempt `--dangerously-skip-permissions` — should be rejected
+4. Verify deny rules block restricted operations
 
 **Expected result:** All developer machines have managed settings deployed; bypass mode is disabled
 
@@ -1057,10 +1057,10 @@ Configure granular permission rules in managed settings to control which tools C
 {% include pack-code.html vendor="anthropic-claude" section="7.2" %}
 
 #### Validation & Testing
-1. [ ] Attempt to read a `.env` file via Claude Code — should be denied
-2. [ ] Attempt to run `curl` via Claude Code — should be denied
-3. [ ] Run an approved command (e.g., `npm run test`) — should succeed
-4. [ ] Verify user-added allow rules are ignored when `allowManagedPermissionRulesOnly` is true
+1. Attempt to read a `.env` file via Claude Code — should be denied
+2. Attempt to run `curl` via Claude Code — should be denied
+3. Run an approved command (e.g., `npm run test`) — should succeed
+4. Verify user-added allow rules are ignored when `allowManagedPermissionRulesOnly` is true
 
 **Expected result:** Sensitive files and commands are blocked; only approved operations succeed
 
@@ -1139,10 +1139,10 @@ When this file exists, it takes **exclusive control** — users cannot add, modi
 {% include pack-code.html vendor="anthropic-claude" section="7.3" %}
 
 #### Validation & Testing
-1. [ ] Verify managed-mcp.json is deployed (if using exclusive control)
-2. [ ] Attempt to add an unapproved MCP server — should be blocked
-3. [ ] Verify approved MCP servers connect successfully
-4. [ ] Test deny rule against a specific server name — should be blocked
+1. Verify managed-mcp.json is deployed (if using exclusive control)
+2. Attempt to add an unapproved MCP server — should be blocked
+3. Verify approved MCP servers connect successfully
+4. Test deny rule against a specific server name — should be blocked
 
 **Expected result:** Only approved MCP servers can be used; all others are blocked
 
@@ -1218,10 +1218,10 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 {% include pack-code.html vendor="anthropic-claude" section="7.4" %}
 
 #### Validation & Testing
-1. [ ] Run analytics script — verify data returns for active Claude Code users
-2. [ ] Verify per-user session counts, commit counts, and LOC metrics
-3. [ ] Verify tool acceptance rates are calculated correctly
-4. [ ] Confirm cost breakdown by model matches Console dashboard
+1. Run analytics script — verify data returns for active Claude Code users
+2. Verify per-user session counts, commit counts, and LOC metrics
+3. Verify tool acceptance rates are calculated correctly
+4. Confirm cost breakdown by model matches Console dashboard
 
 **Expected result:** Per-user Claude Code metrics are monitored daily with alerts for anomalies
 
@@ -1303,11 +1303,11 @@ Enable OS-level bash command sandboxing to isolate Claude Code's subprocess exec
 {% include pack-code.html vendor="anthropic-claude" section="7.5" %}
 
 #### Validation & Testing
-1. [ ] Run Claude Code with sandbox enabled — verify `/sandbox` shows active status
-2. [ ] Attempt to read `~/.aws/credentials` via Claude Code — should be denied
-3. [ ] Attempt to `curl` a non-allowlisted domain — should be blocked
-4. [ ] Set `failIfUnavailable: true` and remove bubblewrap (Linux) — Claude Code should refuse to start
-5. [ ] Verify `allowManagedDomainsOnly` prevents user domain approval prompts
+1. Run Claude Code with sandbox enabled — verify `/sandbox` shows active status
+2. Attempt to read `~/.aws/credentials` via Claude Code — should be denied
+3. Attempt to `curl` a non-allowlisted domain — should be blocked
+4. Set `failIfUnavailable: true` and remove bubblewrap (Linux) — Claude Code should refuse to start
+5. Verify `allowManagedDomainsOnly` prevents user domain approval prompts
 
 **Expected result:** All bash commands execute in kernel-enforced sandbox; credential paths are unreadable; network limited to approved domains
 
@@ -1395,11 +1395,11 @@ Restrict the Claude Code extensibility surface by enforcing managed-only hooks, 
 {% include pack-code.html vendor="anthropic-claude" section="7.6" %}
 
 #### Validation & Testing
-1. [ ] Create a hook in `.claude/settings.json` — verify it does not execute when `allowManagedHooksOnly` is true
-2. [ ] Attempt to install a plugin from a non-approved marketplace — should be blocked
-3. [ ] Verify `blockedMarketplaces` entries are rejected before download
-4. [ ] Create an HTTP hook targeting a non-allowlisted URL — verify it is blocked
-5. [ ] Verify `pluginTrustMessage` appears during plugin trust prompts
+1. Create a hook in `.claude/settings.json` — verify it does not execute when `allowManagedHooksOnly` is true
+2. Attempt to install a plugin from a non-approved marketplace — should be blocked
+3. Verify `blockedMarketplaces` entries are rejected before download
+4. Create an HTTP hook targeting a non-allowlisted URL — verify it is blocked
+5. Verify `pluginTrustMessage` appears during plugin trust prompts
 
 **Expected result:** Only managed hooks execute; plugins limited to approved sources; HTTP hooks restricted to approved endpoints
 
@@ -1493,11 +1493,11 @@ Implement defenses against prompt injection attacks that target Claude Code thro
 {% include pack-code.html vendor="anthropic-claude" section="7.7" %}
 
 #### Validation & Testing
-1. [ ] Run the rules file scanner against a clean repository — should return exit code 0
-2. [ ] Create a test CLAUDE.md with `ignore all previous instructions` — scanner should flag it
-3. [ ] Create a test file with invisible Unicode (zero-width space) — scanner should detect it
-4. [ ] Verify claude-code-safety-net blocks `git reset --hard` and `rm -rf /` commands
-5. [ ] Verify scanner runs in CI on PRs modifying rules files
+1. Run the rules file scanner against a clean repository — should return exit code 0
+2. Create a test CLAUDE.md with `ignore all previous instructions` — scanner should flag it
+3. Create a test file with invisible Unicode (zero-width space) — scanner should detect it
+4. Verify claude-code-safety-net blocks `git reset --hard` and `rm -rf /` commands
+5. Verify scanner runs in CI on PRs modifying rules files
 
 **Expected result:** Malicious rules files detected before Claude Code processes them; destructive commands caught by safety-net hook
 
@@ -1590,11 +1590,11 @@ Secure Claude Code when used in CI/CD pipelines via GitHub Actions. Unlike GitHu
 {% include pack-code.html vendor="anthropic-claude" section="7.8" %}
 
 #### Validation & Testing
-1. [ ] Verify harden-runner is the first step in Claude Code CI jobs
-2. [ ] Run workflow in audit mode — review network connection baseline
-3. [ ] Verify `allowed_tools`/`disallowed_tools` restrict Claude Code capabilities
-4. [ ] Verify `max_turns` limits agent execution length
-5. [ ] Confirm security review action runs only on trusted PRs (not forks)
+1. Verify harden-runner is the first step in Claude Code CI jobs
+2. Run workflow in audit mode — review network connection baseline
+3. Verify `allowed_tools`/`disallowed_tools` restrict Claude Code capabilities
+4. Verify `max_turns` limits agent execution length
+5. Confirm security review action runs only on trusted PRs (not forks)
 
 **Expected result:** Claude Code CI workflows have monitored network egress, restricted tool access, and automated security review
 
@@ -1690,12 +1690,12 @@ Deploy kernel-enforced sandbox tools that wrap Claude Code in an isolation layer
 {% include pack-code.html vendor="anthropic-claude" section="7.9" %}
 
 #### Validation & Testing
-1. [ ] Install nono — verify `nono --version` returns version
-2. [ ] Run `nono run --profile claude-code -- claude` — verify sandbox active
-3. [ ] Attempt to read `~/.ssh/id_rsa` from within nono sandbox — should be denied
-4. [ ] Install OpenShell — verify `openshell --version` returns version
-5. [ ] Run `openshell sandbox create -- claude` — verify isolated container launches
-6. [ ] Verify `nono audit list` shows session history
+1. Install nono — verify `nono --version` returns version
+2. Run `nono run --profile claude-code -- claude` — verify sandbox active
+3. Attempt to read `~/.ssh/id_rsa` from within nono sandbox — should be denied
+4. Install OpenShell — verify `openshell --version` returns version
+5. Run `openshell sandbox create -- claude` — verify isolated container launches
+6. Verify `nono audit list` shows session history
 
 **Expected result:** Claude Code runs inside kernel-enforced or container-enforced sandbox with full audit trail
 
@@ -1809,12 +1809,12 @@ Configure governance controls for Claude Cowork collaborative sessions, includin
 {% include pack-code.html vendor="anthropic-claude" section="7.10" %}
 
 #### Validation & Testing
-1. [ ] Verify `forceLoginMethod` restricts login to Claude.ai accounts only
-2. [ ] Verify `forceLoginOrgUUID` auto-selects the correct organization
-3. [ ] Verify channels are disabled — no external messages delivered
-4. [ ] Set `cleanupPeriodDays: 0` — verify no `.jsonl` transcripts are written
-5. [ ] Verify `disableAutoMode` removes auto from permission mode options
-6. [ ] Verify company announcements display at startup
+1. Verify `forceLoginMethod` restricts login to Claude.ai accounts only
+2. Verify `forceLoginOrgUUID` auto-selects the correct organization
+3. Verify channels are disabled — no external messages delivered
+4. Set `cleanupPeriodDays: 0` — verify no `.jsonl` transcripts are written
+5. Verify `disableAutoMode` removes auto from permission mode options
+6. Verify company announcements display at startup
 
 **Expected result:** Collaborative sessions governed by organizational policy; personal account access blocked; session retention controlled
 

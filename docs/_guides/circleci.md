@@ -330,25 +330,25 @@ Configure and monitor CircleCI audit logs for security events.
 If you suspect CircleCI compromise:
 
 #### Immediate Actions (0-4 hours)
-1. [ ] Rotate ALL secrets stored in CircleCI contexts
-2. [ ] Rotate ALL project environment variables
-3. [ ] Rotate OAuth tokens for connected services (GitHub, AWS, etc.)
-4. [ ] Rotate SSH keys stored in CircleCI
-5. [ ] Review audit logs for unauthorized access
+1. Rotate ALL secrets stored in CircleCI contexts
+2. Rotate ALL project environment variables
+3. Rotate OAuth tokens for connected services (GitHub, AWS, etc.)
+4. Rotate SSH keys stored in CircleCI
+5. Review audit logs for unauthorized access
 
 #### Short-term Actions (24-48 hours)
-1. [ ] Review all pipeline runs during suspected window
-2. [ ] Audit all API token usage
-3. [ ] Check for unauthorized context or project changes
-4. [ ] Rotate personal API tokens
-5. [ ] Review connected service audit logs
+1. Review all pipeline runs during suspected window
+2. Audit all API token usage
+3. Check for unauthorized context or project changes
+4. Rotate personal API tokens
+5. Review connected service audit logs
 
 #### Long-term Actions
-1. [ ] Implement OIDC for cloud provider auth (eliminate static creds)
-2. [ ] Enable context restrictions by security group
-3. [ ] Implement IP allowlisting
-4. [ ] Configure session timeout policies
-5. [ ] Establish regular secret rotation schedule
+1. Implement OIDC for cloud provider auth (eliminate static creds)
+2. Enable context restrictions by security group
+3. Implement IP allowlisting
+4. Configure session timeout policies
+5. Establish regular secret rotation schedule
 
 ---
 

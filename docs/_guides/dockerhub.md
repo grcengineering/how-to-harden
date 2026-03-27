@@ -173,10 +173,10 @@ Reference container images by their immutable SHA256 digest instead of mutable t
 {% include pack-code.html vendor="dockerhub" section="2.3" %}
 
 #### Validation & Testing
-1. [ ] All Dockerfiles use `@sha256:` references (no mutable tags)
-2. [ ] docker-compose files use digest-pinned images
-3. [ ] CI/CD workflows pin container images by digest
-4. [ ] Renovate or Dependabot configured for automated digest updates
+1. All Dockerfiles use `@sha256:` references (no mutable tags)
+2. docker-compose files use digest-pinned images
+3. CI/CD workflows pin container images by digest
+4. Renovate or Dependabot configured for automated digest updates
 
 #### Compliance Mappings
 
@@ -232,10 +232,10 @@ Use Sigstore Cosign for keyless image signing and verification. Cosign is the re
 {% include pack-code.html vendor="dockerhub" section="2.4" %}
 
 #### Validation & Testing
-1. [ ] Build pipeline signs images with Cosign after push
-2. [ ] Deployment pipeline verifies signatures before pull
-3. [ ] Signature identity is pinned to expected OIDC issuer and subject
-4. [ ] Unsigned images are rejected by deployment policies
+1. Build pipeline signs images with Cosign after push
+2. Deployment pipeline verifies signatures before pull
+3. Signature identity is pinned to expected OIDC issuer and subject
+4. Unsigned images are rejected by deployment policies
 
 #### Compliance Mappings
 
@@ -383,10 +383,10 @@ Detect "ghost" image pushes — Docker Hub images that have no corresponding sou
 {% include pack-code.html vendor="dockerhub" section="4.2" %}
 
 #### Validation & Testing
-1. [ ] Script detects Docker Hub tags with no matching GitHub release
-2. [ ] Monitoring alerts configured for unexpected `latest` tag changes
-3. [ ] Push credential rotation procedure documented and tested
-4. [ ] Downstream distribution channels (Homebrew, Helm) included in response plan
+1. Script detects Docker Hub tags with no matching GitHub release
+2. Monitoring alerts configured for unexpected `latest` tag changes
+3. Push credential rotation procedure documented and tested
+4. Downstream distribution channels (Homebrew, Helm) included in response plan
 
 #### Compliance Mappings
 

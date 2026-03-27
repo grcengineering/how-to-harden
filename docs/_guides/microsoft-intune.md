@@ -97,9 +97,9 @@ Replace broad Intune Administrator and Global Administrator assignments with pur
 - **March 2026 Stryker breach**: Attacker escalated to Intune Administrator role and issued mass wipe — scoped RBAC would have limited the wipe to a subset of devices at most
 
 #### Prerequisites
-- [ ] Global Administrator or Intune Administrator role (for initial RBAC setup)
-- [ ] Inventory of current admin role assignments
-- [ ] Organizational structure mapped to scope requirements
+- Global Administrator or Intune Administrator role (for initial RBAC setup)
+- Inventory of current admin role assignments
+- Organizational structure mapped to scope requirements
 
 #### ClickOps Implementation
 
@@ -132,9 +132,9 @@ Replace broad Intune Administrator and Global Administrator assignments with pur
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Sign in as a scoped Help Desk admin and attempt a device wipe — it should be denied
-2. [ ] Verify scoped admins can only see devices within their assigned scope tags
-3. [ ] Confirm no user holds standing Intune Administrator or Global Administrator
+1. Sign in as a scoped Help Desk admin and attempt a device wipe — it should be denied
+2. Verify scoped admins can only see devices within their assigned scope tags
+3. Confirm no user holds standing Intune Administrator or Global Administrator
 
 **Expected result:** Scoped admins receive "insufficient permissions" when attempting out-of-scope actions
 
@@ -192,9 +192,9 @@ Use Intune scope tags to partition administrative visibility so that no single a
 **Attack Prevented:** Unrestricted destructive actions (T1485), enterprise-wide impact from single credential compromise
 
 #### Prerequisites
-- [ ] Intune Administrator or Scope Tag Administrator role
-- [ ] Organizational hierarchy documented (regions, business units, platforms)
-- [ ] Device groups aligned to organizational boundaries
+- Intune Administrator or Scope Tag Administrator role
+- Organizational hierarchy documented (regions, business units, platforms)
+- Device groups aligned to organizational boundaries
 
 #### ClickOps Implementation
 
@@ -219,8 +219,8 @@ Use Intune scope tags to partition administrative visibility so that no single a
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Sign in as a scoped admin and verify device list shows only in-scope devices
-2. [ ] Attempt to assign a policy to an out-of-scope group — should be blocked
+1. Sign in as a scoped admin and verify device list shows only in-scope devices
+2. Attempt to assign a policy to an out-of-scope group — should be blocked
 
 **Expected result:** Admins see only devices and policies matching their assigned scope tags
 
@@ -262,9 +262,9 @@ Require phishing-resistant multi-factor authentication (FIDO2 security keys, Win
 - **January 2024 Midnight Blizzard**: Microsoft corporate breach started from a test account without MFA
 
 #### Prerequisites
-- [ ] FIDO2 security keys provisioned for all Intune admins (YubiKey, Feitian, etc.)
-- [ ] Microsoft Entra ID P1 or P2 license
-- [ ] Conditional Access policies configured (or ability to create them)
+- FIDO2 security keys provisioned for all Intune admins (YubiKey, Feitian, etc.)
+- Microsoft Entra ID P1 or P2 license
+- Conditional Access policies configured (or ability to create them)
 
 #### ClickOps Implementation
 
@@ -300,9 +300,9 @@ Require phishing-resistant multi-factor authentication (FIDO2 security keys, Win
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Attempt to sign in to Intune admin center with password + SMS OTP — should be blocked
-2. [ ] Sign in with FIDO2 key — should succeed
-3. [ ] Verify Conditional Access sign-in logs show "Phishing-resistant MFA" as the satisfied control
+1. Attempt to sign in to Intune admin center with password + SMS OTP — should be blocked
+2. Sign in with FIDO2 key — should succeed
+3. Verify Conditional Access sign-in logs show "Phishing-resistant MFA" as the satisfied control
 
 **Expected result:** Only FIDO2 or Windows Hello for Business satisfies the MFA requirement for Intune admin access
 
@@ -360,9 +360,9 @@ Create dedicated Conditional Access policies that govern access to the Intune ad
 **Attack Prevented:** Credential abuse from unmanaged devices, access from adversary infrastructure
 
 #### Prerequisites
-- [ ] Microsoft Entra ID P1 or P2 license
-- [ ] Named locations configured for corporate networks
-- [ ] Device compliance policies configured in Intune
+- Microsoft Entra ID P1 or P2 license
+- Named locations configured for corporate networks
+- Device compliance policies configured in Intune
 
 #### ClickOps Implementation
 
@@ -393,9 +393,9 @@ Create dedicated Conditional Access policies that govern access to the Intune ad
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Attempt Intune admin sign-in from a non-compliant device — should be blocked
-2. [ ] Attempt sign-in from an untrusted location without compliant device — should be blocked
-3. [ ] Confirm admin sessions require re-authentication after 1 hour
+1. Attempt Intune admin sign-in from a non-compliant device — should be blocked
+2. Attempt sign-in from an untrusted location without compliant device — should be blocked
+3. Confirm admin sessions require re-authentication after 1 hour
 
 **Expected result:** Admin access requires both a compliant device and phishing-resistant MFA; sessions expire after 1 hour
 
@@ -437,9 +437,9 @@ Eliminate standing (permanent) Intune admin privileges by requiring just-in-time
 - **March 2026 Stryker breach**: Permanent admin credentials were compromised via infostealer — JIT activation would have added a critical defense layer
 
 #### Prerequisites
-- [ ] Microsoft Entra ID P2 license
-- [ ] PIM enabled in the tenant
-- [ ] Approval chain defined (who approves elevation requests)
+- Microsoft Entra ID P2 license
+- PIM enabled in the tenant
+- Approval chain defined (who approves elevation requests)
 
 #### ClickOps Implementation
 
@@ -479,10 +479,10 @@ Eliminate standing (permanent) Intune admin privileges by requiring just-in-time
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Verify no user has a permanent active Intune Administrator assignment
-2. [ ] Test role activation: eligible user requests activation → approval required → time-bound session created
-3. [ ] Verify activation expires after configured duration
-4. [ ] Confirm PIM audit logs capture all activation events
+1. Verify no user has a permanent active Intune Administrator assignment
+2. Test role activation: eligible user requests activation → approval required → time-bound session created
+3. Verify activation expires after configured duration
+4. Confirm PIM audit logs capture all activation events
 
 **Expected result:** All Intune admin access requires JIT activation with justification, approval, and MFA; activation expires automatically
 
@@ -545,9 +545,9 @@ Restrict Intune administrative access to designated Privileged Admin Workstation
 **Attack Prevented:** Credential theft via infostealers, keyloggers, and browser session hijacking
 
 #### Prerequisites
-- [ ] Dedicated hardware or VMs for admin workstations
-- [ ] Intune security baseline for PAWs
-- [ ] Device compliance policy specifically for PAWs
+- Dedicated hardware or VMs for admin workstations
+- Intune security baseline for PAWs
+- Device compliance policy specifically for PAWs
 
 #### ClickOps Implementation
 
@@ -579,9 +579,9 @@ Restrict Intune administrative access to designated Privileged Admin Workstation
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Attempt Intune admin sign-in from a non-PAW device — should be blocked
-2. [ ] Verify PAW devices meet all compliance requirements
-3. [ ] Confirm PAW devices cannot browse general internet sites
+1. Attempt Intune admin sign-in from a non-PAW device — should be blocked
+2. Verify PAW devices meet all compliance requirements
+3. Confirm PAW devices cannot browse general internet sites
 
 **Expected result:** Intune admin access is restricted exclusively to PAW devices
 
@@ -622,9 +622,9 @@ Require a second authorized administrator to approve high-impact actions before 
 - **March 2026 Stryker breach**: Single compromised admin account issued mass wipe — Multi-Admin Approval would have blocked every wipe action pending a second approval
 
 #### Prerequisites
-- [ ] Intune Service Administrator or Global Administrator role
-- [ ] At least 2 designated approvers identified
-- [ ] Microsoft Intune Plan 2 or Intune Suite license
+- Intune Service Administrator or Global Administrator role
+- At least 2 designated approvers identified
+- Microsoft Intune Plan 2 or Intune Suite license
 
 #### ClickOps Implementation
 
@@ -656,10 +656,10 @@ After initial deployment stabilizes, extend Multi-Admin Approval to:
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Attempt a device wipe — verify it enters "pending approval" state
-2. [ ] Approve the wipe with a second admin account — verify it executes
-3. [ ] Let a wipe request expire — verify it is auto-denied after timeout
-4. [ ] Verify the original requestor cannot approve their own request
+1. Attempt a device wipe — verify it enters "pending approval" state
+2. Approve the wipe with a second admin account — verify it executes
+3. Let a wipe request expire — verify it is auto-denied after timeout
+4. Verify the original requestor cannot approve their own request
 
 **Expected result:** All protected actions require a second admin's approval before execution
 
@@ -724,9 +724,9 @@ Remove the remote wipe permission from all RBAC roles except a dedicated "Device
 **Attack Prevented:** Mass device wipe (T1485), unauthorized factory reset
 
 #### Prerequisites
-- [ ] Custom RBAC roles configured (Section 1.1)
-- [ ] PIM configured (Section 3.1)
-- [ ] Multi-Admin Approval configured (Section 4.1)
+- Custom RBAC roles configured (Section 1.1)
+- PIM configured (Section 3.1)
+- Multi-Admin Approval configured (Section 4.1)
 
 #### ClickOps Implementation
 
@@ -758,9 +758,9 @@ Remove the remote wipe permission from all RBAC roles except a dedicated "Device
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Sign in as a standard Intune admin and attempt device wipe — should fail
-2. [ ] Activate Device Recovery Operator via PIM, initiate wipe — should enter Multi-Admin Approval queue
-3. [ ] Verify wipe executes only after second admin approval
+1. Sign in as a standard Intune admin and attempt device wipe — should fail
+2. Activate Device Recovery Operator via PIM, initiate wipe — should enter Multi-Admin Approval queue
+3. Verify wipe executes only after second admin approval
 
 **Expected result:** Device wipe requires PIM activation, justification, approval, AND Multi-Admin Approval — four barriers
 
@@ -817,9 +817,9 @@ Configure monitoring to detect and alert on unusual patterns of device wipe acti
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Trigger a small number of test wipe actions and verify logs appear in SIEM
-2. [ ] Verify alert fires when threshold is exceeded in test
-3. [ ] Confirm SOC receives notification within 5 minutes of threshold breach
+1. Trigger a small number of test wipe actions and verify logs appear in SIEM
+2. Verify alert fires when threshold is exceeded in test
+3. Confirm SOC receives notification within 5 minutes of threshold breach
 
 **Expected result:** SOC is alerted within minutes of anomalous wipe activity
 
@@ -856,8 +856,8 @@ Enable token protection policies that bind authentication tokens to the device t
 **Attack Prevented:** Token theft and replay (T1528), session hijacking, persistent unauthorized access
 
 #### Prerequisites
-- [ ] Microsoft Entra ID P2 license
-- [ ] Windows devices enrolled in Intune with TPM 2.0
+- Microsoft Entra ID P2 license
+- Windows devices enrolled in Intune with TPM 2.0
 
 #### ClickOps Implementation
 
@@ -880,8 +880,8 @@ Enable token protection policies that bind authentication tokens to the device t
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Sign in on a managed device, verify token protection is enforced in sign-in logs
-2. [ ] Simulate a risk event (e.g., impossible travel) and verify session is revoked within minutes via CAE
+1. Sign in on a managed device, verify token protection is enforced in sign-in logs
+2. Simulate a risk event (e.g., impossible travel) and verify session is revoked within minutes via CAE
 
 **Expected result:** Admin tokens are device-bound and sessions are revoked in near-real-time when risk conditions change
 
@@ -940,9 +940,9 @@ Establish a documented investigation and response procedure for token theft aler
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Trigger a simulated risky sign-in and verify alert is generated
-2. [ ] Walk through the investigation playbook in a tabletop exercise
-3. [ ] Verify session revocation completes within 5 minutes
+1. Trigger a simulated risky sign-in and verify alert is generated
+2. Walk through the investigation playbook in a tabletop exercise
+3. Verify session revocation completes within 5 minutes
 
 **Expected result:** Token theft alerts trigger automated response and SOC investigation within defined SLAs
 
@@ -979,8 +979,8 @@ Enable and export all Intune audit and operational logs to a SIEM or Log Analyti
 **Attack Prevented:** Detection of unauthorized admin activity, forensic evidence preservation
 
 #### Prerequisites
-- [ ] Log Analytics workspace or SIEM (Microsoft Sentinel, Splunk, etc.)
-- [ ] Intune diagnostic settings permissions
+- Log Analytics workspace or SIEM (Microsoft Sentinel, Splunk, etc.)
+- Intune diagnostic settings permissions
 
 #### ClickOps Implementation
 
@@ -1008,9 +1008,9 @@ Enable and export all Intune audit and operational logs to a SIEM or Log Analyti
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Perform admin actions and verify they appear in the SIEM within 15 minutes
-2. [ ] Verify all log categories are flowing (Audit, Operational, Compliance)
-3. [ ] Confirm log retention meets organizational requirements (minimum 90 days, recommended 365 days)
+1. Perform admin actions and verify they appear in the SIEM within 15 minutes
+2. Verify all log categories are flowing (Audit, Operational, Compliance)
+3. Confirm log retention meets organizational requirements (minimum 90 days, recommended 365 days)
 
 **Expected result:** All Intune administrative actions are captured and forwarded to SIEM in near-real-time
 
@@ -1062,9 +1062,9 @@ Alert when multiple RBAC role assignments are modified within a short time windo
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Trigger each detection rule with simulated activity
-2. [ ] Verify alerts are generated and reach the SOC within 15 minutes
-3. [ ] Confirm automated response actions execute (if configured)
+1. Trigger each detection rule with simulated activity
+2. Verify alerts are generated and reach the SOC within 15 minutes
+3. Confirm automated response actions execute (if configured)
 
 **Expected result:** Each Stryker-pattern TTP generates an alert within the defined detection window
 

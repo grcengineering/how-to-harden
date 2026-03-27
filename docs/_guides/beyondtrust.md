@@ -407,25 +407,25 @@ Export all audit logs to SIEM for correlation and long-term retention.
 **Based on the Treasury Department breach, implement these immediate actions:**
 
 #### Immediate Actions (0-24 hours)
-1. [ ] Rotate ALL API keys immediately
-2. [ ] Review all API access logs for past 90 days
-3. [ ] Identify any access from unusual IPs
-4. [ ] Enable IP restrictions on all API keys
-5. [ ] Apply CVE-2024-12356 and CVE-2024-12686 patches
+1. Rotate ALL API keys immediately
+2. Review all API access logs for past 90 days
+3. Identify any access from unusual IPs
+4. Enable IP restrictions on all API keys
+5. Apply CVE-2024-12356 and CVE-2024-12686 patches
 
 #### Short-term Actions (1-7 days)
-1. [ ] Audit all sessions for unauthorized access
-2. [ ] Review all endpoint access during breach window
-3. [ ] Implement API key rotation automation
-4. [ ] Enable enhanced logging and alerting
-5. [ ] Conduct tabletop exercise
+1. Audit all sessions for unauthorized access
+2. Review all endpoint access during breach window
+3. Implement API key rotation automation
+4. Enable enhanced logging and alerting
+5. Conduct tabletop exercise
 
 #### Long-term Actions (30+ days)
-1. [ ] Implement network segmentation
-2. [ ] Deploy API gateway with rate limiting
-3. [ ] Establish quarterly API key rotation
-4. [ ] Conduct penetration testing
-5. [ ] Review third-party integrations
+1. Implement network segmentation
+2. Deploy API gateway with rate limiting
+3. Establish quarterly API key rotation
+4. Conduct penetration testing
+5. Review third-party integrations
 
 ---
 

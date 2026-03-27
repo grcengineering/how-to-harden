@@ -101,10 +101,10 @@ Configure SAML-based SSO to authenticate ChatGPT Enterprise users through your c
 **Time to Complete:** ~1 hour
 
 #### Validation & Testing
-1. [ ] Test SSO sign-in through IdP
-2. [ ] Verify MFA is enforced (via IdP)
-3. [ ] Confirm direct password login is disabled
-4. [ ] Test user deprovisioning from IdP
+1. Test SSO sign-in through IdP
+2. Verify MFA is enforced (via IdP)
+3. Confirm direct password login is disabled
+4. Test user deprovisioning from IdP
 
 ---
 

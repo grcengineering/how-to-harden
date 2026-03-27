@@ -102,9 +102,9 @@ Configure SAML Single Sign-On to centralize authentication through your identity
 
 #### Validation & Testing
 
-1. [ ] Attempt login without SAML -- should be blocked when enforcement is ON
-2. [ ] Login via IdP -- should succeed and land on team dashboard
-3. [ ] Remove user from IdP group -- should lose Vercel access within sync interval
+1. Attempt login without SAML -- should be blocked when enforcement is ON
+2. Login via IdP -- should succeed and land on team dashboard
+3. Remove user from IdP group -- should lose Vercel access within sync interval
 
 **Expected result:** Only IdP-authenticated users can access the Vercel team
 
@@ -177,9 +177,9 @@ Enable SCIM-based directory synchronization to automatically provision and depro
 
 #### Validation & Testing
 
-1. [ ] Add a test user in IdP -- should appear in Vercel team within sync interval
-2. [ ] Remove test user from IdP group -- should lose Vercel access
-3. [ ] Change user role in IdP -- should reflect in Vercel
+1. Add a test user in IdP -- should appear in Vercel team within sync interval
+2. Remove test user from IdP group -- should lose Vercel access
+3. Change user role in IdP -- should reflect in Vercel
 
 **Expected result:** Team membership mirrors IdP directory state
 
@@ -259,10 +259,10 @@ Configure team and project-level role-based access control using Vercel's granul
 
 #### Validation & Testing
 
-1. [ ] Developer role cannot modify production environment variables
-2. [ ] Security role can manage firewall but cannot deploy
-3. [ ] Viewer role has read-only access with no deploy capability
-4. [ ] Contributor role has no access until explicitly assigned to a project
+1. Developer role cannot modify production environment variables
+2. Security role can manage firewall but cannot deploy
+3. Viewer role has read-only access with no deploy capability
+4. Contributor role has no access until explicitly assigned to a project
 
 **Expected result:** Each team member has minimum required permissions
 
@@ -321,10 +321,10 @@ Enforce scoped, time-limited API tokens and replace long-lived credentials with 
 
 #### Validation & Testing
 
-1. [ ] No tokens exist with unlimited expiration
-2. [ ] OIDC federation provides short-lived credentials (60-min TTL)
-3. [ ] All CI/CD pipelines use scoped tokens or OIDC
-4. [ ] Token creation requires 2FA
+1. No tokens exist with unlimited expiration
+2. OIDC federation provides short-lived credentials (60-min TTL)
+3. All CI/CD pipelines use scoped tokens or OIDC
+4. Token creation requires 2FA
 
 **Expected result:** No long-lived, overly-scoped tokens; OIDC for cloud provider access
 
@@ -390,10 +390,10 @@ Enable multi-layered deployment protection using Vercel Authentication, password
 
 #### Validation & Testing
 
-1. [ ] Unauthenticated access to preview URL returns login prompt
-2. [ ] Password-protected deployment requires correct password
-3. [ ] Access from non-trusted IP is blocked (Enterprise)
-4. [ ] Automation bypass secret is 32+ characters if enabled
+1. Unauthenticated access to preview URL returns login prompt
+2. Password-protected deployment requires correct password
+3. Access from non-trusted IP is blocked (Enterprise)
+4. Automation bypass secret is 32+ characters if enabled
 
 **Expected result:** All non-production deployments require authentication
 
@@ -453,10 +453,10 @@ Secure the Git integration pipeline to prevent unauthorized deployments from for
 
 #### Validation & Testing
 
-1. [ ] Fork deployment is blocked without explicit approval
-2. [ ] Unsigned commits fail deployment (when verified commits enabled)
-3. [ ] Only authorized repositories are connected
-4. [ ] Deployment creation restricted to production-only (L2)
+1. Fork deployment is blocked without explicit approval
+2. Unsigned commits fail deployment (when verified commits enabled)
+3. Only authorized repositories are connected
+4. Deployment creation restricted to production-only (L2)
 
 **Expected result:** Deployment pipeline only accepts authorized, verified code
 
@@ -504,9 +504,9 @@ Enable progressive deployment rollouts to limit blast radius of production chang
 
 #### Validation & Testing
 
-1. [ ] New deployment starts at first stage percentage
-2. [ ] Manual approval required before advancing (if configured)
-3. [ ] Rollback available at any stage
+1. New deployment starts at first stage percentage
+2. Manual approval required before advancing (if configured)
+3. Rollback available at any stage
 
 **Expected result:** Production deployments roll out progressively with approval gates
 
@@ -578,10 +578,10 @@ Enable the Vercel Web Application Firewall with OWASP managed rulesets, bot prot
 
 #### Validation & Testing
 
-1. [ ] WAF is enabled and processing traffic (check Firewall tab)
-2. [ ] OWASP rules detecting common attack patterns in logs
-3. [ ] Bot protection challenging automated requests
-4. [ ] AI bots blocked (if configured)
+1. WAF is enabled and processing traffic (check Firewall tab)
+2. OWASP rules detecting common attack patterns in logs
+3. Bot protection challenging automated requests
+4. AI bots blocked (if configured)
 
 **Expected result:** WAF actively filtering malicious traffic with managed rulesets
 
@@ -641,10 +641,10 @@ Implement IP-based access control and rate limiting to protect against brute for
 
 #### Validation & Testing
 
-1. [ ] Blocked IPs return 403/challenge response
-2. [ ] Rate-limited endpoints enforce configured thresholds
-3. [ ] Persistent actions block repeat offenders
-4. [ ] Rules show in Firewall activity logs
+1. Blocked IPs return 403/challenge response
+2. Rate-limited endpoints enforce configured thresholds
+3. Persistent actions block repeat offenders
+4. Rules show in Firewall activity logs
 
 **Expected result:** Malicious and abusive traffic blocked at the edge
 
@@ -717,10 +717,10 @@ Deploy Serverless Functions within dedicated private networks with static IPs, V
 
 #### Validation & Testing
 
-1. [ ] Functions connect to backend via private network
-2. [ ] Backend rejects connections from non-Vercel IPs
-3. [ ] Region failover switches to passive network on outage
-4. [ ] VPC peering routes traffic correctly (if configured)
+1. Functions connect to backend via private network
+2. Backend rejects connections from non-Vercel IPs
+3. Region failover switches to passive network on outage
+4. VPC peering routes traffic correctly (if configured)
 
 **Expected result:** Serverless Functions operate in isolated private network with static egress IPs
 
@@ -784,10 +784,10 @@ Leverage Vercel's automatic DDoS mitigation and configure Attack Challenge Mode 
 
 #### Validation & Testing
 
-1. [ ] DDoS mitigation active (always on -- verify via Firewall dashboard)
-2. [ ] Attack Challenge Mode can be enabled/disabled
-3. [ ] Spend management alerts configured
-4. [ ] Blocked traffic not appearing in billing
+1. DDoS mitigation active (always on -- verify via Firewall dashboard)
+2. Attack Challenge Mode can be enabled/disabled
+3. Spend management alerts configured
+4. Blocked traffic not appearing in billing
 
 **Expected result:** Multi-layered DDoS protection with cost controls
 
@@ -851,10 +851,10 @@ Configure security headers (CSP, X-Frame-Options, Referrer-Policy, etc.) to prot
 
 #### Validation & Testing
 
-1. [ ] All six security headers present in response
-2. [ ] SecurityHeaders.com score of A or A+
-3. [ ] No CSP violations in browser console for legitimate resources
-4. [ ] X-Frame-Options prevents iframe embedding
+1. All six security headers present in response
+2. SecurityHeaders.com score of A or A+
+3. No CSP violations in browser console for legitimate resources
+4. X-Frame-Options prevents iframe embedding
 
 **Expected result:** All security headers configured and validated
 
@@ -923,10 +923,10 @@ Implement secure environment variable management with proper scoping, sensitivit
 
 #### Validation & Testing
 
-1. [ ] No `NEXT_PUBLIC_` variables contain secret values
-2. [ ] Production secrets not accessible in preview environment
-3. [ ] Sensitive variable policy enforced at team level (L2)
-4. [ ] OIDC federation active for cloud provider access (L2)
+1. No `NEXT_PUBLIC_` variables contain secret values
+2. Production secrets not accessible in preview environment
+3. Sensitive variable policy enforced at team level (L2)
+4. OIDC federation active for cloud provider access (L2)
 
 **Expected result:** Secrets properly scoped, flagged sensitive, and not exposed client-side
 
@@ -974,8 +974,8 @@ Configure deployment retention policies to automatically remove old deployments 
 
 #### Validation & Testing
 
-1. [ ] Retention policies set per environment type
-2. [ ] Old deployments automatically cleaned up
+1. Retention policies set per environment type
+2. Old deployments automatically cleaned up
 
 **Expected result:** Deployment history managed with appropriate retention limits
 
@@ -1036,9 +1036,9 @@ Audit DNS records to prevent subdomain takeover vulnerabilities when CNAME recor
 
 #### Validation & Testing
 
-1. [ ] All DNS records pointing to Vercel have active deployments
-2. [ ] No orphaned domain entries in Vercel dashboard
-3. [ ] Domain configuration changes logged in audit log
+1. All DNS records pointing to Vercel have active deployments
+2. No orphaned domain entries in Vercel dashboard
+3. Domain configuration changes logged in audit log
 
 **Expected result:** No dangling DNS records vulnerable to subdomain takeover
 
@@ -1094,10 +1094,10 @@ Verify TLS configuration and optionally deploy custom certificates for domains r
 
 #### Validation & Testing
 
-1. [ ] SSL Labs grade A+ with HSTS preloading
-2. [ ] No TLS 1.0/1.1 negotiation possible
-3. [ ] All ciphers support forward secrecy
-4. [ ] HSTS preload header present on custom domains (L2)
+1. SSL Labs grade A+ with HSTS preloading
+2. No TLS 1.0/1.1 negotiation possible
+3. All ciphers support forward secrecy
+4. HSTS preload header present on custom domains (L2)
 
 **Expected result:** Strong TLS configuration with HSTS across all domains
 
@@ -1165,10 +1165,10 @@ Forward Vercel runtime, build, and firewall logs to your SIEM via log drains for
 
 #### Validation & Testing
 
-1. [ ] Log drain receiving events in SIEM
-2. [ ] Payload signature verification working
-3. [ ] Firewall logs appearing for blocked requests
-4. [ ] All configured environments and sources flowing
+1. Log drain receiving events in SIEM
+2. Payload signature verification working
+3. Firewall logs appearing for blocked requests
+4. All configured environments and sources flowing
 
 **Expected result:** All Vercel logs forwarded to SIEM with cryptographic verification
 
@@ -1230,10 +1230,10 @@ Enable enterprise audit logging with real-time SIEM streaming to track all admin
 
 #### Validation & Testing
 
-1. [ ] Audit log shows recent administrative events
-2. [ ] SIEM receiving streamed audit events in real-time
-3. [ ] Detection rules firing on test events
-4. [ ] CSV export produces valid compliance report
+1. Audit log shows recent administrative events
+2. SIEM receiving streamed audit events in real-time
+3. Detection rules firing on test events
+4. CSV export produces valid compliance report
 
 **Expected result:** All administrative actions logged, streamed, and alerted on
 
@@ -1284,9 +1284,9 @@ Secure cron job endpoints with the CRON_SECRET mechanism to prevent unauthorized
 
 #### Validation & Testing
 
-1. [ ] CRON_SECRET set as production environment variable
-2. [ ] Direct HTTP request without bearer token returns 401
-3. [ ] Vercel-triggered cron execution succeeds with correct token
+1. CRON_SECRET set as production environment variable
+2. Direct HTTP request without bearer token returns 401
+3. Vercel-triggered cron execution succeeds with correct token
 
 **Expected result:** Cron endpoints only accessible via authenticated Vercel invocation
 

@@ -90,10 +90,10 @@ Configure Vault authentication methods appropriate to each use case. Avoid using
 3. Bind roles to specific CIDRs (L2)
 
 #### Validation & Testing
-1. [ ] Attempt to use root token - should be revoked
-2. [ ] Login via OIDC - should succeed with appropriate policies
-3. [ ] AppRole authentication - verify CIDR binding works
-4. [ ] Check token TTLs are enforced
+1. Attempt to use root token - should be revoked
+2. Login via OIDC - should succeed with appropriate policies
+3. AppRole authentication - verify CIDR binding works
+4. Check token TTLs are enforced
 
 **Expected result:** Each auth method provides minimal required access
 

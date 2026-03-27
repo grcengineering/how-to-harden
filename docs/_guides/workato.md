@@ -113,11 +113,11 @@ Configure SAML 2.0 SSO to centralize authentication for all Workato workspace us
 > **Note:** SAML SSO configuration itself is performed through the Workato admin UI. The API can be used to manage users post-SSO setup.
 
 #### Validation & Testing
-1. [ ] Navigate to SSO login URL and verify redirect to IdP
-2. [ ] Complete authentication and verify redirect back to Workato
-3. [ ] Verify user attributes (name, email) are populated correctly
-4. [ ] Test with a user NOT in the IdP — verify access is denied
-5. [ ] Verify SSO enforcement blocks direct password login
+1. Navigate to SSO login URL and verify redirect to IdP
+2. Complete authentication and verify redirect back to Workato
+3. Verify user attributes (name, email) are populated correctly
+4. Test with a user NOT in the IdP — verify access is denied
+5. Verify SSO enforcement blocks direct password login
 
 **Expected result:** All users authenticate exclusively through the IdP. Direct password login is disabled when enforcement is active.
 
@@ -196,9 +196,9 @@ Require two-factor authentication (2FA) for all workspace users. When SSO is con
 3. Use phishing-resistant methods (FIDO2/WebAuthn) for admin accounts
 
 #### Validation & Testing
-1. [ ] Attempt login without 2FA configured — verify 2FA setup prompt appears
-2. [ ] Complete 2FA setup and verify successful login
-3. [ ] Verify 2FA requirement applies to all collaborators
+1. Attempt login without 2FA configured — verify 2FA setup prompt appears
+2. Complete 2FA setup and verify successful login
+3. Verify 2FA requirement applies to all collaborators
 
 **Expected result:** No user can access the workspace without completing 2FA.
 
@@ -262,9 +262,9 @@ After configuring SAML SSO (Control 1.1), enforce SSO as the **only** authentica
 3. Document the procedure to temporarily disable SSO enforcement
 
 #### Validation & Testing
-1. [ ] Attempt direct password login — verify it is blocked
-2. [ ] Verify SSO login still works for all user roles
-3. [ ] Test break-glass procedure
+1. Attempt direct password login — verify it is blocked
+2. Verify SSO login still works for all user roles
+3. Test break-glass procedure
 
 **Expected result:** All login attempts redirect through the IdP. Direct password login returns an error.
 
@@ -312,9 +312,9 @@ Enable automatic user account creation on first SSO login, eliminating manual us
 2. User accounts are created from the assertion data
 
 #### Validation & Testing
-1. [ ] Remove a test user from Workato workspace
-2. [ ] Have the user log in via SSO — verify account is auto-created
-3. [ ] Verify the default role assignment is correct
+1. Remove a test user from Workato workspace
+2. Have the user log in via SSO — verify account is auto-created
+3. Verify the default role assignment is correct
 
 **Expected result:** New users gain workspace access through SSO without manual admin provisioning.
 
@@ -386,10 +386,10 @@ Configure SCIM (System for Cross-domain Identity Management) provisioning to aut
 {% include pack-code.html vendor="workato" section="1.5" %}
 
 #### Validation & Testing
-1. [ ] Create a test user in IdP — verify it appears in Workato within sync interval
-2. [ ] Update user attributes in IdP — verify changes propagate
-3. [ ] Deactivate user in IdP — verify Workato access is revoked
-4. [ ] Verify no orphaned accounts exist in Workato that aren't in IdP
+1. Create a test user in IdP — verify it appears in Workato within sync interval
+2. Update user attributes in IdP — verify changes propagate
+3. Deactivate user in IdP — verify Workato access is revoked
+4. Verify no orphaned accounts exist in Workato that aren't in IdP
 
 **Expected result:** User lifecycle is fully managed from the IdP. Deactivated IdP users cannot access Workato.
 
@@ -436,8 +436,8 @@ Configure session timeout duration to limit the window of opportunity for sessio
 3. Apply to all users in the workspace
 
 #### Validation & Testing
-1. [ ] Log in, wait past timeout duration, verify session expires
-2. [ ] Verify re-authentication is required after timeout
+1. Log in, wait past timeout duration, verify session expires
+2. Verify re-authentication is required after timeout
 
 **Expected result:** Sessions expire after the configured duration; users must re-authenticate.
 
@@ -510,10 +510,10 @@ Implement least privilege access using Workato's two-level RBAC model: **environ
 {% include pack-code.html vendor="workato" section="2.1" %}
 
 #### Validation & Testing
-1. [ ] Log in as a non-admin user — verify restricted features are inaccessible
-2. [ ] Attempt to access a project without assignment — verify access denied
-3. [ ] Verify deploy permissions are limited to authorized roles only
-4. [ ] Audit all collaborators and confirm minimum necessary roles
+1. Log in as a non-admin user — verify restricted features are inaccessible
+2. Attempt to access a project without assignment — verify access denied
+3. Verify deploy permissions are limited to authorized roles only
+4. Audit all collaborators and confirm minimum necessary roles
 
 **Expected result:** Each user has only the permissions needed for their role. No user has admin access unless required.
 
@@ -559,9 +559,9 @@ Automatically synchronize Workato roles from your IdP via SAML attributes, ensur
 4. Document IdP attribute-to-Workato role mappings
 
 #### Validation & Testing
-1. [ ] Login as user with assigned SAML role attribute — verify role in Workato matches
-2. [ ] Change role attribute in IdP, re-login — verify Workato role updates
-3. [ ] Remove role attribute — verify user gets default role
+1. Login as user with assigned SAML role attribute — verify role in Workato matches
+2. Change role attribute in IdP, re-login — verify Workato role updates
+3. Remove role attribute — verify user gets default role
 
 **Expected result:** Workato roles are fully managed from the IdP. No manual role assignment needed in Workato.
 
@@ -613,9 +613,9 @@ Organize collaborators into groups aligned with team functions, and grant projec
    - `security-reviewers`: View only
 
 #### Validation & Testing
-1. [ ] Add user to a group — verify they gain project access
-2. [ ] Remove user from group — verify project access is revoked
-3. [ ] Verify no individual project assignments exist (all through groups)
+1. Add user to a group — verify they gain project access
+2. Remove user from group — verify project access is revoked
+3. Verify no individual project assignments exist (all through groups)
 
 ---
 
@@ -664,10 +664,10 @@ Create custom environment roles with granular permissions tailored to your organ
 {% include pack-code.html vendor="workato" section="2.4" %}
 
 #### Validation & Testing
-1. [ ] Create a test user with the custom role
-2. [ ] Verify the user can access permitted features
-3. [ ] Verify the user cannot access restricted features
-4. [ ] Test each permission boundary
+1. Create a test user with the custom role
+2. Verify the user can access permitted features
+3. Verify the user cannot access restricted features
+4. Test each permission boundary
 
 ---
 
@@ -707,10 +707,10 @@ Minimize the number of workspace administrator accounts and implement strict con
 {% include pack-code.html vendor="workato" section="2.5" %}
 
 #### Validation & Testing
-1. [ ] Count admin accounts — should be 2-3 maximum
-2. [ ] Verify each admin has documented business justification
-3. [ ] Verify admin accounts have enhanced MFA at IdP level
-4. [ ] Review quarterly
+1. Count admin accounts — should be 2-3 maximum
+2. Verify each admin has documented business justification
+3. Verify admin accounts have enhanced MFA at IdP level
+4. Review quarterly
 
 **Expected result:** Admin count is minimal (2-3) with documented justification and enhanced authentication.
 
@@ -756,9 +756,9 @@ Establish a recurring access review process to verify all Workato workspace coll
 4. File as evidence for SOC 2 / ISO 27001 audits
 
 #### Validation & Testing
-1. [ ] Access review completed with documented results
-2. [ ] All identified issues remediated
-3. [ ] No accounts for departed employees remain
+1. Access review completed with documented results
+2. All identified issues remediated
+3. No accounts for departed employees remain
 
 ---
 
@@ -815,10 +815,10 @@ Enable Workato's Encryption Key Management (EKM) feature to use your own encrypt
 {% include pack-code.html vendor="workato" section="3.1" %}
 
 #### Validation & Testing
-1. [ ] Verify EKM status in Workato admin settings
-2. [ ] Create a test connection — verify data is encrypted with your key
-3. [ ] Temporarily disable the KMS key — verify Workato workspace becomes inaccessible (test in non-production)
-4. [ ] Re-enable the key — verify workspace recovers
+1. Verify EKM status in Workato admin settings
+2. Create a test connection — verify data is encrypted with your key
+3. Temporarily disable the KMS key — verify Workato workspace becomes inaccessible (test in non-production)
+4. Re-enable the key — verify workspace recovers
 
 **Expected result:** All workspace data at rest is encrypted with your AWS KMS key. Revoking the key renders the workspace inoperable.
 
@@ -883,9 +883,9 @@ Protect sensitive data visible in job history, recipe logs, and debug output by 
 3. Use custom roles (Control 2.4) to separate debugging from monitoring
 
 #### Validation & Testing
-1. [ ] Run a recipe with masked fields — verify job history shows `****`
-2. [ ] Verify non-admin users cannot see unmasked values
-3. [ ] Verify job history retention aligns with policy
+1. Run a recipe with masked fields — verify job history shows `****`
+2. Verify non-admin users cannot see unmasked values
+3. Verify job history retention aligns with policy
 
 **Expected result:** Sensitive data is not visible in plain text in job history or debug logs.
 
@@ -927,9 +927,9 @@ Configure data retention policies for job history, recipe versions, and audit lo
 2. This separates operational data (short retention in Workato) from compliance data (long retention in SIEM)
 
 #### Validation & Testing
-1. [ ] Verify job history retention is set to organizational policy
-2. [ ] Verify audit log streaming captures events before retention expiry
-3. [ ] Test that old job history is purged after retention period
+1. Verify job history retention is set to organizational policy
+2. Verify audit log streaming captures events before retention expiry
+3. Test that old job history is purged after retention period
 
 ---
 
@@ -972,9 +972,9 @@ Secure sensitive values stored as Workato environment properties (account proper
 {% include pack-code.html vendor="workato" section="3.4" %}
 
 #### Validation & Testing
-1. [ ] Verify all properties containing secrets are marked as sensitive
-2. [ ] Verify sensitive properties display as `****` in the UI
-3. [ ] Verify non-admin users cannot read sensitive property values
+1. Verify all properties containing secrets are marked as sensitive
+2. Verify sensitive properties display as `****` in the UI
+3. Verify non-admin users cannot read sensitive property values
 
 ---
 
@@ -1029,10 +1029,10 @@ Secure credentials used for connections to external applications. Connections ar
 {% include pack-code.html vendor="workato" section="4.1" %}
 
 #### Validation & Testing
-1. [ ] All connections use service accounts (not personal credentials)
-2. [ ] OAuth is used where available instead of API keys
-3. [ ] Credential rotation schedule is documented and enforced
-4. [ ] Each connection's service account has least-privilege access in the connected system
+1. All connections use service accounts (not personal credentials)
+2. OAuth is used where available instead of API keys
+3. Credential rotation schedule is documented and enforced
+4. Each connection's service account has least-privilege access in the connected system
 
 **Expected result:** Every connection uses a dedicated service account with minimum permissions. OAuth is preferred over static credentials.
 
@@ -1076,9 +1076,9 @@ Control who can view, use, and manage connections within the workspace to preven
 3. Document the purpose and owner for each connection
 
 #### Validation & Testing
-1. [ ] Log in as a non-admin user — verify limited connection visibility
-2. [ ] Verify connection credentials are not viewable by unauthorized users
-3. [ ] Audit connection sharing — no connections shared workspace-wide unless justified
+1. Log in as a non-admin user — verify limited connection visibility
+2. Verify connection credentials are not viewable by unauthorized users
+3. Audit connection sharing — no connections shared workspace-wide unless justified
 
 ---
 
@@ -1137,10 +1137,10 @@ Deploy and secure Workato On-Premises Agents (OPA) for accessing applications an
 {% include pack-code.html vendor="workato" section="4.3" %}
 
 #### Validation & Testing
-1. [ ] Verify agent status shows "Active" in Workato admin
-2. [ ] Test a connection through the agent — verify data flows correctly
-3. [ ] Verify agent host firewall blocks all inbound connections
-4. [ ] Verify agent group failover works (stop one agent, verify the other handles traffic)
+1. Verify agent status shows "Active" in Workato admin
+2. Test a connection through the agent — verify data flows correctly
+3. Verify agent host firewall blocks all inbound connections
+4. Verify agent group failover works (stop one agent, verify the other handles traffic)
 
 #### Monitoring & Maintenance
 - Monitor agent connection status in Workato admin
@@ -1192,10 +1192,10 @@ Restrict Workato workspace access to specific IP addresses or CIDR ranges, limit
 4. Test from a non-allowed IP — verify access is blocked
 
 #### Validation & Testing
-1. [ ] Access workspace from allowed IP — succeeds
-2. [ ] Access workspace from non-allowed IP — blocked
-3. [ ] API calls from allowed IPs — succeed
-4. [ ] API calls from non-allowed IPs — blocked
+1. Access workspace from allowed IP — succeeds
+2. Access workspace from non-allowed IP — blocked
+3. API calls from allowed IPs — succeed
+4. API calls from non-allowed IPs — blocked
 
 **Expected result:** Only connections from explicitly allowed IP ranges can access the workspace.
 
@@ -1254,10 +1254,10 @@ Secure webhook-triggered recipes by implementing signature verification, IP allo
 4. Never use webhook payload data directly in database queries or system commands
 
 #### Validation & Testing
-1. [ ] Send a webhook with valid signature — recipe triggers successfully
-2. [ ] Send a webhook with invalid signature — recipe does not trigger
-3. [ ] Send a webhook from non-allowed IP — request is rejected
-4. [ ] Send a malformed payload — recipe handles gracefully without processing
+1. Send a webhook with valid signature — recipe triggers successfully
+2. Send a webhook with invalid signature — recipe does not trigger
+3. Send a webhook from non-allowed IP — request is rejected
+4. Send a malformed payload — recipe handles gracefully without processing
 
 ---
 
@@ -1316,10 +1316,10 @@ Secure the Workato API Platform, which allows you to expose recipes as API endpo
 {% include pack-code.html vendor="workato" section="5.1" %}
 
 #### Validation & Testing
-1. [ ] Call API endpoint with valid client token — succeeds
-2. [ ] Call API endpoint with invalid/missing token — returns 401
-3. [ ] Call API endpoint from non-allowed IP — returns 403
-4. [ ] Exceed rate limit — returns 429
+1. Call API endpoint with valid client token — succeeds
+2. Call API endpoint with invalid/missing token — returns 401
+3. Call API endpoint from non-allowed IP — returns 403
+4. Exceed rate limit — returns 429
 
 ---
 
@@ -1352,9 +1352,9 @@ Configure rate limiting on API Platform endpoints to prevent abuse, denial-of-se
 3. Adjust limits based on legitimate usage patterns
 
 #### Validation & Testing
-1. [ ] Send requests at normal rate — all succeed
-2. [ ] Exceed rate limit — requests return HTTP 429
-3. [ ] Verify rate limits are per-client, not global
+1. Send requests at normal rate — all succeed
+2. Exceed rate limit — requests return HTTP 429
+3. Verify rate limits are per-client, not global
 
 ---
 
@@ -1403,10 +1403,10 @@ Securely manage Workato Platform API keys (used to call Workato's own management
 > **Deprecation Notice:** Workato deprecated legacy API keys in July 2025. Workspaces should migrate to the newer authentication method (workspace-level API tokens). The v1 API Platform was also deprecated in December 2025 — migrate to the v2 API Platform for API client management. Verify your workspace is using current authentication methods.
 
 #### Validation & Testing
-1. [ ] All API keys have documented owners and purposes
-2. [ ] No API keys exist in source code or configuration files
-3. [ ] API key rotation schedule is documented and followed
-4. [ ] No legacy (deprecated) API keys remain — all migrated to current tokens
+1. All API keys have documented owners and purposes
+2. No API keys exist in source code or configuration files
+3. API key rotation schedule is documented and followed
+4. No legacy (deprecated) API keys remain — all migrated to current tokens
 
 ---
 
@@ -1462,10 +1462,10 @@ Integrate Workato with an external secrets manager (HashiCorp Vault, AWS Secrets
 {% include pack-code.html vendor="workato" section="6.1" %}
 
 #### Validation & Testing
-1. [ ] Verify connections using secrets manager references work correctly
-2. [ ] Rotate a secret in the vault — verify Workato connection continues working with new credential
-3. [ ] Remove vault access — verify Workato connection fails (no fallback to cached credentials)
-4. [ ] Verify vault audit logs show Workato credential access events
+1. Verify connections using secrets manager references work correctly
+2. Rotate a secret in the vault — verify Workato connection continues working with new credential
+3. Remove vault access — verify Workato connection fails (no fallback to cached credentials)
+4. Verify vault audit logs show Workato credential access events
 
 **Expected result:** No credentials stored directly in Workato. All credentials retrieved at runtime from external secrets manager.
 
@@ -1545,9 +1545,9 @@ Configure separate Workato environments (DEV, TEST, PROD) to isolate recipe deve
 2. Use SAML role sync (Control 2.2) to automate environment role assignment
 
 #### Validation & Testing
-1. [ ] Verify DEV and PROD environments use different connections
-2. [ ] Verify developers cannot deploy directly to PROD
-3. [ ] Verify PROD environment has restricted access
+1. Verify DEV and PROD environments use different connections
+2. Verify developers cannot deploy directly to PROD
+3. Verify PROD environment has restricted access
 
 **Expected result:** Recipe changes flow DEV → TEST → PROD through a controlled deployment process. No direct production changes.
 
@@ -1598,10 +1598,10 @@ Configure Workato's Recipe Lifecycle Management (RLCM) to enforce a formal deplo
 {% include pack-code.html vendor="workato" section="7.2" %}
 
 #### Validation & Testing
-1. [ ] Create a deployment package in DEV — verify it's created successfully
-2. [ ] Attempt to deploy to PROD without approval — verify it's blocked
-3. [ ] Approve and deploy to PROD — verify successful deployment
-4. [ ] Verify deployment history shows complete audit trail
+1. Create a deployment package in DEV — verify it's created successfully
+2. Attempt to deploy to PROD without approval — verify it's blocked
+3. Approve and deploy to PROD — verify successful deployment
+4. Verify deployment history shows complete audit trail
 
 #### Monitoring & Maintenance
 - Review deployment logs for unauthorized deployment attempts
@@ -1639,12 +1639,12 @@ Integrate Workato's deployment process with your CI/CD pipeline to automate test
 > **Note on Terraform:** As of early 2026, there is no official Workato Terraform provider. For IaC, use the Workato API via the [Mastercard/restapi](https://registry.terraform.io/providers/Mastercard/restapi/latest) generic REST Terraform provider, or manage deployments through the API-based CI/CD pipeline shown above.
 
 #### Validation & Testing
-1. [ ] CI/CD pipeline triggers on code push
-2. [ ] Package is exported from DEV environment
-3. [ ] Deployment requires manual approval for production
-4. [ ] Package is imported to PROD environment
-5. [ ] Pipeline fails gracefully on errors (doesn't corrupt PROD)
-6. [ ] Post-deployment verification confirms recipes are active
+1. CI/CD pipeline triggers on code push
+2. Package is exported from DEV environment
+3. Deployment requires manual approval for production
+4. Package is imported to PROD environment
+5. Pipeline fails gracefully on errors (doesn't corrupt PROD)
+6. Post-deployment verification confirms recipes are active
 
 ---
 
@@ -1701,9 +1701,9 @@ Enable and actively monitor Workato's Activity Audit Log, which records signific
 {% include pack-code.html vendor="workato" section="8.1" %}
 
 #### Validation & Testing
-1. [ ] Perform a logged action (e.g., start/stop a recipe) — verify it appears in audit log
-2. [ ] Verify login events are recorded with IP address and timestamp
-3. [ ] Verify admin actions are recorded with details
+1. Perform a logged action (e.g., start/stop a recipe) — verify it appears in audit log
+2. Verify login events are recorded with IP address and timestamp
+3. Verify admin actions are recorded with details
 
 **Expected result:** All significant workspace actions are recorded in the audit log with user, timestamp, event type, and details.
 
@@ -1769,10 +1769,10 @@ Configure real-time streaming of Workato audit logs to an external SIEM or log a
 {% include pack-code.html vendor="workato" section="8.2" %}
 
 #### Validation & Testing
-1. [ ] Verify events stream within expected latency (< 5 minutes)
-2. [ ] Verify all event types appear in the destination
-3. [ ] Verify SIEM detection rules trigger on test events
-4. [ ] Verify log retention meets compliance requirements
+1. Verify events stream within expected latency (< 5 minutes)
+2. Verify all event types appear in the destination
+3. Verify SIEM detection rules trigger on test events
+4. Verify log retention meets compliance requirements
 
 ---
 
@@ -1814,9 +1814,9 @@ Configure monitoring for recipe execution errors to detect integration failures,
 {% include pack-code.html vendor="workato" section="8.3" %}
 
 #### Validation & Testing
-1. [ ] Intentionally trigger a recipe error — verify notification is received
-2. [ ] Verify error details include useful diagnostic information
-3. [ ] Verify critical recipe failures trigger within SLA
+1. Intentionally trigger a recipe error — verify notification is received
+2. Verify error details include useful diagnostic information
+3. Verify critical recipe failures trigger within SLA
 
 ---
 
@@ -1851,9 +1851,9 @@ Secure multi-workspace Automation HQ (AHQ) environments by enforcing SSO, consis
 3. Monitor AHQ admin activity in the audit log
 
 #### Validation & Testing
-1. [ ] Verify SSO is enabled on all child workspaces
-2. [ ] Verify AHQ admin count is minimal
-3. [ ] Verify consistent security policies across all workspaces
+1. Verify SSO is enabled on all child workspaces
+2. Verify AHQ admin count is minimal
+3. Verify consistent security policies across all workspaces
 
 ---
 

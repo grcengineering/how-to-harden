@@ -90,10 +90,10 @@ Run the MFA enrollment verification query from the DB Query Code Pack below to c
 **Time to Complete:** ~15 minutes (policy) + user enrollment time
 
 #### Validation & Testing
-1. [ ] Attempt login without MFA - should be blocked
-2. [ ] Complete login with MFA - should succeed
-3. [ ] Run enrollment query - all active users should show MFA enabled
-4. [ ] Verify service accounts use key-pair authentication
+1. Attempt login without MFA - should be blocked
+2. Complete login with MFA - should succeed
+3. Run enrollment query - all active users should show MFA enabled
+4. Verify service accounts use key-pair authentication
 
 **Expected result:** No user can authenticate with password-only
 

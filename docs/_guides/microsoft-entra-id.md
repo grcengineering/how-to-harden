@@ -112,10 +112,10 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Sign in as test user - MFA prompt should appear
-2. [ ] Verify number matching in Microsoft Authenticator
-3. [ ] Review sign-in logs: **Monitoring** → **Sign-in logs**
-4. [ ] Check Identity Secure Score for MFA adoption
+1. Sign in as test user - MFA prompt should appear
+2. Verify number matching in Microsoft Authenticator
+3. Review sign-in logs: **Monitoring** → **Sign-in logs**
+4. Check Identity Secure Score for MFA adoption
 
 **Expected result:** All users require MFA, phishing-resistant methods preferred
 
@@ -197,10 +197,10 @@ Create highly protected emergency access accounts excluded from Conditional Acce
 {% include pack-code.html vendor="microsoft-entra-id" section="1.2" %}
 
 #### Validation & Testing
-1. [ ] Test sign-in with emergency account (then immediately change password)
-2. [ ] Verify bypasses all Conditional Access policies
-3. [ ] Confirm alert triggers on sign-in
-4. [ ] Document and secure credentials
+1. Test sign-in with emergency account (then immediately change password)
+2. Verify bypasses all Conditional Access policies
+3. Confirm alert triggers on sign-in
+4. Document and secure credentials
 
 ---
 
@@ -424,11 +424,11 @@ Implement Privileged Identity Management (PIM) to eliminate standing admin privi
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Verify no permanent Global Admin assignments (except emergency accounts)
-2. [ ] Test PIM activation as eligible admin
-3. [ ] Confirm MFA required on activation
-4. [ ] Verify justification is captured in audit log
-5. [ ] Check activation expires after configured duration
+1. Verify no permanent Global Admin assignments (except emergency accounts)
+2. Test PIM activation as eligible admin
+3. Confirm MFA required on activation
+4. Verify justification is captured in audit log
+5. Check activation expires after configured duration
 
 **Expected result:** Admins activate roles on-demand, access expires automatically
 

@@ -116,10 +116,10 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 
 #### Validation & Testing
 **How to verify the control is working:**
-1. [ ] Sign in as a test user and verify MFA prompt appears
-2. [ ] Attempt sign-in from unmanaged device - MFA should be required
-3. [ ] Review sign-in logs for MFA enforcement: **Entra admin center** → **Monitoring** → **Sign-in logs**
-4. [ ] Run: `Get-MgIdentityConditionalAccessPolicy | Where-Object {$_.State -eq "enabled"}`
+1. Sign in as a test user and verify MFA prompt appears
+2. Attempt sign-in from unmanaged device - MFA should be required
+3. Review sign-in logs for MFA enforcement: **Entra admin center** → **Monitoring** → **Sign-in logs**
+4. Run: `Get-MgIdentityConditionalAccessPolicy | Where-Object {$_.State -eq "enabled"}`
 
 **Expected result:** All user sign-ins require MFA, sign-in logs show "MFA requirement satisfied"
 
@@ -215,9 +215,9 @@ Block legacy authentication protocols (POP3, IMAP, SMTP AUTH, Basic Auth) that c
 {% include pack-code.html vendor="microsoft-365" section="1.2" %}
 
 #### Validation & Testing
-1. [ ] Attempt POP3/IMAP connection - should fail
-2. [ ] Review sign-in logs for blocked legacy auth attempts
-3. [ ] Verify legitimate applications still function via modern auth
+1. Attempt POP3/IMAP connection - should fail
+2. Review sign-in logs for blocked legacy auth attempts
+3. Verify legitimate applications still function via modern auth
 
 **Expected result:** Legacy authentication attempts blocked, modern auth sign-ins succeed
 
@@ -286,10 +286,10 @@ Enable just-in-time privileged access using Microsoft Entra Privileged Identity 
 {% include pack-code.html vendor="microsoft-365" section="1.3" %}
 
 #### Validation & Testing
-1. [ ] Verify no standing Global Admin assignments (all eligible)
-2. [ ] Test PIM activation workflow as eligible admin
-3. [ ] Confirm MFA and justification required on activation
-4. [ ] Review PIM audit logs for activation events
+1. Verify no standing Global Admin assignments (all eligible)
+2. Test PIM activation workflow as eligible admin
+3. Confirm MFA and justification required on activation
+4. Review PIM audit logs for activation events
 
 **Expected result:** Admins must activate roles on-demand with MFA, approval, and justification
 
@@ -362,10 +362,10 @@ Create and secure emergency access accounts that are excluded from Conditional A
 {% include pack-code.html vendor="microsoft-365" section="1.4" %}
 
 #### Validation & Testing
-1. [ ] Verify break-glass accounts can sign in bypassing Conditional Access
-2. [ ] Test sign-in generates alert
-3. [ ] Confirm credentials are securely stored offline
-4. [ ] Document account usage procedure
+1. Verify break-glass accounts can sign in bypassing Conditional Access
+2. Test sign-in generates alert
+3. Confirm credentials are securely stored offline
+4. Document account usage procedure
 
 **Expected result:** Emergency accounts accessible when needed, usage immediately alerted
 
@@ -465,9 +465,9 @@ Prevent users from granting OAuth consent to third-party applications. Require a
 {% include pack-code.html vendor="microsoft-365" section="3.1" %}
 
 #### Validation & Testing
-1. [ ] Attempt to authorize a third-party app as standard user - should be blocked
-2. [ ] Submit admin consent request - verify workflow triggers
-3. [ ] Review existing app permissions: **Enterprise applications** → **All applications** → Review permissions
+1. Attempt to authorize a third-party app as standard user - should be blocked
+2. Submit admin consent request - verify workflow triggers
+3. Review existing app permissions: **Enterprise applications** → **All applications** → Review permissions
 
 **Expected result:** Users cannot grant app permissions; admin approval required
 
