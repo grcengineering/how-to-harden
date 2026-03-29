@@ -1,0 +1,5 @@
+node_modules/
+MEMORY/
+.zerg/
+.DS_Store
+.gsd/

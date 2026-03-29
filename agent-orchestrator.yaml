@@ -1,0 +1,34 @@
+# Agent Orchestrator Configuration for How To Harden
+dataDir: ~/.agent-orchestrator
+worktreeDir: ~/.worktrees
+port: 3000
+
+defaults:
+  runtime: tmux
+  agent: claude-code
+  workspace: worktree
+  notifiers: [desktop]
+
+projects:
+  hth:
+    name: How To Harden
+    repo: grcengineering/how-to-harden
+    path: ~/Code/how-to-harden
+    defaultBranch: main
+    sessionPrefix: hth
+
+    agentRules: |
+      You are working on the How To Harden project (howtoharden.com).
+      This is a security hardening guide and CLI tool.
+      The CLI is written in Rust (cli/ directory).
+      Hardening controls are YAML files in packs/github/controls/.
+      The guide is a Jekyll site in docs/_guides/.
+      Follow existing patterns exactly when creating new files.
+      Use cargo build/clippy to verify Rust changes.
+      Use hth validate to verify YAML control changes.
+
+    reactions:
+      ci-failed:
+        auto: true
+        action: send-to-agent
+        retries: 2
