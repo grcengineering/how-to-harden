@@ -3,3 +3,7 @@ MEMORY/
 .zerg/
 .DS_Store
 .gsd/
+.claude/settings.json
+.claude/settings.local.json
+.claude/projects/
+.claude/metadata-updater.sh
