@@ -57,3 +57,26 @@
     "enableAllProjectMcpServers": false
   }
 // HTH Guide Excerpt: end mcp-allowlist-denylist
+
+// HTH Guide Excerpt: begin mcp-project-server-control
+// Granular control over project-level MCP servers (.mcp.json)
+// Reference: code.claude.com/docs/en/settings
+// By default, Claude Code prompts users to approve .mcp.json servers.
+// enableAllProjectMcpServers: true auto-approves all project MCP servers.
+// For fine-grained control, use enabledMcpjsonServers / disabledMcpjsonServers
+// to pre-approve or block specific server names from .mcp.json files.
+  {
+    "enableAllProjectMcpServers": false,
+    "enabledMcpjsonServers": [
+      {"serverName": "github"},
+      {"serverName": "memory"}
+    ],
+    "disabledMcpjsonServers": [
+      {"serverName": "filesystem"},
+      {"serverName": "shell"},
+      {"serverName": "puppeteer"},
+      {"serverName": "everything"}
+    ],
+    "allowManagedMcpServersOnly": true
+  }
+// HTH Guide Excerpt: end mcp-project-server-control

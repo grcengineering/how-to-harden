@@ -26,6 +26,28 @@
   }
 // HTH Guide Excerpt: end cowork-hardened
 
+// HTH Guide Excerpt: begin cowork-automode
+// Auto mode governance settings
+// Reference: code.claude.com/docs/en/auto-mode
+// DANGER: autoMode.allow and autoMode.soft_deny REPLACE the entire
+// default rule lists when set — see 7.01 automode-warning section.
+// Only autoMode.environment is safe to set without side effects.
+// autoMode is NOT read from project settings (.claude/settings.json)
+// to prevent repos from injecting their own allow rules.
+  {
+    "disableAutoMode": "disable",
+    "useAutoModeDuringPlan": false,
+    "disableDeepLinkRegistration": "disable",
+    "autoMode": {
+      "environment": [
+        "Organization: REPLACE-WITH-YOUR-ORG. Primary use: software development",
+        "Source control: REPLACE-WITH-YOUR-SCM-HOST and all repos under it",
+        "Trusted internal domains: REPLACE-WITH-YOUR-INTERNAL-DOMAINS"
+      ]
+    }
+  }
+// HTH Guide Excerpt: end cowork-automode
+
 // HTH Guide Excerpt: begin cowork-maximum
 // L3 Maximum Security Cowork configuration.
 // Zero session retention, channels disabled, auto-mode disabled,

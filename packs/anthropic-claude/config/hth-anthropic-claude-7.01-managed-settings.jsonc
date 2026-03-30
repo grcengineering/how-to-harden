@@ -145,6 +145,15 @@
     "allowManagedMcpServersOnly": true,
     "channelsEnabled": false,
     "disableAutoMode": "disable",
+    "disableDeepLinkRegistration": "disable",
+    "useAutoModeDuringPlan": false,
+    "autoMode": {
+      "environment": [
+        "Organization: REPLACE-WITH-YOUR-ORG. Primary use: software development",
+        "Source control: REPLACE-WITH-YOUR-SCM-HOST and all repos under it",
+        "Trusted internal domains: REPLACE-WITH-YOUR-INTERNAL-DOMAINS"
+      ]
+    },
     "blockedMarketplaces": [],
     "pluginTrustMessage": "Only IT-approved plugins are permitted.",
     "allowedHttpHookUrls": ["https://hooks.example.com/*"],
@@ -177,3 +186,38 @@
     }
   }
 // HTH Guide Excerpt: end managed-settings-comprehensive
+
+// HTH Guide Excerpt: begin managed-settings-custom-scripts-audit
+// Security note: Custom script settings that execute arbitrary commands.
+// These settings run shell scripts during Claude Code operation.
+// Audit any scripts referenced by these settings for injection risks.
+//
+// apiKeyHelper       — runs a script to generate auth headers for model requests
+// otelHeadersHelper  — runs a script to generate OpenTelemetry headers
+// awsAuthRefresh     — runs a script that modifies the .aws directory
+// awsCredentialExport — runs a script that outputs AWS credentials as JSON
+//
+// Recommendation: In managed settings, either omit these (use standard auth)
+// or restrict to vetted scripts at known paths. Monitor script contents
+// for changes via file integrity monitoring.
+// HTH Guide Excerpt: end managed-settings-custom-scripts-audit
+
+// HTH Guide Excerpt: begin managed-settings-automode-warning
+// DANGER: autoMode.allow and autoMode.soft_deny REPLACE the entire default
+// rule lists when set. Setting soft_deny with a single entry discards ALL
+// built-in block rules: force push, data exfiltration, curl|bash, production
+// deploys, and every other default block rule become allowed.
+//
+// Safe approach:
+//   1. Run: claude auto-mode defaults — to get the full built-in lists
+//   2. Copy the entire list into your settings
+//   3. Add or remove individual rules
+//   4. Run: claude auto-mode config — to verify effective rules
+//   5. Run: claude auto-mode critique — to get AI feedback on custom rules
+//
+// Only autoMode.environment is safe to set without side effects — it does
+// not replace any default lists, only tells the classifier what is trusted.
+//
+// autoMode is NOT read from shared project settings (.claude/settings.json)
+// to prevent checked-in repos from injecting their own allow rules.
+// HTH Guide Excerpt: end managed-settings-automode-warning

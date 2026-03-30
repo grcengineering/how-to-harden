@@ -52,6 +52,49 @@
   }
 // HTH Guide Excerpt: end permission-deny-rules
 
+// HTH Guide Excerpt: begin permission-agent-rules
+// Agent() permission rules — control subagent spawning
+// Reference: code.claude.com/docs/en/permissions
+// Agent() rules follow the same deny/ask/allow evaluation as other tools.
+// Specifier is the subagent_type name from the Agent tool definition.
+// Use this to prevent Claude from spawning unrestricted background agents.
+  {
+    "permissions": {
+      "deny": [
+        "Agent(general-purpose)",
+        "Agent(BrowserAgent)"
+      ],
+      "ask": [
+        "Agent"
+      ],
+      "allow": [
+        "Agent(Explore)",
+        "Agent(Plan)"
+      ]
+    }
+  }
+// HTH Guide Excerpt: end permission-agent-rules
+
+// HTH Guide Excerpt: begin permission-deny-limitations
+// Security note: Permission deny rules have tool-specific scope.
+// Read(./.env) only blocks the Read tool — it does NOT prevent:
+//   Bash(cat .env)    — the Bash tool is a separate permission
+//   Bash(grep -r PASSWORD .env)
+//   Bash(base64 .env)
+//
+// To fully protect sensitive files, you MUST combine:
+//   1. Read() deny rules for the Read tool
+//   2. Bash() deny rules for common exfiltration commands (curl, cat, etc.)
+//   3. Sandbox filesystem.denyRead for OS-level enforcement (strongest)
+//
+// Only sandbox denyRead provides true defense-in-depth because it operates
+// at the OS level and cannot be bypassed by creative Bash commands.
+//
+// Also note: permissions.additionalDirectories grants Claude Code
+// access to directories outside the project root. If set, ensure deny
+// rules also cover those paths (e.g., Read(/data/secrets/**)).
+// HTH Guide Excerpt: end permission-deny-limitations
+
 // HTH Guide Excerpt: begin permission-enforcement
 // Enforce managed-only permission rules
 // Reference: code.claude.com/docs/en/settings
