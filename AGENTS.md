@@ -109,7 +109,13 @@ Step-by-step procedures for common tasks. Follow the template and source files f
    - Map to compliance frameworks (order defined in template)
    - Add real-world incident references where relevant
 
-5. **Before committing:**
+5. **Update `docs/_data/doc_links.yml`** for the vendor:
+   - `product_docs` — main product documentation landing page
+   - `api_docs` — API reference (leave empty string if none)
+   - `hardening_docs` — **must be a vendor-provided hardening/security configuration guide**, NOT a marketing security page or trust center. Look for pages with titles like "Security Best Practices", "Network Configuration", "Compliance and Monitoring", "Deployment Hardening", etc. If the vendor has multiple hardening-relevant docs, pick the most comprehensive one. If the vendor has NO actual hardening guide, leave this field as an empty string rather than linking a generic security marketing page.
+   - `code_pack` — `"https://github.com/grcengineering/how-to-harden/tree/main/packs/[vendor-slug]"` (required if code packs exist; without this, Code Pack buttons won't render in the guide header)
+
+6. **Before committing:**
    - Verify blank lines around ALL tables
    - Verify language on ALL code blocks
    - Update the changelog at the bottom
@@ -203,6 +209,8 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 | Inventing compliance control IDs | Verify against official sources (linked in CONTRIBUTING.md) |
 | Missing changelog entry | Always update changelog when modifying a guide |
 | Generic incident references | Use specific incidents with dates from the table above |
+| Missing `code_pack` in doc_links.yml | Without this field, Code Pack buttons won't render in the guide header — always add when creating packs |
+| Linking marketing security pages as `hardening_docs` | The `hardening_docs` field must point to actual vendor-provided hardening/configuration guides, not trust centers or generic security pages |
 
 ---
 

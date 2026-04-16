@@ -134,7 +134,7 @@ crowdstrike:
 cursor:
   product_docs: "https://cursor.com/docs"
   api_docs: ""
-  hardening_docs: "https://cursor.com/security"
+  hardening_docs: "https://cursor.com/docs/enterprise/network-configuration"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/cursor"
 
 cyberark:
