@@ -135,6 +135,7 @@ cursor:
   product_docs: "https://cursor.com/docs"
   api_docs: ""
   hardening_docs: "https://cursor.com/security"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/cursor"
 
 cyberark:
   product_docs: "https://docs.cyberark.com"
