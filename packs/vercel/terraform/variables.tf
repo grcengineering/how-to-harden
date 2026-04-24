@@ -119,6 +119,22 @@ variable "trusted_ip_addresses" {
 }
 
 # -----------------------------------------------------------------------------
+# Section 2.4: Private Production Deployments (Advanced Deployment Protection)
+# -----------------------------------------------------------------------------
+
+variable "private_production_deployments_enabled" {
+  description = "Enable All-Deployments scope (includes production domains) — Enterprise or Pro Advanced DP add-on (L2+)"
+  type        = bool
+  default     = false
+}
+
+variable "production_only_trusted_ips_enabled" {
+  description = "Restrict production deployments to trusted IPs while leaving preview publicly accessible (Enterprise only, L3)"
+  type        = bool
+  default     = false
+}
+
+# -----------------------------------------------------------------------------
 # Section 2.2: Harden Git Integration
 # -----------------------------------------------------------------------------
 
