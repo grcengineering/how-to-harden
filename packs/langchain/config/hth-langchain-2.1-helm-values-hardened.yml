@@ -1,0 +1,72 @@
+# HTH LangChain Control 2.1: Self-Host LangSmith — Hardened Helm Values
+# Profile: L3 | NIST: SC-7, SC-28, AC-4
+# https://howtoharden.com/guides/langchain/#21-self-host-langsmith
+#
+# Apply with:
+#   helm upgrade --install langsmith langchain/langsmith \
+#     --values langsmith-values.hardened.yaml --version <pinned>
+# Reference: github.com/langchain-ai/helm/blob/main/charts/langsmith
+
+# HTH Guide Excerpt: begin config-helm-hardened-values
+config:
+  # Restrict CORS — default is permissive, MUST be locked down in prod
+  corsAllowedOrigins:
+    - https://langsmith.internal.example.com
+
+  # Enable audit logging (v0.12.33+)
+  auditLogs:
+    enabled: true
+    # Keep audit logs separate from app logs and ship to SIEM
+    destination: stdout
+
+  # Force HTTPS / HSTS at the ingress
+  forceHttps: true
+  hstsMaxAge: 63072000  # 2 years
+
+# Self-hosted SAML SSO (Enterprise add-on required)
+sso:
+  enabled: true
+  provider: saml
+  saml:
+    metadataUrl: https://idp.example.com/app/langsmith/sso/saml/metadata
+
+# Database encryption at rest
+postgresql:
+  primary:
+    persistence:
+      storageClass: encrypted-gp3   # Use a CMK-encrypted storage class
+  auth:
+    existingSecret: langsmith-postgres-credentials  # Sourced from KMS
+
+# Kubernetes pod security
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+# Resource limits (DoS protection)
+resources:
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+
+# Disallow public LoadBalancer; expose via internal ingress only
+service:
+  type: ClusterIP
+ingress:
+  enabled: true
+  className: internal-nginx
+  annotations:
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8"
+# HTH Guide Excerpt: end config-helm-hardened-values
