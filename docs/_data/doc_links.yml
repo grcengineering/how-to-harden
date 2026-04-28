@@ -293,6 +293,12 @@ keeper:
   hardening_docs: "https://docs.keeper.io/en/enterprise-guide/recommended-security-settings"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/keeper"
 
+langchain:
+  product_docs: "https://docs.langchain.com/"
+  api_docs: "https://api.smith.langchain.com/docs"
+  hardening_docs: "https://docs.langchain.com/oss/python/security-policy"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/langchain"
+
 klaviyo:
   product_docs: "https://help.klaviyo.com/hc/en-us"
   api_docs: "https://developers.klaviyo.com/en"
