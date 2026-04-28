@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # HTH Google Workspace Control 4.01: Audit External Drive Sharing
 # Profile: L1 | NIST: AC-3, AC-22
+#
+# TOOL STATUS NOTE (2026-04):
+#   GAM is a COMMUNITY-MAINTAINED CLI, NOT a first-party Google product.
+#   For first-party automation, use the Drive API v3 files.list endpoint
+#   with the q= filter for sharing visibility.
 # Requires: GAM (https://github.com/GAM-team/GAM)
 
 # HTH Guide Excerpt: begin cli-audit-sharing

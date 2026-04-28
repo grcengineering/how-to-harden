@@ -34,7 +34,10 @@ More text
 
 - **No exceptions:** SQL, KQL, SPL, bash, Python, YAML, JSON, HCL — everything goes in packs.
 - **Pack pipeline:** `packs/{vendor}/{type}/` source files → `scripts/sync-packs-to-data.sh` → `docs/_data/packs/{vendor}.yml` → `{% include pack-code.html vendor="{vendor}" section="X.X" %}` in guides.
-- **Pack types (directories):** `terraform/`, `api/`, `cli/`, `sdk/`, `db/`, `siem/sigma/`
+- **Pack types (directories):** `terraform/`, `api/`, `cli/`, `sdk/`, `db/`, `config/`, `siem/sigma/`
+  - `cli/` is reserved for scripts that **invoke a vendor's first-party CLI binary** (e.g., `gh`, `vault`, `databricks`, `snow`). If the vendor has no first-party CLI, do NOT create a `cli/` pack — use `api/` (REST API), `terraform/`, or `config/` instead.
+  - `config/` is for vendor-native configuration files and config-emitting scripts (e.g., `.jsonc` settings, shell scripts that write `.ini`/`.xml`/`.conf` snippets). Use this when the content configures the vendor's product but isn't directly executed via a CLI command.
+  - See `docs/research/cli-inventory.md` for the authoritative list of which vendors actually publish first-party CLIs.
 - **Verification:** Run `grep -cE '^ *```' docs/_guides/{vendor}.md` — must return **0** for every guide.
 - To add code to a guide: create a pack file in `packs/{vendor}/{type}/`, run the sync script, then use the include tag in the guide.
 - Do NOT use `lang=` parameter on include tags.

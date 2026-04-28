@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # HTH Google Workspace Control 3.01: Audit OAuth Apps
 # Profile: L1 | NIST: AC-3, CM-7
+#
+# TOOL STATUS NOTE (2026-04):
+#   GAM is a COMMUNITY-MAINTAINED CLI, NOT a first-party Google product.
+#   For first-party automation, use the Admin SDK Directory API tokens
+#   endpoint (admin.googleapis.com/admin/directory/v1/users/.../tokens).
 # Requires: GAM (https://github.com/GAM-team/GAM)
 
 # HTH Guide Excerpt: begin cli-audit-oauth

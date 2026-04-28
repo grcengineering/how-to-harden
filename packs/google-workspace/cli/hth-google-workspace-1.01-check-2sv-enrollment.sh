@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 # HTH Google Workspace Control 1.01: Check 2-Step Verification Enrollment
 # Profile: L1 | NIST: IA-2(1), IA-2(6)
+#
+# TOOL STATUS NOTE (2026-04):
+#   GAM is a COMMUNITY-MAINTAINED CLI, NOT a first-party Google product.
+#   Google's own `gws` CLI (github.com/googleworkspace/cli) carries a
+#   "not an officially supported Google product" disclaimer; an official
+#   Workspace CLI is announced as "coming soon."
+#   Until the official CLI ships, the first-party automation surface is
+#   the Google Admin SDK Directory + Reports REST APIs (curl + OAuth2).
 # Requires: GAM (https://github.com/GAM-team/GAM)
 
 # HTH Guide Excerpt: begin cli-check-2sv
