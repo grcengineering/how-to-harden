@@ -125,9 +125,11 @@ Use tags to signal special circumstances (version bump follows normal rules):
 
 ### Required Updates for Version Changes
 
-1. **YAML front matter:** Update `version` field
+1. **YAML front matter:** Update `version` field **and** `last_updated` field
 2. **Changelog table:** Add new row with date, version, maturity, changes, author
 3. **VERSIONS.md:** Update the central registry
+
+**Date discipline:** the `last_updated` value in the front matter and the `Date` column of the new changelog row **must both equal the date the change is actually committed and pushed to `main`** — not the date you started drafting. If a guide is drafted over several days, re-stamp both fields right before `git commit`. Run `date +%F` to get today's date in `YYYY-MM-DD` format. The `last_updated` field is rendered as "Last updated:" at the top of every guide page — a stale date misleads readers about how current the content is.
 
 ## Creating a New Guide
 

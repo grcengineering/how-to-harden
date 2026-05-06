@@ -63,6 +63,12 @@ Never use bare ` ``` ` without a language.
 - **ClickOps** - GUI/console steps for manual implementation
 - **Code** - CLI, API, and/or Terraform for automation
 
+### 5. Revision Dates Reflect the Commit Date
+
+Right before `git commit`, set the guide's `last_updated` frontmatter value **and** the new changelog row's `Date` column to today's date (run `date +%F`). Never carry over the drafting date. Both fields must agree. Stale `last_updated` values mislead readers because Jekyll renders that field as "Last updated:" at the top of every guide page.
+
+See [AGENTS.md §5](AGENTS.md#5-revision-dates-reflect-the-publish-date-not-the-drafting-date) for the full rule.
+
 ## File Locations
 
 | What | Where |
@@ -98,6 +104,7 @@ cp templates/vendor-guide-template.md docs/_guides/[vendor-name].md
 - [ ] All code uses pack includes: `{% include pack-code.html vendor="X" section="Y.Z" %}`
 - [ ] Compliance mappings verified
 - [ ] Changelog updated
+- [ ] `last_updated` frontmatter AND new changelog row's Date column both equal today's date (`date +%F`) — not the drafting date
 
 
 <!-- SECURITY_RULES_START -->

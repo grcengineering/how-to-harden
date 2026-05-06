@@ -1806,7 +1806,7 @@ Enforce CODEOWNERS-based review for all changes to `.github/workflows/` and `.gi
 #### Code Implementation
 
 **`.github/CODEOWNERS`:**
-```
+```text
 # Security/Platform team must approve all CI/CD changes
 .github/workflows/    @org/security-team @org/platform-team
 .github/actions/      @org/security-team @org/platform-team

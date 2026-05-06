@@ -319,6 +319,8 @@ Table showing how to assess third-party integration risk:
 
 ## Changelog
 
+> **Date discipline:** the `Date` column below and the `last_updated` value in the front matter **must both be the date the change is committed and pushed** — not the drafting date. Re-stamp both right before `git commit` (run `date +%F`).
+
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
 | YYYY-MM-DD | 0.1.0 | draft | Initial guide | [Author - see guidelines below] |
@@ -397,7 +399,7 @@ HTH uses Extended SemVer with Maturity Qualifiers, aligned with [CIS Benchmarks]
   vendor: "[Vendor]"
   version: "0.1.0"
   maturity: "draft"  # draft | reviewed | verified
-  last_updated: "YYYY-MM-DD"
+  last_updated: "YYYY-MM-DD"   # date of the commit/push that ships the change — NOT the drafting date. Run `date +%F` immediately before `git commit` and use that value here AND in the new changelog row's Date column.
   ---
   ```
 

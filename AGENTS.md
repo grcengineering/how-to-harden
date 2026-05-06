@@ -84,6 +84,22 @@ AI often generates only one method. Always provide:
 - **ClickOps** - GUI/console steps with exact navigation paths
 - **Code** - At least one of: CLI, API (curl), Terraform, or script
 
+### 5. Revision Dates Reflect the Publish Date, Not the Drafting Date
+
+`last_updated` (frontmatter) and the new changelog row's `Date` column **must both be set to the date the change is actually committed and pushed to `main`** — not the date the draft was started. If a guide is drafted over multiple days, update both fields to the final commit date right before pushing.
+
+**Right before `git commit`, do this:**
+
+```bash
+TODAY=$(date +%F)   # YYYY-MM-DD in your local timezone
+# Update frontmatter `last_updated:` to $TODAY
+# Update the new changelog row's Date column to $TODAY
+```
+
+**Why this matters:** the `last_updated` field is what users see at the top of the rendered guide ("Last updated: 2026-MM-DD"). A stale date misleads readers about how current the content is. The dates in frontmatter and changelog must agree.
+
+**Common failure mode (avoid):** drafting a guide on day N, leaving `last_updated: "N"`, then pushing on day N+8. The published guide claims to be 8 days older than it actually is. **Always re-stamp both fields immediately before commit.**
+
 ---
 
 ## Task Procedures
@@ -202,6 +218,7 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 | Leaving template placeholders | Replace ALL `[bracketed placeholders]` |
 | Inventing compliance control IDs | Verify against official sources (linked in CONTRIBUTING.md) |
 | Missing changelog entry | Always update changelog when modifying a guide |
+| Stale `last_updated` / changelog date | Set both to the actual commit-day date right before `git commit` — never carry over the drafting date |
 | Generic incident references | Use specific incidents with dates from the table above |
 
 ---
@@ -233,5 +250,6 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 
 | Date | Changes |
 |------|---------|
+| 2026-05-06 | Added Rule 5: revision dates must reflect the commit/push date, not the drafting date. Added matching Common Mistakes row. |
 | 2025-12-27 | Restructured to reference source files, removed duplications |
 | 2025-12-26 | Initial creation |

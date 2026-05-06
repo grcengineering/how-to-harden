@@ -8,7 +8,7 @@ category: "Productivity"
 description: "AI platform security hardening for Claude API, Console, SSO, workspace isolation, and admin controls"
 version: "0.7.0"
 maturity: "draft"
-last_updated: "2026-04-28"
+last_updated: "2026-05-06"
 ---
 
 ## Overview
@@ -2366,7 +2366,7 @@ Establish incident response procedures specific to Claude Code and Cowork securi
 | 2026-02-21 | 0.4.0 | draft | Added Config-as-Code pack type with standalone .jsonc config files; added code pack buttons, doc links; moved JSON configs from API scripts to config/ directory | `Claude Code (Opus 4.6)` |
 | 2026-03-27 | 0.5.0 | draft | Major expansion: Added 6 new controls (7.5-7.10) — Bash sandbox isolation, hook/plugin lockdown, prompt injection defense, CI/CD pipeline hardening, external sandbox tooling (nono, OpenShell), Cowork governance. Updated 7.1 with drop-in directory, plist/registry delivery, new managed settings. Added comprehensive references for security research (ToxicSkills, Rules File Backdoor, InversePrompt CVEs) and open-source tools. Updated all compliance mappings. | `Claude Code (Opus 4.6)` |
 | 2026-04-06 | 0.6.0 | draft | Added 7.11 Incident Response (kill-switch, forensic collection, AI agent IR scenarios, tabletop exercises). Major expansion of 7.10 Cowork: Chrome hardening (allowlist/blocklist, default gap warnings), global defensive instructions, dedicated workspace scoping, scheduled task governance, plugin install preferences, tenant restriction details (exact header format, proxy platforms, error codes), data training opt-out by tier, web search egress bypass warning, OTel prompt content toggle. Added NIST CSF 2.0 and NIST AI RMF compliance mappings. Added web search bypass warning to 7.5 sandbox. | `Claude Code (Opus 4.6)` |
-| 2026-04-28 | 0.7.0 | draft | Added 2.3 Eliminate Static API Keys via Workload Identity Federation: covers Anthropic's new WIF capability (RFC 7523 jwt-bearer flow against `POST /v1/oauth/token`), Console setup walkthrough for federation issuers / service accounts / federation rules, IdP coverage (AWS / GCP / Azure-Entra / GitHub Actions / Kubernetes / SPIFFE / Okta), credential precedence pitfalls (`ANTHROPIC_API_KEY` shadowing WIF), token lifetime/refresh semantics, JWKS rotation gotchas, and migration runbook. Code Packs: token-exchange script with static-key guardrail (api/), reference hardened GitHub Actions workflow (config/), config-as-code WIF profile (config/), Python SDK pattern (sdk/). Verified against platform.claude.com/docs/en/manage-claude/workload-identity-federation and wif-reference. | `Claude Opus 4.7 (1M)` |
+| 2026-05-06 | 0.7.0 | draft | Added 2.3 Eliminate Static API Keys via Workload Identity Federation: covers Anthropic's new WIF capability (RFC 7523 jwt-bearer flow against `POST /v1/oauth/token`), Console setup walkthrough for federation issuers / service accounts / federation rules, IdP coverage (AWS / GCP / Azure-Entra / GitHub Actions / Kubernetes / SPIFFE / Okta), credential precedence pitfalls (`ANTHROPIC_API_KEY` shadowing WIF), token lifetime/refresh semantics, JWKS rotation gotchas, and migration runbook. Code Packs: token-exchange script with static-key guardrail (api/), reference hardened GitHub Actions workflow (config/), config-as-code WIF profile (config/), Python SDK pattern (sdk/). Verified against platform.claude.com/docs/en/manage-claude/workload-identity-federation and wif-reference. | `Claude Opus 4.7 (1M)` |
 
 ---
 
