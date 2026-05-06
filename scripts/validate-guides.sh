@@ -201,7 +201,7 @@ import os, re, glob
 guides_dir = os.environ["GUIDES_DIR"]
 files = sorted(glob.glob(os.path.join(guides_dir, "*.md")))
 
-VALID_CATS = {"Identity", "Security", "DevOps", "Data", "Productivity", "HR/Finance", "Marketing", "IaC", "IT Operations"}
+VALID_CATS = {"Identity", "Security", "DevOps", "Data", "Productivity", "HR/Finance", "Marketing", "IaC", "IT Operations", "AI/ML Platform"}
 REQUIRED_FIELDS = ["layout", "vendor", "slug", "category", "description", "version", "maturity", "last_updated"]
 REQUIRED_SECTIONS = ["Overview", "Intended Audience", "How to Use This Guide", "Scope", "Changelog"]
 

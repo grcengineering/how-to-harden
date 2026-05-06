@@ -197,7 +197,9 @@ When mapping controls, use this order (defined in template):
 
 For guide front matter `category` field:
 
-`Identity` | `Security` | `DevOps` | `Data` | `Productivity` | `HR/Finance` | `CRM/Marketing`
+`Identity` | `Security` | `DevOps` | `Data` | `Productivity` | `HR/Finance` | `Marketing` | `AI/ML Platform` | `IaC` | `IT Operations`
+
+This list is enforced by `scripts/validate-guides.sh` (Test 5). When adding a new category, update the validator, [docs/about.md](docs/about.md), and this section together.
 
 See [docs/about.md](docs/about.md) for category descriptions and examples.
 

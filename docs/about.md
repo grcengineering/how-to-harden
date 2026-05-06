@@ -48,6 +48,9 @@ Guides are organized by platform category:
 | **Productivity** | Collaboration and productivity tools | Zoom, Notion, Asana |
 | **HR/Finance** | Human resources and finance platforms | Workday, ADP, NetSuite |
 | **Marketing** | Marketing and CRM platforms | Salesforce, HubSpot, Mailchimp |
+| **AI/ML Platform** | AI/ML developer frameworks and platforms | LangChain, LlamaIndex |
+| **IaC** | Infrastructure-as-code and provisioning tooling | Terraform Cloud, Pulumi |
+| **IT Operations** | Endpoint, MDM, and IT operations platforms | Jamf, Microsoft Intune |
 
 ## Contributing
 
