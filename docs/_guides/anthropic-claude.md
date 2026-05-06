@@ -6,9 +6,9 @@ slug: "anthropic-claude"
 tier: "1"
 category: "Productivity"
 description: "AI platform security hardening for Claude API, Console, SSO, workspace isolation, and admin controls"
-version: "0.6.0"
+version: "0.7.0"
 maturity: "draft"
-last_updated: "2026-04-06"
+last_updated: "2026-04-28"
 ---
 
 ## Overview
@@ -27,7 +27,7 @@ Anthropic Claude is an AI assistant platform serving organizations through both 
 - **L3 (Maximum Security):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Anthropic Claude security configurations including authentication (SSO/SCIM), organization role management, API key lifecycle, workspace segmentation, data residency, usage monitoring, integration security, and comprehensive Claude Code and Cowork enterprise controls — MDM/server-managed settings (including drop-in directory and OS-level policy delivery), permission restrictions, MCP server governance, developer analytics, bash sandbox isolation (Seatbelt/bubblewrap), hook and plugin supply chain security, prompt injection and rules file attack defense, CI/CD pipeline hardening (harden-runner, security review actions), external sandbox tooling (nono, NVIDIA OpenShell), and Cowork collaborative session governance. Model behavior configuration (system prompts, safety settings) is out of scope. This guide applies to Claude API, Claude Team, and Claude Enterprise plans.
+This guide covers Anthropic Claude security configurations including authentication (SSO/SCIM), organization role management, API key lifecycle (including Workload Identity Federation for keyless workload auth), workspace segmentation, data residency, usage monitoring, integration security, and comprehensive Claude Code and Cowork enterprise controls — MDM/server-managed settings (including drop-in directory and OS-level policy delivery), permission restrictions, MCP server governance, developer analytics, bash sandbox isolation (Seatbelt/bubblewrap), hook and plugin supply chain security, prompt injection and rules file attack defense, CI/CD pipeline hardening (harden-runner, security review actions), external sandbox tooling (nono, NVIDIA OpenShell), and Cowork collaborative session governance. Model behavior configuration (system prompts, safety settings) is out of scope. This guide applies to Claude API, Claude Team, and Claude Enterprise plans.
 
 ---
 
@@ -416,6 +416,134 @@ Establish a 90-day rotation schedule for all API keys. Since API keys can only b
 | **SOC 2** | CC6.1 | Logical access security over protected information assets |
 | **NIST 800-53** | IA-5(1) | Authenticator management — password-based authentication |
 | **ISO 27001** | A.9.3.1 | Use of secret authentication information |
+
+---
+
+### 2.3 Eliminate Static API Keys via Workload Identity Federation
+
+**Profile Level:** L2 (Hardened)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | IA-5(1), IA-9, AC-3 |
+| SOC 2 | CC6.1 |
+| CIS Controls | 5.6, 6.5 |
+
+#### Description
+Anthropic's [Workload Identity Federation (WIF)](https://platform.claude.com/docs/en/manage-claude/workload-identity-federation) lets workloads authenticate to the Claude API using short-lived OpenID Connect (OIDC) tokens issued by an identity provider you already operate — AWS IAM, Google Cloud, Microsoft Azure / Entra ID, GitHub Actions, Kubernetes service accounts, SPIFFE/SPIRE, or Okta — instead of long-lived `sk-ant-...` API keys. Your workload presents a signed JWT to `POST /v1/oauth/token` (RFC 7523 `jwt-bearer` grant); Anthropic validates it against the trust rule you configured in the Console and returns a short-lived `sk-ant-oat01-...` access token bound to a service account in your organization. There are no static secrets to mint, store in CI, rotate, or leak.
+
+WIF complements (rather than replaces) the workspace scoping in 2.1 and the rotation discipline in 2.2: the federation rule pins the upstream identity, and the minted access token still inherits the target workspace's rate limits, billing, and OAuth scope (`workspace:developer` at launch). Use WIF anywhere a workload runs in a federable environment; keep static API keys only for environments that cannot present an OIDC JWT.
+
+#### Rationale
+**Why This Matters:**
+- Removes long-lived `sk-ant-...` API keys from CI runners, container images, and secrets managers — the highest-value Anthropic credential class
+- Tokens expire in minutes (default 3600s; minimum 60s), not never; SDKs refresh transparently before expiry
+- Federation rule's `subject_prefix`, `audience`, `claims`, and CEL `condition` matchers bind the credential to a specific workload identity (e.g., a single GitHub repo + branch, a specific Kubernetes service account, or an EKS IRSA role)
+- Audit trail attributes API calls to the federated workload identity, not just to "the API key"
+- Eliminates the "key was leaked, rotation forgotten" incident class for federated workloads
+
+**Attack Prevented:** Static API key exfiltration from CI logs, container images, secrets managers, or developer machines; long-lived credential abuse after personnel changes; lateral movement using a stolen long-lived key
+
+**Important caveat:** WIF inherits the trust of your upstream IdP. A compromised IdP, an over-broad federation rule (e.g., `repo:my-org/*` without a branch claim), or a misconfigured `audience` value can grant broader access than intended. Pair WIF with your IdP's existing controls (workload identity binding, conditional access, audit logging) for defense in depth.
+
+#### Prerequisites
+- Organization Admin access to the Claude Console (Settings → Workload identity)
+- An OIDC-capable identity provider with a reachable JWKS endpoint (or an inline JWKS document for air-gapped clusters)
+- A workload that can obtain an identity token from that provider (Kubernetes projected service-account token, GitHub Actions OIDC, AWS STS web identity, GCP metadata server, Azure IMDS, etc.)
+- Workspace IDs (`wrkspc_...`) for any workspaces the federated workload should act in
+- `ANTHROPIC_API_KEY` and `ANTHROPIC_AUTH_TOKEN` removed from anywhere the workload runs (they sit above federation in the SDK credential precedence chain and silently shadow it)
+
+#### ClickOps Implementation
+
+**Step 1: Register a Federation Issuer**
+1. Navigate to: **console.anthropic.com** → **Settings** → **Workload identity** → **Issuers** tab
+2. Click **Create issuer** and select the appropriate preset (AWS, Google Cloud, or generic OIDC for GitHub Actions / Kubernetes / Entra ID / Okta)
+3. Set **Issuer URL** to the exact `iss` claim your IdP puts in its JWTs. Decode a sample token to verify: `jq -rR 'split(".")[1] | gsub("-";"+") | gsub("_";"/") | @base64d | fromjson | .iss' token`
+4. Set **JWKS source** to `discovery` for any provider that serves `/.well-known/openid-configuration`. Use `explicit_url` for providers without discovery, or `inline` for air-gapped clusters
+5. URLs must be `https`, port 443, public DNS (no IP literals) — except for `inline` and `explicit_url` modes where the `issuer_url` is only string-compared
+
+**Step 2: Create a Service Account**
+1. Go to: **Settings** → **Service accounts** → **Create service account**
+2. Name it after the workload it represents (`inference-worker`, `ci-deploy`, `eks-prod-namespace-foo`)
+3. Note the service account ID (`svac_...`)
+4. Add the service account to each target workspace via that workspace's **Members** page — the federated token inherits the workspace's rate limits and usage attribution
+
+**Step 3: Create a Federation Rule**
+1. Back on **Workload identity** → **Federation rules** tab → **Create rule**
+2. Select the issuer from Step 1 and the service account from Step 2
+3. Configure the **Match** block as narrowly as possible:
+   - **Static** matchers: `subject_prefix` (with optional trailing `*` for prefix match), exact `audience`, and a map of exact `claims` values
+   - **CEL** matcher: a [CEL](https://cel.dev/) `condition` expression for complex logic (nested claims, list membership, boolean logic)
+   - At least one of `subject_prefix`, `claims`, or `condition` is required — a rule that only matches `audience` is rejected
+4. Set **Authorization** scope (`workspace:developer` at launch) and **Token lifetime** (60–86400 seconds; default 3600)
+5. Note the rule ID (`fdrl_...`); the workload passes it on every token-exchange request
+
+**Step 4: Migrate the Workload Off the Static Key**
+1. Configure WIF in parallel with the existing `ANTHROPIC_API_KEY`
+2. Smoke-test with `ant auth status` from inside the workload to confirm the SDK is exchanging the federated token (not falling back to the API key)
+3. **Unset `ANTHROPIC_API_KEY` everywhere** it is injected (CI secrets, container env, shell profiles). Re-confirm `ant auth status` reports the federation source as winning
+4. Revoke the old API key in **Settings → API keys**
+
+**Time to Complete:** ~30–60 minutes for first issuer + rule; ~10 minutes per additional rule
+
+#### Code Implementation
+
+{% include pack-code.html vendor="anthropic-claude" section="2.3" %}
+
+#### Validation & Testing
+1. Run the token-exchange script — confirm it returns an `sk-ant-oat01-...` token with the expected `scope` and `expires_in`
+2. From inside the workload, run `ant auth status` — federation should be the winning credential source (not API key)
+3. Trigger a `403` test: temporarily change the federation rule's match block to a non-matching value and confirm the exchange returns `400 invalid_grant`
+4. Confirm the static-key guardrail: the API script in the pack exits non-zero if `ANTHROPIC_API_KEY` is set
+5. For the GitHub Actions workflow: confirm the job succeeds with no `ANTHROPIC_API_KEY` repo secret configured
+6. Audit the [authentication history](https://platform.claude.com/settings/workload-identity-federation?tab=history) page in the Console after a successful exchange — verify the issuer, rule, and matched claims are what you expect
+
+**Expected result:** All federable workloads run with no `sk-ant-...` static keys in their environment; every Claude API call is attributable to a federation rule + service account in the audit trail
+
+#### Monitoring & Maintenance
+**Ongoing monitoring:**
+- Watch the Console's **Workload identity → Authentication history** for failed exchanges (`400 invalid_grant`) — sustained failures indicate IdP key rotation, claim drift, or an attempted misuse
+- Inventory federation rules quarterly: archive any rule whose service account or issuer is no longer in active use
+- Monitor for new `sk-ant-...` API keys created in workspaces that were supposed to be 100% federated — drift indicates an engineer fell back to a static key
+
+**Maintenance schedule:**
+- **Monthly:** Review the active federation rules list against current production workloads
+- **Quarterly:** Review the match blocks of every rule for over-broad scope (especially CEL `condition` expressions and bare `subject_prefix` patterns ending in `*`)
+- **Annually:** Tabletop exercise an IdP-compromise scenario — confirm you can disable a federation issuer in the Console and that all dependent workloads fail closed
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|---------|
+| **User Experience** | None | Workloads run unchanged; SDKs handle the exchange/refresh loop |
+| **System Performance** | Low | One extra HTTPS round-trip per token refresh (every ~hour by default) |
+| **Maintenance Burden** | Low | Eliminates manual key rotation; only changes when IdP trust changes |
+| **Rollback Difficulty** | Easy | Re-issue a static API key and revert the workload's env vars |
+
+**Potential Issues:**
+- **`ANTHROPIC_API_KEY` shadow:** A leftover key in the env wins precedence over WIF and silently keeps the workload on a static credential. Check with `ant auth status`.
+- **Empty-string variables:** `ANTHROPIC_API_KEY=""` is treated as "API key path with an empty key" — unset the variable entirely, do not blank it.
+- **JWKS rotation lag:** In `discovery` and `explicit_url` modes, Anthropic caches the JWKS for up to 60 seconds. If your IdP rotates and signs immediately, exchanges may briefly fail. Publish new keys 15+ minutes before first use; in `inline` mode you must update the issuer config manually.
+- **Multi-workspace rules:** When a federation rule covers more than one workspace, `workspace_id` is required on every exchange (`400 invalid_request: workspace_id_required`).
+
+**Rollback Procedure:**
+1. In the Console, create a new standard API key in the target workspace
+2. Inject it as `ANTHROPIC_API_KEY` in the workload's environment
+3. Restart the workload — it will pick up the static key (which sits above WIF in precedence) without any code change
+4. Optionally archive the federation rule
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security over protected information assets |
+| **NIST 800-53** | IA-5(1) | Authenticator management — short-lived authenticators replacing static credentials |
+| **NIST 800-53** | IA-9 | Service identification and authentication |
+| **NIST 800-53** | AC-3 | Access enforcement |
+| **ISO 27001** | A.9.4.3 | Password management system (eliminating long-lived shared credentials) |
+| **CIS Controls** | 5.6 | Centralized account management |
+| **CIS Controls** | 6.5 | Require MFA for administrative access (via the upstream IdP) |
+| **NIST AI RMF** | GOVERN-1.4 | Authority and accountability for AI system credentials |
 
 ---
 
@@ -2238,6 +2366,7 @@ Establish incident response procedures specific to Claude Code and Cowork securi
 | 2026-02-21 | 0.4.0 | draft | Added Config-as-Code pack type with standalone .jsonc config files; added code pack buttons, doc links; moved JSON configs from API scripts to config/ directory | `Claude Code (Opus 4.6)` |
 | 2026-03-27 | 0.5.0 | draft | Major expansion: Added 6 new controls (7.5-7.10) — Bash sandbox isolation, hook/plugin lockdown, prompt injection defense, CI/CD pipeline hardening, external sandbox tooling (nono, OpenShell), Cowork governance. Updated 7.1 with drop-in directory, plist/registry delivery, new managed settings. Added comprehensive references for security research (ToxicSkills, Rules File Backdoor, InversePrompt CVEs) and open-source tools. Updated all compliance mappings. | `Claude Code (Opus 4.6)` |
 | 2026-04-06 | 0.6.0 | draft | Added 7.11 Incident Response (kill-switch, forensic collection, AI agent IR scenarios, tabletop exercises). Major expansion of 7.10 Cowork: Chrome hardening (allowlist/blocklist, default gap warnings), global defensive instructions, dedicated workspace scoping, scheduled task governance, plugin install preferences, tenant restriction details (exact header format, proxy platforms, error codes), data training opt-out by tier, web search egress bypass warning, OTel prompt content toggle. Added NIST CSF 2.0 and NIST AI RMF compliance mappings. Added web search bypass warning to 7.5 sandbox. | `Claude Code (Opus 4.6)` |
+| 2026-04-28 | 0.7.0 | draft | Added 2.3 Eliminate Static API Keys via Workload Identity Federation: covers Anthropic's new WIF capability (RFC 7523 jwt-bearer flow against `POST /v1/oauth/token`), Console setup walkthrough for federation issuers / service accounts / federation rules, IdP coverage (AWS / GCP / Azure-Entra / GitHub Actions / Kubernetes / SPIFFE / Okta), credential precedence pitfalls (`ANTHROPIC_API_KEY` shadowing WIF), token lifetime/refresh semantics, JWKS rotation gotchas, and migration runbook. Code Packs: token-exchange script with static-key guardrail (api/), reference hardened GitHub Actions workflow (config/), config-as-code WIF profile (config/), Python SDK pattern (sdk/). Verified against platform.claude.com/docs/en/manage-claude/workload-identity-federation and wif-reference. | `Claude Opus 4.7 (1M)` |
 
 ---
 

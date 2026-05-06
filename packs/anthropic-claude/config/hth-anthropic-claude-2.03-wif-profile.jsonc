@@ -1,0 +1,35 @@
+// HTH Anthropic Claude Control 2.3: WIF profile (config-as-code)
+// Profile: L2 | NIST: IA-5(1), CM-2 | SOC 2: CC6.1
+// https://howtoharden.com/guides/anthropic-claude/#23-eliminate-static-api-keys-via-workload-identity-federation
+//
+// Anthropic SDK profile file — non-secret, safe to commit or bake into a
+// container image. The SDK and the `ant` CLI both read this format.
+//
+// Location:
+//   $ANTHROPIC_CONFIG_DIR/configs/<name>.json   (overrides)
+//   ~/.config/anthropic/configs/<name>.json     (Linux/macOS)
+//   %APPDATA%\Anthropic\configs\<name>.json     (Windows)
+//
+// Activate with one of:
+//   export ANTHROPIC_PROFILE=production
+//   ant profile activate production
+//
+// Reference: https://platform.claude.com/docs/en/manage-claude/wif-reference#profile-configuration-file
+
+// HTH Guide Excerpt: begin config-wif-profile
+{
+  "version": "1.0",
+  "authentication": {
+    "type": "oidc_federation",
+    "federation_rule_id": "fdrl_REPLACE_ME",
+    "service_account_id": "svac_REPLACE_ME",
+    "identity_token": {
+      "source": "file",
+      "path": "/var/run/secrets/anthropic.com/token"
+    }
+  },
+  "organization_id": "00000000-0000-0000-0000-000000000000",
+  "workspace_id": "wrkspc_REPLACE_ME",
+  "base_url": "https://api.anthropic.com"
+}
+// HTH Guide Excerpt: end config-wif-profile
