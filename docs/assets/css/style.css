@@ -2236,7 +2236,8 @@ body {
 }
 
 .cheat-sheet-table-wrap {
-  /* Bounded height makes this the scroll container, enabling position:sticky on thead + level rows */
+  /* Bounded height + overflow:auto makes this the scroll container for both axes.
+     Enables position:sticky on thead, level rows (vertical) and first column (horizontal). */
   max-height: calc(100vh - 250px);
   min-height: 300px;
   overflow: auto;
@@ -2253,6 +2254,7 @@ body {
   table-layout: fixed;
 }
 
+/* ── Sticky column headers (vertical) ───────────────────────────────── */
 .cheat-sheet-table thead th {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
@@ -2262,21 +2264,44 @@ body {
   letter-spacing: 0.04em;
   padding: 10px 14px;
   text-align: left;
-  border-bottom: 2px solid var(--color-border-light);
   white-space: nowrap;
-  /* Sticky column headers — top:0 is relative to the scroll container (.cheat-sheet-table-wrap) */
   position: sticky;
   top: 0;
   z-index: 20;
-  /* Box-shadow instead of border so it paints over scrolled rows */
   box-shadow: 0 2px 0 0 var(--color-border-light);
+}
+
+/* ── Sticky first column (horizontal) ───────────────────────────────── */
+/* Corner cell: sticks both top and left — needs the highest z-index */
+.cheat-sheet-table thead th:first-child {
+  left: 0;
+  z-index: 30;
+}
+
+/* First column of data rows */
+.cheat-sheet-table .control-row td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: var(--color-bg-primary);
+  /* Subtle right shadow marks the sticky boundary when scrolling horizontally */
+  box-shadow: 2px 0 5px -2px rgba(0,0,0,0.18);
+}
+
+.cheat-sheet-table .control-row:hover td:first-child {
+  background: var(--color-bg-secondary);
+}
+
+/* Override corner shadow so it doesn't double up with the top shadow */
+.cheat-sheet-table thead th:first-child {
+  box-shadow: 2px 0 5px -2px rgba(0,0,0,0.18), 0 2px 0 0 var(--color-border-light);
 }
 
 .cheat-sheet-table .col-req { width: 22%; }
 .cheat-sheet-table .col-desc { width: 35%; }
 .cheat-sheet-table .col-rat { width: 43%; }
 
-/* Level header rows — sticky below the sticky thead */
+/* ── Level header rows (sticky below thead, full-width) ─────────────── */
 .level-header-row td {
   padding: 8px 14px;
   font-weight: 700;
@@ -2285,14 +2310,12 @@ body {
   text-transform: uppercase;
   border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
-  /* Sticks just below the column-header row; --cs-thead-h is set by JS after measurement */
+  text-align: center;
   position: sticky;
   top: var(--cs-thead-h, 42px);
   z-index: 15;
   box-shadow: 0 2px 0 0 var(--color-border);
 }
-
-.level-header-row td { text-align: center; }
 
 .level-header-row.level-l1 td { background: #0d2a35; color: #1b95c1; }
 .level-header-row.level-l2 td { background: #2a1f0a; color: #ffa84f; }
@@ -2314,7 +2337,7 @@ body {
 .level-badge-l3 { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
 .level-badge-l4 { background: rgba(167, 139, 250, 0.2); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.4); }
 
-/* Control rows */
+/* ── Control rows ────────────────────────────────────────────────────── */
 .control-row td {
   padding: 12px 14px;
   border-bottom: 1px solid var(--color-border);
@@ -2355,7 +2378,43 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* Rationale cell */
+/* ── Code pack badges in the Requirement cell ────────────────────────── */
+.cs-pack-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.cs-pack-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  /* default (unknown type) */
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  transition: opacity 0.12s;
+}
+
+.cs-pack-badge:hover { opacity: 0.75; }
+
+.cs-pack-badge.cs-pack-terraform { background: rgba(94, 37, 209, 0.15); color: #9f6eff; border-color: rgba(94, 37, 209, 0.35); }
+.cs-pack-badge.cs-pack-api       { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.35); }
+.cs-pack-badge.cs-pack-cli       { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35); }
+.cs-pack-badge.cs-pack-config    { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35); }
+.cs-pack-badge.cs-pack-sdk       { background: rgba(236, 72, 153, 0.15); color: #f472b6; border-color: rgba(236, 72, 153, 0.35); }
+.cs-pack-badge.cs-pack-db        { background: rgba(6, 182, 212, 0.15);  color: #22d3ee; border-color: rgba(6, 182, 212, 0.35); }
+.cs-pack-badge.cs-pack-sigma     { background: rgba(239, 68, 68, 0.15);  color: #f87171; border-color: rgba(239, 68, 68, 0.35); }
+
+/* ── Rationale cell ──────────────────────────────────────────────────── */
 .rat-list {
   margin: 0 0 8px 0;
   padding-left: 16px;
@@ -2379,19 +2438,54 @@ body {
   color: var(--color-text-secondary);
 }
 
-/* Light theme overrides */
+/* ── Light theme overrides ───────────────────────────────────────────── */
 [data-theme="light"] .level-header-row.level-l1 td { background: #daf0f7; color: #0d6a8a; }
 [data-theme="light"] .level-header-row.level-l2 td { background: #fdf0dc; color: #b35e00; }
 [data-theme="light"] .level-header-row.level-l3 td { background: #fde8e8; color: #b91c1c; }
 [data-theme="light"] .level-header-row.level-l4 td { background: #ede9fe; color: #6d28d9; }
 [data-theme="light"] .control-row:hover td { background: rgba(0,0,0,0.025); }
+[data-theme="light"] .control-row:hover td:first-child { background: rgba(0,0,0,0.025); }
+[data-theme="light"] .cheat-sheet-table .control-row td:first-child { background: #fff; }
+[data-theme="light"] .cs-pack-badge.cs-pack-terraform { background: rgba(94, 37, 209, 0.08); color: #6d28d9; border-color: rgba(94, 37, 209, 0.25); }
+[data-theme="light"] .cs-pack-badge.cs-pack-api       { background: rgba(59, 130, 246, 0.08); color: #2563eb; border-color: rgba(59, 130, 246, 0.25); }
+[data-theme="light"] .cs-pack-badge.cs-pack-cli       { background: rgba(16, 185, 129, 0.08); color: #059669; border-color: rgba(16, 185, 129, 0.25); }
+[data-theme="light"] .cs-pack-badge.cs-pack-config    { background: rgba(245, 158, 11, 0.08); color: #d97706; border-color: rgba(245, 158, 11, 0.25); }
+[data-theme="light"] .cs-pack-badge.cs-pack-sdk       { background: rgba(236, 72, 153, 0.08); color: #be185d; border-color: rgba(236, 72, 153, 0.25); }
+[data-theme="light"] .cs-pack-badge.cs-pack-db        { background: rgba(6, 182, 212, 0.08);  color: #0891b2; border-color: rgba(6, 182, 212, 0.25); }
+[data-theme="light"] .cs-pack-badge.cs-pack-sigma     { background: rgba(239, 68, 68, 0.08);  color: #dc2626; border-color: rgba(239, 68, 68, 0.25); }
 
-/* Responsive */
+/* ── Responsive ──────────────────────────────────────────────────────── */
+/* Tablet: slightly less height */
 @media (max-width: 900px) {
-  .cheat-sheet-table { table-layout: auto; }
-  .cheat-sheet-table .col-req { width: auto; }
-  .cheat-sheet-table .col-desc { width: auto; }
-  .cheat-sheet-table .col-rat { width: auto; }
+  .cheat-sheet-table-wrap {
+    max-height: calc(100vh - 180px);
+  }
+}
+
+/* Mobile portrait: all three columns visible via horizontal scroll;
+   first column stays sticky to the left as the user scrolls right. */
+@media (max-width: 600px) {
+  .cheat-sheet-table {
+    table-layout: auto;
+    /* Forces horizontal scroll — wider than any portrait phone viewport */
+    min-width: 540px;
+  }
+
+  .cheat-sheet-table .col-req {
+    width: 160px;
+    min-width: 160px;
+  }
+
+  .cheat-sheet-table .col-desc,
+  .cheat-sheet-table .col-rat {
+    min-width: 190px;
+  }
+
+  .cheat-sheet-table thead th,
+  .cheat-sheet-table .control-row td {
+    padding: 8px 10px;
+    font-size: 0.8125rem;
+  }
 }
 
 @media (max-width: 640px) {

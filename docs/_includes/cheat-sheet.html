@@ -1,5 +1,3 @@
-{% assign cs = site.data.cheat_sheets[page.slug] %}
-{% if cs %}
 <div class="cheat-sheet-wrapper" id="cheat-sheet-wrapper">
 
   <div class="view-mode-bar">
@@ -40,38 +38,8 @@
             <th class="col-rat">Rationale</th>
           </tr>
         </thead>
-        <tbody>
-          {% for level in cs.levels %}
-          <tr class="level-header-row level-{{ level.code | downcase }}">
-            <td colspan="3">
-              <span class="level-badge level-badge-{{ level.code | downcase }}">{{ level.code }}</span>
-              {{ level.name }}
-            </td>
-          </tr>
-          {% for ctrl in level.controls %}
-          <tr class="control-row">
-            <td class="col-req">
-              <a href="#{{ ctrl.num | prepend: '' | replace: '.', '-' | prepend: '' }}" class="ctrl-link" onclick="jumpToControl('{{ ctrl.num }}')">
-                <span class="ctrl-num">{{ ctrl.num }}</span>
-                {{ ctrl.name }}
-              </a>
-            </td>
-            <td class="col-desc">{{ ctrl.description }}</td>
-            <td class="col-rat">
-              {% if ctrl.why and ctrl.why.size > 0 %}
-              <ul class="rat-list">
-                {% for bullet in ctrl.why %}
-                <li>{{ bullet }}</li>
-                {% endfor %}
-              </ul>
-              {% endif %}
-              {% if ctrl.attack and ctrl.attack != "" %}
-              <p class="attack-prevented"><strong>Attack Prevented:</strong> {{ ctrl.attack }}</p>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-          {% endfor %}
+        <tbody id="cs-tbody">
+          <!-- dynamically populated from guide content by JS below -->
         </tbody>
       </table>
     </div>
@@ -81,31 +49,241 @@
 
 <script>
 (function() {
+  'use strict';
   var STORAGE_KEY = 'hth-guide-view';
+  // Matches control headings like "1.1 Name", "10.3 Name"
+  var CTRL_RE = /^(\d+(?:\.\d+)+)\s+(.+)/;
+  var built = false;
+
+  function parseLevel(str) {
+    var m = str.match(/^(L\d+)\s*\(([^)]+)\)/i);
+    if (m) return { code: m[1].toUpperCase(), name: m[2] };
+    m = str.match(/^(L\d+)/i);
+    if (m) return { code: m[1].toUpperCase(), name: str.slice(m[1].length).replace(/^\s*[-:(,]\s*/, '').trim() };
+    return { code: 'L?', name: str };
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Walk the guide DOM and extract control data directly from the rendered content.
+  // This means the cheat sheet is always in sync with the guide — no separate data file.
+  function buildCheatSheet() {
+    var guideBody = document.querySelector('.guide-body');
+    if (!guideBody) return [];
+
+    var controls = [];
+    var h3s = Array.prototype.slice.call(guideBody.querySelectorAll('h3'));
+
+    h3s.forEach(function(h3) {
+      var m = CTRL_RE.exec(h3.textContent.trim());
+      if (!m) return;
+
+      var ctrl = {
+        num: m[1],
+        name: m[2],
+        level: null,
+        description: '',
+        why: [],
+        attack: '',
+        packLinks: [],
+        anchorId: h3.id || ''
+      };
+
+      var inDescription = false;
+      var inRationale = false;
+      var prevWasWhy = false;
+      var node = h3.nextElementSibling;
+
+      while (node && node.tagName !== 'H3') {
+        var tag = node.tagName;
+
+        if (tag === 'H4') {
+          var h4t = node.textContent.trim().toLowerCase();
+          inDescription = (h4t === 'description');
+          inRationale = (h4t === 'rationale');
+          prevWasWhy = false;
+
+        } else if (tag === 'P') {
+          var strong = node.querySelector('strong');
+          if (strong) {
+            var keyText = strong.textContent.trim();
+            // Strip trailing colon for matching
+            var keyLower = keyText.replace(/:$/, '').trim().toLowerCase();
+            // Value = node text minus the strong text (and optional colon)
+            var nodeText = node.textContent.trim();
+            var afterKey = nodeText.slice(nodeText.indexOf(keyText) + keyText.length)
+                                   .replace(/^\s*:?\s*/, '').trim();
+
+            if (/^profile[\s_]?level/.test(keyLower)) {
+              ctrl.level = parseLevel(afterKey);
+            } else if (/^attack[\s_]?prevented/.test(keyLower)) {
+              ctrl.attack = afterKey;
+            } else if (/^why\s+this\s+matters/.test(keyLower)) {
+              prevWasWhy = true;
+            }
+          } else if (inDescription && !ctrl.description) {
+            var txt = node.textContent.trim();
+            if (txt) { ctrl.description = txt; inDescription = false; }
+          }
+
+        } else if (tag === 'UL') {
+          // Capture Why This Matters bullets regardless of whether there was an h4 Rationale
+          // — covers both the "Rationale" section pattern and the inline bold heading pattern
+          if ((inRationale || prevWasWhy) && !ctrl.why.length) {
+            ctrl.why = Array.prototype.slice.call(node.querySelectorAll('li'))
+                            .map(function(li) { return li.textContent.trim(); });
+          }
+          prevWasWhy = false;
+
+        } else if (node.classList && node.classList.contains('pack-code-section')) {
+          // Pull the pack type from the type badge class and the GitHub source URL
+          var typeEl = node.querySelector('[class*="pack-type-"]');
+          var typeMatch = typeEl ? typeEl.className.match(/pack-type-(\w+)/) : null;
+          var packType = typeMatch ? typeMatch[1] : 'code';
+          var srcLink = node.querySelector('.pack-source-link');
+          if (srcLink) {
+            ctrl.packLinks.push({ type: packType, url: srcLink.href });
+          }
+
+        } else {
+          prevWasWhy = false;
+        }
+
+        node = node.nextElementSibling;
+      }
+
+      if (ctrl.level) controls.push(ctrl);
+    });
+
+    return controls;
+  }
+
+  function groupByLevel(controls) {
+    var seen = Object.create(null);
+    var order = [];
+    controls.forEach(function(c) {
+      var code = c.level.code;
+      if (!seen[code]) {
+        seen[code] = { code: code, name: c.level.name, controls: [] };
+        order.push(code);
+      }
+      seen[code].controls.push(c);
+    });
+    // Sort groups by level number so L1 < L2 < L3 < L4
+    order.sort(function(a, b) {
+      return parseInt(a.slice(1), 10) - parseInt(b.slice(1), 10);
+    });
+    return order.map(function(code) { return seen[code]; });
+  }
+
+  function renderTable(controls) {
+    var tbody = document.getElementById('cs-tbody');
+    if (!tbody) return;
+
+    var groups = groupByLevel(controls);
+    var html = '';
+
+    groups.forEach(function(g) {
+      var cls = g.code.toLowerCase();
+      html += '<tr class="level-header-row level-' + cls + '">'
+            + '<td colspan="3">'
+            + '<span class="level-badge level-badge-' + cls + '">' + esc(g.code) + '</span>'
+            + esc(g.name)
+            + '</td></tr>';
+
+      g.controls.forEach(function(c) {
+        // Requirement cell
+        var reqCell = '<td class="col-req">'
+          + '<a href="#' + esc(c.anchorId) + '" class="ctrl-link"'
+          + ' onclick="jumpToControl(' + JSON.stringify(c.num) + ');return false;">'
+          + '<span class="ctrl-num">' + esc(c.num) + '</span>'
+          + esc(c.name)
+          + '</a>';
+
+        if (c.packLinks.length) {
+          reqCell += '<div class="cs-pack-links">';
+          c.packLinks.forEach(function(pk) {
+            reqCell += '<a href="' + esc(pk.url) + '" target="_blank" rel="noopener noreferrer"'
+              + ' class="cs-pack-badge cs-pack-' + esc(pk.type) + '"'
+              + ' title="Code Pack: ' + esc(pk.type) + ' — view source on GitHub">'
+              + esc(pk.type) + '</a>';
+          });
+          reqCell += '</div>';
+        }
+        reqCell += '</td>';
+
+        // Description cell
+        var descCell = '<td class="col-desc">' + esc(c.description) + '</td>';
+
+        // Rationale cell
+        var ratCell = '<td class="col-rat">';
+        if (c.why.length) {
+          ratCell += '<ul class="rat-list">';
+          c.why.forEach(function(b) { ratCell += '<li>' + esc(b) + '</li>'; });
+          ratCell += '</ul>';
+        }
+        if (c.attack) {
+          ratCell += '<p class="attack-prevented"><strong>Attack Prevented:</strong> ' + esc(c.attack) + '</p>';
+        }
+        ratCell += '</td>';
+
+        html += '<tr class="control-row">' + reqCell + descCell + ratCell + '</tr>';
+      });
+    });
+
+    tbody.innerHTML = html;
+  }
+
+  function ensureBuilt() {
+    if (built) return;
+    built = true;
+    var controls = buildCheatSheet();
+    if (!controls.length) {
+      // No standard controls found in this guide — hide the toggle entirely
+      var wrapper = document.getElementById('cheat-sheet-wrapper');
+      if (wrapper) wrapper.style.display = 'none';
+      return;
+    }
+    renderTable(controls);
+  }
+
+  function syncTheadHeight() {
+    var table = document.querySelector('.cheat-sheet-table');
+    var thead = table && table.querySelector('thead');
+    if (thead) {
+      var h = thead.getBoundingClientRect().height;
+      if (h > 0) table.style.setProperty('--cs-thead-h', Math.ceil(h) + 'px');
+    }
+  }
 
   function setGuideView(mode) {
     var isCheat = (mode === 'cheat');
-    var guideContent = document.querySelector('.guide-content');
-    var cheatPanel = document.getElementById('cheat-sheet-panel');
+    var gc = document.querySelector('.guide-content');
+    var panel = document.getElementById('cheat-sheet-panel');
     var btnFull = document.getElementById('btn-full');
     var btnCheat = document.getElementById('btn-cheat');
-
-    if (!guideContent || !cheatPanel) return;
+    if (!gc || !panel) return;
 
     if (isCheat) {
-      guideContent.classList.add('guide-content--hidden');
-      cheatPanel.hidden = false;
-      cheatPanel.setAttribute('aria-hidden', 'false');
+      ensureBuilt();
+      gc.classList.add('guide-content--hidden');
+      panel.hidden = false;
+      panel.setAttribute('aria-hidden', 'false');
       btnFull.classList.remove('active');
       btnFull.setAttribute('aria-pressed', 'false');
       btnCheat.classList.add('active');
       btnCheat.setAttribute('aria-pressed', 'true');
-      // Measure thead height after paint so sticky top offset is accurate
       requestAnimationFrame(syncTheadHeight);
     } else {
-      guideContent.classList.remove('guide-content--hidden');
-      cheatPanel.hidden = true;
-      cheatPanel.setAttribute('aria-hidden', 'true');
+      gc.classList.remove('guide-content--hidden');
+      panel.hidden = true;
+      panel.setAttribute('aria-hidden', 'true');
       btnFull.classList.add('active');
       btnFull.setAttribute('aria-pressed', 'true');
       btnCheat.classList.remove('active');
@@ -117,44 +295,24 @@
 
   function jumpToControl(num) {
     setGuideView('full');
-    // Scroll to the heading after a brief paint cycle
     setTimeout(function() {
-      // Try anchor by section number pattern (e.g. "1.1")
-      var headings = document.querySelectorAll('.guide-body h3');
-      for (var i = 0; i < headings.length; i++) {
-        if (headings[i].textContent.indexOf(num + ' ') === 0 ||
-            headings[i].textContent.indexOf(num + ' ') === 0) {
-          headings[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var hs = document.querySelectorAll('.guide-body h3');
+      for (var i = 0; i < hs.length; i++) {
+        if (hs[i].textContent.trim().indexOf(num + ' ') === 0) {
+          hs[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
           return;
         }
       }
-      // Fallback: id-based scroll
-      var slug = num.replace('.', '');
-      var el = document.getElementById(slug);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 80);
   }
 
-  // Expose globally so onclick attributes work
   window.setGuideView = setGuideView;
   window.jumpToControl = jumpToControl;
 
-  function syncTheadHeight() {
-    var table = document.querySelector('.cheat-sheet-table');
-    var thead = table && table.querySelector('thead');
-    if (thead) {
-      var h = thead.getBoundingClientRect().height;
-      table.style.setProperty('--cs-thead-h', Math.ceil(h) + 'px');
-    }
-  }
-
-  // Restore persisted view on load
   document.addEventListener('DOMContentLoaded', function() {
     try {
-      var saved = sessionStorage.getItem(STORAGE_KEY);
-      if (saved === 'cheat') setGuideView('cheat');
+      if (sessionStorage.getItem(STORAGE_KEY) === 'cheat') setGuideView('cheat');
     } catch(e) {}
   });
 })();
 </script>
-{% endif %}
