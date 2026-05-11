@@ -2236,9 +2236,14 @@ body {
 }
 
 .cheat-sheet-table-wrap {
-  overflow-x: auto;
+  /* Bounded height makes this the scroll container, enabling position:sticky on thead + level rows */
+  max-height: calc(100vh - 250px);
+  min-height: 300px;
+  overflow: auto;
   border-radius: 10px;
   border: 1px solid var(--color-border);
+  /* Isolate stacking context so sticky children paint correctly */
+  isolation: isolate;
 }
 
 .cheat-sheet-table {
@@ -2259,13 +2264,19 @@ body {
   text-align: left;
   border-bottom: 2px solid var(--color-border-light);
   white-space: nowrap;
+  /* Sticky column headers — top:0 is relative to the scroll container (.cheat-sheet-table-wrap) */
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  /* Box-shadow instead of border so it paints over scrolled rows */
+  box-shadow: 0 2px 0 0 var(--color-border-light);
 }
 
 .cheat-sheet-table .col-req { width: 22%; }
 .cheat-sheet-table .col-desc { width: 35%; }
 .cheat-sheet-table .col-rat { width: 43%; }
 
-/* Level header rows */
+/* Level header rows — sticky below the sticky thead */
 .level-header-row td {
   padding: 8px 14px;
   font-weight: 700;
@@ -2274,6 +2285,11 @@ body {
   text-transform: uppercase;
   border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
+  /* Sticks just below the column-header row; --cs-thead-h is set by JS after measurement */
+  position: sticky;
+  top: var(--cs-thead-h, 42px);
+  z-index: 15;
+  box-shadow: 0 2px 0 0 var(--color-border);
 }
 
 .level-header-row.level-l1 td { background: rgba(27, 149, 193, 0.12); color: #1b95c1; }

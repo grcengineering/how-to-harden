@@ -100,6 +100,8 @@
       btnFull.setAttribute('aria-pressed', 'false');
       btnCheat.classList.add('active');
       btnCheat.setAttribute('aria-pressed', 'true');
+      // Measure thead height after paint so sticky top offset is accurate
+      requestAnimationFrame(syncTheadHeight);
     } else {
       guideContent.classList.remove('guide-content--hidden');
       cheatPanel.hidden = true;
@@ -136,6 +138,15 @@
   // Expose globally so onclick attributes work
   window.setGuideView = setGuideView;
   window.jumpToControl = jumpToControl;
+
+  function syncTheadHeight() {
+    var table = document.querySelector('.cheat-sheet-table');
+    var thead = table && table.querySelector('thead');
+    if (thead) {
+      var h = thead.getBoundingClientRect().height;
+      table.style.setProperty('--cs-thead-h', Math.ceil(h) + 'px');
+    }
+  }
 
   // Restore persisted view on load
   document.addEventListener('DOMContentLoaded', function() {
