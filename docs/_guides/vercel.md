@@ -8,7 +8,7 @@ category: "DevOps"
 description: "Comprehensive platform security for authentication, WAF, deployment protection, secrets, network isolation, security headers, and monitoring"
 version: "1.1.0"
 maturity: "draft"
-last_updated: "2026-04-24"
+last_updated: "2026-05-11"
 ---
 
 

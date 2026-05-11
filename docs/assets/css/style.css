@@ -2150,3 +2150,231 @@ body {
     padding-right: 8px;
   }
 }
+
+/* ── Cheat Sheet view toggle ─────────────────────────────────────────── */
+
+.view-mode-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+  padding: var(--space-sm) 0;
+}
+
+.view-mode-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.view-mode-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.view-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.view-mode-btn:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-elevated);
+}
+
+.view-mode-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.view-mode-btn svg {
+  flex-shrink: 0;
+}
+
+/* Hide guide content (body + sidebar) when cheat sheet is active */
+.guide-content--hidden {
+  display: none;
+}
+
+/* ── Cheat Sheet panel ───────────────────────────────────────────────── */
+
+.cheat-sheet-panel {
+  width: 100%;
+}
+
+.cheat-sheet-header {
+  margin-bottom: var(--space-lg);
+}
+
+.cheat-sheet-title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.cheat-sheet-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.cheat-sheet-table-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+}
+
+.cheat-sheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  table-layout: fixed;
+}
+
+.cheat-sheet-table thead th {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--color-border-light);
+  white-space: nowrap;
+}
+
+.cheat-sheet-table .col-req { width: 22%; }
+.cheat-sheet-table .col-desc { width: 35%; }
+.cheat-sheet-table .col-rat { width: 43%; }
+
+/* Level header rows */
+.level-header-row td {
+  padding: 8px 14px;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.level-header-row.level-l1 td { background: rgba(27, 149, 193, 0.12); color: #1b95c1; }
+.level-header-row.level-l2 td { background: rgba(255, 168, 79, 0.12); color: #ffa84f; }
+.level-header-row.level-l3 td { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+
+.level-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.level-badge-l1 { background: rgba(27, 149, 193, 0.2); color: #1b95c1; border: 1px solid rgba(27, 149, 193, 0.4); }
+.level-badge-l2 { background: rgba(255, 168, 79, 0.2); color: #ffa84f; border: 1px solid rgba(255, 168, 79, 0.4); }
+.level-badge-l3 { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+/* Control rows */
+.control-row td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.control-row:last-child td {
+  border-bottom: none;
+}
+
+.control-row:hover td {
+  background: var(--color-bg-secondary);
+}
+
+/* Requirement cell */
+.ctrl-link {
+  display: block;
+  color: var(--color-link);
+  text-decoration: none;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.ctrl-link:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
+
+.ctrl-num {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+  letter-spacing: 0.02em;
+}
+
+/* Rationale cell */
+.rat-list {
+  margin: 0 0 8px 0;
+  padding-left: 16px;
+  list-style: disc;
+  color: var(--color-text-secondary);
+}
+
+.rat-list li {
+  margin-bottom: 4px;
+  line-height: 1.45;
+}
+
+.attack-prevented {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+.attack-prevented strong {
+  color: var(--color-text-secondary);
+}
+
+/* Light theme overrides */
+[data-theme="light"] .level-header-row.level-l1 td { background: rgba(27, 149, 193, 0.08); }
+[data-theme="light"] .level-header-row.level-l2 td { background: rgba(255, 168, 79, 0.1); }
+[data-theme="light"] .level-header-row.level-l3 td { background: rgba(239, 68, 68, 0.08); }
+[data-theme="light"] .control-row:hover td { background: rgba(0,0,0,0.025); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .cheat-sheet-table { table-layout: auto; }
+  .cheat-sheet-table .col-req { width: auto; }
+  .cheat-sheet-table .col-desc { width: auto; }
+  .cheat-sheet-table .col-rat { width: auto; }
+}
+
+@media (max-width: 640px) {
+  .cheat-sheet-table thead th.col-rat { display: none; }
+  .cheat-sheet-table .col-rat { display: none; }
+  .view-mode-btn { padding: 5px 10px; font-size: 0.75rem; }
+}
