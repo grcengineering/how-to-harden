@@ -27,9 +27,9 @@ This guide provides comprehensive security hardening recommendations for Salesfo
 - Third-party risk managers evaluating integration security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Salesforce-specific security configurations. For infrastructure hardening (AWS, Azure where Salesforce runs), refer to CIS Benchmarks.
@@ -51,7 +51,7 @@ This guide covers Salesforce-specific security configurations. For infrastructur
 
 ### 1.1 Enforce Multi-Factor Authentication (MFA) for All Users
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **CIS Controls:** 6.3, 6.5
 **NIST 800-53:** IA-2(1), IA-2(2)
 
@@ -86,7 +86,7 @@ Require all Salesforce users to use MFA for authentication, eliminating single-f
 
 ### 2.1 Restrict API Access via IP Allowlisting for Third-Party Integrations
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **CIS Controls:** 13.3, 13.6
 **NIST 800-53:** AC-3, SC-7
 
@@ -195,7 +195,7 @@ HubSpot publishes their IP ranges at: https://knowledge.hubspot.com/integrations
 
 ### 2.2 Restrict Login Hours by Profile
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 #### Description
 Limit when users can log into Salesforce based on their role/profile, reducing attack surface during off-hours.
@@ -217,7 +217,7 @@ Limit when users can log into Salesforce based on their role/profile, reducing a
 
 ### 3.1 Audit and Reduce OAuth Scopes for Connected Apps
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **CIS Controls:** 6.2 (Least Privilege)
 **NIST 800-53:** AC-6
 
@@ -274,7 +274,7 @@ For each over-permissioned app:
 
 ### 3.2 Enable Connected App Session-Level Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 #### Description
 Configure Connected Apps to inherit session security policies (IP restrictions, timeout) from user's profile.
@@ -292,7 +292,7 @@ Configure Connected Apps to inherit session security policies (IP restrictions, 
 
 ### 4.1 Enable Field-Level Encryption for Sensitive Data
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** Salesforce Shield
 
 #### Description
@@ -320,7 +320,7 @@ Encrypt sensitive fields (SSN, credit card, health data) at rest using Salesforc
 
 ### 5.1 Enable Event Monitoring for API Anomalies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **Requires:** Salesforce Shield or Event Monitoring add-on
 
 #### Description
@@ -477,7 +477,7 @@ Before allowing any third-party integration, assess risk:
 ---
 
 **Next Steps:**
-1. Review your current Salesforce configuration against L1 (Baseline) controls
+1. Review your current Salesforce configuration against L1 (Crawl) controls
 2. Implement IP allowlisting for high-risk integrations (Gainsight, Drift, HubSpot)
 3. Audit Connected App OAuth scopes and reduce over-permissions
 4. Enable Event Monitoring for API anomaly detection

@@ -22,9 +22,9 @@ Netskope is a leading Security Service Edge (SSE) platform providing CASB, Secur
 - Third-party risk managers evaluating CASB solutions
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Netskope tenant hardening, CASB policies, DLP configuration, threat protection, and steering configuration.
@@ -47,7 +47,7 @@ This guide covers Netskope tenant hardening, CASB policies, DLP configuration, t
 
 ### 1.1 Secure Admin Console Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -94,7 +94,7 @@ Secure Netskope Admin Console with SSO, MFA, and role-based access controls.
 
 ### 1.2 Configure Tenant Hardening
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -124,7 +124,7 @@ Apply Netskope's recommended tenant hardening configurations.
 
 ### 2.1 Configure Application Visibility
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -167,7 +167,7 @@ Enable comprehensive visibility into all cloud applications in use, including sh
 
 ### 2.2 Configure Real-Time Protection Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -209,7 +209,7 @@ Configure real-time protection policies to control access to cloud applications 
 
 ### 2.3 Configure API Protection
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -249,7 +249,7 @@ Configure API-enabled protection to scan and protect data at rest in sanctioned 
 
 ### 3.1 Configure DLP Profiles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -301,7 +301,7 @@ Configure Data Loss Prevention profiles to detect and protect sensitive data acr
 
 ### 3.2 Apply DLP to Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -334,7 +334,7 @@ Apply DLP profiles to real-time protection and API protection policies.
 
 ### 4.1 Configure Malware Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -372,7 +372,7 @@ Configure Netskope's threat protection to detect and prevent malware in cloud tr
 
 ### 4.2 Configure Threat Protection Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -412,7 +412,7 @@ Create comprehensive threat protection policies following Netskope best practice
 
 ### 5.1 Configure Netskope Client Steering
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -456,7 +456,7 @@ Configure Netskope Client steering to ensure traffic is properly routed through 
 
 ### 5.2 Deploy Netskope Client
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -490,7 +490,7 @@ Deploy Netskope Client to endpoints to enable inline inspection and steering.
 
 ### 6.1 Configure Logging and Alerts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

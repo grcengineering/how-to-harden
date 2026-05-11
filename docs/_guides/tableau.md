@@ -24,9 +24,9 @@ Tableau provides business intelligence and data visualization with connections t
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers Tableau security configurations including authentication, acce
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### ClickOps Implementation
@@ -66,7 +66,7 @@ This guide covers Tableau security configurations including authentication, acce
 
 ### 1.2 Implement Site Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -92,7 +92,7 @@ This guide covers Tableau security configurations including authentication, acce
 
 ### 2.1 Secure Data Source Connections
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -117,7 +117,7 @@ Protect data source credentials and connections.
 
 ### 2.2 Row-Level Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3
 
 #### Implementation
@@ -135,7 +135,7 @@ Protect data source credentials and connections.
 
 ### 3.1 Workbook Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### ClickOps Implementation
@@ -154,7 +154,7 @@ Protect data source credentials and connections.
 
 ### 3.2 Embedding Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-21
 
 #### Implementation
@@ -175,7 +175,7 @@ Protect data source credentials and connections.
 
 ### 4.1 Enable Admin Views
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### ClickOps Implementation

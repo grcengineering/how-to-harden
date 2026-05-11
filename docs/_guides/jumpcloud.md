@@ -22,9 +22,9 @@ JumpCloud is a cloud-based directory platform providing identity management, SSO
 - Third-party risk managers evaluating directory services
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers JumpCloud Admin Portal security, MFA policies, conditional access, device management, and system policies.
@@ -46,7 +46,7 @@ This guide covers JumpCloud Admin Portal security, MFA policies, conditional acc
 
 ### 1.1 Secure Admin Portal Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -97,7 +97,7 @@ Secure JumpCloud Admin Portal access with MFA and role-based access controls. Ad
 
 ### 1.2 Implement Least Privilege Administration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -128,7 +128,7 @@ Implement tiered administration following the principle of least privilege.
 
 ### 2.1 Enforce Organization-Wide MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -176,7 +176,7 @@ Require MFA for all user authentication to protected resources including the Use
 
 ### 2.2 Configure MFA for System Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -207,7 +207,7 @@ Require MFA for system login (Windows, macOS, Linux) and SSH access.
 
 ### 3.1 Configure Conditional Access Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -251,7 +251,7 @@ Configure conditional access policies to enforce context-aware security controls
 
 ### 3.2 Configure Device Trust
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -282,7 +282,7 @@ Configure device trust to verify endpoint compliance before granting access to p
 
 ### 4.1 Configure System Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -337,7 +337,7 @@ Create and apply these essential policies:
 
 ### 4.2 Configure LDAP & RADIUS Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -367,7 +367,7 @@ Secure JumpCloud's cloud LDAP and RADIUS services for directory and network auth
 
 ### 5.1 Enable Directory Insights
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

@@ -22,9 +22,9 @@ Google Workspace is used by over **9 million organizations** worldwide for email
 - Third-party risk managers evaluating Google integrations
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Google Workspace Admin Console security configurations including authentication policies, OAuth app controls, Drive sharing settings, Gmail protection, and device management. Google Cloud Platform (GCP) infrastructure is covered in a separate guide.
@@ -47,7 +47,7 @@ This guide covers Google Workspace Admin Console security configurations includi
 
 ### 1.1 Enforce Multi-Factor Authentication for All Users
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -154,7 +154,7 @@ Require 2-Step Verification (2SV) for all users with enforcement, not just enrol
 
 ### 1.2 Restrict Super Admin Account Usage
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -218,7 +218,7 @@ Limit Super Admin privileges to 2-4 dedicated accounts, enforce security keys fo
 
 ### 1.3 Configure Context-Aware Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -274,7 +274,7 @@ Implement context-aware access policies that evaluate device, location, and user
 
 ### 2.1 Configure Allowed IP Ranges for Admin Console
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -306,7 +306,7 @@ Restrict Admin Console access to specific IP ranges (corporate network, VPN) to 
 
 ### 3.1 Enable OAuth App Whitelisting
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -384,7 +384,7 @@ Restrict which third-party applications can access Google Workspace data via OAu
 
 ### 3.2 Disable Less Secure Apps
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -419,7 +419,7 @@ Disable "Less Secure Apps" access which allows applications to authenticate with
 
 ### 4.1 Configure External Drive Sharing Restrictions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -478,7 +478,7 @@ Restrict external sharing of Google Drive files to prevent unauthorized data exp
 
 ### 4.2 Enable Data Loss Prevention (DLP)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -518,7 +518,7 @@ Configure Google Workspace DLP rules to detect and prevent sharing of sensitive 
 
 ### 5.1 Enable Audit Logging and Investigation Tool
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

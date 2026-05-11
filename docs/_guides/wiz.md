@@ -23,9 +23,9 @@ Wiz provides agentless cloud security to **40-50% of Fortune 100** through API a
 - Third-party risk managers evaluating security tools
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Wiz-specific security configurations including authentication, cloud connector security, API access controls, and data protection.
@@ -47,7 +47,7 @@ This guide covers Wiz-specific security configurations including authentication,
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -90,7 +90,7 @@ Require SAML SSO with MFA for all Wiz console access.
 
 ### 1.2 Implement Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -128,7 +128,7 @@ Configure Wiz roles with least-privilege access.
 
 ### 2.1 Secure Cloud Connector Configuration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5, AC-6
 
 #### Description
@@ -176,7 +176,7 @@ Harden cloud connector IAM permissions to minimum required.
 
 ### 2.2 Connector Credential Rotation
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-5(1)
 
 #### Description
@@ -200,7 +200,7 @@ Implement regular rotation of cloud connector credentials.
 
 ### 3.1 Service Account Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -236,7 +236,7 @@ Secure Wiz API service accounts.
 
 ### 3.2 API Access Monitoring
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AU-6
 
 #### Description
@@ -252,7 +252,7 @@ Monitor API usage for anomalies.
 
 ### 4.1 Configure Data Export Controls
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3
 
 #### Description
@@ -282,7 +282,7 @@ Control export of security findings and vulnerability data.
 
 ### 5.1 Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### ClickOps Implementation

@@ -22,9 +22,9 @@ Jamf Pro is the leading Apple device management platform used by **over 70,000 o
 - Third-party risk managers evaluating device management
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Jamf Pro server security, configuration profiles, CIS benchmark implementation, and managed device hardening.
@@ -45,7 +45,7 @@ This guide covers Jamf Pro server security, configuration profiles, CIS benchmar
 
 ### 1.1 Secure Jamf Pro Console Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -97,7 +97,7 @@ Secure Jamf Pro console access with SSO, MFA, and role-based access controls.
 
 ### 1.2 Secure API Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -140,7 +140,7 @@ Secure Jamf Pro API access with dedicated accounts and token-based authenticatio
 
 ### 2.1 Configure Password Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -180,7 +180,7 @@ Configure device password policies through configuration profiles.
 
 ### 2.2 Configure FileVault Encryption
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -225,7 +225,7 @@ Enforce FileVault full disk encryption on all managed macOS devices.
 
 ### 2.3 Configure Firewall
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -260,7 +260,7 @@ Enable and configure macOS firewall on all managed devices.
 
 ### 2.4 Configure Software Updates
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -303,7 +303,7 @@ Configure automatic software updates and patch management.
 
 ### 3.1 Deploy CIS Benchmark Profiles
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -365,7 +365,7 @@ Deploy CIS macOS Benchmark security configurations using Jamf Compliance Editor.
 
 ### 3.2 Monitor CIS Compliance
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -404,7 +404,7 @@ Monitor device compliance with CIS Benchmark configurations.
 
 ### 4.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

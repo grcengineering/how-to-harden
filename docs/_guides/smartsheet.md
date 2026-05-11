@@ -24,9 +24,9 @@ Smartsheet is a collaborative work management platform for projects, workflows, 
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers Smartsheet security configurations including authentication, a
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### ClickOps Implementation
@@ -66,7 +66,7 @@ This guide covers Smartsheet security configurations including authentication, a
 
 ### 1.2 User Types and Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -91,7 +91,7 @@ This guide covers Smartsheet security configurations including authentication, a
 
 ### 2.1 Configure Sharing Defaults
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-21
 
 #### Description
@@ -118,7 +118,7 @@ Control sheet and workspace sharing.
 
 ### 2.2 Form Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-21
 
 #### ClickOps Implementation
@@ -134,7 +134,7 @@ Control sheet and workspace sharing.
 
 ### 3.1 Connector Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### ClickOps Implementation
@@ -153,7 +153,7 @@ Control sheet and workspace sharing.
 
 ### 3.2 Premium App Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-7
 
 #### ClickOps Implementation
@@ -169,7 +169,7 @@ Control sheet and workspace sharing.
 
 ### 4.1 Activity Log (Enterprise)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### ClickOps Implementation

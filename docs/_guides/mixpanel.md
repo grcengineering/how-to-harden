@@ -22,9 +22,9 @@ Mixpanel is a leading product analytics platform serving **thousands of companie
 - GRC professionals assessing data security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Mixpanel security including SAML SSO, organization/project access, API security, and data governance.
@@ -45,7 +45,7 @@ This guide covers Mixpanel security including SAML SSO, organization/project acc
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -85,7 +85,7 @@ Configure SAML SSO to centralize authentication for Mixpanel users.
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -110,7 +110,7 @@ Require 2FA for all Mixpanel users.
 
 ### 1.3 Configure Access Request Workflow
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -133,7 +133,7 @@ Configure access request workflow for new users.
 
 ### 2.1 Configure Organization Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -163,7 +163,7 @@ Implement least privilege using Mixpanel roles.
 
 ### 2.2 Configure Project Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -192,7 +192,7 @@ Control access to specific projects.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -220,7 +220,7 @@ Minimize and protect administrator accounts.
 
 ### 3.1 Configure Service Account Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -246,7 +246,7 @@ Secure Mixpanel service accounts and API tokens.
 
 ### 3.2 Configure Data Governance
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -274,7 +274,7 @@ Implement data governance controls.
 
 ### 4.1 Configure Activity Logs
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

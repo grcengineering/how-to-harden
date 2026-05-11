@@ -23,9 +23,9 @@ BeyondTrust is a Privileged Access Management (PAM) platform serving **20,000+ c
 - Third-party risk managers evaluating remote access solutions
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for government/regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for government/regulated industries
 
 ### Scope
 This guide covers BeyondTrust-specific security configurations with emphasis on API key security, remote access hardening, and lessons learned from the December 2024 Treasury breach.
@@ -48,7 +48,7 @@ This guide covers BeyondTrust-specific security configurations with emphasis on 
 
 ### 1.1 Enforce Multi-Factor Authentication for All Access
 
-**Profile Level:** L1 (Baseline) - CRITICAL
+**Profile Level:** L1 (Crawl) - CRITICAL
 **CIS Controls:** 6.3, 6.5
 **NIST 800-53:** IA-2(1), IA-2(6)
 
@@ -113,7 +113,7 @@ Require MFA for all BeyondTrust console access, remote support sessions, and API
 
 ### 1.2 Implement Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -155,7 +155,7 @@ Configure granular roles separating administrative functions. Avoid using built-
 
 ### 1.3 Configure IP-Based Access Restrictions
 
-**Profile Level:** L1 (Baseline) - CRITICAL (Post-Breach Lesson)
+**Profile Level:** L1 (Crawl) - CRITICAL (Post-Breach Lesson)
 **NIST 800-53:** AC-3(7), SC-7
 
 #### Description
@@ -192,7 +192,7 @@ Restrict console and API access to known IP ranges. This control would have limi
 
 ### 2.1 API Key Management and Rotation
 
-**Profile Level:** L1 (Baseline) - CRITICAL
+**Profile Level:** L1 (Crawl) - CRITICAL
 **NIST 800-53:** IA-5, SC-12
 
 #### Description
@@ -248,7 +248,7 @@ Implement strict API key management including regular rotation, IP binding, and 
 
 ### 2.2 Implement API Rate Limiting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-5
 
 #### Description
@@ -267,7 +267,7 @@ Configure rate limiting for API endpoints to detect and prevent abuse.
 
 ### 2.3 Monitor API Usage Anomalies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-6, SI-4
 
 #### Description
@@ -283,7 +283,7 @@ Implement monitoring for unusual API activity patterns that may indicate comprom
 
 ### 3.1 Segment Remote Access Infrastructure
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-7
 
 #### Description
@@ -304,7 +304,7 @@ Deploy BeyondTrust in a segmented network zone with strict ingress/egress contro
 
 ### 3.2 Configure Jump Server Integration
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-17
 
 #### Description
@@ -316,7 +316,7 @@ Configure BeyondTrust to work with existing jump server architecture for defense
 
 ### 4.1 Enable Comprehensive Session Recording
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-14
 
 #### Description
@@ -341,7 +341,7 @@ Record all privileged sessions for forensic analysis and compliance.
 
 ### 4.2 Implement Session Approval Workflows
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-2(6)
 
 #### Description
@@ -362,7 +362,7 @@ Require approval for access to sensitive systems.
 
 ### 5.1 Configure Security Alerting
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-4
 
 #### Description
@@ -392,7 +392,7 @@ Configure alerts for security-relevant events based on lessons from December 202
 
 ### 5.2 Forward Logs to SIEM
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-6
 
 #### Description
@@ -431,7 +431,7 @@ Export all audit logs to SIEM for correlation and long-term retention.
 
 ### 6.2 Vulnerability Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Recent Critical CVEs
 

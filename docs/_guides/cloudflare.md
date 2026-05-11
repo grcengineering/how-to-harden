@@ -22,9 +22,9 @@ Cloudflare Zero Trust is a comprehensive security platform providing secure acce
 - Third-party risk managers evaluating security tools
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Cloudflare Zero Trust components including Access, Gateway, WARP client, and Tunnel configurations. CDN and DDoS protection are covered in separate guides.
@@ -47,7 +47,7 @@ This guide covers Cloudflare Zero Trust components including Access, Gateway, WA
 
 ### 1.1 Configure Identity Provider Integration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -105,7 +105,7 @@ Integrate Cloudflare Zero Trust with your corporate identity provider to enable 
 
 ### 1.2 Configure Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -136,7 +136,7 @@ Ensure MFA is enforced for all Access application authentications through IdP po
 
 ### 1.3 Harden Device Enrollment
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -178,7 +178,7 @@ Configure device enrollment policies to control which devices can enroll in WARP
 
 ### 1.4 Configure Admin Role Restrictions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -213,7 +213,7 @@ Configure granular admin roles in Cloudflare to limit dashboard access based on 
 
 ### 2.1 Create Secure Application Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -274,7 +274,7 @@ Create Access policies that protect applications with identity-based, context-aw
 
 ### 2.2 Require WARP for Application Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -304,7 +304,7 @@ Configure Access policies to require WARP client for application access, enablin
 
 ### 2.3 Configure Device Posture Checks
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -345,7 +345,7 @@ Define device posture checks to verify endpoint security status before granting 
 
 ### 3.1 Configure DNS Filtering
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -394,7 +394,7 @@ Configure Gateway DNS policies to block access to malicious and policy-violating
 
 ### 3.2 Configure HTTP Filtering
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -430,7 +430,7 @@ Configure Gateway HTTP policies for deeper inspection and control of web traffic
 
 ### 3.3 Configure Network Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -466,7 +466,7 @@ Configure Gateway network policies to control non-HTTP traffic based on IP, port
 
 ### 3.4 Enable Browser Isolation (L3)
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -505,7 +505,7 @@ Enable Cloudflare Browser Isolation to execute web sessions in a secure cloud en
 
 ### 4.1 Configure WARP Client Settings
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -538,7 +538,7 @@ Configure WARP client settings to ensure consistent security posture across all 
 
 ### 4.2 Lock WARP Client
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -572,7 +572,7 @@ Lock WARP client to prevent users from disabling Zero Trust protection.
 
 ### 4.3 Configure Split Tunnel Settings
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -617,7 +617,7 @@ Configure split tunnel settings to control which traffic passes through WARP and
 
 ### 5.1 Secure Cloudflare Tunnel Configuration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -661,7 +661,7 @@ Configure Cloudflare Tunnel (formerly Argo Tunnel) securely to expose internal a
 
 ### 5.2 Protect Tunnels with Access Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -694,7 +694,7 @@ Always protect tunnel endpoints with Access policies before exposing them public
 
 ### 6.1 Configure Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

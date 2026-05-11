@@ -22,9 +22,9 @@ Workato is a leading enterprise automation platform (iPaaS) enabling organizatio
 - GRC professionals assessing automation security posture
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations — start here
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries (healthcare, finance, government)
+- **L1 (Crawl):** Essential controls for all organizations — start here
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries (healthcare, finance, government)
 
 ### Scope
 This guide covers Workato workspace security including SAML SSO, role-based access control, encryption key management, connection security, API platform security, secrets management, environment separation with recipe lifecycle management, and audit logging. It applies to Workato's cloud-hosted platform across all plan tiers, with plan-specific features noted.
@@ -49,7 +49,7 @@ This guide covers Workato workspace security including SAML SSO, role-based acce
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -152,7 +152,7 @@ Disable SSO enforcement in **Workspace admin** → **Settings** → **Login meth
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -220,7 +220,7 @@ Require two-factor authentication (2FA) for all workspace users. When SSO is con
 
 ### 1.3 Enforce SSO-Only Login
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -281,7 +281,7 @@ After configuring SAML SSO (Control 1.1), enforce SSO as the **only** authentica
 
 ### 1.4 Configure Just-In-Time Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -330,7 +330,7 @@ Enable automatic user account creation on first SSO login, eliminating manual us
 
 ### 1.5 Configure SCIM Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -410,7 +410,7 @@ Configure SCIM (System for Cross-domain Identity Management) provisioning to aut
 
 ### 1.6 Configure Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -454,7 +454,7 @@ Configure session timeout duration to limit the window of opportunity for sessio
 
 ### 2.1 Configure Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -526,7 +526,7 @@ Implement least privilege access using Workato's two-level RBAC model: **environ
 
 ### 2.2 Configure SAML Role Sync
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -577,7 +577,7 @@ Automatically synchronize Workato roles from your IdP via SAML attributes, ensur
 
 ### 2.3 Configure Collaborator Groups
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -621,7 +621,7 @@ Organize collaborators into groups aligned with team functions, and grant projec
 
 ### 2.4 Configure Custom Roles
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -673,7 +673,7 @@ Create custom environment roles with granular permissions tailored to your organ
 
 ### 2.5 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -723,7 +723,7 @@ Minimize the number of workspace administrator accounts and implement strict con
 
 ### 2.6 Implement Privilege Access Reviews
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -766,7 +766,7 @@ Establish a recurring access review process to verify all Workato workspace coll
 
 ### 3.1 Enable Encryption Key Management (EKM)
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -845,7 +845,7 @@ Enable Workato's Encryption Key Management (EKM) feature to use your own encrypt
 
 ### 3.2 Configure Data Masking
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -901,7 +901,7 @@ Protect sensitive data visible in job history, recipe logs, and debug output by 
 
 ### 3.3 Configure Data Retention Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -935,7 +935,7 @@ Configure data retention policies for job history, recipe versions, and audit lo
 
 ### 3.4 Protect Environment Properties
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -982,7 +982,7 @@ Secure sensitive values stored as Workato environment properties (account proper
 
 ### 4.1 Secure Connection Credentials
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1045,7 +1045,7 @@ Secure credentials used for connections to external applications. Connections ar
 
 ### 4.2 Configure Connection Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1084,7 +1084,7 @@ Control who can view, use, and manage connections within the workspace to preven
 
 ### 4.3 Configure On-Premises Agents (OPA)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1161,7 +1161,7 @@ Deploy and secure Workato On-Premises Agents (OPA) for accessing applications an
 
 ### 4.4 Configure IP Allowlisting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1215,7 +1215,7 @@ Restrict Workato workspace access to specific IP addresses or CIDR ranges, limit
 
 ### 4.5 Secure Webhook Endpoints
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1265,7 +1265,7 @@ Secure webhook-triggered recipes by implementing signature verification, IP allo
 
 ### 5.1 Configure API Platform Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1325,7 +1325,7 @@ Secure the Workato API Platform, which allows you to expose recipes as API endpo
 
 ### 5.2 Implement API Rate Limiting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1360,7 +1360,7 @@ Configure rate limiting on API Platform endpoints to prevent abuse, denial-of-se
 
 ### 5.3 Manage Workato Platform API Keys
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1414,7 +1414,7 @@ Securely manage Workato Platform API keys (used to call Workato's own management
 
 ### 6.1 Configure External Secrets Manager Integration
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -1482,7 +1482,7 @@ Integrate Workato with an external secrets manager (HashiCorp Vault, AWS Secrets
 
 ### 6.2 Secure Environment Properties
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1501,7 +1501,7 @@ Ensure all sensitive values stored as Workato environment properties (account pr
 
 ### 7.1 Configure Environment Separation
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1555,7 +1555,7 @@ Configure separate Workato environments (DEV, TEST, PROD) to isolate recipe deve
 
 ### 7.2 Configure Recipe Lifecycle Management (RLCM)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1621,7 +1621,7 @@ Configure Workato's Recipe Lifecycle Management (RLCM) to enforce a formal deplo
 
 ### 7.3 Implement CI/CD Pipeline Integration
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -1652,7 +1652,7 @@ Integrate Workato's deployment process with your CI/CD pipeline to automate test
 
 ### 8.1 Configure Activity Audit Log
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1720,7 +1720,7 @@ Enable and actively monitor Workato's Activity Audit Log, which records signific
 
 ### 8.2 Configure Audit Log Streaming
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1778,7 +1778,7 @@ Configure real-time streaming of Workato audit logs to an external SIEM or log a
 
 ### 8.3 Configure Recipe Error Monitoring
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1822,7 +1822,7 @@ Configure monitoring for recipe execution errors to detect integration failures,
 
 ### 8.4 Secure Automation HQ
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

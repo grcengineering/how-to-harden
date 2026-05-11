@@ -22,9 +22,9 @@ Abnormal Security is an AI-powered email security platform providing advanced th
 - GRC professionals assessing email security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Abnormal portal security including SSO, admin access, and integration security.
@@ -44,7 +44,7 @@ This guide covers Abnormal portal security including SSO, admin access, and inte
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -82,7 +82,7 @@ Configure SAML SSO for Abnormal portal access.
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -105,7 +105,7 @@ Require MFA for all Abnormal users.
 
 ### 2.1 Configure User Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -131,7 +131,7 @@ Implement least privilege for portal access.
 
 ### 2.2 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -158,7 +158,7 @@ Minimize and protect admin accounts.
 
 ### 3.1 Configure API Integration Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

@@ -2297,6 +2297,7 @@ body {
 .level-header-row.level-l1 td { background: #0d2a35; color: #1b95c1; }
 .level-header-row.level-l2 td { background: #2a1f0a; color: #ffa84f; }
 .level-header-row.level-l3 td { background: #2a0e0e; color: #ef4444; }
+.level-header-row.level-l4 td { background: #1a0d35; color: #a78bfa; }
 
 .level-badge {
   display: inline-block;
@@ -2311,6 +2312,7 @@ body {
 .level-badge-l1 { background: rgba(27, 149, 193, 0.2); color: #1b95c1; border: 1px solid rgba(27, 149, 193, 0.4); }
 .level-badge-l2 { background: rgba(255, 168, 79, 0.2); color: #ffa84f; border: 1px solid rgba(255, 168, 79, 0.4); }
 .level-badge-l3 { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+.level-badge-l4 { background: rgba(167, 139, 250, 0.2); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.4); }
 
 /* Control rows */
 .control-row td {
@@ -2381,6 +2383,7 @@ body {
 [data-theme="light"] .level-header-row.level-l1 td { background: #daf0f7; color: #0d6a8a; }
 [data-theme="light"] .level-header-row.level-l2 td { background: #fdf0dc; color: #b35e00; }
 [data-theme="light"] .level-header-row.level-l3 td { background: #fde8e8; color: #b91c1c; }
+[data-theme="light"] .level-header-row.level-l4 td { background: #ede9fe; color: #6d28d9; }
 [data-theme="light"] .control-row:hover td { background: rgba(0,0,0,0.025); }
 
 /* Responsive */

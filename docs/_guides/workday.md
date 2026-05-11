@@ -23,9 +23,9 @@ last_updated: "2025-12-14"
 - Third-party risk managers evaluating payroll integrations
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Workday security configurations including authentication, integration security, data privacy controls, and third-party connector hardening.
@@ -47,7 +47,7 @@ This guide covers Workday security configurations including authentication, inte
 
 ### 1.1 Enforce SAML SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -80,7 +80,7 @@ Require SAML SSO with MFA for all Workday access, including employee self-servic
 
 ### 1.2 Implement Role-Based Security Groups
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -106,7 +106,7 @@ Configure Workday security groups with least-privilege access to HR and financia
 
 ### 1.3 Configure Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-12
 
 #### Description
@@ -126,7 +126,7 @@ Configure session timeout and management policies.
 
 ### 2.1 Secure Integration System Users (ISUs)
 
-**Profile Level:** L1 (Baseline) - CRITICAL
+**Profile Level:** L1 (Crawl) - CRITICAL
 **NIST 800-53:** IA-5, AC-6
 
 #### Description
@@ -170,7 +170,7 @@ For each integration, create dedicated ISU.
 
 ### 2.2 Implement OAuth Token Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(13)
 
 #### Description
@@ -205,7 +205,7 @@ Configure OAuth token policies for integration authentication.
 
 ### 3.1 Configure Field-Level Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3
 
 #### Description
@@ -231,7 +231,7 @@ Restrict access to sensitive fields based on business need.
 
 ### 3.2 Configure Data Retention
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SI-12
 
 #### Description
@@ -252,7 +252,7 @@ Implement data retention policies aligned with legal requirements.
 
 ### 4.1 Restrict API Scopes
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-6
 
 #### Description
@@ -278,7 +278,7 @@ Limit API access to minimum required scopes.
 
 ### 4.2 Secure Workday Studio Integrations
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-7
 
 #### Description
@@ -307,7 +307,7 @@ Harden custom Workday Studio integrations.
 
 ### 5.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Description

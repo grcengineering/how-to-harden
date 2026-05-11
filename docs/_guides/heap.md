@@ -22,9 +22,9 @@ Heap is a digital insights platform providing autocapture analytics for product 
 - GRC professionals assessing data security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Heap security including SAML SSO, environment access, API security, and data governance.
@@ -44,7 +44,7 @@ This guide covers Heap security including SAML SSO, environment access, API secu
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -83,7 +83,7 @@ Configure SAML SSO to centralize authentication for Heap users.
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -106,7 +106,7 @@ Require 2FA for all Heap users.
 
 ### 2.1 Configure User Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -137,7 +137,7 @@ Implement least privilege using Heap roles.
 
 ### 2.2 Configure Environment Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -158,7 +158,7 @@ Control access to different environments.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -186,7 +186,7 @@ Minimize and protect administrator accounts.
 
 ### 3.1 Configure Data Governance
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

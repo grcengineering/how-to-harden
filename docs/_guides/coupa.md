@@ -22,9 +22,9 @@ Coupa is a leading business spend management platform serving **thousands of ent
 - GRC professionals assessing financial platform security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Coupa security including SAML SSO, role-based access control, approval workflows, and data protection.
@@ -45,7 +45,7 @@ This guide covers Coupa security including SAML SSO, role-based access control, 
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -88,7 +88,7 @@ Configure SAML SSO to centralize authentication for Coupa users.
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -114,7 +114,7 @@ Require MFA for all Coupa users.
 
 ### 1.3 Configure Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -142,7 +142,7 @@ Configure session timeout and security settings.
 
 ### 2.1 Configure Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -173,7 +173,7 @@ Implement least privilege using Coupa's role model.
 
 ### 2.2 Configure User Groups
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -199,7 +199,7 @@ Organize users into groups for efficient access management.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -227,7 +227,7 @@ Minimize and protect administrator accounts.
 
 ### 3.1 Configure Approval Chains
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -265,7 +265,7 @@ Configure approval workflows for spend controls.
 
 ### 3.2 Configure Supplier Management Controls
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -293,7 +293,7 @@ Control supplier creation and management.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -320,7 +320,7 @@ Enable and monitor audit logs.
 
 ### 4.2 Configure Compliance Reports
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

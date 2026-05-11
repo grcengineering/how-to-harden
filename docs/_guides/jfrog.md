@@ -23,9 +23,9 @@ JFrog Artifactory is a universal binary repository supporting **40+ package form
 - Platform teams managing binary repositories
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers JFrog Artifactory security configurations including authentication, repository permissions, Xray integration, and artifact integrity controls.
@@ -47,7 +47,7 @@ This guide covers JFrog Artifactory security configurations including authentica
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -81,7 +81,7 @@ Require SAML SSO with MFA for all Artifactory access.
 
 ### 1.2 Implement Permission Targets
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -134,7 +134,7 @@ Configure granular permissions for repository access.
 
 ### 1.3 Secure API Keys and Tokens
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -169,7 +169,7 @@ See the CLI pack below for scoped token creation commands.
 
 ### 2.1 Configure Repository Layout Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### Description
@@ -202,7 +202,7 @@ Harden repository configurations to prevent unauthorized access.
 
 ### 2.2 Remote Repository Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-7
 
 #### Description
@@ -233,7 +233,7 @@ See the CLI pack below for recommended exclude patterns.
 
 ### 2.3 Prevent Dependency Confusion
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-7
 
 #### Description
@@ -264,7 +264,7 @@ See the CLI pack below for virtual repository configuration.
 
 ### 3.1 Enable Artifact Signing
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SI-7
 
 #### Description
@@ -292,7 +292,7 @@ See the CLI pack below for download verification commands.
 
 ### 3.2 Immutable Artifacts
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SI-7
 
 #### Description
@@ -321,7 +321,7 @@ Make release artifacts immutable to prevent tampering.
 
 ### 4.1 Configure Xray Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** RA-5
 
 #### Description
@@ -353,7 +353,7 @@ Configure JFrog Xray for vulnerability and license scanning.
 
 ### 4.2 CVE Remediation Workflow
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Implementation
 
@@ -376,7 +376,7 @@ See the CLI pack below for Xray policy configuration.
 
 ### 5.1 Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Description

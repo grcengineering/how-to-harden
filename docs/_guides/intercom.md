@@ -22,9 +22,9 @@ Intercom is a leading customer messaging platform serving **thousands of busines
 - GRC professionals assessing communication security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Intercom security including SAML SSO, workspace access, conversation security, and data protection.
@@ -45,7 +45,7 @@ This guide covers Intercom security including SAML SSO, workspace access, conver
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -85,7 +85,7 @@ Configure SAML SSO to centralize authentication for Intercom teammates.
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -111,7 +111,7 @@ Require 2FA for all Intercom teammates.
 
 ### 1.3 Configure Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -134,7 +134,7 @@ Configure session timeout and security settings.
 
 ### 2.1 Configure Team Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -163,7 +163,7 @@ Implement least privilege using Intercom roles.
 
 ### 2.2 Configure Inbox Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -189,7 +189,7 @@ Control access to conversation inboxes.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -217,7 +217,7 @@ Minimize and protect administrator accounts.
 
 ### 3.1 Configure Data Export Controls
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -243,7 +243,7 @@ Control data export capabilities.
 
 ### 3.2 Configure Conversation Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -271,7 +271,7 @@ Protect sensitive conversation data.
 
 ### 4.1 Configure Activity Logs
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

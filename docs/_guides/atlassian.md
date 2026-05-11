@@ -23,9 +23,9 @@ Atlassian serves **300,000+ customers** with the Atlassian Marketplace hosting *
 - Third-party risk managers evaluating Marketplace apps
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Atlassian Cloud and Data Center security configurations including authentication, Marketplace app governance, API security, and AppLinks hardening.
@@ -48,7 +48,7 @@ This guide covers Atlassian Cloud and Data Center security configurations includ
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **CIS Controls:** 6.3, 6.5
 **NIST 800-53:** IA-2(1)
 
@@ -101,7 +101,7 @@ Require SAML SSO with MFA for all Atlassian Cloud access, eliminating local pass
 
 ### 1.2 Implement Granular Product Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -133,7 +133,7 @@ Configure product-level and project-level access controls.
 
 ### 1.3 Configure API Token Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -158,7 +158,7 @@ Control API token creation and implement expiration policies.
 
 ### 2.1 Implement App Approval Workflow
 
-**Profile Level:** L1 (Baseline) - CRITICAL
+**Profile Level:** L1 (Crawl) - CRITICAL
 **NIST 800-53:** CM-7
 
 #### Description
@@ -212,7 +212,7 @@ Before approving any app:
 
 ### 2.2 Monitor App Activity
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AU-6
 
 #### Description
@@ -228,7 +228,7 @@ Monitor Marketplace app API calls and data access.
 
 ### 3.1 Secure AppLinks Configuration
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-8
 
 #### Description
@@ -254,7 +254,7 @@ Harden AppLinks between Atlassian products to prevent impersonation attacks.
 
 ### 3.2 Configure Webhook Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-8
 
 #### Description
@@ -280,7 +280,7 @@ Secure webhook configurations to prevent data leakage.
 
 ### 3.3 OAuth Token Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(13)
 
 #### Description
@@ -305,7 +305,7 @@ Manage OAuth tokens for third-party integrations.
 
 ### 4.1 Configure Data Residency
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-28
 
 #### Description
@@ -325,7 +325,7 @@ Configure data residency for compliance with data localization requirements.
 
 ### 4.2 Implement Data Classification
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3
 
 #### Description
@@ -352,7 +352,7 @@ Use data classification to restrict access to sensitive content.
 
 ### 5.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Description
@@ -383,7 +383,7 @@ Configure and monitor Atlassian audit logs.
 
 ### 5.2 Configure Anomaly Detection
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 #### Description
 Enable Atlassian Access anomaly detection (Enterprise).
@@ -403,7 +403,7 @@ Enable Atlassian Access anomaly detection (Enterprise).
 
 ### 6.1 Critical CVE Response
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Description
 Recent critical vulnerabilities require immediate attention.

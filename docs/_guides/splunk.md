@@ -22,9 +22,9 @@ Splunk is a leading SIEM and observability platform used by **thousands of organ
 - GRC professionals assessing SIEM security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Splunk Cloud Platform security including SAML SSO, role-based access control, data security, and search security.
@@ -45,7 +45,7 @@ This guide covers Splunk Cloud Platform security including SAML SSO, role-based 
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -91,7 +91,7 @@ Configure SAML SSO to centralize authentication for Splunk Cloud users.
 
 ### 1.2 Configure Local Admin Fallback
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -123,7 +123,7 @@ Maintain local admin access for emergency recovery.
 
 ### 2.1 Configure Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -157,7 +157,7 @@ Implement least privilege using Splunk's role model.
 
 ### 2.2 Configure Index Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -185,7 +185,7 @@ Restrict access to indexes based on role.
 
 ### 3.1 Configure Search Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -211,7 +211,7 @@ Control what data users can search.
 
 ### 3.2 Configure Encryption
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -238,7 +238,7 @@ Ensure data encryption in transit and at rest.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

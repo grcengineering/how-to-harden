@@ -22,9 +22,9 @@ Fullstory is a digital experience intelligence platform providing session replay
 - GRC professionals assessing data security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Fullstory security including SAML SSO, privacy controls, access management, and data governance.
@@ -44,7 +44,7 @@ This guide covers Fullstory security including SAML SSO, privacy controls, acces
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -83,7 +83,7 @@ Configure SAML SSO to centralize authentication for Fullstory users.
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -106,7 +106,7 @@ Require 2FA for all Fullstory users.
 
 ### 2.1 Configure User Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -135,7 +135,7 @@ Implement least privilege using Fullstory roles.
 
 ### 2.2 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -163,7 +163,7 @@ Minimize and protect administrator accounts.
 
 ### 3.1 Configure Privacy Controls
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -190,7 +190,7 @@ Configure privacy controls to protect user data.
 
 ### 3.2 Configure Data Retention
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

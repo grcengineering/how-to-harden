@@ -22,9 +22,9 @@ Braze is a leading customer engagement platform serving **thousands of brands** 
 - GRC professionals assessing marketing security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Braze security including SAML SSO, permission sets, API key management, and data protection.
@@ -45,7 +45,7 @@ This guide covers Braze security including SAML SSO, permission sets, API key ma
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -85,7 +85,7 @@ Configure SAML SSO to centralize authentication for Braze users.
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -111,7 +111,7 @@ Require 2FA for all Braze users.
 
 ### 1.3 Configure IP Allowlisting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -139,7 +139,7 @@ Restrict dashboard access to approved IP ranges.
 
 ### 2.1 Configure Permission Sets
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -174,7 +174,7 @@ Implement least privilege using Braze permission sets.
 
 ### 2.2 Configure Workspace Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -200,7 +200,7 @@ Control access to workspaces and app groups.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -228,7 +228,7 @@ Minimize and protect administrator accounts.
 
 ### 3.1 Configure API Key Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -259,7 +259,7 @@ Secure API keys and access tokens.
 
 ### 3.2 Configure API IP Allowlisting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -287,7 +287,7 @@ Restrict API access to approved IP ranges.
 
 ### 4.1 Configure Activity Logs
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -314,7 +314,7 @@ Enable and monitor activity logs.
 
 ### 4.2 Configure Data Retention
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

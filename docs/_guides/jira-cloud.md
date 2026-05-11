@@ -22,9 +22,9 @@ Atlassian Jira is a leading issue tracking and project management platform used 
 - Organization administrators managing access controls
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Atlassian Jira Cloud security including SAML SSO, organization policies, user provisioning, and access controls via Atlassian Administration.
@@ -45,7 +45,7 @@ This guide covers Atlassian Jira Cloud security including SAML SSO, organization
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -90,7 +90,7 @@ Configure SAML SSO to centralize authentication for Jira Cloud users.
 
 ### 1.2 Configure Authentication Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -120,7 +120,7 @@ Create authentication policies to enforce SSO.
 
 ### 1.3 Configure Two-Step Verification
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -150,7 +150,7 @@ Require two-step verification for all users.
 
 ### 1.4 Configure SAML JIT Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -178,7 +178,7 @@ Enable Just-In-Time provisioning for automatic account creation.
 
 ### 2.1 Configure Atlassian Guard
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -204,7 +204,7 @@ Enable Atlassian Guard for enhanced security features.
 
 ### 2.2 Configure Domain Verification
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -230,7 +230,7 @@ Verify domains to claim and manage user accounts.
 
 ### 2.3 Configure Organization Admin Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -258,7 +258,7 @@ Manage organization administrator access.
 
 ### 3.1 Configure Project Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -284,7 +284,7 @@ Configure project-level permissions for least privilege.
 
 ### 3.2 Configure External User Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -310,7 +310,7 @@ Control access for external users and guests.
 
 ### 3.3 Configure App Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -338,7 +338,7 @@ Control third-party app access and permissions.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -365,7 +365,7 @@ Enable and monitor audit logs (requires Atlassian Guard).
 
 ### 4.2 Configure Security Alerts
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

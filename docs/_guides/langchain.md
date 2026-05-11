@@ -29,9 +29,9 @@ Hardening these three together matters because they share a trust boundary: a mi
 - Third-party risk managers evaluating LangChain's enterprise posture
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for any team using LangChain in production
-- **L2 (Hardened):** Enhanced controls for security-sensitive deployments
-- **L3 (Maximum Security):** Self-hosting and strict isolation for regulated industries
+- **L1 (Crawl):** Essential controls for any team using LangChain in production
+- **L2 (Walk):** Enhanced controls for security-sensitive deployments
+- **L3 (Run):** Self-hosting and strict isolation for regulated industries
 
 ### Scope
 
@@ -58,7 +58,7 @@ Out of scope: model-provider-specific hardening (covered in vendor-specific guid
 
 ### 1.1 Enforce SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -136,7 +136,7 @@ Configure SAML 2.0 SSO between LangSmith and your corporate identity provider (O
 
 ### 1.2 Use Workspace-Scoped Service Keys, Not Personal Access Tokens
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -184,7 +184,7 @@ LangSmith offers two API key types: **Personal Access Tokens (PATs)** that inher
 
 ### 1.3 Enforce RBAC and ABAC for Project / Dataset Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -236,7 +236,7 @@ LangSmith supports custom RBAC roles (Enterprise plan, GA in 2024) layered with 
 
 ### 2.1 Self-Host LangSmith for Sensitive Data
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -295,7 +295,7 @@ There is no GUI for self-host deployment — operate via the official Helm chart
 
 ### 2.2 Allowlist LangSmith Egress IPs at Provider APIs
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -329,7 +329,7 @@ There is no first-party LangChain CLI for this — the configuration happens at 
 
 ### 3.1 Pin LangChain Dependencies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -355,7 +355,7 @@ The LangChain ecosystem ships as a dozen related PyPI packages (`langchain`, `la
 
 ### 3.2 Patch LangSmith SDK CVEs
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -393,7 +393,7 @@ Add a CVE-version check to your CI to fail any build that ships a vulnerable SDK
 
 ### 3.3 Disable `allow_dangerous_code` Unless Explicitly Required
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -418,7 +418,7 @@ LangChain components that execute model-generated Python or shell — `PythonREP
 
 ### 3.4 Sandbox Untrusted Code Execution
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -438,7 +438,7 @@ See the code in [3.3](#33-disable-allow_dangerous_code-unless-explicitly-require
 
 ### 3.5 Enforce Pydantic Output Validation
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -465,7 +465,7 @@ Wrap every LLM output that flows into business logic in a `PydanticOutputParser`
 
 ### 4.1 Apply Tool-Level Least Privilege
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -491,7 +491,7 @@ Build narrow, single-purpose tools instead of general-purpose ones (`ShellTool`,
 
 ### 4.2 Defend Against Prompt Injection (OWASP LLM01)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -524,7 +524,7 @@ Treat all model inputs that originate outside your trust boundary — user messa
 
 ### 4.3 Limit Excessive Agency
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -539,7 +539,7 @@ The pattern lives inline within [4.1's tool definitions](#41-apply-tool-level-le
 
 ### 4.4 Protect System Prompts from Leakage
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -556,7 +556,7 @@ This is a design pattern, not a single code snippet — review your prompts in c
 
 ### 5.1 Redact Sensitive Data from LangSmith Traces
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -591,7 +591,7 @@ By default, LangSmith captures full input and output of every LLM and tool call.
 
 ### 5.2 Configure Tracing Sampling
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Description
 For high-volume production agents, enable head-based sampling via `LANGCHAIN_TRACING_SAMPLE_RATE` (env var) or per-call `tags=["sampled"]` to send only a representative subset of traces. Reduces both LangSmith ingestion cost and the volume of sensitive data leaving the process.
@@ -602,7 +602,7 @@ This is an environment-variable toggle — see the [LangSmith tracing docs](http
 
 ### 5.3 Restrict Trace Project Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 #### Description
 Apply the [RBAC + ABAC controls in 1.3](#13-enforce-rbac-and-abac-for-project--dataset-access) to LangSmith projects — separate "PII-bearing" projects from general engineering and grant access only to those with a need-to-know. Use the same API endpoints as 1.3 to programmatically apply project-level tag policies.
@@ -613,7 +613,7 @@ Apply the [RBAC + ABAC controls in 1.3](#13-enforce-rbac-and-abac-for-project--d
 
 ### 6.1 Enable Audit Logs
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -653,7 +653,7 @@ LangSmith audit logs are GA in self-hosted v0.12.33+ and Enterprise Cloud. Appro
 
 ### 6.2 Export Audit Logs to SIEM in OCSF Format
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -674,7 +674,7 @@ Pull audit logs from the LangSmith REST API on a schedule and forward to your SI
 
 ### 6.3 Monitor for CVE Disclosures
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Description
 Subscribe to GitHub Security Advisories for `langchain-ai/langchain`, `langchain-ai/langgraph`, and `langchain-ai/langsmith-sdk`. Watch the LangChain blog for changelog announcements. Configure Dependabot or Renovate to flag CVEs in the LangChain dependency family.
@@ -687,7 +687,7 @@ This is an operational practice — see the supply-chain pack in [Section 7](#7-
 
 ### 7.1 Pin and Verify LangChain Package Integrity
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -713,7 +713,7 @@ Use `pip-compile --generate-hashes` to produce a fully-pinned `requirements.txt`
 
 ### 7.2 Use the Official langsmith-cli and langgraph-cli for Reproducible Bootstrap
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

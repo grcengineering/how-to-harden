@@ -23,9 +23,9 @@ Okta is an identity and access management (IAM) platform that controls authentic
 - Third-party risk managers evaluating SSO integrations
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Okta-specific security configurations including authentication policies, OAuth/SCIM governance, session management, and integration security. Infrastructure hardening for Okta agents is out of scope.
@@ -49,7 +49,7 @@ This guide covers Okta-specific security configurations including authentication
 
 ### 1.1 Enforce Phishing-Resistant MFA (FIDO2/WebAuthn)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -165,7 +165,7 @@ Configure both Okta Dashboard and Admin Console policies:
 
 ### 1.2 Implement Admin Role Separation
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -220,7 +220,7 @@ Separate administrative privileges using Okta's custom admin roles instead of gr
 
 ### 1.3 Enable Hardware-Bound Session Tokens
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -266,7 +266,7 @@ Configure Okta to bind session tokens to specific devices using device trust and
 
 ### 1.4 Configure Password Policy
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -282,7 +282,7 @@ Configure comprehensive password policies with appropriate complexity, age, and 
 
 #### Specification Requirements
 
-| Requirement | L1 (Baseline) | L2/L3 (DISA STIG) |
+| Requirement | L1 (Crawl) | L2/L3 (DISA STIG) |
 |------------|---------------|-------------------|
 | Minimum length | 12 characters | 15 characters |
 | Uppercase required | Yes | Yes |
@@ -337,7 +337,7 @@ For each listed Password Policy, click **Edit** and configure:
 
 ### 1.5 Configure Account Lockout
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -349,7 +349,7 @@ Enforce account lockout after consecutive invalid login attempts to protect agai
 
 #### Specification Requirements
 
-| Requirement | L1 (Baseline) | L2/L3 (DISA STIG) |
+| Requirement | L1 (Crawl) | L2/L3 (DISA STIG) |
 |------------|---------------|-------------------|
 | Lockout threshold | 5 attempts | 3 attempts |
 | Lockout duration | 30 minutes | Until admin unlock |
@@ -381,7 +381,7 @@ For each listed Password Policy:
 
 ### 1.6 Configure Account Lifecycle Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -393,7 +393,7 @@ Automatically disable user accounts after a period of inactivity to reduce the r
 
 #### Specification Requirements
 
-| Requirement | L1 (Baseline) | L2/L3 (DISA STIG) |
+| Requirement | L1 (Crawl) | L2/L3 (DISA STIG) |
 |------------|---------------|-------------------|
 | Inactivity threshold | 90 days | 35 days |
 | Action | Suspend | Suspend |
@@ -447,7 +447,7 @@ Automatically disable user accounts after a period of inactivity to reduce the r
 
 ### 1.7 Configure PIV/CAC Smart Card Authentication
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -504,7 +504,7 @@ Configure Okta to accept Personal Identity Verification (PIV) credentials and Co
 
 ### 1.8 Configure FIPS-Compliant Authenticators
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -541,7 +541,7 @@ Configure Okta Verify to only connect with FIPS-compliant devices. This ensures 
 
 ### 1.9 Audit Default Authentication Policy
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -632,7 +632,7 @@ Audit and mitigate the risk posed by Okta's immutable Default Authentication Pol
 
 ### 1.10 Harden Self-Service Recovery
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -741,7 +741,7 @@ Restrict self-service account recovery to trusted methods and network locations.
 
 ### 1.11 Enable End-User Security Notifications
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -841,7 +841,7 @@ Enable all five end-user security notification types in Okta so that users recei
 
 ### 2.1 Configure IP Zones and Network Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -892,7 +892,7 @@ Define network zones (corporate, VPN, known bad) and enforce authentication poli
 
 ### 2.2 Restrict Admin Console Access by IP
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -915,7 +915,7 @@ Limit access to the Okta Admin Console to specific IP ranges (corporate network,
 
 ### 2.3 Configure Dynamic Network Zones and Anonymizer Blocking
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -990,7 +990,7 @@ Activate Okta's Enhanced Dynamic Zone to automatically block traffic from anonym
 
 ### 3.1 Implement OAuth App Consent Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1038,7 +1038,7 @@ Control which OAuth applications users can authorize and require admin approval 
 
 ### 3.2 Harden SCIM Provisioning Connectors
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1082,7 +1082,7 @@ Secure SCIM (System for Cross-domain Identity Management) connectors that provis
 
 ### 3.3 Implement OAuth Application Allowlisting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1149,7 +1149,7 @@ Restrict which third-party applications can receive OAuth grants from users. OAu
 
 ### 3.4 Govern Non-Human Identities (NHI)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1260,7 +1260,7 @@ Implement governance for non-human identities: service accounts, API tokens, aut
 
 ### 4.1 Configure Session Timeouts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1278,7 +1278,7 @@ Set session timeouts appropriate to risk level. Reduce maximum session lifetime 
 
 #### Specification Requirements
 
-| Setting | L1 (Baseline) | L2 (Hardened) | L3/DISA STIG |
+| Setting | L1 (Crawl) | L2 (Walk) | L3/DISA STIG |
 |---------|---------------|---------------|--------------|
 | Max session lifetime | 12 hours | 8 hours | 18 hours |
 | Max idle time | 1 hour | 30 minutes | 15 minutes |
@@ -1312,7 +1312,7 @@ For sensitive apps (PAM, admin consoles, financial systems):
 
 ### 4.2 Disable Session Persistence
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1340,7 +1340,7 @@ Disable "Remember Me" and persistent session features that increase session hija
 
 ### 4.3 Configure Admin Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1424,7 +1424,7 @@ Harden admin sessions with ASN binding, IP binding, and Protected Actions. These
 
 ### 5.1 Enable Comprehensive System Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1459,7 +1459,7 @@ If your SIEM is not directly supported:
 
 ### 5.2 Configure ThreatInsight
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Description
 Enable Okta ThreatInsight to automatically block authentication from known-malicious IPs based on Okta's threat intelligence.
@@ -1478,7 +1478,7 @@ Enable Okta ThreatInsight to automatically block authentication from known-malic
 
 ### 5.3 Enable Identity Threat Protection (ITP)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1543,7 +1543,7 @@ Enable Identity Threat Protection with Okta AI for continuous post-authenticatio
 
 ### 5.4 Configure Behavior Detection Rules
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1608,7 +1608,7 @@ Configure Okta's Behavior Detection to identify anomalous user behavior patterns
 
 ### 5.5 Monitor for Cross-Tenant Impersonation
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1686,7 +1686,7 @@ Configure alerts in your SIEM for these system log events:
 
 ### 5.6 Run HealthInsight Security Reviews
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1801,7 +1801,7 @@ These controls address operational procedures and organizational practices that 
 
 ### 7.1 Sanitize HAR Files Before Sharing
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1859,7 +1859,7 @@ Document a formal policy requiring:
 
 ### 7.2 Monitor Okta Security Advisories
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1907,7 +1907,7 @@ Establish a process to monitor Okta security advisories and ensure all Okta clie
 
 ### 7.3 Conduct Regular Access Reviews
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1967,7 +1967,7 @@ Perform periodic access reviews (recertification campaigns) to verify user acces
 
 ### 7.4 Implement Change Management for Okta Configuration
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -2028,7 +2028,7 @@ Key events to track:
 
 ### 7.5 Establish Identity Incident Response Procedures
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

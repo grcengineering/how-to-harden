@@ -24,9 +24,9 @@ New Relic is an observability platform ingesting application performance, infras
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers New Relic security configurations including authentication, ac
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### ClickOps Implementation
@@ -68,7 +68,7 @@ This guide covers New Relic security configurations including authentication, ac
 
 ### 1.2 Role-Based Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -95,7 +95,7 @@ This guide covers New Relic security configurations including authentication, ac
 
 ### 2.1 Secure API Keys
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -130,7 +130,7 @@ Manage New Relic API keys securely.
 
 ### 2.2 License Key Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### ClickOps Implementation
@@ -149,7 +149,7 @@ Manage New Relic API keys securely.
 
 ### 3.1 Configure Data Obfuscation
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### Description
@@ -176,7 +176,7 @@ Protect sensitive data in logs and traces.
 
 ### 3.2 Data Retention
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-12
 
 #### ClickOps Implementation
@@ -194,7 +194,7 @@ Protect sensitive data in logs and traces.
 
 ### 4.1 NrAuditEvent
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Detection Queries

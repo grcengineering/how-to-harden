@@ -23,9 +23,9 @@ Snowflake is a cloud data platform whose **2024 breach affecting 165+ organizati
 - Third-party risk managers evaluating BI tool integrations
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries (VPS deployment)
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries (VPS deployment)
 
 ### Scope
 This guide covers Snowflake-specific security configurations including authentication, network policies, data sharing governance, and BI tool integration security.
@@ -48,7 +48,7 @@ This guide covers Snowflake-specific security configurations including authentic
 
 ### 1.1 Enforce MFA for All Users
 
-**Profile Level:** L1 (Baseline) - CRITICAL
+**Profile Level:** L1 (Crawl) - CRITICAL
 **CIS Controls:** 6.3, 6.5
 **NIST 800-53:** IA-2(1), IA-2(2)
 
@@ -133,7 +133,7 @@ Run the MFA enrollment verification query from the DB Query Code Pack below to c
 
 ### 1.2 Implement Service Account Key-Pair Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -159,7 +159,7 @@ Replace password authentication for service accounts with RSA key-pair authentic
 
 ### 1.3 Implement RBAC with Custom Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -189,7 +189,7 @@ Create granular role hierarchy instead of granting broad SYSADMIN or ACCOUNTADMI
 
 ### 2.1 Implement Network Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **CIS Controls:** 13.3
 **NIST 800-53:** AC-3, SC-7
 
@@ -229,7 +229,7 @@ Verify network policy assignments using the validation queries in the DB Query C
 
 ### 2.2 Enable Private Connectivity (PrivateLink/Private Service Connect)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-7
 
 #### Description
@@ -255,7 +255,7 @@ Configure private network connectivity to Snowflake, eliminating exposure to pub
 
 ### 3.1 Restrict OAuth Token Scope and Lifetime
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(13)
 
 #### Description
@@ -289,7 +289,7 @@ List and inspect all security integrations using the audit queries in the DB Que
 
 ### 3.2 Implement External OAuth (IdP Integration)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -305,7 +305,7 @@ Configure External OAuth using your identity provider (Okta, Azure AD) for centr
 
 ### 4.1 Implement Column-Level Security with Masking Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3, SC-28
 
 #### Description
@@ -330,7 +330,7 @@ Apply dynamic data masking to sensitive columns (PII, financial data) to restric
 
 ### 4.2 Enable Row Access Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3
 
 #### Description
@@ -342,7 +342,7 @@ Implement row-level security to restrict data visibility based on user attribute
 
 ### 4.3 Restrict Data Sharing
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-21
 
 #### Description
@@ -356,7 +356,7 @@ Audit and control Snowflake data sharing to external accounts. Prevent accidenta
 
 ### 5.1 Enable Comprehensive Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3, AU-6
 
 #### Description
@@ -378,7 +378,7 @@ Key anomaly detection queries are provided in the code pack below. These cover:
 
 ### 5.2 Forward Logs to SIEM
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Description
 Export Snowflake audit logs to SIEM (Splunk, Datadog, Sumo Logic) for real-time alerting and correlation.

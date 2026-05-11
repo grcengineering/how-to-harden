@@ -22,9 +22,9 @@ Proofpoint is a leading cybersecurity platform providing email security, threat 
 - GRC professionals assessing email security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Proofpoint administration security including SAML SSO, admin access, threat protection policies, and audit logging.
@@ -45,7 +45,7 @@ This guide covers Proofpoint administration security including SAML SSO, admin a
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -84,7 +84,7 @@ Configure SAML SSO for Proofpoint administration console.
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -107,7 +107,7 @@ Require MFA for all Proofpoint admin users.
 
 ### 2.1 Configure Admin Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -133,7 +133,7 @@ Implement least privilege for admin access.
 
 ### 2.2 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -161,7 +161,7 @@ Minimize and protect admin accounts.
 
 ### 3.1 Configure Email Protection Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -187,7 +187,7 @@ Configure threat protection policies.
 
 ### 3.2 Configure VIP Protection
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -215,7 +215,7 @@ Enhanced protection for executives and VIPs.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

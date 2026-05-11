@@ -29,9 +29,9 @@ This guide provides comprehensive security hardening recommendations for GitHub,
 - Open source maintainers protecting projects
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for organizations building customer-facing software or security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for highly regulated or high-risk targets
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for organizations building customer-facing software or security-sensitive environments
+- **L3 (Run):** Strictest controls for highly regulated or high-risk targets
 
 ### Scope
 This guide covers GitHub.com and GitHub Enterprise Cloud/Server security configurations including organization settings, repository security, Actions hardening, GitHub Advanced Security (GHAS), and supply chain protection. For self-hosted runner infrastructure hardening (Kubernetes, VMs), refer to CIS Benchmarks for those platforms.
@@ -64,7 +64,7 @@ This guide covers GitHub.com and GitHub Enterprise Cloud/Server security configu
 
 ### 1.1 Enforce Multi-Factor Authentication (MFA) for All Organization Members
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1), IA-2(2)
 **CIS Controls:** 6.3, 6.5
 
@@ -154,7 +154,7 @@ Require all organization members to enable MFA on their GitHub accounts. This pr
 
 ### 1.2 Restrict Base Permissions for Organization Members
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-6 (Least Privilege)
 
 #### Description
@@ -198,7 +198,7 @@ Set default organization member permissions to minimal access. Members should on
 
 ### 1.3 Enable SAML Single Sign-On (SSO) and SCIM Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Enterprise Cloud
 **NIST 800-53:** IA-2, IA-4, IA-8
 **CIS Controls:** 6.3, 12.5
@@ -268,7 +268,7 @@ After SAML SSO is enabled:
 
 ### 1.4 Configure Admin Access Controls
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **Requires:** GitHub Enterprise Cloud/Server (for enterprise-level controls)
 **NIST 800-53:** AC-6(1) (Least Privilege - Authorize Access to Security Functions)
 **CIS Controls:** 5.4
@@ -343,7 +343,7 @@ Implement least privilege for organization and enterprise administrators. Limit 
 
 ### 1.5 Configure Enterprise IP Allow List
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Enterprise Cloud
 **NIST 800-53:** AC-17, SC-7
 **CIS Controls:** 13.5
@@ -395,7 +395,7 @@ Restrict enterprise access to approved IP addresses using IP allow lists. This l
 
 ### 1.7 Enforce Fine-Grained Personal Access Token (PAT) Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-5, AC-6
 **CIS Controls:** 6.2
 
@@ -476,7 +476,7 @@ Enforce fine-grained personal access token policies at the organization and ente
 
 ### 1.8 Restrict Service Account Cross-Organization Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-6(3), AC-6(5)
 **CIS Controls:** 6.8
 
@@ -547,7 +547,7 @@ This control is primarily organizational — no API or Terraform automation exis
 
 ### 2.1 Enable Branch Protection for All Critical Branches
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-3 (Configuration Change Control)
 
 #### Description
@@ -632,7 +632,7 @@ Rulesets are now the primary mechanism for branch protection, replacing legacy b
 
 ### 2.2 Enable Security Features: Dependabot, Code Scanning, Secret Scanning
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Description
 Enable GitHub's native security features to detect vulnerabilities, secrets, and code quality issues automatically.
@@ -710,7 +710,7 @@ For organizations requiring deeper code analysis, configure CodeQL with custom q
 
 ### 2.3 Configure Repository Rulesets
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Enterprise Cloud/Server
 **NIST 800-53:** CM-3 (Configuration Change Control)
 **CIS Controls:** 16.9
@@ -775,7 +775,7 @@ Configure organization-wide repository rulesets to enforce consistent branch pro
 
 ### 2.4 Enforce Commit Signing
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SI-7 (Software, Firmware, and Information Integrity)
 **CIS Controls:** 16.9
 
@@ -860,7 +860,7 @@ Gitsign eliminates key management entirely by using Sigstore's Fulcio CA to issu
 
 ### 2.5 Configure Push Rules in Repository Rulesets
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Team (private/internal repos) or Enterprise Cloud
 **NIST 800-53:** CM-3, SI-7
 **CIS Controls:** 16.9
@@ -919,7 +919,7 @@ Configure push rules within repository rulesets to restrict file types, file siz
 
 ### 2.6 Enable Secret Scanning Delegated Bypass
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Advanced Security (or GitHub Secret Protection standalone)
 **NIST 800-53:** SA-11, IA-5(7)
 
@@ -991,7 +991,7 @@ Configure delegated bypass for secret scanning push protection to require securi
 
 ### 2.7 Enable Immutable Releases
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-3, SI-7
 **CIS Controls:** 2.6
 
@@ -1048,7 +1048,7 @@ Enable immutable releases at the organization level to prevent release artifacts
 
 ### 3.1 Restrict Third-Party GitHub Actions to Verified Creators Only
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **SLSA:** Build L2+ requirement
 
 #### Description
@@ -1151,7 +1151,7 @@ Prevent use of arbitrary third-party Actions by restricting to GitHub-verified c
 
 ### 3.2 Use Least-Privilege Workflow Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **SLSA:** Build L2 requirement
 
 #### Description
@@ -1217,7 +1217,7 @@ In each workflow file, explicitly declare required permissions. See the workflow
 
 ### 3.3 Require Workflow Approval for First-Time Contributors
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 #### Description
 Require manual approval before running workflows triggered by first-time contributors. Prevents malicious PR attacks that exfiltrate secrets.
@@ -1247,7 +1247,7 @@ Require manual approval before running workflows triggered by first-time contrib
 
 ### 3.4 Configure Self-Hosted Runner Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Enterprise Cloud/Server (for runner groups)
 **NIST 800-53:** CM-6 (Configuration Settings)
 **CIS Controls:** 4.1
@@ -1311,7 +1311,7 @@ Secure self-hosted runners to prevent compromise of build environment. Self-host
 
 ### 3.5 Generate and Verify Artifact Attestations
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **SLSA:** Build L2 (L3 with reusable workflows)
 **NIST 800-53:** SI-7, SA-12
 
@@ -1378,7 +1378,7 @@ Generate cryptographically signed build provenance attestations for CI/CD artifa
 
 ### 3.6 Harden Actions OIDC Subject Claims
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-2, IA-8
 **CIS Controls:** 6.3
 
@@ -1438,7 +1438,7 @@ Customize GitHub Actions OIDC subject claims to include repository, environment,
 
 ### 3.7 Recommended Open Source Security Tools
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SA-11, CM-6
 **CIS Controls:** 16.4
 
@@ -1546,7 +1546,7 @@ Run these tools periodically to audit organization-wide security posture.
 
 ### 3.8 Secure `pull_request_target` Workflows Against Pwn Requests
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, SI-7
 **CIS Controls:** 16.1
 
@@ -1607,7 +1607,7 @@ Prevent `pull_request_target` workflows from executing untrusted PR code with el
 
 ### 3.9 Enforce Runner Process and Network Isolation
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-7, SC-39
 **CIS Controls:** 13.4
 
@@ -1676,7 +1676,7 @@ Harden GitHub Actions runners against credential theft from process memory and u
 
 ### 3.10 Detect and Prevent Action Tag Poisoning
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-7, SA-12
 **CIS Controls:** 2.5
 
@@ -1764,7 +1764,7 @@ Detect and prevent attacks where an adversary force-pushes Git tags in an action
 
 ### 3.11 Require CODEOWNERS Approval for Workflow Changes
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-3, AC-6
 **CIS Controls:** 2.6, 5.4
 
@@ -1836,7 +1836,7 @@ renovate.json           @org/security-team
 
 ### 3.12 Prevent AI Prompt Injection in CI/CD Pipelines
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SI-10, SA-11
 **CIS Controls:** 16.12
 
@@ -1908,7 +1908,7 @@ Prevent prompt injection attacks where untrusted input (issue titles, PR descrip
 
 ### 3.13 Prevent GitHub Actions Expression Injection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-10, SA-11
 **CIS Controls:** 16.12
 
@@ -1987,7 +1987,7 @@ Prevent shell command injection attacks caused by GitHub Actions expression synt
 
 ### 3.14 Evaluate Action Trust Before Adoption
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SA-12, RA-3
 **CIS Controls:** 2.5
 
@@ -2061,7 +2061,7 @@ Before adopting any new Action, evaluate:
 
 ### 4.1 Audit and Restrict OAuth App Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-6, AC-17
 **CIS Controls:** 6.8
 
@@ -2132,7 +2132,7 @@ Review all OAuth apps and GitHub Apps with access to your organization. Revoke u
 
 ### 4.2 Audit GitHub App Installation Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-6, CM-8
 **CIS Controls:** 2.1
 
@@ -2183,7 +2183,7 @@ Audit all installed GitHub Apps in the organization, review their granted permis
 
 ### 4.3 Enforce Fine-Grained Personal Access Tokens
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Enterprise Cloud
 **NIST 800-53:** IA-4, IA-5
 **CIS Controls:** 6.3
@@ -2248,7 +2248,7 @@ Require fine-grained personal access tokens (PATs) instead of classic PATs. Fine
 
 ### 5.1 Use GitHub Actions Secrets with Environment Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-12, SC-28
 **CIS Controls:** 3.11
 
@@ -2331,7 +2331,7 @@ Store sensitive credentials in GitHub Actions secrets (not hardcoded in code). U
 
 ### 5.2 Use OpenID Connect (OIDC) Instead of Long-Lived Credentials
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-5(1)
 **SLSA:** Build L3
 
@@ -2405,7 +2405,7 @@ Use GitHub Actions OIDC provider to get short-lived cloud credentials instead of
 
 ### 5.3 Configure Push Protection with Delegated Bypass
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Advanced Security (Secret Protection, $19/month per committer as of April 2025)
 **NIST 800-53:** IA-5, CM-3
 
@@ -2457,7 +2457,7 @@ Enable push protection to block commits containing secrets before they reach the
 
 ### 5.4 Define Custom Secret Scanning Patterns
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Advanced Security
 **NIST 800-53:** IA-5, SI-4
 
@@ -2504,7 +2504,7 @@ Define organization-level custom secret scanning patterns to detect internal API
 
 ### 5.5 Restrict `secrets: inherit` in Reusable Workflows
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-6, IA-5
 **CIS Controls:** 6.3
 
@@ -2592,7 +2592,7 @@ jobs:
 
 ### 6.1 Enable Dependency Review for Pull Requests
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **SLSA:** Build L2
 **NIST 800-53:** SA-12
 
@@ -2636,7 +2636,7 @@ Automatically block pull requests that introduce vulnerable or malicious depende
 
 ### 6.2 Pin Dependencies to Specific Versions (Hash Verification)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **SLSA:** Build L3
 
 #### Description
@@ -2677,7 +2677,7 @@ Use Dependabot or Renovate to keep pins up-to-date while maintaining hash verifi
 
 ### 6.3 Configure Dependabot Grouped Security Updates
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SA-12, SI-2
 
 #### Description
@@ -2720,7 +2720,7 @@ Configure Dependabot with grouped updates to reduce PR noise while keeping depen
 
 ### 6.4 Enable Build Provenance and npm Provenance
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **SLSA:** Build L2+
 **NIST 800-53:** SA-12, SA-15
 
@@ -2770,7 +2770,7 @@ Generate SLSA build provenance attestations for artifacts and publish npm packag
 
 ### 6.5 Enforce Dependency Review Across the Organization
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Enterprise Cloud
 **NIST 800-53:** SA-12, SA-11
 
@@ -2814,7 +2814,7 @@ Use organization rulesets to enforce the dependency-review-action as a required 
 
 ### 6.6 Respond to CI/CD Supply Chain Compromises
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IR-4, IR-5, IR-6
 **CIS Controls:** 17.1, 17.3
 
@@ -2909,7 +2909,7 @@ Establish an incident response playbook for when a GitHub Action or CI/CD depend
 
 ### 6.7 Enforce Dependency Cool-Down Periods
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SA-12, SI-7
 **CIS Controls:** 2.5, 16.4
 
@@ -3008,7 +3008,7 @@ Dependabot does not natively support cool-down periods. If using Dependabot inst
 
 ### 6.8 Deploy a Dependency Firewall
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 **NIST 800-53:** SA-12, SC-7
 **CIS Controls:** 13.4, 2.5
 
@@ -3084,7 +3084,7 @@ Deploy a dependency firewall (also called a package firewall) that acts as a pro
 
 ### 7.1 Configure Copilot Governance
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **Requires:** GitHub Copilot Business or Enterprise
 **NIST 800-53:** AC-3, AU-2
 
@@ -3146,7 +3146,7 @@ Configure Copilot governance policies including content exclusions to prevent Co
 
 ### 7.2 Create Custom Repository Roles
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Enterprise Cloud
 **NIST 800-53:** AC-2, AC-3
 **CIS Controls:** 6.8
@@ -3196,7 +3196,7 @@ Create custom repository roles to define fine-grained permission sets beyond the
 
 ### 7.3 Enforce Required Workflows via Organization Rulesets
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Enterprise Cloud
 **NIST 800-53:** SA-11, CM-3
 
@@ -3252,7 +3252,7 @@ Use organization rulesets to enforce required workflows (security scans, code qu
 
 ### 8.1 Enable Audit Log Streaming to SIEM
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **Requires:** GitHub Enterprise Cloud
 
 #### Description
@@ -3324,7 +3324,7 @@ These events should be prioritized in your SIEM alert rules:
 
 ### 8.2 Use Security Overview Dashboard
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **Requires:** GitHub Enterprise Cloud with GHAS
 **NIST 800-53:** RA-5, SI-4
 
@@ -3371,7 +3371,7 @@ Use the Security Overview dashboard to get a consolidated view of security alert
 
 ### 8.3 Apply GitHub-Recommended Security Configuration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **Requires:** GitHub Enterprise Cloud
 
 #### Description

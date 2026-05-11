@@ -22,9 +22,9 @@ Orca Security is a cloud security platform providing agentless workload protecti
 - GRC professionals assessing cloud security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Orca platform security including SSO, RBAC, cloud account integration, and audit logging.
@@ -44,7 +44,7 @@ This guide covers Orca platform security including SSO, RBAC, cloud account inte
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -86,7 +86,7 @@ Configure SAML SSO for Orca platform access.
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -113,7 +113,7 @@ Require MFA for all Orca users.
 
 ### 2.1 Configure Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -151,7 +151,7 @@ Implement least privilege using Orca roles.
 
 ### 2.2 Configure Account Scope
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -176,7 +176,7 @@ Limit user access to specific cloud accounts.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -207,7 +207,7 @@ Minimize and protect admin accounts.
 
 ### 3.1 Configure Cloud Account Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -237,7 +237,7 @@ Secure cloud account integrations.
 
 ### 3.2 Configure API Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

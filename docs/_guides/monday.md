@@ -22,9 +22,9 @@ Monday.com is a leading work management platform used by **millions of users** f
 - Account administrators managing access controls
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Monday.com security including SAML SSO, authentication policies, admin controls, and account security.
@@ -45,7 +45,7 @@ This guide covers Monday.com security including SAML SSO, authentication policie
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -89,7 +89,7 @@ Configure SAML SSO to centralize authentication for Monday.com users.
 
 ### 1.2 Configure Login Restriction Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -119,7 +119,7 @@ Configure login policies to enforce SSO or allow exceptions.
 
 ### 1.3 Enable Monday Certificate Encryption
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -145,7 +145,7 @@ Enable certificate encryption for SAML assertions.
 
 ### 1.4 Configure Google SSO (Alternative)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -172,7 +172,7 @@ Configure Google Single Sign-On (available on Pro and Enterprise).
 
 ### 2.1 Restrict Account Membership
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -197,7 +197,7 @@ Control who can join your Monday.com account.
 
 ### 2.2 Configure Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -222,7 +222,7 @@ Configure session timeout and security settings.
 
 ### 2.3 Manage Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -250,7 +250,7 @@ Minimize and protect administrator accounts.
 
 ### 3.1 Configure Workspace Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -276,7 +276,7 @@ Configure permissions across workspaces and boards.
 
 ### 3.2 Configure Guest Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -301,7 +301,7 @@ Control guest access to workspaces and boards.
 
 ### 3.3 Configure Integration Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -329,7 +329,7 @@ Control third-party integrations and apps.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -356,7 +356,7 @@ Monitor account activity through audit logs.
 
 ### 4.2 Configure Data Export Controls
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

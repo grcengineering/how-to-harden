@@ -22,9 +22,9 @@ ServiceNow is a leading IT service management and business workflow platform use
 - Platform administrators managing instance security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers ServiceNow instance security including SAML SSO, Security Center, high-security plugins, and RBAC.
@@ -45,7 +45,7 @@ This guide covers ServiceNow instance security including SAML SSO, Security Cent
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -92,7 +92,7 @@ Configure SAML SSO to centralize authentication for ServiceNow users.
 
 ### 1.2 Configure Account Recovery Administrator
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -122,7 +122,7 @@ Configure Account Recovery (ACR) administrator for SSO fallback.
 
 ### 1.3 Enable Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -148,7 +148,7 @@ Enforce MFA for all authentication methods.
 
 ### 2.1 Configure Security Center
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -176,7 +176,7 @@ Use Security Center to monitor and improve instance security.
 
 ### 2.2 Enable High-Security Plugins
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -207,7 +207,7 @@ Activate high-security plugins for enhanced protection.
 
 ### 3.1 Configure Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -236,7 +236,7 @@ Implement least privilege using ServiceNow's role model.
 
 ### 3.2 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -265,7 +265,7 @@ Minimize and protect administrator accounts.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

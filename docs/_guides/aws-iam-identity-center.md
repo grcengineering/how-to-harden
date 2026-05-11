@@ -22,9 +22,9 @@ AWS IAM Identity Center (formerly AWS SSO) is the recommended service for managi
 - GRC professionals assessing cloud identity
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers AWS IAM Identity Center security including MFA enforcement, permission sets, identity sources, and session policies.
@@ -45,7 +45,7 @@ This guide covers AWS IAM Identity Center security including MFA enforcement, pe
 
 ### 1.1 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -85,7 +85,7 @@ Require MFA for all IAM Identity Center users.
 
 ### 1.2 Configure Session Duration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -111,7 +111,7 @@ Configure appropriate session duration limits.
 
 ### 1.3 Configure Attribute-Based Access Control
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -142,7 +142,7 @@ Enable ABAC for fine-grained access control.
 
 ### 2.1 Configure External Identity Provider
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -173,7 +173,7 @@ Connect to external IdP for centralized identity.
 
 ### 2.2 Configure Automatic Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -201,7 +201,7 @@ Enable SCIM for automatic user provisioning.
 
 ### 3.1 Configure Permission Sets
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -235,7 +235,7 @@ Create least-privilege permission sets.
 
 ### 3.2 Configure Account Assignments
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -264,7 +264,7 @@ Assign access to AWS accounts.
 
 ### 3.3 Protect Privileged Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -292,7 +292,7 @@ Additional controls for privileged access.
 
 ### 4.1 Configure CloudTrail Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -321,7 +321,7 @@ Enable CloudTrail for IAM Identity Center events.
 
 ### 4.2 Configure Access Analyzer
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

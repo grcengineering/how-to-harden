@@ -23,9 +23,9 @@ Docker Hub is the largest public container registry with millions of images. Res
 - Platform teams managing Docker infrastructure
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls (use private registry)
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls (use private registry)
 
 
 ### Scope
@@ -46,7 +46,7 @@ This guide covers Docker Hub security configurations including authentication, a
 
 ### 1.1 Enforce MFA and SSO
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -74,7 +74,7 @@ Require MFA for Docker Hub accounts, especially those with push access.
 
 ### 1.2 Implement Access Tokens
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -105,7 +105,7 @@ Use personal access tokens instead of passwords for automation.
 
 ### 2.1 Enable Docker Scout
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** RA-5
 
 #### Description
@@ -119,7 +119,7 @@ Use Docker Scout for vulnerability scanning.
 
 ### 2.2 Image Signing (Content Trust)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SI-7
 
 #### Description
@@ -133,7 +133,7 @@ Enable Docker Content Trust for image signing.
 
 ### 2.3 Pin Images by Digest, Not Tag
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-7, SA-12
 **CIS Controls:** 2.5
 
@@ -191,7 +191,7 @@ Reference container images by their immutable SHA256 digest instead of mutable t
 
 ### 2.4 Verify Images with Cosign/Sigstore
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SI-7, SA-12
 
 #### Description
@@ -250,7 +250,7 @@ Use Sigstore Cosign for keyless image signing and verification. Cosign is the re
 
 ### 2.5 Generate Build Provenance and SBOM Attestations
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SA-12, SI-7
 
 #### Description
@@ -295,7 +295,7 @@ Generate SLSA provenance attestations and Software Bill of Materials (SBOM) for 
 
 ### 3.1 Private Repository Configuration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### ClickOps Implementation
 
@@ -307,7 +307,7 @@ Generate SLSA provenance attestations and Software Bill of Materials (SBOM) for 
 
 ### 3.2 Prevent Secret Exposure
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Implementation
 
@@ -321,7 +321,7 @@ Generate SLSA provenance attestations and Software Bill of Materials (SBOM) for 
 
 ### 4.1 Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2
 
 #### Detection Focus
@@ -336,7 +336,7 @@ Monitor Docker Hub activity logs for:
 
 ### 4.2 Detect Unauthorized and Ghost Image Pushes
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-4, AU-6
 **CIS Controls:** 8.5
 

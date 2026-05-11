@@ -22,9 +22,9 @@ Fivetran is a leading data integration platform that automates data pipelines fo
 - GRC professionals assessing data integration security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Fivetran Dashboard security including SAML SSO, role-based access control, connector security, and session management.
@@ -45,7 +45,7 @@ This guide covers Fivetran Dashboard security including SAML SSO, role-based acc
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -107,7 +107,7 @@ Configure SAML SSO to centralize authentication for Fivetran users.
 
 ### 1.2 Restrict Authentication to SSO
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -142,7 +142,7 @@ Require all users to authenticate via SSO only.
 
 ### 1.3 Configure Just-In-Time Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -179,7 +179,7 @@ Enable automatic user provisioning on first login.
 
 ### 1.4 Configure Session Timeout
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -223,7 +223,7 @@ Configure session timeout for dashboard access.
 
 ### 2.1 Configure Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -261,7 +261,7 @@ Implement role-based permissions for Fivetran access.
 
 ### 2.2 Configure Team Structure
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -296,7 +296,7 @@ Organize users into teams for granular access control.
 
 ### 2.3 Configure SCIM Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -333,7 +333,7 @@ Configure SCIM for automated user and group provisioning.
 
 ### 3.1 Secure Connector Credentials
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -376,7 +376,7 @@ Secure credentials used for data source connections.
 
 ### 3.2 Configure Network Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -411,7 +411,7 @@ Secure network access for Fivetran connections.
 
 ### 3.3 Configure Destination Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -448,7 +448,7 @@ Secure data warehouse and destination configurations.
 
 ### 4.1 Configure Activity Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -487,7 +487,7 @@ Monitor user and connector activity.
 
 ### 4.2 Configure Sync Monitoring
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -522,7 +522,7 @@ Monitor data sync status and errors.
 
 ### 4.3 Data Governance
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

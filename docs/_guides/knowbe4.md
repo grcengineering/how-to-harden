@@ -22,9 +22,9 @@ KnowBe4 is a leading security awareness training platform providing phishing sim
 - GRC professionals assessing training programs
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers KnowBe4 console security including SAML SSO, admin access, campaign configuration, and audit logging.
@@ -44,7 +44,7 @@ This guide covers KnowBe4 console security including SAML SSO, admin access, cam
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -83,7 +83,7 @@ Configure SAML SSO for KnowBe4 console access.
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -110,7 +110,7 @@ Require MFA for all KnowBe4 admin users.
 
 ### 2.1 Configure Admin Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -140,7 +140,7 @@ Implement least privilege for admin access.
 
 ### 2.2 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -167,7 +167,7 @@ Minimize and protect admin accounts.
 
 ### 3.1 Configure Phishing Campaign Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -193,7 +193,7 @@ Secure phishing simulation campaigns.
 
 ### 3.2 Configure API Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

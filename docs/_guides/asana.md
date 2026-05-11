@@ -22,9 +22,9 @@ Asana is a leading project management platform used by **millions of users** for
 - Organization administrators managing access controls
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Asana Admin Console security including SAML SSO, authentication policies, data protection, and mobile security.
@@ -45,7 +45,7 @@ This guide covers Asana Admin Console security including SAML SSO, authenticatio
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -88,7 +88,7 @@ Configure SAML SSO to centralize authentication for Asana users.
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -114,7 +114,7 @@ Require 2FA for all organization members.
 
 ### 1.3 Configure Session Timeout
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -139,7 +139,7 @@ Configure session timeout for security.
 
 ### 1.4 Configure SAML Group Mapping
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -167,7 +167,7 @@ Use SAML groups for license assignment.
 
 ### 2.1 Configure Admin Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -198,7 +198,7 @@ Implement role-based access for administration.
 
 ### 2.2 Configure Domain Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -224,7 +224,7 @@ Control organization membership through domain management.
 
 ### 2.3 Configure SCIM Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -252,7 +252,7 @@ Configure SCIM for automated user lifecycle management.
 
 ### 3.1 Configure Sharing Controls
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -278,7 +278,7 @@ Control how content is shared inside and outside the organization.
 
 ### 3.2 Configure Export Controls
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -304,7 +304,7 @@ Control ability to export data from Asana.
 
 ### 3.3 Configure Mobile Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -332,7 +332,7 @@ Configure mobile device security settings.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -364,7 +364,7 @@ Monitor activity through audit logs.
 
 ### 4.2 Monitor Security Compliance
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

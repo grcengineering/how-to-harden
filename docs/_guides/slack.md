@@ -22,9 +22,9 @@ Slack is used by over **750,000 organizations** worldwide for business communica
 - Third-party risk managers evaluating Slack integrations
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries (HIPAA, FINRA, FedRAMP)
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries (HIPAA, FINRA, FedRAMP)
 
 ### Scope
 This guide covers Slack workspace and Enterprise Grid security configurations including SSO/SAML, data loss prevention, retention policies, app management, and external collaboration controls.
@@ -47,7 +47,7 @@ This guide covers Slack workspace and Enterprise Grid security configurations in
 
 ### 1.1 Enable SAML Single Sign-On (SSO)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -125,7 +125,7 @@ Configure SAML-based SSO to authenticate Slack users through your corporate iden
 
 ### 1.2 Configure SCIM User Provisioning
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -179,7 +179,7 @@ Enable SCIM (System for Cross-domain Identity Management) to automatically provi
 
 ### 1.3 Restrict Workspace Admin Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -217,7 +217,7 @@ Limit Primary Owner and Admin roles to essential personnel. Use granular roles l
 
 ### 1.4 Configure Session Management
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -247,7 +247,7 @@ Configure session duration controls to automatically log out inactive users and 
 
 ### 2.1 Configure Approved IP Ranges
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -279,7 +279,7 @@ Restrict Slack access to approved IP ranges (corporate network, VPN) to prevent 
 
 ### 3.1 Restrict App Installation and Approval
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -342,7 +342,7 @@ Control which Slack apps and integrations can be installed. Require admin approv
 
 ### 3.2 Manage Slack Connect (External Collaboration)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -382,7 +382,7 @@ Control Slack Connect channels that enable collaboration with external organizat
 
 ### 4.1 Enable Data Loss Prevention (DLP)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -444,7 +444,7 @@ Configure Slack's native DLP to detect and prevent sharing of sensitive informat
 
 ### 4.2 Configure Message Retention Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -492,7 +492,7 @@ Configure message and file retention policies to balance compliance requirements
 
 ### 4.3 Enable Enterprise Key Management (EKM)
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -526,7 +526,7 @@ Deploy Slack Enterprise Key Management to use your own AWS KMS keys for encrypti
 
 ### 5.1 Enable Audit Logs
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

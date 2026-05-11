@@ -24,9 +24,9 @@ SailPoint is the **#1 IGA (Identity Governance and Administration) vendor** cont
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers SailPoint security configurations including authentication, ac
 
 ### 1.1 Enforce MFA for Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -77,7 +77,7 @@ Require strong MFA for all SailPoint administrative access.
 
 ### 1.2 Role-Based Administration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-6
 
 #### ClickOps Implementation
@@ -97,7 +97,7 @@ Require strong MFA for all SailPoint administrative access.
 
 ### 2.1 Secure SCIM Connectors
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -124,7 +124,7 @@ Harden SCIM connector configurations.
 
 ### 3.1 Implement Provisioning Controls
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-2
 
 #### ClickOps Implementation
@@ -145,7 +145,7 @@ Harden SCIM connector configurations.
 
 ### 4.1 Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Detection Queries

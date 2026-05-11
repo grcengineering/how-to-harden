@@ -22,9 +22,9 @@ Pendo is a product experience platform providing analytics, in-app guidance, and
 - GRC professionals assessing data security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Pendo security including SAML SSO, subscription access, API security, and data privacy controls.
@@ -44,7 +44,7 @@ This guide covers Pendo security including SAML SSO, subscription access, API se
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -83,7 +83,7 @@ Configure SAML SSO to centralize authentication for Pendo users.
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -106,7 +106,7 @@ Require 2FA for all Pendo users.
 
 ### 2.1 Configure User Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -135,7 +135,7 @@ Implement least privilege using Pendo roles.
 
 ### 2.2 Configure Subscription Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -156,7 +156,7 @@ Control access to different subscriptions/apps.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -184,7 +184,7 @@ Minimize and protect administrator accounts.
 
 ### 3.1 Configure Integration Key Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -210,7 +210,7 @@ Secure Pendo integration keys.
 
 ### 3.2 Configure Data Privacy
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

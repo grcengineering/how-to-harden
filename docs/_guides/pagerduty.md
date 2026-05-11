@@ -22,9 +22,9 @@ PagerDuty is a leading incident management platform used by **thousands of organ
 - GRC professionals assessing operational security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers PagerDuty security including SAML SSO, user provisioning, role-based access, and account security.
@@ -45,7 +45,7 @@ This guide covers PagerDuty security including SAML SSO, user provisioning, role
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -98,7 +98,7 @@ Configure SAML SSO to centralize authentication for PagerDuty users.
 
 ### 1.2 Manage SSO Certificate Rotation
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -128,7 +128,7 @@ Maintain SAML certificate validity.
 
 ### 1.3 Configure Account Owner Fallback
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -157,7 +157,7 @@ Understand and protect Account Owner fallback access.
 
 ### 2.1 Configure User Provisioning
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -184,7 +184,7 @@ Configure automatic user provisioning via SSO.
 
 ### 2.2 Configure SCIM Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -213,7 +213,7 @@ Configure SCIM for automated user lifecycle management.
 
 ### 3.1 Configure Role-Based Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -245,7 +245,7 @@ Implement least privilege using PagerDuty roles.
 
 ### 3.2 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -274,7 +274,7 @@ Minimize and protect administrator accounts.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

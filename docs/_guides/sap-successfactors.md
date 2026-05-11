@@ -24,9 +24,9 @@ SAP SuccessFactors is a global enterprise HCM with deep SAP ecosystem integratio
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers SAP SuccessFactors security configurations including authentic
 
 ### 1.1 Configure SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### ClickOps Implementation
@@ -70,7 +70,7 @@ This guide covers SAP SuccessFactors security configurations including authentic
 
 ### 1.2 Role-Based Permissions (RBP)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -99,7 +99,7 @@ This guide covers SAP SuccessFactors security configurations including authentic
 
 ### 2.1 Secure OData API Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -128,7 +128,7 @@ Harden OData API integrations.
 
 ### 2.2 OAuth Token Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(13)
 
 #### Implementation
@@ -148,7 +148,7 @@ Harden OData API integrations.
 
 ### 3.1 Configure Data Privacy
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### ClickOps Implementation
@@ -175,7 +175,7 @@ Harden OData API integrations.
 
 ### 4.1 Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### ClickOps Implementation

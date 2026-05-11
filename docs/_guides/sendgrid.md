@@ -22,9 +22,9 @@ Twilio SendGrid is a leading email delivery platform used by **millions of sende
 - GRC professionals assessing communication security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Twilio SendGrid security including two-factor authentication, API key management, SSO configuration, and IP access management.
@@ -45,7 +45,7 @@ This guide covers Twilio SendGrid security including two-factor authentication, 
 
 ### 1.1 Enable Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -94,7 +94,7 @@ Enable and enforce two-factor authentication for all SendGrid users.
 
 ### 1.2 Configure SAML Single Sign-On
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -144,7 +144,7 @@ Configure SAML SSO for centralized authentication.
 
 ### 1.3 Configure SSO Teammates
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -182,7 +182,7 @@ Manage teammates through SSO for centralized access control.
 
 ### 1.4 Configure IP Access Management
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -221,7 +221,7 @@ Restrict account access to approved IP addresses.
 
 ### 2.1 Use API Keys Instead of Passwords
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -268,7 +268,7 @@ Use API keys for all API and SMTP authentication.
 
 ### 2.2 Implement API Key Best Practices
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -306,7 +306,7 @@ Secure API key storage and management.
 
 ### 2.3 Implement Least Privilege API Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -344,7 +344,7 @@ Grant minimum necessary API permissions.
 
 ### 2.4 Configure API Key Alerts
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -383,7 +383,7 @@ Monitor API key usage for anomalies.
 
 ### 3.1 Secure Administrator Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -418,7 +418,7 @@ Protect administrator account access.
 
 ### 3.2 Configure Teammate Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -457,7 +457,7 @@ Configure granular permissions for teammates.
 
 ### 3.3 Configure Sender Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -497,7 +497,7 @@ Configure domain authentication for email security.
 
 ### 4.1 Monitor Email Activity
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -539,7 +539,7 @@ Monitor email sending activity and statistics.
 
 ### 4.2 Configure Event Webhooks
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -581,7 +581,7 @@ Configure webhooks for real-time event notification.
 
 ### 4.3 Monitor for Compromised Accounts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

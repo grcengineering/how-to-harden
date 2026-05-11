@@ -22,9 +22,9 @@ ChatGPT Enterprise is OpenAI's enterprise-grade AI assistant serving organizatio
 - Third-party risk managers evaluating AI tools
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers ChatGPT Enterprise security configurations including SSO/SAML, user management, data privacy controls, GPT restrictions, and compliance settings.
@@ -46,7 +46,7 @@ This guide covers ChatGPT Enterprise security configurations including SSO/SAML,
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -110,7 +110,7 @@ Configure SAML-based SSO to authenticate ChatGPT Enterprise users through your c
 
 ### 1.2 Enable Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -136,7 +136,7 @@ Enforce multi-factor authentication for all ChatGPT Enterprise users. With SSO, 
 
 ### 1.3 Configure SCIM User Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -176,7 +176,7 @@ Enable SCIM (System for Cross-domain Identity Management) for automatic user pro
 
 ### 1.4 Implement Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -218,7 +218,7 @@ Configure role-based access using ChatGPT Enterprise's three role types: Owner, 
 
 ### 2.1 Understand Data Privacy Guarantees
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -249,7 +249,7 @@ According to OpenAI's Enterprise Privacy commitments:
 
 ### 2.2 Configure Data Retention Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -280,7 +280,7 @@ Configure data retention policies to balance compliance requirements with data m
 
 ### 2.3 Enable Enterprise Key Management (EKM)
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -309,7 +309,7 @@ Deploy Enterprise Key Management to use your own encryption keys for ChatGPT dat
 
 ### 2.4 Establish Acceptable Use Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -353,7 +353,7 @@ Create and enforce acceptable use policies that define what data can and cannot 
 
 ### 3.1 Restrict Third-Party GPT Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -391,7 +391,7 @@ Control which GPTs (custom ChatGPT applications) can be used by your organizatio
 
 ### 3.2 Control App and Plugin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -421,7 +421,7 @@ Control which ChatGPT features and integrations are available to users. All apps
 
 ### 3.3 Configure Custom Instructions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -447,7 +447,7 @@ Set organization-wide custom instructions that apply to all conversations, embed
 
 ### 4.1 Enable Usage Analytics
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -476,7 +476,7 @@ Monitor ChatGPT Enterprise usage through the admin console analytics dashboard f
 
 ### 4.2 Integrate with Microsoft Purview
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -500,7 +500,7 @@ For organizations using Microsoft 365, integrate ChatGPT Enterprise with Microso
 
 ### 4.3 Implement Audit Trail Reviews
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

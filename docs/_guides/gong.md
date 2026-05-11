@@ -22,9 +22,9 @@ Gong is a revenue intelligence platform providing conversation analytics and sal
 - GRC professionals assessing communication security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Gong security including SAML SSO, user permissions, data access controls, and recording policies.
@@ -44,7 +44,7 @@ This guide covers Gong security including SAML SSO, user permissions, data acces
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -83,7 +83,7 @@ Configure SAML SSO for Gong access.
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -106,7 +106,7 @@ Require MFA for all Gong users.
 
 ### 2.1 Configure User Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -135,7 +135,7 @@ Implement least privilege for Gong access.
 
 ### 2.2 Configure Recording Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -161,7 +161,7 @@ Control access to call recordings.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -188,7 +188,7 @@ Minimize and protect admin accounts.
 
 ### 3.1 Configure Data Retention
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -209,7 +209,7 @@ Configure recording retention policies.
 
 ### 3.2 Configure Integration Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

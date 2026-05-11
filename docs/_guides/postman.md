@@ -22,9 +22,9 @@ Postman is the leading API platform used by **over 30 million developers** for A
 - DevOps engineers implementing secure API workflows
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Postman Enterprise security configurations including team management, SSO, API key management, and workspace security.
@@ -45,7 +45,7 @@ This guide covers Postman Enterprise security configurations including team mana
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -107,7 +107,7 @@ Configure SAML SSO to centralize authentication and enforce organizational secur
 
 ### 1.2 Configure SCIM Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -151,7 +151,7 @@ Configure SCIM for automatic user provisioning and deprovisioning synced with yo
 
 ### 1.3 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -184,7 +184,7 @@ Require MFA for team members accessing Postman.
 
 ### 2.1 Configure Workspace Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -220,7 +220,7 @@ Configure workspace-level permissions following least privilege principles.
 
 ### 2.2 Configure Team Member Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -253,7 +253,7 @@ Implement role-based access control for team administration.
 
 ### 2.3 Control Invitation Settings
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -281,7 +281,7 @@ Control who can invite new members to the team.
 
 ### 2.4 Restrict Public Workspaces
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -310,7 +310,7 @@ Restrict the creation of public workspaces to prevent accidental data exposure.
 
 ### 3.1 Configure API Key Expiration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -345,7 +345,7 @@ Configure Postman API key expiration to limit credential lifetime.
 
 ### 3.2 Centralize API Key Management
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -379,7 +379,7 @@ Centrally manage team API keys with visibility and revocation capabilities.
 
 ### 3.3 Use Postman Vault for Secrets
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -419,7 +419,7 @@ Use Postman Local Vault to store sensitive credentials locally, never syncing to
 
 ### 3.4 Enable Secret Scanner
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -452,7 +452,7 @@ Use Postman's Secret Scanner to detect exposed credentials in public workspaces.
 
 ### 4.1 Review Audit Logs
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -489,7 +489,7 @@ Regularly review audit logs for security events and compliance.
 
 ### 4.2 Configure Allowed Domains
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -515,7 +515,7 @@ Restrict API requests to approved domains to prevent data exfiltration.
 
 ### 4.3 Implement Data Governance
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

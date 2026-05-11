@@ -22,9 +22,9 @@ Bitbucket Cloud is Atlassian's Git-based code hosting and collaboration platform
 - Platform engineers implementing secure SDLC
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Bitbucket Cloud security configurations including workspace settings, authentication, branch permissions, and pipeline security. Bitbucket Data Center is covered in a separate guide.
@@ -46,7 +46,7 @@ This guide covers Bitbucket Cloud security configurations including workspace se
 
 ### 1.1 Enforce Two-Step Verification
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -90,7 +90,7 @@ Require two-step verification (2SV) for all workspace members to protect against
 
 ### 1.2 Configure SAML Single Sign-On
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -126,7 +126,7 @@ Configure SAML SSO using Atlassian Access to centralize identity management.
 
 ### 1.3 Configure IP Allowlisting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -167,7 +167,7 @@ Restrict Bitbucket access to approved IP addresses to prevent access from unauth
 
 ### 1.4 Manage User Permissions and Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -210,7 +210,7 @@ Implement least privilege access for workspace members and manage user lifecycle
 
 ### 2.1 Configure Project-Level Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -247,7 +247,7 @@ Configure project-level permissions to manage access at scale across multiple re
 
 ### 2.2 Manage Third-Party App Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -281,7 +281,7 @@ Control which third-party applications can access workspace data.
 
 ### 2.3 Disable Repository Forking for Private Repos
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -310,7 +310,7 @@ Prevent unauthorized code distribution by disabling forking for private reposito
 
 ### 3.1 Configure Branch Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -350,7 +350,7 @@ Configure branch permissions to protect important branches from unauthorized cha
 
 ### 3.2 Require Pull Request Approvals
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -384,7 +384,7 @@ Require pull request reviews before code can be merged to protected branches.
 
 ### 3.3 Enforce Signed Commits
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -412,7 +412,7 @@ Require GPG or SSH signed commits to verify commit authenticity.
 
 ### 4.1 Secure Pipeline Variables
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -444,7 +444,7 @@ Securely manage secrets and variables used in Bitbucket Pipelines.
 
 ### 4.2 Configure Deployment Permissions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -474,7 +474,7 @@ Restrict who can trigger deployments to production environments.
 
 ### 4.3 Scan for Secrets in Commits
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -494,7 +494,7 @@ Implement secret scanning to prevent credentials from being committed.
 
 ### 5.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -531,7 +531,7 @@ Enable and monitor audit logs for security events and compliance.
 
 ### 5.2 Regular Security Reviews
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

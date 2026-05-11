@@ -23,9 +23,9 @@ Databricks serves **10,000+ customers** with Unity Catalog governing data lake a
 - Third-party risk managers evaluating analytics integrations
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Databricks security configurations including authentication, Unity Catalog governance, cluster security, and secrets management.
@@ -47,7 +47,7 @@ This guide covers Databricks security configurations including authentication, U
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -77,7 +77,7 @@ Require SAML SSO with MFA for all Databricks access.
 
 ### 1.2 Implement Service Principal Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -119,7 +119,7 @@ Secure service principals used for automation and integrations.
 
 ### 1.3 Configure IP Access Lists
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3(7)
 
 #### Description
@@ -143,7 +143,7 @@ Restrict Databricks access to known IP ranges.
 
 ### 2.1 Implement Data Governance
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3
 
 #### Description
@@ -169,7 +169,7 @@ Create row filter functions to restrict data visibility by group membership and 
 
 ### 2.2 Configure Data Masking
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-28
 
 #### Description
@@ -181,7 +181,7 @@ Implement dynamic data masking for sensitive columns. Create masking functions t
 
 ### 2.3 Audit Logging for Data Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Description
@@ -206,7 +206,7 @@ Query the `system.access.audit` table to review data access events. See the DB Q
 
 ### 3.1 Configure Cluster Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### Description
@@ -229,7 +229,7 @@ Implement cluster policies to enforce security configurations.
 
 ### 3.2 Network Isolation
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-7
 
 #### Description
@@ -252,7 +252,7 @@ The account-level Terraform example for private workspace deployment with VPC is
 
 ### 4.1 Use Databricks Secret Scopes
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### Description
@@ -280,7 +280,7 @@ Access secrets via `dbutils.secrets.get()` in notebooks. Secret values are autom
 
 ### 4.2 External Secret Store Integration
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-28
 
 #### Description
@@ -298,7 +298,7 @@ Create an Azure Key Vault-backed secret scope so secrets are fetched directly fr
 
 ### 5.1 Security Monitoring
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-4
 
 #### Detection Queries

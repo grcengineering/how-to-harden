@@ -22,9 +22,9 @@ last_updated: "2025-02-05"
 - Third-party risk managers evaluating password managers
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers 1Password Business admin controls, SSO configuration, team policies, and vault security.
@@ -45,7 +45,7 @@ This guide covers 1Password Business admin controls, SSO configuration, team pol
 
 ### 1.1 Configure SSO with Identity Provider
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -100,7 +100,7 @@ Configure SAML-based SSO to authenticate 1Password users through your corporate 
 
 ### 1.2 Configure SCIM Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -139,7 +139,7 @@ Configure SCIM for automatic user provisioning and deprovisioning synced with yo
 
 ### 2.1 Configure Account Password Policy
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -173,7 +173,7 @@ Configure master password requirements for 1Password accounts.
 
 ### 2.2 Configure Firewall Rules
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -200,7 +200,7 @@ Configure IP-based access restrictions for 1Password access.
 
 ### 2.3 Configure Team Member Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -239,7 +239,7 @@ Configure policies for team member permissions and capabilities.
 
 ### 2.4 Implement Role-Based Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -270,7 +270,7 @@ Configure role-based access for team administration.
 
 ### 3.1 Configure Vault Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -306,7 +306,7 @@ Configure vault access permissions following least privilege principles.
 
 ### 3.2 Configure Item Sharing Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -336,7 +336,7 @@ Configure how items can be shared within and outside the organization.
 
 ### 4.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -368,7 +368,7 @@ Enable audit logging for security monitoring and compliance.
 
 ### 4.2 Monitor Security Dashboard
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

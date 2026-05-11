@@ -22,9 +22,9 @@ Shopify is a leading e-commerce platform powering **millions of businesses** wor
 - GRC professionals assessing retail security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Shopify Plus security including SAML SSO, organization management, staff permissions, and store security.
@@ -44,7 +44,7 @@ This guide covers Shopify Plus security including SAML SSO, organization managem
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -85,7 +85,7 @@ Configure SAML SSO for Shopify Plus organization users.
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -110,7 +110,7 @@ Require 2FA for all Shopify staff accounts.
 
 ### 1.3 Configure Login Services
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -133,7 +133,7 @@ Control allowed login methods.
 
 ### 2.1 Configure Staff Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -164,7 +164,7 @@ Implement least privilege for staff accounts.
 
 ### 2.2 Configure Store Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -185,7 +185,7 @@ Control access to individual stores.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -213,7 +213,7 @@ Minimize and protect organization owner accounts.
 
 ### 3.1 Configure API Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -239,7 +239,7 @@ Secure API apps and access tokens.
 
 ### 3.2 Configure Checkout Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

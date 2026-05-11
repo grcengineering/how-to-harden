@@ -22,9 +22,9 @@ Mimecast is a leading cloud-based email security platform protecting **millions 
 - SOC analysts monitoring email threats
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Mimecast Email Security Gateway configuration including targeted threat protection, impersonation protection, URL protection, and policy optimization.
@@ -46,7 +46,7 @@ This guide covers Mimecast Email Security Gateway configuration including target
 
 ### 1.1 Verify MX Record Configuration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -82,7 +82,7 @@ Ensure MX records are properly configured to route all email through Mimecast.
 
 ### 1.2 Configure Email Authentication (SPF, DKIM, DMARC)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -119,7 +119,7 @@ Configure email authentication to prevent spoofing and verify sender identity.
 
 ### 1.3 Configure Secure Communication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -153,7 +153,7 @@ Configure TLS and secure communication for email transmission.
 
 ### 2.1 Configure URL Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -194,7 +194,7 @@ Configure URL Protection to detect and block malicious links.
 
 ### 2.2 Configure Attachment Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -232,7 +232,7 @@ Configure attachment scanning and sandboxing for malware protection.
 
 ### 2.3 Configure Internal Email Protection
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -266,7 +266,7 @@ Enable scanning of internal email for compromised account detection.
 
 ### 3.1 Configure Standard Impersonation Policy
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -303,7 +303,7 @@ Configure impersonation protection to detect business email compromise attempts.
 
 ### 3.2 Configure VIP Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -340,7 +340,7 @@ Configure enhanced protection for high-value targets (executives, finance).
 
 ### 3.3 Configure Advanced Business Email Compromise (ABEC)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -373,7 +373,7 @@ Enable advanced BEC detection using AI-powered analysis.
 
 ### 4.1 Configure Admin Access Controls
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -406,7 +406,7 @@ Implement least privilege for Mimecast administration.
 
 ### 4.2 Enforce MFA for Admin Accounts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -433,7 +433,7 @@ Require MFA for all administrative access to Mimecast.
 
 ### 4.3 Manage User Access and Lifecycle
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -461,7 +461,7 @@ Implement proper user lifecycle management.
 
 ### 5.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -496,7 +496,7 @@ Enable and monitor audit logs for security events.
 
 ### 5.2 Conduct Quarterly Policy Review
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -535,7 +535,7 @@ Regularly audit and review Mimecast policies for effectiveness.
 
 ### 5.3 Monitor Threat Dashboard
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

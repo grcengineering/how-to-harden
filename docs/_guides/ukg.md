@@ -22,9 +22,9 @@ UKG (Ultimate Kronos Group) Pro is a leading cloud-based human capital managemen
 - GRC professionals assessing HCM security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers UKG Pro security including SAML SSO, authentication features, role-based access control, and session security.
@@ -45,7 +45,7 @@ This guide covers UKG Pro security including SAML SSO, authentication features, 
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -89,7 +89,7 @@ Configure SAML SSO to centralize authentication for UKG Pro users.
 
 ### 1.2 Configure Multiple Identity Providers
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -122,7 +122,7 @@ Configure multiple IdPs for different user populations.
 
 ### 1.3 Configure Single Logout (SLO)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -154,7 +154,7 @@ Enable IdP Service Level Objective (SLO) for session termination.
 
 ### 1.4 Configure SAML Response Signing
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -188,7 +188,7 @@ Ensure SAML responses are properly signed.
 
 ### 2.1 Configure Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -219,7 +219,7 @@ Implement least privilege using UKG's role model.
 
 ### 2.2 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -245,7 +245,7 @@ Minimize and protect administrator accounts.
 
 ### 2.3 Configure System Settings Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -269,7 +269,7 @@ Configure system security settings.
 
 ### 3.1 Configure Data Access Controls
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -295,7 +295,7 @@ Control access to sensitive employee data.
 
 ### 3.2 Configure Report Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -323,7 +323,7 @@ Control access to HR reports and analytics.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

@@ -31,9 +31,9 @@ This guide provides comprehensive hardening controls informed by vendor document
 - Compliance teams assessing data privacy for AI tools
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations using Cursor
-- **L2 (Hardened):** Enhanced controls for organizations with sensitive codebases
-- **L3 (Maximum Security):** Strictest controls for regulated industries or high-security environments
+- **L1 (Crawl):** Essential controls for all organizations using Cursor
+- **L2 (Walk):** Enhanced controls for organizations with sensitive codebases
+- **L3 (Run):** Strictest controls for regulated industries or high-security environments
 
 ### Scope
 This guide covers Cursor-specific security configurations including AI privacy settings, MCP server security, agent sandbox controls, API key management, rules file integrity, code privacy controls, workspace trust, extension supply chain security, and organizational policies. General VSCode security and operating system hardening are out of scope.
@@ -71,7 +71,7 @@ This guide covers Cursor-specific security configurations including AI privacy s
 
 ### 1.1 Enforce Account Authentication for All Users
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2
 
 #### Description
@@ -140,7 +140,7 @@ Require all developers to authenticate with a Cursor account instead of using th
 
 ### 1.2 Enable Multi-Factor Authentication (MFA)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -194,7 +194,7 @@ Require MFA for Cursor account authentication to prevent account takeover via co
 
 ### 1.3 Configure SSO with SAML/OIDC (Enterprise)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-2, IA-8
 
 #### Description
@@ -262,7 +262,7 @@ Integrate Cursor with your identity provider (IdP) via SAML 2.0 or OIDC for cent
 
 ### 1.4 Enable SCIM Provisioning (Enterprise)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-2
 
 #### Description
@@ -320,7 +320,7 @@ Enable SCIM 2.0 to automate user lifecycle management (provisioning, deprovision
 
 ### 2.1 Enable Privacy Mode for Sensitive Codebases
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-4
 
 #### Description
@@ -412,7 +412,7 @@ For granular control, add privacy settings to workspace configuration:
 
 ### 2.2 Configure AI Provider Restrictions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-7
 
 #### Description
@@ -461,7 +461,7 @@ Restrict which AI providers Cursor can use. Allow only approved providers with a
 
 ### 2.3 Configure .cursorignore for Sensitive Files
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, SC-4
 
 #### Description
@@ -517,7 +517,7 @@ Use `.cursorignore` for secrets and credentials. Use `.cursorindexingignore` for
 
 ### 2.4 Enable Local AI Models (L3 Maximum Security)
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 **NIST 800-53:** SC-4, SC-7
 
 #### Description
@@ -580,7 +580,7 @@ Options:
 
 ### 3.1 Use Environment Variables for API Keys (Never Hardcode)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(1)
 
 #### Description
@@ -630,7 +630,7 @@ Store Cursor AI provider API keys in environment variables or secure credential 
 
 ### 3.2 Rotate AI Provider API Keys Quarterly
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-5(1)
 
 #### Description
@@ -671,7 +671,7 @@ For Anthropic:
 
 ### 3.3 Monitor API Key Usage and Costs
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 #### Description
 Monitor AI provider API usage to detect anomalies (unusual spikes, unauthorized usage, cost overruns).
@@ -701,7 +701,7 @@ For Anthropic:
 
 ### 4.1 Audit and Allowlist MCP Servers
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7, SA-9
 
 #### Description
@@ -778,7 +778,7 @@ Audit all configured MCP (Model Context Protocol) servers and restrict usage to 
 
 ### 4.2 Enable MCP Tool Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-6
 
 #### Description
@@ -817,7 +817,7 @@ Enable MCP Tool Protection to require explicit user approval before any MCP tool
 
 ### 5.1 Disable Auto-Run Mode
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7, AC-6
 
 #### Description
@@ -883,7 +883,7 @@ Disable Cursor's auto-run mode (sometimes called "YOLO mode") to require explici
 
 ### 5.2 Configure Agent Sandbox
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-39, CM-7
 
 #### Description
@@ -932,7 +932,7 @@ Enable and configure Cursor's agent sandbox to restrict file system access, netw
 
 ### 5.3 Secure Background/Cloud Agents
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 **NIST 800-53:** SC-7, AC-6
 
 #### Description
@@ -975,7 +975,7 @@ Configure security controls for Cursor's Background Agents (remote cloud agents 
 
 ### 6.1 Audit .cursorrules for Hidden Payloads
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-3, CM-7
 
 #### Description
@@ -1035,7 +1035,7 @@ Scan `.cursorrules` and `.cursor/rules/*.mdc` files for hidden Unicode character
 
 ### 6.2 Enforce Rules File Review in PRs
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-3
 
 #### Description
@@ -1077,7 +1077,7 @@ Require mandatory code review for any changes to AI rules files (`.cursorrules`,
 
 ### 7.1 Enable Workspace Trust for All Repositories
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### Description
@@ -1155,7 +1155,7 @@ Enable VSCode/Cursor Workspace Trust to prevent automatic execution of untrusted
 
 ### 7.2 Scan for Secrets in Code Before AI Processing
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -1193,7 +1193,7 @@ Use secret scanning tools to detect and remove secrets from code before allowing
 
 ### 8.1 Audit and Restrict VSCode Extensions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### Description
@@ -1255,7 +1255,7 @@ Review all installed VSCode extensions and remove unnecessary or untrusted ones.
 
 ### 9.1 Disable Telemetry and Crash Reporting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-4
 
 #### Description
@@ -1284,7 +1284,7 @@ Disable telemetry data collection and crash reporting to prevent code snippets o
 
 ### 9.2 Configure Network Allowlisting
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 **NIST 800-53:** SC-7
 
 #### Description
@@ -1316,7 +1316,7 @@ Use enterprise firewall or endpoint security to allowlist only required Cursor n
 
 ### 10.1 Enable Cursor Usage Logging
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AU-2
 
 #### Description
@@ -1353,7 +1353,7 @@ Configure logging of Cursor AI usage for audit and compliance purposes. Ensure C
 
 ### 10.2 Monitor for Suspicious Agent Activity
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AU-6, SI-4
 
 #### Description
@@ -1389,7 +1389,7 @@ Monitor developer workstations for indicators of Cursor-based attacks including 
 
 ### 11.1 Deploy Cursor Teams or Enterprise for Centralized Management
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 #### Description
 Use Cursor Teams or Enterprise edition to enforce organizational policies, manage licenses, and control AI provider access centrally.
@@ -1440,7 +1440,7 @@ Use Cursor Teams or Enterprise edition to enforce organizational policies, manag
 
 ### 11.2 Enforce Organizational Policies via MDM
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 #### Description
 Use MDM (Mobile Device Management) to deploy and enforce Cursor security settings across all developer machines. MDM-deployed policies cannot be overridden locally.

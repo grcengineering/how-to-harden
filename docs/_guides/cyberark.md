@@ -23,9 +23,9 @@ CyberArk is a Privileged Access Management (PAM) platform that protects credenti
 - Third-party risk managers evaluating secrets management
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers CyberArk-specific security configurations including vault hardening, API security, session management, secrets rotation, and integration security with external secrets managers.
@@ -48,7 +48,7 @@ This guide covers CyberArk-specific security configurations including vault hard
 
 ### 1.1 Enforce Multi-Factor Authentication for All Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **CIS Controls:** 6.3, 6.5
 **NIST 800-53:** IA-2(1), IA-2(6)
 
@@ -107,7 +107,7 @@ Require MFA for all CyberArk console access, including PVWA (Password Vault Web 
 
 ### 1.2 Implement Vault-Level Access Controls
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -141,7 +141,7 @@ Organize safes into logical categories (Infrastructure, Applications, Emergency)
 
 ### 1.3 Configure Break-Glass Procedures
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CP-2
 
 #### Description
@@ -172,7 +172,7 @@ Implement emergency access procedures for critical scenarios when normal authent
 
 ### 2.1 Harden Vault Server Configuration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-8, SC-28
 
 #### Description
@@ -201,7 +201,7 @@ Configure secure vault server settings including encryption, communication secur
 
 ### 2.2 Implement Vault High Availability
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CP-9, CP-10
 
 #### Description
@@ -223,7 +223,7 @@ Use `PAReplicate.exe` to verify replication status and test DR failover in non-p
 
 ### 3.1 Secure API Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5, SC-8
 
 #### Description
@@ -265,7 +265,7 @@ Configure rate limiting in PVConfiguration.xml to limit concurrent requests, set
 
 ### 3.2 Restrict Integration Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-6
 
 #### Description
@@ -287,7 +287,7 @@ For each integration:
 
 ### 3.3 Integrate with External Secrets Managers
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-5(7)
 
 #### Description
@@ -301,7 +301,7 @@ Securely configure integrations with HashiCorp Vault, AWS Secrets Manager, and A
 
 ### 4.1 Configure PSM Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-12, AU-14
 
 #### Description
@@ -335,7 +335,7 @@ Configure session duration limits (8 hours maximum), idle timeouts (30 minutes),
 
 ### 4.2 Implement Just-In-Time Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-2(6)
 
 #### Description
@@ -363,7 +363,7 @@ Configure time-limited access requests with automatic credential rotation after 
 
 ### 5.1 Configure Automatic Password Rotation
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(1)
 
 #### Description
@@ -390,7 +390,7 @@ Set minimum length to 20 characters, require uppercase, lowercase, numbers, and 
 
 ### 5.2 Monitor Rotation Failures
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Description
 Alert on password rotation failures to prevent credential staleness.
@@ -405,7 +405,7 @@ Query for rotation failures via SIEM or direct database reporting to identify ac
 
 ### 6.1 Enable Comprehensive Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Description

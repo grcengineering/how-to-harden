@@ -24,9 +24,9 @@ Box serves **115,000+ customers including 70% of Fortune 500**. Box Platform API
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers Box security configurations including authentication, access c
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### ClickOps Implementation
@@ -65,7 +65,7 @@ This guide covers Box security configurations including authentication, access c
 
 ### 1.2 Role-Based Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -83,7 +83,7 @@ This guide covers Box security configurations including authentication, access c
 
 ### 2.1 Configure Sharing Restrictions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-21
 
 #### ClickOps Implementation
@@ -108,7 +108,7 @@ This guide covers Box security configurations including authentication, access c
 
 ### 3.1 Manage OAuth Apps
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### ClickOps Implementation
@@ -127,7 +127,7 @@ This guide covers Box security configurations including authentication, access c
 
 ### 3.2 Service Account Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-5
 
 #### Implementation
@@ -143,7 +143,7 @@ This guide covers Box security configurations including authentication, access c
 
 ### 4.1 Enable Box Shield
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 #### Features
 

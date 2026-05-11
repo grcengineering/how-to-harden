@@ -22,9 +22,9 @@ Vanta is a leading AI-powered compliance and trust management platform automatin
 - Compliance managers overseeing audit readiness
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Vanta platform security including access controls, integration security, continuous monitoring configuration, and vendor risk management.
@@ -45,7 +45,7 @@ This guide covers Vanta platform security including access controls, integration
 
 ### 1.1 Configure SSO Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -85,7 +85,7 @@ Configure SAML SSO to centralize authentication and enforce organizational secur
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -117,7 +117,7 @@ Require MFA for all users accessing Vanta.
 
 ### 1.3 Implement Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -151,7 +151,7 @@ Configure role-based access to implement least privilege.
 
 ### 1.4 Restrict Administrative Privileges
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -184,7 +184,7 @@ Follow Essential Eight recommendations for admin privilege restriction.
 
 ### 2.1 Configure Integrations with Least Privilege
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -221,7 +221,7 @@ Connect integrations with minimum required permissions.
 
 ### 2.2 Secure Cloud Infrastructure Integrations
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -253,7 +253,7 @@ Securely configure AWS, Azure, and GCP integrations.
 
 ### 2.3 Secure Identity Provider Integration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -281,7 +281,7 @@ Configure identity provider integration for compliance monitoring.
 
 ### 3.1 Configure Automated Tests
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -318,7 +318,7 @@ Configure Vanta's 1,200+ automated tests for continuous compliance visibility.
 
 ### 3.2 Configure Alerts and Notifications
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -352,7 +352,7 @@ Configure continuous monitoring alerts for compliance issues.
 
 ### 3.3 Monitor Security Dashboard
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -383,7 +383,7 @@ Use security insights dashboard for threat visibility.
 
 ### 3.4 Configure Remediation Workflows
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -411,7 +411,7 @@ Configure automated remediation workflows for fast resolution.
 
 ### 4.1 Configure Vendor Security Reviews
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -442,7 +442,7 @@ Use Vanta's vendor risk management for third-party security assessment.
 
 ### 4.2 Manage Trust Center
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

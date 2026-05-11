@@ -22,9 +22,9 @@ Microsoft Entra ID (formerly Azure Active Directory) is the cloud identity platf
 - Third-party risk managers evaluating SSO integrations
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Microsoft Entra ID security configurations including authentication policies, Conditional Access, Privileged Identity Management, application security, and Zero Trust identity architecture. Microsoft 365 and Azure infrastructure are covered in separate guides.
@@ -47,7 +47,7 @@ This guide covers Microsoft Entra ID security configurations including authentic
 
 ### 1.1 Enforce Phishing-Resistant MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -132,7 +132,7 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 
 ### 1.2 Configure Emergency Access (Break-Glass) Accounts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -208,7 +208,7 @@ Create highly protected emergency access accounts excluded from Conditional Acce
 
 ### 2.1 Block Legacy Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -251,7 +251,7 @@ Block legacy authentication protocols (Basic Auth, POP, IMAP, SMTP AUTH) that ca
 
 ### 2.2 Require MFA for All Users
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -284,7 +284,7 @@ Create Conditional Access policy requiring MFA for all interactive sign-ins to a
 
 ### 2.3 Require Compliant Devices for Admins
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -314,7 +314,7 @@ Require privileged users to access admin portals only from Intune-compliant or H
 
 ### 2.4 Block High-Risk Sign-Ins
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -355,7 +355,7 @@ Use Entra ID Protection to automatically block sign-ins classified as high risk 
 
 ### 3.1 Enable Just-In-Time Access for Admin Roles
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -436,7 +436,7 @@ Implement Privileged Identity Management (PIM) to eliminate standing admin privi
 
 ### 3.2 Configure Access Reviews
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -469,7 +469,7 @@ Enable recurring access reviews for privileged roles and group memberships to en
 
 ### 4.1 Restrict User Consent to Applications
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -516,7 +516,7 @@ Prevent users from granting OAuth consent to third-party applications. Require a
 
 ### 4.2 Review and Restrict Application Permissions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -553,7 +553,7 @@ Regularly audit enterprise applications for excessive permissions, especially hi
 
 ### 5.1 Enable Sign-In and Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -590,7 +590,7 @@ Enable and export Entra ID sign-in and audit logs for security monitoring, threa
 
 ### 5.2 Monitor Identity Secure Score
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

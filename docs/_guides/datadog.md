@@ -22,9 +22,9 @@ Datadog is a leading observability and security platform used by **thousands of 
 - GRC professionals assessing observability security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Datadog organization security including SAML SSO, role-based access control, API key management, and session security.
@@ -45,7 +45,7 @@ This guide covers Datadog organization security including SAML SSO, role-based a
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -103,7 +103,7 @@ Configure SAML SSO to centralize authentication for Datadog users.
 
 ### 1.2 Enable SAML Strict Mode
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -134,7 +134,7 @@ Require SAML authentication for all users.
 
 ### 1.3 Configure Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -163,7 +163,7 @@ Configure session timeout and security settings.
 
 ### 2.1 Configure Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -197,7 +197,7 @@ Implement least privilege using Datadog's RBAC model.
 
 ### 2.2 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -225,7 +225,7 @@ Minimize and protect administrator accounts.
 
 ### 3.1 Secure API Keys
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -258,7 +258,7 @@ Secure Datadog API keys used for data ingestion.
 
 ### 3.2 Secure Application Keys
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -290,7 +290,7 @@ Secure application keys used for API access.
 
 ### 4.1 Configure Audit Logs
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

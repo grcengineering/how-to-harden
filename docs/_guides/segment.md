@@ -22,9 +22,9 @@ Twilio Segment is a leading customer data platform (CDP) serving **thousands of 
 - GRC professionals assessing CDP security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Segment security including SAML SSO, workspace access, source/destination security, and data governance.
@@ -45,7 +45,7 @@ This guide covers Segment security including SAML SSO, workspace access, source/
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -85,7 +85,7 @@ Configure SAML SSO to centralize authentication for Segment users.
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -113,7 +113,7 @@ Require 2FA for all Segment users.
 
 ### 2.1 Configure Workspace Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -144,7 +144,7 @@ Implement least privilege using Segment roles.
 
 ### 2.2 Configure Source/Destination Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -170,7 +170,7 @@ Control access to specific sources and destinations.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -198,7 +198,7 @@ Minimize and protect administrator accounts.
 
 ### 3.1 Configure Write Keys Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -229,7 +229,7 @@ Secure source write keys.
 
 ### 3.2 Configure Data Governance
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -260,7 +260,7 @@ Implement data governance controls.
 
 ### 3.3 Configure Destination Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -288,7 +288,7 @@ Secure destination connections and credentials.
 
 ### 4.1 Configure Audit Trail
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -315,7 +315,7 @@ Enable and monitor audit logs.
 
 ### 4.2 Configure Alerting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

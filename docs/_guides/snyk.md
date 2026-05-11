@@ -24,9 +24,9 @@ Snyk provides developer security for vulnerability scanning across code, depende
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers Snyk security configurations including authentication, access 
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### ClickOps Implementation
@@ -67,7 +67,7 @@ This guide covers Snyk security configurations including authentication, access 
 
 ### 1.2 Role-Based Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -94,7 +94,7 @@ This guide covers Snyk security configurations including authentication, access 
 
 ### 2.1 Secure Service Account Tokens
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -121,7 +121,7 @@ Manage Snyk service account tokens securely.
 
 ### 2.2 SCM Integration Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### ClickOps Implementation
@@ -144,7 +144,7 @@ Manage Snyk service account tokens securely.
 
 ### 3.1 Project Visibility
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-21
 
 #### ClickOps Implementation
@@ -165,7 +165,7 @@ Manage Snyk service account tokens securely.
 
 ### 3.2 Ignore Policy
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-7
 
 #### Implementation
@@ -183,7 +183,7 @@ Manage Snyk service account tokens securely.
 
 ### 4.1 Audit Logs (Enterprise)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### ClickOps Implementation

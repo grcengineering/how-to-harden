@@ -22,9 +22,9 @@ Outreach is a sales engagement platform providing automation and analytics for s
 - GRC professionals assessing sales platform security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Outreach security including SAML SSO, user permissions, data access, and integration security.
@@ -44,7 +44,7 @@ This guide covers Outreach security including SAML SSO, user permissions, data a
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -80,7 +80,7 @@ Configure SAML SSO for Outreach access.
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -102,7 +102,7 @@ Require MFA for all Outreach users.
 
 ### 2.1 Configure User Profiles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -128,7 +128,7 @@ Implement least privilege using profiles.
 
 ### 2.2 Configure Governance Controls
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -149,7 +149,7 @@ Configure governance and compliance controls.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -176,7 +176,7 @@ Minimize and protect admin accounts.
 
 ### 3.1 Configure Integration Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

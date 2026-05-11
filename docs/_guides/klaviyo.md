@@ -24,9 +24,9 @@ Klaviyo is an e-commerce marketing platform managing customer data, email/SMS ca
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers Klaviyo security configurations including authentication, acce
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### ClickOps Implementation
@@ -66,7 +66,7 @@ This guide covers Klaviyo security configurations including authentication, acce
 
 ### 1.2 Role-Based Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -92,7 +92,7 @@ This guide covers Klaviyo security configurations including authentication, acce
 
 ### 2.1 Secure API Keys
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -126,7 +126,7 @@ Manage Klaviyo API keys securely.
 
 ### 2.2 Webhook Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-8
 
 #### Implementation
@@ -142,7 +142,7 @@ Manage Klaviyo API keys securely.
 
 ### 3.1 Profile Data Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### ClickOps Implementation
@@ -161,7 +161,7 @@ Manage Klaviyo API keys securely.
 
 ### 3.2 Email Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-3
 
 #### ClickOps Implementation
@@ -182,7 +182,7 @@ Manage Klaviyo API keys securely.
 
 ### 4.1 Activity Monitoring
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### ClickOps Implementation

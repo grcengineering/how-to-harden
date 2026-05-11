@@ -23,9 +23,9 @@ Azure DevOps provides deep Microsoft ecosystem integration with enterprise-wide 
 - DevOps teams implementing secure pipelines
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Azure DevOps security configurations including authentication, service connection hardening, pipeline security, and variable group management.
@@ -48,7 +48,7 @@ This guide covers Azure DevOps security configurations including authentication,
 
 ### 1.1 Enforce Azure AD Authentication with Conditional Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **CIS Controls:** 6.3, 6.5
 **NIST 800-53:** IA-2(1)
 
@@ -102,7 +102,7 @@ Require Azure AD authentication with Conditional Access policies including MFA, 
 
 ### 1.2 Implement Project-Level Security Groups
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -134,7 +134,7 @@ See the CLI Code Pack below for the recommended security group hierarchy.
 
 ### 1.3 Configure Personal Access Token Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -163,7 +163,7 @@ See the Code Pack below for a PowerShell script that lists all PATs via the Azur
 
 ### 2.1 Migrate to Workload Identity Federation
 
-**Profile Level:** L1 (Baseline) - CRITICAL
+**Profile Level:** L1 (Crawl) - CRITICAL
 **NIST 800-53:** IA-5
 
 #### Description
@@ -207,7 +207,7 @@ Replace service connections with stored credentials with workload identity feder
 
 ### 2.2 Audit and Rotate Legacy Service Connections
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(1)
 
 #### Description
@@ -243,7 +243,7 @@ See the Code Pack below for a PowerShell script that updates service connection 
 
 ### 2.3 Implement Service Connection Approval Gates
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-3
 
 #### Description
@@ -268,7 +268,7 @@ Require approval for pipeline use of sensitive service connections.
 
 ### 3.1 Implement YAML Pipeline Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### Description
@@ -300,7 +300,7 @@ See the CLI Code Pack below for a secure pipeline template with build, security 
 
 ### 3.2 Configure Pipeline Permissions and Approvals
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3
 
 #### Description
@@ -329,7 +329,7 @@ Restrict pipeline access to resources and require approvals for production.
 
 ### 3.3 Secure Agent Pool Configuration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-7
 
 #### Description
@@ -363,7 +363,7 @@ See the Code Pack below for a PowerShell script that installs a self-hosted agen
 
 ### 4.1 Configure Branch Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-3
 
 #### Description
@@ -393,7 +393,7 @@ Implement branch policies to enforce code review and prevent direct pushes.
 
 ### 4.2 Enable Credential Scanning
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** RA-5
 
 #### Description
@@ -409,7 +409,7 @@ Enable Microsoft Security DevOps to detect secrets in repositories.
 
 ### 5.1 Secure Variable Groups
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### Description
@@ -445,7 +445,7 @@ Configure variable groups with appropriate security controls.
 
 ### 5.2 Use Runtime Parameters for Secrets
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-28
 
 #### Description
@@ -461,7 +461,7 @@ Pass secrets at runtime rather than storing in pipelines. See the CLI Code Pack 
 
 ### 6.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Description

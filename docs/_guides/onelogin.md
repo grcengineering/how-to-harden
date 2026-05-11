@@ -22,9 +22,9 @@ OneLogin is a leading cloud identity and access management platform providing SS
 - Third-party risk managers evaluating identity providers
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers OneLogin administration console security, user policies, MFA configuration, and access controls.
@@ -46,7 +46,7 @@ This guide covers OneLogin administration console security, user policies, MFA c
 
 ### 1.1 Configure Password Policy
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -84,7 +84,7 @@ Configure password policies to enforce strong authentication requirements for On
 
 ### 1.2 Configure Session Controls
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -112,7 +112,7 @@ Configure session timeout and activity controls to limit exposure from idle sess
 
 ### 1.3 Enable Self-Service Password Reset
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -146,7 +146,7 @@ Configure secure self-service password reset to reduce helpdesk burden while mai
 
 ### 2.1 Enforce MFA for All Users
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -193,7 +193,7 @@ Require multi-factor authentication for all users accessing OneLogin.
 
 ### 2.2 Configure SmartFactor Authentication
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -240,7 +240,7 @@ Enable SmartFactor Authentication for risk-based adaptive MFA.
 
 ### 2.3 Require Phishing-Resistant MFA for Admins
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -273,7 +273,7 @@ Require WebAuthn/FIDO2 hardware keys for administrator accounts.
 
 ### 3.1 Implement Delegated Administration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -309,7 +309,7 @@ Configure delegated administration to implement least privilege for admin access
 
 ### 3.2 Configure IP Address Allowlisting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -344,7 +344,7 @@ Restrict access to OneLogin from approved IP addresses.
 
 ### 3.3 Protect Privileged Accounts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -380,7 +380,7 @@ Implement additional protections for privileged administrator accounts.
 
 ### 4.1 Configure TLS Requirements
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -399,7 +399,7 @@ Ensure all OneLogin communications use strong TLS encryption.
 
 ### 4.2 Configure Brute Force Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -427,7 +427,7 @@ Configure account lockout and brute force protection.
 
 ### 4.3 Configure Device Trust
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -456,7 +456,7 @@ Implement device trust policies to verify device security posture.
 
 ### 5.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -492,7 +492,7 @@ Enable and monitor audit logs for security events.
 
 ### 5.2 Configure Security Alerts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

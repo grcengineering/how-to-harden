@@ -24,9 +24,9 @@ Rippling is a unified workforce platform managing HR, IT, payroll, and spend. RE
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers Rippling security configurations including authentication, acc
 
 ### 1.1 Configure SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### ClickOps Implementation
@@ -66,7 +66,7 @@ This guide covers Rippling security configurations including authentication, acc
 
 ### 1.2 Role-Based Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -93,7 +93,7 @@ This guide covers Rippling security configurations including authentication, acc
 
 ### 2.1 App Management Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### Description
@@ -118,7 +118,7 @@ Secure Rippling app integrations.
 
 ### 2.2 Device Management Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-7
 
 #### ClickOps Implementation
@@ -134,7 +134,7 @@ Secure Rippling app integrations.
 
 ### 3.1 Protect Employee Data
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### ClickOps Implementation
@@ -153,7 +153,7 @@ Secure Rippling app integrations.
 
 ### 3.2 Payroll Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### ClickOps Implementation
@@ -169,7 +169,7 @@ Secure Rippling app integrations.
 
 ### 4.1 Audit Logs
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### ClickOps Implementation

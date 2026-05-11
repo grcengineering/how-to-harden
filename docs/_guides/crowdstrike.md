@@ -23,9 +23,9 @@ CrowdStrike Falcon is deployed across **298 Fortune 500 companies** (538 of Fort
 - SOC teams optimizing detection and response
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers CrowdStrike Falcon console security, API hardening, sensor configuration, and lessons learned from the July 2024 outage.
@@ -48,7 +48,7 @@ This guide covers CrowdStrike Falcon console security, API hardening, sensor con
 
 ### 1.1 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **CIS Controls:** 6.3, 6.5
 **NIST 800-53:** IA-2(1), IA-2(6)
 
@@ -97,7 +97,7 @@ Require MFA for all Falcon console access. Console compromise provides access to
 
 ### 1.2 Implement Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -131,7 +131,7 @@ See the CLI pack below for the recommended role structure.
 
 ### 1.3 Configure IP-Based Access Controls
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3(7)
 
 #### Description
@@ -151,7 +151,7 @@ Restrict Falcon console access to corporate networks and VPNs.
 
 ### 2.1 Secure API Client Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5, SC-8
 
 #### Description
@@ -201,7 +201,7 @@ For each integration, create dedicated client with minimal scopes:
 
 ### 2.2 Configure API Rate Limiting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-5
 
 #### Description
@@ -215,7 +215,7 @@ Monitor API usage patterns and implement alerting for anomalous activity.
 
 ### 3.1 Prevent Unauthorized Sensor Uninstall
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-3
 
 #### Description
@@ -255,7 +255,7 @@ Configure sensor anti-tamper protections to prevent unauthorized removal.
 
 ### 3.2 Configure Prevention Policy Hardening
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-3, SI-4
 
 #### Description
@@ -267,7 +267,7 @@ Configure aggressive prevention policies while managing false positive risk.
 1. Navigate to: **Configuration → Prevention Policies**
 2. For production policy, configure:
 
-| Setting | L1 (Baseline) | L2 (Hardened) | L3 (Maximum) |
+| Setting | L1 (Crawl) | L2 (Walk) | L3 (Run) |
 |---------|---------------|---------------|--------------|
 | Malware | Moderate | Aggressive | Aggressive |
 | Sensor ML | Moderate | Aggressive | Extra Aggressive |
@@ -291,7 +291,7 @@ Configure aggressive prevention policies while managing false positive risk.
 
 ### 3.3 Implement Sensor Grouping Strategy
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-2
 
 #### Description
@@ -322,7 +322,7 @@ See the CLI pack below for the recommended sensor grouping structure.
 
 ### 4.1 Implement Staged Content Deployment
 
-**Profile Level:** L1 (Baseline) - CRITICAL (Post-July 2024 Lesson)
+**Profile Level:** L1 (Crawl) - CRITICAL (Post-July 2024 Lesson)
 **NIST 800-53:** CM-3
 
 #### Description
@@ -380,7 +380,7 @@ See the SDK pack below for canary health monitoring scripts.
 
 ### 4.2 Configure Rollback Procedures
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-3
 
 #### Description
@@ -407,7 +407,7 @@ Document and test rollback procedures for sensor updates.
 
 ### 5.1 Configure Detection Tuning
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-4
 
 #### Description
@@ -439,7 +439,7 @@ Tune detection rules to reduce noise while maintaining visibility.
 
 ### 5.2 Forward Events to SIEM
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-6
 
 #### Description

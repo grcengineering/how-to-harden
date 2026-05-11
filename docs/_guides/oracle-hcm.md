@@ -24,9 +24,9 @@ Oracle HCM Cloud is a global enterprise HR platform with REST APIs, SOAP web ser
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers Oracle HCM Cloud security configurations including authenticat
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -81,7 +81,7 @@ Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
 
 ### 1.2 Implement Security Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -109,7 +109,7 @@ Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
 
 ### 1.3 Configure Security Profiles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-6(1)
 
 #### Description
@@ -139,7 +139,7 @@ Implement data-level security using security profiles.
 
 ### 2.1 Secure REST API Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -170,7 +170,7 @@ Harden REST API integrations for HCM data.
 
 ### 2.2 HCM Data Loader (HDL) Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-8
 
 #### Description
@@ -198,7 +198,7 @@ Secure bulk data operations via HDL.
 
 ### 3.1 Configure Data Encryption
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### ClickOps Implementation
@@ -220,7 +220,7 @@ Secure bulk data operations via HDL.
 
 ### 3.2 Data Retention and Purge
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-12
 
 #### Implementation
@@ -245,7 +245,7 @@ Secure bulk data operations via HDL.
 
 ### 4.1 Enable Audit Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### ClickOps Implementation
@@ -270,7 +270,7 @@ Secure bulk data operations via HDL.
 
 ### 4.2 Monitor Integration Activity
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 #### Detection Queries
 

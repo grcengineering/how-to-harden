@@ -22,9 +22,9 @@ Auth0, now part of Okta, is a leading identity platform powering authentication 
 - Third-party risk managers evaluating identity providers
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Auth0 tenant security configurations including attack protection, MFA policies, application security, and monitoring.
@@ -46,7 +46,7 @@ This guide covers Auth0 tenant security configurations including attack protecti
 
 ### 1.1 Enable Brute Force Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -102,7 +102,7 @@ Brute force protection blocks IP addresses that repeatedly fail to authenticate 
 
 ### 1.2 Enable Suspicious IP Throttling
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -136,7 +136,7 @@ Suspicious IP throttling monitors and limits requests from IP addresses exhibiti
 
 ### 1.3 Enable Breached Password Detection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -171,7 +171,7 @@ Breached Password Detection checks user passwords against known breached credent
 
 ### 1.4 Configure Bot Detection
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -207,7 +207,7 @@ Configure CAPTCHA and bot detection to prevent automated attacks against authent
 
 ### 2.1 Enforce Strong Password Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -243,7 +243,7 @@ Configure password policies that enforce complexity requirements while balancing
 
 ### 2.2 Enable Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -285,7 +285,7 @@ Require MFA for user authentication. Configure phishing-resistant options like W
 
 ### 2.3 Configure Adaptive MFA
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -315,7 +315,7 @@ Configure Adaptive MFA to trigger additional authentication based on risk signal
 
 ### 3.1 Restrict Dashboard Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -351,7 +351,7 @@ Limit Dashboard admin access to essential personnel and require MFA for all admi
 
 ### 3.2 Configure Tenant Isolation
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -379,7 +379,7 @@ Use separate tenants for production and non-production environments to isolate s
 
 ### 3.3 Secure Tenant Credentials
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -401,7 +401,7 @@ Protect Auth0 API credentials (Client ID, Client Secret, Management API tokens) 
 
 ### 4.1 Configure Secure Connections
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -431,7 +431,7 @@ Configure database and social connections with security best practices.
 
 ### 4.2 Secure Application Configurations
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -464,7 +464,7 @@ Configure Auth0 applications with security best practices.
 
 ### 4.3 Secure Rules and Actions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -490,7 +490,7 @@ Secure Auth0 Rules and Actions to prevent injection and ensure proper error hand
 
 ### 5.1 Enable Logging and Monitoring
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

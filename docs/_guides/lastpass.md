@@ -22,9 +22,9 @@ LastPass is a widely-deployed enterprise password manager protecting credentials
 - Third-party risk managers evaluating password managers
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers LastPass Business admin policies, MFA configuration, security dashboard utilization, and integration security.
@@ -45,7 +45,7 @@ This guide covers LastPass Business admin policies, MFA configuration, security 
 
 ### 1.1 Require Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -95,7 +95,7 @@ Require MFA for all users accessing their LastPass vault.
 
 ### 1.2 Configure SSO Integration
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -132,7 +132,7 @@ Integrate LastPass with your identity provider for centralized authentication.
 
 ### 1.3 Configure Trusted Devices
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -163,7 +163,7 @@ Configure trusted device policies to control vault access.
 
 ### 2.1 Enable Master Password Requirements
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -193,7 +193,7 @@ Configure master password requirements for all LastPass users.
 
 ### 2.2 Configure Sharing Restrictions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -223,7 +223,7 @@ Control how credentials can be shared within and outside the organization.
 
 ### 2.3 Restrict Personal Account Linking
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -249,7 +249,7 @@ Prevent users from linking personal LastPass accounts to business accounts.
 
 ### 2.4 Configure Admin Permission Levels
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -285,7 +285,7 @@ Implement least privilege for LastPass administration.
 
 ### 3.1 Monitor Security Score
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -319,7 +319,7 @@ Use the Security Dashboard to monitor organization password health.
 
 ### 3.2 Enable Dark Web Monitoring
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -349,7 +349,7 @@ Enable dark web monitoring to detect compromised credentials.
 
 ### 3.3 Audit Weak and Reused Passwords
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -382,7 +382,7 @@ Regularly audit and remediate weak and reused passwords.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -418,7 +418,7 @@ Enable and review audit logs for security events.
 
 ### 4.2 Configure Login Alerts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -447,7 +447,7 @@ Enable alerts for suspicious login activity.
 
 ### 4.3 Implement Geofencing
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

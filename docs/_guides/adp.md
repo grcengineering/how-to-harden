@@ -23,9 +23,9 @@ ADP processes payroll for **640,000+ companies** worldwide with access to W-2 da
 - Third-party risk managers evaluating HR integrations
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers ADP security configurations including authentication, access c
 
 ### 1.1 Enforce MFA for All Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -79,7 +79,7 @@ Require MFA for all ADP access, especially administrator and payroll processor a
 
 ### 1.2 Implement Role-Based Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -107,7 +107,7 @@ Configure ADP roles with segregation of duties for payroll functions.
 
 ### 2.1 Secure ADP API Connections
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -131,7 +131,7 @@ Harden API integrations with ADP Marketplace partners.
 
 ### 3.1 Protect W-2 and Tax Data
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### Description
@@ -150,7 +150,7 @@ Implement controls to prevent W-2 data theft.
 
 ### 4.1 Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Detection Focus Areas

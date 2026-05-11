@@ -22,9 +22,9 @@ Cisco Duo is a leading multi-factor authentication platform protecting **over 10
 - Third-party risk managers evaluating MFA solutions
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Cisco Duo security configurations including admin policies, application policies, user management, device trust, and monitoring.
@@ -47,7 +47,7 @@ This guide covers Cisco Duo security configurations including admin policies, ap
 
 ### 1.1 Secure Admin Panel Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -98,7 +98,7 @@ Secure Duo Admin Panel access with MFA, role-based access, and monitoring. Admin
 
 ### 1.2 Protect Admin Credentials
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -133,7 +133,7 @@ Protect Duo integration keys, secret keys, and API credentials as highly sensiti
 
 ### 2.1 Configure Global Policy
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -166,7 +166,7 @@ Configure the Global Policy as the baseline security policy for all Duo-protecte
 
 ### 2.2 Eliminate Bypass Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -214,7 +214,7 @@ Review and minimize bypass access that allows users to skip MFA. Bypass status s
 
 ### 2.3 Require Phishing-Resistant MFA
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -258,7 +258,7 @@ Configure policies to require phishing-resistant authentication methods like Web
 
 ### 2.4 Configure Authorized Networks
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -292,7 +292,7 @@ Configure authorized network policies to adjust MFA requirements based on networ
 
 ### 3.1 Manage Inactive Accounts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -334,7 +334,7 @@ Identify and manage inactive Duo accounts to prevent account takeover and unauth
 
 ### 3.2 Configure User Enrollment
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -372,7 +372,7 @@ Configure secure user enrollment processes that verify identity before granting 
 
 ### 4.1 Configure Trusted Endpoints
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -407,7 +407,7 @@ Configure Duo's Trusted Endpoints feature to verify device compliance before gra
 
 ### 4.2 Monitor Device Registration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -437,7 +437,7 @@ Monitor device registrations to detect suspicious activity that could indicate a
 
 ### 5.1 Configure Application-Specific Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -482,7 +482,7 @@ Create application-specific policies with appropriate security controls based on
 
 ### 5.2 Secure Windows Logon/RDP
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -518,7 +518,7 @@ Configure Duo for Windows Logon and RDP with appropriate security settings.
 
 ### 6.1 Enable Logging and Alerting
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -569,7 +569,7 @@ Configure Duo logging and integrate with SIEM for security monitoring and incide
 
 ### 6.3 Implement Session Hijacking Protection
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

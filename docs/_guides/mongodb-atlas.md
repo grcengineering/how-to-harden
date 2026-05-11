@@ -22,9 +22,9 @@ MongoDB Atlas is the leading cloud database platform, serving **millions of deve
 - DevOps engineers implementing secure deployments
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers MongoDB Atlas security configurations including network access, authentication, encryption, and monitoring. Self-managed MongoDB deployments are covered in a separate guide.
@@ -45,7 +45,7 @@ This guide covers MongoDB Atlas security configurations including network access
 
 ### 1.1 Configure IP Access List
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -93,7 +93,7 @@ Configure IP access lists to restrict which IP addresses can connect to your Atl
 
 ### 1.2 Configure VPC Peering or Private Endpoints
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -147,7 +147,7 @@ Configure private connectivity via VPC peering or private endpoints to eliminate
 
 ### 2.1 Configure Database Users with Least Privilege
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -204,7 +204,7 @@ Create database users with role-based access control (RBAC) following the princi
 
 ### 2.2 Enable Multi-Factor Authentication for Atlas Console
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -230,7 +230,7 @@ Require MFA for all users accessing the MongoDB Atlas console.
 
 ### 2.3 Configure X.509 Certificate Authentication
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -259,7 +259,7 @@ Configure X.509 certificate authentication for stronger machine-to-machine authe
 
 ### 2.4 Configure Organization and Project Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -294,7 +294,7 @@ Configure granular roles for Atlas console access at organization and project le
 
 ### 3.1 Verify Default Encryption
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -321,7 +321,7 @@ Verify that default encryption at rest and in transit is enabled (cannot be disa
 
 ### 3.2 Configure Customer Key Management (CMK)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -369,7 +369,7 @@ Configure customer-managed encryption keys for additional control over data encr
 
 ### 3.3 Configure Client-Side Field Level Encryption
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -397,7 +397,7 @@ Configure Client-Side Field Level Encryption (CSFLE) to encrypt sensitive fields
 
 ### 4.1 Enable Database Auditing
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -430,7 +430,7 @@ Enable database auditing to log authentication attempts and data access.
 
 ### 4.2 Monitor Atlas Activity Feed
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

@@ -22,9 +22,9 @@ Notion is a leading collaboration and productivity platform used by **millions o
 - Workspace administrators managing access controls
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Notion workspace and organization security including SAML SSO, SCIM provisioning, data protection, and workspace permissions.
@@ -45,7 +45,7 @@ This guide covers Notion workspace and organization security including SAML SSO,
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -90,7 +90,7 @@ Configure SAML SSO to centralize authentication for Notion users.
 
 ### 1.2 Enforce SAML SSO
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -121,7 +121,7 @@ Require SAML authentication for all workspace members.
 
 ### 1.3 Configure SCIM Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -154,7 +154,7 @@ Configure SCIM for automated user lifecycle management.
 
 ### 2.1 Configure Workspace Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -185,7 +185,7 @@ Control who can access workspaces and create accounts.
 
 ### 2.2 Configure Team Spaces
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -211,7 +211,7 @@ Organize content using team spaces for access control.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -239,7 +239,7 @@ Minimize and protect workspace owner accounts.
 
 ### 3.1 Configure Sharing Controls
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -270,7 +270,7 @@ Control how content can be shared internally and externally.
 
 ### 3.2 Disable Content Duplication
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -296,7 +296,7 @@ Prevent members from copying pages to other workspaces.
 
 ### 3.3 Configure Export Controls
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -324,7 +324,7 @@ Control ability to export content from Notion.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -351,7 +351,7 @@ Monitor user activity through audit logs (Enterprise).
 
 ### 4.2 Configure Analytics
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

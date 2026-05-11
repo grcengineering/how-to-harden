@@ -22,9 +22,9 @@ Drata is a leading compliance automation platform helping **thousands of organiz
 - Compliance managers overseeing audit readiness
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Drata platform security including access controls, integration security, policy management, and monitoring configuration.
@@ -45,7 +45,7 @@ This guide covers Drata platform security including access controls, integration
 
 ### 1.1 Configure SSO Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -85,7 +85,7 @@ Configure SAML SSO to centralize authentication and enforce organizational secur
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -111,7 +111,7 @@ Require MFA for all users accessing Drata platform.
 
 ### 1.3 Implement Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -151,7 +151,7 @@ Configure role-based access to implement least privilege for Drata users.
 
 ### 1.4 Restrict Admin Privileges
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -184,7 +184,7 @@ Follow CIS Control recommendations for admin privilege management.
 
 ### 2.1 Configure Integrations with Least Privilege
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -222,7 +222,7 @@ Configure Drata integrations with minimum necessary permissions.
 
 ### 2.2 Secure Cloud Provider Integrations
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -253,7 +253,7 @@ Securely configure cloud provider (AWS, GCP, Azure) integrations.
 
 ### 2.3 Secure Identity Provider Integration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -286,7 +286,7 @@ Securely configure identity provider integrations for user sync and compliance m
 
 ### 3.1 Manage Policy Templates
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -317,7 +317,7 @@ Properly manage policy templates and maintain version control.
 
 ### 3.2 Configure Control Monitoring
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -348,7 +348,7 @@ Configure continuous control monitoring for real-time compliance visibility.
 
 ### 3.3 Implement Exception Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -381,7 +381,7 @@ Properly manage control exceptions and evidence gaps.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -417,7 +417,7 @@ Enable and monitor audit logs for security events.
 
 ### 4.2 Configure Alert Notifications
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -446,7 +446,7 @@ Configure alerts for compliance and security events.
 
 ### 4.3 Monitor Compliance Dashboard
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

@@ -24,9 +24,9 @@ Mailchimp manages email marketing with audience data, campaign history, and cust
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers Mailchimp security configurations including authentication, ac
 
 ### 1.1 Enforce MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### ClickOps Implementation
@@ -66,7 +66,7 @@ This guide covers Mailchimp security configurations including authentication, ac
 
 ### 1.2 Implement Access Levels
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -92,7 +92,7 @@ This guide covers Mailchimp security configurations including authentication, ac
 
 ### 2.1 Secure API Keys
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -117,7 +117,7 @@ Manage Mailchimp API keys securely.
 
 ### 2.2 OAuth App Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### ClickOps Implementation
@@ -138,7 +138,7 @@ Manage Mailchimp API keys securely.
 
 ### 3.1 Protect Subscriber Data
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### ClickOps Implementation
@@ -157,7 +157,7 @@ Manage Mailchimp API keys securely.
 
 ### 3.2 Email Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-3
 
 #### ClickOps Implementation
@@ -178,7 +178,7 @@ Manage Mailchimp API keys securely.
 
 ### 4.1 Account Activity
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### ClickOps Implementation

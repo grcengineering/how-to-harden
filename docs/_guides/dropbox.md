@@ -24,9 +24,9 @@ Dropbox has **700+ million registered users** with enterprise file storage. The 
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers Dropbox security configurations including authentication, acce
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -78,7 +78,7 @@ Require SSO with MFA for all Dropbox Business access.
 
 ### 1.2 Configure Access Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -94,7 +94,7 @@ Require SSO with MFA for all Dropbox Business access.
 
 ### 2.1 Restrict External Sharing
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-21
 
 #### ClickOps Implementation
@@ -116,7 +116,7 @@ Require SSO with MFA for all Dropbox Business access.
 
 ### 3.1 Manage Connected Apps
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### Rationale
@@ -142,7 +142,7 @@ Require SSO with MFA for all Dropbox Business access.
 
 ### 4.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### ClickOps Implementation

@@ -22,9 +22,9 @@ SAP Concur is a leading travel, expense, and invoice management platform serving
 - GRC professionals assessing financial platform security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers SAP Concur security including SAML SSO, expense policies, approval workflows, and audit controls.
@@ -45,7 +45,7 @@ This guide covers SAP Concur security including SAML SSO, expense policies, appr
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -88,7 +88,7 @@ Configure SAML SSO to centralize authentication for Concur users.
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -114,7 +114,7 @@ Require MFA for all Concur users.
 
 ### 1.3 Configure Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -137,7 +137,7 @@ Configure session timeout settings.
 
 ### 2.1 Configure Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -167,7 +167,7 @@ Implement least privilege using Concur's role model.
 
 ### 2.2 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -193,7 +193,7 @@ Minimize and protect administrator accounts.
 
 ### 2.3 Configure Delegate Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -221,7 +221,7 @@ Control delegate access for expense management.
 
 ### 3.1 Configure Expense Policy Rules
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -252,7 +252,7 @@ Configure expense policies for compliance.
 
 ### 3.2 Configure Approval Workflows
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -278,7 +278,7 @@ Configure expense approval workflows.
 
 ### 3.3 Configure Receipt Requirements
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -306,7 +306,7 @@ Require receipts for expense documentation.
 
 ### 4.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -333,7 +333,7 @@ Enable and monitor audit logs.
 
 ### 4.2 Configure Expense Reports
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

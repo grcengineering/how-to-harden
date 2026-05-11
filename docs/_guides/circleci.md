@@ -23,9 +23,9 @@ CircleCI serves **200,000+ DevOps teams** with integrated CI/CD pipelines. The *
 - Platform teams managing CircleCI deployments
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers CircleCI security configurations including authentication, context security, secrets management, and lessons learned from the January 2023 breach.
@@ -48,7 +48,7 @@ This guide covers CircleCI security configurations including authentication, con
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **CIS Controls:** 6.3, 6.5
 **NIST 800-53:** IA-2(1)
 
@@ -96,7 +96,7 @@ Require SAML SSO with MFA for all CircleCI access. The January 2023 breach demon
 
 ### 1.2 Implement Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -124,7 +124,7 @@ Use CircleCI's organization roles to limit access based on job function.
 
 ### 1.3 Rotate Personal API Tokens
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -153,7 +153,7 @@ Implement regular rotation of personal API tokens and audit existing tokens.
 
 ### 2.1 Implement Secure Contexts
 
-**Profile Level:** L1 (Baseline) - CRITICAL
+**Profile Level:** L1 (Crawl) - CRITICAL
 **NIST 800-53:** SC-28, AC-3
 
 #### Description
@@ -189,7 +189,7 @@ Use CircleCI contexts with security restrictions to limit secret exposure. Conte
 
 ### 2.2 Environment Variable Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### Description
@@ -217,7 +217,7 @@ Following the 2023 breach, CircleCI recommended:
 
 ### 2.3 OIDC Token Authentication
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -233,7 +233,7 @@ Use OIDC tokens instead of static credentials for cloud provider authentication.
 
 ### 3.1 Restrict Pipeline Triggers
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### Description
@@ -255,7 +255,7 @@ Control who can trigger pipelines and from which sources.
 
 ### 3.2 Implement Pipeline Security Scanning
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** RA-5
 
 #### Description
@@ -267,7 +267,7 @@ Include security scanning in CI/CD pipeline.
 
 ### 3.3 Secure Docker Image Usage
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### Description
@@ -281,7 +281,7 @@ Use verified, pinned Docker images in CI/CD pipelines.
 
 ### 4.1 Self-Hosted Runner Hardening
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-7
 
 #### Description
@@ -297,7 +297,7 @@ Secure self-hosted runners for sensitive workloads.
 
 ### 5.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Description

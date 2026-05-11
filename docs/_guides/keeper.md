@@ -22,9 +22,9 @@ Keeper Security is a leading zero-knowledge password management platform protect
 - Third-party risk managers evaluating password managers
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Keeper Enterprise admin console security, role-based enforcement policies, MFA configuration, and SSO integration.
@@ -46,7 +46,7 @@ This guide covers Keeper Enterprise admin console security, role-based enforceme
 
 ### 1.1 Protect Keeper Administrator Accounts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -92,7 +92,7 @@ Protect Keeper Administrator accounts as they have full control over the enterpr
 
 ### 1.2 Configure IP Address Allowlisting for Admins
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -134,7 +134,7 @@ Restrict admin access to approved IP addresses to prevent unauthorized administr
 
 ### 1.3 Enable Administrative Event Alerts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -169,7 +169,7 @@ Configure alerts for administrative events to detect suspicious activity.
 
 ### 2.1 Configure Master Password Requirements
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -207,7 +207,7 @@ Configure master password requirements through role enforcement policies.
 
 ### 2.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -249,7 +249,7 @@ Require 2FA for all users accessing their Keeper vault.
 
 ### 2.3 Configure Sharing and Export Restrictions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -282,7 +282,7 @@ Control how records can be shared and exported from Keeper.
 
 ### 2.4 Restrict Browser Extension Installation
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -321,7 +321,7 @@ Control which browser extensions users can install to prevent malicious extensio
 
 ### 3.1 Configure Biometric Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -354,7 +354,7 @@ Configure biometric authentication options for improved security and usability.
 
 ### 3.2 Configure Account Recovery
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -388,7 +388,7 @@ Configure secure account recovery options.
 
 ### 4.1 Configure SAML SSO
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -433,7 +433,7 @@ Integrate Keeper with your SAML identity provider for centralized authentication
 
 ### 4.2 Configure Just-in-Time Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -465,7 +465,7 @@ Configure automatic user provisioning through SSO.
 
 ### 5.1 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -508,7 +508,7 @@ Enable and review audit logs for security events.
 
 ### 5.2 Monitor Security Audit
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -546,7 +546,7 @@ Use Security Audit to monitor organization password health.
 
 ### 5.3 BreachWatch Integration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

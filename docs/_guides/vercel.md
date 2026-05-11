@@ -33,9 +33,9 @@ Vercel operates under a shared responsibility model ([source](https://vercel.com
 
 ### How to Use This Guide
 
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 
@@ -64,7 +64,7 @@ Appendices: [A. Edition Compatibility](#appendix-a-edition-compatibility) · [B.
 
 ### 1.1 Enforce SSO with SAML
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** IA-2(1), IA-8
 
@@ -140,7 +140,7 @@ Configure SAML Single Sign-On to centralize authentication through your identity
 
 ### 1.2 Configure Directory Sync (SCIM)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 **NIST 800-53:** AC-2, IA-5(1)
 
@@ -209,7 +209,7 @@ Enable SCIM-based directory synchronization to automatically provision and depro
 
 ### 1.3 Enforce Least-Privilege RBAC
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** AC-3, AC-6
 
@@ -283,7 +283,7 @@ Configure team and project-level role-based access control using Vercel's granul
 
 ### 1.4 Harden API Token Lifecycle
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** IA-5, IA-4
 
@@ -345,7 +345,7 @@ Enforce scoped, time-limited API tokens and replace long-lived credentials with 
 
 ### 1.5 Audit Third-Party Integrations and OAuth Grants
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** AC-6, SA-12, CM-8
 
@@ -432,7 +432,7 @@ Maintain an inventory of all Marketplace integrations, Git connections, deploy h
 
 ### 2.1 Configure Deployment Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** CM-3, AC-3
 
@@ -538,7 +538,7 @@ Vercel documents three protection **methods** and four protection **scopes**. Ch
 
 ### 2.2 Harden Git Integration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** CM-7, SA-10
 
@@ -601,7 +601,7 @@ Secure the Git integration pipeline to prevent unauthorized deployments from for
 
 ### 2.3 Configure Rolling Releases
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 **NIST 800-53:** CM-3(2)
 
@@ -671,7 +671,7 @@ Enable progressive deployment rollouts to limit blast radius of production chang
 
 ### 2.4 Private Production Deployments (Advanced Deployment Protection)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 **NIST 800-53:** AC-3, SC-7, AC-4
 
@@ -761,7 +761,7 @@ Restrict access to production domains — not just preview URLs — to authentic
 
 ### 3.1 Enable WAF with Managed Rulesets
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 **NIST 800-53:** SC-7, SI-3
 
@@ -860,7 +860,7 @@ See Section 3.4 — configure in **Log** mode, review for 7 days, then decide De
 
 ### 3.2 Configure IP Blocking and Rate Limiting
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** SC-5, SI-4
 
@@ -923,7 +923,7 @@ Implement IP-based access control and rate limiting to protect against brute for
 
 ### 3.3 Configure Firewall Persistent Actions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 **NIST 800-53:** SC-5, SI-4
 
@@ -996,7 +996,7 @@ Persistent Actions are time-based IP-level blocks that execute **before** the re
 
 ### 3.4 Configure AI Bots Managed Ruleset
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 **NIST 800-53:** SI-4, AC-4
 
@@ -1067,7 +1067,7 @@ Control traffic from known AI crawlers — training crawlers, search-assistant u
 
 ### 4.1 Enable Secure Compute
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 **NIST 800-53:** SC-7, SC-8
 
@@ -1169,7 +1169,7 @@ Per [Vercel Secure Compute docs](https://vercel.com/docs/connectivity/secure-com
 
 ### 4.2 Configure DDoS Protection and Attack Challenge Mode
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** SC-5, CP-10
 
@@ -1254,7 +1254,7 @@ Per [Vercel docs](https://vercel.com/docs/vercel-firewall/attack-challenge-mode)
 
 ### 5.1 Configure Security Response Headers
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** SI-10, SC-28
 
@@ -1321,7 +1321,7 @@ Configure security headers (CSP, X-Frame-Options, Referrer-Policy, etc.) to prot
 
 ### 6.1 Environment Variable Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** SC-28, SC-12
 
@@ -1413,7 +1413,7 @@ Implement secure environment variable management with proper scoping, **mandator
 
 ### 6.2 Deployment Retention Policy
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 **NIST 800-53:** SI-12
 
@@ -1462,7 +1462,7 @@ Configure deployment retention policies to automatically remove old deployments 
 
 ### 6.3 Rotate Deploy Hooks
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** IA-5, SA-15
 
@@ -1545,7 +1545,7 @@ Deploy Hook URLs accept unauthenticated POST requests — the URL **is** the cre
 
 ### 6.4 Block NEXT_PUBLIC_ Secret Leaks in CI
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** SC-28, SA-11, SA-15
 
@@ -1621,7 +1621,7 @@ Add a CI/pre-commit check that fails the build if any environment variable prefi
 
 ### 7.1 Prevent Subdomain Takeover
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** CM-8, SC-20
 
@@ -1682,7 +1682,7 @@ Audit DNS records to prevent subdomain takeover vulnerabilities when CNAME recor
 
 ### 7.2 Harden TLS and Certificate Configuration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** SC-8, SC-13
 
@@ -1743,7 +1743,7 @@ Verify TLS configuration and optionally deploy custom certificates for domains r
 
 ### 8.1 Configure Drains for SIEM
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** AU-2, AU-6
 
@@ -1840,7 +1840,7 @@ Specify the desired schema via the REST API `schemas` property when creating or 
 
 ### 8.2 Enable Audit Logging with SIEM Streaming
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 **NIST 800-53:** AU-2, AU-3, AU-12
 
@@ -1905,7 +1905,7 @@ Enable enterprise audit logging with real-time SIEM streaming to track all admin
 
 ### 8.3 Cron Job Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** AC-3, SI-10
 
@@ -1958,7 +1958,7 @@ Secure cron job endpoints with the CRON_SECRET mechanism to prevent unauthorized
 
 ### 8.4 Verify Drain Delivery Signatures
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** SC-8, SC-13, AU-9
 
@@ -2043,7 +2043,7 @@ Vercel-hosted apps overwhelmingly run **Next.js**, a framework Vercel also maint
 
 ### 9.1 Next.js Patch Management & Edge Header Strip
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** SI-2, RA-5, SI-10
 
@@ -2149,7 +2149,7 @@ These are **customer-side misconfigurations**, not Vercel platform vulnerabiliti
 
 ### 10.1 Enforce `/_next/image` remotePatterns Allowlist
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** SC-7, SI-10, CM-7
 
@@ -2213,7 +2213,7 @@ Next.js's `/_next/image` endpoint performs server-side `fetch()` against URLs ma
 
 ### 10.2 Enforce Authorization Defense in Depth (No Middleware-Only Authz)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** AC-3, SI-10
 
@@ -2281,7 +2281,7 @@ CVE-2025-29927 proved that Next.js middleware **can be bypassed** from the publi
 
 ### 10.3 Do Not Stack a Reverse Proxy in Front of Vercel Bot Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 **NIST 800-53:** SC-7, SI-4
 

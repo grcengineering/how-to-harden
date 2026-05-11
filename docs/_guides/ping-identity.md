@@ -23,9 +23,9 @@ Ping Identity serves **50%+ of Fortune 100** with federation trust relationships
 - Third-party risk managers evaluating federation security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Ping Identity security configurations including federation hardening, OAuth security, DaVinci orchestration controls, and token lifecycle management.
@@ -48,7 +48,7 @@ This guide covers Ping Identity security configurations including federation har
 
 ### 1.1 Enforce Phishing-Resistant MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **CIS Controls:** 6.3, 6.5
 **NIST 800-53:** IA-2(1), IA-2(6)
 
@@ -104,7 +104,7 @@ See the API pack below for MFA policy creation and assignment commands.
 
 ### 1.2 Implement Least-Privilege Admin Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-6, AC-6(1)
 
 #### Description
@@ -150,7 +150,7 @@ Create granular administrative roles instead of using organization-wide admin ac
 
 ### 1.3 Configure IP-Based Access Restrictions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3(7), SC-7
 
 #### Description
@@ -179,7 +179,7 @@ Restrict administrative console and API access to known IP ranges.
 
 ### 2.1 Harden SAML Federation Trust
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5, SC-23
 
 #### Description
@@ -230,7 +230,7 @@ See the CLI pack below for SAML configuration examples.
 
 ### 2.2 Implement Federation Monitoring
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-6, SI-4
 
 #### Description
@@ -246,7 +246,7 @@ See the DB pack below for federation monitoring queries.
 
 ### 2.3 Certificate Lifecycle Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-12
 
 #### Description
@@ -276,7 +276,7 @@ Implement proactive certificate management to prevent federation disruption.
 
 ### 3.1 Configure Secure OAuth Settings
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(13), SC-23
 
 #### Description
@@ -314,7 +314,7 @@ See the API pack below for OAuth application configuration.
 
 ### 3.2 Implement Token Revocation
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-2(6)
 
 #### Description
@@ -346,7 +346,7 @@ Enable token revocation for user sessions and compromised tokens.
 
 ### 3.3 OAuth Consent Management
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-6
 
 #### Description
@@ -372,7 +372,7 @@ Control OAuth consent to prevent unauthorized application access.
 
 ### 4.1 Secure DaVinci Flows
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3, CM-3
 
 #### Description
@@ -421,7 +421,7 @@ Harden PingOne DaVinci orchestration flows to prevent abuse and unauthorized wor
 
 ### 4.2 Version Control for Flows
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-3
 
 #### Description
@@ -442,7 +442,7 @@ Implement version control and change management for DaVinci flows.
 
 ### 5.1 Configure Comprehensive Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3, AU-6
 
 #### Description
@@ -485,7 +485,7 @@ See the DB pack below for SIEM detection queries.
 
 ### 6.1 SP Connection Hardening
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Description
 Harden Service Provider (SP) connections in federation.

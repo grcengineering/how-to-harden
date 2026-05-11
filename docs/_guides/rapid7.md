@@ -22,9 +22,9 @@ Rapid7 is a leading cybersecurity platform providing vulnerability management, S
 - SOC analysts managing InsightVM and InsightIDR
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Rapid7 Insight Platform and InsightVM Security Console security including SAML SSO, user management, console hardening, and Command Platform administration.
@@ -45,7 +45,7 @@ This guide covers Rapid7 Insight Platform and InsightVM Security Console securit
 
 ### 1.1 Configure Command Platform SSO
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -99,7 +99,7 @@ Configure SAML SSO for centralized authentication to the Rapid7 Command Platform
 
 ### 1.2 Configure InsightVM Console SSO
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -136,7 +136,7 @@ Configure SAML SSO directly on InsightVM Security Console for local authenticati
 
 ### 1.3 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -169,7 +169,7 @@ Require MFA for all Rapid7 platform users.
 
 ### 2.1 Secure Console Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -202,7 +202,7 @@ Secure network access to the InsightVM Security Console.
 
 ### 2.2 Harden Console Installation
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -233,7 +233,7 @@ Apply hardening configurations to the Security Console server.
 
 ### 2.3 Configure Scan Engine Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -266,7 +266,7 @@ Secure scan engine configurations and communications.
 
 ### 3.1 Implement Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -304,7 +304,7 @@ Configure granular roles for least privilege access.
 
 ### 3.2 Manage Administrator Accounts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -341,7 +341,7 @@ Protect and limit administrator account access.
 
 ### 3.3 Configure Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -378,7 +378,7 @@ Enable and monitor audit logs for security events.
 
 ### 4.1 Configure Vulnerability Scanning Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -409,7 +409,7 @@ Secure vulnerability scanning configurations.
 
 ### 4.2 Configure Compliance Assessment
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -442,7 +442,7 @@ Enable policy compliance scanning for hardening verification.
 
 ### 4.3 Configure InsightIDR Integration
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

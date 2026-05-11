@@ -22,9 +22,9 @@ Zscaler is a cloud-native security platform providing Zero Trust Network Access 
 - Third-party risk managers evaluating ZTNA solutions
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Zscaler Internet Access (ZIA), Zscaler Private Access (ZPA), and Zscaler Client Connector security configurations. Cloud infrastructure and DLP-specific configurations are covered in related sections.
@@ -47,7 +47,7 @@ This guide covers Zscaler Internet Access (ZIA), Zscaler Private Access (ZPA), a
 
 ### 1.1 Configure SAML SSO Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -100,7 +100,7 @@ Configure SAML-based SSO for Zscaler Admin Portal and Client Connector authentic
 
 ### 1.2 Implement Role-Based Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -151,7 +151,7 @@ Configure granular admin roles in Zscaler to limit access based on job responsib
 
 ### 2.1 Configure URL Filtering Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -198,7 +198,7 @@ Configure URL filtering policies to block access to malicious, risky, and policy
 
 ### 2.2 Enable Advanced Threat Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -235,7 +235,7 @@ Enable Zscaler's advanced threat protection capabilities including cloud sandbox
 
 ### 2.3 Configure Firewall Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -272,7 +272,7 @@ Configure Zscaler Cloud Firewall policies to control non-web traffic including p
 
 ### 3.1 Configure Application Segments
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -314,7 +314,7 @@ Define application segments in ZPA to control access to internal applications wi
 
 ### 3.2 Create Access Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -351,7 +351,7 @@ Create ZPA access policies that define who can access which applications based o
 
 ### 3.3 Enable Device Posture Checks
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -385,7 +385,7 @@ Configure device posture checks to verify endpoint security status before granti
 
 ### 4.1 Deploy Client Connector Securely
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -422,7 +422,7 @@ Deploy Zscaler Client Connector with security-optimized settings to ensure all t
 
 ### 4.2 Install SSL Certificate for Inspection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -459,7 +459,7 @@ Deploy Zscaler root certificate to enable SSL inspection of encrypted traffic.
 
 ### 4.3 Lock Client Connector Settings
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -492,7 +492,7 @@ Lock Client Connector configuration to prevent users from disabling or bypassing
 
 ### 5.1 Enable SSL Inspection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -542,7 +542,7 @@ Enable SSL/TLS inspection to decrypt, inspect, and re-encrypt HTTPS traffic for 
 
 ### 5.2 Test SSL Inspection Thoroughly
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -574,7 +574,7 @@ Thoroughly test SSL inspection before production deployment to identify and reso
 
 ### 6.1 Configure Logging and Reporting
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

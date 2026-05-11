@@ -22,9 +22,9 @@ Anthropic Claude is an AI assistant platform serving organizations through both 
 - Third-party risk managers evaluating AI platform controls
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations using Claude
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations using Claude
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Anthropic Claude security configurations including authentication (SSO/SCIM), organization role management, API key lifecycle (including Workload Identity Federation for keyless workload auth), workspace segmentation, data residency, usage monitoring, integration security, and comprehensive Claude Code and Cowork enterprise controls — MDM/server-managed settings (including drop-in directory and OS-level policy delivery), permission restrictions, MCP server governance, developer analytics, bash sandbox isolation (Seatbelt/bubblewrap), hook and plugin supply chain security, prompt injection and rules file attack defense, CI/CD pipeline hardening (harden-runner, security review actions), external sandbox tooling (nono, NVIDIA OpenShell), and Cowork collaborative session governance. Model behavior configuration (system prompts, safety settings) is out of scope. This guide applies to Claude API, Claude Team, and Claude Enterprise plans.
@@ -59,7 +59,7 @@ This guide covers Anthropic Claude security configurations including authenticat
 
 ### 1.1 Enforce Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -157,7 +157,7 @@ Configure SAML 2.0 or OIDC-based SSO to authenticate Claude users through your c
 
 ### 1.2 Enforce Least-Privilege Organization Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -233,7 +233,7 @@ Assign the minimum necessary organization role to each user. Anthropic provides 
 
 ### 1.3 Protect Admin API Keys
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -299,7 +299,7 @@ Admin API keys (`sk-ant-admin...`) grant organization-wide management access. Th
 
 ### 2.1 Scope API Keys to Workspaces
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -360,7 +360,7 @@ Every standard API key in Anthropic Claude is scoped to a single workspace. Leve
 
 ### 2.2 Rotate API Keys Regularly
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -421,7 +421,7 @@ Establish a 90-day rotation schedule for all API keys. Since API keys can only b
 
 ### 2.3 Eliminate Static API Keys via Workload Identity Federation
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -551,7 +551,7 @@ WIF complements (rather than replaces) the workspace scoping in 2.1 and the rota
 
 ### 3.1 Segment Workspaces by Environment
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -616,7 +616,7 @@ Create separate workspaces for development, staging, and production environments
 
 ### 3.2 Manage Workspace Membership
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -677,7 +677,7 @@ Assign users to only the workspaces they need. Workspace roles (`workspace_user`
 
 ### 4.1 Enforce Data Residency Restrictions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -740,7 +740,7 @@ Configure data residency at the workspace level to control where Claude processe
 
 ### 4.2 Configure Data Retention Policies
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -802,7 +802,7 @@ Understand and configure Anthropic's data retention policies. By default, API in
 
 ### 5.1 Monitor API Usage and Costs
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -866,7 +866,7 @@ Use Anthropic's Admin API usage and cost reporting endpoints to monitor token co
 
 ### 5.2 Configure Spend Limits per Workspace
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -929,7 +929,7 @@ Set per-workspace spend limits and rate limits to prevent cost overruns and abus
 
 ### 6.1 Audit and Clean Up Pending Invites
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -987,7 +987,7 @@ Regularly audit pending organization invites. Invites in Anthropic expire after 
 
 ### 6.2 Integration Risk Assessment
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1039,7 +1039,7 @@ Assess the security posture of applications and services that consume your Claud
 
 ### 7.1 Deploy Managed Settings via MDM
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1136,7 +1136,7 @@ For modular policies, create a `managed-settings.d/` directory alongside the bas
 
 ### 7.2 Restrict Claude Code Permissions and Tools
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1214,7 +1214,7 @@ Configure granular permission rules in managed settings to control which tools C
 
 ### 7.3 Control MCP Server Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1296,7 +1296,7 @@ When this file exists, it takes **exclusive control** — users cannot add, modi
 
 ### 7.4 Monitor Claude Code Developer Metrics
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1377,7 +1377,7 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 
 ### 7.5 Enforce Bash Sandbox Isolation
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1475,7 +1475,7 @@ Enable OS-level bash command sandboxing to isolate Claude Code's subprocess exec
 
 ### 7.6 Lock Down Hooks and Plugins
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1558,7 +1558,7 @@ Restrict the Claude Code extensibility surface by enforcing managed-only hooks, 
 
 ### 7.7 Defend Against Prompt Injection and Rules File Attacks
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1665,7 +1665,7 @@ Implement defenses against prompt injection attacks that target Claude Code thro
 
 ### 7.8 Harden Claude Code in CI/CD Pipelines
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -1753,7 +1753,7 @@ Secure Claude Code when used in CI/CD pipelines via GitHub Actions. Unlike GitHu
 
 ### 7.9 Deploy External Sandbox Tooling
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -1854,7 +1854,7 @@ Deploy kernel-enforced sandbox tools that wrap Claude Code in an isolation layer
 
 ### 7.10 Govern Claude Cowork and Collaborative Sessions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -2044,7 +2044,7 @@ Configure governance controls for Claude Cowork collaborative sessions, includin
 
 ### 7.11 Establish Incident Response for Claude Code and Cowork
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

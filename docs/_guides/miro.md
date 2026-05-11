@@ -24,9 +24,9 @@ Miro is a visual collaboration platform for whiteboards, diagrams, and design se
 
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 
 ### Scope
@@ -47,7 +47,7 @@ This guide covers Miro security configurations including authentication, access 
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### ClickOps Implementation
@@ -65,7 +65,7 @@ This guide covers Miro security configurations including authentication, access 
 
 ### 1.2 Team Access Controls
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### ClickOps Implementation
@@ -89,7 +89,7 @@ This guide covers Miro security configurations including authentication, access 
 
 ### 2.1 Configure Sharing Defaults
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-21
 
 #### Description
@@ -114,7 +114,7 @@ Control board sharing to prevent data exposure.
 
 ### 2.2 Board Export Controls
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-21
 
 #### ClickOps Implementation
@@ -130,7 +130,7 @@ Control board sharing to prevent data exposure.
 
 ### 3.1 Manage Apps
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### ClickOps Implementation
@@ -149,7 +149,7 @@ Control board sharing to prevent data exposure.
 
 ### 3.2 API Token Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Implementation
@@ -170,7 +170,7 @@ Control board sharing to prevent data exposure.
 
 ### 4.1 Audit Logs (Enterprise)
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### ClickOps Implementation

@@ -22,9 +22,9 @@ Stripe is a leading payment processing platform serving **millions of businesses
 - GRC professionals assessing payment security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Stripe Dashboard security including SSO, team permissions, API key management, and webhook security.
@@ -44,7 +44,7 @@ This guide covers Stripe Dashboard security including SSO, team permissions, API
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -84,7 +84,7 @@ Configure SAML SSO for Stripe Dashboard access.
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -110,7 +110,7 @@ Require 2FA for all Stripe team members.
 
 ### 1.3 Configure Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -133,7 +133,7 @@ Configure session timeout settings.
 
 ### 2.1 Configure Team Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -164,7 +164,7 @@ Implement least privilege using Stripe roles.
 
 ### 2.2 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -192,7 +192,7 @@ Minimize and protect administrator accounts.
 
 ### 3.1 Configure API Key Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -226,7 +226,7 @@ Secure Stripe API keys.
 
 ### 3.2 Configure Webhook Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -255,7 +255,7 @@ Secure webhook endpoints.
 
 ### 3.3 Configure Restricted Keys
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

@@ -24,9 +24,9 @@ This guide focuses on hardening the Intune administrative plane against the spec
 - Third-party risk managers evaluating endpoint management risk
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries (healthcare, finance, government)
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries (healthcare, finance, government)
 
 ### Scope
 This guide covers Microsoft Intune administrative security: RBAC, authentication hardening, Privileged Identity Management, Multi-Admin Approval, device wipe protection, token protection, and detection of admin-plane abuse. Device-level compliance policies and application management are covered where they relate to preventing destructive attacks. Entra ID and Microsoft 365 hardening are covered in their respective guides.
@@ -75,7 +75,7 @@ Every control in this guide maps to at least one stage of this kill chain.
 
 ### 1.1 Enforce Least-Privilege RBAC Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -173,7 +173,7 @@ Reassign the built-in Intune Administrator role to affected users via Entra ID >
 
 ### 1.2 Implement Scope Tags for Resource Isolation
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -238,7 +238,7 @@ Use Intune scope tags to partition administrative visibility so that no single a
 
 ### 2.1 Require Phishing-Resistant MFA for All Intune Admins
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -341,7 +341,7 @@ Set the Conditional Access policy to **Report-only** mode to stop enforcement wh
 
 ### 2.2 Enforce Conditional Access for Admin Portals
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -414,7 +414,7 @@ Create dedicated Conditional Access policies that govern access to the Intune ad
 
 ### 3.1 Enable Privileged Identity Management (PIM) for Intune Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -526,7 +526,7 @@ Convert eligible assignments back to active permanent assignments in PIM setting
 
 ### 3.2 Require Privileged Admin Workstations for High-Impact Actions
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 
 | Framework | Control |
 |-----------|---------|
@@ -599,7 +599,7 @@ Restrict Intune administrative access to designated Privileged Admin Workstation
 
 ### 4.1 Enable Multi-Admin Approval for Destructive Actions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -705,7 +705,7 @@ Disable the Multi-Admin Approval policy under Tenant administration. Protected a
 
 ### 5.1 Restrict Remote Wipe Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -776,7 +776,7 @@ Remove the remote wipe permission from all RBAC roles except a dedicated "Device
 
 ### 5.2 Configure Device Wipe Rate Limiting and Alerting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -837,7 +837,7 @@ Configure monitoring to detect and alert on unusual patterns of device wipe acti
 
 ### 6.1 Enable Token Protection and Continuous Access Evaluation
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -897,7 +897,7 @@ Enable token protection policies that bind authentication tokens to the device t
 
 ### 6.2 Operationalize Token Theft Investigation
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -960,7 +960,7 @@ Establish a documented investigation and response procedure for token theft aler
 
 ### 7.1 Enable Comprehensive Intune Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -1027,7 +1027,7 @@ Enable and export all Intune audit and operational logs to a SIEM or Log Analyti
 
 ### 7.2 Deploy Stryker-Pattern Detection Rules
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

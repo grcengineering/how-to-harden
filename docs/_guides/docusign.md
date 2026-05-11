@@ -22,9 +22,9 @@ DocuSign is the leading eSignature platform used by **over 1 million customers**
 - Legal/compliance teams managing agreement workflows
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers DocuSign eSignature security configurations including admin tools, SSO, security settings, and compliance features.
@@ -45,7 +45,7 @@ This guide covers DocuSign eSignature security configurations including admin to
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -99,7 +99,7 @@ Configure SAML SSO to centralize authentication and enforce organizational secur
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -130,7 +130,7 @@ Require MFA for all DocuSign users.
 
 ### 1.3 Configure User Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -163,7 +163,7 @@ Configure automated user provisioning and deprovisioning.
 
 ### 2.1 Configure Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -190,7 +190,7 @@ Configure session timeout and security settings.
 
 ### 2.2 Configure Document Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -224,7 +224,7 @@ Configure document encryption and security settings.
 
 ### 2.3 Configure Envelope Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -256,7 +256,7 @@ Configure enhanced security for sensitive envelopes.
 
 ### 3.1 Implement Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -292,7 +292,7 @@ Configure role-based permissions for DocuSign administration.
 
 ### 3.2 Centralize Admin Management
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -318,7 +318,7 @@ Use DocuSign Admin Tools for centralized management across accounts.
 
 ### 3.3 Configure API Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -351,7 +351,7 @@ Secure DocuSign API access and integrations.
 
 ### 4.1 Configure Audit Trails
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -384,7 +384,7 @@ Enable comprehensive audit logging for compliance.
 
 ### 4.2 Configure Compliance Features
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

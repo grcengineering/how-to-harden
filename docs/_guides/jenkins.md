@@ -22,9 +22,9 @@ Jenkins is the most widely used open-source CI/CD automation server, powering bu
 - Platform engineers implementing secure pipelines
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Jenkins security configurations including authentication, authorization, agent security, and pipeline hardening for both Jenkins Controller and Jenkins Cloud deployments.
@@ -46,7 +46,7 @@ This guide covers Jenkins security configurations including authentication, auth
 
 ### 1.1 Enable Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -91,7 +91,7 @@ Enable authentication to prevent anonymous access to Jenkins. By default, older 
 
 ### 1.2 Configure LDAP or SAML SSO
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -150,7 +150,7 @@ Configure centralized authentication using LDAP or SAML SSO for enterprise ident
 
 ### 1.3 Disable Remember Me
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -178,7 +178,7 @@ Disable the "Remember me" feature to prevent persistent authentication tokens.
 
 ### 2.1 Configure Matrix-Based Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -225,7 +225,7 @@ Configure Matrix-based security for fine-grained permission control. This is rec
 
 ### 2.2 Configure Project-Based Matrix Authorization
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -261,7 +261,7 @@ Enable project-based authorization for per-project access control.
 
 ### 2.3 Configure Role-Based Access Control
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -306,7 +306,7 @@ Implement role-based access control for scalable permission management.
 
 ### 2.4 Restrict Script Console Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -344,7 +344,7 @@ Restrict access to the Script Console to administrators only.
 
 ### 3.1 Enable Agent to Controller Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -381,7 +381,7 @@ Enable Agent → Controller Access Control to prevent compromised agents from at
 
 ### 3.2 Disable Builds on Controller
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -416,7 +416,7 @@ Configure Jenkins to run builds only on agents, not on the controller node.
 
 ### 3.3 Use Ephemeral Agents
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -453,7 +453,7 @@ Use ephemeral (disposable) agents that are created fresh for each build.
 
 ### 3.4 Secure Agent Communication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -484,7 +484,7 @@ Secure communication between agents and controller using JNLP over TLS.
 
 ### 4.1 Enable CSRF Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -509,7 +509,7 @@ Enable CSRF protection to prevent cross-site request forgery attacks.
 
 ### 4.2 Secure Credentials Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -554,7 +554,7 @@ Securely manage credentials using Jenkins Credentials Plugin with appropriate sc
 
 ### 4.3 Implement Pipeline Sandbox
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -593,7 +593,7 @@ Use Pipeline Groovy Sandbox to restrict what pipeline scripts can do.
 
 ### 4.4 Secure Jenkinsfile Configuration
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -615,7 +615,7 @@ See the SDK Code Pack below for a secure Jenkinsfile template demonstrating hard
 
 ### 5.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -657,7 +657,7 @@ Enable comprehensive audit logging for security monitoring.
 
 ### 5.2 Keep Jenkins Updated
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

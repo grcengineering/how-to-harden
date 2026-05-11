@@ -1,6 +1,6 @@
 levels:
   - code: L1
-    name: Baseline
+    name: Crawl
     controls:
       - num: "1.1"
         name: Enforce SSO with SAML
@@ -166,7 +166,7 @@ levels:
         attack: False negatives in bot classification, false positives blocking legitimate users, masked security events
 
   - code: L2
-    name: Hardened
+    name: Walk
     controls:
       - num: "1.2"
         name: Configure Directory Sync (SCIM)
@@ -227,7 +227,7 @@ levels:
         attack: Undetected administrative compromise, unauthorized configuration changes, insider threat
 
   - code: L3
-    name: Maximum Security
+    name: Run
     controls:
       - num: "4.1"
         name: Enable Secure Compute

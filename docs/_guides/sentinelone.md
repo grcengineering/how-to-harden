@@ -22,9 +22,9 @@ SentinelOne is a leading AI-powered Endpoint Detection and Response (EDR) platfo
 - GRC professionals assessing endpoint security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers SentinelOne Management Console hardening, policy configuration, detection tuning, and response procedures.
@@ -46,7 +46,7 @@ This guide covers SentinelOne Management Console hardening, policy configuration
 
 ### 1.1 Secure Console Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -92,7 +92,7 @@ Secure SentinelOne Management Console with SSO, MFA, and role-based access contr
 
 ### 1.2 Configure API Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -127,7 +127,7 @@ Secure SentinelOne API access and token management.
 
 ### 2.1 Configure Protection Mode
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -171,7 +171,7 @@ Configure SentinelOne agents to "Protect" mode for automatic threat mitigation.
 
 ### 2.2 Configure Detection Engines
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -207,7 +207,7 @@ Configure SentinelOne's detection engines for optimal threat detection.
 
 ### 2.3 Configure Ransomware Protection
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -238,7 +238,7 @@ Configure SentinelOne's ransomware protection and rollback capabilities.
 
 ### 2.4 Configure Network Control
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -266,7 +266,7 @@ Configure network control features for threat containment and investigation.
 
 ### 3.1 Configure Exclusions Carefully
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -319,7 +319,7 @@ Manage exclusions to prevent false positives while maintaining security coverage
 
 ### 3.2 Configure Custom Detection Rules
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -349,7 +349,7 @@ Create custom detection rules for organization-specific threats and behaviors.
 
 ### 3.3 Enable Local Upgrade Authorization
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -383,7 +383,7 @@ Enable Local Upgrade Authorization to control agent upgrades and prevent unautho
 
 ### 4.1 Configure Automated Response
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -413,7 +413,7 @@ Configure automated threat response to minimize dwell time and analyst workload.
 
 ### 4.2 Configure Threat Intelligence
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -443,7 +443,7 @@ Integrate threat intelligence feeds for enhanced detection.
 
 ### 5.1 Configure Alerting and Notifications
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -475,7 +475,7 @@ Configure alerting and notifications for threat visibility and response.
 
 ### 5.2 Health Monitoring
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -514,7 +514,7 @@ Monitor agent health to ensure consistent protection coverage.
 
 ### 5.3 Maintain Agent Updates
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

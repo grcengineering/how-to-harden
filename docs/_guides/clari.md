@@ -22,9 +22,9 @@ Clari is a revenue operations platform providing forecasting and pipeline manage
 - GRC professionals assessing sales platform security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Clari security including SAML SSO, user permissions, forecast visibility controls, and audit logging.
@@ -44,7 +44,7 @@ This guide covers Clari security including SAML SSO, user permissions, forecast 
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -88,7 +88,7 @@ Configure SAML SSO for Clari access. Clari integrates with SSO/MFA solutions via
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -113,7 +113,7 @@ Require MFA for all Clari users via IdP integration.
 
 ### 2.1 Configure User Permissions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -140,7 +140,7 @@ Implement least privilege for Clari access using custom roles.
 
 ### 2.2 Configure Forecast Visibility
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -166,7 +166,7 @@ Control who can view forecast data.
 
 ### 2.3 Manage User Lifecycle
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -192,7 +192,7 @@ Manage user provisioning and deprovisioning.
 
 ### 2.4 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -219,7 +219,7 @@ Minimize and protect admin accounts.
 
 ### 3.1 Configure Audit Logging
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

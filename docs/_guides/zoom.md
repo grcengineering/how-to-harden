@@ -23,9 +23,9 @@ Zoom commands **55.91% global market share** with **70% of Fortune 100** as cust
 - Third-party risk managers evaluating SDK integrations
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Zoom security configurations including authentication, meeting security, Marketplace app governance, and encryption controls.
@@ -47,7 +47,7 @@ This guide covers Zoom security configurations including authentication, meeting
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -78,7 +78,7 @@ Require SAML/OIDC SSO with MFA for all Zoom access.
 
 ### 1.2 Configure User Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -112,7 +112,7 @@ Implement role-based access and user provisioning.
 
 ### 2.1 Enforce Meeting Password and Waiting Room
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3
 
 #### Description
@@ -143,7 +143,7 @@ Require passwords and waiting rooms to prevent unauthorized meeting access.
 
 ### 2.2 Meeting Encryption Settings
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-8
 
 #### Description
@@ -164,7 +164,7 @@ Configure end-to-end encryption for sensitive meetings.
 
 ### 2.3 Configure Zoom Phone Security (If Used)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-8
 
 #### Description
@@ -184,7 +184,7 @@ Secure Zoom Phone configurations.
 
 ### 3.1 Implement App Approval Workflow
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### Description
@@ -222,7 +222,7 @@ Control Zoom App Marketplace installations.
 
 ### 3.2 OAuth Token Management
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(13)
 
 #### Description
@@ -245,7 +245,7 @@ Manage OAuth tokens for marketplace apps.
 
 ### 4.1 Configure Customer Managed Key (CMK)
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 **NIST 800-53:** SC-12
 
 #### Description
@@ -266,7 +266,7 @@ Use customer-managed encryption keys for meeting content.
 
 ### 4.2 Configure Recording Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
 #### Description
@@ -292,7 +292,7 @@ Secure meeting recordings.
 
 ### 5.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Description

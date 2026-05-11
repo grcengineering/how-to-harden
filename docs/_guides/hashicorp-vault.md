@@ -23,9 +23,9 @@ HashiCorp Vault is the industry-standard secrets management solution used enterp
 - Platform teams implementing zero-trust architectures
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Vault-specific security configurations including authentication methods, secrets engine hardening, audit logging, and CI/CD integration security.
@@ -48,7 +48,7 @@ This guide covers Vault-specific security configurations including authenticatio
 
 ### 1.1 Implement Least-Privilege Auth Methods
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **CIS Controls:** 6.3, 6.8
 **NIST 800-53:** AC-6, IA-2
 
@@ -119,7 +119,7 @@ Configure Vault authentication methods appropriate to each use case. Avoid using
 
 ### 1.2 Implement Granular Policies
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -139,7 +139,7 @@ Create fine-grained policies limiting access to specific paths. Avoid wildcard p
 
 ### 1.3 Enable Entity and Group Management
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-2
 
 #### Description
@@ -153,7 +153,7 @@ Use Vault's identity system to manage users and groups across auth methods, enab
 
 ### 2.1 Use Dynamic Secrets Where Possible
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(7)
 
 #### Description
@@ -172,7 +172,7 @@ Configure dynamic secrets engines that generate credentials on-demand with autom
 
 ### 2.2 Implement Secrets Versioning and Rotation
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(1)
 
 #### Description
@@ -184,7 +184,7 @@ Enable KV v2 secrets engine with versioning for audit trail and rollback capabil
 
 ### 2.3 Enable Transit Engine for Encryption-as-a-Service
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-28
 
 #### Description
@@ -198,7 +198,7 @@ Use Transit secrets engine for application-level encryption without exposing enc
 
 ### 3.1 Configure TLS and API Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-8
 
 #### Description
@@ -212,7 +212,7 @@ Secure Vault API with TLS, client certificates, and rate limiting.
 
 ### 3.2 Implement Request Rate Limiting
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-5
 
 #### Description
@@ -224,7 +224,7 @@ Configure rate limiting to prevent abuse and detect anomalous access patterns.
 
 ### 4.1 Enable Comprehensive Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Description
@@ -243,7 +243,7 @@ Enable audit logging to file and SIEM for all Vault operations.
 
 ### 4.2 Configure Audit Log Alerting
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Detection Use Cases
 
@@ -255,7 +255,7 @@ Enable audit logging to file and SIEM for all Vault operations.
 
 ### 5.1 Secure Jenkins Integration
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Description
 Configure secure Vault integration for Jenkins with minimal privileges and short-lived tokens.
@@ -278,7 +278,7 @@ Configure a Jenkinsfile that uses the `withVault` step to securely retrieve secr
 
 ### 5.2 Implement OIDC for GitHub Actions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 #### Description
 Use GitHub Actions OIDC to authenticate to Vault without storing long-lived tokens.
@@ -293,7 +293,7 @@ Configure JWT authentication for GitHub Actions using OIDC federation. This elim
 
 ### 6.1 Configure Auto-Unseal
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-12
 
 #### Description
@@ -305,7 +305,7 @@ Configure auto-unseal using cloud KMS to eliminate manual unseal key management.
 
 ### 6.2 Implement Disaster Recovery
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CP-9, CP-10
 
 #### Description

@@ -22,9 +22,9 @@ Microsoft 365 is the world's most widely deployed productivity suite, with over 
 - Third-party risk managers evaluating M365 integrations
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Microsoft 365 tenant-level security configurations including Entra ID (Azure AD) authentication policies, Exchange Online protection, SharePoint/OneDrive data security, Teams governance, and integration security. Azure infrastructure hardening is covered in a separate guide.
@@ -47,7 +47,7 @@ This guide covers Microsoft 365 tenant-level security configurations including E
 
 ### 1.1 Enforce Phishing-Resistant MFA for All Users
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -164,7 +164,7 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 
 ### 1.2 Block Legacy Authentication Protocols
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -233,7 +233,7 @@ Block legacy authentication protocols (POP3, IMAP, SMTP AUTH, Basic Auth) that c
 
 ### 1.3 Implement Privileged Identity Management (PIM)
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -305,7 +305,7 @@ Enable just-in-time privileged access using Microsoft Entra Privileged Identity 
 
 ### 1.4 Configure Break-Glass Emergency Access Accounts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -375,7 +375,7 @@ Create and secure emergency access accounts that are excluded from Conditional A
 
 ### 2.1 Configure Trusted Locations and Named Locations
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -418,7 +418,7 @@ Define trusted IP ranges (corporate networks, VPN egress) and use them in Condit
 
 ### 3.1 Restrict User Consent to Applications
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -483,7 +483,7 @@ Prevent users from granting OAuth consent to third-party applications. Require a
 
 ### 3.2 Review and Revoke Overprivileged App Permissions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -527,7 +527,7 @@ Regularly audit enterprise applications for excessive permissions (especially Ma
 
 ### 4.1 Enable Sensitivity Labels and Data Loss Prevention
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -570,7 +570,7 @@ Implement Microsoft Purview sensitivity labels to classify and protect sensitive
 
 ### 4.2 Configure External Sharing Restrictions
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -605,7 +605,7 @@ Restrict external sharing in SharePoint and OneDrive to prevent unauthorized dat
 
 ### 5.1 Enable Unified Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -655,7 +655,7 @@ Enable and configure unified audit logging to capture user and admin activities 
 
 ### 5.2 Configure Security Alerts and Microsoft Defender
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

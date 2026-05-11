@@ -22,9 +22,9 @@ Twilio is a leading cloud communications platform serving **millions of develope
 - GRC professionals assessing communications security
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Twilio Console security including SSO, account permissions, API key management, and security controls.
@@ -44,7 +44,7 @@ This guide covers Twilio Console security including SSO, account permissions, AP
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -85,7 +85,7 @@ Configure SAML SSO for Twilio Console access.
 
 ### 1.2 Enforce Two-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -115,7 +115,7 @@ Require 2FA for all Twilio Console users.
 
 ### 2.1 Configure User Roles
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -148,7 +148,7 @@ Implement least privilege using Twilio roles.
 
 ### 2.2 Configure Subaccounts
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -176,7 +176,7 @@ Use subaccounts for isolation.
 
 ### 2.3 Limit Admin Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -206,7 +206,7 @@ Minimize and protect owner accounts.
 
 ### 3.1 Configure API Key Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -239,7 +239,7 @@ Secure Twilio API credentials.
 
 ### 3.2 Configure Webhook Security
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

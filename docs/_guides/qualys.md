@@ -22,9 +22,9 @@ Qualys is a leading cloud-based vulnerability management and compliance platform
 - SOC analysts managing vulnerability data
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Qualys platform security including user management, scanning configuration, policy compliance, and Security Configuration Assessment (SCA).
@@ -45,7 +45,7 @@ This guide covers Qualys platform security including user management, scanning c
 
 ### 1.1 Configure SSO Authentication
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -85,7 +85,7 @@ Configure SAML SSO to centralize authentication for Qualys platform.
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -122,7 +122,7 @@ Require MFA for all users, especially administrators.
 
 ### 1.3 Implement Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -163,7 +163,7 @@ Configure granular roles for least privilege access.
 
 ### 1.4 Configure IP Restrictions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -191,7 +191,7 @@ Restrict Qualys access to approved IP addresses.
 
 ### 2.1 Secure Scan Credentials
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -236,7 +236,7 @@ Securely manage credentials used for authenticated scanning.
 
 ### 2.2 Configure Scan Options
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -274,7 +274,7 @@ Configure appropriate scan options for comprehensive coverage.
 
 ### 2.3 Configure Agent Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -309,7 +309,7 @@ Securely configure Qualys Cloud Agents.
 
 ### 3.1 Configure CIS Benchmark Assessments
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -346,7 +346,7 @@ Configure Policy Compliance for CIS Benchmark assessments.
 
 ### 3.2 Configure DISA STIG Assessments
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -380,7 +380,7 @@ Configure DISA STIG assessments for government compliance.
 
 ### 3.3 Configure Security Configuration Assessment
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -412,7 +412,7 @@ Use Qualys SCA for automated configuration assessment.
 
 ### 4.1 Configure Asset Discovery
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -449,7 +449,7 @@ Configure comprehensive asset discovery for visibility.
 
 ### 4.2 Configure Cloud Connector Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -483,7 +483,7 @@ Securely configure cloud provider connectors.
 
 ### 4.3 Configure Approval Workflows
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

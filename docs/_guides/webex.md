@@ -22,9 +22,9 @@ Cisco Webex is a leading enterprise collaboration platform providing video confe
 - Meeting administrators managing site settings
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Webex Control Hub and Site Administration security including meeting security, SSO, user management, and data protection.
@@ -45,7 +45,7 @@ This guide covers Webex Control Hub and Site Administration security including m
 
 ### 1.1 Configure SAML Single Sign-On
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -84,7 +84,7 @@ Configure SAML SSO to centralize authentication for Webex applications.
 
 ### 1.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -111,7 +111,7 @@ Require MFA for all Webex users.
 
 ### 1.3 Configure User Provisioning
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -146,7 +146,7 @@ Configure automatic user provisioning and deprovisioning.
 
 ### 2.1 Configure Meeting Passwords
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -183,7 +183,7 @@ Require passwords for all Webex meetings.
 
 ### 2.2 Configure Meeting Lock and Lobby
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -216,7 +216,7 @@ Configure automatic meeting lock and lobby controls.
 
 ### 2.3 Require Authentication for Meetings
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -242,7 +242,7 @@ Require users to sign in before joining meetings.
 
 ### 2.4 Configure Content Sharing Controls
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -272,7 +272,7 @@ Control what content can be shared in meetings.
 
 ### 3.1 Limit Administrator Access
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -312,7 +312,7 @@ Minimize administrator accounts to reduce risk.
 
 ### 3.2 Configure Enterprise Mobility Management
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -340,7 +340,7 @@ Configure EMM for mobile device security.
 
 ### 3.3 Configure Audit Tracking
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -374,7 +374,7 @@ Enable and monitor administrative audit logs.
 
 ### 4.1 Configure Encryption Settings
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -404,7 +404,7 @@ Verify and configure encryption for data protection.
 
 ### 4.2 Configure Data Loss Prevention
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -441,7 +441,7 @@ Configure DLP controls for data protection.
 
 ### 4.3 Configure Pro Pack Features
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|

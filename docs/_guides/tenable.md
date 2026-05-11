@@ -22,9 +22,9 @@ Tenable is a leading vulnerability management platform protecting **millions of 
 - SOC analysts managing vulnerability data
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers Tenable.io and Tenable Security Center security including administrator account protection, SAML SSO, credential management, and hardening assessment configuration.
@@ -45,7 +45,7 @@ This guide covers Tenable.io and Tenable Security Center security including admi
 
 ### 1.1 Protect Administrator Accounts
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -86,7 +86,7 @@ Administrator accounts have the highest level of access and pose significant sec
 
 ### 1.2 Implement Role-Based Access Control
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -124,7 +124,7 @@ Configure granular roles to implement least privilege access.
 
 ### 1.3 Monitor Administrator Activity
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -159,7 +159,7 @@ Monitor and audit administrator activities.
 
 ### 2.1 Configure SAML Single Sign-On
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -209,7 +209,7 @@ Configure SAML SSO for centralized identity management.
 
 ### 2.2 Enforce Multi-Factor Authentication
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -235,7 +235,7 @@ Require MFA for all users, enforced through SSO or native settings.
 
 ### 2.3 Configure Session Security
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -260,7 +260,7 @@ Configure session timeout and security settings.
 
 ### 3.1 Secure Scan Credentials
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -302,7 +302,7 @@ Securely manage credentials used for authenticated scanning.
 
 ### 3.2 Secure Agent Linking Keys
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -339,7 +339,7 @@ Securely manage Nessus Agent linking keys.
 
 ### 3.3 Configure Scan Security Settings
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
@@ -374,7 +374,7 @@ Configure appropriate scan settings for security and performance.
 
 ### 4.1 Configure CIS Benchmark Audits
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -413,7 +413,7 @@ Configure compliance auditing using CIS Benchmarks.
 
 ### 4.2 Configure DISA STIG Audits
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
@@ -439,7 +439,7 @@ Configure DISA STIG assessments for government compliance.
 
 ### 4.3 Monitor Hardening Posture
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|

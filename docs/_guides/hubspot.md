@@ -23,9 +23,9 @@ HubSpot serves **247,939+ paying customers** with **38% global marketing automat
 - Third-party risk managers evaluating marketing integrations
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
 This guide covers HubSpot security configurations including authentication, marketplace app governance, API security, and data protection controls.
@@ -47,7 +47,7 @@ This guide covers HubSpot security configurations including authentication, mark
 
 ### 1.1 Enforce SSO with MFA
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
 #### Description
@@ -75,7 +75,7 @@ Require SAML SSO with MFA for all HubSpot access.
 
 ### 1.2 Implement User Permission Sets
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
@@ -114,7 +114,7 @@ Configure permission sets limiting access to CRM data and features.
 
 ### 2.1 Implement App Approval Workflow
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
 #### Description
@@ -153,7 +153,7 @@ Require approval for marketplace app installations.
 
 ### 2.2 Audit OAuth Grants
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5(13)
 
 #### Description
@@ -180,7 +180,7 @@ Regularly audit OAuth grants to marketplace apps.
 
 ### 3.1 Secure Private App Tokens
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
 #### Description
@@ -208,7 +208,7 @@ Manage private app access tokens with appropriate restrictions.
 
 ### 3.2 Configure API Rate Limiting Awareness
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 
 #### Description
 Design integrations with HubSpot's rate limits in mind.
@@ -231,7 +231,7 @@ Design integrations with HubSpot's rate limits in mind.
 
 ### 4.1 Configure GDPR & Privacy Settings
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-12
 
 #### Description
@@ -256,7 +256,7 @@ Enable GDPR compliance features for data privacy.
 
 ### 4.2 Export and Data Access Controls
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3
 
 #### Description
@@ -280,7 +280,7 @@ Control bulk data export capabilities.
 
 ### 5.1 Enable Audit Logging
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
 #### Description
