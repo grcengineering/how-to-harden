@@ -1429,6 +1429,12 @@ body {
     padding: var(--space-xs) var(--space-sm);
   }
 
+  /* Body offset: mobile chrome is 56px header + ~28px status banner ≈ 84px.
+     90px gives 6px clearance; matches sticky top values in cheat sheet. */
+  body {
+    padding-top: 90px;
+  }
+
   /* Floating bar on mobile — fixed at bottom */
   .floating-bar {
     position: fixed;
@@ -2479,4 +2485,15 @@ body {
 
 @media (max-width: 640px) {
   .view-mode-btn { padding: 5px 10px; font-size: 0.75rem; }
+
+  /* Sticky offsets for mobile: header 56px + status-banner ~28px = ~84px;
+     body padding-top is overridden to 90px so these must match. */
+  .cheat-sheet-table thead th {
+    top: 90px;
+  }
+
+  .level-header-row td {
+    /* 90px fixed chrome + 36px mobile thead (8px pad × 2 + ~20px line) */
+    top: 126px;
+  }
 }
