@@ -2236,10 +2236,12 @@ body {
 }
 
 .cheat-sheet-table-wrap {
-  /* overflow:auto provides horizontal scroll when the table is wider than the
-     container. No max-height means the table extends to its full natural height —
-     no vertical scrollbox. Y never overflows so no Y scrollbar appears. */
-  overflow: auto;
+  /* overflow-x:auto gives horizontal scroll on narrow viewports.
+     overflow-y:clip does NOT create a Y scroll container (unlike hidden/auto),
+     so position:sticky on thead and level-headers stays viewport-relative.
+     No max-height → table extends to its full natural height, no vertical scrollbox. */
+  overflow-x: auto;
+  overflow-y: clip;
   border-radius: 10px;
   border: 1px solid var(--color-border);
   isolation: isolate;
@@ -2252,7 +2254,7 @@ body {
   table-layout: fixed;
 }
 
-/* ── Column headers ──────────────────────────────────────────────────── */
+/* ── Sticky column headers (vertical) ───────────────────────────────── */
 .cheat-sheet-table thead th {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
@@ -2263,6 +2265,8 @@ body {
   padding: 10px 14px;
   text-align: left;
   white-space: nowrap;
+  position: sticky;
+  top: 120px; /* clear fixed site-header (64px) + floating-bar (~56px) */
   z-index: 20;
   box-shadow: 0 2px 0 0 var(--color-border-light);
 }
@@ -2298,7 +2302,7 @@ body {
 .cheat-sheet-table .col-desc { width: 35%; }
 .cheat-sheet-table .col-rat { width: 43%; }
 
-/* ── Level header rows ───────────────────────────────────────────────── */
+/* ── Level header rows (sticky just below thead) ─────────────────────── */
 .level-header-row td {
   padding: 8px 14px;
   font-weight: 700;
@@ -2308,6 +2312,8 @@ body {
   border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
   text-align: center;
+  position: sticky;
+  top: 161px; /* 120px fixed chrome + 41px thead height (10px pad × 2 + ~21px line) */
   z-index: 15;
   box-shadow: 0 2px 0 0 var(--color-border);
 }
