@@ -2242,12 +2242,7 @@ body {
 }
 
 .cheat-sheet-table-wrap {
-  /* overflow-x:auto gives horizontal scroll on narrow viewports.
-     overflow-y:clip does NOT create a Y scroll container (unlike hidden/auto),
-     so position:sticky on thead and level-headers stays viewport-relative.
-     No max-height → table extends to its full natural height, no vertical scrollbox. */
   overflow-x: auto;
-  overflow-y: clip;
   border-radius: 10px;
   border: 1px solid var(--color-border);
   isolation: isolate;
@@ -2260,7 +2255,7 @@ body {
   table-layout: fixed;
 }
 
-/* ── Sticky column headers (vertical) ───────────────────────────────── */
+/* ── Column headers ──────────────────────────────────────────────────── */
 .cheat-sheet-table thead th {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
@@ -2271,25 +2266,22 @@ body {
   padding: 10px 14px;
   text-align: left;
   white-space: nowrap;
-  position: sticky;
-  top: 120px; /* clear fixed site-header (64px) + floating-bar (~56px) */
-  z-index: 20;
   box-shadow: 0 2px 0 0 var(--color-border-light);
 }
 
 /* ── Sticky first column (horizontal) ───────────────────────────────── */
-/* Corner cell: sticks left — needs the highest z-index */
+/* Corner cell: sticks left */
 .cheat-sheet-table thead th:first-child {
   position: sticky;
   left: 0;
-  z-index: 30;
+  z-index: 20;
 }
 
 /* First column of data rows */
 .cheat-sheet-table .control-row td:first-child {
   position: sticky;
   left: 0;
-  z-index: 16; /* Must exceed level-header-row z-index (15) so first column paints over sticky level bands */
+  z-index: 16;
   background: var(--color-bg-primary);
   /* Subtle right shadow marks the sticky boundary when scrolling horizontally */
   box-shadow: 2px 0 5px -2px rgba(0,0,0,0.18);
@@ -2308,7 +2300,7 @@ body {
 .cheat-sheet-table .col-desc { width: 35%; }
 .cheat-sheet-table .col-rat { width: 43%; }
 
-/* ── Level header rows (sticky just below thead) ─────────────────────── */
+/* ── Level header rows ────────────────────────────────────────────────── */
 .level-header-row td {
   padding: 8px 14px;
   font-weight: 700;
@@ -2318,10 +2310,6 @@ body {
   border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
   text-align: center;
-  position: sticky;
-  top: 161px; /* 120px fixed chrome + 41px thead height (10px pad × 2 + ~21px line) */
-  z-index: 15;
-  box-shadow: 0 2px 0 0 var(--color-border);
 }
 
 .level-header-row.level-l1 td { background: #0d2a35; color: #1b95c1; }
@@ -2485,15 +2473,4 @@ body {
 
 @media (max-width: 640px) {
   .view-mode-btn { padding: 5px 10px; font-size: 0.75rem; }
-
-  /* Sticky offsets for mobile: header 56px + status-banner ~28px = ~84px;
-     body padding-top is overridden to 90px so these must match. */
-  .cheat-sheet-table thead th {
-    top: 90px;
-  }
-
-  .level-header-row td {
-    /* 90px fixed chrome + 36px mobile thead (8px pad × 2 + ~20px line) */
-    top: 126px;
-  }
 }
