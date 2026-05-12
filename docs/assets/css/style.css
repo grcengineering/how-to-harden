@@ -2236,14 +2236,14 @@ body {
 }
 
 .cheat-sheet-table-wrap {
-  /* Bounded height + overflow:auto makes this the scroll container for both axes.
-     Enables position:sticky on thead, level rows (vertical) and first column (horizontal). */
-  max-height: calc(100vh - 250px);
-  min-height: 300px;
-  overflow: auto;
+  /* overflow-x: auto provides horizontal scroll on narrow viewports.
+     overflow-y: clip does NOT create a Y scroll container, so the table
+     extends to its full natural height (no scrollbox) and position:sticky
+     on thead/level rows is relative to the viewport, not this element. */
+  overflow-x: auto;
+  overflow-y: clip;
   border-radius: 10px;
   border: 1px solid var(--color-border);
-  /* Isolate stacking context so sticky children paint correctly */
   isolation: isolate;
 }
 
@@ -2266,7 +2266,7 @@ body {
   text-align: left;
   white-space: nowrap;
   position: sticky;
-  top: 0;
+  top: 120px; /* clear fixed site-header (64px) + floating-bar (56px) */
   z-index: 20;
   box-shadow: 0 2px 0 0 var(--color-border-light);
 }
@@ -2312,7 +2312,7 @@ body {
   vertical-align: middle;
   text-align: center;
   position: sticky;
-  top: var(--cs-thead-h, 42px);
+  top: calc(120px + var(--cs-thead-h, 42px));
   z-index: 15;
   box-shadow: 0 2px 0 0 var(--color-border);
 }
@@ -2455,36 +2455,24 @@ body {
 [data-theme="light"] .cs-pack-badge.cs-pack-sigma     { background: rgba(239, 68, 68, 0.08);  color: #dc2626; border-color: rgba(239, 68, 68, 0.25); }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
-/* Tablet: slightly less height */
-@media (max-width: 900px) {
-  .cheat-sheet-table-wrap {
-    max-height: calc(100vh - 180px);
-  }
-}
-
 /* Mobile portrait: all three columns visible via horizontal scroll;
    first column stays sticky to the left as the user scrolls right. */
 @media (max-width: 600px) {
   .cheat-sheet-table {
-    table-layout: auto;
-    /* Forces horizontal scroll — wider than any portrait phone viewport */
-    min-width: 600px;
+    /* Keep table-layout: fixed (from base) — explicit widths below enforce column sizes */
+    min-width: 600px; /* ensures horizontal scroll on portrait phones */
   }
 
-  .cheat-sheet-table .col-req {
-    width: 180px;
-    min-width: 180px;
-  }
-
-  .cheat-sheet-table .col-desc,
-  .cheat-sheet-table .col-rat {
-    min-width: 210px;
-  }
+  /* Explicit pixel widths prevent auto-sizing from bloating the sticky first column */
+  .cheat-sheet-table .col-req  { width: 145px; }
+  .cheat-sheet-table .col-desc { width: 225px; }
+  .cheat-sheet-table .col-rat  { width: 230px; }
 
   .cheat-sheet-table thead th,
   .cheat-sheet-table .control-row td {
     padding: 8px 10px;
     font-size: 0.8125rem;
+    overflow-wrap: break-word; /* text wraps within fixed-width cells */
   }
 }
 
