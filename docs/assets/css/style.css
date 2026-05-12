@@ -2282,7 +2282,7 @@ body {
 .cheat-sheet-table .control-row td:first-child {
   position: sticky;
   left: 0;
-  z-index: 10;
+  z-index: 16; /* Must exceed level-header-row z-index (15) so first column paints over sticky level bands */
   background: var(--color-bg-primary);
   /* Subtle right shadow marks the sticky boundary when scrolling horizontally */
   box-shadow: 2px 0 5px -2px rgba(0,0,0,0.18);
@@ -2444,7 +2444,7 @@ body {
 [data-theme="light"] .level-header-row.level-l3 td { background: #fde8e8; color: #b91c1c; }
 [data-theme="light"] .level-header-row.level-l4 td { background: #ede9fe; color: #6d28d9; }
 [data-theme="light"] .control-row:hover td { background: rgba(0,0,0,0.025); }
-[data-theme="light"] .control-row:hover td:first-child { background: rgba(0,0,0,0.025); }
+[data-theme="light"] .control-row:hover td:first-child { background: #f5f5f5; }
 [data-theme="light"] .cheat-sheet-table .control-row td:first-child { background: #fff; }
 [data-theme="light"] .cs-pack-badge.cs-pack-terraform { background: rgba(94, 37, 209, 0.08); color: #6d28d9; border-color: rgba(94, 37, 209, 0.25); }
 [data-theme="light"] .cs-pack-badge.cs-pack-api       { background: rgba(59, 130, 246, 0.08); color: #2563eb; border-color: rgba(59, 130, 246, 0.25); }
@@ -2468,17 +2468,17 @@ body {
   .cheat-sheet-table {
     table-layout: auto;
     /* Forces horizontal scroll — wider than any portrait phone viewport */
-    min-width: 540px;
+    min-width: 600px;
   }
 
   .cheat-sheet-table .col-req {
-    width: 160px;
-    min-width: 160px;
+    width: 180px;
+    min-width: 180px;
   }
 
   .cheat-sheet-table .col-desc,
   .cheat-sheet-table .col-rat {
-    min-width: 190px;
+    min-width: 210px;
   }
 
   .cheat-sheet-table thead th,
@@ -2489,7 +2489,5 @@ body {
 }
 
 @media (max-width: 640px) {
-  .cheat-sheet-table thead th.col-rat { display: none; }
-  .cheat-sheet-table .col-rat { display: none; }
   .view-mode-btn { padding: 5px 10px; font-size: 0.75rem; }
 }
