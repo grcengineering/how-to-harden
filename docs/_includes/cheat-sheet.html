@@ -253,15 +253,6 @@
     renderTable(controls);
   }
 
-  function syncTheadHeight() {
-    var table = document.querySelector('.cheat-sheet-table');
-    var thead = table && table.querySelector('thead');
-    if (thead) {
-      var h = thead.getBoundingClientRect().height;
-      if (h > 0) table.style.setProperty('--cs-thead-h', Math.ceil(h) + 'px');
-    }
-  }
-
   function setGuideView(mode) {
     var isCheat = (mode === 'cheat');
     var gc = document.querySelector('.guide-content');
@@ -279,7 +270,6 @@
       btnFull.setAttribute('aria-pressed', 'false');
       btnCheat.classList.add('active');
       btnCheat.setAttribute('aria-pressed', 'true');
-      requestAnimationFrame(syncTheadHeight);
     } else {
       gc.classList.remove('guide-content--hidden');
       panel.hidden = true;

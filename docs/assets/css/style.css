@@ -2236,12 +2236,10 @@ body {
 }
 
 .cheat-sheet-table-wrap {
-  /* overflow-x: auto provides horizontal scroll on narrow viewports.
-     overflow-y: clip does NOT create a Y scroll container, so the table
-     extends to its full natural height (no scrollbox) and position:sticky
-     on thead/level rows is relative to the viewport, not this element. */
-  overflow-x: auto;
-  overflow-y: clip;
+  /* overflow:auto provides horizontal scroll when the table is wider than the
+     container. No max-height means the table extends to its full natural height —
+     no vertical scrollbox. Y never overflows so no Y scrollbar appears. */
+  overflow: auto;
   border-radius: 10px;
   border: 1px solid var(--color-border);
   isolation: isolate;
@@ -2254,7 +2252,7 @@ body {
   table-layout: fixed;
 }
 
-/* ── Sticky column headers (vertical) ───────────────────────────────── */
+/* ── Column headers ──────────────────────────────────────────────────── */
 .cheat-sheet-table thead th {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
@@ -2265,15 +2263,14 @@ body {
   padding: 10px 14px;
   text-align: left;
   white-space: nowrap;
-  position: sticky;
-  top: 120px; /* clear fixed site-header (64px) + floating-bar (56px) */
   z-index: 20;
   box-shadow: 0 2px 0 0 var(--color-border-light);
 }
 
 /* ── Sticky first column (horizontal) ───────────────────────────────── */
-/* Corner cell: sticks both top and left — needs the highest z-index */
+/* Corner cell: sticks left — needs the highest z-index */
 .cheat-sheet-table thead th:first-child {
+  position: sticky;
   left: 0;
   z-index: 30;
 }
@@ -2301,7 +2298,7 @@ body {
 .cheat-sheet-table .col-desc { width: 35%; }
 .cheat-sheet-table .col-rat { width: 43%; }
 
-/* ── Level header rows (sticky below thead, full-width) ─────────────── */
+/* ── Level header rows ───────────────────────────────────────────────── */
 .level-header-row td {
   padding: 8px 14px;
   font-weight: 700;
@@ -2311,8 +2308,6 @@ body {
   border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
   text-align: center;
-  position: sticky;
-  top: calc(120px + var(--cs-thead-h, 42px));
   z-index: 15;
   box-shadow: 0 2px 0 0 var(--color-border);
 }
