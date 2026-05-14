@@ -1,0 +1,42 @@
+title: ChatGPT Workspace Agent Suspended
+id: chatgpt-enterprise-6005-agent-suspended
+status: test
+description: |
+    Detects suspension of a workspace agent by an admin. Suspensions
+    are a strong signal of either an incident response action or a
+    policy violation discovered during review. OpenAI documents
+    "admins can also suspend agents if needed" via the Global Admin
+    Console and the Compliance API. Use this rule to fan out a
+    notification to the GRC/Security oncall and to open a tracking
+    ticket capturing the reason for suspension.
+    This corresponds to HTH ChatGPT Enterprise control 6.5
+    (section 6.5, L1).
+references:
+    - https://howtoharden.com/guides/chatgpt-enterprise/#65-incident-response-suspend-and-investigate
+    - https://help.openai.com/en/articles/12289294-global-admin-console
+    - https://help.openai.com/en/articles/9261474-compliance-apis-for-enterprise-customers
+author: How to Harden
+date: 2026/05/13
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: openai
+    service: chatgpt-compliance
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        event_type: 'USER_LOG'
+        action: 'agent.suspended'
+    condition: selection
+fields:
+    - timestamp
+    - actor_email
+    - agent_id
+    - agent_name
+    - reason
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned lifecycle cleanup (owner departed, agent expired)
+    - Quarterly attestation re-baseline
+level: medium

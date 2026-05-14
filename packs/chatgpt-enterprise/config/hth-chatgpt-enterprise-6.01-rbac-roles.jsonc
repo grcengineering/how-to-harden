@@ -1,0 +1,51 @@
+// HTH ChatGPT Enterprise Control 6.1: Workspace Agent RBAC Role Layout
+// Profile: L1 | NIST: AC-2, AC-6 | SOC 2: CC6.1
+// https://howtoharden.com/guides/chatgpt-enterprise/#61-keep-workspace-agents-disabled-until-governance-is-in-place
+//
+// Apply via Workspace settings -> Members -> Roles.
+// RBAC reference: https://help.openai.com/en/articles/11750701-rbac
+//
+// Default posture: workspace agents are DISABLED workspace-wide. Only the
+// three roles below should ever receive agent privileges, and assignments
+// flow through SCIM-provisioned groups, never directly to individual users.
+
+// HTH Guide Excerpt: begin rbac-agent-roles
+{
+  "roles": [
+    {
+      "name": "agents-run",
+      "description": "Run published agents; cannot build or publish.",
+      "features": {
+        "agents_use": "enabled",
+        "agents_build": "disabled",
+        "agents_publish": "disabled",
+        "workspace_agents_for_slack": "enabled"
+      }
+    },
+    {
+      "name": "agents-build",
+      "description": "Build and modify agents; cannot publish org-wide.",
+      "features": {
+        "agents_use": "enabled",
+        "agents_build": "enabled",
+        "agents_publish": "disabled",
+        "workspace_agents_for_slack": "enabled"
+      }
+    },
+    {
+      "name": "agents-admin",
+      "description": "Publish agents workspace-wide; approve cross-team sharing.",
+      "features": {
+        "agents_use": "enabled",
+        "agents_build": "enabled",
+        "agents_publish": "enabled",
+        "workspace_agents_for_slack": "enabled"
+      }
+    }
+  ]
+}
+// HTH Guide Excerpt: end rbac-agent-roles
+
+// Review cadence: quarterly attestation. Cross-reference the
+// Global Admin Console -> Agents inventory against the agents-admin
+// roster; flag any orphaned agents whose owner has left the org.

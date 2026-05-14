@@ -1,0 +1,44 @@
+title: ChatGPT Workspace Agent First MCP Tool Invocation
+id: chatgpt-enterprise-6004-mcp-first-use
+status: test
+description: |
+    Detects the first invocation of a custom MCP tool by a workspace
+    agent. Custom MCP servers (Developer Mode beta) extend the agent's
+    trust boundary beyond OpenAI's vetted apps catalog. A first
+    invocation is the most informative observation because the agent
+    is exercising a capability that has not yet been seen in
+    production traffic. Pair with the approval policy from control 6.3
+    so the first call requires human approval before completion.
+    This corresponds to HTH ChatGPT Enterprise control 6.4
+    (section 6.4, L2).
+references:
+    - https://howtoharden.com/guides/chatgpt-enterprise/#64-detect-cross-connector-exfiltration-patterns
+    - https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta
+    - https://platform.openai.com/docs/guides/tools-connectors-mcp
+author: How to Harden
+date: 2026/05/13
+tags:
+    - attack.execution
+    - attack.t1059
+    - attack.t1204
+logsource:
+    product: openai
+    service: chatgpt-compliance
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        event_type: 'CONVERSATION_LOG'
+        tool.type: 'mcp'
+    condition: selection
+    timeframe: 30d
+fields:
+    - timestamp
+    - agent_id
+    - user_email
+    - tool.server_url
+    - tool.name
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Approved enrollment of a new MCP tool with documented business case
+    - Builder testing a tool during agent development (should fire only in Preview)
+level: high

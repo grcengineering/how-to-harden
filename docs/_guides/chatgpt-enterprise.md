@@ -5,15 +5,17 @@ vendor: "OpenAI"
 slug: "chatgpt-enterprise"
 tier: "1"
 category: "Productivity"
-description: "Enterprise AI security hardening for ChatGPT, SSO configuration, data privacy, and admin controls"
-version: "0.1.0"
+description: "Enterprise AI security hardening for ChatGPT, SSO configuration, data privacy, admin controls, and workspace agent governance"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-05-14"
 ---
 
 ## Overview
 
 ChatGPT Enterprise is OpenAI's enterprise-grade AI assistant serving organizations that require enhanced security, privacy, and administrative controls. With AI adoption accelerating across enterprises, properly securing ChatGPT Enterprise is critical to prevent data leakage, maintain compliance, and ensure responsible AI usage. Unlike consumer versions, Enterprise provides SOC 2 Type II compliance, data isolation, and guarantees that prompts and outputs are not used for model training.
+
+On April 22, 2026, OpenAI announced **[Workspace Agents in ChatGPT](https://openai.com/index/introducing-workspace-agents-in-chatgpt/)** — Codex-powered, cloud-resident agents that can connect to enterprise apps (Slack, Salesforce, Google Workspace, Microsoft 365, GitHub, Notion, Atlassian Rovo, and others), run on schedules, and complete multi-step workflows on a user's behalf. Workspace agents are an evolution of custom GPTs and inherit a substantially broader risk surface because they can take **actions** in connected systems, not just answer questions. This guide's new Section 6 covers hardening that specific surface.
 
 ### Intended Audience
 - Security engineers managing AI tools
@@ -38,7 +40,8 @@ This guide covers ChatGPT Enterprise security configurations including SSO/SAML,
 3. [GPT & App Controls](#3-gpt--app-controls)
 4. [Monitoring & Compliance](#4-monitoring--compliance)
 5. [Third-Party Integration Security](#5-third-party-integration-security)
-6. [Compliance Quick Reference](#6-compliance-quick-reference)
+6. [Workspace Agents Hardening](#6-workspace-agents-hardening)
+7. [Compliance Quick Reference](#7-compliance-quick-reference)
 
 ---
 
@@ -557,7 +560,366 @@ Establish regular audit trail reviews to detect policy violations, unusual usage
 
 ---
 
-## 6. Compliance Quick Reference
+## 6. Workspace Agents Hardening
+
+**Workspace agents** are Codex-powered, cloud-resident agents introduced by OpenAI on **April 22, 2026** as the successor to custom GPTs. They run multi-step, long-running tasks against connected enterprise apps (Slack, Salesforce, Google Workspace, Microsoft 365, GitHub, Notion, Atlassian Rovo, custom MCP servers, and others), can be triggered by a human, by Slack, or on a schedule, and continue running when the creator is offline.
+
+As of this guide's revision date, workspace agents are in **research preview** across ChatGPT Business, Enterprise, Edu, and Teachers plans. The feature is **disabled by default** at the workspace level; admins must enable it per role. The pre-credit-billing period is free through **May 6, 2026**; credit-based pricing begins thereafter.
+
+### Why Workspace Agents Need Their Own Hardening Section
+
+Unlike chat conversations, workspace agents combine three properties that map directly onto Simon Willison's [lethal trifecta](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/):
+
+1. **Access to private data** — through connected apps such as Gmail, Drive, SharePoint, Salesforce, Notion.
+2. **Exposure to untrusted content** — agents read emails, documents, calendar invites, Slack messages, and web pages that may contain hidden injection payloads.
+3. **External communication ability** — agents can send email, post to Slack, create calendar invites, write to CRM records, and invoke arbitrary remote tools via MCP.
+
+Every confirmed exfiltration PoC against AI agents in the past 12 months — **ShadowLeak** (Radware, 2025), **AgentFlayer** (Zenity Labs, Black Hat USA 2025), **ZombieAgent** (Radware, September 2025), and **GeminiJack** (Noma Security, January 2026) — exploited an architecture identical to what workspace agents inherit. The defensive posture is therefore **deny-by-default and approval-gated**, not "trust the model layer."
+
+---
+
+### 6.1 Keep Workspace Agents Disabled Until Governance Is in Place
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.1, 4.7 |
+| NIST 800-53 | CM-7, AC-3 |
+
+#### Description
+
+Workspace agents are disabled by default in new and existing Enterprise/Edu workspaces. Do not enable them workspace-wide until RBAC roles, connector posture, approval policies, and Compliance API ingestion are all in place. Once enabled, grant agent privileges only to dedicated SCIM-provisioned groups (`agents-run`, `agents-build`, `agents-admin`).
+
+#### Rationale
+
+**Why This Matters:**
+- Agent build privileges proliferate faster than governance reviews can keep up
+- Once the feature is on, suspending it for the whole workspace breaks legitimate work; deny-by-default avoids that trap
+- OpenAI's documented quote: *"Workspace owners can enable agents for the workspace and assign access to specific roles with RBAC"*
+
+**Attack Prevented:** Shadow AI / agent sprawl, orphan agents owned by departed users, premature exposure of the lethal-trifecta surface
+
+**Real-World Pattern:** Custom GPT proliferation in the 2023–2024 period — many enterprises ended up with hundreds of internal GPTs and no inventory; workspace agents inherit the same failure mode plus the ability to take actions.
+
+#### ClickOps Implementation
+
+**Step 1: Confirm the feature is off**
+
+1. Navigate to: **Workspace settings** → **Members** → **Roles**
+2. Confirm no existing role has `Agents` or `workspace agents for Slack` features enabled
+3. If any role does, document the role and the affected user count before proceeding
+
+**Step 2: Create three dedicated RBAC roles**
+
+1. Create `agents-run` — `agents_use: enabled`, build/publish disabled
+2. Create `agents-build` — adds `agents_build: enabled`
+3. Create `agents-admin` — adds `agents_publish: enabled`
+4. Map each role to a SCIM-provisioned group in your identity provider — no direct user assignments
+
+**Step 3: Defer workspace-level enablement**
+
+1. Do not enable the agent feature in `Workspace settings` → `Apps` → `Directory` until controls 6.2 (connector posture), 6.3 (approval policy), and 6.6 (SIEM ingestion) are all in place
+
+**Time to Complete:** ~30 minutes plus IdP group provisioning lead time
+
+#### Code Implementation
+
+{% include pack-code.html vendor="chatgpt-enterprise" section="6.1" %}
+
+#### Validation & Testing
+
+1. Pull the role roster and confirm the three roles exist with the expected feature toggles
+2. In the Global Admin Console, confirm the `Agents` section shows no published agents
+3. Sample a user without any of the three roles and confirm the `Agents` sidebar entry is not visible
+
+**Expected result:** Three roles defined, all SCIM-mapped, zero agents published, the agent feature invisible to non-role users.
+
+---
+
+### 6.2 Minimize Connector Scopes and Default to Read-Only
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.3, 6.8 |
+| NIST 800-53 | AC-3, AC-6, CM-7 |
+
+#### Description
+
+OpenAI exposes three values at **Workspace settings** → **Apps** → **{App}** → **Action control**: `allow_all`, `read_only`, and `custom`. All apps are disabled by default. When you enable an app, default it to `read_only` and use `custom` only to allow specific write actions with a documented business case. Never use `allow_all` on a workspace that hosts agents.
+
+#### Rationale
+
+**Why This Matters:**
+- OAuth scopes are negotiated at the provider level (Google, Microsoft, Salesforce); they are coarse and cannot be reduced per-action
+- The OpenAI Action control toggle is the only granular write-prevention layer between an injected agent and a connected system
+- **AgentFlayer** (Zenity Labs, Black Hat USA 2025) demonstrated that hidden 1-pixel instructions in a Google Drive document caused an agent with broad Drive access to traverse a victim's drive and exfiltrate API keys
+
+**Attack Prevented:** Cross-connector data exfiltration, runaway write actions triggered by indirect prompt injection, accidental destructive operations from a faulty agent build
+
+#### ClickOps Implementation
+
+**Step 1: Audit currently enabled apps**
+
+1. Navigate to: **Workspace settings** → **Apps**
+2. List every app whose status is `Enabled`
+3. For each enabled app, open the app and review its current `Action control` setting
+
+**Step 2: Apply the read-only baseline**
+
+1. For every enabled app, set `Action control` to `read_only` unless there is a documented and approved write workflow
+2. Set `Newly added actions` to `Deny` (or the equivalent "deny by default for new actions" toggle)
+3. For Slack, use `custom`: allow `search` and `read_channel`; deny `post_to_channel`, `dm_external`, `post_to_dm`
+
+**Step 3: Document exceptions**
+
+1. Any app with `custom` or `allow_all` must have a CAB ticket containing the business case, the approver, and a review date no more than 90 days out
+
+**Time to Complete:** ~1 hour per enabled app
+
+#### Code Implementation
+
+{% include pack-code.html vendor="chatgpt-enterprise" section="6.2" %}
+
+#### Validation & Testing
+
+1. Export the app list and confirm every entry is either `disabled` or `read_only` (or a `custom` entry with a CAB ticket)
+2. Have an `agents-build` user attempt to construct an agent that performs a write on a `read_only` app; the action should be unavailable in the Builder
+
+#### Monitoring & Maintenance
+
+- Quarterly: re-attest each enabled app's action control
+- On every CAB-approved exception: schedule a review date and a Sigma alert (see 6.4) on the resulting grant event
+
+---
+
+### 6.3 Require Human Approval for Sensitive Agent Actions
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.7 |
+| NIST 800-53 | AC-3(2), CM-3 |
+
+#### Description
+
+OpenAI documents builder-side approval gates: *"sensitive actions … require the agent to ask for permission before moving forward."* Apply a workspace-wide policy that every write action with reputational, financial, or regulatory impact requires a human approver in the loop. Enforce the policy at publish time — agents-admin reviewers must reject any agent that lacks the gate for the action categories below.
+
+#### Rationale
+
+**Why This Matters:**
+- Model-layer prompt-injection defenses are probabilistic; Anthropic's best result is ~1% browser-agent attack success after RL training, and OpenAI's own Atlas post concedes it *"may never be fully solved"*
+- The only deterministic mitigation against an injected agent issuing a malicious write is a separate human signing off on that write
+- **CVE-2026-21520** (Microsoft Copilot Studio, "ShareLeak") showed that confirm-before-act gates are bypassable when poorly scoped; the gate must trigger on the action category, not just on a "looks-sensitive" heuristic
+
+**Attack Prevented:** Indirect-prompt-injection-driven email exfiltration, calendar-invite data leaks, CRM record poisoning, code-push backdoors
+
+#### ClickOps Implementation
+
+**Step 1: Define the required-approval action list**
+
+The minimum list every published agent must gate behind human approval:
+
+- Send email (any external recipient)
+- Create calendar invite for external attendees
+- Salesforce / CRM record create / update / delete
+- SharePoint or Drive bulk write or any delete
+- GitHub push / merge / release
+- Slack post to channel or DM to external recipient
+- First invocation of any MCP tool
+- Any financial transaction
+
+**Step 2: Enforce during the publish workflow**
+
+1. In `Global Admin Console` → `Agents` → an agent that is pending publish, open its action map
+2. Reject the publish if any of the above categories appears without an approval gate
+3. Require the agents-admin to record the approver email and the agent ID in a published-agents register
+
+**Time to Complete:** ~15 minutes per agent during publish review
+
+#### Code Implementation
+
+{% include pack-code.html vendor="chatgpt-enterprise" section="6.3" %}
+
+#### Validation & Testing
+
+1. Build a test agent that attempts to send email without an approval gate; the publish should be blocked
+2. Approve the agent with the gate in place and confirm the agent run halts at the send step and waits for approver acknowledgement
+
+---
+
+### 6.4 Detect Lethal-Trifecta Agents and First-Use MCP Tools
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 8.11 |
+| NIST 800-53 | SI-4(2), SI-4(24) |
+
+#### Description
+
+A workspace agent crosses the lethal-trifecta threshold the moment its connected app set intersects all three categories: private-data read, untrusted-content ingest, and external-send. Inventory every agent and flag the trifecta cases. Separately, fire a high-severity alert on every first invocation of a custom MCP tool — custom MCP servers extend the trust boundary beyond OpenAI's vetted catalog.
+
+#### Rationale
+
+**Why This Matters:**
+- The trifecta is the *architectural* precondition for every published agent exfiltration PoC; eliminating it eliminates the vulnerability class
+- Custom MCP tools are bring-your-own-code; their first call is the most informative observation because the agent is exercising a capability that has not yet been seen in production
+- OpenAI quote: *"Conversations involving agent tasks will appear in Compliance API logs, but individual agent actions (such as virtual computer usage, app requests, chain of thought) will not."* — the SIEM rules in this section are therefore your only continuous visibility into per-step capability changes
+
+**Attack Prevented:** Architectural exfiltration paths, undocumented MCP tool capability, post-publish scope expansion that bypasses the publish review
+
+#### ClickOps Implementation
+
+**Step 1: Export the agent inventory**
+
+1. Navigate to: **Global Admin Console** → **Agents**
+2. Export the full agent list to CSV (columns: `agent_id`, `agent_name`, `owner_email`, `connected_apps`)
+
+**Step 2: Classify each agent**
+
+1. Mark each agent whose `connected_apps` includes any of:
+   - Private-data: Gmail, Drive, Calendar, Docs, SharePoint, OneDrive, Outlook, Salesforce, Notion, Confluence, Jira, GitHub, GitLab, Box, Dropbox
+   - Untrusted-content: Gmail, Outlook, Slack, Calendar, Web Search, Browser, Notion, Confluence, Jira
+   - External-send: Gmail, Outlook, Slack, Calendar, Web Search, Browser, GitHub, GitLab, Salesforce
+2. Any agent that appears in all three lists is a trifecta agent — require either app-set reduction or full human-in-the-loop approval on every external-send step
+
+**Time to Complete:** ~30 minutes for the first inventory, then 5 minutes per new agent at publish
+
+#### Code Implementation
+
+{% include pack-code.html vendor="chatgpt-enterprise" section="6.4" %}
+
+#### Validation & Testing
+
+1. Run the trifecta detection script against your exported agent inventory; confirm zero unapproved trifecta agents
+2. Have a builder add an MCP tool to a test agent in Preview; confirm the first-use Sigma rule fires in your SIEM
+
+---
+
+### 6.5 Operationalize Agent Suspension for Incident Response
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 17.7 |
+| NIST 800-53 | IR-4(1), CM-3 |
+
+#### Description
+
+OpenAI documents agent suspension as a first-class admin action: *"Admins can also suspend agents if needed."* Build the suspension runbook before the first incident — define who can suspend, what evidence is collected, what users are notified, and how the suspension is reversed.
+
+#### Rationale
+
+**Why This Matters:**
+- The Global Admin Console → Agents → Suspend action is the kill-switch; latency matters during an active exfiltration
+- Without a documented runbook, the suspension decision drifts to whoever happens to be on call, which is rarely the right person
+- A suspension event is also a high-confidence detection signal — Sigma rule 6.5 surfaces every suspension to the GRC oncall
+
+**Attack Prevented:** Continued exfiltration after compromise is identified, post-suspension confusion and reversal, lack of forensic evidence
+
+#### ClickOps Implementation
+
+**Step 1: Document the runbook**
+
+1. Suspension authority: anyone in the `agents-admin` role plus the security incident commander
+2. Triggering signals: trifecta detection (6.4), Sigma alert on suspension by an unexpected admin, anomalous Compliance API event
+3. Required evidence capture before suspension: agent ID, owner, connected apps list, last 10 runs from the Compliance API, builder configuration screenshot
+4. Notification list: agent owner, agents-admin chat channel, GRC oncall, security incident commander
+
+**Step 2: Drill the runbook**
+
+1. Suspend a non-production test agent quarterly
+2. Time the full suspension-to-evidence-capture cycle; target under 15 minutes
+3. After suspension, restore the agent and confirm it resumes correctly
+
+**Time to Complete:** ~2 hours to document; ~30 minutes per quarterly drill
+
+#### Code Implementation
+
+{% include pack-code.html vendor="chatgpt-enterprise" section="6.5" %}
+
+#### Validation & Testing
+
+1. The quarterly drill is the validation — confirm under-15-minute suspension-to-evidence latency and successful restore
+
+---
+
+### 6.6 Stream Compliance API Logs to SIEM with 30-Day Retention Awareness
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 8.2, 8.10 |
+| NIST 800-53 | AU-6, AU-11, AU-12 |
+
+#### Description
+
+The OpenAI **Compliance Logs Platform** retains 30 days of immutable events. Continuous export is mandatory for SOX, HIPAA, PCI scope and for any retention beyond 30 days. The platform exposes a single REST surface: `GET https://api.chatgpt.com/v1/compliance/{scope}/{principal_id}/logs` with event types `AUTH_LOG`, `CONVERSATION_LOG`, `FILE_LOG`, `GPT_LOG`, `MEMORY_LOG`, and `USER_LOG`.
+
+#### Rationale
+
+**Why This Matters:**
+- Without continuous export, every event older than 30 days is gone and unrecoverable
+- Workspace agent runs appear under `CONVERSATION_LOG`; agent lifecycle events appear under `USER_LOG`
+- OpenAI quote (limitation worth flagging in audit scope): *"Conversations involving agent tasks will appear in Compliance API logs, but individual agent actions (such as virtual computer usage, app requests, chain of thought) will not."*
+
+**Attack Prevented:** Audit-trail loss past 30 days, missed lateral movement signals during longer dwell times, inability to support a post-incident forensic timeline
+
+#### ClickOps Implementation
+
+**Step 1: Provision a Compliance API key**
+
+1. Navigate to: **Global Admin Console** → **API keys**
+2. Generate a `Compliance API key`, scoped to your workspace or organization
+3. Note the IP allowlist requirement: per OpenAI, IP allowlist is *"always enforced for Compliance API traffic"* — add your puller's egress IPs first
+
+**Step 2: Deploy the continuous puller**
+
+1. Deploy the bash script in 6.6 (or your existing SIEM connector) on a scheduled job — every 15 minutes is a reasonable starting cadence
+2. Persist each downloaded JSONL log file to an immutable bucket (S3 Object Lock, GCS retention policy, Azure Blob immutability) with a retention setting that matches your compliance scope (1 year for PCI, 6 years for HIPAA, 7 years for SOX)
+
+**Step 3: Wire the SIEM**
+
+1. Forward the bucket contents to Splunk (universal forwarder), Microsoft Sentinel (Custom Logs DCR), Google Chronicle, or your existing platform
+2. Deploy the three Sigma rules (6.4–6.6) and confirm they fire against historical events
+
+**Time to Complete:** ~4 hours including initial backfill
+
+#### Code Implementation
+
+{% include pack-code.html vendor="chatgpt-enterprise" section="6.3" %}
+
+{% include pack-code.html vendor="chatgpt-enterprise" section="6.4" %}
+
+{% include pack-code.html vendor="chatgpt-enterprise" section="6.5" %}
+
+{% include pack-code.html vendor="chatgpt-enterprise" section="6.6" %}
+
+#### Validation & Testing
+
+1. After 24 hours, confirm the SIEM has ingested events from each event type
+2. Generate a test agent suspension and confirm Sigma 6.5 fires within the alerting SLA
+3. Quarterly: restore a sample log file from the immutable bucket and confirm the JSONL parses cleanly
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|---------|
+| **User Experience** | None | Logging is server-side |
+| **System Performance** | Low | One scheduled pull every 15 minutes per event type |
+| **Maintenance Burden** | Medium | Watch for new OpenAI event types and 2026-06-05 deprecation of the legacy stateful conversations route |
+| **Rollback Difficulty** | Easy | Disabling the puller stops ingestion; archived logs remain |
+
+---
+
+## 7. Compliance Quick Reference
 
 ### SOC 2 Trust Services Criteria Mapping
 
@@ -565,9 +927,12 @@ Establish regular audit trail reviews to detect policy violations, unusual usage
 |-----------|-----------------|---------------|
 | CC6.1 | SSO authentication | [1.1](#11-configure-saml-single-sign-on) |
 | CC6.1 | MFA enforcement | [1.2](#12-enable-multi-factor-authentication) |
+| CC6.1 | Workspace agent RBAC | [6.1](#61-keep-workspace-agents-disabled-until-governance-is-in-place) |
 | CC6.2 | Role-based access | [1.4](#14-implement-role-based-access-control) |
 | CC6.6 | Data retention | [2.2](#22-configure-data-retention-policies) |
 | CC7.2 | Usage monitoring | [4.1](#41-enable-usage-analytics) |
+| CC7.2 | Compliance API SIEM export | [6.6](#66-stream-compliance-api-logs-to-siem-with-30-day-retention-awareness) |
+| CC7.4 | Agent approval policy | [6.3](#63-require-human-approval-for-sensitive-agent-actions) |
 
 ### NIST 800-53 Rev 5 Mapping
 
@@ -576,8 +941,14 @@ Establish regular audit trail reviews to detect policy violations, unusual usage
 | IA-2 | SAML SSO | [1.1](#11-configure-saml-single-sign-on) |
 | IA-2(1) | MFA | [1.2](#12-enable-multi-factor-authentication) |
 | AC-2 | User provisioning | [1.3](#13-configure-scim-user-provisioning) |
+| AC-3 | Workspace agent RBAC | [6.1](#61-keep-workspace-agents-disabled-until-governance-is-in-place) |
+| AC-3(2) | Agent action approvals | [6.3](#63-require-human-approval-for-sensitive-agent-actions) |
 | AC-6(1) | Least privilege | [1.4](#14-implement-role-based-access-control) |
+| CM-7 | Connector read-only baseline | [6.2](#62-minimize-connector-scopes-and-default-to-read-only) |
 | SC-28 | Data encryption | [2.1](#21-understand-data-privacy-guarantees) |
+| SI-4(2) | Cross-connector exfil detection | [6.4](#64-detect-lethal-trifecta-agents-and-first-use-mcp-tools) |
+| AU-6 | Compliance API SIEM export | [6.6](#66-stream-compliance-api-logs-to-siem-with-30-day-retention-awareness) |
+| IR-4(1) | Agent suspension runbook | [6.5](#65-operationalize-agent-suspension-for-incident-response) |
 
 ### GDPR Considerations
 
@@ -588,21 +959,25 @@ Establish regular audit trail reviews to detect policy violations, unusual usage
 | Data portability | Export functionality |
 | Right to erasure | Conversation deletion |
 | Security of processing | SOC 2, encryption, access controls |
+| Article 22 (automated decisions) | Workspace agent approval gates ensure human is in the loop for actions with legal or significant effect; see [6.3](#63-require-human-approval-for-sensitive-agent-actions) |
 
 ---
 
 ## Appendix A: Edition Comparison
 
-| Feature | ChatGPT Team | ChatGPT Enterprise |
-|---------|--------------|-------------------|
-| SSO/SAML | ❌ | ✅ |
-| SCIM | ❌ | ✅ |
-| Data not used for training | ✅ | ✅ |
-| Enterprise Key Management | ❌ | ✅ |
-| Admin Console | Basic | Full |
-| Usage Analytics | Basic | Advanced |
-| SOC 2 Type II | ❌ | ✅ |
-| Custom data retention | ❌ | ✅ |
+| Feature | ChatGPT Team | ChatGPT Business | ChatGPT Enterprise | ChatGPT Edu |
+|---------|--------------|------------------|-------------------|-------------|
+| SSO/SAML | ❌ | ✅ | ✅ | ✅ |
+| SCIM | ❌ | ✅ | ✅ | ✅ |
+| Data not used for training | ✅ | ✅ | ✅ | ✅ |
+| Enterprise Key Management | ❌ | ❌ | ✅ | ✅ |
+| Admin Console | Basic | Full | Full | Full |
+| Usage Analytics | Basic | Advanced | Advanced | Advanced |
+| SOC 2 Type II | ❌ | ✅ | ✅ | ✅ |
+| Custom data retention | ❌ | ✅ | ✅ | ✅ |
+| Workspace Agents (research preview, Apr 2026) | ❌ | ✅ | ✅ | ✅ |
+| Compliance API for agent logs | ❌ | ❌ | ✅ | ✅ |
+| Granular app action control (per-app read-only) | ❌ | Limited | ✅ | ✅ |
 
 ---
 
@@ -613,20 +988,47 @@ Establish regular audit trail reviews to detect policy violations, unusual usage
 - [Security and Privacy at OpenAI](https://openai.com/security-and-privacy/)
 - [Business Data Privacy, Security, and Compliance](https://openai.com/business-data/)
 - [ChatGPT Enterprise Help Center](https://help.openai.com/en/collections/5688074-chatgpt-enterprise)
-- [Admin Controls: Security and Compliance](https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-in-apps-enterprise-edu-and-business)
+- [Admin Controls: Security and Compliance in Apps](https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-in-apps-enterprise-edu-and-business)
+
+**Workspace Agents:**
+- [Introducing Workspace Agents in ChatGPT](https://openai.com/index/introducing-workspace-agents-in-chatgpt/) — April 22, 2026 announcement
+- [Workspace Agents for Enterprise and Business](https://help.openai.com/en/articles/20001143-chatgpt-workspace-agents-for-enterprise-and-business)
+- [ChatGPT Agent (underlying technology)](https://help.openai.com/en/articles/11752874-chatgpt-agent)
+- [Workspace Agents App in Slack](https://help.openai.com/en/articles/20001199-chatgpt-agents-app-in-slack)
+- [Global Admin Console](https://help.openai.com/en/articles/12289294-global-admin-console)
+- [RBAC for ChatGPT](https://help.openai.com/en/articles/11750701-rbac)
+- [Developer Mode Apps and Full MCP Connectors (beta)](https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta)
+- [OpenAI Academy: Workspace Agents](https://openai.com/academy/workspace-agents/)
+- [Building Workspace Agents — OpenAI Cookbook](https://developers.openai.com/cookbook/articles/chatgpt-agents-sales-meeting-prep)
+- [Designing Agents to Resist Prompt Injection](https://openai.com/index/designing-agents-to-resist-prompt-injection/)
+- [Hardening Atlas Against Prompt Injection](https://openai.com/index/hardening-atlas-against-prompt-injection/)
+
+**Compliance API:**
+- [Compliance APIs for Enterprise Customers](https://help.openai.com/en/articles/9261474-compliance-apis-for-enterprise-customers)
+- [Compliance Logs Platform Quickstart — OpenAI Cookbook](https://developers.openai.com/cookbook/examples/chatgpt/compliance_api/logs_platform)
+- [Compliance API vs User Analytics](https://help.openai.com/en/articles/11327494-compliance-api-vs-user-analytics-in-chatgpt-enterpriseedu)
 
 **API Documentation:**
 - [OpenAI API Reference](https://platform.openai.com/docs/api-reference/introduction)
 - [Official Python SDK](https://github.com/openai/openai-python)
 - [Official Node.js/TypeScript SDK](https://platform.openai.com/docs/libraries)
 - [Agents SDK](https://platform.openai.com/docs/guides/agents-sdk)
+- [Tools, Connectors, and MCP](https://platform.openai.com/docs/guides/tools-connectors-mcp)
 
 **Compliance Frameworks:**
 - SOC 2 Type II (Security, Availability, Confidentiality, Privacy), ISO 27001:2022, ISO 27017, ISO 27018, ISO 27701 — via [OpenAI Trust Portal](https://trust.openai.com/)
 
+**Security Research on AI Agents:**
+- [The Lethal Trifecta — Simon Willison, June 2025](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/) — the architectural pattern behind every confirmed agent exfiltration PoC
+- [AgentFlayer: ChatGPT Connectors 0-click — Zenity Labs, Black Hat USA 2025](https://labs.zenity.io/p/agentflayer-chatgpt-connectors-0click-attack-5b41)
+- [OWASP Top 10 for LLM Applications (LLM01: Prompt Injection)](https://genai.owasp.org/llmrisk/llm01-prompt-injection/)
+- [Embrace The Red — Johann Rehberger's prompt-injection research](https://embracethered.com/blog/)
+
 **Security Incidents:**
 - **March 2023 — Redis library bug exposed chat titles and payment info.** A bug in the open-source Redis client library allowed some users to see other users' chat history titles and first messages. Payment information of approximately 1.2% of ChatGPT Plus subscribers was also briefly exposed. ([OpenAI Disclosure](https://openai.com/index/march-20-chatgpt-outage/))
 - **November 2025 — Vendor (Mixpanel) breach exposed limited business customer data.** Attackers breached OpenAI's third-party analytics vendor Mixpanel, stealing names, emails, locations, and technical system details of business customers. No chat data, API keys, credentials, or payment details were compromised. OpenAI suspended the relationship with Mixpanel and initiated broader vendor security reviews. ([OpenAI Disclosure](https://openai.com/index/mixpanel-incident/))
+- **2025 (patched 2026-02-20) — ShadowLeak.** Radware disclosed a zero-click indirect prompt injection against the Deep Research agent. Hidden HTML in an inbound Gmail message caused the agent to exfiltrate inbox contents from OpenAI's cloud infrastructure, invisible to local DLP. Patched. ([Radware advisory via Infosecurity Magazine](https://www.infosecurity-magazine.com/news/vulnerability-chatgpt-agent-gmail/))
+- **September 2025 (patched mid-December 2025) — ZombieAgent.** Radware disclosed a persistent indirect-prompt-injection attack that planted rules into ChatGPT memory; every subsequent session re-triggered exfiltration. Bypassed dynamic-URL filters via a pre-built static URL dictionary. ([Coverage via The Hacker News](https://thehackernews.com/2026/03/openai-patches-chatgpt-data.html))
 
 ---
 
@@ -634,6 +1036,7 @@ Establish regular audit trail reviews to detect policy violations, unusual usage
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-05-14 | 0.2.0 | draft | [SECURITY] Added Section 6 Workspace Agents Hardening (6 controls covering RBAC, connector posture, approval policy, lethal-trifecta detection, suspension runbook, Compliance API SIEM export). Added Code Packs under `packs/chatgpt-enterprise/` (api, config, siem/sigma). Updated NIST and GDPR mappings. Expanded References with workspace agent, Compliance API, and agent-security research links. | Claude Code (Opus 4.7) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, data privacy, GPT controls, and compliance | Claude Code (Opus 4.5) |
 
 ---

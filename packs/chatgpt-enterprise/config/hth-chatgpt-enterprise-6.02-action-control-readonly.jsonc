@@ -1,0 +1,55 @@
+// HTH ChatGPT Enterprise Control 6.2: App Action-Control Read-Only Posture
+// Profile: L1 | NIST: AC-3, CM-7 | SOC 2: CC6.1
+// https://howtoharden.com/guides/chatgpt-enterprise/#62-minimize-connector-scopes-and-default-to-read-only
+//
+// Apply per app at: Workspace settings -> Apps -> {App} -> Action control.
+// Action-control reference:
+//   https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-in-apps-enterprise-edu-and-business
+//
+// OpenAI exposes three values: allow_all, read_only, custom.
+// Principle: default to read_only on every enabled app. Use custom only
+// when a specific write action has a documented business case.
+// Never use allow_all on a workspace that hosts agents.
+
+// HTH Guide Excerpt: begin app-action-control
+{
+  "apps": {
+    "gmail":           { "enabled": false, "action_control": "read_only", "new_actions_default": "deny" },
+    "google_drive":    { "enabled": false, "action_control": "read_only", "new_actions_default": "deny" },
+    "google_calendar": { "enabled": false, "action_control": "read_only", "new_actions_default": "deny" },
+    "outlook":         { "enabled": false, "action_control": "read_only", "new_actions_default": "deny" },
+    "sharepoint":      { "enabled": false, "action_control": "read_only", "new_actions_default": "deny" },
+    "salesforce":      { "enabled": false, "action_control": "read_only", "new_actions_default": "deny" },
+    "slack": {
+      "enabled": false,
+      "action_control": "custom",
+      "actions_allowed": ["search", "read_channel"],
+      "actions_denied":  ["post_to_channel", "dm_external", "post_to_dm"],
+      "new_actions_default": "deny"
+    },
+    "github":          { "enabled": false, "action_control": "read_only", "new_actions_default": "deny" },
+    "notion":          { "enabled": false, "action_control": "read_only", "new_actions_default": "deny" },
+    "atlassian_rovo":  { "enabled": false, "action_control": "read_only", "new_actions_default": "deny" },
+    "custom_mcp_servers": {
+      "enabled": false,
+      "action_control": "custom",
+      "new_actions_default": "deny"
+    }
+  }
+}
+// HTH Guide Excerpt: end app-action-control
+
+// Per-app risk notes:
+//   gmail/outlook: TRIFECTA HOT — read + untrusted-content + external-send.
+//     ShadowLeak (Radware 2025) and ZombieAgent (Radware Sep 2025) exploited
+//     this exact surface. Never grant write without human-in-the-loop approval.
+//   google_drive: AgentFlayer (Zenity Labs, Black Hat USA 2025) abused Drive
+//     uploads for indirect prompt injection across multiple AI platforms.
+//   google_calendar: Calendar invite descriptions are an injection carrier
+//     (Miggo / Bitdefender Gemini PoC, Jan 2026).
+//   sharepoint: OpenAI's documented example posture is "broad read, no bulk
+//     write, no delete." SharePoint is also a trusted-domain exfil sink.
+//   slack: Slack DMs are the most common exfil channel in published PoCs.
+//     Read channels for context; never allow agent-originated posts or DMs.
+//   custom_mcp_servers: Allowlist by exact server URL and exact tool name.
+//     Require human approval on first call to every new tool.

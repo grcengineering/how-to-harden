@@ -1,0 +1,44 @@
+// HTH ChatGPT Enterprise Control 6.3: Per-Action Approval Policy
+// Profile: L1 | NIST: AC-3(2), CM-3 | SOC 2: CC7.4
+// https://howtoharden.com/guides/chatgpt-enterprise/#63-require-human-approval-for-sensitive-actions
+//
+// Builders configure approval gates inside each agent in the Builder.
+// There is no workspace-wide enforcement toggle as of 2026-05; the
+// agents-admin role MUST review the approval matrix during the publish
+// workflow for every new agent.
+// Announcement:
+//   https://openai.com/index/introducing-workspace-agents-in-chatgpt/
+
+// HTH Guide Excerpt: begin approval-policy
+{
+  "approval_required_actions": {
+    "email_send":                            "human_required",
+    "calendar_invite_external":              "human_required",
+    "salesforce_record_create_update_delete":"human_required",
+    "sharepoint_drive_bulk_write_or_delete": "human_required",
+    "github_push_merge_release":             "human_required",
+    "slack_post_to_channel_or_external_dm":  "human_required",
+    "mcp_first_invocation_of_tool":          "human_required",
+    "financial_transaction_any":             "human_required"
+  },
+  "approval_logged_actions": {
+    "drive_create_or_update_within_owned_folder": "logged",
+    "notion_create_page_in_owned_workspace":      "logged",
+    "jira_comment_on_owned_ticket":               "logged"
+  }
+}
+// HTH Guide Excerpt: end approval-policy
+
+// Risk rationale per gate:
+//   email_send: Most-abused exfil channel. ShadowLeak (Radware 2025)
+//     and ZombieAgent (Radware Sep 2025) both exfiltrated via email.
+//   calendar_invite_external: Second-most-common exfil channel
+//     (Miggo Gemini PoC, Jan 2026).
+//   salesforce write: CRM data is regulated PII; downstream automation
+//     may amplify a bad write.
+//   sharepoint_drive bulk write/delete: Not legitimate agent behavior.
+//   github push/merge/release: Code-mutating actions risk backdoor insertion.
+//   slack external: Bypasses email DLP; PromptArmor demonstrated Slack AI
+//     RAG poisoning in Aug 2024.
+//   mcp first invocation: First call reveals the real capability requested.
+//   financial: Never auto-approvable.

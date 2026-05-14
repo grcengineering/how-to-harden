@@ -1,0 +1,45 @@
+title: ChatGPT Workspace Agent New App Grant
+id: chatgpt-enterprise-6006-new-app-grant
+status: test
+description: |
+    Detects when a workspace agent is granted access to a new
+    connected app. App grants expand the agent's read or write
+    surface and may push an agent across the lethal-trifecta
+    threshold (private data + untrusted content + external send).
+    This rule surfaces every new grant so the agents-admin can
+    re-evaluate whether the approval policy still matches the
+    expanded capability.
+    This corresponds to HTH ChatGPT Enterprise control 6.4
+    (section 6.4, L2).
+references:
+    - https://howtoharden.com/guides/chatgpt-enterprise/#64-detect-cross-connector-exfiltration-patterns
+    - https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-in-apps-enterprise-edu-and-business
+    - https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/
+author: How to Harden
+date: 2026/05/13
+tags:
+    - attack.privilege_escalation
+    - attack.t1098
+logsource:
+    product: openai
+    service: chatgpt-compliance
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        event_type: 'USER_LOG'
+        action:
+            - 'agent.app.granted'
+            - 'agent.connector.granted'
+    condition: selection
+fields:
+    - timestamp
+    - actor_email
+    - agent_id
+    - agent_name
+    - app_name
+    - action_control
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Approved publish of a new agent that requires the granted app
+    - Builder iteration on an agent draft (Preview state)
+level: medium
