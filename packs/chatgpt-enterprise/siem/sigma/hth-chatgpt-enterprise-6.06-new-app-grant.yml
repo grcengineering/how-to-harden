@@ -24,19 +24,23 @@ logsource:
     product: openai
     service: chatgpt-compliance
 # HTH Guide Excerpt: begin detection
+# Per OpenAI's Workspace Agents Security Overview (April 29, 2026), the
+# Compliance Logs Platform emits connector OAuth resolution events when an
+# agent's connector grant is established or refreshed. This is the highest-
+# signal moment to evaluate whether the new grant pushes the agent across
+# the lethal-trifecta threshold.
 detection:
     selection:
-        event_type: 'USER_LOG'
-        action:
-            - 'agent.app.granted'
-            - 'agent.connector.granted'
+        event_type: 'connector.oauth.resolved'
     condition: selection
 fields:
+    - event_id
     - timestamp
     - actor_email
     - agent_id
     - agent_name
-    - app_name
+    - connector.name
+    - connector.scopes
     - action_control
 # HTH Guide Excerpt: end detection
 falsepositives:

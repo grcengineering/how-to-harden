@@ -1,0 +1,71 @@
+// HTH ChatGPT Enterprise Control 6.7: Pre-Launch Admin Checklist
+// Profile: L1 | NIST: CM-2, CM-3, CM-6 | SOC 2: CC8.1
+// https://howtoharden.com/guides/chatgpt-enterprise/#67-execute-the-openai-pre-launch-admin-checklist
+//
+// Source: OpenAI, "Workspace Agents Security Overview" (April 29, 2026)
+//   https://cdn.openai.com/business/workspace-agents-security-overview.pdf
+//
+// Use this checklist as a publish gate. Track per-publish completion with
+// the named approver and effective date for audit trail.
+
+// HTH Guide Excerpt: begin prelaunch-checklist
+{
+  "checklist_version": "openai-2026-04-29",
+  "publish_gate": "all_required_steps_must_be_signed_off_before_agent_goes_live",
+  "steps": [
+    {
+      "id": 1,
+      "name": "audit_users_and_groups",
+      "description": "Users are added to the workspace and in the right SCIM-provisioned groups. No orphaned accounts; no service accounts in user groups.",
+      "owner": "agents-admin",
+      "evidence_required": "SCIM sync report + user-list export"
+    },
+    {
+      "id": 2,
+      "name": "configure_custom_roles",
+      "description": "Five-dimension RBAC mapping per control 6.1. publish_agents_with_shared_connections withheld unless CAB-approved.",
+      "owner": "agents-admin",
+      "evidence_required": "role export + RBAC matrix screenshot"
+    },
+    {
+      "id": 3,
+      "name": "enable_approved_apps",
+      "description": "Enable only apps required by the workflow. Confirm read/write split. New actions require admin review (not auto-enabled).",
+      "owner": "agents-admin",
+      "openai_documented_apps": [
+        "slack",
+        "google_drive",
+        "sharepoint",
+        "gmail",
+        "google_calendar",
+        "github",
+        "jira",
+        "confluence"
+      ],
+      "evidence_required": "app list export + action-control settings screenshot"
+    },
+    {
+      "id": 4,
+      "name": "make_required_skills_available",
+      "description": "Enable skill permissions for the relevant builder and user groups. Skills package instructions, files, and scripts — treat their enablement as a privileged grant.",
+      "owner": "agents-admin",
+      "evidence_required": "skill permission audit"
+    },
+    {
+      "id": 5,
+      "name": "review_mcp_availability",
+      "description": "If builders need custom MCPs, enable Developer Mode or approved MCP connectors only for the right builder groups. SIEM ingestion (control 6.6) must be live before any MCP grant.",
+      "owner": "agents-admin",
+      "evidence_required": "Developer Mode role assignment + SIEM event_id of first MCP-related event"
+    },
+    {
+      "id": 6,
+      "name": "confirm_slack_setup",
+      "description": "If agents will be deployed to Slack, approve the ChatGPT Agents app in Slack and define who can deploy via the enable_slack_bot RBAC bit. Slack-deployed agents carry higher inherent risk because Slack cannot pause for per-user auth.",
+      "owner": "agents-admin",
+      "evidence_required": "Slack app approval screenshot + RBAC enable_slack_bot membership list"
+    }
+  ],
+  "_comment_review_cadence": "Quarterly re-attestation of the entire checklist. Per-publish: complete every applicable step before the agent moves from Preview to Published."
+}
+// HTH Guide Excerpt: end prelaunch-checklist

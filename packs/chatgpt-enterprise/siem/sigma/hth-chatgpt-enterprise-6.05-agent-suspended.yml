@@ -24,16 +24,24 @@ logsource:
     product: openai
     service: chatgpt-compliance
 # HTH Guide Excerpt: begin detection
+# Per OpenAI's Workspace Agents Security Overview (April 29, 2026), agent
+# lifecycle events are part of the exportable Compliance Logs Platform
+# stream. Suspension/unpublish/delete are emitted as lifecycle transitions.
 detection:
     selection:
-        event_type: 'USER_LOG'
-        action: 'agent.suspended'
+        event_type: 'agent.lifecycle'
+        action:
+            - 'suspended'
+            - 'unpublished'
+            - 'deleted'
     condition: selection
 fields:
+    - event_id
     - timestamp
     - actor_email
     - agent_id
     - agent_name
+    - action
     - reason
 # HTH Guide Excerpt: end detection
 falsepositives:

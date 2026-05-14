@@ -25,18 +25,23 @@ logsource:
     product: openai
     service: chatgpt-compliance
 # HTH Guide Excerpt: begin detection
+# Per OpenAI's Workspace Agents Security Overview (April 29, 2026), the
+# Compliance Logs Platform emits "connector call requested/completed" events
+# with at-least-once delivery and event_id-based deduplication. MCP tool
+# invocations surface through the same connector-call event family.
 detection:
     selection:
-        event_type: 'CONVERSATION_LOG'
-        tool.type: 'mcp'
+        event_type: 'connector.call.requested'
+        connector.kind: 'mcp'
     condition: selection
     timeframe: 30d
 fields:
+    - event_id
     - timestamp
     - agent_id
-    - user_email
-    - tool.server_url
-    - tool.name
+    - actor_email
+    - connector.server_url
+    - connector.tool_name
 # HTH Guide Excerpt: end detection
 falsepositives:
     - Approved enrollment of a new MCP tool with documented business case

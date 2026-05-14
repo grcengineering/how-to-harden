@@ -6,7 +6,7 @@ slug: "chatgpt-enterprise"
 tier: "1"
 category: "Productivity"
 description: "Enterprise AI security hardening for ChatGPT, SSO configuration, data privacy, admin controls, and workspace agent governance"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-05-14"
 ---
@@ -15,7 +15,7 @@ last_updated: "2026-05-14"
 
 ChatGPT Enterprise is OpenAI's enterprise-grade AI assistant serving organizations that require enhanced security, privacy, and administrative controls. With AI adoption accelerating across enterprises, properly securing ChatGPT Enterprise is critical to prevent data leakage, maintain compliance, and ensure responsible AI usage. Unlike consumer versions, Enterprise provides SOC 2 Type II compliance, data isolation, and guarantees that prompts and outputs are not used for model training.
 
-On April 22, 2026, OpenAI announced **[Workspace Agents in ChatGPT](https://openai.com/index/introducing-workspace-agents-in-chatgpt/)** — Codex-powered, cloud-resident agents that can connect to enterprise apps (Slack, Salesforce, Google Workspace, Microsoft 365, GitHub, Notion, Atlassian Rovo, and others), run on schedules, and complete multi-step workflows on a user's behalf. Workspace agents are an evolution of custom GPTs and inherit a substantially broader risk surface because they can take **actions** in connected systems, not just answer questions. This guide's new Section 6 covers hardening that specific surface.
+On April 22, 2026, OpenAI announced **[Workspace Agents in ChatGPT](https://openai.com/index/introducing-workspace-agents-in-chatgpt/)** — cloud-resident agents that can connect to enterprise apps (Slack, Google Drive, SharePoint, Gmail, Calendar, GitHub, Jira, Confluence, and others), run on schedules, and complete multi-step workflows on a user's behalf. Workspace agents are an evolution of custom GPTs and inherit a substantially broader risk surface because they can take **actions** in connected systems, not just answer questions. OpenAI's *[Workspace Agents Security Overview](https://cdn.openai.com/business/workspace-agents-security-overview.pdf)* (April 29, 2026) is the authoritative reference for the security model; this guide's new Section 6 operationalizes it into deployable controls.
 
 ### Intended Audience
 - Security engineers managing AI tools
@@ -562,9 +562,9 @@ Establish regular audit trail reviews to detect policy violations, unusual usage
 
 ## 6. Workspace Agents Hardening
 
-**Workspace agents** are Codex-powered, cloud-resident agents introduced by OpenAI on **April 22, 2026** as the successor to custom GPTs. They run multi-step, long-running tasks against connected enterprise apps (Slack, Salesforce, Google Workspace, Microsoft 365, GitHub, Notion, Atlassian Rovo, custom MCP servers, and others), can be triggered by a human, by Slack, or on a schedule, and continue running when the creator is offline.
+**Workspace agents** are cloud-resident agents introduced by OpenAI on **April 22, 2026** as the successor to custom GPTs. Per OpenAI's [security overview](https://cdn.openai.com/business/workspace-agents-security-overview.pdf), they *"help teams turn repeatable work into shared agents that can gather context, follow team processes, take action across approved tools, and keep work moving in ChatGPT or Slack."* Agents can run in the cloud on schedules, use connected apps and files, and *"ask for approval when needed."*
 
-As of this guide's revision date, workspace agents are in **research preview** across ChatGPT Business, Enterprise, Edu, and Teachers plans. The feature is **disabled by default** at the workspace level; admins must enable it per role. The pre-credit-billing period is free through **May 6, 2026**; credit-based pricing begins thereafter.
+As of this guide's revision date, workspace agents are in **research preview** on ChatGPT Business, Enterprise, Edu, and Teachers plans. The full set of governance controls in this section (RBAC, app/action controls, Compliance Platform export) is available on **ChatGPT Enterprise and Edu**; Business and Teachers tiers have a more limited admin surface. The feature is **disabled by default** at the workspace level; admins must enable it per role.
 
 ### Why Workspace Agents Need Their Own Hardening Section
 
@@ -589,14 +589,14 @@ Every confirmed exfiltration PoC against AI agents in the past 12 months — **S
 
 #### Description
 
-Workspace agents are disabled by default in new and existing Enterprise/Edu workspaces. Do not enable them workspace-wide until RBAC roles, connector posture, approval policies, and Compliance API ingestion are all in place. Once enabled, grant agent privileges only to dedicated SCIM-provisioned groups (`agents-run`, `agents-build`, `agents-admin`).
+Workspace agents are disabled by default in new and existing Enterprise/Edu workspaces. Do not enable them workspace-wide until RBAC roles, connector posture, approval policies, and Compliance Platform ingestion are all in place. OpenAI's RBAC surface for agents has **five distinct dimensions** — *"Admins/owners can use ChatGPT workspace RBAC settings to control who can use agents, build agents, publish agents, publish agents with shared connections, and enable the Slack bot for agents."* Build a role mapping that separates all five, with the **publish-with-shared-connections** permission reserved for the narrowest possible group because it is the only setting that lets an agent run with one set of credentials on behalf of many users.
 
 #### Rationale
 
 **Why This Matters:**
 - Agent build privileges proliferate faster than governance reviews can keep up
+- "Publish with shared connections" is the highest-risk privilege — it grants every runner of that agent the union of the shared connection's scopes, regardless of the runner's personal entitlements
 - Once the feature is on, suspending it for the whole workspace breaks legitimate work; deny-by-default avoids that trap
-- OpenAI's documented quote: *"Workspace owners can enable agents for the workspace and assign access to specific roles with RBAC"*
 
 **Attack Prevented:** Shadow AI / agent sprawl, orphan agents owned by departed users, premature exposure of the lethal-trifecta surface
 
@@ -607,19 +607,20 @@ Workspace agents are disabled by default in new and existing Enterprise/Edu work
 **Step 1: Confirm the feature is off**
 
 1. Navigate to: **Workspace settings** → **Members** → **Roles**
-2. Confirm no existing role has `Agents` or `workspace agents for Slack` features enabled
+2. Confirm no existing role has any of the five agent feature toggles enabled
 3. If any role does, document the role and the affected user count before proceeding
 
 **Step 2: Create three dedicated RBAC roles**
 
-1. Create `agents-run` — `agents_use: enabled`, build/publish disabled
-2. Create `agents-build` — adds `agents_build: enabled`
-3. Create `agents-admin` — adds `agents_publish: enabled`
-4. Map each role to a SCIM-provisioned group in your identity provider — no direct user assignments
+1. Create `agents-run` — `use_agents: enabled`; build, publish, publish-with-shared-connections, and Slack-bot disabled
+2. Create `agents-build` — adds `build_agents: enabled`
+3. Create `agents-admin` — adds `publish_agents: enabled` plus `enable_slack_bot: enabled`
+4. **Withhold** `publish_agents_with_shared_connections` from all three roles initially — grant it only to a named subset of `agents-admin` users when a specific shared-connection agent has been approved through CAB
+5. Map each role to a SCIM-provisioned group in your identity provider — no direct user assignments
 
 **Step 3: Defer workspace-level enablement**
 
-1. Do not enable the agent feature in `Workspace settings` → `Apps` → `Directory` until controls 6.2 (connector posture), 6.3 (approval policy), and 6.6 (SIEM ingestion) are all in place
+1. Do not enable the agent feature workspace-wide until controls 6.2 (connector posture), 6.3 (approval policy), and 6.6 (Compliance Platform ingestion) are all in place
 
 **Time to Complete:** ~30 minutes plus IdP group provisioning lead time
 
@@ -706,12 +707,12 @@ OpenAI exposes three values at **Workspace settings** → **Apps** → **{App}**
 
 #### Description
 
-OpenAI documents builder-side approval gates: *"sensitive actions … require the agent to ask for permission before moving forward."* Apply a workspace-wide policy that every write action with reputational, financial, or regulatory impact requires a human approver in the loop. Enforce the policy at publish time — agents-admin reviewers must reject any agent that lacks the gate for the action categories below.
+Per OpenAI's security overview, *"write-capable actions default to requiring human approval, providing write-action safety control, with flexibility for authors to configure approval behavior."* The default is therefore deny-on-write — the hardening posture is to **preserve that default** during agent publish review, never relax it for "convenience," and define the explicit list of action categories that no agent may unbind. Agents-admin reviewers must reject any agent that disables approval on the categories below.
 
 #### Rationale
 
 **Why This Matters:**
-- Model-layer prompt-injection defenses are probabilistic; Anthropic's best result is ~1% browser-agent attack success after RL training, and OpenAI's own Atlas post concedes it *"may never be fully solved"*
+- Model-layer prompt-injection defenses are probabilistic; Anthropic's best result is ~1% browser-agent attack success after RL training, and OpenAI's own [Atlas hardening post](https://openai.com/index/hardening-atlas-against-prompt-injection/) concedes it *"may never be fully solved"*
 - The only deterministic mitigation against an injected agent issuing a malicious write is a separate human signing off on that write
 - **CVE-2026-21520** (Microsoft Copilot Studio, "ShareLeak") showed that confirm-before-act gates are bypassable when poorly scoped; the gate must trigger on the action category, not just on a "looks-sensitive" heuristic
 
@@ -850,7 +851,7 @@ OpenAI documents agent suspension as a first-class admin action: *"Admins can al
 
 ---
 
-### 6.6 Stream Compliance API Logs to SIEM with 30-Day Retention Awareness
+### 6.6 Stream Compliance Platform Logs to SIEM
 
 **Profile Level:** L2 (Walk)
 
@@ -861,29 +862,38 @@ OpenAI documents agent suspension as a first-class admin action: *"Admins can al
 
 #### Description
 
-The OpenAI **Compliance Logs Platform** retains 30 days of immutable events. Continuous export is mandatory for SOX, HIPAA, PCI scope and for any retention beyond 30 days. The platform exposes a single REST surface: `GET https://api.chatgpt.com/v1/compliance/{scope}/{principal_id}/logs` with event types `AUTH_LOG`, `CONVERSATION_LOG`, `FILE_LOG`, `GPT_LOG`, `MEMORY_LOG`, and `USER_LOG`.
+The OpenAI **Compliance Logs Platform** is designed specifically for compliance needs and exposes immutable JSONL files with the following technical properties (from OpenAI's [security overview](https://cdn.openai.com/business/workspace-agents-security-overview.pdf)):
+
+- **Immutable JSONL files** suitable for SIEM, DLP, eDiscovery, data lake, and audit workflows
+- **~10-minute windows** between log file emissions
+- **p99 under 30 minutes** from event time to log inclusion
+- **At-least-once delivery** — consumers must implement idempotency
+- **`event_id`-based deduplication** at the consumer
+
+For workspace agents, the exportable logs cover *"agent lifecycle events, run creation/completion/failure, agent-authored messages, connector call requested/completed events, connector OAuth resolution, skill use, trigger create/update/delete, and memory read/write/delete."* The Compliance API additionally exposes *"the full configuration of every agent, audit logs for every change to every agent, and traces for every run of every agent."*
 
 #### Rationale
 
 **Why This Matters:**
-- Without continuous export, every event older than 30 days is gone and unrecoverable
-- Workspace agent runs appear under `CONVERSATION_LOG`; agent lifecycle events appear under `USER_LOG`
-- OpenAI quote (limitation worth flagging in audit scope): *"Conversations involving agent tasks will appear in Compliance API logs, but individual agent actions (such as virtual computer usage, app requests, chain of thought) will not."*
+- Continuous export is mandatory for SOX, HIPAA, PCI scope and for retention beyond the platform's default window
+- Workspace agent activity is **fully observable** through the documented event types — unlike some adjacent agent products, OpenAI's Compliance Platform exposes per-step connector calls, OAuth resolutions, and memory operations
+- The at-least-once delivery contract means downstream SIEM rules must deduplicate on `event_id` to avoid double-firing on the same event
 
-**Attack Prevented:** Audit-trail loss past 30 days, missed lateral movement signals during longer dwell times, inability to support a post-incident forensic timeline
+**Attack Prevented:** Audit-trail gaps, missed lateral movement signals during longer dwell times, inability to support a post-incident forensic timeline
 
 #### ClickOps Implementation
 
 **Step 1: Provision a Compliance API key**
 
-1. Navigate to: **Global Admin Console** → **API keys**
-2. Generate a `Compliance API key`, scoped to your workspace or organization
+1. Sign in to the Global Admin Console at [admin.openai.com](https://admin.openai.com)
+2. Navigate to **API keys** and generate a `Compliance API key`, scoped to your workspace or organization
 3. Note the IP allowlist requirement: per OpenAI, IP allowlist is *"always enforced for Compliance API traffic"* — add your puller's egress IPs first
 
 **Step 2: Deploy the continuous puller**
 
-1. Deploy the bash script in 6.6 (or your existing SIEM connector) on a scheduled job — every 15 minutes is a reasonable starting cadence
-2. Persist each downloaded JSONL log file to an immutable bucket (S3 Object Lock, GCS retention policy, Azure Blob immutability) with a retention setting that matches your compliance scope (1 year for PCI, 6 years for HIPAA, 7 years for SOX)
+1. Deploy the bash script in 6.6 (or your existing SIEM connector) on a scheduled job — given OpenAI's ~10-minute log windows and p99 < 30-minute latency, **every 15 minutes** is a sensible cadence
+2. Implement `event_id` deduplication at the consumer to honor the at-least-once delivery contract
+3. Persist each downloaded JSONL log file to an immutable bucket (S3 Object Lock, GCS retention policy, Azure Blob immutability) with a retention setting that matches your compliance scope (1 year for PCI, 6 years for HIPAA, 7 years for SOX)
 
 **Step 3: Wire the SIEM**
 
@@ -916,6 +926,73 @@ The OpenAI **Compliance Logs Platform** retains 30 days of immutable events. Con
 | **System Performance** | Low | One scheduled pull every 15 minutes per event type |
 | **Maintenance Burden** | Medium | Watch for new OpenAI event types and 2026-06-05 deprecation of the legacy stateful conversations route |
 | **Rollback Difficulty** | Easy | Disabling the puller stops ingestion; archived logs remain |
+
+---
+
+### 6.7 Execute the OpenAI Pre-Launch Admin Checklist
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.1, 6.8 |
+| NIST 800-53 | CM-2, CM-3, CM-6 |
+
+#### Description
+
+OpenAI publishes a six-step pre-launch checklist in its [Workspace Agents Security Overview](https://cdn.openai.com/business/workspace-agents-security-overview.pdf): *"Many workspace agent settings use controls that may already be set up in an organization's workspace. Reviewing those settings before launch can help teams build successfully and reduce IT escalations."* Treat the checklist as a publish gate — no agent goes live in your workspace until every step is signed off by `agents-admin`.
+
+#### Rationale
+
+**Why This Matters:**
+- OpenAI's own recommended sequence catches the most common misconfigurations before users start building
+- Most steps map directly onto controls 6.1–6.6 of this guide; running the checklist also validates that those controls are in effect
+- A documented gate per agent publish creates an audit trail you can show to your auditor mapping every published agent to a named approver and an effective date
+
+**Attack Prevented:** Misconfigured early-adopter agents, surprise IT escalations, shadow agents that bypass the broader governance program
+
+#### ClickOps Implementation — Pre-Launch Checklist
+
+Walk the six steps from the OpenAI overview, in order:
+
+**Step 1: Audit users and groups**
+
+Ensure that users are added to the workspace and in the right SCIM-provisioned groups. Confirm no orphaned accounts from departed employees, no service accounts in user groups.
+
+**Step 2: Configure custom roles for builders and users**
+
+Apply the five-dimension RBAC mapping from control 6.1. The `publish_agents_with_shared_connections` permission is the highest-risk bit — withhold it until a specific shared-connection agent has been approved through CAB.
+
+**Step 3: Enable approved apps**
+
+Turn on the apps your builders need (OpenAI's documented examples are Slack, Google Drive, SharePoint, Gmail, Calendar, GitHub, Jira, Confluence). For each app:
+
+- Confirm which actions are read-only vs. write-capable
+- Set `Newly added actions` to require admin review (do **not** auto-enable new write actions)
+- Apply the read-only baseline from control 6.2
+
+**Step 4: Make required skills available**
+
+Enable skill permissions for the relevant builder and user groups so agents can use approved, repeatable workflows. Skills package instructions, files, and scripts; treat their enablement as a privileged grant.
+
+**Step 5: Review MCP availability**
+
+If builders need custom MCP servers, enable Developer Mode or approved MCP connectors only for the right builder groups. First invocation of any MCP tool fires the Sigma rule from control 6.4 — confirm SIEM ingestion is live before granting MCP access to any builder.
+
+**Step 6: Confirm Slack setup**
+
+If agents will be deployed to Slack, approve the `ChatGPT Agents` app in Slack and define who can deploy agents to Slack via the `enable_slack_bot` RBAC bit. Note from OpenAI: *"In Slack and other non-interactive surfaces, the agent generally relies on shared/agent-owned or builder-configured app connections because Slack cannot pause the run to authenticate each invoking user."* Slack-deployed agents therefore carry higher inherent risk than ChatGPT-resident agents and warrant extra scrutiny on the approval policy.
+
+**Time to Complete:** ~2 hours for the initial pass; ~10 minutes per subsequent agent publish
+
+#### Code Implementation
+
+{% include pack-code.html vendor="chatgpt-enterprise" section="6.7" %}
+
+#### Validation & Testing
+
+1. Walk the checklist for one pilot agent end-to-end; capture screenshots/exports at every step into an evidence folder
+2. Have a non-`agents-admin` user attempt to publish an agent without completing the checklist; confirm the publish workflow surfaces the gate
 
 ---
 
@@ -991,6 +1068,7 @@ The OpenAI **Compliance Logs Platform** retains 30 days of immutable events. Con
 - [Admin Controls: Security and Compliance in Apps](https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-in-apps-enterprise-edu-and-business)
 
 **Workspace Agents:**
+- [Workspace Agents Security Overview (PDF)](https://cdn.openai.com/business/workspace-agents-security-overview.pdf) — OpenAI, current as of April 29, 2026 (authoritative primary source for the security model)
 - [Introducing Workspace Agents in ChatGPT](https://openai.com/index/introducing-workspace-agents-in-chatgpt/) — April 22, 2026 announcement
 - [Workspace Agents for Enterprise and Business](https://help.openai.com/en/articles/20001143-chatgpt-workspace-agents-for-enterprise-and-business)
 - [ChatGPT Agent (underlying technology)](https://help.openai.com/en/articles/11752874-chatgpt-agent)
@@ -1036,6 +1114,7 @@ The OpenAI **Compliance Logs Platform** retains 30 days of immutable events. Con
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-05-14 | 0.2.1 | draft | Reconciled Section 6 against OpenAI's *Workspace Agents Security Overview* (April 29, 2026). Added the fifth RBAC dimension `publish_agents_with_shared_connections` (6.1). Replaced reconstructed event-type list with the PDF's authoritative agent lifecycle / run / connector-call / OAuth-resolution / skill / trigger / memory event families (6.6). Added Logs Platform technical specs (~10-min windows, p99 < 30 min, at-least-once, event_id dedup). Added control 6.7 implementing OpenAI's six-step pre-launch checklist. Updated Sigma rules and the SIEM-streaming and trifecta-detection scripts with PDF-verified event names and app catalog. New pack file: `config/hth-chatgpt-enterprise-6.07-prelaunch-checklist.jsonc`. | Claude Code (Opus 4.7) |
 | 2026-05-14 | 0.2.0 | draft | [SECURITY] Added Section 6 Workspace Agents Hardening (6 controls covering RBAC, connector posture, approval policy, lethal-trifecta detection, suspension runbook, Compliance API SIEM export). Added Code Packs under `packs/chatgpt-enterprise/` (api, config, siem/sigma). Updated NIST and GDPR mappings. Expanded References with workspace agent, Compliance API, and agent-security research links. | Claude Code (Opus 4.7) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, data privacy, GPT controls, and compliance | Claude Code (Opus 4.5) |
 

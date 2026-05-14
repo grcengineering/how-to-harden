@@ -20,9 +20,36 @@ OUT_DIR="${OUT_DIR:-./compliance-export}"
 CHECKPOINT_DIR="${CHECKPOINT_DIR:-./compliance-checkpoints}"
 mkdir -p "${OUT_DIR}" "${CHECKPOINT_DIR}"
 
-# Event types documented in the Compliance Logs Platform cookbook.
-# Source: https://developers.openai.com/cookbook/examples/chatgpt/compliance_api/logs_platform
-EVENT_TYPES=(AUTH_LOG CONVERSATION_LOG FILE_LOG GPT_LOG MEMORY_LOG USER_LOG)
+# Event types documented in OpenAI's Workspace Agents Security Overview
+# (April 29, 2026): "agent lifecycle events, run creation/completion/failure,
+# agent-authored messages, connector call requested/completed events,
+# connector OAuth resolution, skill use, trigger create/update/delete, and
+# memory read/write/delete." Plus the general Compliance Logs Platform
+# event families documented in the cookbook.
+# Sources:
+#   https://cdn.openai.com/business/workspace-agents-security-overview.pdf
+#   https://developers.openai.com/cookbook/examples/chatgpt/compliance_api/logs_platform
+EVENT_TYPES=(
+  AUTH_LOG
+  CONVERSATION_LOG
+  FILE_LOG
+  GPT_LOG
+  MEMORY_LOG
+  USER_LOG
+  agent.lifecycle
+  agent.run
+  agent.message
+  connector.call.requested
+  connector.call.completed
+  connector.oauth.resolved
+  skill.used
+  trigger.created
+  trigger.updated
+  trigger.deleted
+  memory.read
+  memory.write
+  memory.delete
+)
 
 # HTH Guide Excerpt: begin api-stream-siem
 # For each event type, resume from the last checkpoint (or 30 days back on

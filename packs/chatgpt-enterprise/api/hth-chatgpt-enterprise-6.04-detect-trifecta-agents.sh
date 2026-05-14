@@ -37,8 +37,12 @@ if [[ ! -f "${INPUT}" ]]; then
 fi
 
 # HTH Guide Excerpt: begin api-detect-trifecta
-# Classification of OpenAI apps into the trifecta dimensions.
-PRIVATE_DATA="gmail|google-drive|google-calendar|google-docs|sharepoint|onedrive|outlook|salesforce|notion|atlassian-rovo|confluence|jira|github|gitlab|box|dropbox"
+# Classification of OpenAI apps into the lethal-trifecta dimensions.
+# Apps named in OpenAI's Workspace Agents Security Overview (April 29, 2026):
+# Slack, Google Drive, SharePoint, Gmail, Calendar, GitHub, Jira, Confluence.
+# Additional apps documented in announcement and Help Center coverage:
+# Salesforce, Notion, Outlook, OneDrive, Atlassian Rovo, GitLab, Box, Dropbox.
+PRIVATE_DATA="gmail|google-drive|sharepoint|google-calendar|github|jira|confluence|outlook|onedrive|salesforce|notion|atlassian-rovo|gitlab|box|dropbox"
 UNTRUSTED_INPUT="gmail|outlook|slack|google-calendar|web-search|browser|notion|confluence|jira"
 EXTERNAL_SEND="gmail|outlook|slack|google-calendar|web-search|browser|github|gitlab|salesforce"
 
