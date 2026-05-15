@@ -19,13 +19,14 @@ projects:
 
     agentRules: |
       You are working on the How To Harden project (howtoharden.com).
-      This is a security hardening guide and CLI tool.
-      The CLI is written in Rust (cli/ directory).
-      Hardening controls are YAML files in packs/github/controls/.
-      The guide is a Jekyll site in docs/_guides/.
+      This is a security hardening guide and Code Pack repository.
+      Vendor guides are a Jekyll site in docs/_guides/.
+      Code Packs (terraform/api/cli/sdk/db/siem) live in packs/{vendor}/.
+      The CLI tooling now lives in the separate grcengineering/OCEAN repo,
+      not here.
       Follow existing patterns exactly when creating new files.
-      Use cargo build/clippy to verify Rust changes.
-      Use hth validate to verify YAML control changes.
+      Use scripts/sync-packs-to-data.sh to regenerate Jekyll pack data.
+      Use scripts/validate-guides.sh (make lint-content) to verify guides.
 
     reactions:
       ci-failed:

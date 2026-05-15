@@ -5,10 +5,9 @@
 #
 # Prerequisites:
 #   - Python 3 (content validation)
-#   - Rust toolchain with clippy + rustfmt (CLI tests)
 #   - Ruby + Bundler (Jekyll build — CI only unless installed locally)
 
-.PHONY: help test lint lint-content lint-rust test-unit test-build \
+.PHONY: help test test-all lint lint-content test-build \
         test-build-jekyll test-build-sync
 
 # ─── Default ──────────────────────────────────────────────────────────────────
@@ -19,25 +18,16 @@ help: ## Show available targets
 
 # ─── Top-level ────────────────────────────────────────────────────────────────
 
-test: lint test-unit test-build-sync ## Run all tests (local-safe: skips Jekyll if no Ruby)
+test: lint test-build-sync ## Run all tests (local-safe: skips Jekyll if no Ruby)
 
-test-all: lint test-unit test-build ## Run all tests including Jekyll build (requires Ruby)
+test-all: lint test-build ## Run all tests including Jekyll build (requires Ruby)
 
 # ─── Lint ─────────────────────────────────────────────────────────────────────
 
-lint: lint-content lint-rust ## Run all linters
+lint: lint-content ## Run all linters
 
 lint-content: ## Validate guide formatting, frontmatter, tables (7 checks)
 	@bash scripts/validate-guides.sh
-
-lint-rust: ## Clippy warnings-as-errors + rustfmt check
-	@cd cli && cargo fmt --all -- --check
-	@cd cli && cargo clippy --workspace -- -D warnings
-
-# ─── Unit / Integration Tests ─────────────────────────────────────────────────
-
-test-unit: ## Rust unit + integration tests (178 tests)
-	@cd cli && cargo test --workspace
 
 # ─── Build Verification ───────────────────────────────────────────────────────
 
