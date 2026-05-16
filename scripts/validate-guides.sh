@@ -147,7 +147,7 @@ PYEOF
 
 # Parse Test 2 results
 echo "▸ Test 2: Code blocks have language identifiers"
-bare_section=$(echo "$content_results" | sed -n '/===BARE===/,/===SEP===/p' | head -n -1 | tail -n +2)
+bare_section=$(echo "$content_results" | sed -n '/===BARE===/,/===SEP===/p' | sed '$d' | tail -n +2)
 bare_count=$(echo "$bare_section" | head -1)
 if [ "$bare_count" -gt 0 ]; then
   fail "${bare_count} bare code blocks found:"
@@ -160,7 +160,7 @@ echo ""
 
 # Parse Test 3 results
 echo "▸ Test 3: Table separator column counts match headers"
-sep_section=$(echo "$content_results" | sed -n '/===SEP===/,/===TABLE===/p' | head -n -1 | tail -n +2)
+sep_section=$(echo "$content_results" | sed -n '/===SEP===/,/===TABLE===/p' | sed '$d' | tail -n +2)
 sep_count=$(echo "$sep_section" | head -1)
 if [ "$sep_count" -gt 0 ]; then
   fail "${sep_count} malformed table separators found:"
@@ -172,7 +172,7 @@ echo ""
 
 # Parse Test 4 results
 echo "▸ Test 4: Tables have required blank lines (kramdown)"
-table_section=$(echo "$content_results" | sed -n '/===TABLE===/,/===LIQUID===/p' | head -n -1 | tail -n +2)
+table_section=$(echo "$content_results" | sed -n '/===TABLE===/,/===LIQUID===/p' | sed '$d' | tail -n +2)
 table_count=$(echo "$table_section" | head -1)
 if [ "$table_count" -gt 0 ]; then
   fail "${table_count} tables missing blank lines:"
@@ -260,7 +260,7 @@ PYEOF
 
 # Parse Test 5 results
 echo "▸ Test 5: Frontmatter categories are valid"
-cat_section=$(echo "$meta_results" | sed -n '/===CAT===/,/===FM===/p' | head -n -1 | tail -n +2)
+cat_section=$(echo "$meta_results" | sed -n '/===CAT===/,/===FM===/p' | sed '$d' | tail -n +2)
 cat_count=$(echo "$cat_section" | head -1)
 if [ "$cat_count" -gt 0 ]; then
   fail "${cat_count} invalid categories found:"
@@ -272,7 +272,7 @@ echo ""
 
 # Parse Test 6 results
 echo "▸ Test 6: Required frontmatter fields present"
-fm_section=$(echo "$meta_results" | sed -n '/===FM===/,/===STRUCT===/p' | head -n -1 | tail -n +2)
+fm_section=$(echo "$meta_results" | sed -n '/===FM===/,/===STRUCT===/p' | sed '$d' | tail -n +2)
 fm_count=$(echo "$fm_section" | head -1)
 if [ "$fm_count" -gt 0 ]; then
   fail "${fm_count} missing frontmatter fields:"

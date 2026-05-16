@@ -226,7 +226,7 @@ We measure impact through:
 **Phase 2 (Months 7-12):** Expansion + Tooling
 - Top 5 platform guides (Salesforce, Microsoft 365, GitHub, Google Workspace, Slack)
 - 3-5 defensive patterns (IP allowlisting, OAuth scoping, certificate auth)
-- CLI tool for stack analysis (`how-to-harden analyze`)
+- ~~CLI tool for stack analysis (`how-to-harden analyze`)~~ — *no longer in scope for this repo; CLI tooling now lives in the separate `grcengineering/OCEAN` project*
 - CSPM/SSPM vendor partnerships
 
 **Phase 3 (Year 2+):** Ecosystem Integration

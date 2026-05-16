@@ -12,6 +12,16 @@
 #   # HTH Guide Excerpt: end <name>
 #   -- HTH Guide Excerpt: end <name>
 
+# Requires bash 4+ for associative arrays (`declare -A`). macOS ships bash 3.2,
+# so re-exec under a Homebrew bash when the invoking shell is too old.
+if [ -z "${BASH_VERSINFO:-}" ] || [ "${BASH_VERSINFO[0]}" -lt 4 ]; then
+  for alt in /opt/homebrew/bin/bash /usr/local/bin/bash; do
+    [ -x "$alt" ] && exec "$alt" "$0" "$@"
+  done
+  echo "ERROR: requires bash 4+ (macOS ships 3.2). Install with 'brew install bash'." >&2
+  exit 1
+fi
+
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"

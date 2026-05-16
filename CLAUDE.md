@@ -114,7 +114,7 @@ Auto-generated from [TikiTribe/claude-secure-coding-rules](https://github.com/Ti
 
 ## Detected Stack
 
-- **Languages**: javascript, python, ruby, rust, sql
+- **Languages**: javascript, python, ruby, sql
 - **Infrastructure**: github-actions, terraform
 
 ## Fetched Rules
@@ -125,7 +125,6 @@ Auto-generated from [TikiTribe/claude-secure-coding-rules](https://github.com/Ti
 - `languages/javascript/CLAUDE.md`
 - `languages/python/CLAUDE.md`
 - `languages/ruby/CLAUDE.md`
-- `languages/rust/CLAUDE.md`
 - `languages/sql/CLAUDE.md`
 
 <!-- SECURITY_RULES_END -->
