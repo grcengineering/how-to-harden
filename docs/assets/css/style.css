@@ -1943,6 +1943,16 @@ body {
   color: var(--color-primary);
 }
 
+.demo-subheading .ocean-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.demo-subheading .ocean-link:hover code {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .terminal-window {
   max-width: 780px;
   margin: 0 auto;

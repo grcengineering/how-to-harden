@@ -19,7 +19,7 @@ title: Home
 <section class="terminal-demo" id="terminal-demo">
   <div class="container">
     <h2 class="demo-heading">See it in action</h2>
-    <p class="demo-subheading">The <code>hth</code> CLI scans your SaaS platforms against hardening guides and fixes what it finds.</p>
+    <p class="demo-subheading"><a href="https://github.com/grcengineering/ocean" class="ocean-link"><code>ocean</code></a> is the CLI companion to How to Harden — scan, assess, and remediate any platform that has an HTH guide.</p>
     <div class="terminal-window">
       <div class="terminal-titlebar">
         <div class="terminal-dots">
@@ -27,7 +27,7 @@ title: Home
           <span class="terminal-dot dot-minimize"></span>
           <span class="terminal-dot dot-maximize"></span>
         </div>
-        <span class="terminal-title">hth &mdash; GitHub Security Scan</span>
+        <span class="terminal-title">ocean &mdash; GitHub Security Scan</span>
       </div>
       <div class="terminal-body" id="terminal-body"></div>
     </div>
@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Scene 1: Type the scan command
     var cmd1 = addPromptLine();
-    await typeText(cmd1, 'hth scan --vendor github --profile 2', 40);
+    await typeText(cmd1, 'ocean scan --vendor github --profile 2', 40);
     await delay(400);
     hideCursor(cmd1);
 
@@ -563,7 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Scene 2: Remediate command
     var cmd2 = addPromptLine();
-    await typeText(cmd2, 'hth remediate --vendor github --controls github-2.1,github-3.1', 35);
+    await typeText(cmd2, 'ocean remediate --vendor github --controls github-2.1,github-3.1', 35);
     await delay(500);
     hideCursor(cmd2);
     addLine('');
