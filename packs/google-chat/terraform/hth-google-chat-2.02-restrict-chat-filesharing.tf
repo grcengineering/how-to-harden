@@ -1,9 +1,9 @@
 # =============================================================================
-# HTH Google Workspace Control 4.4: Restrict Google Chat File Sharing
+# HTH Google Chat Control 4.4: Restrict Google Chat File Sharing
 # Profile Level: L2 (Hardened)
 # Frameworks: CIS 3.3, NIST AC-3
 # SCuBA: GWS.CHAT.2.1v1 (external file sharing SHALL be disabled)
-# Source: https://howtoharden.com/guides/google-workspace/#44-restrict-google-chat-file-sharing
+# Source: https://howtoharden.com/guides/google-chat/#44-restrict-google-chat-file-sharing
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform

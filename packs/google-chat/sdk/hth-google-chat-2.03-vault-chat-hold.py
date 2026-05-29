@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HTH Google Workspace Control 4.5: Enforce Google Chat History & Retention
+# HTH Google Chat Control 4.5: Enforce Google Chat History & Retention
 # Profile: L2 | NIST: AU-2, AU-9, SC-7(10) | SCuBA: GWS.CHAT.1.1v1, 1.2v1, 3.1v1
 #
 # History defaults ("History for chats" = ON, "History for spaces" = ALWAYS ON,

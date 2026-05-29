@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# HTH Google Workspace Control 5.2: Google Chat Audit Logging & Content Reporting
+# HTH Google Chat Control 5.2: Google Chat Audit Logging & Content Reporting
 # Profile: L1 | NIST: AU-2, AU-3, AU-6, IR-6 | SCuBA: GWS.CHAT.5.1v1, 5.2v1
 #
 # TOOL STATUS NOTE (2026-04):
