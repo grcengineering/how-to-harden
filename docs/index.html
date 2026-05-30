@@ -127,7 +127,7 @@ title: Home
   <div class="container">
 
     <div class="guides-grid" id="guides-grid">
-      {% for guide in site.guides %}
+      {% for guide in site.guides %}{% unless guide.platform_slug %}
       {% assign cat = guide.category | downcase %}
       {% if cat contains "identity" or cat contains "iam" or cat contains "iga" %}
         {% assign data_cat = "identity" %}
@@ -203,6 +203,37 @@ title: Home
           {% endif %}
         </div>
       </div>
+      {% endunless %}{% endfor %}
+
+      {% comment %} Multi-product platforms render as one expand-in-place stacked card {% endcomment %}
+      {% assign platform_groups = site.guides | where_exp: "g", "g.platform_slug" | group_by: "platform_slug" %}
+      {% for pg in platform_groups %}
+        {% assign prods = pg.items | sort: "product" %}
+        {% assign p0 = pg.items | first %}
+        {% assign p_has_pack = false %}
+        {% assign p_names = "" %}
+        {% for g in pg.items %}{% if site.data.packs[g.slug] %}{% assign p_has_pack = true %}{% endif %}{% assign p_names = p_names | append: " " | append: g.slug %}{% endfor %}
+        <div class="guide-card platform-card" data-category="productivity" data-name="{{ p_names }}" data-reviewed="ai-drafted" data-has-pack="{{ p_has_pack }}">
+          <div class="guide-card-header platform-card-header">
+            <h3>{{ p0.platform }}</h3>
+            <span class="platform-count">{{ pg.items.size }} guides
+              <svg class="platform-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
+          </div>
+          <p class="guide-card-description">Multi-product platform &mdash; {{ pg.items.size }} product guides. Click to expand.</p>
+          <div class="guide-card-meta">
+            <span class="category-tag category-productivity">Productivity</span>
+            {% if p_has_pack %}<span class="pack-badge"><span class="pack-badge-text">&lt;/&gt; Code Pack</span></span>{% endif %}
+          </div>
+          <div class="platform-products">
+            {% for g in prods %}
+            <a class="product-subcard" href="{{ g.url | relative_url }}">
+              <span class="product-subcard-name">{{ g.product }}</span>
+              <span class="product-subcard-desc">{{ g.description | truncate: 110 }}</span>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
       {% endfor %}
 
     </div>
@@ -427,10 +458,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Make entire guide card clickable
+  // Make entire guide card clickable; platform cards expand in place instead of navigating
   guideCards.forEach(function(card) {
     card.addEventListener('click', function(e) {
       if (e.target.tagName === 'A' || e.target.closest('a')) return;
+      if (this.classList.contains('platform-card')) {
+        this.classList.toggle('expanded');
+        return;
+      }
       var link = this.querySelector('h3 a');
       if (link) link.click();
     });

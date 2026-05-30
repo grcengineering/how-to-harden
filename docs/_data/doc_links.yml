@@ -226,6 +226,23 @@ google-workspace:
   hardening_docs: "https://support.google.com/a/answer/7587183"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/google-workspace"
 
+google-chat:
+  product_docs: "https://support.google.com/chat/"
+  api_docs: "https://developers.google.com/chat"
+  hardening_docs: "https://support.google.com/a/answer/7587183"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/google-chat"
+
+google-drive:
+  product_docs: "https://support.google.com/drive/"
+  api_docs: "https://developers.google.com/drive"
+  hardening_docs: "https://support.google.com/a/answer/7587183"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/google-drive"
+
+gmail:
+  product_docs: "https://support.google.com/mail/"
+  api_docs: "https://developers.google.com/gmail/api"
+  hardening_docs: "https://support.google.com/a/answer/7587183"
+
 gusto:
   product_docs: "https://support.gusto.com/"
   api_docs: "https://docs.gusto.com/"

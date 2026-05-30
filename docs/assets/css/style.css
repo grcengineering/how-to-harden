@@ -2484,3 +2484,36 @@ body {
 @media (max-width: 640px) {
   .view-mode-btn { padding: 5px 10px; font-size: 0.75rem; }
 }
+
+/* ── Multi-product platform cards (expand-in-place) — GRC-496 ─────────────── */
+.platform-card { position: relative; }
+.platform-card::after {
+  content: "";
+  position: absolute;
+  left: 10px; right: 10px; bottom: -5px; height: 10px;
+  border: 1px solid var(--color-border); border-top: none;
+  border-radius: 0 0 12px 12px;
+  background: var(--color-bg-tertiary);
+  z-index: -1;
+}
+.platform-card-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.platform-count {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--color-primary); white-space: nowrap;
+}
+.platform-chevron { transition: transform 0.2s ease; }
+.platform-card.expanded .platform-chevron { transform: rotate(180deg); }
+.platform-products { max-height: 0; overflow: hidden; transition: max-height 0.28s ease; }
+.platform-card.expanded .platform-products { max-height: 1200px; margin-top: var(--space-md); }
+.product-subcard {
+  display: block; padding: 0.6rem 0.75rem; margin-bottom: 0.5rem;
+  border: 1px solid var(--color-border); border-radius: 8px;
+  background: var(--color-bg-tertiary);
+  text-decoration: none; color: var(--color-text-primary);
+  transition: border-color 0.15s, background 0.15s;
+}
+.product-subcard:last-child { margin-bottom: 0; }
+.product-subcard:hover { border-color: var(--color-primary); background: var(--color-bg-elevated); }
+.product-subcard-name { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; color: var(--color-link); }
+.product-subcard-desc { display: block; font-size: 0.8rem; color: var(--color-text-secondary); line-height: 1.4; }

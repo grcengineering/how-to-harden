@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# HTH Google Workspace Control 4.01: Audit External Drive Sharing
+# HTH Google Drive Control 4.01: Audit External Drive Sharing
 # Profile: L1 | NIST: AC-3, AC-22
 #
 # TOOL STATUS NOTE (2026-04):
