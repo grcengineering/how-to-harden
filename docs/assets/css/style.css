@@ -1447,6 +1447,19 @@ body {
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
   }
 
+  /* Fill the gap below the bar (e.g. when iOS lifts it for the keyboard) with the
+     same backdrop, so it extends seamlessly to the bottom of the frame. */
+  .floating-bar::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 60vh;
+    background: var(--color-bg-secondary);
+    pointer-events: none;
+  }
+
   .floating-bar-inner {
     flex-direction: column;
     padding: var(--space-sm) var(--space-md);
@@ -2511,18 +2524,27 @@ body {
 /* Expanded products = an ABSOLUTE dropdown overlay: out of normal flow, so the
    card's grid cell never grows — no sibling card changes height — and it floats
    ABOVE the cards beneath it (z-index + shadow). */
-.platform-card.expanded { z-index: 50; }
+.platform-card.expanded {
+  z-index: 50;
+  border-color: var(--color-primary);
+  border-bottom: none;                 /* merge into the dropdown — no seam line */
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: none;
+  /* ONE shadow that follows the whole silhouette (card + overflowing dropdown) */
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.5));
+}
 .platform-products {
   position: absolute;
-  top: calc(100% - 6px);
-  left: 0; right: 0;
+  top: 100%;
+  left: -1px; right: -1px;             /* borders sit flush over the card's → continuous edge */
   z-index: 50;
   padding: 0.75rem;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);   /* same as the card → seamless interior */
+  border: 1px solid var(--color-primary);  /* same teal as the expanded card */
   border-top: none;
   border-radius: 0 0 12px 12px;
-  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5);
+  box-shadow: none;                    /* unified shadow comes from the card's drop-shadow */
   opacity: 0;
   visibility: hidden;
   transform: translateY(-6px);
@@ -2546,5 +2568,5 @@ body {
 }
 .platform-card .product-subcard:last-child { margin-bottom: 0; }
 .platform-card .product-subcard:hover { border-color: var(--color-primary); background: var(--color-bg-elevated); }
-.platform-card .product-subcard .product-subcard-name { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; color: var(--color-link); }
+.platform-card .product-subcard .product-subcard-name { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; color: var(--color-text-primary); }
 .platform-card .product-subcard .product-subcard-desc { display: block; font-size: 0.8rem; color: var(--color-text-secondary); line-height: 1.4; }
