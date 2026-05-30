@@ -2485,8 +2485,18 @@ body {
   .view-mode-btn { padding: 5px 10px; font-size: 0.75rem; }
 }
 
-/* ── Multi-product platform cards (expand-in-place) — GRC-496 ─────────────── */
+/* ── Multi-product platform cards (expand-in-place OVERLAY) — GRC-496 ───────── */
 .platform-card { position: relative; }
+.platform-card-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; cursor: pointer; }
+.platform-count {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--color-primary); white-space: nowrap;
+}
+.platform-chevron { transition: transform 0.2s ease; }
+.platform-card.expanded .platform-chevron { transform: rotate(180deg); }
+
+/* "contains multiple guides" stacked hint — hidden while expanded */
 .platform-card::after {
   content: "";
   position: absolute;
@@ -2496,24 +2506,45 @@ body {
   background: var(--color-bg-tertiary);
   z-index: -1;
 }
-.platform-card-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-.platform-count {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 0.75rem; font-weight: 600;
-  color: var(--color-primary); white-space: nowrap;
+.platform-card.expanded::after { display: none; }
+
+/* Expanded products = an ABSOLUTE dropdown overlay: out of normal flow, so the
+   card's grid cell never grows — no sibling card changes height — and it floats
+   ABOVE the cards beneath it (z-index + shadow). */
+.platform-card.expanded { z-index: 50; }
+.platform-products {
+  position: absolute;
+  top: calc(100% - 6px);
+  left: 0; right: 0;
+  z-index: 50;
+  padding: 0.75rem;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
 }
-.platform-chevron { transition: transform 0.2s ease; }
-.platform-card.expanded .platform-chevron { transform: rotate(180deg); }
-.platform-products { max-height: 0; overflow: hidden; transition: max-height 0.28s ease; }
-.platform-card.expanded .platform-products { max-height: 1200px; margin-top: var(--space-md); }
-.product-subcard {
+.platform-card.expanded .platform-products {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  pointer-events: auto;
+}
+
+/* sub-cards — scoped under .platform-card so they reliably beat the global `a {}` rule */
+.platform-card .product-subcard {
   display: block; padding: 0.6rem 0.75rem; margin-bottom: 0.5rem;
   border: 1px solid var(--color-border); border-radius: 8px;
   background: var(--color-bg-tertiary);
   text-decoration: none; color: var(--color-text-primary);
   transition: border-color 0.15s, background 0.15s;
 }
-.product-subcard:last-child { margin-bottom: 0; }
-.product-subcard:hover { border-color: var(--color-primary); background: var(--color-bg-elevated); }
-.product-subcard-name { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; color: var(--color-link); }
-.product-subcard-desc { display: block; font-size: 0.8rem; color: var(--color-text-secondary); line-height: 1.4; }
+.platform-card .product-subcard:last-child { margin-bottom: 0; }
+.platform-card .product-subcard:hover { border-color: var(--color-primary); background: var(--color-bg-elevated); }
+.platform-card .product-subcard .product-subcard-name { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; color: var(--color-link); }
+.platform-card .product-subcard .product-subcard-desc { display: block; font-size: 0.8rem; color: var(--color-text-secondary); line-height: 1.4; }
