@@ -2530,9 +2530,10 @@ body {
   border-bottom: none;                 /* merge into the dropdown — no seam line */
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  box-shadow: none;
-  /* ONE shadow that follows the whole silhouette (card + overflowing dropdown) */
-  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.5));
+  /* box-shadow (not filter: drop-shadow, which renders as a flickering rectangle on
+     Safari when there's an overflowing child). The card's shadow rounds at its top
+     corners; its bottom is covered by the flush dropdown. */
+  box-shadow: 0 6px 26px rgba(0, 0, 0, 0.4);
 }
 .platform-products {
   position: absolute;
@@ -2544,7 +2545,9 @@ body {
   border: 1px solid var(--color-primary);  /* same teal as the expanded card */
   border-top: none;
   border-radius: 0 0 12px 12px;
-  box-shadow: none;                    /* unified shadow comes from the card's drop-shadow */
+  /* shadow rounds at the dropdown's bottom corners; its top is covered by the card.
+     Together with the card's box-shadow this reads as one shadow around the whole shape. */
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.45);
   opacity: 0;
   visibility: hidden;
   transform: translateY(-6px);

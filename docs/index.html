@@ -622,3 +622,27 @@ document.addEventListener('DOMContentLoaded', function() {
   runDemo();
 })();
 </script>
+
+<script>
+// ─── Mobile: keep the bottom filter bar flush above the on-screen keyboard ────
+// The virtual keyboard shrinks the VISUAL viewport, but position:fixed is pinned to
+// the LAYOUT viewport — so a bottom bar gets a gap (page content) below it. We offset
+// the bar up by the keyboard overlap so it sits flush on the keyboard, no gap.
+(function() {
+  var vv = window.visualViewport;
+  var bar = document.getElementById('floating-bar');
+  if (!vv || !bar) return;
+  function sync() {
+    // Only on the mobile layout, where the bar is bottom-anchored. On desktop the bar
+    // is top-anchored, so clear any inline bottom we may have set.
+    if (window.innerWidth > 640) { bar.style.bottom = ''; return; }
+    var overlap = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    bar.style.bottom = overlap + 'px';
+  }
+  vv.addEventListener('resize', sync);
+  vv.addEventListener('scroll', sync);
+  window.addEventListener('resize', sync);
+  window.addEventListener('orientationchange', sync);
+  sync();
+})();
+</script>
