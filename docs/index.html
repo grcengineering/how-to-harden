@@ -643,6 +643,16 @@ document.addEventListener('DOMContentLoaded', function() {
   vv.addEventListener('scroll', sync);
   window.addEventListener('resize', sync);
   window.addEventListener('orientationchange', sync);
+  // The focus-time resize can fire before the keyboard finishes animating (so before #60
+  // the bar only settled once the user typed). Re-sync a few times after focus to close
+  // the gap immediately on focus.
+  var pcSearch = document.getElementById('search');
+  if (pcSearch) {
+    pcSearch.addEventListener('focus', function() {
+      [0, 100, 250, 450, 700].forEach(function(t) { setTimeout(sync, t); });
+    });
+    pcSearch.addEventListener('blur', function() { setTimeout(sync, 100); });
+  }
   sync();
 })();
 </script>
