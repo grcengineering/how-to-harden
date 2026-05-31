@@ -1446,8 +1446,10 @@ body {
     right: 8px;
     border: 1px solid var(--color-border);
     border-radius: 14px;
-    background: var(--color-bg-secondary); /* fallback where color-mix is unsupported */
-    background: color-mix(in srgb, var(--color-bg-secondary) 88%, transparent);
+    /* Elevated surface (light: #fff vs the page's #f8f9fa; dark: #242424 vs #0d0d0d)
+       so the island reads as distinctly whiter/lighter than the page behind it. */
+    background: var(--color-bg-elevated); /* fallback where color-mix is unsupported */
+    background: color-mix(in srgb, var(--color-bg-elevated) 90%, transparent);
     -webkit-backdrop-filter: blur(18px) saturate(180%);
     backdrop-filter: blur(18px) saturate(180%);
     /* Soft, low-opacity lift — kept tight so the blur doesn't bleed below the
