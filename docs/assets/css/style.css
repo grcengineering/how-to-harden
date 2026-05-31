@@ -1449,13 +1449,15 @@ body {
     /* Elevated surface (light: #fff vs the page's #f8f9fa; dark: #242424 vs #0d0d0d)
        so the island reads as distinctly whiter/lighter than the page behind it. */
     background: var(--color-bg-elevated); /* fallback where color-mix is unsupported */
-    background: color-mix(in srgb, var(--color-bg-elevated) 90%, transparent);
-    /* 90% opaque white over a strong, near-neutral blur: the heavier blur averages
-       the busy gray cards/colored tags into a uniform light wash, and dropping the
-       saturation boost (180%->105%) stops them tinting the glass — so it reads as
-       a cleaner, whiter frosted pane while staying glassy. */
-    -webkit-backdrop-filter: blur(22px) saturate(105%);
-    backdrop-filter: blur(22px) saturate(105%);
+    background: color-mix(in srgb, var(--color-bg-elevated) 72%, transparent);
+    /* 72% fill (was 90%) so the frosted blur is actually visible. At 90% only 10%
+       of the backdrop showed through, and at the bar's position the page is
+       near-white (light) / near-black (dark) — the same color as the fill — so
+       the translucency was imperceptible and it read as a solid panel. 72% lets
+       blurred content scrolling behind the island show through; saturate 140%
+       gives that frost some richness. */
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    backdrop-filter: blur(22px) saturate(140%);
     /* Soft, low-opacity lift — kept tight so the blur doesn't bleed below the
        island into Safari's collapsed bottom address bar (which would clip it). */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
