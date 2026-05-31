@@ -624,29 +624,51 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
-// ─── Mobile keyboard DEBUG readout — open the site with ?kbdebug to enable ────
-// The repositioning JS was reverted (it couldn't be verified without a device and made
-// things worse). This prints the live viewport numbers on-device so the real keyboard
-// geometry can drive an exact fix: visit /?kbdebug, focus the search box, screenshot.
+// ─── Mobile: lift the bottom filter bar above the iOS keyboard ────────────────
+// Grounded in real device data (iPhone, keyboard open): innerHeight=815, vv.height=428,
+// offsetTop=0 → keyboard covers 815-428 = 387px at the bottom of the (un-shrunk) layout
+// viewport. position:fixed;bottom:0 sits behind it, so we lift the bar by that amount.
+// NO interactive-widget meta (that caused an over-lift). Per-frame re-assert on focus
+// because iOS shifts fixed elements during the keyboard animation.
 (function() {
-  if (location.search.indexOf('kbdebug') < 0) return;
   var vv = window.visualViewport;
-  var el = document.createElement('div');
-  el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#000;color:#0f0;font:12px/1.5 monospace;padding:6px 8px;white-space:pre-wrap;pointer-events:none;';
-  function show() {
-    el.textContent =
-      'innerH=' + window.innerHeight +
-      ' innerW=' + window.innerWidth +
-      ' | vv.h=' + (vv ? Math.round(vv.height) : 'n/a') +
-      ' vv.offTop=' + (vv ? Math.round(vv.offsetTop) : 'n/a') +
-      ' vv.pageTop=' + (vv ? Math.round(vv.pageTop) : 'n/a') +
-      ' scrollY=' + Math.round(window.scrollY || window.pageYOffset || 0);
+  if (!vv) return;
+  var bar = document.getElementById('floating-bar');
+  var search = document.getElementById('search');
+  var debug = location.search.indexOf('kbdebug') >= 0
+    ? (function() { var d = document.createElement('div'); d.style.cssText = 'position:fixed;bottom:0;left:0;z-index:99999;background:#000;color:#0f0;font:11px/1.4 monospace;padding:4px 8px;white-space:pre-wrap;pointer-events:none;'; document.body.appendChild(d); return d; })()
+    : null;
+
+  function keyboardOverlap() {
+    return Math.max(0, Math.round(window.innerHeight - vv.height));
   }
-  document.body.appendChild(el);
-  if (vv) { vv.addEventListener('resize', show); vv.addEventListener('scroll', show); }
-  window.addEventListener('resize', show);
-  var s = document.getElementById('search');
-  if (s) { s.addEventListener('focus', show); s.addEventListener('input', show); }
-  show();
+  var lastBottom = '';
+  function sync() {
+    if (bar) {
+      if (window.innerWidth > 640) {
+        if (lastBottom !== '') { bar.style.bottom = ''; lastBottom = ''; }   // desktop: top-anchored
+      } else {
+        var b = keyboardOverlap() + 'px';
+        if (b !== lastBottom) { bar.style.bottom = b; lastBottom = b; }
+      }
+    }
+    if (debug) {
+      debug.textContent = 'innerH=' + window.innerHeight + ' vv.h=' + Math.round(vv.height) +
+        ' offTop=' + Math.round(vv.offsetTop) + ' | kbd=' + keyboardOverlap() +
+        ' barBottom=' + (bar ? (bar.style.bottom || '0') : 'n/a');
+    }
+  }
+  vv.addEventListener('resize', sync);
+  vv.addEventListener('scroll', sync);
+  window.addEventListener('resize', sync);
+  window.addEventListener('orientationchange', sync);
+  var raf = null;
+  function loop() { sync(); raf = requestAnimationFrame(loop); }
+  function stop() { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } }
+  if (search) {
+    search.addEventListener('focus', function() { stop(); loop(); });
+    search.addEventListener('blur', function() { stop(); setTimeout(sync, 120); });
+  }
+  sync();
 })();
 </script>
