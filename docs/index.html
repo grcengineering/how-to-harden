@@ -648,8 +648,10 @@ document.addEventListener('DOMContentLoaded', function() {
       if (window.innerWidth > 640) {
         if (lastBottom !== '') { bar.style.bottom = ''; lastBottom = ''; }   // desktop: top-anchored
       } else {
-        var b = keyboardOverlap() + 'px';
-        if (b !== lastBottom) { bar.style.bottom = b; lastBottom = b; }
+        // Reposition DISABLED: the JS lift fought iOS's own fixed-element handling and
+        // over-lifted the bar to the top of the screen. Leave it native (CSS bottom:0)
+        // pending the design decision (move search to sticky-top vs. keep bottom-fixed).
+        if (lastBottom !== '') { bar.style.bottom = ''; lastBottom = ''; }
       }
     }
     if (debug) {

@@ -2496,18 +2496,6 @@ body {
 .platform-chevron { transition: transform 0.2s ease; }
 .platform-card.expanded .platform-chevron { transform: rotate(180deg); }
 
-/* "contains multiple guides" stacked hint — hidden while expanded */
-.platform-card::after {
-  content: "";
-  position: absolute;
-  left: 10px; right: 10px; bottom: -5px; height: 10px;
-  border: 1px solid var(--color-border); border-top: none;
-  border-radius: 0 0 12px 12px;
-  background: var(--color-bg-tertiary);
-  z-index: -1;
-}
-.platform-card.expanded::after { display: none; }
-
 /* Expanded products = an ABSOLUTE dropdown overlay: out of normal flow, so the
    card's grid cell never grows — no sibling card changes height — and it floats
    ABOVE the cards beneath it (z-index + shadow). */
