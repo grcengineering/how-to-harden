@@ -1456,8 +1456,8 @@ body {
        the translucency was imperceptible and it read as a solid panel. 72% lets
        blurred content scrolling behind the island show through; saturate 140%
        gives that frost some richness. */
-    -webkit-backdrop-filter: blur(22px) saturate(140%);
-    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
     /* Soft, low-opacity lift — kept tight so the blur doesn't bleed below the
        island into Safari's collapsed bottom address bar (which would clip it). */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
