@@ -2545,9 +2545,7 @@ body {
   border: 1px solid var(--color-primary);  /* same teal as the expanded card */
   border-top: none;
   border-radius: 0 0 12px 12px;
-  /* shadow rounds at the dropdown's bottom corners; its top is covered by the card.
-     Together with the card's box-shadow this reads as one shadow around the whole shape. */
-  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.45);
+  box-shadow: none;   /* applied ONLY when expanded (below) so it can't ghost while collapsed */
   opacity: 0;
   visibility: hidden;
   transform: translateY(-6px);
@@ -2559,6 +2557,9 @@ body {
   visibility: visible;
   transform: none;
   pointer-events: auto;
+  /* shadow only while expanded — rounds at the dropdown's bottom corners; the card's
+     box-shadow handles the top. Removed on collapse so nothing lingers. */
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.45);
 }
 
 /* sub-cards — scoped under .platform-card so they reliably beat the global `a {}` rule */
