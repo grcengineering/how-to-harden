@@ -632,26 +632,29 @@ document.addEventListener('DOMContentLoaded', function() {
   var vv = window.visualViewport;
   var bar = document.getElementById('floating-bar');
   if (!vv || !bar) return;
+  var last = '';
   function sync() {
-    // Only on the mobile layout, where the bar is bottom-anchored. On desktop the bar
-    // is top-anchored, so clear any inline bottom we may have set.
-    if (window.innerWidth > 640) { bar.style.bottom = ''; return; }
-    var overlap = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-    bar.style.bottom = overlap + 'px';
+    // Mobile layout only (bar is bottom-anchored). On desktop it's top-anchored — clear.
+    if (window.innerWidth > 640) { if (last !== '') { bar.style.bottom = ''; last = ''; } return; }
+    // Keyboard overlap = how much the visual viewport is shorter than the layout viewport.
+    // Do NOT subtract vv.offsetTop: on focus iOS scrolls the page (offsetTop > 0), which
+    // under-lifts the bar and leaves the gap until the user types and the scroll settles.
+    var px = Math.max(0, Math.round(window.innerHeight - vv.height)) + 'px';
+    if (px !== last) { bar.style.bottom = px; last = px; }
   }
   vv.addEventListener('resize', sync);
   vv.addEventListener('scroll', sync);
   window.addEventListener('resize', sync);
   window.addEventListener('orientationchange', sync);
-  // The focus-time resize can fire before the keyboard finishes animating (so before #60
-  // the bar only settled once the user typed). Re-sync a few times after focus to close
-  // the gap immediately on focus.
+  // While the search box is focused, keep the bar flush EVERY FRAME — robust against the
+  // iOS keyboard-animation timing (resize/scroll alone only settled after the first keystroke).
+  var raf = null;
+  function loop() { sync(); raf = requestAnimationFrame(loop); }
+  function stop() { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } }
   var pcSearch = document.getElementById('search');
   if (pcSearch) {
-    pcSearch.addEventListener('focus', function() {
-      [0, 100, 250, 450, 700].forEach(function(t) { setTimeout(sync, t); });
-    });
-    pcSearch.addEventListener('blur', function() { setTimeout(sync, 100); });
+    pcSearch.addEventListener('focus', function() { stop(); loop(); });
+    pcSearch.addEventListener('blur', function() { stop(); setTimeout(sync, 80); });
   }
   sync();
 })();
