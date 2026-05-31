@@ -1449,7 +1449,7 @@ body {
     /* Elevated surface (light: #fff vs the page's #f8f9fa; dark: #242424 vs #0d0d0d)
        so the island reads as distinctly whiter/lighter than the page behind it. */
     background: var(--color-bg-elevated); /* fallback where color-mix is unsupported */
-    background: color-mix(in srgb, var(--color-bg-elevated) 72%, transparent);
+    background: color-mix(in srgb, var(--color-bg-elevated) 50%, transparent);
     /* 72% fill (was 90%) so the frosted blur is actually visible. At 90% only 10%
        of the backdrop showed through, and at the bar's position the page is
        near-white (light) / near-black (dark) — the same color as the fill — so
