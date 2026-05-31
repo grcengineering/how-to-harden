@@ -1442,17 +1442,17 @@ body {
     position: fixed;
     top: auto;
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    left: 12px;
-    right: 12px;
+    left: 8px;
+    right: 8px;
     border: 1px solid var(--color-border);
-    border-radius: 18px;
+    border-radius: 14px;
     background: var(--color-bg-secondary); /* fallback where color-mix is unsupported */
     background: color-mix(in srgb, var(--color-bg-secondary) 88%, transparent);
     -webkit-backdrop-filter: blur(18px) saturate(180%);
     backdrop-filter: blur(18px) saturate(180%);
-    /* Soft, low-opacity lift — two layers (close + diffuse) read as "floating"
-       without the muddy dark halo a single heavy shadow leaves on a light bg. */
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.06);
+    /* Soft, low-opacity lift — kept tight so the blur doesn't bleed below the
+       island into Safari's collapsed bottom address bar (which would clip it). */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
     overflow: hidden;
   }
 
