@@ -1447,19 +1447,6 @@ body {
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
   }
 
-  /* Fill the gap below the bar (e.g. when iOS lifts it for the keyboard) with the
-     same backdrop, so it extends seamlessly to the bottom of the frame. */
-  .floating-bar::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    height: 60vh;
-    background: var(--color-bg-secondary);
-    pointer-events: none;
-  }
-
   .floating-bar-inner {
     flex-direction: column;
     padding: var(--space-sm) var(--space-md);
