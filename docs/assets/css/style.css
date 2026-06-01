@@ -160,9 +160,10 @@ a:hover {
   z-index: 100;
 }
 
-/* Offset for fixed header + fixed floating bar */
+/* Offset for fixed header (64px) + the floating search island below it
+   (top:76px + ~52px tall ≈ 128px) plus a little breathing room. */
 body {
-  padding-top: 120px;
+  padding-top: 148px;
 }
 
 .site-header .container {
@@ -303,16 +304,30 @@ body {
 }
 
 /* ============================================================
-   Floating search + filter bar (Google Images / Reddit style)
+   Floating search + filter island
+   Desktop: a detached, centered, glassy island fixed just below the header
+   (mirrors the mobile island below — same frosted recipe, different position).
    ============================================================ */
 .floating-bar {
   position: fixed;
-  top: 64px;
+  top: 76px;                 /* 64px header + 12px gap → "slightly below, separate" */
   left: 0;
   right: 0;
+  margin: 0 auto;            /* centre within the left:0/right:0 box */
+  width: calc(100% - 2 * var(--space-lg));
+  max-width: var(--max-width);
   z-index: 90;
-  background: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  /* Same frosted glass as the mobile island: translucent elevated fill over a
+     blurred, lightly-saturated backdrop. NOTE: no overflow:hidden here — the
+     desktop filter dropdowns are absolutely-positioned children and must be
+     allowed to escape; border-radius alone still clips the glass cleanly. */
+  background: var(--color-bg-elevated); /* fallback where color-mix is unsupported */
+  background: color-mix(in srgb, var(--color-bg-elevated) 50%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .floating-bar-inner {
@@ -1460,18 +1475,19 @@ body {
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     left: 8px;
     right: 8px;
+    width: auto;   /* reset desktop island width/centering — left/right define the box here */
+    margin: 0;
     border: 1px solid var(--color-border);
     border-radius: 14px;
     /* Elevated surface (light: #fff vs the page's #f8f9fa; dark: #242424 vs #0d0d0d)
        so the island reads as distinctly whiter/lighter than the page behind it. */
     background: var(--color-bg-elevated); /* fallback where color-mix is unsupported */
     background: color-mix(in srgb, var(--color-bg-elevated) 50%, transparent);
-    /* 72% fill (was 90%) so the frosted blur is actually visible. At 90% only 10%
-       of the backdrop showed through, and at the bar's position the page is
-       near-white (light) / near-black (dark) — the same color as the fill — so
-       the translucency was imperceptible and it read as a solid panel. 72% lets
-       blurred content scrolling behind the island show through; saturate 140%
-       gives that frost some richness. */
+    /* 50% fill so the frosted blur is clearly visible. At higher opacity the
+       translucency was imperceptible where the page behind the bar is
+       near-white (light) / near-black (dark) — the same colour as the fill — so
+       it read as a solid panel. 50% lets blurred content scrolling behind the
+       island show through; saturate 140% gives the frost some richness. */
     -webkit-backdrop-filter: blur(12px) saturate(140%);
     backdrop-filter: blur(12px) saturate(140%);
     /* Soft, low-opacity lift — kept tight so the blur doesn't bleed below the
