@@ -160,10 +160,10 @@ a:hover {
   z-index: 100;
 }
 
-/* Offset for fixed header (64px) + the floating search island below it
-   (top:76px + ~52px tall ≈ 128px) plus a little breathing room. */
+/* Offset for fixed header (64px) + the stacked floating search island below it
+   (top:76px + ~92px tall ≈ 168px) plus a little breathing room. */
 body {
-  padding-top: 148px;
+  padding-top: 184px;
 }
 
 .site-header .container {
@@ -315,7 +315,7 @@ body {
   right: 0;
   margin: 0 auto;            /* centre within the left:0/right:0 box */
   width: calc(100% - 2 * var(--space-lg));
-  max-width: var(--max-width);
+  max-width: 600px;          /* compact card — full-width search bar stays a sensible length */
   z-index: 90;
   border: 1px solid var(--color-border);
   border-radius: 14px;
@@ -331,19 +331,19 @@ body {
 }
 
 .floating-bar-inner {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: var(--space-sm) var(--space-lg);
+  /* Stacked like the mobile island: search bar on top (full width), filter row
+     beneath (full width). */
   display: flex;
-  align-items: center;
-  gap: var(--space-md);
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
 }
 
-/* Search input inside floating bar */
+/* Search input inside floating bar — full width, centred in the island */
 .floating-search {
   position: relative;
-  flex: 0 1 280px;
-  min-width: 160px;
+  width: 100%;
 }
 
 .floating-search svg {
@@ -357,7 +357,7 @@ body {
 
 .floating-search input {
   width: 100%;
-  padding: 7px 12px 7px 34px;
+  padding: 6px 12px 6px 34px;
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -376,25 +376,28 @@ body {
   box-shadow: 0 0 0 2px var(--color-primary-muted);
 }
 
-/* Horizontal filter strip */
+/* Filter row — sits beneath the search bar and spans the full island width,
+   buttons distributed side to side. */
 .floating-filters {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
-  flex: 1;
-  padding: 2px 0;
+  width: 100%;
+  flex-wrap: wrap;
+  padding: 0;
 }
 
 /* Filter buttons (shared style for sort + dropdown triggers) */
 .filter-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
+  gap: 4px;
+  padding: 5px 10px;
   background: transparent;
   border: 1px solid var(--color-border);
   border-radius: 20px;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -1476,6 +1479,7 @@ body {
     left: 8px;
     right: 8px;
     width: auto;   /* reset desktop island width/centering — left/right define the box here */
+    max-width: none;
     margin: 0;
     border: 1px solid var(--color-border);
     border-radius: 14px;
@@ -1510,6 +1514,7 @@ body {
   /* Single horizontal row, scrollable with fade edges */
   .floating-filters {
     width: 100%;
+    justify-content: flex-start;   /* left-packed scroll strip (override desktop space-between) */
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
