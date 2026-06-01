@@ -29,6 +29,12 @@
   --color-border: #2a2a2a;
   --color-border-light: #3a3a3a;
 
+  /* Header drop shadow (dark) — a pure-black shadow is invisible on the
+     near-black page, so a faint LIGHT hairline at the bottom edge carries the
+     separation (the macOS/iOS translucent-bar technique), paired with a diffuse
+     dark shadow that reads when lighter content scrolls beneath the bar. */
+  --header-shadow: 0 1px 0 rgba(255, 255, 255, 0.07), 0 8px 20px rgba(0, 0, 0, 0.6);
+
   /* Table header tints */
   --color-table-header: rgba(255, 167, 79, 0.3);
 
@@ -89,6 +95,9 @@
   --color-border: #dee2e6;
   --color-border-light: #e9ecef;
 
+  /* Header drop shadow (light) — soft, low-opacity gray lift. */
+  --header-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.08);
+
   /* Table header tints */
   --color-table-header: rgba(219, 125, 0, 0.15);
 }
@@ -135,8 +144,15 @@ a:hover {
 
 /* Header */
 .site-header {
-  background: var(--color-bg-secondary);
+  /* Frosted glass — same recipe as the floating search island: translucent
+     fill over a blurred, lightly-saturated backdrop, so page content blurs
+     through as it scrolls beneath the fixed bar. */
+  background: var(--color-bg-secondary); /* fallback where color-mix is unsupported */
+  background: color-mix(in srgb, var(--color-bg-secondary) 72%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
   border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--header-shadow);
   position: fixed;
   top: 0;
   left: 0;
