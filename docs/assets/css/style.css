@@ -573,10 +573,10 @@ body {
     align-items: center;
     gap: 0;
     width: auto;
-    height: 40px;                 /* proportional to the 32px logo */
+    height: 36px;                 /* a little shorter; proportional to the 32px logo */
     flex: 1;
-    margin-left: 185px;           /* clear the logo (~169px + gap) */
-    margin-right: 284px;          /* clear the nav (~268px + gap) */
+    margin-left: 215px;           /* clear the logo (+ extra → a little narrower) */
+    margin-right: 314px;          /* clear the nav (+ extra → a little narrower) */
     padding: 0 4px 0 0;
     background: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
@@ -594,13 +594,13 @@ body {
     min-width: 0;
   }
   .floating-search svg {
-    left: 16px;
-    width: 16px;
-    height: 16px;
+    left: 14px;
+    width: 15px;
+    height: 15px;
   }
   .floating-search input {
-    height: 36px;
-    padding: 0 10px 0 42px;
+    height: 32px;
+    padding: 0 10px 0 38px;
     background: transparent;
     border: none;
     border-radius: 0;
@@ -622,14 +622,14 @@ body {
     content: "";
     flex: 0 0 auto;
     width: 1px;
-    height: 22px;
+    height: 20px;
     background: var(--color-border);
     margin: 0 6px;
   }
 
   /* Icon-only filter buttons — no text labels, no chevrons, round hover */
   .filter-btn {
-    padding: 7px;
+    padding: 6px;
     gap: 0;
     border: none;
     border-radius: 50%;
@@ -646,18 +646,23 @@ body {
     background: var(--color-primary-muted);
   }
 
-  /* View toggle: plain round icons, no segmented container */
+  /* View toggle: a single icon that shows the OTHER view (click to switch).
+     Hiding the active button leaves only the target-view icon visible, so it
+     toggles grid ⇄ list one icon at a time. */
   .view-toggle {
     background: transparent;
     border: none;
     padding: 0;
-    gap: 1px;
+    gap: 0;
     border-radius: 0;
   }
   .view-btn {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
+  }
+  .view-btn.active {
+    display: none;
   }
 }
 
