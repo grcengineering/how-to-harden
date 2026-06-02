@@ -78,7 +78,7 @@ title: Home
 
       <div class="filter-dropdown" id="filter-category">
         <button class="filter-btn" title="System type">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
           <span class="filter-label">System Type</span>
           <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </button>
@@ -355,11 +355,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (sortDirection === 'az') {
       sortDirection = 'za';
       sortBtn.querySelector('svg:first-child').style.transform = 'scaleY(-1)';
-      sortBtn.childNodes[sortBtn.childNodes.length - 1].textContent = 'Z-A';
+      sortBtn.querySelector('.filter-label').textContent = 'Z-A';
     } else {
       sortDirection = 'az';
       sortBtn.querySelector('svg:first-child').style.transform = '';
-      sortBtn.childNodes[sortBtn.childNodes.length - 1].textContent = 'A-Z';
+      sortBtn.querySelector('.filter-label').textContent = 'A-Z';
     }
     sortBtn.classList.add('filter-active');
     sortGuides();
