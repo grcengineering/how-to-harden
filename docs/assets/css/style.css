@@ -305,24 +305,27 @@ body {
 
 /* ============================================================
    Search + filter
-   Desktop: sits INSIDE the header band — overlaid in the centre between the
-   logo and nav, at the header's own 64px height so the header does NOT grow.
-   Transparent (the header's frosted glass is the backdrop); compact + stacked
-   (search on top, filter row beneath). Control sizes are in the min-width:641px
-   block below. NOTE: kept a sibling of the header, not a child — the header's
-   backdrop-filter would otherwise trap this fixed element and break the mobile
-   bottom island.
+   Desktop (min-width:641px block below): a Google-style search pill that sits
+   inside the header band — logo on the left, the pill to its right at the same
+   height, filters as icon-only buttons inside the pill's right edge (split off
+   by a vertical divider). The bar overlays the header at its own 64px height so
+   the header does NOT grow. Aligned to the header .container (same max-width +
+   padding) so the pill lands cleanly between the logo and the nav.
+   NOTE: kept a sibling of the header, not a child — the header's backdrop-filter
+   would otherwise trap this fixed element and break the mobile bottom island.
    ============================================================ */
 .floating-bar {
   position: fixed;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 64px;                            /* match header — a band, not extra height */
-  width: min(460px, calc(100vw - 500px));  /* stay clear of the logo (left) and nav (right) */
-  z-index: 101;                            /* above the header so the controls are clickable */
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  max-width: var(--max-width);        /* align to the header .container */
+  padding: 0 var(--space-lg);         /* match .container horizontal padding */
+  height: 64px;                       /* match header — a band, not extra height */
+  z-index: 101;                       /* above the header so the controls are clickable */
   display: flex;
-  align-items: center;                     /* vertically centre the stacked block in the band */
+  align-items: center;
 }
 
 .floating-bar-inner {
@@ -557,35 +560,104 @@ body {
 }
 
 /* ============================================================
-   Desktop-only: shrink the search + filter controls so the stacked block fits
-   inside the header's 64px band. Scoped to >=641px so the comfortable base
-   sizes (incl. the iOS-safe 16px search input) still apply on mobile.
+   Desktop (>=641px): Google-style search pill in the header.
+   One row — [magnifier] search input … | filter icons. The pill is reserved
+   into the centre of the header by margins that clear the logo (left) and nav
+   (right). Scoped to >=641px so the mobile bottom island (base + max-width:640)
+   is untouched, incl. its full text labels and iOS-safe 16px input.
    ============================================================ */
 @media (min-width: 641px) {
-  .floating-search input {
-    padding: 4px 10px 4px 28px;
-    font-size: 13px;
-    border-radius: 7px;
+  /* The pill */
+  .floating-bar-inner {
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    width: auto;
+    height: 40px;                 /* proportional to the 32px logo */
+    flex: 1;
+    margin-left: 185px;           /* clear the logo (~169px + gap) */
+    margin-right: 284px;          /* clear the nav (~268px + gap) */
+    padding: 0 4px 0 0;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: 22px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .floating-bar-inner:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-muted);
+  }
+
+  /* Search input — transparent, fills the pill; magnifier inside-left */
+  .floating-search {
+    flex: 1;
+    min-width: 0;
   }
   .floating-search svg {
-    width: 14px;
-    height: 14px;
-    left: 9px;
+    left: 16px;
+    width: 16px;
+    height: 16px;
   }
+  .floating-search input {
+    height: 36px;
+    padding: 0 10px 0 42px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    font-size: 14px;
+  }
+  .floating-search input:focus {
+    border: none;
+    box-shadow: none;             /* focus ring lives on the pill */
+  }
+
+  /* Filter icons, split from the input by a vertical divider */
+  .floating-filters {
+    flex: 0 0 auto;
+    width: auto;
+    justify-content: flex-end;
+    gap: 1px;
+  }
+  .floating-filters::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 1px;
+    height: 22px;
+    background: var(--color-border);
+    margin: 0 6px;
+  }
+
+  /* Icon-only filter buttons — no text labels, no chevrons, round hover */
   .filter-btn {
-    padding: 2px 8px;
-    font-size: 0.7rem;
-    gap: 3px;
-    border-radius: 14px;
+    padding: 7px;
+    gap: 0;
+    border: none;
+    border-radius: 50%;
   }
+  .filter-btn .filter-label,
+  .filter-btn .chevron {
+    display: none;
+  }
+  .filter-btn:hover {
+    background: var(--color-bg-elevated);
+    border: none;
+  }
+  .filter-btn.filter-active {
+    background: var(--color-primary-muted);
+  }
+
+  /* View toggle: plain round icons, no segmented container */
   .view-toggle {
-    padding: 1px;
-    border-radius: 14px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    gap: 1px;
+    border-radius: 0;
   }
   .view-btn {
-    width: 24px;
-    height: 20px;
-    border-radius: 11px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
   }
 }
 
@@ -1512,6 +1584,7 @@ body {
     transform: none;   /* reset desktop centering translate */
     height: auto;      /* reset desktop 64px band height */
     margin: 0;
+    padding: 0;        /* reset the desktop container-padding (0 var(--space-lg)) */
     border: 1px solid var(--color-border);
     border-radius: 14px;
     /* Elevated surface (light: #fff vs the page's #f8f9fa; dark: #242424 vs #0d0d0d)
