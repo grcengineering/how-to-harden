@@ -160,10 +160,10 @@ a:hover {
   z-index: 100;
 }
 
-/* Offset for fixed header (64px) + the stacked floating search island below it
-   (top:76px + ~92px tall ≈ 168px) plus a little breathing room. */
+/* Offset for the fixed header (64px). The search/filter now lives inside the
+   header band on desktop, so no extra offset is needed below it. */
 body {
-  padding-top: 184px;
+  padding-top: 72px;
 }
 
 .site-header .container {
@@ -304,40 +304,35 @@ body {
 }
 
 /* ============================================================
-   Floating search + filter island
-   Desktop: a detached, centered, glassy island fixed just below the header
-   (mirrors the mobile island below — same frosted recipe, different position).
+   Search + filter
+   Desktop: sits INSIDE the header band — overlaid in the centre between the
+   logo and nav, at the header's own 64px height so the header does NOT grow.
+   Transparent (the header's frosted glass is the backdrop); compact + stacked
+   (search on top, filter row beneath). Control sizes are in the min-width:641px
+   block below. NOTE: kept a sibling of the header, not a child — the header's
+   backdrop-filter would otherwise trap this fixed element and break the mobile
+   bottom island.
    ============================================================ */
 .floating-bar {
   position: fixed;
-  top: 76px;                 /* 64px header + 12px gap → "slightly below, separate" */
-  left: 0;
-  right: 0;
-  margin: 0 auto;            /* centre within the left:0/right:0 box */
-  width: calc(100% - 2 * var(--space-lg));
-  max-width: 600px;          /* compact card — full-width search bar stays a sensible length */
-  z-index: 90;
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  /* Same frosted glass as the mobile island: translucent elevated fill over a
-     blurred, lightly-saturated backdrop. NOTE: no overflow:hidden here — the
-     desktop filter dropdowns are absolutely-positioned children and must be
-     allowed to escape; border-radius alone still clips the glass cleanly. */
-  background: var(--color-bg-elevated); /* fallback where color-mix is unsupported */
-  background: color-mix(in srgb, var(--color-bg-elevated) 50%, transparent);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  backdrop-filter: blur(12px) saturate(140%);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 64px;                            /* match header — a band, not extra height */
+  width: min(460px, calc(100vw - 500px));  /* stay clear of the logo (left) and nav (right) */
+  z-index: 101;                            /* above the header so the controls are clickable */
+  display: flex;
+  align-items: center;                     /* vertically centre the stacked block in the band */
 }
 
 .floating-bar-inner {
-  /* Stacked like the mobile island: search bar on top (full width), filter row
-     beneath (full width). */
+  /* Stacked: search bar on top (full width), filter row beneath (full width). */
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
+  gap: 3px;
+  width: 100%;
+  padding: 0;
 }
 
 /* Search input inside floating bar — full width, centred in the island */
@@ -376,15 +371,16 @@ body {
   box-shadow: 0 0 0 2px var(--color-primary-muted);
 }
 
-/* Filter row — sits beneath the search bar and spans the full island width,
-   buttons distributed side to side. */
+/* Filter row — beneath the search bar, spans its full width, buttons
+   distributed side to side. nowrap keeps it one line so the header band height
+   stays fixed. */
 .floating-filters {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   padding: 0;
 }
 
@@ -558,6 +554,39 @@ body {
 .view-btn.active {
   background: var(--color-bg-elevated);
   color: var(--color-primary);
+}
+
+/* ============================================================
+   Desktop-only: shrink the search + filter controls so the stacked block fits
+   inside the header's 64px band. Scoped to >=641px so the comfortable base
+   sizes (incl. the iOS-safe 16px search input) still apply on mobile.
+   ============================================================ */
+@media (min-width: 641px) {
+  .floating-search input {
+    padding: 4px 10px 4px 28px;
+    font-size: 13px;
+    border-radius: 7px;
+  }
+  .floating-search svg {
+    width: 14px;
+    height: 14px;
+    left: 9px;
+  }
+  .filter-btn {
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    gap: 3px;
+    border-radius: 14px;
+  }
+  .view-toggle {
+    padding: 1px;
+    border-radius: 14px;
+  }
+  .view-btn {
+    width: 24px;
+    height: 20px;
+    border-radius: 11px;
+  }
 }
 
 /* Guides section */
@@ -1478,8 +1507,10 @@ body {
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     left: 8px;
     right: 8px;
-    width: auto;   /* reset desktop island width/centering — left/right define the box here */
+    width: auto;       /* reset the desktop in-header overlay → full-width bottom island */
     max-width: none;
+    transform: none;   /* reset desktop centering translate */
+    height: auto;      /* reset desktop 64px band height */
     margin: 0;
     border: 1px solid var(--color-border);
     border-radius: 14px;
