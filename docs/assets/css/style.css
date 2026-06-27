@@ -1,51 +1,70 @@
-/* How to Harden - GRC Engineering design language */
+/* ==========================================================================
+   How to Harden — built on the GRC Engineering Design System
+   --------------------------------------------------------------------------
+   Brand source of truth: grce-tokens.css (vendored from
+   github.com/grcengineering/grce-design-system). This file imports those
+   tokens, then BRIDGES the site's legacy variable names (--color-*, --space-*)
+   onto the design-system's semantic tokens, then layers the component styles
+   and a small brand-refinement section (display/body fonts, mono eyebrows,
+   the fusion-gradient hero) at the end of the file.
+   ========================================================================== */
+
+@import url("grce-tokens.css");
+
+/* ==========================================================================
+   DESIGN-SYSTEM BRIDGE
+   Every legacy variable below resolves to a GRC Engineering token. Surface,
+   text, border, and link tokens flip automatically under [data-theme="dark"]
+   inside the token layer — so the whole site themes with ONE bridge block.
+   Only values that are not themed tokens (header shadow, link hover) need a
+   dark override, kept minimal below.
+   ========================================================================== */
 
 :root {
-  /* Colors - GRC Engineering palette */
-  --color-primary: #1b95c1;
-  --color-primary-dark: rgb(2, 98, 133);
-  --color-accent: #ffa84f;
-  --color-accent-dark: rgb(188, 102, 16);
-  --color-accent-border: #db7d00;
+  /* Brand poles */
+  --color-primary: var(--brand-accent);             /* Engineering blue — the interactive accent */
+  --color-primary-dark: var(--brand-accent-strong);
+  --color-accent: var(--brand-grc);                 /* Legacy-GRC orange — brand pole, used sparingly */
+  --color-accent-dark: var(--grc-orange-700);
+  --color-accent-border: var(--grc-orange-600);
 
-  /* Dark theme backgrounds */
-  --color-bg-primary: #000000;
-  --color-bg-secondary: #0d0d0d;
-  --color-bg-tertiary: #1a1a1a;
-  --color-bg-elevated: #242424;
+  /* Surfaces — auto-flip light/dark via the DS token layer */
+  --color-bg-primary: var(--surface-page);
+  --color-bg-secondary: var(--surface-card);
+  --color-bg-tertiary: var(--surface-inset);
+  --color-bg-elevated: var(--surface-raised);
 
-  /* Text colors */
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #b0b0b0;
-  --color-text-muted: #808080;
+  /* Text */
+  --color-text-primary: var(--text-strong);
+  --color-text-secondary: var(--text-body);
+  /* Muted: DS slate-500 is 4.41:1 on white (just under AA); use slate-600 in
+     light for 6.76:1. Dark keeps the DS muted value (restored in the dark bridge). */
+  --color-text-muted: var(--slate-600);
 
-  /* Link and accent colors */
-  --color-link: #ffa84f;
-  --color-link-hover: #ffbe7a;
-  --color-accent-muted: rgba(255, 168, 79, 0.15);
-  --color-primary-muted: rgba(27, 149, 193, 0.15);
+  /* Links & accent tints (blue = interactive; orange tint kept for legacy semantics) */
+  --color-link: var(--text-link);
+  --color-link-hover: var(--eng-blue-700);
+  --color-accent-muted: var(--status-legacy-bg);
+  --color-primary-muted: var(--status-info-bg);
 
-  /* Border colors */
-  --color-border: #2a2a2a;
-  --color-border-light: #3a3a3a;
+  /* Borders — hairlines */
+  --color-border: var(--border-default);
+  --color-border-light: var(--border-strong);
 
-  /* Header drop shadow (dark) — a pure-black shadow is invisible on the
-     near-black page, so a faint LIGHT hairline at the bottom edge carries the
-     separation (the macOS/iOS translucent-bar technique), paired with a diffuse
-     dark shadow that reads when lighter content scrolls beneath the bar. */
-  --header-shadow: 0 1px 0 rgba(255, 255, 255, 0.07), 0 8px 20px rgba(0, 0, 0, 0.6);
+  /* Header shadow — soft cool lift on light surfaces */
+  --header-shadow: var(--shadow-md);
 
-  /* Table header tints */
-  --color-table-header: rgba(255, 167, 79, 0.3);
+  /* Table header tint — neutral slate inset */
+  --color-table-header: var(--surface-inset);
 
-  /* Tier colors - using GRC palette */
-  --color-tier-1: #ef4444;
-  --color-tier-2: #ffa84f;
-  --color-tier-3: #eab308;
-  --color-tier-4: #22c55e;
-  --color-tier-5: #1b95c1;
+  /* Tier colors — mapped onto DS status / brand poles */
+  --color-tier-1: var(--red-500);
+  --color-tier-2: var(--grc-orange-400);
+  --color-tier-3: var(--amber-500);
+  --color-tier-4: var(--green-500);
+  --color-tier-5: var(--eng-blue-500);
 
-  /* Category colors - distinct palette */
+  /* Category colors — distinct functional palette (kept as-is) */
   --color-identity: #3b82f6;    /* Blue */
   --color-security: #ef4444;    /* Red */
   --color-devops: #8b5cf6;      /* Purple */
@@ -54,52 +73,28 @@
   --color-hr: #ec4899;          /* Pink */
   --color-marketing: #06b6d4;   /* Cyan */
 
-  /* Typography - Plus Jakarta Sans / IBM Plex Mono */
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'IBM Plex Mono', 'Fira Code', Consolas, monospace;
-
-  /* Spacing */
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
-  --space-2xl: 3rem;
-  --space-3xl: 4rem;
+  /* Legacy spacing aliases → DS 4px grid */
+  --space-xs: var(--space-1);    /* 4 */
+  --space-sm: var(--space-2);    /* 8 */
+  --space-md: var(--space-4);    /* 16 */
+  --space-lg: var(--space-6);    /* 24 */
+  --space-xl: var(--space-8);    /* 32 */
+  --space-2xl: var(--space-12);  /* 48 */
+  --space-3xl: var(--space-16);  /* 64 */
+  --space-xxl: var(--space-20);  /* 80 — was undefined upstream; defined here */
 
   /* Layout */
   --max-width: 1200px;
   --sidebar-width: 260px;
 }
 
-/* Light theme */
-[data-theme="light"] {
-  /* Light theme backgrounds */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f8f9fa;
-  --color-bg-tertiary: #e9ecef;
-  --color-bg-elevated: #ffffff;
-
-  /* Text colors */
-  --color-text-primary: #1a1a1a;
-  --color-text-secondary: #4a4a4a;
-  --color-text-muted: #6c757d;
-
-  /* Link colors - darker for better contrast on light bg */
-  --color-link: #db7d00;
-  --color-link-hover: #b86800;
-  --color-accent-muted: rgba(219, 125, 0, 0.1);
-  --color-primary-muted: rgba(27, 149, 193, 0.1);
-
-  /* Border colors */
-  --color-border: #dee2e6;
-  --color-border-light: #e9ecef;
-
-  /* Header drop shadow (light) — soft, low-opacity gray lift. */
-  --header-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.08);
-
-  /* Table header tints */
-  --color-table-header: rgba(219, 125, 0, 0.15);
+/* Dark-only bridge overrides (values that aren't themed DS tokens) */
+[data-theme="dark"] {
+  --color-link-hover: var(--eng-blue-200);
+  --color-text-muted: var(--text-muted);   /* DS dark muted #8B97A4 (6.04:1 on dark card) */
+  /* On near-black, a faint light hairline at the bar's edge carries separation
+     (the macOS/iOS translucent-bar technique) + a diffuse dark shadow beneath. */
+  --header-shadow: 0 1px 0 rgba(255, 255, 255, 0.07), 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
 /* Reset */
@@ -237,10 +232,11 @@ body {
   position: absolute;
 }
 
-/* Show only the active icon based on data-theme-preference attribute */
+/* Show only the active icon based on data-theme-preference attribute
+   (light / dark / system — the GRC Engineering ThemeToggle vocabulary) */
 [data-theme-preference="light"] .theme-icon-light,
 [data-theme-preference="dark"] .theme-icon-dark,
-[data-theme-preference="auto"] .theme-icon-auto {
+[data-theme-preference="system"] .theme-icon-auto {
   display: block;
 }
 
@@ -2712,3 +2708,152 @@ body {
 .platform-card .product-subcard:hover { border-color: var(--color-primary); background: var(--color-bg-elevated); }
 .platform-card .product-subcard .product-subcard-name { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; color: var(--color-text-primary); }
 .platform-card .product-subcard .product-subcard-desc { display: block; font-size: 0.8rem; color: var(--color-text-secondary); line-height: 1.4; }
+
+/* ==========================================================================
+   BRAND REFINEMENT LAYER — GRC Engineering type roles + signature devices
+   Appended last so it wins for shared selectors. This is where the four-font
+   system, the fusion-gradient hero, and the mono eyebrows actually land.
+   ========================================================================== */
+
+/* Body prose → Satoshi (the design system's body face) */
+body {
+  font-family: var(--font-body);
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
+}
+
+/* Links: keep the restrained, fast DS easing (was 500ms) */
+a {
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+/* UI chrome → Archivo (industrial grotesque). Nav, controls, buttons, and
+   badges stay on the chrome face so the Satoshi body never bleeds into UI. */
+button, input, select, textarea, label,
+.main-nav a, .breadcrumb, .guide-meta,
+.tier, .status-badge, .category-tag, .pack-badge, .level-badge, .cs-pack-badge,
+.doc-link-btn, .code-pack-btn, .filter-btn, .filter-option,
+.view-btn, .view-mode-btn, .view-mode-label {
+  font-family: var(--font-sans);
+}
+
+/* Headings → General Sans (display), tight tracking, balanced wrapping */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: var(--heading-tracking);
+  text-wrap: balance;
+}
+
+/* Big display numerals also wear the display face */
+.stat-value,
+.cheat-sheet-title,
+.demo-heading {
+  font-family: var(--font-display);
+}
+
+/* Brand wordmark in the header/footer logo lockup */
+.logo span {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+/* ---- The signature fusion gradient: hero wordmark + gradient rule ---- */
+.hero h1 {
+  background: var(--gradient-fusion-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  letter-spacing: var(--tracking-tighter);
+}
+
+.hero h1::after {
+  content: "";
+  display: block;
+  width: 96px;
+  height: 3px;
+  margin: var(--space-md) auto 0;
+  background: var(--gradient-fusion);
+  border-radius: var(--radius-pill);
+}
+
+/* ---- Mono eyebrows / kickers (the "as-code" voice on small labels) ---- */
+.stat-label,
+.toc h3,
+.footer-column h4,
+.code-pack-label {
+  font-family: var(--font-mono);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
+/* ---- Always-visible focus ring (accessibility is on-brand here) ---- */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+/* Footer link columns sit side by side (the wrapper had no layout rule, so the
+   three columns were stacking in a cramped right-hand strip). Clean DS footer. */
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xl);
+}
+/* Wrapped two-line links (e.g. "Identity & Access") must not collide */
+.footer-column li { line-height: var(--leading-snug); }
+.footer-column a { display: inline-block; }
+@media (max-width: 768px) {
+  .footer-links { gap: var(--space-xl); }
+}
+
+/* ==========================================================================
+   WCAG AA — badge contrast
+   Status / tier / category badges paint a bright hue as small text over a
+   0.15-alpha tint of the SAME hue. That reads fine on dark surfaces but fails
+   AA badly on the near-white light card (1.6–3.2:1). In LIGHT mode, swap the
+   text to a darker shade of each hue (tint background unchanged). Each value
+   below is verified ≥4.8:1 on its own tint. Dark mode is left as-is except the
+   one borderline blue badge.
+   ========================================================================== */
+[data-theme="light"] .status-draft    { color: #6F5700; } /* amber  6.3:1 */
+[data-theme="light"] .status-reviewed { color: #1D4ED8; } /* blue   5.6:1 */
+[data-theme="light"] .status-verified { color: #166534; } /* green  6.3:1 */
+
+[data-theme="light"] .tier-1 { color: #A8262D; } /* red     ~6:1 */
+[data-theme="light"] .tier-2 { color: #9A4A0E; } /* orange  5.4:1 */
+[data-theme="light"] .tier-3 { color: #6F5700; } /* amber   6.3:1 */
+[data-theme="light"] .tier-4 { color: #166534; } /* green   6.3:1 */
+[data-theme="light"] .tier-5 { color: #1D4ED8; } /* blue    5.6:1 */
+
+[data-theme="light"] .category-identity     { color: #1D4ED8; }
+[data-theme="light"] .category-security     { color: #B91C1C; }
+[data-theme="light"] .category-devops       { color: #6D28D9; }
+[data-theme="light"] .category-data         { color: #166534; }
+[data-theme="light"] .category-productivity { color: #8A5A00; }
+[data-theme="light"] .category-hr           { color: #BE185D; }
+[data-theme="light"] .category-marketing    { color: #0E7490; }
+
+/* Unknown-type cheat-sheet pack badge had no light override (low-contrast indigo) */
+[data-theme="light"] .cs-pack-badge { color: #4F46E5; border-color: rgba(99,102,241,0.25); }
+
+/* Dark: the hardcoded #3b82f6 blue badge is borderline (4.06:1) on the dark
+   tint — brighten it to match how the DS lifts blue in dark mode. */
+[data-theme="dark"] .status-reviewed,
+[data-theme="dark"] .category-identity { color: #6FA8FF; }
+
+/* Honour reduced-motion: kill the homepage terminal cursor blink + transitions */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,458 @@
+/* ==========================================================================
+   GRC ENGINEERING — Design System tokens (vendored)
+   --------------------------------------------------------------------------
+   Source: https://github.com/grcengineering/grce-design-system
+   This file is a verbatim concatenation of the design system's token layer
+   (tokens/fonts · colors · typography · spacing · effects · motion · base),
+   with one change: @font-face `src` paths repointed to this site's
+   self-hosted /assets/fonts/ directory. Do not hand-edit the token values —
+   re-sync from the design system instead. The site's brand mapping lives in
+   style.css (the "design-system bridge" block).
+   ========================================================================== */
+
+/* ============================================================
+   FONTS — GRC Engineering · self-hosted @font-face
+     • Display  → General Sans   (variable grotesque)
+     • Body     → Satoshi        (variable geometric sans)
+     • UI sans  → Archivo        (industrial grotesque for chrome/labels)
+     • Mono     → Martian Mono   ("as-code" voice)
+   ============================================================ */
+
+@font-face {
+  font-family: "General Sans";
+  src: url("/assets/fonts/general-sans-vf.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/assets/fonts/satoshi-vf.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Satoshi";
+  src: url("/assets/fonts/satoshi-vf-italic.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Archivo";
+  src: url("/assets/fonts/archivo-vf.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Martian Mono";
+  src: url("/assets/fonts/martian-mono-vf.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   COLORS — GRC Engineering
+   Legacy-GRC orange + Engineering blue, fused.
+   ============================================================ */
+
+:root {
+  /* ---- Brand: Legacy GRC (orange) ---- */
+  --grc-orange-50:  #FFF4E6;
+  --grc-orange-100: #FFE6CC;
+  --grc-orange-200: #FFD3A6;
+  --grc-orange-300: #FFBE7B;
+  --grc-orange-400: #FFA84F; /* core — rgb(255,168,79) "Legacy GRC" */
+  --grc-orange-500: #F8932F;
+  --grc-orange-600: #E07C18;
+  --grc-orange-700: #B5610F;
+  --grc-orange-800: #8A490C;
+  --grc-orange-900: #5E320A;
+
+  /* ---- Brand: Engineering (blue) ---- */
+  --eng-blue-50:  #E9F6FB;
+  --eng-blue-100: #CDEAF4;
+  --eng-blue-200: #9DD6EA;
+  --eng-blue-300: #63BEDC;
+  --eng-blue-400: #2FA6CF;
+  --eng-blue-500: #1B95C1; /* core — rgb(27,149,193) "Engineering" */
+  --eng-blue-600: #157AA1;
+  --eng-blue-700: #126181;
+  --eng-blue-800: #114E67;
+  --eng-blue-900: #0E3A4C;
+
+  /* ---- Brand: GRC Engineering fusion gradient ---- */
+  --gradient-fusion: linear-gradient(100deg, var(--grc-orange-400) 0%, #E58A56 38%, #6FA9C2 64%, var(--eng-blue-500) 100%);
+  --gradient-fusion-soft: linear-gradient(100deg, rgba(255,168,79,0.16) 0%, rgba(27,149,193,0.16) 100%);
+  --gradient-fusion-text: linear-gradient(96deg, var(--grc-orange-500) 0%, var(--eng-blue-500) 92%);
+  --gradient-ink-glow: radial-gradient(120% 120% at 0% 0%, rgba(255,168,79,0.12) 0%, transparent 42%), radial-gradient(120% 120% at 100% 0%, rgba(27,149,193,0.14) 0%, transparent 46%);
+  --gradient-ocean: linear-gradient(115deg, #FFA84F 0%, #1B95C1 100%);
+
+  /* ---- Neutrals: cool slate (engineering ink) ---- */
+  --slate-0:   #FFFFFF;
+  --slate-25:  #FBFCFD;
+  --slate-50:  #F6F8FA;
+  --slate-100: #EEF1F4;
+  --slate-150: #E3E8ED;
+  --slate-200: #D6DDE4;
+  --slate-300: #BAC4CE;
+  --slate-400: #94A2AF;
+  --slate-500: #6B7A88;
+  --slate-600: #4F5D6A;
+  --slate-700: #394550;
+  --slate-800: #232D36;
+  --slate-900: #161D24;
+  --slate-950: #0C1117; /* engineering ink */
+  --ink:       #0B0F14; /* deepest canvas */
+
+  /* ---- Semantic status ---- */
+  --green-100: #D6F1E3;
+  --green-500: #1F9D6B; /* pass / compliant */
+  --green-600: #16855A;
+  --green-700: #0F6B49;
+
+  --red-100: #FBDFE0;
+  --red-500: #E5484D; /* fail / non-compliant */
+  --red-600: #CC2F36;
+  --red-700: #A8262D;
+
+  --amber-100: #FCEFD0;
+  --amber-500: #E8A317; /* at-risk / drift (distinct from brand orange) */
+  --amber-600: #C9890C;
+
+  /* =========================================================
+     SEMANTIC ALIASES — reference these in components
+     ========================================================= */
+
+  /* Brand */
+  --brand-grc: var(--grc-orange-400);
+  --brand-eng: var(--eng-blue-500);
+  --brand-accent: var(--eng-blue-500);          /* default interactive accent */
+  --brand-accent-strong: var(--eng-blue-600);
+
+  /* Surfaces (light) */
+  --surface-page:    var(--slate-25);
+  --surface-card:    var(--slate-0);
+  --surface-sunken:  var(--slate-50);
+  --surface-raised:  var(--slate-0);
+  --surface-inset:   var(--slate-100);
+  --surface-ink:     var(--slate-950);          /* dark engineering panels */
+  --surface-ink-2:   var(--slate-900);
+
+  /* Text */
+  --text-strong:  var(--slate-900);
+  --text-body:    var(--slate-700);
+  --text-muted:   var(--slate-500);
+  --text-faint:   var(--slate-400);
+  --text-on-ink:  #E7EDF2;
+  --text-on-ink-muted: #93A2AE;
+  --text-on-accent: #FFFFFF;
+  --text-link:    var(--eng-blue-600);
+
+  /* Borders */
+  --border-subtle: var(--slate-150);
+  --border-default: var(--slate-200);
+  --border-strong: var(--slate-300);
+  --border-ink:    rgba(255,255,255,0.10);
+  --border-accent: var(--eng-blue-500);
+
+  /* Status semantics */
+  --status-pass-fg: var(--green-700);
+  --status-pass-bg: var(--green-100);
+  --status-fail-fg: var(--red-700);
+  --status-fail-bg: var(--red-100);
+  --status-risk-fg: var(--amber-600);
+  --status-risk-bg: var(--amber-100);
+  --status-info-fg: var(--eng-blue-700);
+  --status-info-bg: var(--eng-blue-50);
+  --status-legacy-fg: var(--grc-orange-700);
+  --status-legacy-bg: var(--grc-orange-100);
+
+  /* Focus ring */
+  --focus-ring: 0 0 0 3px rgba(27,149,193,0.35);
+
+  color-scheme: light;
+}
+
+/* =========================================================
+   DARK THEME
+   The token layer exposes exactly two scopes:
+     :root              → light values (default)
+     [data-theme="dark"]→ dark values
+   ========================================================= */
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --brand-accent:        var(--eng-blue-400);
+  --brand-accent-strong: var(--eng-blue-300);
+
+  /* Surfaces — deep engineering navy (matches shipped tools) */
+  --surface-page:    #0A0E16;
+  --surface-card:    #111722;
+  --surface-sunken:  #0C111B;
+  --surface-raised:  #161E2B;
+  --surface-inset:   #1A2330;
+  --surface-ink:     #060910;
+  --surface-ink-2:   #0C121B;
+
+  /* Text */
+  --text-strong:  #F1F5F9;
+  --text-body:    #C4CDD8;
+  --text-muted:   #8B97A4;
+  --text-faint:   #5E6B78;
+  --text-link:    var(--eng-blue-300);
+
+  /* Borders — light hairlines on dark */
+  --border-subtle:  rgba(255,255,255,0.07);
+  --border-default: rgba(255,255,255,0.11);
+  --border-strong:  rgba(255,255,255,0.17);
+  --border-accent:  var(--eng-blue-400);
+
+  /* Status — brighter fg, translucent tints */
+  --status-pass-fg: #4FD396; --status-pass-bg: rgba(31,157,107,0.16);
+  --status-fail-fg: #FF7E82; --status-fail-bg: rgba(229,72,77,0.18);
+  --status-risk-fg: #F2C14E; --status-risk-bg: rgba(232,163,23,0.17);
+  --status-info-fg: #63BEDC; --status-info-bg: rgba(27,149,193,0.16);
+  --status-legacy-fg: #FFBE7B; --status-legacy-bg: rgba(255,168,79,0.15);
+
+  --focus-ring: 0 0 0 3px rgba(99,190,220,0.45);
+}
+
+/* ============================================================
+   TYPOGRAPHY — GRC Engineering
+   ============================================================ */
+
+:root {
+  /* Families */
+  --font-display: "General Sans", "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Satoshi", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-body);            /* back-compat alias */
+  --font-sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+
+  /* Weights */
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 800;
+
+  /* Type scale (1.250 major-third-ish, tuned) */
+  --text-2xs: 0.6875rem;  /* 11px — mono micro labels */
+  --text-xs:  0.75rem;    /* 12px */
+  --text-sm:  0.8125rem;  /* 13px */
+  --text-base: 0.9375rem; /* 15px — body default */
+  --text-md:  1.0625rem;  /* 17px */
+  --text-lg:  1.25rem;    /* 20px */
+  --text-xl:  1.5rem;     /* 24px */
+  --text-2xl: 1.9375rem;  /* 31px */
+  --text-3xl: 2.5rem;     /* 40px */
+  --text-4xl: 3.25rem;    /* 52px */
+  --text-5xl: 4.25rem;    /* 68px */
+  --text-6xl: 5.5rem;     /* 88px */
+
+  /* Line heights */
+  --leading-none: 1;
+  --leading-tight: 1.12;
+  --leading-snug: 1.28;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  /* Letter spacing */
+  --tracking-tighter: -0.03em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-wider: 0.12em;
+  --tracking-widest: 0.18em;
+
+  /* ---- Semantic roles ---- */
+  --display-family: var(--font-display);
+  --display-weight: var(--fw-semibold);
+  --display-tracking: var(--tracking-tighter);
+  --display-leading: var(--leading-tight);
+
+  --heading-weight: var(--fw-medium);
+  --heading-tracking: var(--tracking-tight);
+
+  --body-family: var(--font-body);
+  --body-size: var(--text-base);
+  --body-leading: var(--leading-relaxed);
+
+  --ui-family: var(--font-sans);
+
+  --eyebrow-family: var(--font-mono);
+  --eyebrow-size: var(--text-2xs);
+  --eyebrow-weight: var(--fw-medium);
+  --eyebrow-tracking: var(--tracking-wider);
+}
+
+/* ============================================================
+   SPACING & SIZING — GRC Engineering · 4px base grid.
+   ============================================================ */
+
+:root {
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 0.125rem; /* 2 */
+  --space-1: 0.25rem;    /* 4 */
+  --space-1-5: 0.375rem; /* 6 */
+  --space-2: 0.5rem;     /* 8 */
+  --space-2-5: 0.625rem; /* 10 */
+  --space-3: 0.75rem;    /* 12 */
+  --space-4: 1rem;       /* 16 */
+  --space-5: 1.25rem;    /* 20 */
+  --space-6: 1.5rem;     /* 24 */
+  --space-7: 1.75rem;    /* 28 */
+  --space-8: 2rem;       /* 32 */
+  --space-10: 2.5rem;    /* 40 */
+  --space-12: 3rem;      /* 48 */
+  --space-14: 3.5rem;    /* 56 */
+  --space-16: 4rem;      /* 64 */
+  --space-20: 5rem;      /* 80 */
+  --space-24: 6rem;      /* 96 */
+  --space-32: 8rem;      /* 128 */
+
+  /* Layout */
+  --container-sm: 640px;
+  --container-md: 820px;
+  --container-lg: 1080px;
+  --container-xl: 1280px;
+  --container-2xl: 1440px;
+  --gutter: var(--space-6);
+  --section-y: var(--space-24);
+
+  /* Control sizing */
+  --control-h-sm: 30px;
+  --control-h-md: 38px;
+  --control-h-lg: 46px;
+}
+
+/* ============================================================
+   EFFECTS — radii, borders, shadows — GRC Engineering
+   ============================================================ */
+
+:root {
+  /* Radii — tight & modern */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 9px;
+  --radius-lg: 13px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-pill: 999px;
+
+  /* Border widths */
+  --border-w: 1px;
+  --border-w-thick: 1.5px;
+
+  /* Shadows — cool slate tint, layered, subtle */
+  --shadow-xs: 0 1px 2px rgba(12,17,23,0.05);
+  --shadow-sm: 0 1px 2px rgba(12,17,23,0.06), 0 1px 1px rgba(12,17,23,0.04);
+  --shadow-md: 0 4px 12px -2px rgba(12,17,23,0.08), 0 2px 4px -2px rgba(12,17,23,0.06);
+  --shadow-lg: 0 12px 28px -6px rgba(12,17,23,0.12), 0 4px 10px -4px rgba(12,17,23,0.07);
+  --shadow-xl: 0 24px 56px -12px rgba(12,17,23,0.18), 0 8px 20px -8px rgba(12,17,23,0.10);
+
+  /* Accent glows (use sparingly — hero, focus, primary CTA) */
+  --glow-eng: 0 8px 30px -8px rgba(27,149,193,0.45);
+  --glow-grc: 0 8px 30px -8px rgba(255,168,79,0.45);
+
+  /* Inset / ring */
+  --ring-inset: inset 0 0 0 1px rgba(255,255,255,0.06);
+  --hairline-top: inset 0 1px 0 rgba(255,255,255,0.05);
+
+  /* Backdrop blur */
+  --blur-sm: 6px;
+  --blur-md: 14px;
+  --blur-lg: 28px;
+
+  /* ---- Frosted glass ---- */
+  --glass-fill:        color-mix(in srgb, var(--surface-card) 62%, transparent);
+  --glass-fill-strong: color-mix(in srgb, var(--surface-card) 80%, transparent);
+  --glass-blur:        3px;
+  --glass-border:      linear-gradient(135deg, rgba(255,168,79,0.55) 0%, rgba(255,255,255,0.10) 38%, rgba(27,149,193,0.45) 100%);
+  --glass-highlight:   inset 0 1px 0 rgba(255,255,255,0.10);
+  --glass-shadow:      0 20px 50px -18px rgba(0,0,0,0.55);
+}
+
+[data-theme="dark"] {
+  --glass-fill:        color-mix(in srgb, var(--surface-card) 52%, transparent);
+  --glass-fill-strong: color-mix(in srgb, var(--surface-card) 72%, transparent);
+}
+
+/* ============================================================
+   MOTION — GRC Engineering · restrained, ease-out, no bounce.
+   ============================================================ */
+
+:root {
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --dur-instant: 80ms;
+  --dur-fast: 130ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --dur-slower: 520ms;
+
+  --transition-control: background-color var(--dur-fast) var(--ease-out),
+                        border-color var(--dur-fast) var(--ease-out),
+                        color var(--dur-fast) var(--ease-out),
+                        box-shadow var(--dur-fast) var(--ease-out),
+                        transform var(--dur-fast) var(--ease-out);
+}
+
+/* ============================================================
+   BASE — brand utility classes (safe to consume globally)
+   Resets/typography for the page live in style.css; here we expose
+   only the brand utilities the design system documents.
+   ============================================================ */
+
+/* Mono eyebrow / kicker */
+.grc-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--eyebrow-size);
+  font-weight: var(--eyebrow-weight);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* The signature fusion gradient as text */
+.grc-gradient-text {
+  background: var(--gradient-fusion-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Fusion gradient hairline / rule */
+.grc-fusion-rule {
+  height: 2px;
+  border: 0;
+  background: var(--gradient-fusion);
+  border-radius: var(--radius-pill);
+}
+
+/* Dark engineering panel */
+.grc-ink {
+  background: var(--surface-ink);
+  color: var(--text-on-ink);
+}
+
+/* Dot-grid blueprint texture (engineering motif) */
+.grc-grid-bg {
+  background-image: radial-gradient(rgba(27,149,193,0.10) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+::selection { background: rgba(27,149,193,0.22); }
