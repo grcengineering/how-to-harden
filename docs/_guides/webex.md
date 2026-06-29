@@ -6,9 +6,9 @@ slug: "webex"
 tier: "2"
 category: "Productivity"
 description: "Enterprise collaboration hardening for Cisco Webex including meeting security, SSO configuration, and admin controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Webex Control Hub and Site Administration security including m
 #### Description
 Configure SAML SSO to centralize authentication for Webex applications.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Webex authentication in your corporate IdP so MFA, conditional access, and session policies apply to every login
+- Standalone Webex passwords bypass IdP controls and are a prime target for credential stuffing and phishing
+- A single sign-on point lets you revoke access across meetings, messaging, and calling instantly when an employee leaves
+- Webex carries sensitive business discussions and recordings, so one compromised local login can expose all of it
+
+**Attack Prevented:** Credential theft, phishing, credential stuffing, password reuse, orphaned-account access
+
 #### ClickOps Implementation
 
 **Step 1: Access SSO Settings**
@@ -94,6 +103,15 @@ Configure SAML SSO to centralize authentication for Webex applications.
 #### Description
 Require MFA for all Webex users.
 
+#### Rationale
+**Why This Matters:**
+- A stolen or guessed password alone cannot grant access when a second factor is required
+- Webex accounts unlock meetings, recordings, messages, and calling that attackers prize for espionage and fraud
+- Phishing-resistant factors for admins block adversary-in-the-middle and push-fatigue attacks
+- MFA is a baseline expectation for SOC 2, ISO 27001, and most regulatory frameworks
+
+**Attack Prevented:** Credential stuffing, phishing, password spraying, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Enable Organization MFA**
@@ -120,6 +138,15 @@ Require MFA for all Webex users.
 
 #### Description
 Configure automatic user provisioning and deprovisioning.
+
+#### Rationale
+**Why This Matters:**
+- SCIM provisioning removes departed users automatically, eliminating orphaned accounts with standing access to meetings and data
+- Manual deprovisioning is slow and error-prone, leaving a window where ex-employees retain access
+- Attribute and group mapping keeps Webex roles aligned with the authoritative directory, preventing privilege drift
+- Consistent lifecycle management produces the access evidence auditors expect
+
+**Attack Prevented:** Orphaned-account access, insider misuse, privilege creep, unauthorized access by former employees
 
 #### ClickOps Implementation
 
@@ -193,6 +220,15 @@ Require passwords for all Webex meetings.
 #### Description
 Configure automatic meeting lock and lobby controls.
 
+#### Rationale
+**Why This Matters:**
+- Auto-lock prevents uninvited participants from slipping into a meeting after it starts
+- A lobby lets the host vet each attendee before granting entry, stopping gate-crashers and eavesdroppers
+- Holding unauthenticated guests in the lobby limits exposure of confidential discussions and shared content
+- Combined controls defend against meeting bombing and unauthorized recording of sensitive conversations
+
+**Attack Prevented:** Meeting bombing, unauthorized eavesdropping, gate-crashing, confidential-data exposure
+
 #### ClickOps Implementation
 
 **Step 1: Configure Auto-Lock**
@@ -226,6 +262,15 @@ Configure automatic meeting lock and lobby controls.
 #### Description
 Require users to sign in before joining meetings.
 
+#### Rationale
+**Why This Matters:**
+- Requiring sign-in ties every participant to a verified identity instead of an anonymous guest
+- Authenticated attendance produces an accurate attendee record for audit and incident response
+- Blocking anonymous joins removes a key vector for eavesdropping and meeting disruption
+- Sign-in enforcement lets host controls and access policies apply per identity
+
+**Attack Prevented:** Anonymous eavesdropping, meeting bombing, attendee spoofing, unauthorized access
+
 #### ClickOps Implementation
 
 **Step 1: Enable Sign-In Requirement**
@@ -251,6 +296,15 @@ Require users to sign in before joining meetings.
 
 #### Description
 Control what content can be shared in meetings.
+
+#### Rationale
+**Why This Matters:**
+- Restricting who can share screen, applications, and files stops participants from hijacking the presentation
+- Limiting file transfer reduces the risk of malware delivery and accidental data leakage during meetings
+- Host control over participant sharing contains disruptive or malicious content injection
+- Default sharing restrictions enforce least privilege so only authorized presenters expose content
+
+**Attack Prevented:** Screen-sharing hijack, malware distribution, data exfiltration, meeting disruption
 
 #### ClickOps Implementation
 
@@ -322,6 +376,15 @@ Minimize administrator accounts to reduce risk.
 #### Description
 Configure EMM for mobile device security.
 
+#### Rationale
+**Why This Matters:**
+- EMM/MDM policies enforce app protection on personal and corporate devices that access Webex data
+- Blocking copy/paste and screenshots prevents corporate content from leaking into unmanaged apps
+- Controlling file-sharing destinations keeps meeting and message data inside approved boundaries
+- Device-level controls protect Webex data even when a phone is lost, stolen, or jailbroken
+
+**Attack Prevented:** Data leakage, lost/stolen device exposure, unmanaged-app exfiltration, mobile data theft
+
 #### ClickOps Implementation
 
 **Step 1: Enable EMM Integration**
@@ -349,6 +412,15 @@ Configure EMM for mobile device security.
 
 #### Description
 Enable and monitor administrative audit logs.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs create an accountable record of every admin action for forensic investigation
+- Exporting to a SIEM enables real-time alerting on suspicious configuration and privilege changes
+- Without logging, account compromise and insider abuse can go undetected for long periods
+- Retained audit trails satisfy SOC 2, NIST, and regulatory evidence requirements
+
+**Attack Prevented:** Undetected privilege escalation, insider abuse, configuration tampering, delayed breach detection
 
 #### ClickOps Implementation
 
@@ -383,6 +455,15 @@ Enable and monitor administrative audit logs.
 
 #### Description
 Verify and configure encryption for data protection.
+
+#### Rationale
+**Why This Matters:**
+- TLS in transit protects meetings, messages, and recordings from network interception and man-in-the-middle attacks
+- End-to-end encryption keeps sensitive spaces confidential even from the platform and underlying infrastructure
+- Encryption at rest protects stored recordings and files if the underlying storage is compromised
+- Verified encryption settings are essential evidence for data-protection and privacy compliance
+
+**Attack Prevented:** Network interception, man-in-the-middle, data-at-rest theft, eavesdropping
 
 #### Webex Encryption Features
 1. **End-to-End Encryption (E2E):** Messages encrypted before reaching servers
@@ -450,6 +531,15 @@ Configure DLP controls for data protection.
 
 #### Description
 Configure Pro Pack for advanced security controls.
+
+#### Rationale
+**Why This Matters:**
+- Advanced file-sharing controls restrict where content can be sent, closing data-exfiltration paths
+- eDiscovery and extended retention preserve records for legal hold and regulatory investigations
+- Compliance exports give security teams the data needed for audits and incident response
+- Granular Pro Pack controls extend protection beyond the defaults for security-sensitive and regulated environments
+
+**Attack Prevented:** Data exfiltration, evidence loss, compliance gaps, uncontrolled file sharing
 
 #### Prerequisites
 - Webex Pro Pack license
@@ -521,6 +611,7 @@ Configure Pro Pack for advanced security controls.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, meeting security, and data protection | Claude Code (Opus 4.5) |
 
 ---

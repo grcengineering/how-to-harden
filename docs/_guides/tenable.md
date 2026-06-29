@@ -6,9 +6,9 @@ slug: "tenable"
 tier: "2"
 category: "Security"
 description: "Vulnerability management platform hardening for Tenable.io and Security Center including user access, scanning security, and agent configuration"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -96,6 +96,14 @@ Administrator accounts have the highest level of access and pose significant sec
 #### Description
 Configure granular roles to implement least privilege access.
 
+#### Rationale
+**Why This Matters:**
+- Granular roles give each user only the Tenable permissions their job requires, shrinking the blast radius if any account is compromised
+- Default Administrator access for everyone lets ordinary analysts modify scan policies, delete findings, or create new accounts
+- Separating scan operators, read-only stakeholders, and administrators enforces separation of duties and produces clean audit trails
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, unauthorized configuration changes
+
 #### ClickOps Implementation
 
 **Step 1: Review Built-in Roles**
@@ -133,6 +141,14 @@ Configure granular roles to implement least privilege access.
 
 #### Description
 Monitor and audit administrator activities.
+
+#### Rationale
+**Why This Matters:**
+- Administrator actions like creating users, changing roles, or deleting scan data can hide an attacker covering their tracks if left unrecorded
+- Exporting the activity log to a SIEM preserves tamper-evident records outside the platform an attacker may control
+- Alerting on configuration and account changes shortens the window between a malicious action and its detection
+
+**Attack Prevented:** Undetected account takeover, audit-log tampering, insider abuse, delayed breach detection
 
 #### ClickOps Implementation
 
@@ -219,6 +235,14 @@ Configure SAML SSO for centralized identity management.
 #### Description
 Require MFA for all users, enforced through SSO or native settings.
 
+#### Rationale
+**Why This Matters:**
+- MFA stops attackers who have already obtained a valid Tenable password from completing a login
+- A vulnerability management console holds a complete map of the organization's weaknesses, so a single phished password without MFA exposes that map
+- Phishing-resistant factors for administrators defend the highest-privilege accounts against credential replay and prompt-bombing
+
+**Attack Prevented:** Credential stuffing, phishing, password reuse, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Enable Native MFA (Non-SSO)**
@@ -244,6 +268,14 @@ Require MFA for all users, enforced through SSO or native settings.
 
 #### Description
 Configure session timeout and security settings.
+
+#### Rationale
+**Why This Matters:**
+- Idle and absolute session timeouts limit how long a stolen or abandoned session token stays usable
+- Without timeouts, an unlocked workstation or hijacked session grants standing access to sensitive vulnerability data
+- Shorter sessions reduce the value of session-cookie theft and force periodic reauthentication
+
+**Attack Prevented:** Session hijacking, unattended-workstation access, stolen-token reuse
 
 #### ClickOps Implementation
 
@@ -349,6 +381,14 @@ Securely manage Nessus Agent linking keys.
 #### Description
 Configure appropriate scan settings for security and performance.
 
+#### Rationale
+**Why This Matters:**
+- Scan policies scoped to the right targets and intensity prevent scanners from disrupting production systems or triggering outages
+- Encrypting all scanner and API communications keeps vulnerability findings and credentials from being intercepted in transit
+- Purpose-built, consistent policies make assessments repeatable and stop sensitive results from traversing insecure protocols
+
+**Attack Prevented:** Data interception in transit, denial of service from aggressive scans, exposure of vulnerability findings
+
 #### ClickOps Implementation
 
 **Step 1: Configure Scan Policies**
@@ -423,6 +463,14 @@ Configure compliance auditing using CIS Benchmarks.
 #### Description
 Configure DISA STIG assessments for government compliance.
 
+#### Rationale
+**Why This Matters:**
+- DISA STIG audits measure systems against mandated government hardening baselines, surfacing misconfigurations attackers routinely exploit
+- Automated STIG assessment replaces error-prone manual checks and produces the evidence required for an authorization to operate
+- Documenting exceptions and severities keeps residual risk visible instead of silently accepted
+
+**Attack Prevented:** Exploitation of unhardened configurations, compliance drift, undocumented risk acceptance
+
 #### ClickOps Implementation
 
 **Step 1: Select STIG Audit Files**
@@ -448,6 +496,14 @@ Configure DISA STIG assessments for government compliance.
 
 #### Description
 Use dashboards to monitor hardening compliance posture.
+
+#### Rationale
+**Why This Matters:**
+- Continuous dashboards reveal when compliance scores drop or new non-compliant assets appear, catching configuration drift early
+- Tracking top failing checks focuses remediation on the weaknesses most likely to be exploited
+- Alerting on posture changes turns periodic audits into ongoing monitoring, closing gaps faster
+
+**Attack Prevented:** Configuration drift, unmonitored non-compliant assets, exploitation of newly introduced weaknesses
 
 #### ClickOps Implementation (Security Center)
 
@@ -519,6 +575,7 @@ Use dashboards to monitor hardening compliance posture.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, authentication, and hardening assessments | Claude Code (Opus 4.5) |
 
 ---

@@ -6,9 +6,9 @@ slug: "segment"
 tier: "2"
 category: "Data"
 description: "Customer data platform hardening for Segment including SAML SSO, workspace access, and data governance"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Segment security including SAML SSO, workspace access, source/
 #### Description
 Configure SAML SSO to centralize authentication for Segment users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Segment workspace authentication in your corporate IdP, enforcing MFA, conditional access, and session policy on every login
+- Local email-and-password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- IdP-driven provisioning and deprovisioning removes access the moment an employee leaves, eliminating orphaned accounts with standing access to customer data
+- Segment workspaces route customer PII and behavioral event streams to dozens of downstream tools, so a single compromised login can expose or redirect all of it
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - Segment admin access
 - Business tier or higher
@@ -95,6 +104,15 @@ Configure SAML SSO to centralize authentication for Segment users.
 #### Description
 Require 2FA for all Segment users.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor blocks account takeover even when a password is phished, leaked, or reused from another breach
+- Segment admins can alter sources, destinations, and data routing, so a single stolen credential without 2FA can silently exfiltrate customer event data
+- Phishing-resistant factors such as hardware keys and passkeys defeat real-time relay attacks that bypass one-time codes
+- For SSO-managed workspaces, enforcing MFA at the IdP applies the control consistently across every user
+
+**Attack Prevented:** Account takeover, credential stuffing, password reuse, phishing
+
 #### ClickOps Implementation
 
 **Step 1: Enable Workspace 2FA**
@@ -122,6 +140,15 @@ Require 2FA for all Segment users.
 
 #### Description
 Implement least privilege using Segment roles.
+
+#### Rationale
+**Why This Matters:**
+- Assigning the minimum role each user needs limits the blast radius when an account is compromised or misused
+- Broad Workspace Owner and Admin grants let a single user reconfigure data flows, add destinations, or delete data across the entire workspace
+- Scoped roles such as Source Admin and Read-only keep contractors and analysts away from privileged configuration and credentials
+- Regular access reviews catch privilege creep and stale grants before they become an audit finding or attack path
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, excessive standing access
 
 #### ClickOps Implementation
 
@@ -154,6 +181,15 @@ Implement least privilege using Segment roles.
 #### Description
 Control access to specific sources and destinations.
 
+#### Rationale
+**Why This Matters:**
+- Scoping users to only the sources and destinations they own contains the damage if their account is compromised
+- Unrestricted destination access lets a user wire customer data to an unauthorized third-party tool, creating a silent exfiltration channel
+- Limiting write access to sources prevents tampering with the event schema and pipeline configuration that downstream analytics depend on
+- Per-resource access aligns Segment with data-handling agreements that require demonstrable control over where PII flows
+
+**Attack Prevented:** Data exfiltration, unauthorized data routing, pipeline tampering, insider misuse
+
 #### ClickOps Implementation
 
 **Step 1: Configure Source Access**
@@ -179,6 +215,15 @@ Control access to specific sources and destinations.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Administrator accounts hold the highest-value credentials in the workspace and are the primary target of attackers
+- Keeping admins to a small, known set shrinks the attack surface and makes anomalous admin activity easier to spot
+- Requiring strong MFA on every admin account blocks takeover even if an admin password is leaked
+- Fewer privileged accounts means faster, more reliable deprovisioning when an admin changes role or leaves
+
+**Attack Prevented:** Privileged account takeover, admin credential theft, insider abuse, undetected configuration changes
 
 #### ClickOps Implementation
 
@@ -207,6 +252,15 @@ Minimize and protect administrator accounts.
 
 #### Description
 Secure source write keys.
+
+#### Rationale
+**Why This Matters:**
+- Source write keys authorize event ingestion, so anyone holding a key can inject arbitrary data into your pipelines and downstream tools
+- Keys embedded in client-side code or committed to source control are trivially harvested and abused for data poisoning or quota exhaustion
+- Storing keys in a secrets vault and keeping them out of public clients prevents unauthorized event injection
+- A defined rotation process limits how long a leaked key remains usable and provides a clean response when compromise is suspected
+
+**Attack Prevented:** Write-key leakage, data poisoning, event spoofing, unauthorized ingestion
 
 #### ClickOps Implementation
 
@@ -239,6 +293,15 @@ Secure source write keys.
 #### Description
 Implement data governance controls.
 
+#### Rationale
+**Why This Matters:**
+- Schema enforcement via Protocols blocks malformed or unexpected events before they corrupt downstream analytics and warehouses
+- PII detection and data masking keep sensitive fields from being forwarded to destinations that should never receive them
+- User-deletion workflows are required to satisfy GDPR and CCPA data-subject requests and to avoid retaining data past its lawful basis
+- Governance controls turn ad hoc data handling into auditable, enforceable policy that compliance teams can attest to
+
+**Attack Prevented:** Uncontrolled PII sprawl, data-quality poisoning, privacy-regulation violations, over-retention of personal data
+
 #### ClickOps Implementation
 
 **Step 1: Configure Protocols**
@@ -270,6 +333,15 @@ Implement data governance controls.
 #### Description
 Secure destination connections and credentials.
 
+#### Rationale
+**Why This Matters:**
+- Each destination is an outbound channel for customer data, so an unused or misconfigured one is an unmonitored exposure point
+- Stale or shared destination credentials, especially long-lived API keys, are a common path for data leakage if a third-party tool is breached
+- Preferring OAuth and rotating keys limits the value of any single stolen credential and supports clean revocation
+- Inventorying and pruning destinations keeps the data-sharing footprint aligned with what each downstream tool is actually authorized to receive
+
+**Attack Prevented:** Third-party credential compromise, data leakage, unauthorized data sharing, supply-chain exposure
+
 #### ClickOps Implementation
 
 **Step 1: Review Destinations**
@@ -298,6 +370,15 @@ Secure destination connections and credentials.
 #### Description
 Enable and monitor audit logs.
 
+#### Rationale
+**Why This Matters:**
+- An audit trail records who changed sources, destinations, permissions, and data, so incidents can be reconstructed and attributed
+- Without retained logs, a compromised account or malicious insider can alter data flows with no forensic record
+- Monitoring authentication and permission events surfaces account takeover and privilege abuse while there is still time to respond
+- Audit evidence is required to demonstrate access controls and change management for SOC 2, ISO 27001, and similar attestations
+
+**Attack Prevented:** Undetected configuration tampering, repudiation, insider abuse, delayed breach detection
+
 #### ClickOps Implementation
 
 **Step 1: Access Audit Trail**
@@ -324,6 +405,15 @@ Enable and monitor audit logs.
 
 #### Description
 Configure alerts for security events.
+
+#### Rationale
+**Why This Matters:**
+- Real-time alerts shorten the window between a malicious or accidental change and your team's response
+- Schema-violation and delivery-failure alerts catch pipeline tampering and broken integrations before bad data spreads downstream
+- Event-volume anomaly alerts can reveal data exfiltration, spoofed ingestion, or abuse of a leaked write key
+- Routing alerts into Slack, email, and incident management ensures security events are seen and worked, not buried in logs
+
+**Attack Prevented:** Delayed incident response, undetected data exfiltration, pipeline tampering, silent integration failures
 
 #### ClickOps Implementation
 
@@ -387,6 +477,7 @@ Configure alerts for security events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, access controls, and data governance | Claude Code (Opus 4.5) |
 
 ---

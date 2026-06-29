@@ -6,9 +6,9 @@ slug: "aws-iam-identity-center"
 tier: "1"
 category: "Identity"
 description: "AWS identity management hardening for IAM Identity Center including MFA, permission sets, and account access"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers AWS IAM Identity Center security including MFA enforcement, pe
 #### Description
 Require MFA for all IAM Identity Center users.
 
+#### Rationale
+**Why This Matters:**
+- MFA adds a second factor beyond the password, so a phished or stolen credential alone cannot reach the AWS access portal
+- IAM Identity Center is the single front door to every account in the organization — one MFA-less login compromise can expose the entire AWS estate
+- FIDO2 security keys and authenticator apps resist phishing and SIM-swap attacks that defeat SMS-delivered codes
+- Enforcing MFA on every sign-in closes the gap where long-lived sessions skip re-verification
+
+**Attack Prevented:** Credential theft, phishing, credential stuffing, MFA bypass, account takeover
+
 #### Prerequisites
 - IAM Identity Center enabled in management account
 - AWS Organizations configured
@@ -95,6 +104,14 @@ Require MFA for all IAM Identity Center users.
 #### Description
 Configure appropriate session duration limits.
 
+#### Rationale
+**Why This Matters:**
+- Shorter sessions shrink the window in which a hijacked token or unattended session can be abused
+- Long-lived portal and permission-set sessions let a stolen session token stay valid long after a user leaves, undermining deprovisioning
+- Tighter durations on privileged permission sets force frequent re-authentication for the highest-blast-radius access
+
+**Attack Prevented:** Session hijacking, token replay, unattended-workstation abuse, standing access after offboarding
+
 #### ClickOps Implementation
 
 **Step 1: Configure Portal Session**
@@ -120,6 +137,14 @@ Configure appropriate session duration limits.
 
 #### Description
 Enable ABAC for fine-grained access control.
+
+#### Rationale
+**Why This Matters:**
+- ABAC scopes access by matching user and session attributes (department, project, environment) to resource tags, enforcing least privilege dynamically
+- Tag-based conditions stop users from reaching resources outside their team or environment even when they hold a broad permission set
+- Attribute-driven policies scale without spawning an ever-growing set of bespoke permission sets per team or project
+
+**Attack Prevented:** Lateral movement, over-broad access, privilege creep, cross-environment resource access
 
 #### ClickOps Implementation
 
@@ -152,6 +177,15 @@ Enable ABAC for fine-grained access control.
 #### Description
 Connect to external IdP for centralized identity.
 
+#### Rationale
+**Why This Matters:**
+- Centralizing authentication in your corporate IdP enforces MFA, conditional access, and password policy consistently on every AWS login
+- The built-in Identity Center directory lacks the risk-based and conditional-access controls a dedicated IdP provides
+- A single source of truth means offboarding in the IdP immediately cuts AWS access, eliminating orphaned local accounts
+- SAML federation removes locally stored AWS credentials that are a prime target for theft
+
+**Attack Prevented:** Credential theft, orphaned-account access, inconsistent MFA enforcement, identity sprawl
+
 #### ClickOps Implementation
 
 **Step 1: Change Identity Source**
@@ -183,6 +217,14 @@ Connect to external IdP for centralized identity.
 #### Description
 Enable SCIM for automatic user provisioning.
 
+#### Rationale
+**Why This Matters:**
+- SCIM automatically deprovisions departed users and updates group membership, eliminating standing access from stale accounts
+- Manual provisioning drifts over time, leaving orphaned users and incorrect group assignments that widen the attack surface
+- Group sync keeps permission-set assignments aligned with IdP and HR reality, enforcing least privilege as roles change
+
+**Attack Prevented:** Orphaned-account access, privilege creep, offboarding gaps, unauthorized standing access
+
 #### ClickOps Implementation
 
 **Step 1: Enable SCIM**
@@ -210,6 +252,14 @@ Enable SCIM for automatic user provisioning.
 
 #### Description
 Create least-privilege permission sets.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege permission sets limit what any assigned user can do, shrinking the blast radius of a compromised login
+- Permissions boundaries cap the maximum permissions a set can grant, blocking privilege-escalation paths even via inline policies
+- Broadly assigned permissive sets (such as AdministratorAccess) turn any account takeover into full organizational compromise
+
+**Attack Prevented:** Privilege escalation, lateral movement, blast-radius expansion, excessive standing permissions
 
 #### ClickOps Implementation
 
@@ -245,6 +295,14 @@ Create least-privilege permission sets.
 #### Description
 Assign access to AWS accounts.
 
+#### Rationale
+**Why This Matters:**
+- Assigning users only the accounts they need contains a compromised identity to a limited scope rather than the whole organization
+- Group-based assignments make access auditable and revocable in one place instead of scattered per-user grants
+- Regular reviews catch accumulated and unnecessary cross-account access before an attacker can exploit it
+
+**Attack Prevented:** Lateral movement across accounts, excessive access, privilege creep, unauthorized account access
+
 #### ClickOps Implementation
 
 **Step 1: Review Assignments**
@@ -274,6 +332,14 @@ Assign access to AWS accounts.
 #### Description
 Additional controls for privileged access.
 
+#### Rationale
+**Why This Matters:**
+- Administrative permission sets carry the highest blast radius, so per-session MFA and short durations limit how a stolen admin session can be abused
+- Separating admin sets from day-to-day access enforces deliberate, auditable elevation instead of always-on privilege
+- Restricting and reviewing admin assignments prevents the privilege accumulation that gives attackers a high-value target
+
+**Attack Prevented:** Privileged account takeover, admin session hijacking, standing admin privilege, privilege escalation
+
 #### ClickOps Implementation
 
 **Step 1: Create Privileged Permission Sets**
@@ -301,6 +367,14 @@ Additional controls for privileged access.
 
 #### Description
 Enable CloudTrail for IAM Identity Center events.
+
+#### Rationale
+**Why This Matters:**
+- CloudTrail records authentication events, permission changes, and account assignments, providing the audit trail needed to detect and investigate misuse
+- Without comprehensive logging, attacker activity such as new admin assignments or anomalous sign-ins goes undetected
+- Retained logs support forensic reconstruction after an incident and meet compliance evidence requirements
+
+**Attack Prevented:** Undetected privilege changes, unnoticed unauthorized access, delayed breach detection, audit gaps
 
 #### ClickOps Implementation
 
@@ -330,6 +404,14 @@ Enable CloudTrail for IAM Identity Center events.
 
 #### Description
 Use IAM Access Analyzer for policy validation.
+
+#### Rationale
+**Why This Matters:**
+- Access Analyzer surfaces policies that grant unintended external or cross-account access before an attacker finds them
+- Automated policy validation catches over-permissive grants and misconfigurations that manual review routinely misses
+- Continuous findings let teams remediate excessive access proactively rather than after an incident
+
+**Attack Prevented:** Unintended external access, cross-account exposure, policy misconfiguration, excessive permissions
 
 #### ClickOps Implementation
 
@@ -400,6 +482,7 @@ Use IAM Access Analyzer for policy validation.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with MFA, permission sets, and monitoring | Claude Code (Opus 4.5) |
 
 ---

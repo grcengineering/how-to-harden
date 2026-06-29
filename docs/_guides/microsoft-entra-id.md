@@ -6,9 +6,9 @@ slug: "microsoft-entra-id"
 tier: "1"
 category: "Identity"
 description: "Identity Provider hardening for Azure Active Directory, Conditional Access, PIM, and Zero Trust"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -262,6 +262,14 @@ Block legacy authentication protocols (Basic Auth, POP, IMAP, SMTP AUTH) that ca
 #### Description
 Create Conditional Access policy requiring MFA for all interactive sign-ins to all cloud applications.
 
+#### Rationale
+**Why This Matters:**
+- Passwords alone are routinely compromised through phishing, reuse, and breach-database credential stuffing
+- A tenant-wide Conditional Access MFA policy closes the gaps that per-user MFA and Security Defaults leave open
+- Requiring MFA on every interactive sign-in to every cloud app removes the weakest-link application as an entry point
+
+**Attack Prevented:** Password spray, credential stuffing, phishing, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Create MFA Policy**
@@ -294,6 +302,14 @@ Create Conditional Access policy requiring MFA for all interactive sign-ins to a
 #### Description
 Require privileged users to access admin portals only from Intune-compliant or Hybrid Azure AD joined devices.
 
+#### Rationale
+**Why This Matters:**
+- Admin credentials used from unmanaged or personal devices expose the tenant to malware, keyloggers, and token theft
+- Restricting admin access to managed, compliant devices ensures endpoint controls (disk encryption, EDR, patch state) are enforced before any privileged action
+- A stolen admin password is useless to an attacker without an enrolled, compliant device to sign in from
+
+**Attack Prevented:** Token theft, credential replay from untrusted endpoints, privilege escalation via compromised personal devices
+
 #### ClickOps Implementation
 
 **Step 1: Create Admin Device Compliance Policy**
@@ -323,6 +339,14 @@ Require privileged users to access admin portals only from Intune-compliant or H
 
 #### Description
 Use Entra ID Protection to automatically block sign-ins classified as high risk based on machine learning detection of suspicious patterns.
+
+#### Rationale
+**Why This Matters:**
+- High-risk sign-ins reflect signals like leaked credentials, anonymous IP usage, and impossible-travel patterns that indicate active compromise
+- Automated, real-time blocking responds faster than human analysts can triage and act on alerts
+- Risk-based policies adapt to evolving attacker behavior without constant manual rule maintenance
+
+**Attack Prevented:** Account takeover, credential-based intrusion, anomalous sign-in abuse
 
 #### Prerequisites
 - Microsoft Entra ID P2 license
@@ -446,6 +470,14 @@ Implement Privileged Identity Management (PIM) to eliminate standing admin privi
 #### Description
 Enable recurring access reviews for privileged roles and group memberships to ensure continued business need for access.
 
+#### Rationale
+**Why This Matters:**
+- Access tends to accumulate over time as employees change roles, leaving users with privileges they no longer need
+- Recurring reviews force periodic re-justification, shrinking the standing attack surface of privileged accounts
+- Removing stale privileged and group memberships limits what a compromised account can reach
+
+**Attack Prevented:** Privilege creep, orphaned-access abuse, insider misuse of stale permissions
+
 #### ClickOps Implementation
 
 **Step 1: Create Access Review**
@@ -526,6 +558,14 @@ Prevent users from granting OAuth consent to third-party applications. Require a
 #### Description
 Regularly audit enterprise applications for excessive permissions, especially high-risk permissions like Mail.ReadWrite, Directory.ReadWrite.All, and full_access_as_app.
 
+#### Rationale
+**Why This Matters:**
+- OAuth applications holding broad Graph permissions can read mail, files, and directory data across the entire tenant
+- A single over-privileged or compromised app grants attackers persistent, MFA-bypassing access to sensitive data
+- Periodic permission audits catch dangerous grants that accumulate from forgotten, abandoned, or maliciously installed integrations
+
+**Attack Prevented:** OAuth application abuse, data exfiltration via excessive app permissions, persistent backdoor access
+
 #### ClickOps Implementation
 
 **Step 1: Audit Applications**
@@ -563,6 +603,14 @@ Regularly audit enterprise applications for excessive permissions, especially hi
 #### Description
 Enable and export Entra ID sign-in and audit logs for security monitoring, threat detection, and compliance.
 
+#### Rationale
+**Why This Matters:**
+- Without exported logs, attacker activity such as role changes and risky sign-ins goes undetected until damage is done
+- Centralizing sign-in and audit logs in a SIEM enables correlation, alerting, and forensic investigation
+- Default log retention in Entra ID is limited, so exporting preserves the evidence needed for incident response and compliance audits
+
+**Attack Prevented:** Undetected intrusion, delayed breach discovery, audit-trail gaps
+
 #### ClickOps Implementation
 
 **Step 1: Configure Diagnostic Settings**
@@ -599,6 +647,14 @@ Enable and export Entra ID sign-in and audit logs for security monitoring, threa
 
 #### Description
 Regularly review Identity Secure Score to track security posture and identify improvement opportunities.
+
+#### Rationale
+**Why This Matters:**
+- Identity Secure Score surfaces concrete, prioritized gaps in MFA, legacy authentication, and privileged access configuration
+- Tracking the score over time catches configuration drift and regressions before attackers can exploit them
+- It translates Microsoft's evolving identity best practices into actionable, measurable improvements
+
+**Attack Prevented:** Misconfiguration drift, unaddressed identity weaknesses, security-posture regression
 
 #### ClickOps Implementation
 
@@ -733,6 +789,7 @@ Regularly review Identity Secure Score to track security posture and identify im
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with authentication, Conditional Access, PIM, and monitoring | Claude Code (Opus 4.5) |
 
 ---

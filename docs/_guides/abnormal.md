@@ -6,9 +6,9 @@ slug: "abnormal"
 tier: "2"
 category: "Security"
 description: "Email security platform hardening for Abnormal Security including SSO configuration, admin access, and integration security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Abnormal portal security including SSO, admin access, and inte
 #### Description
 Configure SAML SSO for Abnormal portal access.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Abnormal portal authentication in your corporate IdP, applying MFA and conditional access on every login
+- Local password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- SSO enables centralized deprovisioning so departed admins lose access immediately, eliminating orphaned accounts with standing access
+- The portal exposes email threat detection, remediation actions, and tenant-wide message visibility — a single compromised login could disable protections or read flagged messages
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - Abnormal admin access
 - SAML 2.0 compatible IdP
@@ -92,6 +101,15 @@ Configure SAML SSO for Abnormal portal access.
 #### Description
 Require MFA for all Abnormal users.
 
+#### Rationale
+**Why This Matters:**
+- A second factor blocks attackers who already hold a valid password from completing a login
+- Phishing-resistant methods (FIDO2/WebAuthn) for admins defeat real-time phishing proxies and push-fatigue attacks
+- The Abnormal console controls email security policy and remediation — MFA prevents a single stolen credential from disabling defenses
+- Enforcing MFA at the IdP applies uniformly to all SSO users without per-application gaps
+
+**Attack Prevented:** Credential stuffing, password spraying, phishing, MFA push fatigue
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -114,6 +132,15 @@ Require MFA for all Abnormal users.
 
 #### Description
 Implement least privilege for portal access.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure analysts and operators can only see and change what their job actually requires
+- Read-only roles for analysts prevent accidental or malicious changes to detection and remediation policy
+- Limiting elevated roles shrinks the blast radius if any single account is compromised
+- The portal surfaces sensitive email metadata and content, so over-broad roles expand who can access it
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, accidental policy change
 
 #### ClickOps Implementation
 
@@ -141,6 +168,15 @@ Implement least privilege for portal access.
 #### Description
 Minimize and protect admin accounts.
 
+#### Rationale
+**Why This Matters:**
+- Admin accounts can change security policy, disable detections, and access tenant-wide email data, so fewer admins means fewer high-value targets
+- Requiring MFA and monitoring on admins raises the cost of compromising these privileged accounts
+- Maintaining an inventory of admins enables timely deprovisioning and detection of unauthorized additions
+- A compromised admin could silently weaken email defenses, allowing follow-on phishing and business email compromise to land
+
+**Attack Prevented:** Admin account takeover, privilege abuse, undetected policy tampering, business email compromise
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admins**
@@ -167,6 +203,15 @@ Minimize and protect admin accounts.
 
 #### Description
 Secure email platform integrations.
+
+#### Rationale
+**Why This Matters:**
+- API integrations connect Abnormal to mail platforms such as Microsoft 365 and Google Workspace, so scoping them to least privilege limits what a compromised integration can do
+- Over-permissioned API tokens can read or remediate email tenant-wide, making them an attractive supply-chain target
+- Reviewing connected platforms and monitoring integration activity surfaces unauthorized or stale connections
+- Stolen or leaked integration credentials grant programmatic access that bypasses interactive login and MFA
+
+**Attack Prevented:** Token theft, supply-chain compromise, over-privileged integration abuse, unauthorized data access
 
 #### ClickOps Implementation
 
@@ -229,6 +274,7 @@ Secure email platform integrations.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
 
 ---

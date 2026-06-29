@@ -6,9 +6,9 @@ slug: "mimecast"
 tier: "2"
 category: "Security"
 description: "Email security hardening for Mimecast including targeted threat protection, impersonation policies, and gateway configuration"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -92,6 +92,15 @@ Ensure MX records are properly configured to route all email through Mimecast.
 #### Description
 Configure email authentication to prevent spoofing and verify sender identity.
 
+#### Rationale
+**Why This Matters:**
+- SPF, DKIM, and DMARC let receiving servers verify that mail claiming to come from your domain actually originated from authorized senders
+- Without an enforcing DMARC policy, attackers can spoof your exact domain in phishing and BEC campaigns that pass basic filters
+- A published DMARC reject policy stops unauthorized senders from delivering mail as your brand and protects domain reputation
+- Inbound authentication checking lets Mimecast quarantine or reject spoofed inbound mail before it reaches users
+
+**Attack Prevented:** Domain spoofing, phishing, business email compromise, brand impersonation
+
 #### ClickOps Implementation
 
 **Step 1: Configure SPF**
@@ -129,6 +138,15 @@ Configure email authentication to prevent spoofing and verify sender identity.
 #### Description
 Configure TLS and secure communication for email transmission.
 
+#### Rationale
+**Why This Matters:**
+- TLS encrypts email in transit so messages and credentials cannot be read or modified by network eavesdroppers
+- Plaintext LDAP and POP3 expose directory credentials and journaled mail to interception on the wire
+- Enforced TLS for sensitive domains prevents silent downgrade to cleartext delivery
+- Encrypting directory sync and journaling protects the integrity of the data Mimecast relies on for policy and compliance
+
+**Attack Prevented:** Man-in-the-middle interception, credential sniffing, eavesdropping, TLS downgrade
+
 #### ClickOps Implementation
 
 **Step 1: Configure TLS**
@@ -162,6 +180,15 @@ Configure TLS and secure communication for email transmission.
 
 #### Description
 Configure URL Protection to detect and block malicious links.
+
+#### Rationale
+**Why This Matters:**
+- Malicious links are the most common phishing payload, and URLs that look clean at delivery are frequently weaponized after the email lands
+- Scan-on-click (time-of-click) rewriting re-checks every link at the moment a user clicks, catching delayed-activation and newly weaponized URLs
+- Newly observed domain detection adds scrutiny to throwaway domains attackers register hours before a campaign
+- Blocking malicious downloads and scanning internal URLs limits both initial compromise and lateral spread
+
+**Attack Prevented:** Phishing, credential harvesting, drive-by malware, delayed-weaponization links
 
 #### ClickOps Implementation
 
@@ -203,6 +230,15 @@ Configure URL Protection to detect and block malicious links.
 
 #### Description
 Configure attachment scanning and sandboxing for malware protection.
+
+#### Rationale
+**Why This Matters:**
+- Email attachments remain a primary delivery vehicle for malware, ransomware, and macro-based loaders
+- Sandbox detonation of suspicious files catches zero-day and evasive malware that signature-only scanning misses
+- Blocking high-risk executable, script, and macro-enabled file types removes the most commonly weaponized formats by default
+- Converting attachments to safe formats before delivery neutralizes embedded active content while preserving usability
+
+**Attack Prevented:** Malware delivery, ransomware, macro-based attacks, zero-day exploits
 
 #### ClickOps Implementation
 
@@ -313,6 +349,15 @@ Configure impersonation protection to detect business email compromise attempts.
 #### Description
 Configure enhanced protection for high-value targets (executives, finance).
 
+#### Rationale
+**Why This Matters:**
+- Executives and finance staff are the highest-value impersonation and wire-fraud targets because of their authority to approve payments and access
+- Lower flagging thresholds and additional display-name variants catch lookalike and name-spoofing attempts aimed at these users
+- External-sender warnings and out-of-band verification reduce the chance a fraudulent payment request is acted on
+- Concentrating stricter controls on a defined VIP group raises protection where the financial impact of a successful attack is greatest
+
+**Attack Prevented:** CEO fraud, executive impersonation, wire transfer fraud, spear phishing
+
 #### ClickOps Implementation
 
 **Step 1: Define VIP List**
@@ -350,6 +395,15 @@ Configure enhanced protection for high-value targets (executives, finance).
 #### Description
 Enable advanced BEC detection using AI-powered analysis.
 
+#### Rationale
+**Why This Matters:**
+- Payload-less BEC emails contain no malicious link or attachment, so they evade traditional URL and attachment scanning
+- AI-based analysis of tone, intent, urgency, and relationship anomalies detects social-engineering attempts that rule-based filters miss
+- Monitor Mode lets you tune sensitivity against real traffic before enforcement, minimizing disruption from false positives
+- Catching BEC at the gateway prevents fraudulent payment and data-disclosure requests from ever reaching the targeted user
+
+**Attack Prevented:** Business email compromise, payload-less phishing, invoice fraud, social engineering
+
 #### ClickOps Implementation
 
 **Step 1: Enable ABEC**
@@ -382,6 +436,15 @@ Enable advanced BEC detection using AI-powered analysis.
 
 #### Description
 Implement least privilege for Mimecast administration.
+
+#### Rationale
+**Why This Matters:**
+- Mimecast admins can change security policies, release held mail, and access message content, so over-privileged accounts are a high-value target
+- Role-based access with least privilege limits the blast radius if any single admin account is compromised
+- Separating duties across security admin, report viewer, and help desk roles prevents accidental or malicious weakening of protections by support staff
+- Restricting full admin to essential personnel reduces the number of accounts that can disable protections organization-wide
+
+**Attack Prevented:** Privilege escalation, insider misuse, unauthorized policy changes, account-takeover blast radius
 
 #### ClickOps Implementation
 
@@ -416,6 +479,15 @@ Implement least privilege for Mimecast administration.
 #### Description
 Require MFA for all administrative access to Mimecast.
 
+#### Rationale
+**Why This Matters:**
+- Admin passwords alone are insufficient protection because credentials are routinely phished, reused, or leaked in breaches
+- A second authentication factor blocks attackers who obtain a valid admin password from logging in
+- Admin access controls the email security gateway itself, so a single compromised admin login could disable protection for the whole organization
+- Enforced enrollment ensures no privileged account is left protected by password only
+
+**Attack Prevented:** Credential theft, phishing, password reuse, admin account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Configure 2-Step Authentication**
@@ -442,6 +514,15 @@ Require MFA for all administrative access to Mimecast.
 
 #### Description
 Implement proper user lifecycle management.
+
+#### Rationale
+**Why This Matters:**
+- Directory sync ties Mimecast accounts to an authoritative source so disabled or deleted users lose access automatically
+- Orphaned accounts for departed employees retain standing access to mail and can be exploited if not removed
+- Automatic disabling on AD changes closes the window between offboarding and access revocation
+- Regular access reviews catch accounts with excessive or stale permissions before they are abused
+
+**Attack Prevented:** Orphaned-account access, unauthorized access by former employees, privilege creep
 
 #### ClickOps Implementation
 
@@ -470,6 +551,15 @@ Implement proper user lifecycle management.
 
 #### Description
 Enable and monitor audit logs for security events.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs of admin actions, policy changes, and authentication events provide the record needed to detect and investigate misuse
+- Without log retention and SIEM export, malicious or mistaken policy changes can go unnoticed and unattributable
+- Real-time streaming to a SIEM enables alerting and correlation with other security telemetry
+- Comprehensive logging supports forensic reconstruction and meets compliance evidence requirements
+
+**Attack Prevented:** Undetected policy tampering, insider misuse, delayed breach detection, repudiation
 
 #### ClickOps Implementation
 
@@ -505,6 +595,15 @@ Enable and monitor audit logs for security events.
 
 #### Description
 Regularly audit and review Mimecast policies for effectiveness.
+
+#### Rationale
+**Why This Matters:**
+- Security policies drift over time as exceptions accumulate, threats evolve, and configurations are changed ad hoc
+- Periodic review catches weakened or obsolete settings, stale permitted-sender entries, and outdated VIP lists before attackers exploit them
+- Reviewing detection effectiveness and false-positive rates keeps protection tuned without users routing around controls
+- Scheduled audits ensure new threat-protection features are adopted rather than left at insecure defaults
+
+**Attack Prevented:** Configuration drift, stale allowlist abuse, control degradation, coverage gaps
 
 #### Process
 
@@ -544,6 +643,15 @@ Regularly audit and review Mimecast policies for effectiveness.
 
 #### Description
 Actively monitor threat dashboard for emerging threats.
+
+#### Rationale
+**Why This Matters:**
+- The threat dashboard surfaces blocked-threat trends and targeted-user patterns that indicate active campaigns against your organization
+- Active monitoring shortens detection and response time for emerging attacks rather than discovering them after impact
+- Alerts on unusual block volume or VIP-targeted attacks flag campaigns in progress while they can still be contained
+- Visibility into top targeted users informs where to focus additional awareness training and protective controls
+
+**Attack Prevented:** Undetected attack campaigns, delayed incident response, targeted attacks on key users
 
 #### ClickOps Implementation
 
@@ -623,6 +731,7 @@ Actively monitor threat dashboard for emerging threats.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with gateway, TTP, and impersonation protection | Claude Code (Opus 4.5) |
 
 ---

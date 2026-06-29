@@ -6,9 +6,9 @@ slug: "jumpcloud"
 tier: "2"
 category: "Identity"
 description: "Cloud directory and identity management hardening for JumpCloud SSO, MFA, and device management"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -107,6 +107,15 @@ Secure JumpCloud Admin Portal access with MFA and role-based access controls. Ad
 #### Description
 Implement tiered administration following the principle of least privilege.
 
+#### Rationale
+**Why This Matters:**
+- Tiered admin roles limit each operator to only the permissions their job requires, shrinking the blast radius if any single account is compromised
+- A flat model where everyone holds full Administrator rights means one phished help-desk login can disable MFA, alter policies, or create rogue accounts directory-wide
+- Reserving the most privileged tier for 2-3 hardware-key-protected admins makes the highest-value credentials the hardest to steal and the easiest to monitor
+- Read-only and Help Desk roles let auditors and support staff do their work without ever touching security-critical configuration
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider abuse, blast-radius expansion from a single compromised admin
+
 #### Implementation
 
 **Tier 0 (Critical):**
@@ -186,6 +195,15 @@ Require MFA for all user authentication to protected resources including the Use
 #### Description
 Require MFA for system login (Windows, macOS, Linux) and SSH access.
 
+#### Rationale
+**Why This Matters:**
+- Endpoint and SSH logins are a primary entry point for attackers who have already harvested a username and password
+- Adding MFA at the OS and SSH layer means a stolen or reused credential alone cannot unlock a workstation or server
+- SSH credentials leaked through code repositories or phishing are worthless to an attacker without the second factor
+- System-level MFA extends Zero Trust to the endpoint, not just the web portal, closing a gap attackers routinely exploit
+
+**Attack Prevented:** Credential stuffing, password reuse, stolen SSH credentials, unauthorized workstation and server access
+
 #### ClickOps Implementation
 
 **Step 1: Enable MFA for Systems**
@@ -261,6 +279,15 @@ Configure conditional access policies to enforce context-aware security controls
 #### Description
 Configure device trust to verify endpoint compliance before granting access to protected resources.
 
+#### Rationale
+**Why This Matters:**
+- Device trust ensures only managed, compliant endpoints can reach sensitive applications and systems, even when valid credentials are presented
+- Requiring the JumpCloud agent, disk encryption, and a current OS blocks access from unmanaged, jailbroken, or out-of-date machines attackers favor
+- Tying access to device posture stops valid credentials used from an attacker-controlled or personal device from succeeding
+- Continuous compliance checks catch endpoints that fall out of policy, preventing drift from silently expanding the attack surface
+
+**Attack Prevented:** Access from compromised or unmanaged devices, credential use on attacker hardware, BYOD data leakage, non-compliant endpoint access
+
 #### ClickOps Implementation
 
 **Step 1: Enable Device Trust**
@@ -291,6 +318,15 @@ Configure device trust to verify endpoint compliance before granting access to p
 
 #### Description
 Configure JumpCloud system policies to enforce security settings across managed devices.
+
+#### Rationale
+**Why This Matters:**
+- Centrally enforced policies for screen lock, disk encryption, firewall, and patching guarantee a consistent security baseline on every managed device
+- Full-disk encryption with key escrow protects data on lost or stolen laptops, and inactivity screen lock stops walk-up access to unlocked sessions
+- Enforcing host firewalls and timely OS updates removes the unpatched, exposed endpoints attackers scan for
+- Policy enforcement from the directory prevents individual users from silently disabling protections on their own machines
+
+**Attack Prevented:** Data theft from lost or stolen devices, unpatched-vulnerability exploitation, unauthorized physical access, endpoint configuration drift
 
 #### ClickOps Implementation
 
@@ -347,6 +383,15 @@ Create and apply these essential policies:
 #### Description
 Secure JumpCloud's cloud LDAP and RADIUS services for directory and network authentication.
 
+#### Rationale
+**Why This Matters:**
+- Cloud LDAP and RADIUS authenticate directory binds and WiFi/VPN access, making them high-value targets for credential capture and network intrusion
+- Requiring TLS on LDAP prevents bind credentials and directory queries from being intercepted in transit
+- Dedicated, least-privilege service accounts for LDAP binds limit what a leaked bind credential can read or do
+- Adding MFA to RADIUS and protecting shared secrets keeps a single stolen password or weak secret from granting network access
+
+**Attack Prevented:** Credential interception, man-in-the-middle on directory traffic, unauthorized network and VPN access, shared-secret abuse
+
 #### ClickOps Implementation
 
 **Step 1: Configure Cloud LDAP**
@@ -376,6 +421,15 @@ Secure JumpCloud's cloud LDAP and RADIUS services for directory and network auth
 
 #### Description
 Enable JumpCloud Directory Insights for comprehensive audit logging and security monitoring.
+
+#### Rationale
+**Why This Matters:**
+- Directory Insights captures admin actions, authentications, SSO, and system events that form the primary evidence trail for detecting and investigating compromise
+- Without centralized logging, attacker activity such as new admin creation, MFA changes, or anomalous logins goes unnoticed
+- Exporting logs to a SIEM enables real-time alerting and correlation across the rest of the security stack
+- Adequate retention preserves the forensic record needed for incident response and compliance audits long after an event occurs
+
+**Attack Prevented:** Undetected account compromise, stealthy privilege changes, delayed breach detection, evidence loss during incident response
 
 #### ClickOps Implementation
 
@@ -477,6 +531,7 @@ Enable JumpCloud Directory Insights for comprehensive audit logging and security
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, MFA, and conditional access | Claude Code (Opus 4.5) |
 
 ---

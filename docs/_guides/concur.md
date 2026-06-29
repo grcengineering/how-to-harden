@@ -6,9 +6,9 @@ slug: "concur"
 tier: "2"
 category: "HR/Finance"
 description: "Travel and expense management platform hardening for SAP Concur including SAML SSO, expense policies, and audit controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers SAP Concur security including SAML SSO, expense policies, appr
 #### Description
 Configure SAML SSO to centralize authentication for Concur users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Concur authentication in your corporate IdP, enforcing MFA, conditional access, and consistent password policy on every login
+- Native Concur passwords bypass IdP controls and are prime targets for credential stuffing and phishing campaigns that impersonate the expense portal
+- Centralized SSO enables immediate deprovisioning when employees leave, eliminating orphaned accounts that retain access to financial data and reimbursement workflows
+- Concur holds employee travel itineraries, corporate card data, and reimbursement banking details — a single compromised login can expose all of it
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - SAP Concur admin access
 - SAP Cloud Identity Services or external IdP
@@ -98,6 +107,15 @@ Configure SAML SSO to centralize authentication for Concur users.
 #### Description
 Require MFA for all Concur users.
 
+#### Rationale
+**Why This Matters:**
+- Adds a second authentication factor so a stolen or guessed password alone cannot grant access to expense and travel data
+- Expense approvers can authorize payments and reimbursements — phishing-resistant MFA on these accounts blocks attackers who target approval authority
+- Mobile app PIN/biometric and remote wipe protect cached expense data if a device is lost or stolen
+- Concur is frequently impersonated in credential-phishing lures; MFA defeats the reused-credential step of those campaigns
+
+**Attack Prevented:** Credential stuffing, phishing, account takeover, payment fraud via compromised approver
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -124,6 +142,15 @@ Require MFA for all Concur users.
 #### Description
 Configure session timeout settings.
 
+#### Rationale
+**Why This Matters:**
+- Idle session timeouts limit the window an attacker has to hijack an authenticated session on an unattended or shared device
+- Finance and approver workstations often sit unlocked in shared offices — short timeouts reduce exposure of expense and banking data
+- Bounded session lifetimes force periodic re-authentication, shrinking the value of stolen session tokens
+- Concur sessions can submit and approve reimbursements, so an abandoned live session is a direct path to fraudulent payments
+
+**Attack Prevented:** Session hijacking, unauthorized access via unattended sessions, session token replay
+
 #### ClickOps Implementation
 
 **Step 1: Configure Timeout**
@@ -146,6 +173,15 @@ Configure session timeout settings.
 
 #### Description
 Implement least privilege using Concur's role model.
+
+#### Rationale
+**Why This Matters:**
+- Assigns only the permissions each user needs, so a compromised employee account cannot reach approver or administrator functions
+- Separating Employee, Expense Approver, Invoice Approver, and Administrator roles enforces separation of duties across the expense lifecycle
+- Least privilege contains the blast radius of any single account compromise, limiting access to financial data and payment workflows
+- Over-broad roles let ordinary users alter policies or approve their own spend, undermining expense controls
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider abuse, expense fraud
 
 #### ClickOps Implementation
 
@@ -177,6 +213,15 @@ Implement least privilege using Concur's role model.
 #### Description
 Minimize and protect administrator accounts.
 
+#### Rationale
+**Why This Matters:**
+- Administrator accounts can change authentication settings, policies, and approval workflows — restricting their number shrinks the highest-value attack surface
+- Requiring MFA and monitoring on admin accounts makes compromise harder and detectable
+- Fewer admins means fewer credentials that, if stolen, could disable security controls or reroute reimbursements
+- Unmonitored admin access enables silent tampering with expense policy and audit configuration
+
+**Attack Prevented:** Admin account takeover, privilege abuse, security control tampering, undetected configuration changes
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admin Users**
@@ -202,6 +247,15 @@ Minimize and protect administrator accounts.
 
 #### Description
 Control delegate access for expense management.
+
+#### Rationale
+**Why This Matters:**
+- Delegates act on another user's behalf, so uncontrolled delegate grants can quietly expand who can submit or approve expenses
+- Limiting and approving delegate setup preserves accountability and separation of duties in the approval chain
+- Auditing delegate actions ensures every expense action ties back to an authorized, identifiable person
+- Unrestricted delegation lets a single account aggregate approval authority and obscure fraudulent activity
+
+**Attack Prevented:** Authorization sprawl, separation-of-duties bypass, accountability evasion, delegated expense fraud
 
 #### ClickOps Implementation
 
@@ -230,6 +284,15 @@ Control delegate access for expense management.
 
 #### Description
 Configure expense policies for compliance.
+
+#### Rationale
+**Why This Matters:**
+- Encoded spending limits, receipt requirements, and per diem rates automatically flag out-of-policy spend before reimbursement
+- Automated policy enforcement reduces reliance on manual review, catching violations that busy approvers might miss
+- Consistent policy rules support audit readiness and regulatory compliance for travel and expense spend
+- Without enforced policies, inflated, duplicate, or non-compliant expenses pass through undetected
+
+**Attack Prevented:** Expense fraud, policy circumvention, inflated and duplicate claims, compliance gaps
 
 #### ClickOps Implementation
 
@@ -262,6 +325,15 @@ Configure expense policies for compliance.
 #### Description
 Configure expense approval workflows.
 
+#### Rationale
+**Why This Matters:**
+- Multi-level approval chains ensure no expense is reimbursed without independent review proportional to its amount
+- Preventing submitters from approving their own expenses enforces separation of duties, a core anti-fraud control
+- Escalation rules and approval limits route high-value spend to appropriate authority, preventing unauthorized large payments
+- An audit trail of approvals creates accountability and supports investigation of suspicious reimbursements
+
+**Attack Prevented:** Self-approval fraud, separation-of-duties bypass, unauthorized payments, collusion concealment
+
 #### ClickOps Implementation
 
 **Step 1: Configure Approval Chains**
@@ -287,6 +359,15 @@ Configure expense approval workflows.
 
 #### Description
 Require receipts for expense documentation.
+
+#### Rationale
+**Why This Matters:**
+- Mandatory receipts provide verifiable evidence that claimed expenses are real, deterring fabricated or inflated claims
+- Receipt imaging and OCR validation catch mismatches between submitted amounts and supporting documentation
+- Documented receipts create the audit trail needed for tax, regulatory, and internal compliance reviews
+- Without receipt requirements, expenses can be claimed with no proof, enabling reimbursement fraud
+
+**Attack Prevented:** Fabricated expense claims, inflated reimbursements, fraud through missing documentation, audit failures
 
 #### ClickOps Implementation
 
@@ -316,6 +397,15 @@ Require receipts for expense documentation.
 #### Description
 Enable and monitor audit logs.
 
+#### Rationale
+**Why This Matters:**
+- Audit logs of submissions, approvals, policy violations, and admin changes provide the evidence needed to detect and investigate abuse
+- Monitoring approval actions and admin changes surfaces unauthorized or anomalous behavior before it becomes systemic fraud
+- Retained logs support forensic reconstruction after an incident and satisfy compliance evidence requirements
+- Without auditing, fraudulent expenses and configuration tampering go unnoticed and unprovable
+
+**Attack Prevented:** Undetected fraud, configuration tampering, repudiation, forensic and compliance gaps
+
 #### ClickOps Implementation
 
 **Step 1: Enable Auditing**
@@ -342,6 +432,15 @@ Enable and monitor audit logs.
 
 #### Description
 Configure compliance reports.
+
+#### Rationale
+**Why This Matters:**
+- Scheduled policy-violation and spend-analytics reports turn raw audit data into reviewable signals of misuse
+- A regular review cadence (weekly, monthly, quarterly) ensures anomalies are caught promptly rather than discovered late
+- Compliance reports give management and auditors evidence that expense controls are operating effectively
+- Without reporting, policy violations and unusual spend patterns remain buried in logs and escape oversight
+
+**Attack Prevented:** Undetected policy violations, slow fraud detection, oversight gaps, compliance reporting failures
 
 #### ClickOps Implementation
 
@@ -405,6 +504,7 @@ Configure compliance reports.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and expense policies | Claude Code (Opus 4.5) |
 
 ---

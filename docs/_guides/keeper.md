@@ -6,9 +6,9 @@ slug: "keeper"
 tier: "2"
 category: "Identity"
 description: "Enterprise password manager hardening for Keeper Security including role enforcement, MFA, and admin console security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -144,6 +144,15 @@ Restrict admin access to approved IP addresses to prevent unauthorized administr
 #### Description
 Configure alerts for administrative events to detect suspicious activity.
 
+#### Rationale
+**Why This Matters:**
+- Administrative actions in Keeper (role changes, policy edits, user provisioning) directly alter who can access vaults and under what controls
+- Without real-time alerting, a compromised or rogue admin can weaken enforcement policies or create backdoor accounts unnoticed
+- Timely alerts shrink the detection window, letting the security team respond before the damage spreads
+- Routing events to a SIEM creates an independent record that survives tampering inside the console
+
+**Attack Prevented:** Stealthy privilege escalation, malicious policy weakening, insider abuse, delayed breach detection
+
 #### ClickOps Implementation
 
 **Step 1: Configure Alerts**
@@ -178,6 +187,15 @@ Configure alerts for administrative events to detect suspicious activity.
 
 #### Description
 Configure master password requirements through role enforcement policies.
+
+#### Rationale
+**Why This Matters:**
+- In Keeper's zero-knowledge model the master password derives the key that decrypts the entire vault, so its strength is the last line of defense
+- Weak or short master passwords are vulnerable to offline brute-force once a device, backup, or hash is obtained
+- Enforcing length and complexity by role guarantees a consistent baseline instead of relying on individual user choices
+- Preventing reuse stops a password already exposed elsewhere from unlocking the vault
+
+**Attack Prevented:** Brute-force cracking, credential stuffing, password reuse, dictionary attacks
 
 #### ClickOps Implementation
 
@@ -216,6 +234,15 @@ Configure master password requirements through role enforcement policies.
 
 #### Description
 Require 2FA for all users accessing their Keeper vault.
+
+#### Rationale
+**Why This Matters:**
+- A Keeper vault holds every credential a user owns, making a single compromised login a master key to the organization
+- 2FA blocks attackers who have phished or guessed the master password but lack the second factor
+- Phishing-resistant factors like FIDO2/WebAuthn defeat man-in-the-middle and replay attacks that weaker factors cannot
+- Disabling SMS removes the SIM-swap vector that undermines one-time-code second factors
+
+**Attack Prevented:** Credential theft, phishing, password-only account takeover, SIM-swap
 
 #### ClickOps Implementation
 
@@ -258,6 +285,15 @@ Require 2FA for all users accessing their Keeper vault.
 
 #### Description
 Control how records can be shared and exported from Keeper.
+
+#### Rationale
+**Why This Matters:**
+- Uncontrolled export lets a user (or an attacker on their session) bulk-extract every credential in plaintext, defeating the vault's protections
+- External sharing can leak secrets to personal accounts or third parties outside organizational oversight
+- Restricting sharing to within the organization keeps records inside auditable, policy-governed boundaries
+- Disabling printing and export reduces insider data-exfiltration and accidental-exposure paths
+
+**Attack Prevented:** Credential exfiltration, insider data theft, unauthorized external sharing, accidental leakage
 
 #### ClickOps Implementation
 
@@ -331,6 +367,15 @@ Control which browser extensions users can install to prevent malicious extensio
 #### Description
 Configure biometric authentication options for improved security and usability.
 
+#### Rationale
+**Why This Matters:**
+- Biometric unlock lets users keep a long, complex master password without retyping it constantly, reducing pressure to choose a weak one
+- Device-bound biometrics (Touch ID, Windows Hello, Face ID) keep the unlock factor on the local device, away from network attackers
+- Restricting which biometric methods are allowed prevents users from enabling weaker or unsupported options
+- Periodic master-password re-entry ensures the underlying secret is still known and not lost behind biometrics alone
+
+**Attack Prevented:** Shoulder-surfing, keylogging of typed passwords, weak-password adoption, unattended-device access
+
 #### ClickOps Implementation
 
 **Step 1: Enable Biometrics**
@@ -363,6 +408,15 @@ Configure biometric authentication options for improved security and usability.
 
 #### Description
 Configure secure account recovery options.
+
+#### Rationale
+**Why This Matters:**
+- Account recovery is a deliberate bypass of normal authentication, so a weak recovery flow becomes the easiest path into a vault
+- Admin-assisted recovery with an approval workflow forces human verification rather than self-service an attacker could trigger
+- Logging every recovery event creates accountability and an audit trail for forensic review
+- Strong verification steps prevent social-engineering of the help desk into restoring access for an impostor
+
+**Attack Prevented:** Account-recovery abuse, help-desk social engineering, unauthorized vault access, self-service takeover
 
 #### ClickOps Implementation
 
@@ -397,6 +451,15 @@ Configure secure account recovery options.
 
 #### Description
 Integrate Keeper with your SAML identity provider for centralized authentication.
+
+#### Rationale
+**Why This Matters:**
+- Centralizing authentication in the corporate IdP enforces MFA, conditional access, and session policy on every Keeper login
+- SSO removes a standalone Keeper password that could be phished or reused, shrinking the credential attack surface
+- Group-to-role mapping keeps Keeper access aligned with IdP identity, so deprovisioning at the IdP cuts off vault access
+- Because the IdP becomes the gateway to all vaults, it must itself be locked down with MFA or it becomes a single point of failure
+
+**Attack Prevented:** Credential reuse, phishing of standalone passwords, orphaned-account access, inconsistent access policy
 
 #### Prerequisites
 - Keeper SSO Connect Cloud license
@@ -443,6 +506,15 @@ Integrate Keeper with your SAML identity provider for centralized authentication
 #### Description
 Configure automatic user provisioning through SSO.
 
+#### Rationale
+**Why This Matters:**
+- Automated provisioning creates accounts with the correct default role and policies instead of error-prone manual setup
+- JIT and SCIM tie the account lifecycle to the IdP, so departing users are deprovisioned promptly and don't retain standing vault access
+- Eliminating manual account creation reduces the chance of over-privileged or forgotten accounts
+- Consistent provisioning applies enforcement policies to every new user from first login
+
+**Attack Prevented:** Orphaned-account access, privilege misassignment, lingering ex-employee access, inconsistent policy application
+
 #### ClickOps Implementation
 
 **Step 1: Enable JIT Provisioning**
@@ -474,6 +546,15 @@ Configure automatic user provisioning through SSO.
 
 #### Description
 Enable and review audit logs for security events.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs are the primary evidence for detecting credential access, sharing, and admin abuse inside the vault
+- Streaming events to a SIEM preserves an independent, tamper-evident record outside the Keeper console
+- Monitoring failed logins and 2FA changes surfaces brute-force and account-takeover attempts early
+- Without complete logging, incidents go undetected and post-breach forensics and compliance reporting become impossible
+
+**Attack Prevented:** Undetected intrusion, log tampering, delayed incident response, audit gaps
 
 #### ClickOps Implementation
 
@@ -518,6 +599,15 @@ Enable and review audit logs for security events.
 #### Description
 Use Security Audit to monitor organization password health.
 
+#### Rationale
+**Why This Matters:**
+- Weak and reused passwords across the organization are exploitable even when the vault platform itself is secure
+- The Security Audit dashboard quantifies risk (weak/reused passwords, low 2FA adoption) so remediation can be prioritized
+- Tracking 2FA adoption identifies accounts still protected by a single factor and at higher takeover risk
+- Continuous monitoring turns password hygiene into a measurable, improvable program rather than a one-time check
+
+**Attack Prevented:** Credential stuffing via reused passwords, weak-password cracking, single-factor account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Access Security Audit**
@@ -555,6 +645,15 @@ Use Security Audit to monitor organization password health.
 
 #### Description
 Enable BreachWatch to detect compromised credentials.
+
+#### Rationale
+**Why This Matters:**
+- Credentials exposed in third-party breaches are quickly weaponized for credential-stuffing against corporate systems
+- BreachWatch continuously checks stored records against known breach data so exposed passwords are flagged before attackers use them
+- Prompt notification and forced rotation close the window between exposure and exploitation
+- Investigating the exposure source helps identify reuse patterns and at-risk accounts across the organization
+
+**Attack Prevented:** Credential stuffing, breach-replay attacks, account takeover from reused or exposed passwords
 
 #### ClickOps Implementation
 
@@ -644,6 +743,7 @@ Enable BreachWatch to detect compromised credentials.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, enforcement policies, and SSO | Claude Code (Opus 4.5) |
 
 ---

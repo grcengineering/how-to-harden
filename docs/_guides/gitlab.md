@@ -6,9 +6,9 @@ slug: "gitlab"
 tier: "2"
 category: "DevOps"
 description: "DevOps platform security for CI/CD pipelines, repository access, and runners"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2026-02-19"
+last_updated: "2026-06-29"
 ---
 
 
@@ -104,6 +104,14 @@ Require SAML/OIDC SSO with MFA for all GitLab authentication, eliminating passwo
 #### Description
 Configure project-level access controls using GitLab's role-based permissions.
 
+#### Rationale
+**Why This Matters:**
+- GitLab's role hierarchy (Guest through Owner) limits each user to only the actions their job requires, shrinking the blast radius of any single compromised account
+- Protected branches with a forced merge-request workflow stop unreviewed or malicious code from reaching production branches directly
+- Mandatory multi-approver review with author self-approval blocked prevents one insider or one hijacked account from shipping changes unilaterally
+
+**Attack Prevented:** Privilege escalation, unauthorized code changes, insider tampering, malicious merge to protected branches
+
 #### ClickOps Implementation
 
 **Step 1: Define Role Strategy**
@@ -140,6 +148,14 @@ Configure project-level access controls using GitLab's role-based permissions.
 #### Description
 Restrict personal access token (PAT) creation and enforce expiration policies.
 
+#### Rationale
+**Why This Matters:**
+- Personal access tokens authenticate to the API and Git without MFA, so a leaked long-lived token grants persistent, password-less access to source and pipelines
+- Enforcing a maximum token lifetime guarantees stolen or forgotten tokens expire automatically instead of remaining valid indefinitely
+- Restricting tokens to minimal scopes ensures a leaked read token cannot be used to push code or alter CI/CD configuration
+
+**Attack Prevented:** Credential theft, token replay, over-privileged token abuse, persistent unauthorized access
+
 #### ClickOps Implementation
 
 **Step 1: Set Token Expiration Limits**
@@ -166,6 +182,15 @@ Restrict personal access token (PAT) creation and enforce expiration policies.
 
 #### Description
 Configure CI/CD variables with appropriate protection levels and masking.
+
+#### Rationale
+**Why This Matters:**
+- CI/CD variables typically hold deployment credentials, API keys, and cloud secrets that grant access far beyond GitLab itself
+- Masking keeps secret values from being printed in job logs, which are visible to anyone who can view the pipeline
+- Marking variables as protected confines them to protected branches, so a feature branch or fork cannot exfiltrate production secrets
+- Environment-scoping prevents a staging pipeline from reading production credentials
+
+**Attack Prevented:** Secret exposure in logs, credential exfiltration via untrusted branches, cross-environment secret leakage
 
 #### ClickOps Implementation
 
@@ -199,6 +224,14 @@ Configure CI/CD variables with appropriate protection levels and masking.
 #### Description
 Restrict pipeline execution and prevent unauthorized CI/CD modifications.
 
+#### Rationale
+**Why This Matters:**
+- Fork-based merge requests run attacker-authored pipeline code, so requiring approval before they execute stops poisoned-pipeline attacks
+- Limiting the CI/CD job token scope to only the projects a pipeline truly needs prevents lateral movement between repositories if a job is compromised
+- Requiring pipelines to succeed and discussions to resolve before merge enforces that security and quality checks actually gate the codebase
+
+**Attack Prevented:** Poisoned pipeline execution, lateral movement via job tokens, bypass of security gates
+
 #### ClickOps Implementation
 
 **Step 1: Require Pipeline Approval for Forks**
@@ -226,6 +259,14 @@ Restrict pipeline execution and prevent unauthorized CI/CD modifications.
 #### Description
 Implement secure CI/CD configuration practices. See the CLI Code Pack below for a security-hardened .gitlab-ci.yml example.
 
+#### Rationale
+**Why This Matters:**
+- The .gitlab-ci.yml file is executable code that runs with pipeline privileges, making it a prime target for supply-chain injection
+- Pinning image and dependency versions, avoiding untrusted includes, and restricting privileged execution reduce the chance a build step is hijacked
+- A hardened pipeline definition limits what a compromised job can reach, containing damage to a single stage rather than the whole environment
+
+**Attack Prevented:** CI/CD supply-chain injection, malicious build steps, privileged container escape, untrusted include abuse
+
 {% include pack-code.html vendor="gitlab" section="2.3" %}
 
 ---
@@ -239,6 +280,14 @@ Implement secure CI/CD configuration practices. See the CLI Code Pack below for 
 
 #### Description
 Deploy isolated runners for different trust levels and environments.
+
+#### Rationale
+**Why This Matters:**
+- Runners execute arbitrary pipeline code, so a shared runner that touches production is a single point an attacker can use to pivot from any project to sensitive systems
+- Segmenting runners by trust level and environment ensures a compromised low-trust job cannot reach production networks or credentials
+- Ephemeral, single-use runner containers prevent one job from tampering with the environment of the next job on the same host
+
+**Attack Prevented:** Runner-based lateral movement, cross-job contamination, production network pivot, persistent runner compromise
 
 #### Implementation
 
@@ -260,6 +309,14 @@ Deploy isolated runners for different trust levels and environments.
 #### Description
 Implement regular runner token rotation to limit exposure from compromised tokens.
 
+#### Rationale
+**Why This Matters:**
+- A runner registration or authentication token lets anyone register a runner that receives and executes pipeline jobs, including access to CI/CD secrets
+- Regular rotation ensures a leaked token has a short useful lifespan instead of granting indefinite access
+- Resetting tokens immediately on suspected exposure invalidates any rogue runners an attacker may have registered
+
+**Attack Prevented:** Rogue runner registration, token theft, unauthorized job execution, secret harvesting
+
 #### ClickOps Implementation
 
 **Step 1: Reset Runner Token**
@@ -280,6 +337,14 @@ Implement regular runner token rotation to limit exposure from compromised token
 
 #### Description
 Configure push rules to prevent accidental secret commits and enforce commit hygiene.
+
+#### Rationale
+**Why This Matters:**
+- Secrets accidentally committed to a repository remain in Git history even after deletion and are frequently harvested by attackers scanning repos
+- Push rules that block secret files and verify author identity stop credential leaks and commit spoofing at the point of push
+- Combining push rules with secret detection in the pipeline provides defense in depth against hardcoded credentials reaching the repository
+
+**Attack Prevented:** Secret leakage in commits, credential harvesting, commit author spoofing
 
 #### ClickOps Implementation
 
@@ -303,6 +368,14 @@ See the CLI Code Pack below for the .gitlab-ci.yml secret detection configuratio
 
 #### Description
 Require GPG or SSH signed commits to verify commit authorship.
+
+#### Rationale
+**Why This Matters:**
+- Git lets anyone set an arbitrary author name and email, so unsigned commits provide no real proof of who wrote the code
+- Requiring cryptographically signed commits verifies that changes come from a known, key-holding identity rather than an impersonator
+- Rejecting unsigned commits and unverified users blocks an attacker from forging history or attributing malicious code to a trusted developer
+
+**Attack Prevented:** Commit spoofing, author impersonation, unauthorized code attribution, repository history forgery
 
 #### ClickOps Implementation
 
@@ -330,6 +403,14 @@ Require GPG or SSH signed commits to verify commit authorship.
 #### Description
 Integrate with external secrets managers instead of storing secrets in GitLab.
 
+#### Rationale
+**Why This Matters:**
+- Storing secrets directly in GitLab couples their security to GitLab's access model and risks exposure through logs, exports, or a platform compromise
+- An external secrets manager like Vault issues short-lived, dynamically generated credentials that are far harder to steal and reuse
+- Centralizing secrets externally provides a single audited place to rotate, revoke, and govern access independent of the CI/CD platform
+
+**Attack Prevented:** Static secret theft, credential reuse, broad exposure from a platform compromise, unaudited secret access
+
 #### HashiCorp Vault Integration
 
 {% include pack-code.html vendor="gitlab" section="5.1" %}
@@ -350,6 +431,14 @@ Integrate with external secrets managers instead of storing secrets in GitLab.
 
 #### Description
 Configure comprehensive audit logging for GitLab operations.
+
+#### Rationale
+**Why This Matters:**
+- Without comprehensive audit logging, malicious actions such as repository deletion, permission changes, or runner registration go undetected
+- Streaming audit events to a SIEM preserves a tamper-resistant record off-platform, surviving attempts to cover tracks inside GitLab
+- Alerting on high-risk events enables fast detection and response to account takeover and privilege abuse before damage spreads
+
+**Attack Prevented:** Undetected privilege abuse, log tampering, delayed breach detection, repository destruction
 
 #### ClickOps Implementation
 
@@ -434,6 +523,7 @@ See the DB Code Pack below for SQL queries that detect unusual repository clonin
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-02-19 | 0.1.2 | draft | Migrate all remaining inline code to Code Packs (2.1, 2.3, 3.1, 4.1, 4.2, 6.1); zero inline blocks | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.1.1 | draft | Migrate inline code to CLI Code Packs (1.1, 3.1, 3.2, 5.1) | Claude Code (Opus 4.6) |
 | 2025-12-14 | 0.1.0 | draft | Initial GitLab hardening guide | Claude Code (Opus 4.5) |

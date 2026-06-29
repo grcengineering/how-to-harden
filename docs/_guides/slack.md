@@ -6,9 +6,9 @@ slug: "slack"
 tier: "1"
 category: "Productivity"
 description: "Enterprise security hardening for Slack workspaces, SSO, DLP, and data governance"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2026-02-19"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -227,6 +227,15 @@ Limit Primary Owner and Admin roles to essential personnel. Use granular roles l
 #### Description
 Configure session duration controls to automatically log out inactive users and limit session lifetime.
 
+#### Rationale
+**Why This Matters:**
+- Long-lived or never-expiring sessions let a stolen device, browser token, or unattended workstation retain authenticated Slack access indefinitely
+- Forced logout after inactivity and a bounded session lifetime shrink the window an attacker can ride a hijacked session
+- Shorter web-session durations force re-validation against the IdP and its MFA / conditional-access policies on a regular cadence
+- Mobile devices are easily lost or stolen, so capping mobile session length contains exposure of corporate conversations and files
+
+**Attack Prevented:** Session hijacking, stolen-token reuse, unattended-device access, lost or stolen mobile device access
+
 #### ClickOps Implementation
 
 **Step 1: Configure Session Duration**
@@ -256,6 +265,15 @@ Configure session duration controls to automatically log out inactive users and 
 
 #### Description
 Restrict Slack access to approved IP ranges (corporate network, VPN) to prevent unauthorized access from unknown locations.
+
+#### Rationale
+**Why This Matters:**
+- IP allowlisting makes the workspace reachable only from trusted corporate egress points or the VPN, not from arbitrary internet locations
+- Even if credentials or a session token are phished or stolen, an attacker outside the approved ranges cannot use them to reach Slack
+- Network-layer restriction is independent of authentication, so a single failed control does not by itself grant access
+- Confines exposure of sensitive business communications, files, and shared secrets to managed, monitored network paths
+
+**Attack Prevented:** Credential-stuffing from unknown locations, stolen-token reuse off-network, account takeover from untrusted networks
 
 #### Prerequisites
 - Slack Enterprise Grid
@@ -502,6 +520,15 @@ Configure message and file retention policies to balance compliance requirements
 #### Description
 Deploy Slack Enterprise Key Management to use your own AWS KMS keys for encrypting Slack messages and files, providing customer-controlled encryption.
 
+#### Rationale
+**Why This Matters:**
+- Customer-managed KMS keys give your organization, not the vendor, ultimate control over the keys that decrypt messages and files
+- Revoking key access instantly cuts off decryption during an incident, insider-threat event, or contract termination
+- AWS CloudTrail key-access logging provides granular visibility into when and how Slack content is decrypted
+- Satisfies data-sovereignty and regulatory mandates that require customer-held encryption keys for sensitive or regulated data
+
+**Attack Prevented:** Provider-side data exposure, insider misuse, inability to revoke access during an incident, compliance gaps for regulated data
+
 #### Prerequisites
 - Slack Enterprise Grid
 - AWS account with KMS
@@ -704,6 +731,7 @@ Enable and export Slack audit logs for security monitoring, incident investigati
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, DLP, retention, and app controls | Claude Code (Opus 4.5) |
 | 2026-02-19 | 0.1.1 | draft | Extract inline code to Code Packs (SDK, Terraform, API) | Claude Code (Opus 4.6) |
 

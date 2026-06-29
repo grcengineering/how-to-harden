@@ -6,9 +6,9 @@ slug: "qualys"
 tier: "2"
 category: "Security"
 description: "Vulnerability management platform hardening for Qualys VMDR including user access, scanning configuration, and policy compliance"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Qualys platform security including user management, scanning c
 
 #### Description
 Configure SAML SSO to centralize authentication for Qualys platform.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes Qualys authentication in your corporate IdP, enforcing MFA, conditional access, and session policy on every login
+- Local Qualys passwords bypass IdP controls and are prime targets for credential stuffing, phishing, and password reuse
+- Centralized provisioning and deprovisioning removes departed users automatically, eliminating orphaned accounts with standing access to vulnerability data
+- Qualys holds a complete map of every unpatched weakness across your estate, so a single compromised login hands an attacker a ready-made target list
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
 
 #### ClickOps Implementation
 
@@ -132,6 +141,15 @@ Require MFA for all users, especially administrators.
 #### Description
 Configure granular roles for least privilege access.
 
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure each user can only perform the actions their job requires, limiting the blast radius of any single compromised account
+- Restricting the Manager (full admin) role to a small set of named personnel prevents over-broad control of scan configs, credentials, and platform settings
+- Scoped roles keep read-only stakeholders from altering scan targets, deleting findings, or exporting sensitive vulnerability data
+- Clear role boundaries make access reviews and audit attestation straightforward
+
+**Attack Prevented:** Privilege escalation, insider misuse, unauthorized data export, lateral movement
+
 #### ClickOps Implementation
 
 **Step 1: Review Built-in Roles**
@@ -172,6 +190,15 @@ Configure granular roles for least privilege access.
 
 #### Description
 Restrict Qualys access to approved IP addresses.
+
+#### Rationale
+**Why This Matters:**
+- Limiting access to known corporate and VPN egress ranges blocks logins from anywhere else, even when valid credentials are stolen
+- Network-layer restrictions add a control independent of password and MFA strength, raising the bar for remote attackers
+- Tighter restrictions on admin accounts shrink the exposed surface for the most powerful identities
+- Reduces the value of phished or leaked credentials, since they cannot be used from attacker-controlled infrastructure
+
+**Attack Prevented:** Credential stuffing from untrusted networks, remote account takeover, session hijacking
 
 #### ClickOps Implementation
 
@@ -246,6 +273,15 @@ Securely manage credentials used for authenticated scanning.
 #### Description
 Configure appropriate scan options for comprehensive coverage.
 
+#### Rationale
+**Why This Matters:**
+- Comprehensive, well-tuned option profiles ensure full port and service coverage so vulnerabilities are not missed and left exposed
+- Purpose-built profiles (authenticated, PCI) produce accurate findings that drive correct remediation priorities
+- Scheduling scans outside peak windows prevents accidental disruption of production systems while preserving coverage
+- Incomplete or misconfigured scans create blind spots that attackers exploit before defenders are aware of them
+
+**Attack Prevented:** Undetected exposed services, coverage gaps, exploitation of unscanned assets
+
 #### ClickOps Implementation
 
 **Step 1: Configure Scan Profiles**
@@ -283,6 +319,15 @@ Configure appropriate scan options for comprehensive coverage.
 
 #### Description
 Securely configure Qualys Cloud Agents.
+
+#### Rationale
+**Why This Matters:**
+- Secure agent distribution and integrity verification prevent attackers from deploying tampered or rogue agents into the environment
+- Protecting activation keys stops unauthorized hosts from enrolling and impersonating managed assets
+- Monitoring agent health surfaces disconnected or disabled agents that would otherwise create silent coverage gaps
+- Compromised or spoofed agents could feed false telemetry and hide real vulnerabilities from the platform
+
+**Attack Prevented:** Rogue agent enrollment, activation-key abuse, telemetry tampering, coverage evasion
 
 #### ClickOps Implementation
 
@@ -356,6 +401,15 @@ Configure Policy Compliance for CIS Benchmark assessments.
 #### Description
 Configure DISA STIG assessments for government compliance.
 
+#### Rationale
+**Why This Matters:**
+- Automated STIG assessment continuously verifies systems against mandated DoD hardening baselines instead of relying on manual point-in-time checks
+- Detecting configuration drift early closes the misconfigurations that attackers most often exploit for initial access and persistence
+- Documented findings and exceptions provide the evidence trail required for government and regulated-environment audits
+- Unassessed STIG gaps leave known-weak default settings in place across the estate
+
+**Attack Prevented:** Exploitation of insecure configurations, configuration drift, compliance gaps
+
 #### ClickOps Implementation
 
 **Step 1: Select STIG Templates**
@@ -390,6 +444,15 @@ Configure DISA STIG assessments for government compliance.
 #### Description
 Use Qualys SCA for automated configuration assessment.
 
+#### Rationale
+**Why This Matters:**
+- Automated, continuous configuration assessment catches hardening regressions far faster than periodic manual reviews
+- Prioritizing findings by severity directs remediation effort to the misconfigurations that pose the greatest real risk
+- Automated alerting ensures newly introduced weak configurations are flagged before they can be exploited
+- Misconfigurations are among the most common root causes of breaches, and SCA makes them visible and measurable
+
+**Attack Prevented:** Security misconfiguration, hardening drift, exploitation of insecure defaults
+
 #### ClickOps Implementation
 
 **Step 1: Enable SCA**
@@ -421,6 +484,15 @@ Use Qualys SCA for automated configuration assessment.
 
 #### Description
 Configure comprehensive asset discovery for visibility.
+
+#### Rationale
+**Why This Matters:**
+- You cannot protect or scan assets you do not know exist, so comprehensive discovery eliminates blind spots in coverage
+- Combining network, cloud, agent, and passive discovery catches shadow IT and rogue devices that bypass standard provisioning
+- Automated tagging enables accurate scan targeting so no asset class is silently excluded from assessment
+- Alerting on new and unmanaged assets shortens the window in which an unmonitored device can be attacked
+
+**Attack Prevented:** Shadow IT exposure, unmanaged-asset compromise, scanning blind spots
 
 #### ClickOps Implementation
 
@@ -459,6 +531,15 @@ Configure comprehensive asset discovery for visibility.
 #### Description
 Securely configure cloud provider connectors.
 
+#### Rationale
+**Why This Matters:**
+- Granting connectors only the minimum read permissions limits what an attacker can reach if the integration is compromised
+- Scoped IAM roles, app registrations, and service accounts prevent the connector from becoming a path to broader cloud control-plane access
+- Cross-account and least-privilege configuration contains the blast radius of any single leaked connector credential
+- Over-permissioned cloud connectors are a high-value pivot point into the entire cloud environment
+
+**Attack Prevented:** Cloud credential abuse, excessive-permission pivot, lateral movement into cloud accounts
+
 #### ClickOps Implementation
 
 **Step 1: AWS Connector**
@@ -492,6 +573,15 @@ Securely configure cloud provider connectors.
 
 #### Description
 Configure approval workflows for automated remediation.
+
+#### Rationale
+**Why This Matters:**
+- Requiring approval before automated remediation prevents unreviewed changes from disrupting production systems
+- Maintenance windows and risk thresholds ensure high-impact actions only execute under controlled conditions
+- Defined approvers, escalation, and timeout actions create accountability and an auditable change trail
+- Unconstrained automated actions could be abused or misfire to cause outages or mask malicious changes
+
+**Attack Prevented:** Unauthorized automated changes, change-control bypass, remediation-driven outages
 
 #### ClickOps Implementation
 
@@ -560,6 +650,7 @@ Configure approval workflows for automated remediation.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with access controls, scanning, and policy compliance | Claude Code (Opus 4.5) |
 
 ---

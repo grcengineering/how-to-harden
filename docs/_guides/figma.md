@@ -6,9 +6,9 @@ slug: "figma"
 tier: "2"
 category: "Productivity"
 description: "Design platform hardening for Figma Enterprise including SSO, access controls, and governance features"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Figma Organization and Enterprise security including SAML SSO,
 
 #### Description
 Configure SAML SSO to centralize authentication and enforce organizational security policies.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes Figma authentication in your corporate IdP so MFA, conditional access, and session policies apply to every login
+- Local email-and-password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- Enforcing "Members must log in with SAML SSO" prevents users from creating shadow accounts outside organizational governance
+- Figma files hold unreleased product designs, brand assets, and prototypes — a single compromised login can expose your entire design pipeline
+
+**Attack Prevented:** Credential theft, phishing, password reuse, shadow accounts, unauthorized access
 
 #### Prerequisites
 - Figma Organization or Enterprise plan
@@ -105,6 +114,15 @@ Configure SAML SSO to centralize authentication and enforce organizational secur
 #### Description
 Require 2FA for organization members and guests.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor blocks account takeover even when a password is phished, leaked, or reused
+- Guests and external collaborators sit outside your IdP, so enforced 2FA is the only MFA control that reaches them
+- Enforcement across web, desktop, and mobile closes the gap where a single unprotected client becomes the weakest link
+- Design files often contain confidential roadmaps and customer-facing assets that attackers monetize or leak
+
+**Attack Prevented:** Credential stuffing, password reuse, phishing, guest account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA for Members**
@@ -130,6 +148,15 @@ Require 2FA for organization members and guests.
 
 #### Description
 Configure SCIM for automatic user provisioning and deprovisioning.
+
+#### Rationale
+**Why This Matters:**
+- Automatic deprovisioning removes a departing employee's Figma access the moment they leave the IdP, eliminating orphaned accounts with standing design access
+- Manual offboarding is error-prone and frequently leaves seats active long after a user should retain access
+- Provisioning attributes from the IdP keeps roles and group membership consistent, reducing privilege drift
+- Orphaned accounts holding editor access to proprietary designs are a quiet, persistent insider and data-loss risk
+
+**Attack Prevented:** Orphaned-account access, insider threat, privilege creep, offboarding gaps
 
 #### ClickOps Implementation
 
@@ -168,6 +195,15 @@ Configure SCIM for automatic user provisioning and deprovisioning.
 #### Description
 Configure team and project permissions following least privilege.
 
+#### Rationale
+**Why This Matters:**
+- Least-privilege team and project roles limit each user to only the files their work requires, shrinking the blast radius of any compromised account
+- Default broad access lets any member view or edit sensitive designs they have no business touching
+- Separating Admin, Editor, and Viewer roles prevents accidental or malicious changes to production design systems
+- Tight project scoping contains exposure when a single credential is phished or a guest oversteps
+
+**Attack Prevented:** Lateral movement, unauthorized edits, data exposure, privilege abuse
+
 #### ClickOps Implementation
 
 **Step 1: Create Team Structure**
@@ -203,6 +239,15 @@ Configure team and project permissions following least privilege.
 #### Description
 Implement role-based access for organization administration.
 
+#### Rationale
+**Why This Matters:**
+- Organization Admins can change SSO, sharing, and security settings, so every excess admin is a high-value target and a single point of failure
+- Limiting Organization Admin to a small group and using scoped Team Admin roles enforces separation of duties
+- Fewer privileged accounts means fewer credentials whose compromise grants full tenant control
+- Documented admin assignments make unauthorized privilege escalation immediately visible during review
+
+**Attack Prevented:** Privilege escalation, admin account takeover, configuration tampering, insider abuse
+
 #### ClickOps Implementation
 
 **Step 1: Review Admin Access**
@@ -234,6 +279,15 @@ Implement role-based access for organization administration.
 #### Description
 Restrict personal account access on corporate networks.
 
+#### Rationale
+**Why This Matters:**
+- Blocking personal Figma accounts on the corporate network stops employees from moving company designs into accounts you cannot govern or audit
+- Personal accounts sit outside SSO, SCIM, activity logging, and DLP, creating an invisible data-exfiltration channel
+- Restricting to organization-domain accounts ensures all design work stays within monitored, owned tenancy
+- Shadow IT usage of Figma is a common path for intellectual property to leak undetected
+
+**Attack Prevented:** Data exfiltration, shadow IT, unmonitored access, IP leakage
+
 #### ClickOps Implementation
 
 **Step 1: Enable Network Restrictions**
@@ -262,6 +316,15 @@ Restrict personal account access on corporate networks.
 #### Description
 Control how designs can be shared via links.
 
+#### Rationale
+**Why This Matters:**
+- Open shareable links can expose confidential designs to anyone with the URL, including forwarded recipients and indexing services
+- Setting a view-only default and restricting who can create public links prevents accidental oversharing of sensitive files
+- Link expiration limits how long a leaked or forwarded URL remains usable
+- Public design links are a frequent source of unintended intellectual-property disclosure
+
+**Attack Prevented:** Accidental public exposure, link leakage, unauthorized access, data loss
+
 #### ClickOps Implementation
 
 **Step 1: Configure Organization Sharing**
@@ -288,6 +351,15 @@ Control how designs can be shared via links.
 
 #### Description
 Control collaboration with external users.
+
+#### Rationale
+**Why This Matters:**
+- Guests and external collaborators operate outside your IdP and policies, so explicit access limits keep them from over-reaching
+- Restricting edit rights and access duration for guests prevents external parties from retaining standing access to internal designs
+- Blocking unsanctioned access to external Figma content stops data from flowing into organizations you do not control
+- Uncontrolled external collaboration is a direct path for proprietary designs to leave the organization
+
+**Attack Prevented:** Data leakage to third parties, guest over-permissioning, unauthorized external access
 
 #### ClickOps Implementation
 
@@ -316,6 +388,15 @@ Control collaboration with external users.
 
 #### Description
 Use sensitivity labels to classify designs.
+
+#### Rationale
+**Why This Matters:**
+- Classifying designs as Confidential, Internal, or Public makes data sensitivity visible so users handle each file appropriately
+- Without labels, collaborators cannot distinguish public marketing assets from unreleased product designs and may overshare
+- Labels create the foundation for downstream controls, reviews, and audit decisions tied to classification
+- Visual sensitivity cues reduce the human error that leads to confidential material being shared externally
+
+**Attack Prevented:** Accidental disclosure, mishandling of sensitive data, oversharing, classification errors
 
 #### ClickOps Implementation
 
@@ -347,6 +428,15 @@ Use sensitivity labels to classify designs.
 
 #### Description
 Monitor user activity through activity logs.
+
+#### Rationale
+**Why This Matters:**
+- Activity logs capture file access, permission changes, exports, and logins so suspicious behavior can be detected and investigated
+- Without logging, account compromise and insider data theft go unnoticed until the damage is already done
+- Exporting logs to a SIEM enables correlation, alerting, and retention beyond the native console
+- Monitoring exports and external sharing surfaces the specific actions that precede intellectual-property loss
+
+**Attack Prevented:** Undetected breach, insider data theft, unauthorized exports, audit gaps
 
 #### ClickOps Implementation
 
@@ -383,6 +473,15 @@ Monitor user activity through activity logs.
 #### Description
 Enable Governance+ for advanced security controls.
 
+#### Rationale
+**Why This Matters:**
+- Governance+ unlocks advanced activity logs, multiple IdPs, and extended controls needed by regulated and high-sensitivity organizations
+- Per-team authentication lets you apply stronger IdP policies to teams handling the most sensitive designs
+- Advanced reporting and compliance dashboards provide the evidence auditors and regulators require
+- Granular governance reduces the risk that a one-size-fits-all configuration leaves sensitive teams under-protected
+
+**Attack Prevented:** Insufficient monitoring, weak segmentation, compliance gaps, under-protected teams
+
 #### Prerequisites
 - Figma Enterprise with Governance+ add-on
 
@@ -413,6 +512,15 @@ Enable Governance+ for advanced security controls.
 
 #### Description
 Manage all accounts using company domains.
+
+#### Rationale
+**Why This Matters:**
+- Registering all company domains lets the organization claim and govern every account created with corporate email addresses
+- Unclaimed accounts on your domain operate outside SSO, logging, and admin control, forming a pool of shadow access
+- Domain verification is the prerequisite that makes SSO enforcement and centralized policy possible
+- Consolidating shadow accounts removes ungoverned editor access to proprietary designs
+
+**Attack Prevented:** Shadow accounts, ungoverned access, SSO bypass, account sprawl
 
 #### ClickOps Implementation
 
@@ -494,6 +602,7 @@ Manage all accounts using company domains.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, access controls, and governance | Claude Code (Opus 4.5) |
 
 ---

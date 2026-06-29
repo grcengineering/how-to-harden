@@ -6,9 +6,9 @@ slug: "onelogin"
 tier: "1"
 category: "Identity"
 description: "Identity provider hardening for OneLogin including MFA policies, user security, and SmartFactor Authentication"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -56,6 +56,14 @@ This guide covers OneLogin administration console security, user policies, MFA c
 #### Description
 Configure password policies to enforce strong authentication requirements for OneLogin users.
 
+#### Rationale
+**Why This Matters:**
+- Weak or reused passwords are the most common entry point for credential stuffing and brute-force attacks against the identity provider
+- OneLogin authenticates access to every downstream SaaS app, so a single guessed password can cascade into the entire application portfolio
+- Account lockout thresholds blunt automated password-guessing tools before they succeed
+
+**Attack Prevented:** Credential stuffing, brute-force password guessing, password reuse exploitation
+
 #### ClickOps Implementation
 
 **Step 1: Access User Policies**
@@ -94,6 +102,14 @@ Configure password policies to enforce strong authentication requirements for On
 #### Description
 Configure session timeout and activity controls to limit exposure from idle sessions.
 
+#### Rationale
+**Why This Matters:**
+- Long-lived or idle sessions leave authenticated tokens available for theft on unattended or shared devices
+- Bounded session and idle timeouts shrink the window an attacker has to ride a hijacked session into connected applications
+- Forced re-authentication on sensitive apps ensures a stolen session cannot silently reach the most critical resources
+
+**Attack Prevented:** Session hijacking, token replay, unauthorized access from unattended devices
+
 #### ClickOps Implementation
 
 **Step 1: Configure Session Timeout**
@@ -121,6 +137,14 @@ Configure session timeout and activity controls to limit exposure from idle sess
 
 #### Description
 Configure secure self-service password reset to reduce helpdesk burden while maintaining security.
+
+#### Rationale
+**Why This Matters:**
+- Password reset flows are a frequent target for social engineering and account takeover when identity proofing is weak
+- Requiring MFA and strong verification on reset prevents attackers from seizing accounts through the recovery path
+- Self-service reset removes helpdesk impersonation as an attack vector while keeping verification controls enforced
+
+**Attack Prevented:** Account takeover via recovery flow, helpdesk social engineering, password reset abuse
 
 #### ClickOps Implementation
 
@@ -250,6 +274,14 @@ Enable SmartFactor Authentication for risk-based adaptive MFA.
 #### Description
 Require WebAuthn/FIDO2 hardware keys for administrator accounts.
 
+#### Rationale
+**Why This Matters:**
+- Administrators hold the keys to the entire identity platform, making their accounts the highest-value target for attackers
+- WebAuthn/FIDO2 keys are bound to the origin and cannot be replayed, defeating phishing and adversary-in-the-middle proxies that bypass push and TOTP factors
+- Disabling SMS, email, and TOTP for admins removes the weaker factors attackers prefer to intercept or fatigue
+
+**Attack Prevented:** Phishing, adversary-in-the-middle, MFA fatigue, SIM swapping, admin account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Create Admin MFA Policy**
@@ -282,6 +314,14 @@ Require WebAuthn/FIDO2 hardware keys for administrator accounts.
 
 #### Description
 Configure delegated administration to implement least privilege for admin access.
+
+#### Rationale
+**Why This Matters:**
+- Super-user accounts can alter any policy, user, or app integration, so broad admin grants dramatically expand the blast radius of a compromise
+- Scoped custom roles ensure helpdesk and tier-1 staff hold only the permissions their job requires
+- Limiting the number of full administrators reduces the set of accounts an attacker can target for total control
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider misuse, blast-radius expansion
 
 #### ClickOps Implementation
 
@@ -319,6 +359,14 @@ Configure delegated administration to implement least privilege for admin access
 #### Description
 Restrict access to OneLogin from approved IP addresses.
 
+#### Rationale
+**Why This Matters:**
+- Restricting logins to corporate and VPN egress IPs denies attackers access even when they hold valid stolen credentials
+- Network-based restrictions add a control that cannot be defeated by phishing the password or a one-time code
+- Step-up or block responses for unknown IPs flag and contain anomalous access attempts from unexpected locations
+
+**Attack Prevented:** Credential theft exploitation, remote access from untrusted networks, geographic-anomaly logins
+
 #### ClickOps Implementation
 
 **Step 1: Configure IP Restrictions**
@@ -353,6 +401,14 @@ Restrict access to OneLogin from approved IP addresses.
 
 #### Description
 Implement additional protections for privileged administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Privileged accounts are the primary objective of targeted attacks because they control the entire identity fabric
+- Separate admin and daily-use accounts prevent routine browsing or email compromise from exposing administrative power
+- Shorter timeouts, mandatory MFA, and enhanced logging on these accounts detect and limit misuse faster
+
+**Attack Prevented:** Admin account takeover, privilege abuse, lateral movement, standing-privilege exploitation
 
 #### ClickOps Implementation
 
@@ -390,6 +446,14 @@ Implement additional protections for privileged administrator accounts.
 #### Description
 Ensure all OneLogin communications use strong TLS encryption.
 
+#### Rationale
+**Why This Matters:**
+- Authentication traffic, SAML assertions, and API calls carry credentials and session tokens that are exposed if transport is unencrypted or downgraded
+- Enforcing TLS 1.2+ prevents attackers on the network path from intercepting or tampering with login flows
+- Strong transport encryption is a baseline requirement for protecting identity data in transit and meeting compliance mandates
+
+**Attack Prevented:** Man-in-the-middle interception, protocol downgrade, credential and token sniffing
+
 #### Validation
 1. Verify OneLogin portal uses TLS 1.2+
 2. Check SAML connections use HTTPS
@@ -408,6 +472,14 @@ Ensure all OneLogin communications use strong TLS encryption.
 
 #### Description
 Configure account lockout and brute force protection.
+
+#### Rationale
+**Why This Matters:**
+- Without lockout thresholds, attackers can run unlimited automated password-guessing attempts against accounts
+- Lockout and counter-reset settings slow credential-guessing tools enough to make brute force impractical
+- Login anomaly detection and alerting surface ongoing attacks so responders can block malicious sources
+
+**Attack Prevented:** Brute-force attacks, password spraying, credential stuffing
 
 #### ClickOps Implementation
 
@@ -437,6 +509,14 @@ Configure account lockout and brute force protection.
 #### Description
 Implement device trust policies to verify device security posture.
 
+#### Rationale
+**Why This Matters:**
+- Allowing logins only from domain-joined or managed devices stops attackers using stolen credentials on unmanaged hardware
+- Device posture checks ensure authenticating endpoints meet security baselines before granting access
+- Binding access to trusted devices adds a factor that phished passwords and codes alone cannot satisfy
+
+**Attack Prevented:** Credential theft exploitation, unmanaged-device access, endpoint compromise propagation
+
 #### ClickOps Implementation
 
 **Step 1: Enable Desktop SSO**
@@ -465,6 +545,14 @@ Implement device trust policies to verify device security posture.
 
 #### Description
 Enable and monitor audit logs for security events.
+
+#### Rationale
+**Why This Matters:**
+- Without comprehensive logs, account compromise and admin abuse can occur undetected and cannot be investigated after the fact
+- Capturing login, MFA, and configuration-change events provides the forensic trail needed for incident response
+- Exporting logs to a SIEM enables correlation, alerting, and retention beyond the platform's native window
+
+**Attack Prevented:** Undetected intrusion, log tampering, delayed breach discovery
 
 #### ClickOps Implementation
 
@@ -501,6 +589,14 @@ Enable and monitor audit logs for security events.
 
 #### Description
 Configure alerts for security-relevant events.
+
+#### Rationale
+**Why This Matters:**
+- Real-time alerts on failed logins, privilege changes, and policy edits shrink the time attackers operate unnoticed
+- Notifying responders of unusual login locations and admin actions enables rapid containment before damage spreads
+- Alerting on policy modifications detects attempts to weaken security controls from within
+
+**Attack Prevented:** Delayed incident response, stealthy privilege escalation, undetected configuration tampering
 
 #### ClickOps Implementation
 
@@ -582,6 +678,7 @@ Configure alerts for security-relevant events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with MFA, policies, and admin controls | Claude Code (Opus 4.5) |
 
 ---

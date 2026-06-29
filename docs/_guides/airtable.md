@@ -6,9 +6,9 @@ slug: "airtable"
 tier: "2"
 category: "Productivity"
 description: "Low-code platform hardening for Airtable Enterprise including SSO, access controls, and collaboration security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Airtable Enterprise Admin Panel security including SSO configu
 
 #### Description
 Configure SAML SSO to centralize authentication for Airtable users.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes Airtable authentication in your corporate IdP so MFA, conditional access, and password policy apply to every login
+- Standalone Airtable passwords bypass IdP controls and are a prime target for phishing and credential stuffing
+- Federating logins under SSO eliminates shadow personal accounts that admins cannot see or revoke
+- Bases hold business-critical records and customer data, so a single unmanaged login can expose entire workspaces
+
+**Attack Prevented:** Credential theft, phishing, password reuse, unmanaged shadow accounts
 
 #### Prerequisites
 - Airtable Enterprise plan
@@ -107,6 +116,15 @@ Configure SAML SSO to centralize authentication for Airtable users.
 #### Description
 Require 2FA for organization members.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor blocks account takeover even when a password is phished, leaked, or reused
+- Enforcing 2FA organization-wide removes the gap left by members who would otherwise opt out
+- Airtable accounts can read and export sensitive business data, making them high-value targets for credential attacks
+- IdP-enforced MFA gives consistent, auditable coverage across every federated user
+
+**Attack Prevented:** Account takeover, credential stuffing, password reuse, phishing
+
 #### Prerequisites
 - Enterprise Scale plan for enforced 2FA
 
@@ -135,6 +153,15 @@ Require 2FA for organization members.
 
 #### Description
 Configure SCIM for automatic user lifecycle management.
+
+#### Rationale
+**Why This Matters:**
+- Automatic deprovisioning revokes Airtable access the moment a user is disabled in the IdP, closing the window for orphaned accounts
+- Manual offboarding is error-prone and routinely leaves departed employees and contractors with standing data access
+- SCIM keeps group and role assignments in sync with the IdP, preventing privilege drift over time
+- Centralized lifecycle management produces a consistent, auditable record of who has access and why
+
+**Attack Prevented:** Orphaned-account access, privilege creep, insider data exfiltration after offboarding
 
 #### ClickOps Implementation
 
@@ -207,6 +234,15 @@ Verify and federate your organization's domains for complete control.
 #### Description
 Configure session timeout and security settings.
 
+#### Rationale
+**Why This Matters:**
+- Bounded session lifetimes force periodic re-authentication, shrinking the value of a stolen or hijacked session token
+- Long-lived sessions on shared or unattended devices let anyone resume an authenticated Airtable session
+- Shorter sessions for sensitive bases limit how long an attacker can operate after a single compromise
+- Documented session policy supports compliance evidence for access-control requirements
+
+**Attack Prevented:** Session hijacking, unattended-device access, stolen-token reuse
+
 #### ClickOps Implementation
 
 **Step 1: Configure Session Length**
@@ -232,6 +268,15 @@ Configure session timeout and security settings.
 
 #### Description
 Restrict access to approved IP addresses.
+
+#### Rationale
+**Why This Matters:**
+- Restricting sign-in to approved networks blocks access attempts from outside your corporate or VPN ranges
+- Even valid stolen credentials are useless to an attacker connecting from an unapproved IP
+- Network-level controls add a layer that does not depend on user behavior or password strength
+- Allowlisting reduces exposure of business-critical bases to the open internet
+
+**Attack Prevented:** Credential theft from external networks, unauthorized remote access, account takeover from attacker infrastructure
 
 #### ClickOps Implementation
 
@@ -260,6 +305,15 @@ Restrict access to approved IP addresses.
 
 #### Description
 Control who can invite external collaborators.
+
+#### Rationale
+**Why This Matters:**
+- Unrestricted invites let any member share bases with outside parties, expanding the data exposure surface uncontrollably
+- Restricting invitations to verified domains keeps collaboration inside organizations you trust and govern
+- External collaborators retain access to whatever they were shared on until explicitly removed, creating long-lived exposure
+- Centralized invite policy prevents accidental oversharing of sensitive records to personal or competitor accounts
+
+**Attack Prevented:** Data leakage via oversharing, unauthorized external access, accidental exposure of sensitive bases
 
 #### ClickOps Implementation
 
@@ -290,6 +344,15 @@ Control who can invite external collaborators.
 #### Description
 Implement least privilege for workspace access.
 
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure each user can only read or change the data their job requires
+- Over-broad Creator or Editor access lets a single compromised account modify or delete entire bases
+- Scoping permissions by team and function limits the blast radius of any account compromise or insider misuse
+- Granular base-level roles support separation of duties and audit requirements
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider data tampering, blast-radius expansion
+
 #### ClickOps Implementation
 
 **Step 1: Configure Workspace Structure**
@@ -318,6 +381,15 @@ Implement least privilege for workspace access.
 
 #### Description
 Control access to Airtable Interfaces.
+
+#### Rationale
+**Why This Matters:**
+- Interfaces expose curated views of underlying base data, so uncontrolled access can leak records the viewer should not see
+- Restricting who can create and edit interfaces prevents unauthorized reshaping or exposure of sensitive data
+- Sensitivity labels give users a clear visual cue to handle high-risk bases and interfaces appropriately
+- Scoped interface access aligns shared dashboards with the principle of least privilege
+
+**Attack Prevented:** Unauthorized data disclosure, oversharing through interface views, mishandling of sensitive data
 
 #### ClickOps Implementation
 
@@ -349,6 +421,15 @@ Control access to Airtable Interfaces.
 
 #### Description
 Enable and monitor audit logs for security events.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs provide the record needed to detect, investigate, and respond to suspicious activity in Airtable
+- Without logging, account compromise, data exports, and permission changes go unnoticed until damage is done
+- Monitoring provisioning and external-collaborator events surfaces unauthorized access early
+- Retained logs supply the forensic evidence and compliance proof required after a security incident
+
+**Attack Prevented:** Undetected breaches, insider misuse, unnoticed data exfiltration, tampering without accountability
 
 #### ClickOps Implementation
 
@@ -386,6 +467,15 @@ Enable and monitor audit logs for security events.
 #### Description
 Secure Airtable API access.
 
+#### Rationale
+**Why This Matters:**
+- Personal access tokens can read and export base data programmatically, bypassing interactive login controls
+- Unmanaged or never-expiring tokens are durable credentials that persist long after they are needed
+- Expiration policies and a token inventory limit the lifetime and reach of any leaked credential
+- Monitoring API usage reveals unauthorized integrations and abnormal data-access patterns
+
+**Attack Prevented:** Token leakage, automated data exfiltration, unauthorized integrations, standing-credential abuse
+
 #### ClickOps Implementation
 
 **Step 1: Manage Personal Access Tokens**
@@ -411,6 +501,15 @@ Secure Airtable API access.
 
 #### Description
 Use IdP conditional access for enhanced security.
+
+#### Rationale
+**Why This Matters:**
+- Conditional access evaluates device health, location, and risk signals before granting an Airtable session
+- Requiring compliant devices keeps business data off unmanaged or jailbroken endpoints
+- Blocking risky sign-ins and enabling continuous evaluation revokes access when conditions change mid-session
+- Session controls reduce the chance of data exfiltration from compromised or non-compliant contexts
+
+**Attack Prevented:** Access from compromised devices, risky sign-ins, session-based data exfiltration, location-based attacks
 
 #### ClickOps Implementation
 
@@ -499,6 +598,7 @@ Use IdP conditional access for enhanced security.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, domain management, and collaboration controls | Claude Code (Opus 4.5) |
 
 ---

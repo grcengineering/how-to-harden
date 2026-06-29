@@ -106,7 +106,9 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  /* clip (not hidden) prevents horizontal scroll WITHOUT forcing overflow-y to
+     auto — which would create a scroll container and break the sticky ToC. */
+  overflow-x: clip;
 }
 
 body {
@@ -116,7 +118,7 @@ body {
   color: var(--color-text-primary);
   background-color: var(--color-bg-primary);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip; /* clip, not hidden — keeps overflow-y visible so sticky works */
   width: 100%;
 }
 
@@ -864,7 +866,7 @@ body {
   max-width: var(--max-width);
   margin: 0 auto;
   padding: var(--space-xl) var(--space-lg);
-  overflow-x: hidden;
+  overflow-x: clip; /* clip, not hidden — preserves the sticky ToC inside */
 }
 
 /* Status banners - full width, attached below header */
@@ -1144,7 +1146,13 @@ body {
 
 .toc {
   position: sticky;
-  top: 120px;
+  /* Stick just below the fixed header (64px) + status banner (~39px) so the
+     ToC top lines up immediately under the banner as the page scrolls. */
+  top: 104px;
+  /* Cap to the visible viewport so a long ToC scrolls internally instead of
+     overflowing the screen while pinned. */
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -2374,8 +2382,10 @@ body {
 }
 
 .view-mode-btn.active {
-  background: var(--color-primary);
-  color: #fff;
+  /* Selected view uses the GRCE brand orange (Legacy-GRC pole), with dark text
+     for accessible contrast on the light-orange fill (~10:1). */
+  background: var(--color-accent);
+  color: #1a1a1a;
 }
 
 .view-mode-btn svg {
@@ -2435,7 +2445,9 @@ body {
   padding: 10px 14px;
   text-align: left;
   white-space: nowrap;
-  box-shadow: 0 2px 0 0 var(--color-border-light);
+  /* Crisp 1px divider drawn INSIDE the header cell (inset) so it sits flush on
+     the level band below with no protruding 2px groove/seam. */
+  box-shadow: inset 0 -1px 0 0 var(--color-border);
 }
 
 /* ── Sticky first column (horizontal) ───────────────────────────────── */
@@ -2460,9 +2472,10 @@ body {
   background: var(--color-bg-secondary);
 }
 
-/* Override corner shadow so it doesn't double up with the top shadow */
+/* Corner cell: keep the right-edge scroll shadow, share the same inset bottom
+   divider as the other header cells (no doubled/protruding seam). */
 .cheat-sheet-table thead th:first-child {
-  box-shadow: 2px 0 5px -2px rgba(0,0,0,0.18), 0 2px 0 0 var(--color-border-light);
+  box-shadow: 2px 0 5px -2px rgba(0,0,0,0.18), inset 0 -1px 0 0 var(--color-border);
 }
 
 .cheat-sheet-table .col-req { width: 22%; }

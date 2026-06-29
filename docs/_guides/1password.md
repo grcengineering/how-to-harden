@@ -6,9 +6,9 @@ slug: "1password"
 tier: "2"
 category: "Security"
 description: "Enterprise password manager hardening for 1Password Business SSO, policies, and vault security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -110,6 +110,15 @@ Configure SAML-based SSO to authenticate 1Password users through your corporate 
 #### Description
 Configure SCIM for automatic user provisioning and deprovisioning synced with your identity provider.
 
+#### Rationale
+**Why This Matters:**
+- Automatically deprovisions departed employees, eliminating orphaned accounts that retain access to stored credentials and secrets
+- Removes manual offboarding steps that are routinely forgotten or delayed, closing the window where former staff keep vault access
+- Group sync keeps team and vault membership aligned with IdP roles, preventing privilege drift as people change jobs
+- A password manager holds the keys to every other system, so a single stale account is a high-value foothold for attackers
+
+**Attack Prevented:** Orphaned-account access, insider threat from departed employees, privilege creep, manual offboarding gaps
+
 #### ClickOps Implementation
 
 **Step 1: Enable SCIM**
@@ -149,6 +158,14 @@ Configure SCIM for automatic user provisioning and deprovisioning synced with yo
 #### Description
 Configure master password requirements for 1Password accounts.
 
+#### Rationale
+**Why This Matters:**
+- The master password, combined with the Secret Key, is the root of 1Password's zero-knowledge encryption — its strength determines how resistant vaults are to offline cracking
+- Enforcing a minimum length and complexity prevents users from choosing weak, guessable passphrases that brute-force and dictionary attacks can defeat
+- Consistent organization-wide requirements remove the weakest-link accounts that attackers probe first
+
+**Attack Prevented:** Brute-force cracking, dictionary attacks, weak-password compromise
+
 #### ClickOps Implementation
 
 **Step 1: Access Password Policy**
@@ -183,6 +200,15 @@ Configure master password requirements for 1Password accounts.
 #### Description
 Configure IP-based access restrictions for 1Password access.
 
+#### Rationale
+**Why This Matters:**
+- Restricts 1Password access to expected corporate networks and geographies, shrinking the attack surface exposed to the public internet
+- Blocks sign-in attempts from countries and IP ranges where the organization has no legitimate users, defeating large classes of automated attacks
+- Adds a network-layer control that helps contain stolen credentials even when an attacker holds a valid username and password
+- IP allowlisting at L3 ensures vault access only originates from trusted, managed egress points
+
+**Attack Prevented:** Credential stuffing from foreign IPs, unauthorized remote access, automated login attacks
+
 #### ClickOps Implementation
 
 **Step 1: Access Firewall Settings**
@@ -209,6 +235,15 @@ Configure IP-based access restrictions for 1Password access.
 
 #### Description
 Configure policies for team member permissions and capabilities.
+
+#### Rationale
+**Why This Matters:**
+- Restricting who can create vaults and share items prevents uncontrolled sprawl of credentials into unmanaged or externally shared locations
+- Requiring approval for external sharing stops sensitive secrets from leaving the organization without oversight
+- Setting Travel Mode and recovery policies centrally means security posture does not depend on each user making the right choice
+- Default-permissive capabilities give every account a wider blast radius if it is compromised
+
+**Attack Prevented:** Data exfiltration via uncontrolled sharing, credential sprawl, accidental exposure, shadow vaults
 
 #### ClickOps Implementation
 
@@ -249,6 +284,15 @@ Configure policies for team member permissions and capabilities.
 #### Description
 Configure role-based access for team administration.
 
+#### Rationale
+**Why This Matters:**
+- Limiting Owner and Admin roles to essential personnel enforces least privilege and reduces the number of accounts that can alter security policy or reach every vault
+- Fewer privileged accounts means fewer high-value targets for phishing and account takeover
+- Tiered roles ensure standard users and guests cannot reconfigure the tenant or escalate their own access
+- A compromised admin account can disable controls, export data, or grant attacker persistence, so minimizing them is critical
+
+**Attack Prevented:** Privilege escalation, admin account takeover, insider abuse, lateral movement
+
 #### ClickOps Implementation
 
 **Step 1: Review Default Roles**
@@ -279,6 +323,15 @@ Configure role-based access for team administration.
 
 #### Description
 Configure vault access permissions following least privilege principles.
+
+#### Rationale
+**Why This Matters:**
+- Scoping vault access to only the users and groups that need it limits how much a single compromised account can reach
+- Group-based permissions keep access aligned with job function and make audits and revocation straightforward
+- Separating private, team, infrastructure, and executive vaults contains the blast radius if any one vault or account is breached
+- Over-broad vault membership turns one stolen credential into access to the organization's entire secret store
+
+**Attack Prevented:** Lateral movement, excessive data exposure, insider access abuse, blast-radius expansion
 
 #### ClickOps Implementation
 
@@ -316,6 +369,15 @@ Configure vault access permissions following least privilege principles.
 #### Description
 Configure how items can be shared within and outside the organization.
 
+#### Rationale
+**Why This Matters:**
+- Controlling item and guest sharing prevents secrets from being copied into unmanaged hands or external parties without oversight
+- Setting share-link expiration and view limits ensures shared credentials cannot be replayed indefinitely if a link is intercepted or forwarded
+- Requiring approval for sensitive sharing inserts a deliberate checkpoint before high-value credentials leave their vault
+- Unrestricted sharing is a common path for credentials to leak outside the zero-knowledge boundary
+
+**Attack Prevented:** Credential leakage, unauthorized external sharing, share-link replay, data exfiltration
+
 #### ClickOps Implementation
 
 **Step 1: Configure Sharing Settings**
@@ -345,6 +407,15 @@ Configure how items can be shared within and outside the organization.
 
 #### Description
 Enable audit logging for security monitoring and compliance.
+
+#### Rationale
+**Why This Matters:**
+- Activity logs capture sign-ins, vault access, item changes, and admin actions — the evidence needed to detect misuse and investigate incidents
+- Streaming events to a SIEM enables real-time alerting on suspicious behavior such as mass item access or anomalous sign-ins
+- Durable records support compliance audits and forensic reconstruction after a breach
+- Without logging, credential theft and insider abuse can occur silently and remain undetected for long periods
+
+**Attack Prevented:** Undetected credential theft, insider abuse, delayed breach detection, audit gaps
 
 #### ClickOps Implementation
 
@@ -377,6 +448,15 @@ Enable audit logging for security monitoring and compliance.
 
 #### Description
 Monitor the security dashboard for insights and recommendations.
+
+#### Rationale
+**Why This Matters:**
+- Watchtower surfaces compromised, weak, and reused passwords so they can be rotated before attackers exploit them
+- Tracking 2FA adoption identifies accounts still protected by a single factor and most exposed to takeover
+- Continuous review turns the stored credential inventory into an active risk-reduction program rather than a static vault
+- Known-breached and reused passwords are a primary vector for credential-stuffing attacks across connected systems
+
+**Attack Prevented:** Credential stuffing, reused-password compromise, account takeover, exploitation of known-breached secrets
 
 #### ClickOps Implementation
 
@@ -466,6 +546,7 @@ Monitor the security dashboard for insights and recommendations.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, policies, and vault security | Claude Code (Opus 4.5) |
 
 ---

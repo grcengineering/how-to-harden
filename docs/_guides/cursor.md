@@ -6,9 +6,9 @@ slug: "cursor"
 tier: "1"
 category: "DevOps"
 description: "AI code editor security hardening for code privacy, MCP security, agent sandboxing, API key management, and workspace trust"
-version: "0.3.0"
+version: "0.3.1"
 maturity: "draft"
-last_updated: "2026-04-15"
+last_updated: "2026-06-29"
 ---
 
 
@@ -676,6 +676,15 @@ For Anthropic:
 #### Description
 Monitor AI provider API usage to detect anomalies (unusual spikes, unauthorized usage, cost overruns).
 
+#### Rationale
+**Why This Matters:**
+- A leaked or stolen AI provider key usually surfaces first as an abnormal spike in token usage or spend, well before any other indicator appears
+- Hard billing limits cap the financial blast radius of a compromised key, a runaway agent loop, or an abusive integration
+- Per-user usage review exposes shadow usage and insider misuse that account-level controls alone would miss
+- Cursor connects to multiple providers (OpenAI, Anthropic, Google, custom keys), so usage anomalies are the most practical signal of credential abuse across all of them
+
+**Attack Prevented:** API key abuse, undetected credential theft, denial-of-wallet via cost exhaustion, runaway agent token consumption
+
 #### ClickOps Implementation
 
 **Step 1: Enable Usage Tracking**
@@ -1290,6 +1299,15 @@ Disable telemetry data collection and crash reporting to prevent code snippets o
 #### Description
 Use enterprise firewall or endpoint security to allowlist only required Cursor network endpoints, blocking all other traffic.
 
+#### Rationale
+**Why This Matters:**
+- Restricting Cursor to a known set of endpoints forces all AI model traffic through Cursor's Privacy Mode proxy instead of direct provider APIs that bypass data-retention guarantees
+- An egress allowlist removes the exfiltration channels that prompt injection, a malicious extension, or a poisoned MCP server would use to reach attacker-controlled servers
+- Outbound filtering contains compromised agents and subprocesses that attempt to call out to unapproved hosts for command-and-control or data theft
+- Codebase context, embeddings, and credentials only leave the machine through network connections, so the network boundary is the last enforceable control when in-editor protections fail
+
+**Attack Prevented:** Data exfiltration to unauthorized endpoints, Privacy Mode proxy bypass, command-and-control callbacks from compromised agents or extensions
+
 #### Required Endpoints
 
 | Endpoint | Purpose | Required For |
@@ -1629,6 +1647,7 @@ Use MDM (Mobile Device Management) to deploy and enforce Cursor security setting
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.3.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-04-15 | 0.3.0 | draft | [SECURITY] Major update: add MCP Server Security (sec 4), Agent & Sandbox Security (sec 5), Rules File Security (sec 6), SSO/SCIM (1.3-1.4), .cursorignore (2.3), extension supply chain (8.1), agent monitoring (10.2), MDM enforcement (11.2). Update Security Incidents appendix with 12+ new CVEs/vulns. Add OWASP Agentic/LLM, NIST AI RMF, MITRE ATLAS compliance mappings. Update edition compatibility for Teams/Enterprise tiers. Create 12 code pack files. | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.2.0 | draft | Migrate all inline code blocks to Code Packs (sections 2.1, 3.1, 3.2, 3.3, 4.2, 7.1) | Claude Code (Opus 4.6) |
 | 2025-12-15 | 0.1.0 | draft | Initial Cursor hardening guide | Claude Code (Opus 4.5) |

@@ -6,9 +6,9 @@ slug: "docusign"
 tier: "2"
 category: "Productivity"
 description: "eSignature platform hardening for DocuSign including SSO configuration, session security, and admin controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -109,6 +109,14 @@ Configure SAML SSO to centralize authentication and enforce organizational secur
 #### Description
 Require MFA for all DocuSign users.
 
+#### Rationale
+**Why This Matters:**
+- MFA blocks account takeover even when a password is phished, leaked, or reused from another breach
+- DocuSign accounts can send legally binding agreements, so a single compromised login can authorize fraudulent contracts
+- Enforcing MFA through the IdP or native settings closes the gap left by password-only authentication
+
+**Attack Prevented:** Credential stuffing, phishing, password reuse, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Enable MFA via SSO**
@@ -139,6 +147,14 @@ Require MFA for all DocuSign users.
 
 #### Description
 Configure automated user provisioning and deprovisioning.
+
+#### Rationale
+**Why This Matters:**
+- Automated provisioning ties the DocuSign account lifecycle to the authoritative IdP, so access is granted and revoked centrally
+- Automatic deprovisioning removes a departed employee's access immediately, eliminating orphaned accounts that retain document and signing rights
+- JIT and SCIM assign roles from IdP attributes, preventing over-privileged accounts created by manual error
+
+**Attack Prevented:** Orphaned-account access, insider misuse, privilege creep, manual provisioning errors
 
 #### ClickOps Implementation
 
@@ -173,6 +189,14 @@ Configure automated user provisioning and deprovisioning.
 #### Description
 Configure session timeout and security settings.
 
+#### Rationale
+**Why This Matters:**
+- Idle and maximum session timeouts limit the window an attacker can use a hijacked or unattended session
+- Shared or public devices left logged in expose the ability to send and sign envelopes on the user's behalf
+- Re-authentication for sensitive operations adds a checkpoint before high-impact actions
+
+**Attack Prevented:** Session hijacking, unattended-session abuse, token replay
+
 #### ClickOps Implementation
 
 **Step 1: Configure Session Timeout**
@@ -199,6 +223,14 @@ Configure session timeout and security settings.
 
 #### Description
 Configure document encryption and security settings.
+
+#### Rationale
+**Why This Matters:**
+- Encryption at rest and TLS in transit protect document contents from interception and storage-layer exposure
+- Least-privilege permissions ensure only authorized users can send envelopes, access templates, or view audit trails
+- Retention and purging policies reduce the volume of sensitive data exposed if an account is compromised
+
+**Attack Prevented:** Data interception, unauthorized document access, data exposure from over-retention
 
 #### ClickOps Implementation
 
@@ -234,6 +266,14 @@ Configure document encryption and security settings.
 #### Description
 Configure enhanced security for sensitive envelopes.
 
+#### Rationale
+**Why This Matters:**
+- Signer authentication (access code, phone, SMS, knowledge-based) verifies the recipient is who they claim before they sign
+- Without recipient verification, an intercepted envelope link can be signed by an impostor
+- Envelope expiration limits how long an unsigned, potentially intercepted agreement remains actionable
+
+**Attack Prevented:** Signature fraud, recipient impersonation, envelope interception, stale-link abuse
+
 #### ClickOps Implementation
 
 **Step 1: Configure Signing Authentication**
@@ -265,6 +305,14 @@ Configure enhanced security for sensitive envelopes.
 
 #### Description
 Configure role-based permissions for DocuSign administration.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure users hold only the permissions their job requires, shrinking the blast radius of any compromised account
+- Restricting Account Administrator to essential personnel limits who can change security settings, manage users, or alter branding
+- Granular permissions separate template, user, and API management so a single account cannot abuse every function
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider misuse, over-privileged account compromise
 
 #### ClickOps Implementation
 
@@ -302,6 +350,14 @@ Configure role-based permissions for DocuSign administration.
 #### Description
 Use DocuSign Admin Tools for centralized management across accounts.
 
+#### Rationale
+**Why This Matters:**
+- Centralized administration applies consistent security policies across all linked accounts, preventing weak configurations from drifting in isolated accounts
+- Managing SSO and users centrally eliminates the inconsistent enforcement that occurs when each account is configured separately
+- Bulk operations let security settings be applied uniformly rather than per-user, reducing the chance a user is missed
+
+**Attack Prevented:** Configuration drift, inconsistent policy enforcement, shadow-admin gaps
+
 #### ClickOps Implementation
 
 **Step 1: Configure Admin Tools**
@@ -327,6 +383,14 @@ Use DocuSign Admin Tools for centralized management across accounts.
 
 #### Description
 Secure DocuSign API access and integrations.
+
+#### Rationale
+**Why This Matters:**
+- Integration keys are long-lived credentials that, if leaked, allow automated sending and access to envelopes outside the UI
+- Removing unused integrations and granting minimum scopes shrinks the attack surface available to a compromised key
+- OAuth 2.0 and regular key rotation limit how long a stolen credential remains valid, and monitoring surfaces abuse early
+
+**Attack Prevented:** API key theft, over-scoped integration abuse, automated envelope fraud, supply chain compromise
 
 #### ClickOps Implementation
 
@@ -361,6 +425,14 @@ Secure DocuSign API access and integrations.
 #### Description
 Enable comprehensive audit logging for compliance.
 
+#### Rationale
+**Why This Matters:**
+- Audit trails and envelope certificates provide tamper-evident records needed to investigate incidents and prove document integrity
+- Tracking admin and configuration changes detects unauthorized modifications to security settings or permissions
+- Without comprehensive logging, account compromise and insider abuse can go undetected and forensics become impossible
+
+**Attack Prevented:** Undetected intrusion, repudiation, tampering, insider abuse
+
 #### ClickOps Implementation
 
 **Step 1: Access Audit Trails**
@@ -393,6 +465,14 @@ Enable comprehensive audit logging for compliance.
 
 #### Description
 Enable compliance-specific features for regulated industries.
+
+#### Rationale
+**Why This Matters:**
+- Tamper-evident logging and certificates of completion preserve the legal defensibility of signed agreements
+- Retention policies and legal holds ensure required records are preserved and not prematurely destroyed
+- Advanced audit features supply the evidence regulated industries need to satisfy auditors and compliance frameworks
+
+**Attack Prevented:** Evidence tampering, record destruction, compliance gaps, repudiation of signed agreements
 
 #### ClickOps Implementation
 
@@ -474,6 +554,7 @@ Enable compliance-specific features for regulated industries.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, security settings, and admin controls | Claude Code (Opus 4.5) |
 
 ---

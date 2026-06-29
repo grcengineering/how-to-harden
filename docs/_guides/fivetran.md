@@ -6,9 +6,9 @@ slug: "fivetran"
 tier: "2"
 category: "Data"
 description: "Data integration platform hardening for Fivetran including SSO configuration, role-based access, and connector security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -117,6 +117,15 @@ Configure SAML SSO to centralize authentication for Fivetran users.
 #### Description
 Require all users to authenticate via SSO only.
 
+#### Rationale
+**Why This Matters:**
+- Forcing SAML-only authentication closes the local password login path that bypasses IdP-enforced MFA and conditional access
+- Password logins are vulnerable to credential stuffing, phishing, and reuse of breached credentials
+- Centralizing every login through the IdP means deprovisioning a user in the IdP instantly revokes Fivetran access
+- Fivetran holds the credentials and data flows for your entire pipeline, so any non-SSO login is a high-value bypass
+
+**Attack Prevented:** Credential stuffing, phishing, MFA bypass, password reuse, orphaned-account access
+
 #### ClickOps Implementation
 
 **Step 1: Configure Authentication Restriction**
@@ -151,6 +160,15 @@ Require all users to authenticate via SSO only.
 
 #### Description
 Enable automatic user provisioning on first login.
+
+#### Rationale
+**Why This Matters:**
+- JIT provisioning creates accounts only when an IdP-authenticated user signs in for the first time, eliminating pre-created dormant accounts
+- New users are created with no permissions by default, enforcing least privilege until roles are explicitly assigned
+- Tying account creation to the IdP keeps the user lifecycle authoritative in one place rather than scattered across manual Fivetran account creation
+- Manual account creation is error-prone and tends to leave stale, over-privileged accounts behind
+
+**Attack Prevented:** Orphaned-account access, privilege creep, manual provisioning errors, dormant account abuse
 
 #### ClickOps Implementation
 
@@ -188,6 +206,15 @@ Enable automatic user provisioning on first login.
 
 #### Description
 Configure session timeout for dashboard access.
+
+#### Rationale
+**Why This Matters:**
+- Bounded session lifetimes limit the window in which a stolen or hijacked session token can be reused
+- Shorter timeouts protect against unattended-workstation access to the dashboard and its connector configurations
+- Aligning timeout length to data sensitivity forces re-authentication in high-risk environments
+- A default 24-hour session is a long exposure window for an admin console that controls data movement
+
+**Attack Prevented:** Session hijacking, token replay, unattended-session abuse, idle-session takeover
 
 #### Prerequisites
 - Enterprise or Business Critical plan (for custom timeout)
@@ -233,6 +260,15 @@ Configure session timeout for dashboard access.
 #### Description
 Implement role-based permissions for Fivetran access.
 
+#### Rationale
+**Why This Matters:**
+- Assigning the least-privileged role to each user limits the blast radius if any single account is compromised
+- Restricting Account Administrator to a small number of users reduces the count of high-value targets
+- Read-only Analyst roles let users see status without the ability to alter connectors, credentials, or destinations
+- Over-broad administrative access lets a single compromised account reconfigure pipelines or exfiltrate source and destination data
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider misuse, blast-radius expansion
+
 #### ClickOps Implementation
 
 **Step 1: Review Account Roles**
@@ -271,6 +307,15 @@ Implement role-based permissions for Fivetran access.
 #### Description
 Organize users into teams for granular access control.
 
+#### Rationale
+**Why This Matters:**
+- Teams scope connector and destination access to the users who actually need it, enforcing need-to-know
+- Inherited team permissions make access consistent and auditable rather than ad hoc per user
+- Limiting Team Manager assignments controls who can grant access to pipelines and data
+- Without segmentation, every user can potentially reach every connector and destination across the account
+
+**Attack Prevented:** Over-broad data access, lateral movement, unauthorized pipeline changes, insider misuse
+
 #### ClickOps Implementation
 
 **Step 1: Create Teams**
@@ -305,6 +350,15 @@ Organize users into teams for granular access control.
 
 #### Description
 Configure SCIM for automated user and group provisioning.
+
+#### Rationale
+**Why This Matters:**
+- SCIM automates account creation, updates, and deprovisioning from the IdP so access mirrors employment status in near real time
+- Automatic deprovisioning removes departed users immediately, eliminating orphaned accounts with standing data access
+- Group-to-team mapping keeps role assignments consistent and removes manual permission drift
+- Manual offboarding is slow and easily missed, leaving credentials that can be abused after a user leaves
+
+**Attack Prevented:** Orphaned-account access, offboarding gaps, privilege drift, manual provisioning errors
 
 #### ClickOps Implementation
 
@@ -386,6 +440,15 @@ Secure credentials used for data source connections.
 #### Description
 Secure network access for Fivetran connections.
 
+#### Rationale
+**Why This Matters:**
+- IP allowlisting restricts source-system access to known Fivetran addresses, shrinking the attack surface to a defined set of origins
+- PrivateLink and private networking keep data off the public internet, removing exposure to interception and internet-facing scanning
+- Requiring SSL/TLS with certificate validation protects pipeline data in transit and defends against man-in-the-middle attacks
+- Source databases exposed to the public internet are routinely scanned and brute-forced by attackers
+
+**Attack Prevented:** Man-in-the-middle interception, network eavesdropping, unauthorized source access, internet-exposed database attacks
+
 #### ClickOps Implementation
 
 **Step 1: Configure IP Allowlisting**
@@ -420,6 +483,15 @@ Secure network access for Fivetran connections.
 
 #### Description
 Secure data warehouse and destination configurations.
+
+#### Rationale
+**Why This Matters:**
+- Dedicated least-privilege service accounts for the destination limit what a compromised Fivetran connection can write or alter
+- Encryption in transit and at rest protects the consolidated warehouse data, which is often more sensitive than any single source
+- Restricting who can change destination settings prevents redirection of data or weakening of warehouse controls
+- The destination aggregates data from many sources, making it a concentrated, high-value target
+
+**Attack Prevented:** Data exfiltration, unauthorized warehouse writes, data redirection, eavesdropping on data in transit and at rest
 
 #### ClickOps Implementation
 
@@ -457,6 +529,15 @@ Secure data warehouse and destination configurations.
 
 #### Description
 Monitor user and connector activity.
+
+#### Rationale
+**Why This Matters:**
+- Activity logs provide the audit trail needed to detect unauthorized logins, permission changes, and connector tampering
+- Exporting logs to a SIEM enables correlation, alerting, and retention beyond the dashboard's native view
+- Monitoring credential and SSO configuration changes catches attacker attempts to weaken authentication controls
+- Without logging, account compromise and configuration drift go undetected and forensic investigation is impossible
+
+**Attack Prevented:** Undetected account compromise, configuration tampering, insider misuse, post-incident blind spots
 
 #### ClickOps Implementation
 
@@ -497,6 +578,15 @@ Monitor user and connector activity.
 #### Description
 Monitor data sync status and errors.
 
+#### Rationale
+**Why This Matters:**
+- Sync failure alerts surface broken or tampered pipelines quickly, protecting data freshness and integrity
+- Webhook integration with monitoring systems enables automated detection and response to abnormal sync behavior
+- Prompt investigation of errors distinguishes routine failures from credential revocation or malicious interference
+- Silent sync failures can mask data manipulation, exfiltration, or a compromised source connection
+
+**Attack Prevented:** Undetected pipeline tampering, data integrity loss, silent connector compromise, delayed incident response
+
 #### ClickOps Implementation
 
 **Step 1: Configure Notifications**
@@ -531,6 +621,15 @@ Monitor data sync status and errors.
 
 #### Description
 Implement data governance controls for sensitive data.
+
+#### Rationale
+**Why This Matters:**
+- Column blocking prevents sensitive fields such as PII from ever being replicated into the destination, reducing the data footprint
+- Column hashing protects sensitive values while preserving referential integrity for analytics
+- Documented data flows and lineage support compliance audits and rapid scoping during an incident
+- Replicating unnecessary sensitive data expands breach impact and regulatory exposure across every destination
+
+**Attack Prevented:** PII over-exposure, sensitive-data sprawl, compliance violations, expanded breach blast radius
 
 #### ClickOps Implementation
 
@@ -620,6 +719,7 @@ Implement data governance controls for sensitive data.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, access controls, and connector security | Claude Code (Opus 4.5) |
 
 ---

@@ -6,9 +6,9 @@ slug: "datadog"
 tier: "1"
 category: "Security"
 description: "Observability platform hardening for Datadog including SAML SSO, role-based access control, and organization security settings"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -113,6 +113,15 @@ Configure SAML SSO to centralize authentication for Datadog users.
 #### Description
 Require SAML authentication for all users.
 
+#### Rationale
+**Why This Matters:**
+- Strict mode disables local password and social logins, forcing every login through your corporate IdP and its MFA and conditional-access policies
+- Leaving password or Google login enabled creates a parallel authentication path that bypasses SSO controls and is a prime target for credential stuffing and phishing
+- Centralized IdP authentication ensures departed employees lose Datadog access the moment they are deprovisioned, eliminating orphaned standing access
+- Datadog holds infrastructure telemetry, logs, and security signals that map your environment for anyone who gets in
+
+**Attack Prevented:** Credential stuffing, phishing, MFA bypass, orphaned-account access
+
 #### ClickOps Implementation
 
 **Step 1: Navigate to Login Methods**
@@ -144,6 +153,15 @@ Require SAML authentication for all users.
 #### Description
 Configure session timeout and security settings.
 
+#### Rationale
+**Why This Matters:**
+- Bounded session duration and idle timeout limit the window in which a stolen or hijacked session token remains valid
+- Without an idle timeout, an unattended or unlocked workstation leaves an authenticated Datadog session open indefinitely for anyone with physical or remote access
+- Shorter sessions force periodic re-authentication, reducing the value of exfiltrated session cookies
+- Datadog dashboards expose sensitive operational and security data, so a lingering session is a direct path to that data
+
+**Attack Prevented:** Session hijacking, cookie theft, unattended-workstation access
+
 #### ClickOps Implementation
 
 **Step 1: Configure Session Duration**
@@ -172,6 +190,15 @@ Configure session timeout and security settings.
 
 #### Description
 Implement least privilege using Datadog's RBAC model.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure each user can only see and change what their job requires, containing the blast radius if an account is compromised
+- Broad default roles grant more access than most users need, expanding the attack surface across dashboards, monitors, and integrations
+- Custom roles let you gate sensitive permissions such as key management, billing, and user administration to a small set of trusted operators
+- Datadog aggregates logs and metrics from across your infrastructure, so over-privileged accounts can expose data from systems the user never works on
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider data access, over-exposure of telemetry
 
 #### ClickOps Implementation
 
@@ -207,6 +234,15 @@ Implement least privilege using Datadog's RBAC model.
 #### Description
 Minimize and protect administrator accounts.
 
+#### Rationale
+**Why This Matters:**
+- Admin accounts can modify org-wide security settings, manage users, and rotate keys, making them the highest-value target in the organization
+- Each additional admin multiplies the number of accounts an attacker can phish or compromise to gain full control
+- Keeping admin to a small, named set makes anomalous admin activity easier to detect and audit
+- A single compromised Datadog admin can disable logging, exfiltrate data, and weaken every other control in this guide
+
+**Attack Prevented:** Admin account takeover, privilege escalation, audit tampering, security-control bypass
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admin Users**
@@ -234,6 +270,15 @@ Minimize and protect administrator accounts.
 
 #### Description
 Secure Datadog API keys used for data ingestion.
+
+#### Rationale
+**Why This Matters:**
+- API keys authorize data ingestion and programmatic access, so a leaked key lets an attacker submit false telemetry or pull organizational data
+- Purpose-specific, descriptively named keys let you revoke a single compromised integration without breaking everything else
+- Storing keys in a secret manager and keeping them out of source code prevents the most common leak vector — credentials committed to repositories
+- Unused or orphaned keys are standing credentials an attacker can exploit undetected
+
+**Attack Prevented:** API key leakage, credential exposure in source code, telemetry poisoning, unauthorized data access
 
 #### ClickOps Implementation
 
@@ -268,6 +313,15 @@ Secure Datadog API keys used for data ingestion.
 #### Description
 Secure application keys used for API access.
 
+#### Rationale
+**Why This Matters:**
+- Application keys inherit the full permissions of the user who created them, so a leaked key grants an attacker that user's entire level of access
+- Scoping keys to the minimum required permissions limits what a compromised key can read or change
+- Regular rotation shortens the lifespan of any key that is exposed before the leak is detected
+- Tying a privileged user's app key to a broad scope effectively turns a key leak into an account takeover
+
+**Attack Prevented:** Application key leakage, over-scoped access, credential reuse, account impersonation
+
 #### ClickOps Implementation
 
 **Step 1: Review Application Keys**
@@ -299,6 +353,15 @@ Secure application keys used for API access.
 
 #### Description
 Monitor administrative and security events.
+
+#### Rationale
+**Why This Matters:**
+- The audit trail records configuration changes, logins, and sensitive operations, providing the evidence needed to detect and investigate abuse
+- Without alerting on sensitive events, malicious changes such as disabling SSO or creating new admin accounts go unnoticed
+- Exporting logs to a SIEM with independent retention preserves evidence even if an attacker tampers with the Datadog console
+- Detection and forensic readiness are the backstop for every preventive control — they catch what slips through
+
+**Attack Prevented:** Undetected configuration tampering, insider abuse, delayed breach detection, log destruction
 
 #### ClickOps Implementation
 
@@ -373,6 +436,7 @@ Monitor administrative and security events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and key security | Claude Code (Opus 4.5) |
 
 ---

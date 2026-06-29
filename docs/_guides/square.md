@@ -6,9 +6,9 @@ slug: "square"
 tier: "2"
 category: "Productivity"
 description: "Commerce platform hardening for Square including SSO configuration, team permissions, and API security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Square Dashboard security including SSO, team permissions, dev
 #### Description
 Configure SSO for Square Dashboard access (Square for Enterprise).
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Square Dashboard authentication in your corporate IdP, enforcing MFA and conditional access on every login
+- Local Square password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- IdP-driven deprovisioning removes access the moment an employee leaves, eliminating orphaned accounts that retain standing access to payment and customer data
+- A single compromised Square login can expose transaction history, customer PII, and payout banking details
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - Square for Enterprise plan
 - Account owner access
@@ -91,6 +100,15 @@ Configure SSO for Square Dashboard access (Square for Enterprise).
 #### Description
 Require 2FA for all Square accounts.
 
+#### Rationale
+**Why This Matters:**
+- Two-factor authentication blocks account takeover even when a password is phished, leaked, or reused from another breach
+- Square accounts control payments, refunds, and payout bank accounts, so a password alone is insufficient protection for financial operations
+- Requiring 2FA across the whole team closes the weakest-link gap where one unprotected member becomes the entry point
+- PCI DSS requires multi-factor authentication for access to the cardholder data environment
+
+**Attack Prevented:** Credential stuffing, phishing, password reuse, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA**
@@ -118,6 +136,15 @@ Require 2FA for all Square accounts.
 
 #### Description
 Implement least privilege using Square permissions.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege permission sets ensure each team member can only reach the data and actions their role requires
+- Over-broad access lets a single compromised staff account expose customer records, sales reports, and settings far beyond its job function
+- Separating sales, reporting, customer-data, and settings access contains the blast radius of any one account compromise
+- Granular permissions create accountability and make insider misuse easier to detect during access reviews
+
+**Attack Prevented:** Privilege escalation, insider data theft, lateral movement, excessive-access abuse
 
 #### ClickOps Implementation
 
@@ -149,6 +176,15 @@ Implement least privilege using Square permissions.
 #### Description
 Control team access to specific locations.
 
+#### Rationale
+**Why This Matters:**
+- Scoping team members to only their assigned locations limits exposure of sales, customer, and payout data across the business
+- A compromised or rogue account confined to one location cannot pull reports or process refunds for the entire organization
+- Location-level segmentation enforces separation between production sites and test or pilot locations
+- Cross-location access reviews surface accounts that have accumulated unnecessary reach over time
+
+**Attack Prevented:** Lateral movement, cross-location data exposure, excessive-access abuse
+
 #### ClickOps Implementation
 
 **Step 1: Configure Access**
@@ -169,6 +205,15 @@ Control team access to specific locations.
 
 #### Description
 Minimize and protect owner accounts.
+
+#### Rationale
+**Why This Matters:**
+- Account owners hold the highest privilege in Square (billing, banking, team management, and full data access), so their number must be tightly limited
+- Every additional owner account expands the attack surface and the chance of a single compromised credential controlling the whole account
+- Requiring 2FA and monitoring activity on owner accounts detects misuse before it escalates
+- Tight owner control reduces the risk of standing access lingering after a privileged employee departs
+
+**Attack Prevented:** Privilege escalation, account takeover, insider abuse, orphaned-admin access
 
 #### ClickOps Implementation
 
@@ -197,6 +242,15 @@ Minimize and protect owner accounts.
 #### Description
 Manage Square devices and terminals.
 
+#### Rationale
+**Why This Matters:**
+- Square terminals and POS devices sit in physically exposed retail environments where theft and tampering are real threats
+- Device passcodes and automatic logout prevent an unattended or stolen terminal from processing fraudulent transactions or exposing customer data
+- An accurate device inventory makes rogue or unrecognized hardware immediately visible
+- Monitoring device activity surfaces anomalous use such as logins from unexpected devices or off-hours transactions
+
+**Attack Prevented:** Physical device theft, unauthorized POS access, terminal tampering, fraudulent transactions
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Devices**
@@ -222,6 +276,15 @@ Manage Square devices and terminals.
 
 #### Description
 Secure Square API access.
+
+#### Rationale
+**Why This Matters:**
+- Square API access tokens can read and write payments, customers, and inventory programmatically, so a leaked token is equivalent to a compromised account
+- Removing unused connected applications eliminates dormant integrations that retain access no one is monitoring
+- Using the sandbox for testing keeps real payment data and live credentials out of development workflows
+- Regular credential rotation limits the window an exposed token remains usable
+
+**Attack Prevented:** API token theft, third-party integration abuse, credential leakage, unauthorized data access
 
 #### ClickOps Implementation
 
@@ -285,6 +348,7 @@ Secure Square API access.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and permissions | Claude Code (Opus 4.5) |
 
 ---

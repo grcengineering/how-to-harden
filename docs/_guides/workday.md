@@ -6,9 +6,9 @@ slug: "workday"
 tier: "2"
 category: "HR/Finance"
 description: "HCM platform hardening for security groups, integration security, and domain policies"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -86,6 +86,14 @@ Require SAML SSO with MFA for all Workday access, including employee self-servic
 #### Description
 Configure Workday security groups with least-privilege access to HR and financial data.
 
+#### Rationale
+**Why This Matters:**
+- Workday security groups govern who can view and modify HR, payroll, and financial data — over-broad groups grant standing access far beyond business need
+- Least-privilege domain security policies contain the blast radius when any single account is compromised
+- Segregation of duties between payroll input and payroll approval prevents one person from both initiating and authorizing fraudulent payments
+
+**Attack Prevented:** Privilege escalation, insider fraud, lateral movement, excessive data exposure
+
 #### ClickOps Implementation
 
 **Step 1: Design Security Group Structure**
@@ -111,6 +119,14 @@ Configure Workday security groups with least-privilege access to HR and financia
 
 #### Description
 Configure session timeout and management policies.
+
+#### Rationale
+**Why This Matters:**
+- Idle Workday sessions left open on unattended or shared workstations let anyone resume an authenticated session to sensitive PII
+- Short timeouts and re-authentication on extension limit the window an attacker has to use a hijacked or stolen session
+- Concurrent-session limits make it harder for a stolen credential to be used alongside the legitimate user without detection
+
+**Attack Prevented:** Session hijacking, unattended-workstation takeover, credential reuse
 
 #### ClickOps Implementation
 
@@ -176,6 +192,15 @@ For each integration, create dedicated ISU.
 #### Description
 Configure OAuth token policies for integration authentication.
 
+#### Rationale
+**Why This Matters:**
+- Long-lived or non-expiring refresh tokens for integrations are high-value targets that grant bulk programmatic access to employee data
+- Short token lifetimes and regular client-secret rotation shrink the useful lifespan of any leaked credential
+- Scoping each OAuth client to the minimum required APIs limits what a stolen token can reach
+- Monitoring token issuance and revoking anomalous tokens enables fast containment of a compromise
+
+**Attack Prevented:** Token theft, refresh-token abuse, bulk data exfiltration, replay attacks
+
 #### ClickOps Implementation
 
 **Step 1: Configure OAuth Clients**
@@ -211,6 +236,14 @@ Configure OAuth token policies for integration authentication.
 #### Description
 Restrict access to sensitive fields based on business need.
 
+#### Rationale
+**Why This Matters:**
+- Fields like SSN, bank account, and compensation are the most damaging data in the tenant and are often exposed to far more roles than need them
+- Field-level restrictions and masking ensure most users see only the data their job requires, even within reports they can otherwise run
+- Logging access to sensitive fields creates the audit trail needed to detect and investigate misuse
+
+**Attack Prevented:** PII exposure, identity theft, insider data harvesting, over-broad data access
+
 #### ClickOps Implementation
 
 **Step 1: Identify Sensitive Fields**
@@ -237,6 +270,14 @@ Restrict access to sensitive fields based on business need.
 #### Description
 Implement data retention policies aligned with legal requirements.
 
+#### Rationale
+**Why This Matters:**
+- Data retained beyond its legal or business need expands the volume of PII exposed in any future breach
+- Automated purging of expired records reduces standing liability and supports privacy obligations such as right-to-erasure
+- Clear retention schedules prevent stale employment, payroll, and performance records from accumulating as an unmanaged data hoard
+
+**Attack Prevented:** Excessive data exposure, regulatory non-compliance, breach blast-radius amplification
+
 #### ClickOps Implementation
 
 1. Navigate to: **Data Retention Policies**
@@ -257,6 +298,14 @@ Implement data retention policies aligned with legal requirements.
 
 #### Description
 Limit API access to minimum required scopes.
+
+#### Rationale
+**Why This Matters:**
+- Over-scoped API clients can read and write far more data than their integration needs, magnifying the impact of a compromised client
+- Granting only the specific scopes required — for example, Staffing and Payroll for a payroll export — contains what a stolen credential can touch
+- Annual scope review with documented justification prevents permission creep as integrations evolve
+
+**Attack Prevented:** Excessive privilege, bulk data exfiltration, scope abuse via compromised integrations
 
 #### Workday API Scopes
 
@@ -283,6 +332,14 @@ Limit API access to minimum required scopes.
 
 #### Description
 Harden custom Workday Studio integrations.
+
+#### Rationale
+**Why This Matters:**
+- Custom Studio integrations are application code that can embed hardcoded credentials, mishandle errors, or leak sensitive data if not reviewed
+- Using ISU authentication and vault-stored secrets instead of embedded credentials prevents secret sprawl in integration definitions
+- Integration audit logging and data-volume anomaly alerting surface compromised or misbehaving connectors before large-scale data loss
+
+**Attack Prevented:** Hardcoded-credential theft, data leakage, supply-chain compromise of custom integrations
 
 #### Best Practices
 
@@ -312,6 +369,14 @@ Harden custom Workday Studio integrations.
 
 #### Description
 Configure comprehensive audit logging for Workday operations.
+
+#### Rationale
+**Why This Matters:**
+- Without comprehensive sign-on, data-access, and configuration-change logging, malicious activity in the tenant goes undetected
+- Exporting audit logs to a SIEM enables correlation, alerting, and retention beyond what the platform retains natively
+- Real-time webhooks on critical events shorten the time to detect and respond to account compromise or privilege changes
+
+**Attack Prevented:** Undetected intrusion, delayed incident response, audit-trail tampering, insider abuse
 
 #### ClickOps Implementation
 
@@ -383,4 +448,5 @@ Configure comprehensive audit logging for Workday operations.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Workday hardening guide | Claude Code (Opus 4.5) |

@@ -6,9 +6,9 @@ slug: "jenkins"
 tier: "2"
 category: "DevOps"
 description: "CI/CD security hardening for Jenkins including authorization, agent security, and pipeline protection"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2026-02-19"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -101,6 +101,15 @@ Enable authentication to prevent anonymous access to Jenkins. By default, older 
 #### Description
 Configure centralized authentication using LDAP or SAML SSO for enterprise identity management.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Jenkins login in the corporate IdP so MFA, conditional access, and password policy apply to every CI/CD user
+- Local Jenkins user databases lack MFA and central deprovisioning, leaving orphaned accounts behind when staff leave
+- Group and role attributes from the IdP drive Jenkins authorization, removing per-user permission drift
+- Jenkins holds deployment credentials and source code, so weak standalone logins are a direct path into the supply chain
+
+**Attack Prevented:** Credential stuffing, phishing, orphaned-account access, password reuse
+
 #### Prerequisites
 - LDAP directory or SAML IdP available
 - LDAP Plugin or SAML Plugin installed
@@ -159,6 +168,14 @@ Configure centralized authentication using LDAP or SAML SSO for enterprise ident
 
 #### Description
 Disable the "Remember me" feature to prevent persistent authentication tokens.
+
+#### Rationale
+**Why This Matters:**
+- Persistent "remember me" tokens stay valid long after a session should expire, widening the window for token theft
+- A stolen token from a shared or compromised workstation grants ongoing Jenkins access without re-authentication
+- Disabling it forces re-login so session timeout and MFA are re-evaluated regularly
+
+**Attack Prevented:** Session hijacking, token theft, unauthorized persistent access
 
 #### ClickOps Implementation
 
@@ -235,6 +252,14 @@ Configure Matrix-based security for fine-grained permission control. This is rec
 #### Description
 Enable project-based authorization for per-project access control.
 
+#### Rationale
+**Why This Matters:**
+- Global-only permissions force a choice between over-granting access and blocking legitimate work across teams
+- Per-project authorization confines each user to the jobs they need, containing the blast radius of a compromised account
+- Limits which credentials and pipelines an attacker can reach if they gain one team member's access
+
+**Attack Prevented:** Lateral movement, privilege creep, cross-team data exposure
+
 #### Prerequisites
 - Matrix Authorization Strategy Plugin installed
 
@@ -270,6 +295,14 @@ Enable project-based authorization for per-project access control.
 
 #### Description
 Implement role-based access control for scalable permission management.
+
+#### Rationale
+**Why This Matters:**
+- Matrix permissions assigned per user drift over time and become impossible to audit as the team grows
+- Roles map permissions to job function once, so access stays consistent and reviewable as users join and leave
+- Item-role patterns scope teams to their own job namespaces, preventing access to unrelated pipelines and credentials
+
+**Attack Prevented:** Privilege creep, misconfigured access grants, cross-team unauthorized access
 
 #### Prerequisites
 - Role-based Authorization Strategy Plugin installed
@@ -426,6 +459,14 @@ Configure Jenkins to run builds only on agents, not on the controller node.
 #### Description
 Use ephemeral (disposable) agents that are created fresh for each build.
 
+#### Rationale
+**Why This Matters:**
+- Long-lived agents accumulate build artifacts, cached credentials, and toolchains that one malicious build can poison for the next
+- A fresh agent per build guarantees no state carries between jobs, eliminating cross-build contamination
+- Disposable agents shrink the window an attacker has to establish persistence on build infrastructure
+
+**Attack Prevented:** Cross-build contamination, persistence on build hosts, theft of cached credentials and artifacts
+
 #### ClickOps Implementation
 
 **Step 1: Configure Cloud Agents**
@@ -463,6 +504,14 @@ Use ephemeral (disposable) agents that are created fresh for each build.
 #### Description
 Secure communication between agents and controller using JNLP over TLS.
 
+#### Rationale
+**Why This Matters:**
+- Unencrypted agent protocols expose build commands, source code, and secrets to anyone on the network path
+- TLS prevents an attacker from intercepting or injecting traffic between the controller and its agents
+- Legacy agent protocols have known weaknesses and should be disabled in favor of the TLS-encrypted protocol
+
+**Attack Prevented:** Man-in-the-middle interception, traffic injection, credential and source-code eavesdropping
+
 #### ClickOps Implementation
 
 **Step 1: Configure Agent Protocols**
@@ -494,6 +543,14 @@ Secure communication between agents and controller using JNLP over TLS.
 #### Description
 Enable CSRF protection to prevent cross-site request forgery attacks.
 
+#### Rationale
+**Why This Matters:**
+- Without CSRF tokens, a logged-in admin who visits a malicious page can be tricked into triggering Jenkins actions unknowingly
+- Attackers can forge requests to start builds, change configuration, or alter permissions using the victim's active session
+- The crumb issuer requires a per-session token on state-changing requests, blocking forged cross-origin calls
+
+**Attack Prevented:** Cross-site request forgery, unauthorized configuration changes, forced build triggers
+
 #### ClickOps Implementation
 
 **Step 1: Enable CSRF Protection**
@@ -518,6 +575,15 @@ Enable CSRF protection to prevent cross-site request forgery attacks.
 
 #### Description
 Securely manage credentials using Jenkins Credentials Plugin with appropriate scoping.
+
+#### Rationale
+**Why This Matters:**
+- Jenkins stores deployment keys, cloud tokens, and registry passwords that grant access far beyond Jenkins itself
+- Global-scope credentials are reachable by every job, so one compromised pipeline can exfiltrate them all
+- Folder- and domain-scoped credentials plus withCredentials binding limit exposure to only the jobs that need them
+- Masked, bound credentials keep plaintext secrets out of build logs
+
+**Attack Prevented:** Credential theft, secret leakage in build logs, lateral movement to production systems
 
 #### ClickOps Implementation
 
@@ -603,6 +669,14 @@ Use Pipeline Groovy Sandbox to restrict what pipeline scripts can do.
 #### Description
 Implement secure Jenkinsfile practices to prevent pipeline attacks.
 
+#### Rationale
+**Why This Matters:**
+- A Jenkinsfile is executable code in the repository, so anyone who can open a pull request can influence what the pipeline runs
+- Hardened pipeline patterns prevent untrusted input and forked PRs from executing privileged steps or reaching secrets
+- Pinning tools, scoping credentials, and validating inputs in the Jenkinsfile shrink the supply-chain attack surface
+
+**Attack Prevented:** Poisoned pipeline execution, malicious pull-request builds, secret exfiltration via pipeline code
+
 #### Code Implementation
 
 See the SDK Code Pack below for a secure Jenkinsfile template demonstrating hardened pipeline practices.
@@ -624,6 +698,14 @@ See the SDK Code Pack below for a secure Jenkinsfile template demonstrating hard
 
 #### Description
 Enable comprehensive audit logging for security monitoring.
+
+#### Rationale
+**Why This Matters:**
+- Without an audit trail, configuration changes, credential access, and build triggers leave no record to investigate
+- Centralized logs shipped to a SIEM enable detection of anomalous admin actions and after-the-fact forensics
+- Tamper-evident logging deters insider abuse and supplies compliance evidence for access and change control
+
+**Attack Prevented:** Undetected configuration tampering, insider abuse, post-incident evidence loss
 
 #### Prerequisites
 - Audit Trail Plugin installed
@@ -666,6 +748,14 @@ Enable comprehensive audit logging for security monitoring.
 
 #### Description
 Keep Jenkins and all plugins updated with security patches.
+
+#### Rationale
+**Why This Matters:**
+- Jenkins core and its plugins receive frequent security advisories, and unpatched flaws are routinely exploited in the wild
+- Outdated plugins are a leading source of remote code execution and authentication-bypass vulnerabilities in Jenkins
+- Staying on the supported LTS line with prompt patching closes known exploit paths before attackers reach them
+
+**Attack Prevented:** Exploitation of known CVEs, remote code execution, authentication bypass
 
 #### ClickOps Implementation
 
@@ -764,6 +854,7 @@ Keep Jenkins and all plugins updated with security patches.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-02-19 | 0.1.1 | draft | Migrate inline code to SDK/CLI Code Packs (1.3, 3.3, 3.4, 4.3, 4.4); remove lang= from includes | Claude Code (Opus 4.6) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with authentication, authorization, and pipeline security | Claude Code (Opus 4.5) |
 

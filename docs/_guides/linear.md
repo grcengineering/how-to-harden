@@ -6,9 +6,9 @@ slug: "linear"
 tier: "3"
 category: "DevOps"
 description: "Issue tracking platform hardening for Linear including SAML SSO, workspace access, and team permissions"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Linear security including SAML SSO, workspace access, team per
 #### Description
 Configure SAML SSO to centralize authentication for Linear users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizing Linear authentication in your corporate IdP enforces MFA, conditional access, and session policies on every login
+- Local email/password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- SSO enables automatic deprovisioning when employees leave, eliminating orphaned accounts with standing access to roadmaps and issues
+- Linear workspaces hold product roadmaps, security issues, and internal planning, so a single compromised login can expose sensitive engineering intelligence
+
+**Attack Prevented:** Credential theft, phishing, account takeover, orphaned-account access
+
 #### Prerequisites
 - Linear workspace admin access
 - Enterprise tier
@@ -95,6 +104,15 @@ Configure SAML SSO to centralize authentication for Linear users.
 #### Description
 Require 2FA for all Linear users.
 
+#### Rationale
+**Why This Matters:**
+- Passwords alone are routinely compromised through reuse, phishing, and database breaches; a second factor blocks the vast majority of automated account-takeover attempts
+- Requiring 2FA workspace-wide closes the gap left by individual users who would otherwise opt out
+- Phishing-resistant factors for admins protect the accounts that can change workspace-wide security settings
+- Linear issues and projects can reveal unreleased features and security work that attackers actively seek
+
+**Attack Prevented:** Credential stuffing, password reuse attacks, phishing, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA Requirement**
@@ -121,6 +139,15 @@ Require 2FA for all Linear users.
 #### Description
 Restrict sign-up to approved email domains.
 
+#### Rationale
+**Why This Matters:**
+- Restricting sign-up to corporate domains prevents personal or attacker-controlled email addresses from joining the workspace
+- Blocking public email providers stops unauthorized outsiders from self-provisioning access to internal projects
+- Domain allowlists keep workspace membership aligned with your identity provider and HR-managed accounts
+- Without domain controls, a leaked invite link or open join setting can let unintended parties view engineering data
+
+**Attack Prevented:** Unauthorized workspace access, rogue account creation, data exposure to outsiders
+
 #### ClickOps Implementation
 
 **Step 1: Configure Allowed Domains**
@@ -143,6 +170,15 @@ Restrict sign-up to approved email domains.
 
 #### Description
 Implement least privilege using Linear teams.
+
+#### Rationale
+**Why This Matters:**
+- Scoping members to only the teams they need limits how much of the workspace any single compromised account can reach
+- Least-privilege roles (Admin, Member, Guest) prevent ordinary users from changing settings or accessing unrelated projects
+- Function-based teams contain the blast radius of a phished or insider account to a narrow slice of issues
+- Regular access reviews catch privilege creep before it becomes a standing risk
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider data access, over-permissioned accounts
 
 #### ClickOps Implementation
 
@@ -173,6 +209,15 @@ Implement least privilege using Linear teams.
 #### Description
 Control project and issue visibility.
 
+#### Rationale
+**Why This Matters:**
+- Restricting sensitive projects to the teams that own them keeps confidential initiatives out of view for the broader workspace
+- Default-open visibility means every member can read security issues, business plans, or unreleased features unless explicitly restricted
+- Controlling cross-team access enforces need-to-know on the most sensitive work
+- A compromised low-privilege account can only see what visibility settings expose to it
+
+**Attack Prevented:** Unauthorized data access, information disclosure, insider snooping
+
 #### ClickOps Implementation
 
 **Step 1: Configure Team Privacy**
@@ -198,6 +243,15 @@ Control project and issue visibility.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Admins can change SSO, 2FA, domain, and membership settings, making every admin account a high-value target
+- Keeping admins to a small, documented set shrinks the attack surface for workspace takeover
+- Requiring SSO and 2FA on admin accounts protects the controls every other user depends on
+- Monitoring admin activity surfaces unauthorized configuration changes quickly
+
+**Attack Prevented:** Workspace takeover, privilege abuse, unauthorized configuration changes
 
 #### ClickOps Implementation
 
@@ -227,6 +281,15 @@ Minimize and protect administrator accounts.
 #### Description
 Control third-party integrations.
 
+#### Rationale
+**Why This Matters:**
+- Each connected integration is granted access to workspace data and expands the supply-chain attack surface
+- Removing unused integrations eliminates dormant OAuth grants that attackers can abuse if the vendor is compromised
+- Limiting integration scopes enforces least privilege on machine-to-machine data access
+- A breached third-party app with broad permissions can read or exfiltrate issues without touching a user account
+
+**Attack Prevented:** Supply-chain compromise, OAuth token abuse, data exfiltration via third parties
+
 #### ClickOps Implementation
 
 **Step 1: Review Integrations**
@@ -252,6 +315,15 @@ Control third-party integrations.
 
 #### Description
 Secure API token management.
+
+#### Rationale
+**Why This Matters:**
+- Personal API tokens act as long-lived credentials that bypass interactive SSO and 2FA prompts
+- Tokens leaked in code, logs, or CI configs grant direct programmatic access to workspace data
+- Regular rotation and revocation of unused tokens limits the window an exposed token remains valid
+- Documenting token purposes makes it possible to spot and revoke tokens that no longer have an owner
+
+**Attack Prevented:** Credential leakage, token theft, unauthorized API access, persistent access via stale tokens
 
 #### ClickOps Implementation
 
@@ -280,6 +352,15 @@ Secure API token management.
 
 #### Description
 Enable and monitor activity logs.
+
+#### Rationale
+**Why This Matters:**
+- Activity logs provide the evidence needed to detect and investigate unauthorized access or configuration changes
+- Monitoring authentication, permission, and integration events surfaces account compromise and insider abuse early
+- Without log review, malicious actions go unnoticed until damage is done and incident response has no timeline to reconstruct
+- Retained audit records support SOC 2, GDPR, and HIPAA evidence requirements
+
+**Attack Prevented:** Undetected intrusion, insider abuse, repudiation, delayed incident response
 
 #### ClickOps Implementation
 
@@ -343,6 +424,7 @@ Enable and monitor activity logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, teams, and integrations | Claude Code (Opus 4.5) |
 
 ---

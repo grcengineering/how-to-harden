@@ -6,9 +6,9 @@ slug: "pagerduty"
 tier: "2"
 category: "IT Operations"
 description: "Incident management platform hardening for PagerDuty including SSO configuration, user provisioning, and access controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -138,6 +138,15 @@ Maintain SAML certificate validity.
 #### Description
 Understand and protect Account Owner fallback access.
 
+#### Rationale
+**Why This Matters:**
+- The Account Owner's email/password login is a permanent bypass of your SSO and MFA controls and exists on every PagerDuty account whether you protect it or not
+- During an IdP or SSO outage this account is the only way to restore incident-response access, so its credentials must be both recoverable and rigorously protected in a vault
+- Because the Account Owner can re-enable password login for every user, compromise of this single account collapses the entire SSO security model
+- Incident management is a critical operational function — an attacker who seizes the Account Owner can suppress or reroute alerts during an active attack
+
+**Attack Prevented:** SSO/MFA bypass, account takeover, credential theft, alert suppression during incident
+
 #### ClickOps Implementation
 
 **Step 1: Protect Account Owner Credentials**
@@ -167,6 +176,15 @@ Understand and protect Account Owner fallback access.
 #### Description
 Configure automatic user provisioning via SSO.
 
+#### Rationale
+**Why This Matters:**
+- On-demand provisioning ensures only users your IdP has authorized can create a PagerDuty account, keeping the user directory tied to corporate identity
+- Centralizing account creation in the IdP removes manual invite workflows that are easy to misconfigure or abuse to seed rogue accounts
+- Because SAML attributes are applied only at initial creation and do not later sync, understanding this behavior prevents stale role assignments that silently grant more access than intended
+- Tying account creation to IdP group membership shrinks the pool of accounts an attacker can phish or target
+
+**Attack Prevented:** Unauthorized account creation, privilege drift, orphaned accounts
+
 #### ClickOps Implementation
 
 **Step 1: Enable On-Demand Provisioning**
@@ -193,6 +211,15 @@ Configure automatic user provisioning via SSO.
 
 #### Description
 Configure SCIM for automated user lifecycle management.
+
+#### Rationale
+**Why This Matters:**
+- SCIM automatically deprovisions departed employees, closing the gap that on-demand SSO provisioning leaves open when access is revoked only in the IdP
+- Automated lifecycle management eliminates orphaned PagerDuty accounts that retain standing access to on-call schedules and incident data
+- Centralizing create, update, and deactivate operations in the IdP keeps PagerDuty roles synchronized with current job function
+- Removing manual offboarding steps reduces the window during which a former insider could still receive or act on production alerts
+
+**Attack Prevented:** Orphaned-account access, insider threat, privilege creep, delayed offboarding
 
 #### ClickOps Implementation
 
@@ -222,6 +249,15 @@ Configure SCIM for automated user lifecycle management.
 
 #### Description
 Implement least privilege using PagerDuty roles.
+
+#### Rationale
+**Why This Matters:**
+- Assigning the least-privileged role that fits each user's job limits what a compromised account can change, exfiltrate, or destroy
+- Restricting Account Owner and Admin to a small group shrinks the high-value attack surface that grants account-wide control
+- Granular roles (Manager, Responder, Observer, Limited User) prevent on-call engineers from holding administrative power they never need
+- Proper role scoping protects integration keys, escalation policies, and audit settings from accidental or malicious modification
+
+**Attack Prevented:** Privilege escalation, lateral movement, configuration tampering, blast-radius expansion
 
 #### ClickOps Implementation
 
@@ -255,6 +291,15 @@ Implement least privilege using PagerDuty roles.
 #### Description
 Minimize and protect administrator accounts.
 
+#### Rationale
+**Why This Matters:**
+- Admin accounts can modify integrations, escalation policies, and security settings, so each one is a high-value target whose compromise affects the whole account
+- Reducing the number of admins to the minimum directly shrinks the attack surface exposed to phishing and credential theft
+- Using the Manager role for routine team administration avoids handing out account-wide power for day-to-day tasks
+- Fewer privileged accounts make anomalous admin activity easier to detect and investigate in audit logs
+
+**Attack Prevented:** Admin account takeover, privilege escalation, unauthorized configuration changes
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admin Users**
@@ -283,6 +328,15 @@ Minimize and protect administrator accounts.
 
 #### Description
 Monitor administrative and security events.
+
+#### Rationale
+**Why This Matters:**
+- Audit records provide the evidence trail needed to detect unauthorized changes to users, roles, integrations, and SSO settings
+- Exporting events to a SIEM enables correlation with other systems and near-real-time alerting on suspicious PagerDuty activity
+- Without comprehensive logging, account compromise and insider misuse can go undetected and forensic investigation becomes impossible
+- Retained audit logs satisfy compliance evidence requirements for SOC 2, ISO 27001, and similar frameworks
+
+**Attack Prevented:** Undetected intrusion, insider misuse, untraceable tampering, compliance evidence gaps
 
 #### ClickOps Implementation
 
@@ -355,6 +409,7 @@ Monitor administrative and security events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, user management, and access controls | Claude Code (Opus 4.5) |
 
 ---

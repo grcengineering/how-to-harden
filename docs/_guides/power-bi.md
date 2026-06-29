@@ -6,9 +6,9 @@ slug: "power-bi"
 tier: "5"
 category: "Data"
 description: "Microsoft BI security for tenant settings, gateway credentials, and embed controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -50,6 +50,18 @@ This guide covers Power BI security configurations including authentication, acc
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
+#### Description
+Require Azure AD Conditional Access policies (MFA and device compliance) for all Power BI access and enable Microsoft Information Protection sensitivity labels on tenant content.
+
+#### Rationale
+**Why This Matters:**
+- Conditional Access enforces MFA and device-compliance checks on every Power BI sign-in, closing the gap that password-only authentication leaves open
+- Power BI inherits Azure AD identity, so policies set centrally apply uniformly across the Microsoft 365 ecosystem instead of per-report
+- Sensitivity labels travel with exported reports and datasets, keeping protection in place when content leaves the service
+- Executive dashboards and financial reports are high-value targets, and unconditional access lets a single stolen credential reach all of them
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, access from unmanaged or non-compliant devices
+
 #### ClickOps Implementation
 
 **Step 1: Configure Conditional Access (Azure AD)**
@@ -69,6 +81,18 @@ This guide covers Power BI security configurations including authentication, acc
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
+
+#### Description
+Assign least-privilege workspace roles (Admin, Member, Contributor, Viewer) per team and limit external sharing so users receive only the access their function requires.
+
+#### Rationale
+**Why This Matters:**
+- Granular workspace roles enforce least privilege, so a Viewer cannot publish or alter datasets and a Contributor cannot reassign permissions
+- Per-team workspaces contain the blast radius of a compromised account to that team's content rather than the whole tenant
+- Restricting external sharing at the workspace level prevents sensitive reports from leaking to guests or unmanaged identities
+- Over-broad Admin and Member grants are a common path to privilege escalation and unauthorized data exposure
+
+**Attack Prevented:** Privilege escalation, unauthorized data modification, lateral movement, oversharing to external users
 
 #### ClickOps Implementation
 
@@ -101,6 +125,14 @@ Control report and dashboard sharing.
 #### Rationale
 **Attack Scenario:** Public publish to web exposes financial reports; embed tokens enable unauthorized dashboard access.
 
+**Why This Matters:**
+- Disabling Publish to web prevents reports from being exposed anonymously on the public internet where anyone with the link can read them
+- Restricting external sharing keeps business intelligence inside the organization's identity boundary
+- Limiting and auditing export formats stops data from being copied out of governed reports into ungoverned spreadsheets
+- Default-open sharing settings are a common cause of accidental financial and customer-data exposure in Power BI
+
+**Attack Prevented:** Anonymous public data exposure, data exfiltration via export, oversharing to external users
+
 #### ClickOps Implementation
 
 **Step 1: Tenant Settings**
@@ -121,6 +153,18 @@ Control report and dashboard sharing.
 
 **Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-21
+
+#### Description
+Secure embedded analytics by using the app-owns-data pattern with a service principal, enforcing row-level security, setting short token expirations, and restricting who can generate embed tokens.
+
+#### Rationale
+**Why This Matters:**
+- The app-owns-data pattern with a service principal keeps master credentials out of client code and centralizes embed authorization
+- Row-level security ensures an embed token only returns the rows the end user is entitled to, even though the app authenticates as a single identity
+- Short-lived embed tokens limit the window in which an intercepted or leaked token can be replayed
+- Unrestricted embed-token generation lets any developer mint access to sensitive dashboards outside governed sharing controls
+
+**Attack Prevented:** Embed token theft and replay, cross-user and cross-tenant data leakage, unauthorized dashboard access
 
 #### Implementation
 
@@ -143,6 +187,18 @@ Control report and dashboard sharing.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 
+#### Description
+Limit on-premises data gateway administrators, review stored data source credentials, use dedicated service accounts with minimal database permissions, and rotate those credentials regularly.
+
+#### Rationale
+**Why This Matters:**
+- The gateway stores credentials to on-premises databases, so a compromised gateway admin can reach every connected source
+- Limiting gateway administrators reduces the number of identities that can repoint connections or read stored credentials
+- Service accounts scoped to least-privilege database permissions cap what a leaked credential can actually do
+- Regular credential rotation shrinks the value of any credential that is captured or exposed
+
+**Attack Prevented:** Credential theft, lateral movement into on-premises databases, standing-credential abuse, privilege escalation
+
 #### ClickOps Implementation
 
 **Step 1: Manage Gateway Users**
@@ -161,6 +217,18 @@ Control report and dashboard sharing.
 
 **Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-3
+
+#### Description
+Define and test row-level security (RLS) roles so users only see the dataset rows they are authorized to view, then validate enforcement with the "View as" feature.
+
+#### Rationale
+**Why This Matters:**
+- RLS enforces data segregation inside a shared dataset, so one report can serve many audiences without exposing each other's rows
+- Without RLS, any user with report access can see all underlying records, including other regions, teams, or customers
+- Testing with "View as" catches misconfigured filters before they leak data in production
+- RLS is the primary control preventing horizontal data exposure in multi-tenant or multi-team dashboards
+
+**Attack Prevented:** Unauthorized data access, horizontal data exposure across tenants and teams, broken access control
 
 #### Implementation
 
@@ -181,6 +249,18 @@ Control report and dashboard sharing.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
+
+#### Description
+Enable and retain the Power BI activity log (or the Microsoft 365 unified audit log) to record user and admin actions such as sharing, exports, and access changes.
+
+#### Rationale
+**Why This Matters:**
+- Activity logs provide the audit trail needed to detect suspicious sharing, mass exports, or unexpected admin changes
+- Without retained logs, incident responders cannot reconstruct what data was accessed or exfiltrated and when
+- Centralizing in the Microsoft 365 unified audit log correlates Power BI events with the rest of the tenant's activity
+- Adequate retention satisfies compliance evidence requirements and supports forensic investigation
+
+**Attack Prevented:** Undetected data exfiltration, insider abuse, delayed breach detection, audit-trail gaps
 
 #### ClickOps Implementation
 
@@ -230,4 +310,5 @@ Control report and dashboard sharing.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Power BI hardening guide | Claude Code (Opus 4.5) |

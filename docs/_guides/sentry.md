@@ -6,9 +6,9 @@ slug: "sentry"
 tier: "2"
 category: "DevOps"
 description: "Application monitoring platform hardening for Sentry including SAML SSO, team access, data scrubbing, and integration security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Sentry security including SAML SSO, team access, data scrubbin
 #### Description
 Configure SAML SSO to centralize authentication for Sentry users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Sentry login in your corporate IdP so MFA, conditional access, and session policies apply on every authentication
+- Local Sentry passwords bypass IdP controls and are prime targets for credential stuffing and phishing
+- IdP-driven provisioning and deprovisioning removes departed employees automatically, eliminating orphaned accounts with standing access to error data
+- Sentry events expose stack traces, request payloads, and environment details that map your application's internals, so a single compromised login can reveal them all
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, orphaned-account access
+
 #### Prerequisites
 - Sentry organization owner access
 - Business or Enterprise tier
@@ -99,6 +108,15 @@ Configure SAML SSO to centralize authentication for Sentry users.
 #### Description
 Require 2FA for all Sentry users.
 
+#### Rationale
+**Why This Matters:**
+- A second factor blocks account takeover even when a password is phished, guessed, or reused from another breach
+- Sentry accounts can read error reports containing sensitive data and can alter project, alerting, and DSN settings
+- Phishing-resistant factors for owners and admins protect the accounts with the broadest blast radius
+- Enforcing 2FA organization-wide closes the gap of individual users who would otherwise opt out
+
+**Attack Prevented:** Credential stuffing, password reuse, account takeover, phishing
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA Requirement**
@@ -130,6 +148,15 @@ Require 2FA for all Sentry users.
 
 #### Description
 Implement least privilege using Sentry teams.
+
+#### Rationale
+**Why This Matters:**
+- Team-scoped access limits each member to only the projects and error data they need, shrinking the blast radius of any one compromised account
+- Over-broad organization roles let a single user read every project's stack traces and modify settings across the org
+- Function- or product-aligned teams make access reviews and offboarding straightforward and auditable
+- Least privilege contains insider misuse and limits lateral movement after a credential compromise
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider data access, excessive exposure
 
 #### ClickOps Implementation
 
@@ -165,6 +192,15 @@ Implement least privilege using Sentry teams.
 #### Description
 Control access to specific projects.
 
+#### Rationale
+**Why This Matters:**
+- Restricting projects to specific teams keeps sensitive production error data away from members who have no business reason to see it
+- Separating production from lower environments prevents broad, cross-project visibility into customer-facing systems
+- Per-project permissions enforce data segmentation and support compliance and tenant boundaries
+- Auditing project access surfaces stale or over-broad grants before they are abused
+
+**Attack Prevented:** Unauthorized data access, lateral movement, data-segregation failures
+
 #### ClickOps Implementation
 
 **Step 1: Configure Project Teams**
@@ -194,6 +230,15 @@ Control access to specific projects.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Owner and admin accounts can change SSO, billing, DSNs, data scrubbing, and member roles, giving them full control over the organization's security posture
+- Keeping the number of privileged accounts small reduces the attack surface attackers can target
+- Requiring SSO and 2FA on every admin account hardens the highest-value logins against takeover
+- Monitoring admin activity gives early warning of misuse or a compromised privileged session
+
+**Attack Prevented:** Privileged-account takeover, configuration tampering, insider abuse, security-control rollback
 
 #### ClickOps Implementation
 
@@ -226,6 +271,15 @@ Minimize and protect administrator accounts.
 
 #### Description
 Scrub sensitive data from error reports.
+
+#### Rationale
+**Why This Matters:**
+- Stack traces and request payloads frequently capture passwords, tokens, session cookies, and PII that should never be stored in a monitoring system
+- Server-side scrubbing provides a backstop, while client-side beforeSend filtering keeps sensitive values from ever leaving the application
+- Minimizing stored sensitive data shrinks the impact of any breach and supports GDPR, HIPAA, and PCI obligations
+- Unscrubbed secrets captured in events become live credentials anyone with Sentry access can harvest
+
+**Attack Prevented:** Sensitive-data exposure, secret leakage, PII overcollection, compliance violations
 
 #### ClickOps Implementation
 
@@ -262,6 +316,15 @@ Scrub sensitive data from error reports.
 #### Description
 Secure Data Source Names (DSNs).
 
+#### Rationale
+**Why This Matters:**
+- A leaked DSN lets anyone submit arbitrary events to your project, polluting error data and burning your event quota
+- Rate limits and quotas on each DSN contain abuse and prevent denial of service through event flooding
+- Rotating compromised DSNs promptly cuts off attackers without disrupting legitimate clients
+- Tracking DSN usage makes it possible to detect anomalous ingestion and unauthorized clients
+
+**Attack Prevented:** DSN abuse, event flooding, quota exhaustion, data poisoning
+
 #### ClickOps Implementation
 
 **Step 1: Review DSNs**
@@ -297,6 +360,15 @@ Secure Data Source Names (DSNs).
 #### Description
 Filter events by IP address.
 
+#### Rationale
+**Why This Matters:**
+- Restricting event ingestion to known network ranges blocks spoofed or junk events submitted with a leaked DSN from unexpected sources
+- Filtering reduces noise and prevents attackers from flooding projects with bogus data that masks real errors
+- IP allowlists add a network-layer control on top of DSN secrecy, enforcing defense in depth
+- Documented filtering rules make ingestion sources auditable and anomalies easy to spot
+
+**Attack Prevented:** Event spoofing, data poisoning, quota exhaustion, ingestion abuse
+
 #### ClickOps Implementation
 
 **Step 1: Configure Allowed IPs**
@@ -323,6 +395,15 @@ Filter events by IP address.
 
 #### Description
 Enable and monitor audit logs.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs record authentication, permission changes, DSN modifications, and data access so security-relevant actions are attributable
+- Without a reliable log trail, account compromise and configuration tampering can go undetected and unattributed
+- Monitoring permission and DSN changes catches privilege escalation and exfiltration setup early
+- Retained logs are essential evidence for incident response, forensics, and SOC 2 / ISO 27001 audits
+
+**Attack Prevented:** Undetected intrusion, repudiation, unauthorized configuration changes, audit-trail gaps
 
 #### ClickOps Implementation
 
@@ -390,6 +471,7 @@ Enable and monitor audit logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, teams, and data scrubbing | Claude Code (Opus 4.5) |
 
 ---

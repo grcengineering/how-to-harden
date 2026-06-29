@@ -6,9 +6,9 @@ slug: "zoom"
 tier: "2"
 category: "Productivity"
 description: "Video conferencing security for meeting policies, recording controls, and app marketplace"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -53,6 +53,15 @@ This guide covers Zoom security configurations including authentication, meeting
 #### Description
 Require SAML/OIDC SSO with MFA for all Zoom access.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Zoom authentication in your corporate IdP so MFA and conditional access apply to every login
+- Local Zoom passwords bypass IdP controls and are prime targets for credential stuffing — Zoom suffered a mass credential-stuffing account compromise in 2020
+- SSO with SCIM deprovisions departed users automatically, eliminating orphaned accounts that retain meeting and recording access
+- Meetings and cloud recordings can hold confidential discussions, so a single compromised login can expose sensitive collaboration data
+
+**Attack Prevented:** Credential stuffing, phishing, MFA bypass, orphaned-account access
+
 #### ClickOps Implementation
 
 **Step 1: Configure SAML SSO (Business/Enterprise)**
@@ -83,6 +92,15 @@ Require SAML/OIDC SSO with MFA for all Zoom access.
 
 #### Description
 Implement role-based access and user provisioning.
+
+#### Rationale
+**Why This Matters:**
+- Role-based access enforces least privilege so members cannot reach admin settings, billing, or account-wide configuration
+- Limiting the Owner and Admin roles shrinks the set of accounts able to disable security controls or export recordings
+- SCIM provisioning keeps Zoom membership synchronized with the IdP, removing access the moment an employee is offboarded
+- Auto-provisioning with a constrained default role prevents new SSO users from silently inheriting elevated permissions
+
+**Attack Prevented:** Privilege escalation, orphaned-account access, insider misuse, unauthorized configuration changes
 
 #### ClickOps Implementation
 
@@ -118,6 +136,15 @@ Implement role-based access and user provisioning.
 #### Description
 Require passwords and waiting rooms to prevent unauthorized meeting access.
 
+#### Rationale
+**Why This Matters:**
+- Passcodes and waiting rooms stop uninvited participants from joining via guessed or shared meeting IDs ("Zoombombing")
+- Requiring authenticated users ties attendance to known identities, deterring anonymous disruption and eavesdropping
+- Locking these settings at the account level prevents individual hosts from weakening protection on sensitive meetings
+- Disabling rejoin-after-removal and self-rename closes paths for ejected or impersonating attendees to re-enter or hide
+
+**Attack Prevented:** Meeting hijacking (Zoombombing), unauthorized eavesdropping, participant impersonation, meeting disruption
+
 #### ClickOps Implementation
 
 **Step 1: Configure Account-Level Settings**
@@ -149,6 +176,15 @@ Require passwords and waiting rooms to prevent unauthorized meeting access.
 #### Description
 Configure end-to-end encryption for sensitive meetings.
 
+#### Rationale
+**Why This Matters:**
+- End-to-end encryption ensures only meeting participants — not Zoom servers or network intermediaries — can decrypt audio and video
+- Enhanced and E2EE encryption protect confidential discussions against interception on untrusted networks and provider-side compromise
+- Verifying the security code with participants confirms there is no machine-in-the-middle injecting a substitute key
+- Sensitive meetings (legal, executive, healthcare) carry confidentiality and regulatory requirements that plain transport encryption alone may not satisfy
+
+**Attack Prevented:** Eavesdropping, machine-in-the-middle interception, provider-side data exposure
+
 #### ClickOps Implementation
 
 **Step 1: Enable E2EE**
@@ -169,6 +205,15 @@ Configure end-to-end encryption for sensitive meetings.
 
 #### Description
 Secure Zoom Phone configurations.
+
+#### Rationale
+**Why This Matters:**
+- Requiring consent for call recording keeps voice capture compliant with two-party-consent and wiretap regulations
+- Voicemail encryption protects stored messages that often contain credentials, callback numbers, and confidential business details
+- Correct E911 configuration ensures emergency calls route to the right responders with accurate location information
+- Unsecured telephony is a frequent target for toll fraud, voicemail harvesting, and interception of sensitive conversations
+
+**Attack Prevented:** Toll fraud, voicemail interception, unlawful recording, emergency-call misrouting
 
 #### ClickOps Implementation
 
@@ -228,6 +273,15 @@ Control Zoom App Marketplace installations.
 #### Description
 Manage OAuth tokens for marketplace apps.
 
+#### Rationale
+**Why This Matters:**
+- Zoom access tokens stay valid for 14 days and refresh tokens are perpetual, so a leaked token grants long-lived access to meetings and recordings
+- Reviewing and revoking unused tokens removes standing access held by abandoned or compromised integrations
+- Monitoring token usage surfaces apps still reaching meeting content that no longer have a business justification
+- Prompt revocation on offboarding or app removal closes the window in which an attacker can ride a stolen token
+
+**Attack Prevented:** OAuth token theft, persistent third-party access, data exfiltration via compromised apps
+
 #### Key Settings
 
 | Token Type | Default Validity | Recommendation |
@@ -251,6 +305,15 @@ Manage OAuth tokens for marketplace apps.
 #### Description
 Use customer-managed encryption keys for meeting content.
 
+#### Rationale
+**Why This Matters:**
+- Customer-managed keys give your organization sole control over the keys that encrypt meeting content at rest
+- Revoking or rotating the key in your KMS cuts off access to encrypted data, including against provider-side or legal compulsion
+- KMS-backed key management produces an auditable trail of every key use for compliance and incident response
+- Regulated communications often require demonstrable customer control of encryption keys that default provider-managed encryption cannot prove
+
+**Attack Prevented:** Provider-side data exposure, unauthorized data-at-rest access, key-compromise blast radius
+
 #### ClickOps Implementation (Enterprise)
 
 **Step 1: Enable CMK**
@@ -271,6 +334,15 @@ Use customer-managed encryption keys for meeting content.
 
 #### Description
 Secure meeting recordings.
+
+#### Rationale
+**Why This Matters:**
+- Cloud recordings capture full meeting audio, video, and shared screens, making them a concentrated target for data theft
+- Password protection and viewer authentication stop recordings from being opened by anyone holding a shared link
+- Restricting downloads to authenticated users prevents silent redistribution of sensitive recorded content
+- Recording consent and default expiration limit both legal exposure and the lifetime an exposed recording remains reachable
+
+**Attack Prevented:** Unauthorized recording access, link-sharing leakage, data exfiltration, retention-policy violations
 
 #### ClickOps Implementation
 
@@ -297,6 +369,15 @@ Secure meeting recordings.
 
 #### Description
 Configure Zoom audit logging.
+
+#### Rationale
+**Why This Matters:**
+- Sign-in, meeting, and operation logs provide the evidence trail needed to detect account compromise and policy changes
+- Forwarding logs to a SIEM enables correlation and alerting that Zoom's native reports alone cannot deliver
+- Without comprehensive logging, breaches go undetected and forensic reconstruction after an incident becomes impossible
+- Audit records of administrative actions reveal unauthorized settings changes such as disabling encryption or waiting rooms
+
+**Attack Prevented:** Undetected account compromise, unauthorized configuration changes, insider misuse, delayed incident response
 
 #### ClickOps Implementation
 
@@ -380,4 +461,5 @@ Configure Zoom audit logging.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Zoom hardening guide | Claude Code (Opus 4.5) |

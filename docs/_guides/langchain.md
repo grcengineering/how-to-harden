@@ -6,9 +6,9 @@ slug: "langchain"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for the LangChain library, LangSmith observability platform, and LangGraph deployment platform — covering SSO/RBAC, SDK CVE patching, prompt injection defense (OWASP LLM Top 10), tracing redaction, audit logs, and self-hosted deployment"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2026-04-27"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -475,6 +475,15 @@ Wrap every LLM output that flows into business logic in a `PydanticOutputParser`
 #### Description
 Build narrow, single-purpose tools instead of general-purpose ones (`ShellTool`, `RequestsGetTool`, generic database query). Validate inputs inside each tool and route through service accounts with the minimum DB role. Maps to **OWASP LLM06:2025 Excessive Agency** and **LLM02:2025 Sensitive Information Disclosure**.
 
+#### Rationale
+**Why This Matters:**
+- A general-purpose tool hands a prompt-injected agent the same blast radius as the underlying credential — narrow tools cap what the model can do even when it is manipulated
+- Validating inputs inside each tool stops the model from passing crafted arguments (path traversal, SQL fragments, oversized payloads) into downstream systems
+- Scoping each tool's service account to the minimum database role means a compromised agent cannot read or mutate data beyond that tool's single purpose
+- Single-purpose tools keep agent actions auditable, so misuse is easier to detect and attribute
+
+**Attack Prevented:** Excessive agency, prompt-injection-driven tool misuse, lateral movement via over-privileged credentials, sensitive data disclosure
+
 #### Code Implementation
 
 {% include pack-code.html vendor="langchain" section="4.1" %}
@@ -535,6 +544,14 @@ Cap the maximum number of tool calls per agent invocation, require human approva
 
 The pattern lives inline within [4.1's tool definitions](#41-apply-tool-level-least-privilege) — the `issue_refund` tool's `if amount_cents > 10_000: raise PermissionError(...)` is the canonical example. Combine with LangGraph human-in-the-loop checkpoints (see the [LangGraph docs](https://docs.langchain.com/langgraph)).
 
+#### Rationale
+**Why This Matters:**
+- An agent without a tool-call ceiling can be driven into runaway loops that exhaust API budget or take cascading destructive actions before anyone intervenes
+- High-impact operations (refunds, account deletions, production writes) need a human checkpoint because a single injection or hallucination should never act irreversibly on its own
+- Explicit graph routing constrains the agent to an approved set of transitions, removing the open-ended autonomy that injection attacks exploit
+
+**Attack Prevented:** Excessive agency, prompt-injection-driven destructive actions, runaway-loop resource exhaustion, unauthorized high-impact operations
+
 ---
 
 ### 4.4 Protect System Prompts from Leakage
@@ -549,6 +566,14 @@ The pattern lives inline within [4.1's tool definitions](#41-apply-tool-level-le
 Treat system prompts as **public knowledge once deployed** — never store secrets, customer-specific data, or business-rule details inside them. If your application logic depends on prompt content, that content can and will be extracted via injection attacks (LLM07: System Prompt Leakage). Move secrets to environment variables and tool-call boundaries; move business rules to deterministic Python.
 
 This is a design pattern, not a single code snippet — review your prompts in code review and treat any leak as low severity but expected.
+
+#### Rationale
+**Why This Matters:**
+- System prompts are routinely extracted via injection (LLM07), so any secret, API key, or customer-specific datum placed inside them must be assumed exposed
+- Encoding business rules in the prompt means an attacker who extracts it learns your fraud thresholds, pricing logic, and guardrails — knowledge that directly enables evasion
+- Keeping secrets in environment variables and rules in deterministic code holds the security boundary outside the model, where prompt extraction cannot reach it
+
+**Attack Prevented:** System prompt leakage, secret disclosure, business-logic reconnaissance and guardrail evasion
 
 ---
 
@@ -598,6 +623,14 @@ For high-volume production agents, enable head-based sampling via `LANGCHAIN_TRA
 
 This is an environment-variable toggle — see the [LangSmith tracing docs](https://docs.langchain.com/langsmith/tracing). No dedicated CLI/API/SDK pack is warranted because it's a single env-var change documented at the source.
 
+#### Rationale
+**Why This Matters:**
+- Every trace shipped to LangSmith carries full prompt and output content, so sending 100% of high-volume traffic multiplies the amount of sensitive data leaving your process
+- Sampling shrinks the observability data footprint, reducing both the breach surface and the third-party retention of PII-bearing payloads
+- A representative subset preserves debugging and evaluation value while capping cost and exposure
+
+**Attack Prevented:** PII over-collection in observability stores, oversized data-exfiltration surface, runaway tracing cost
+
 ---
 
 ### 5.3 Restrict Trace Project Access
@@ -606,6 +639,14 @@ This is an environment-variable toggle — see the [LangSmith tracing docs](http
 
 #### Description
 Apply the [RBAC + ABAC controls in 1.3](#13-enforce-rbac-and-abac-for-project--dataset-access) to LangSmith projects — separate "PII-bearing" projects from general engineering and grant access only to those with a need-to-know. Use the same API endpoints as 1.3 to programmatically apply project-level tag policies.
+
+#### Rationale
+**Why This Matters:**
+- Traces capture raw user inputs and model outputs, so unrestricted project access effectively exposes production customer data to every workspace member
+- Isolating PII-bearing projects behind ABAC tags enforces need-to-know and keeps sensitive traces out of view for general engineers and contractors
+- Granular project-level access limits the blast radius if any single LangSmith account is compromised
+
+**Attack Prevented:** Insider data exfiltration, over-broad trace exposure, contractor scope creep
 
 ---
 
@@ -662,6 +703,14 @@ LangSmith audit logs are GA in self-hosted v0.12.33+ and Enterprise Cloud. Appro
 #### Description
 Pull audit logs from the LangSmith REST API on a schedule and forward to your SIEM. Tag high-risk events (`create_api_key`, `update_role_assignment`, `update_sso_config`, `delete_workspace`) for elevated alerting.
 
+#### Rationale
+**Why This Matters:**
+- Audit logs that stay inside LangSmith are not correlated with the rest of your security telemetry; forwarding to a SIEM enables cross-system detection and retention beyond the platform's window
+- Tagging high-risk events (API key creation, role-assignment changes, SSO config edits, workspace deletion) drives real-time alerting on the actions most associated with account compromise
+- A centralized OCSF export preserves a copy of admin activity that survives even if the LangSmith account itself is taken over and its in-platform logs are altered
+
+**Attack Prevented:** Undetected credential and role abuse, delayed incident detection, log tampering and evidence destruction
+
 #### Code Implementation
 
 {% include pack-code.html vendor="langchain" section="6.2" %}
@@ -680,6 +729,14 @@ Pull audit logs from the LangSmith REST API on a schedule and forward to your SI
 Subscribe to GitHub Security Advisories for `langchain-ai/langchain`, `langchain-ai/langgraph`, and `langchain-ai/langsmith-sdk`. Watch the LangChain blog for changelog announcements. Configure Dependabot or Renovate to flag CVEs in the LangChain dependency family.
 
 This is an operational practice — see the supply-chain pack in [Section 7](#7-supply-chain-security) for the automation that ties this together.
+
+#### Rationale
+**Why This Matters:**
+- LangChain's fast-moving, multi-package ecosystem means new CVEs (such as the SDK SSRF and account-takeover flaws) surface regularly and reach you silently if you are not subscribed to advisories
+- Automated advisory and dependency alerts shorten the window between disclosure and patch — the period when exploitation is most likely
+- Watching the official sources catches a vulnerable transitive dependency that hash-pinning alone would otherwise freeze in place until you act
+
+**Attack Prevented:** Exploitation of known unpatched CVEs, prolonged exposure window, blind spots in transitive dependencies
 
 ---
 
@@ -728,6 +785,14 @@ LangChain publishes three official CLIs from the `langchain-ai` GitHub organizat
 
 Use these for reproducible local dev, CI bootstrap, and deployment — never wrap untrusted community CLIs around LangChain operations when the official tools exist.
 
+#### Rationale
+**Why This Matters:**
+- First-party CLIs from the `langchain-ai` organization carry the vendor's release provenance, so you are not trusting an anonymous third party with your build and deployment steps
+- Community-maintained wrappers and look-alike CLIs are a classic supply-chain and typosquatting vector — they can inject malicious steps into bootstrap and deploy flows
+- Standardizing on the official tooling makes environment setup reproducible and auditable across local dev and CI
+
+**Attack Prevented:** Supply-chain compromise via unofficial tooling, typosquatting, unreproducible and unauditable bootstrap
+
 #### Code Implementation
 
 {% include pack-code.html vendor="langchain" section="7.2" %}
@@ -771,6 +836,7 @@ A `bogware/langsmith` Terraform provider exists on the Terraform Registry, but i
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.1.1 | 2026-06-29 | Add cheat-sheet Description and Rationale for all controls |
 | 0.1.0 | 2026-04-27 | Initial draft. Verified all Code Packs against live vendor docs (langchain-cli, langgraph-cli, langsmith-cli are first-party from langchain-ai org; LangSmith REST API at api.smith.langchain.com is documented; Helm charts are official; bogware/langsmith Terraform provider is third-party and explicitly excluded). Includes CVE-2026-25528 and CVE-2026-25750 patching guidance. |
 
 ---

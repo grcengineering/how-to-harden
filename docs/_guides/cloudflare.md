@@ -6,9 +6,9 @@ slug: "cloudflare"
 tier: "1"
 category: "Security"
 description: "Security hardening for Cloudflare Zero Trust, Access, Gateway, and WARP deployment"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -115,6 +115,15 @@ Integrate Cloudflare Zero Trust with your corporate identity provider to enable 
 #### Description
 Ensure MFA is enforced for all Access application authentications through IdP policies or Cloudflare's additional MFA requirements.
 
+#### Rationale
+**Why This Matters:**
+- Passwords alone are routinely defeated by phishing, credential stuffing, and reuse — MFA adds a second factor an attacker is far less likely to possess
+- Cloudflare Access sits in front of internal and SaaS applications, so a single bypassed login can expose every protected resource
+- Enforcing MFA at the IdP or in the Access policy guarantees the requirement applies to every authentication, not just the logins users choose to protect
+- Phishing-resistant factors (FIDO2/WebAuthn) defeat real-time relay attacks that one-time codes cannot stop
+
+**Attack Prevented:** Credential theft, phishing, credential stuffing, password reuse, account takeover
+
 #### ClickOps Implementation
 
 **Option A: Enforce MFA via IdP (Recommended)**
@@ -187,6 +196,15 @@ Configure device enrollment policies to control which devices can enroll in WARP
 
 #### Description
 Configure granular admin roles in Cloudflare to limit dashboard access based on job responsibilities.
+
+#### Rationale
+**Why This Matters:**
+- Super Administrator access grants full control over Zero Trust policies, DNS, and account settings — a compromised admin account can disable every protection at once
+- Assigning least-privilege roles limits the blast radius if any single admin credential is phished or stolen
+- Scoped roles such as Zero Trust Admin and Audit Log Viewer let teams do their jobs without holding billing or account-wide change rights
+- Fewer privileged accounts means a smaller, more defensible attack surface for adversaries to target
+
+**Attack Prevented:** Privilege escalation, insider misuse, account takeover, unauthorized configuration change
 
 #### ClickOps Implementation
 
@@ -284,6 +302,15 @@ Create Access policies that protect applications with identity-based, context-aw
 #### Description
 Configure Access policies to require WARP client for application access, enabling device posture checks and additional security controls.
 
+#### Rationale
+**Why This Matters:**
+- Requiring WARP ensures every request to a protected application originates from a managed, enrolled device rather than an arbitrary browser
+- WARP routes traffic through Gateway, so all access is subject to DNS, HTTP, and network inspection instead of bypassing security controls
+- Device posture signals such as encryption, OS version, and security agents can only be evaluated when the WARP client is present and connected
+- Blocking non-WARP access closes the gap where stolen credentials alone would otherwise be sufficient to reach sensitive apps
+
+**Attack Prevented:** Unmanaged-device access, credential-only access, security-control bypass, data exfiltration
+
 #### ClickOps Implementation
 
 **Step 1: Enable WARP Requirement in Policy**
@@ -313,6 +340,15 @@ Configure Access policies to require WARP client for application access, enablin
 
 #### Description
 Define device posture checks to verify endpoint security status before granting application access.
+
+#### Rationale
+**Why This Matters:**
+- Verified identity alone does not prove the device is safe — a legitimate user on a compromised or non-compliant laptop is still a threat
+- Posture checks for disk encryption, firewall, screen lock, and OS version enforce a minimum security baseline before access is granted
+- Service-provider checks confirm endpoint security tools such as EDR and anti-malware are actually running, not merely installed
+- Blocking access on posture failure prevents malware-infected or out-of-date endpoints from reaching internal applications and data
+
+**Attack Prevented:** Compromised-endpoint access, malware lateral movement, data exposure from unencrypted devices
 
 #### ClickOps Implementation
 
@@ -404,6 +440,15 @@ Configure Gateway DNS policies to block access to malicious and policy-violating
 #### Description
 Configure Gateway HTTP policies for deeper inspection and control of web traffic.
 
+#### Rationale
+**Why This Matters:**
+- DNS filtering alone cannot see inside HTTP(S) sessions — Layer 7 inspection is needed to block malicious downloads and specific URLs
+- HTTP policies stop malware and botnet content even when delivered from otherwise-reputable or newly-categorized domains
+- Inline file inspection and antivirus scanning intercept malicious payloads before they reach the endpoint
+- Web-layer control reduces the chance that a single drive-by download or malicious file leads to endpoint compromise
+
+**Attack Prevented:** Malware downloads, drive-by compromise, botnet communication, malicious file delivery
+
 #### ClickOps Implementation
 
 **Step 1: Create HTTP Policy**
@@ -440,6 +485,15 @@ Configure Gateway HTTP policies for deeper inspection and control of web traffic
 #### Description
 Configure Gateway network policies to control non-HTTP traffic based on IP, port, and protocol.
 
+#### Rationale
+**Why This Matters:**
+- Threats and data exfiltration frequently use non-HTTP channels that web and DNS filtering never inspect
+- Blocking risky ports, tunneling, and P2P protocols removes covert paths attackers use for command-and-control and lateral movement
+- Identity-based controls on the private network range (100.96.0.0/12) prevent any enrolled user from freely reaching internal systems
+- Logging private network access creates the audit trail needed to detect and investigate unauthorized internal connections
+
+**Attack Prevented:** Command-and-control over non-HTTP ports, data exfiltration, lateral movement, unauthorized internal access
+
 #### ClickOps Implementation
 
 **Step 1: Create Network Policy**
@@ -475,6 +529,15 @@ Configure Gateway network policies to control non-HTTP traffic based on IP, port
 
 #### Description
 Enable Cloudflare Browser Isolation to execute web sessions in a secure cloud environment, preventing malware execution on endpoints.
+
+#### Rationale
+**Why This Matters:**
+- Running web sessions in a remote cloud browser means active web code never executes on the endpoint, neutralizing browser-borne malware and zero-days
+- Isolating uncategorized and newly-registered domains contains the highest-risk browsing where threat intelligence has not yet caught up
+- Disabling copy/paste, printing, and uploads/downloads on sensitive sites prevents data from leaving controlled sessions
+- Isolation protects against exploit kits and malicious scripts even when users click links that slip past other filters
+
+**Attack Prevented:** Browser-based malware, drive-by downloads, zero-day exploits, web-based data exfiltration
 
 #### Prerequisites
 - Browser Isolation add-on license
@@ -515,6 +578,15 @@ Enable Cloudflare Browser Isolation to execute web sessions in a secure cloud en
 #### Description
 Configure WARP client settings to ensure consistent security posture across all enrolled devices.
 
+#### Rationale
+**Why This Matters:**
+- Consistent global settings ensure every enrolled device enforces the same Zero Trust protections rather than relying on per-user configuration
+- Auto-connect and captive-portal detection keep WARP active across reboots and untrusted WiFi, closing windows where traffic would bypass inspection
+- Locking the WARP switch prevents users from disabling protection to evade filtering or reach blocked content
+- A defined default service mode (Gateway with WARP) guarantees traffic is routed through inspection by default, not left to user choice
+
+**Attack Prevented:** Protection bypass, unfiltered traffic on untrusted networks, inconsistent endpoint posture
+
 #### ClickOps Implementation
 
 **Step 1: Access WARP Settings**
@@ -547,6 +619,15 @@ Configure WARP client settings to ensure consistent security posture across all 
 
 #### Description
 Lock WARP client to prevent users from disabling Zero Trust protection.
+
+#### Rationale
+**Why This Matters:**
+- If users can freely disable WARP, all Gateway filtering and Access posture checks can be bypassed at will, defeating the Zero Trust model
+- Locking the switch keeps every device continuously inspected, including when malware or a user actively tries to evade controls
+- Admin override codes preserve a controlled, time-limited path for legitimate troubleshooting without leaving the switch open to everyone
+- Enforcing Gateway with WARP service mode ensures all traffic remains filtered rather than silently falling back to an unprotected path
+
+**Attack Prevented:** Security-control evasion, unfiltered malicious traffic, posture-check bypass
 
 #### ClickOps Implementation
 
@@ -671,6 +752,15 @@ Configure Cloudflare Tunnel (formerly Argo Tunnel) securely to expose internal a
 #### Description
 Always protect tunnel endpoints with Access policies before exposing them publicly.
 
+#### Rationale
+**Why This Matters:**
+- A tunnel hostname published without an Access policy exposes the internal application directly to the entire internet
+- Creating the Access application first ensures the endpoint is never reachable during the window between publishing and securing it
+- Identity-based Access policies require authenticated, authorized users before any request reaches the origin service
+- Unprotected tunnels are quickly discovered by automated scanners, making an Access gate the difference between private and publicly exploitable
+
+**Attack Prevented:** Unauthenticated access to internal apps, exposure of internal services, automated scanning and exploitation
+
 #### ClickOps Implementation
 
 **Step 1: Create Access Application First**
@@ -703,6 +793,15 @@ Always protect tunnel endpoints with Access policies before exposing them public
 
 #### Description
 Configure comprehensive logging for Zero Trust activities and integrate with SIEM for security monitoring.
+
+#### Rationale
+**Why This Matters:**
+- Without comprehensive Access, Gateway, and audit logs, malicious activity and policy violations go undetected and uninvestigable
+- Exporting via Logpush to a SIEM enables correlation, alerting, and long-term retention beyond the dashboard's limited window
+- Logs of admin changes, posture failures, and denied access provide the evidence needed for incident response and forensics
+- Audit trails support compliance obligations and demonstrate that Zero Trust controls are operating as designed
+
+**Attack Prevented:** Undetected intrusion, delayed breach discovery, repudiation, unnoticed configuration tampering
 
 #### ClickOps Implementation
 
@@ -817,6 +916,7 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with Access, Gateway, and WARP hardening | Claude Code (Opus 4.5) |
 
 ---

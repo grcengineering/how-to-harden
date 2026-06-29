@@ -6,9 +6,9 @@ slug: "jamf"
 tier: "2"
 category: "IT Operations"
 description: "MDM hardening for Jamf Pro macOS and iOS device management"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -107,6 +107,15 @@ Secure Jamf Pro console access with SSO, MFA, and role-based access controls.
 #### Description
 Secure Jamf Pro API access with dedicated accounts and token-based authentication.
 
+#### Rationale
+**Why This Matters:**
+- The Jamf Pro API can read and modify every managed device, push profiles and scripts, and pull full inventory — an exposed API token is effectively full MDM admin
+- Dedicated, least-privilege API accounts keep a compromised integration from inheriting human-admin power and make revocation surgical
+- Bearer tokens with rotation and short expiry shrink the window a leaked credential stays useful, unlike long-lived basic-auth passwords
+- API audit logging exposes credential abuse and automated reconnaissance that the console UI never surfaces
+
+**Attack Prevented:** API token theft, credential stuffing, over-privileged integration abuse, undetected programmatic tampering
+
 #### ClickOps Implementation
 
 **Step 1: Create API Accounts**
@@ -149,6 +158,15 @@ Secure Jamf Pro API access with dedicated accounts and token-based authenticatio
 
 #### Description
 Configure device password policies through configuration profiles.
+
+#### Rationale
+**Why This Matters:**
+- Device passcodes are the first barrier against physical access to a lost or stolen Mac before FileVault unlock
+- Weak or short passcodes fall quickly to brute-force and shoulder-surfing, exposing local data and cached credentials
+- Enforced length, complexity, history, and auto-lock remove the user's ability to opt out of baseline protection
+- Centralized profile enforcement guarantees the policy applies fleet-wide instead of relying on per-user discipline
+
+**Attack Prevented:** Brute-force passcode guessing, physical device access, shoulder-surfing, credential reuse
 
 #### ClickOps Implementation
 
@@ -235,6 +253,15 @@ Enforce FileVault full disk encryption on all managed macOS devices.
 #### Description
 Enable and configure macOS firewall on all managed devices.
 
+#### Rationale
+**Why This Matters:**
+- The macOS application firewall blocks unsolicited inbound connections to listening services on the endpoint
+- Stealth mode stops the device from responding to network probes, reducing its visibility to attackers scanning the LAN or untrusted Wi-Fi
+- Endpoints roam onto hostile networks (cafes, airports, hotels) where host-based filtering is the only perimeter the device has
+- Centrally enforcing the firewall stops users from disabling it and closes the gap for lateral movement and remote service exploitation
+
+**Attack Prevented:** Network-based exploitation, port scanning, lateral movement, unsolicited inbound connections
+
 #### ClickOps Implementation
 
 **Step 1: Create Firewall Profile**
@@ -269,6 +296,15 @@ Enable and configure macOS firewall on all managed devices.
 
 #### Description
 Configure automatic software updates and patch management.
+
+#### Rationale
+**Why This Matters:**
+- Unpatched macOS and application vulnerabilities are among the most reliably exploited paths to endpoint compromise
+- Automatic update enforcement closes the window between a security fix shipping and devices actually applying it
+- Rapid security responses address actively exploited zero-days that attackers weaponize within days of disclosure
+- Patch compliance monitoring surfaces the long tail of devices that silently fall behind and become the weakest link
+
+**Attack Prevented:** Exploitation of known vulnerabilities, zero-day weaponization, drive-by malware, outdated-component compromise
 
 #### ClickOps Implementation
 
@@ -375,6 +411,15 @@ Deploy CIS macOS Benchmark security configurations using Jamf Compliance Editor.
 #### Description
 Monitor device compliance with CIS Benchmark configurations.
 
+#### Rationale
+**Why This Matters:**
+- Deploying a benchmark profile is not the same as devices staying compliant — drift, user tampering, and failed installs erode the baseline over time
+- Smart groups and extension attributes give continuous, evidence-based visibility into which devices have actually fallen out of policy
+- Early detection of non-compliant devices lets you remediate before an attacker exploits the missing control
+- Compliance reports provide audit-ready proof of control effectiveness for SOC 2, ISO 27001, and regulatory assessments
+
+**Attack Prevented:** Configuration drift, silent control failure, undetected non-compliance, audit evidence gaps
+
 #### ClickOps Implementation
 
 **Step 1: Create Smart Groups**
@@ -413,6 +458,15 @@ Monitor device compliance with CIS Benchmark configurations.
 
 #### Description
 Enable comprehensive audit logging for Jamf Pro activities.
+
+#### Rationale
+**Why This Matters:**
+- Jamf Pro admin actions — profile pushes, script runs, MDM commands, and account changes — are high-impact and must be attributable to a specific actor
+- Without comprehensive logs, a compromised admin account or malicious insider can tamper with the fleet undetected and without forensic trail
+- Forwarding logs to a SIEM enables real-time alerting on anomalous activity and preserves evidence beyond the console's local retention
+- Audit trails are a hard requirement for SOC 2, ISO 27001, and most regulatory frameworks
+
+**Attack Prevented:** Insider abuse, undetected admin compromise, repudiation, evidence tampering
 
 #### ClickOps Implementation
 
@@ -515,6 +569,7 @@ Enable comprehensive audit logging for Jamf Pro activities.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with server security, device policies, and CIS implementation | Claude Code (Opus 4.5) |
 
 ---

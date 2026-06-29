@@ -6,9 +6,9 @@ slug: "salesforce"
 tier: "2"
 category: "Marketing"
 description: "CRM platform security for MFA enforcement, Connected Apps, and Shield Event Monitoring"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-12"
+last_updated: "2026-06-29"
 ---
 
 
@@ -200,6 +200,15 @@ HubSpot publishes their IP ranges at: https://knowledge.hubspot.com/integrations
 #### Description
 Limit when users can log into Salesforce based on their role/profile, reducing attack surface during off-hours.
 
+#### Rationale
+**Why This Matters:**
+- Restricting login hours shrinks the window during which stolen credentials or a hijacked session can be used against Salesforce
+- Off-hours logins are a common indicator of compromise; blocking them outright removes a whole class of unattended attack opportunity
+- Scoping by profile lets you tightly constrain high-risk groups such as contractors and third-party integrators without disrupting normal business users
+- Combined with MFA and IP allowlisting, time-based restrictions add a defense-in-depth layer that an attacker must also defeat to operate
+
+**Attack Prevented:** Off-hours credential abuse, stolen-credential reuse, unauthorized after-hours access, automated bot logins
+
 #### ClickOps Implementation
 1. **Setup → Users → Profiles → [Select Profile]**
 2. Click **"Login Hours"** button
@@ -226,6 +235,14 @@ Review all Connected Apps (third-party integrations) and ensure they only have m
 
 #### Rationale
 **Attack Impact:** When Gainsight was breached, attackers had `full` OAuth scope, allowing complete data exfiltration. Scoped permissions would have limited damage.
+
+**Why This Matters:**
+- Connected Apps granted broad scopes such as full or api can read and write nearly every object, so a single compromised integration token exposes the entire CRM dataset
+- Least-privilege scoping ensures a breached third party can only reach the specific objects and operations it genuinely needs, containing the blast radius of a token theft
+- Persistent grants like refresh_token and offline_access let stolen tokens work indefinitely; trimming and expiring them limits how long compromised credentials stay useful
+- Requiring explicit user authorization for OAuth flows surfaces rogue or unexpected app connections before they gain standing access to your org
+
+**Attack Prevented:** Over-permissioned token abuse, full-scope data exfiltration, persistent OAuth access via stolen refresh tokens, supply chain compromise
 
 #### ClickOps Implementation
 
@@ -279,6 +296,15 @@ For each over-permissioned app:
 #### Description
 Configure Connected Apps to inherit session security policies (IP restrictions, timeout) from user's profile.
 
+#### Rationale
+**Why This Matters:**
+- Inheriting profile session policies binds Connected Apps to the same IP restrictions and timeouts as interactive users, closing gaps where integrations would otherwise bypass org-wide controls
+- Short session timeouts and bounded refresh-token lifetimes shrink the window a stolen token remains valid, forcing attackers to re-authenticate
+- "Never expires" tokens are effectively permanent credentials; expiring them ensures revoked or rotated access actually takes effect
+- Enforcing IP restrictions on the app prevents a leaked token from being replayed from attacker-controlled infrastructure
+
+**Attack Prevented:** Stolen token replay, indefinite session persistence, IP restriction bypass, long-lived refresh token abuse
+
 #### ClickOps Implementation
 1. **Setup → Apps → Connected Apps → [App Name]**
 2. Edit Policies
@@ -297,6 +323,15 @@ Configure Connected Apps to inherit session security policies (IP restrictions, 
 
 #### Description
 Encrypt sensitive fields (SSN, credit card, health data) at rest using Salesforce Shield Platform Encryption.
+
+#### Rationale
+**Why This Matters:**
+- Platform Encryption protects sensitive fields at rest so that database-level exposure, backup theft, or insider access to raw storage does not reveal plaintext SSNs, card numbers, or health data
+- Encryption keys are derived from a tenant secret you control, decoupling data confidentiality from Salesforce's own infrastructure access
+- Encrypting regulated data fields directly supports data-at-rest obligations under PCI DSS, HIPAA, and privacy regulations
+- Limiting encryption to genuinely sensitive fields preserves query and reporting functionality while still shrinking the sensitive-data exposure surface
+
+**Attack Prevented:** Data-at-rest exposure, insider data theft, backup or storage compromise, regulated-data disclosure
 
 #### ClickOps Implementation
 1. **Setup → Security → Platform Encryption**
@@ -325,6 +360,15 @@ Encrypt sensitive fields (SSN, credit card, health data) at rest using Salesforc
 
 #### Description
 Enable Salesforce Event Monitoring to detect anomalous API usage patterns that could indicate compromised integrations.
+
+#### Rationale
+**Why This Matters:**
+- API, login, and report-export event logs provide the visibility needed to detect compromised integrations and anomalous data access that would otherwise go unnoticed
+- Bulk query spikes, unusual export volumes, and off-pattern API callers are strong indicators of token theft or exfiltration in progress
+- Feeding event logs to a SIEM enables alerting and correlation, turning passive logs into active detection and incident response
+- Without monitoring, supply chain breaches via stolen OAuth tokens can run undetected for extended periods before discovery
+
+**Attack Prevented:** Undetected data exfiltration, compromised-integration abuse, OAuth token theft, anomalous bulk API access
 
 #### ClickOps Implementation
 1. **Setup → Event Monitoring → Event Manager**
@@ -472,6 +516,7 @@ Before allowing any third-party integration, assess risk:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-12 | 0.1.0 | draft | Initial Salesforce hardening guide with focus on integration security | Claude Code (Opus 4.5) |
 
 ---

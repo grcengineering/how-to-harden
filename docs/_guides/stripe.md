@@ -6,9 +6,9 @@ slug: "stripe"
 tier: "1"
 category: "Productivity"
 description: "Payment platform hardening for Stripe including SSO configuration, team permissions, and API key security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Stripe Dashboard security including SSO, team permissions, API
 #### Description
 Configure SAML SSO for Stripe Dashboard access.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Stripe Dashboard authentication in your corporate IdP, applying MFA, conditional access, and device posture checks to every login
+- Local email-and-password logins bypass IdP controls and are prime targets for phishing and credential stuffing
+- IdP-driven deprovisioning removes Dashboard access the moment an employee leaves, eliminating orphaned accounts with standing access to payment data
+- The Dashboard exposes live payment flows, payout settings, customer PII, and API key management — a single compromised login can redirect funds or exfiltrate cardholder data
+
+**Attack Prevented:** Credential theft, phishing, account takeover, orphaned-account access
+
 #### Prerequisites
 - Stripe account with SSO support
 - Account owner access
@@ -94,6 +103,15 @@ Configure SAML SSO for Stripe Dashboard access.
 #### Description
 Require 2FA for all Stripe team members.
 
+#### Rationale
+**Why This Matters:**
+- Adds a second authentication factor so a stolen or guessed password alone cannot grant Dashboard access
+- Brute-force, password-spray, and credential-stuffing attacks that succeed against reused passwords are blocked at the second factor
+- Hardware security keys for admins resist phishing and adversary-in-the-middle proxy attacks that defeat SMS or TOTP
+- Stripe accounts control real money movement and customer financial data, making single-factor access an unacceptable risk
+
+**Attack Prevented:** Password reuse compromise, credential stuffing, brute force, phishing
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA Requirement**
@@ -120,6 +138,15 @@ Require 2FA for all Stripe team members.
 #### Description
 Configure session timeout settings.
 
+#### Rationale
+**Why This Matters:**
+- Idle session timeouts limit the window an unattended or hijacked Dashboard session stays usable
+- Automatic logout protects against walk-up access on shared, lost, or unlocked devices
+- Shorter session lifetimes reduce the value of a stolen session cookie or token to an attacker
+- Because the Dashboard can initiate payouts and refunds, a lingering authenticated session is a direct path to financial fraud
+
+**Attack Prevented:** Session hijacking, cookie theft, unattended-workstation abuse
+
 #### ClickOps Implementation
 
 **Step 1: Configure Timeout**
@@ -142,6 +169,15 @@ Configure session timeout settings.
 
 #### Description
 Implement least privilege using Stripe roles.
+
+#### Rationale
+**Why This Matters:**
+- Assigning the minimum necessary role limits what any single account can do if it is compromised
+- View-only and analyst roles let staff do their jobs without the ability to move money, change payout settings, or manage keys
+- Least-privilege role assignment contains the blast radius of insider mistakes and account takeover
+- Over-permissioned accounts hand an attacker who phishes one user full control over payments, refunds, and customer data
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, blast-radius expansion
 
 #### ClickOps Implementation
 
@@ -174,6 +210,15 @@ Implement least privilege using Stripe roles.
 #### Description
 Minimize and protect administrator accounts.
 
+#### Rationale
+**Why This Matters:**
+- Administrator accounts can change payout bank details, manage API keys, and add or remove team members — the highest-value targets in the account
+- Keeping admins to a small, monitored set reduces the attack surface for account takeover
+- Requiring 2FA and monitoring admin activity makes compromise harder and detection faster
+- A single compromised admin can silently redirect payouts or grant persistent access, so minimizing their number is critical
+
+**Attack Prevented:** Admin account takeover, payout redirection, unauthorized privilege grants
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admins**
@@ -201,6 +246,15 @@ Minimize and protect administrator accounts.
 
 #### Description
 Secure Stripe API keys.
+
+#### Rationale
+**Why This Matters:**
+- Secret API keys can charge cards, issue refunds, and read customer data, so a leaked key is equivalent to full programmatic account access
+- Restricted keys scoped to minimum permissions limit what a leaked key can do
+- Separating test and live keys prevents accidental real-money operations during development
+- Regular rotation and prompt revocation shrink the window an exposed key remains useful to an attacker
+
+**Attack Prevented:** API key leakage, unauthorized charges and refunds, data exfiltration
 
 #### ClickOps Implementation
 
@@ -236,6 +290,15 @@ Secure Stripe API keys.
 #### Description
 Secure webhook endpoints.
 
+#### Rationale
+**Why This Matters:**
+- Verifying Stripe's webhook signature ensures events actually originate from Stripe and were not forged by an attacker
+- Without signature verification, an attacker can POST fake events to mark orders paid, trigger fulfillment, or corrupt application state
+- Storing webhook secrets securely and rejecting unverified events prevents replay and spoofing of payment notifications
+- Webhooks often drive critical business logic, so a forged event can translate directly into fraud or free goods
+
+**Attack Prevented:** Webhook spoofing, forged payment events, replay attacks, fulfillment fraud
+
 #### ClickOps Implementation
 
 **Step 1: Configure Webhooks**
@@ -264,6 +327,15 @@ Secure webhook endpoints.
 
 #### Description
 Use restricted API keys for specific functions.
+
+#### Rationale
+**Why This Matters:**
+- Restricted keys grant only the specific permissions an integration needs, so a compromised key cannot perform unrelated actions
+- Per-integration keys isolate failures — revoking one leaked key does not break every other integration
+- Scoping keys to read-only or single-resource access limits the damage from a leak in third-party code or logs
+- Using one all-powerful secret key everywhere means any single leak exposes the entire account
+
+**Attack Prevented:** Over-privileged key compromise, lateral abuse across integrations, full-account exposure from a single leak
 
 #### ClickOps Implementation
 
@@ -330,6 +402,7 @@ Use restricted API keys for specific functions.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and API security | Claude Code (Opus 4.5) |
 
 ---

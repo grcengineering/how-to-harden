@@ -6,9 +6,9 @@ slug: "snowflake"
 tier: "1"
 category: "Data"
 description: "Data warehouse security including network policies, MFA enforcement, and access controls"
-version: "0.3.0"
+version: "0.3.1"
 maturity: "draft"
-last_updated: "2026-02-19"
+last_updated: "2026-06-29"
 ---
 
 
@@ -165,6 +165,15 @@ Replace password authentication for service accounts with RSA key-pair authentic
 #### Description
 Create granular role hierarchy instead of granting broad SYSADMIN or ACCOUNTADMIN access. Implement least privilege for data access.
 
+#### Rationale
+**Why This Matters:**
+- Snowflake's default ACCOUNTADMIN and SYSADMIN roles grant sweeping access, so handing them out broadly turns any single compromised account into a full-account breach
+- Granular functional and object-access roles ensure analysts, engineers, and service accounts can only reach the specific data their job requires
+- Separating object-access roles from functional roles lets you change a user's data reach by adjusting role grants instead of rewriting individual privileges
+- Restricting ACCOUNTADMIN membership and documenting a break-glass procedure shrinks the population that can alter security settings, create shares, or exfiltrate at scale
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider data theft, blast-radius expansion from a single compromised account
+
 #### ClickOps Implementation
 
 **Step 1: Design Role Hierarchy**
@@ -235,6 +244,15 @@ Verify network policy assignments using the validation queries in the DB Query C
 #### Description
 Configure private network connectivity to Snowflake, eliminating exposure to public internet.
 
+#### Rationale
+**Why This Matters:**
+- Routing Snowflake traffic over PrivateLink or Private Service Connect keeps it on the cloud provider's private backbone, off the public internet entirely
+- Eliminating a public endpoint removes the attack surface that credential-stuffing and direct-access attempts depend on
+- Private connectivity complements network policies: even valid stolen credentials cannot reach the account from outside the approved private network path
+- Traffic that never traverses the public internet reduces exposure to interception, man-in-the-middle attacks, and opportunistic scanning
+
+**Attack Prevented:** Public-internet exposure, credential abuse from external networks, network interception, reconnaissance and scanning
+
 #### ClickOps Implementation
 
 **AWS PrivateLink:**
@@ -295,6 +313,15 @@ List and inspect all security integrations using the audit queries in the DB Que
 #### Description
 Configure External OAuth using your identity provider (Okta, Azure AD) for centralized authentication and MFA enforcement.
 
+#### Rationale
+**Why This Matters:**
+- Delegating authentication to your IdP enforces corporate MFA, conditional access, and session policies on every Snowflake login
+- Centralized identity means deprovisioning a user in the IdP immediately cuts their Snowflake access, eliminating orphaned local accounts
+- External OAuth removes the need for Snowflake-local passwords, the exact weakness exploited in the 2024 credential-stuffing campaign
+- IdP-issued tokens carry short lifetimes and can be revoked centrally, limiting the window a stolen token remains useful
+
+**Attack Prevented:** Credential stuffing, phishing, orphaned-account access, MFA bypass
+
 #### Code Implementation
 
 {% include pack-code.html vendor="snowflake" section="3.2" %}
@@ -310,6 +337,15 @@ Configure External OAuth using your identity provider (Okta, Azure AD) for centr
 
 #### Description
 Apply dynamic data masking to sensitive columns (PII, financial data) to restrict visibility based on user role.
+
+#### Rationale
+**Why This Matters:**
+- Dynamic masking ensures PII and financial columns render as redacted values for anyone outside an explicitly authorized role, even when they can query the table
+- Policy-based masking is enforced at query time by Snowflake, so it cannot be bypassed by changing the client or rewriting the query
+- Limiting who sees raw sensitive data shrinks the impact of a compromised analyst account or an over-broad role grant
+- Masking supports data minimization and regulatory requirements (PCI DSS, HIPAA) without duplicating data into separate restricted tables
+
+**Attack Prevented:** Unauthorized PII and financial data exposure, insider snooping, over-privileged data access, compliance violations
 
 #### ClickOps Implementation
 
@@ -336,6 +372,15 @@ Apply dynamic data masking to sensitive columns (PII, financial data) to restric
 #### Description
 Implement row-level security to restrict data visibility based on user attributes (department, region, customer assignment).
 
+#### Rationale
+**Why This Matters:**
+- Row-level security restricts each user to only the rows their attributes permit, enforcing data segmentation within shared tables
+- Centralized policy logic applies consistently across every query path, preventing accidental cross-tenant or cross-department data leakage
+- Row policies limit the blast radius of a compromised account to that user's authorized slice of data rather than the entire table
+- Attribute-driven access supports multi-tenant and need-to-know models without maintaining separate physical tables per audience
+
+**Attack Prevented:** Cross-tenant data leakage, unauthorized row access, insider over-reach, data-segregation failures
+
 {% include pack-code.html vendor="snowflake" section="4.2" %}
 
 ---
@@ -347,6 +392,15 @@ Implement row-level security to restrict data visibility based on user attribute
 
 #### Description
 Audit and control Snowflake data sharing to external accounts. Prevent accidental data exposure via shares.
+
+#### Rationale
+**Why This Matters:**
+- Snowflake Secure Data Sharing can expose entire databases to external accounts, so an unreviewed or misconfigured share becomes a silent data-exfiltration channel
+- Regularly auditing outbound shares catches accidental exposure before sensitive data reaches an unintended account
+- Controlling who can create shares prevents a compromised or careless privileged user from publishing data externally
+- Inventorying shares and their consumers is required to demonstrate data-handling controls to auditors and regulators
+
+**Attack Prevented:** Accidental data exposure, unauthorized external sharing, data exfiltration via shares, third-party leakage
 
 {% include pack-code.html vendor="snowflake" section="4.3" %}
 
@@ -361,6 +415,15 @@ Audit and control Snowflake data sharing to external accounts. Prevent accidenta
 
 #### Description
 Configure access to SNOWFLAKE.ACCOUNT_USAGE schema for security monitoring and anomaly detection.
+
+#### Rationale
+**Why This Matters:**
+- The ACCOUNT_USAGE schema records logins, queries, grants, and access history; without it a breach is invisible and impossible to investigate
+- Failed-login, bulk-export, new-IP, and privilege-escalation queries surface the exact behaviors seen in credential-stuffing and exfiltration attacks
+- Retained audit data enables incident investigation, scope determination, and regulatory breach-notification timelines
+- Continuous monitoring turns logs into early detection rather than after-the-fact discovery
+
+**Attack Prevented:** Undetected credential stuffing, silent data exfiltration, privilege-escalation abuse, delayed breach detection
 
 #### Detection Use Cases
 
@@ -382,6 +445,15 @@ Key anomaly detection queries are provided in the code pack below. These cover:
 
 #### Description
 Export Snowflake audit logs to SIEM (Splunk, Datadog, Sumo Logic) for real-time alerting and correlation.
+
+#### Rationale
+**Why This Matters:**
+- Exporting audit logs to a SIEM enables real-time alerting and correlation that querying ACCOUNT_USAGE on demand cannot provide
+- Centralizing Snowflake events with the rest of your telemetry lets analysts spot multi-system attack patterns and lateral movement
+- Logs held outside Snowflake survive tampering or deletion by an attacker who gains account access
+- SIEM retention and alerting support compliance requirements for continuous monitoring and timely incident response
+
+**Attack Prevented:** Delayed detection, log tampering, missed cross-system attack patterns, slow incident response
 
 {% include pack-code.html vendor="snowflake" section="5.2" %}
 
@@ -478,6 +550,7 @@ Export Snowflake audit logs to SIEM (Splunk, Datadog, Sumo Logic) for real-time 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.3.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-02-19 | 0.3.0 | draft | Migrate all remaining inline code to Code Packs (sections 1.1, 2.1, 2.2, 3.1, 4.3); zero inline code blocks remain | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.2.0 | draft | Migrate inline code to Code Packs (sections 1.2, 3.2, 4.2, 5.2, 6.2) | Claude Code (Opus 4.6) |
 | 2025-12-14 | 0.1.0 | draft | Initial Snowflake hardening guide | Claude Code (Opus 4.5) |

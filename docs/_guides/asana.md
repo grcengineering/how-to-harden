@@ -6,9 +6,9 @@ slug: "asana"
 tier: "2"
 category: "Productivity"
 description: "Project management platform hardening for Asana including SAML SSO, admin console controls, and mobile security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Asana Admin Console security including SAML SSO, authenticatio
 #### Description
 Configure SAML SSO to centralize authentication for Asana users.
 
+#### Rationale
+**Why This Matters:**
+- Routing Asana logins through your corporate IdP enforces MFA, conditional access, and device posture checks on every authentication
+- Local Asana password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- Centralized authentication lets you instantly revoke access across all sessions when an employee leaves or a credential is compromised
+- Asana holds project plans, roadmaps, and business operations data — a single unprotected login can expose sensitive planning information
+
+**Attack Prevented:** Credential theft, phishing, password reuse, unauthorized access
+
 #### Prerequisites
 - Asana Enterprise or Enterprise+ subscription
 - SAML 2.0 compatible IdP (Okta, Azure AD, Google Workspace)
@@ -98,6 +107,15 @@ Configure SAML SSO to centralize authentication for Asana users.
 #### Description
 Require 2FA for all organization members.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor blocks account takeover even when a password is phished, leaked, or reused from another breach
+- Without enforced 2FA, any member relying on a password alone is a single weak link into the entire workspace
+- Admins and accounts with broad project visibility are high-value targets that warrant phishing-resistant factors
+- Project management data and connected integrations increase the blast radius of any single compromised account
+
+**Attack Prevented:** Credential stuffing, password reuse, account takeover, phishing
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA Requirement**
@@ -124,6 +142,15 @@ Require 2FA for all organization members.
 #### Description
 Configure session timeout for security.
 
+#### Rationale
+**Why This Matters:**
+- Bounded session lifetimes limit how long a stolen or hijacked session token remains usable to an attacker
+- Automatic logout protects accounts left open on shared, lost, or unattended devices
+- Shorter timeouts reduce the window for session-replay and cookie-theft attacks against active sessions
+- Forcing periodic re-authentication ensures revoked or disabled accounts lose access promptly
+
+**Attack Prevented:** Session hijacking, token replay, unattended-device access
+
 #### ClickOps Implementation
 
 **Step 1: Access Session Settings**
@@ -148,6 +175,15 @@ Configure session timeout for security.
 
 #### Description
 Use SAML groups for license assignment.
+
+#### Rationale
+**Why This Matters:**
+- Driving Asana roles and licenses from IdP group membership keeps access decisions in one authoritative source of truth
+- Group-based mapping eliminates manual per-user provisioning errors that lead to over-privileged or orphaned accounts
+- Access is automatically adjusted when a user changes teams or leaves, enforcing least privilege as roles evolve
+- Centralized group control makes access reviews and audits far easier to perform and evidence
+
+**Attack Prevented:** Privilege creep, orphaned access, manual provisioning errors
 
 #### ClickOps Implementation
 
@@ -176,6 +212,15 @@ Use SAML groups for license assignment.
 
 #### Description
 Implement role-based access for administration.
+
+#### Rationale
+**Why This Matters:**
+- Limiting Super Admin accounts shrinks the number of high-value targets that can reconfigure security settings or export all data
+- Least-privilege admin roles ensure team leads can manage their scope without holding org-wide control
+- Fewer privileged accounts mean a smaller blast radius if any single admin credential is compromised
+- Regular admin review catches stale or unnecessary privileged access before it can be abused
+
+**Attack Prevented:** Privilege escalation, admin account takeover, insider misuse
 
 #### ClickOps Implementation
 
@@ -208,6 +253,15 @@ Implement role-based access for administration.
 #### Description
 Control organization membership through domain management.
 
+#### Rationale
+**Why This Matters:**
+- Verifying and claiming corporate domains ensures only sanctioned accounts can join the organization under central control
+- Domain management prevents shadow accounts created outside IT governance from holding company data
+- Claiming existing accounts brings personal or unmanaged sign-ups under enterprise security policy and SSO enforcement
+- Restricting membership to trusted domains reduces the risk of unauthorized external users gaining standing access
+
+**Attack Prevented:** Shadow IT, unauthorized account creation, account sprawl
+
 #### ClickOps Implementation
 
 **Step 1: Verify Domains**
@@ -233,6 +287,15 @@ Control organization membership through domain management.
 
 #### Description
 Configure SCIM for automated user lifecycle management.
+
+#### Rationale
+**Why This Matters:**
+- Automated provisioning and deprovisioning removes departed users immediately, eliminating orphaned accounts with standing access
+- SCIM keeps roles and group memberships in sync with the IdP, preventing privilege drift over time
+- Removing manual lifecycle steps eliminates human error and delays that leave access active after offboarding
+- Centralized lifecycle management produces a consistent, auditable record of who has access and why
+
+**Attack Prevented:** Orphaned-account access, offboarding gaps, privilege drift
 
 #### ClickOps Implementation
 
@@ -262,6 +325,15 @@ Configure SCIM for automated user lifecycle management.
 #### Description
 Control how content is shared inside and outside the organization.
 
+#### Rationale
+**Why This Matters:**
+- Restricting external sharing prevents project plans and task data from being exposed to unauthorized outside parties
+- Controlling guest access limits what non-employees can see and do inside the workspace
+- Tight sharing defaults reduce the risk of accidental data leakage through over-broad or public links
+- Monitoring and limiting guest activity helps detect and contain misuse of external collaboration
+
+**Attack Prevented:** Data leakage, oversharing, unauthorized external access
+
 #### ClickOps Implementation
 
 **Step 1: Configure External Sharing**
@@ -288,6 +360,15 @@ Control how content is shared inside and outside the organization.
 #### Description
 Control ability to export data from Asana.
 
+#### Rationale
+**Why This Matters:**
+- Restricting bulk export limits the ability of a compromised or malicious account to exfiltrate large volumes of project data
+- Controlling who can export dashboards and reports keeps sensitive aggregated data in authorized hands
+- Limiting file attachment types reduces the risk of malware delivery and unwanted data movement
+- Export restrictions provide a key control point for data loss prevention and regulatory compliance
+
+**Attack Prevented:** Data exfiltration, bulk data theft, malware delivery via attachments
+
 #### ClickOps Implementation
 
 **Step 1: Configure Export Settings**
@@ -313,6 +394,15 @@ Control ability to export data from Asana.
 
 #### Description
 Configure mobile device security settings.
+
+#### Rationale
+**Why This Matters:**
+- Mobile controls protect Asana data on devices that are easily lost, stolen, or used outside corporate networks
+- Enforcing biometric login prevents access from an unlocked or shared device
+- Disabling screenshots and copy-paste reduces leakage of sensitive task data to unmanaged apps
+- MDM integration such as Intune extends enterprise policy and remote wipe to the mobile app
+
+**Attack Prevented:** Lost-device data exposure, mobile data leakage, unauthorized mobile access
 
 #### ClickOps Implementation
 
@@ -341,6 +431,15 @@ Configure mobile device security settings.
 
 #### Description
 Monitor activity through audit logs.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs provide the visibility needed to detect suspicious activity such as mass exports, permission changes, or unusual logins
+- Streaming events to a SIEM enables correlation, alerting, and retention beyond the platform's native window
+- Without comprehensive logging, account compromise and insider misuse can go undetected and unattributable
+- Detailed records of admin and sharing actions are essential for incident response and compliance evidence
+
+**Attack Prevented:** Undetected compromise, insider misuse, delayed incident response
 
 #### ClickOps Implementation
 
@@ -373,6 +472,15 @@ Monitor activity through audit logs.
 
 #### Description
 Continuously monitor security posture.
+
+#### Rationale
+**Why This Matters:**
+- Continuous monitoring surfaces configuration drift and policy gaps before attackers can exploit them
+- Reviewing authentication patterns helps detect credential attacks, anomalous logins, and brute-force attempts early
+- Regular posture reviews ensure security controls remain enforced as the organization and platform evolve
+- Documented monitoring provides ongoing assurance and evidence for audits and compliance frameworks
+
+**Attack Prevented:** Configuration drift, undetected anomalies, control regression
 
 #### ClickOps Implementation
 
@@ -458,6 +566,7 @@ Continuously monitor security posture.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, admin controls, and data protection | Claude Code (Opus 4.5) |
 
 ---

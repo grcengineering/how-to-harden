@@ -6,9 +6,9 @@ slug: "crowdstrike"
 tier: "1"
 category: "Security"
 description: "EDR platform hardening for API security, update policies, and RTR access"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -103,6 +103,15 @@ Require MFA for all Falcon console access. Console compromise provides access to
 #### Description
 Configure granular RBAC preventing over-privileged access to Falcon console functions.
 
+#### Rationale
+**Why This Matters:**
+- Falcon roles grant powerful capabilities — sensor uninstall, policy edits, and host containment can each disrupt fleet-wide protection
+- Default Administrator assignment gives operators far more access than their job requires, widening the blast radius of any single compromised account
+- Scoping analysts to detection and investigation functions enforces least privilege and separation of duties
+- A compromised over-privileged console account lets an attacker disable prevention policies or uninstall sensors across the estate
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, unauthorized policy or sensor changes
+
 #### ClickOps Implementation
 
 **Step 1: Design Role Structure**
@@ -136,6 +145,15 @@ See the CLI pack below for the recommended role structure.
 
 #### Description
 Restrict Falcon console access to corporate networks and VPNs.
+
+#### Rationale
+**Why This Matters:**
+- Restricting console and API access to corporate networks and VPN ranges shrinks the attack surface exposed to the public internet
+- Even valid stolen credentials are far less useful to an attacker connecting from an unapproved IP range
+- Network-based conditions add context on top of identity, catching logins from anomalous geographies and untrusted devices
+- The Falcon console manages security for the entire fleet, so limiting where it can be reached from is a high-value containment control
+
+**Attack Prevented:** Credential stuffing from external networks, stolen-credential reuse, unauthorized remote access
 
 #### ClickOps Implementation
 
@@ -207,6 +225,15 @@ For each integration, create dedicated client with minimal scopes:
 #### Description
 Monitor API usage patterns and implement alerting for anomalous activity.
 
+#### Rationale
+**Why This Matters:**
+- A compromised API client often reveals itself through a sudden spike in request volume or calls to endpoints it never used before
+- Monitoring usage patterns turns the API from a blind spot into an early-warning signal for credential theft and automated abuse
+- Alerting on anomalous activity lets responders revoke a leaked key before an attacker completes bulk data extraction
+- Falcon APIs expose detections, host data, and response actions, so unbounded automated access can exfiltrate intelligence or disrupt the fleet
+
+**Attack Prevented:** Bulk data exfiltration, API credential abuse, automated enumeration, denial of service
+
 {% include pack-code.html vendor="crowdstrike" section="2.2" %}
 
 ---
@@ -261,6 +288,15 @@ Configure sensor anti-tamper protections to prevent unauthorized removal.
 #### Description
 Configure aggressive prevention policies while managing false positive risk.
 
+#### Rationale
+**Why This Matters:**
+- Prevention policies left in detect-only mode log malicious activity but never stop it, leaving endpoints exposed at the moment of attack
+- Enabling machine-learning, exploit, and script blocking moves Falcon from passive observation to active interdiction of threats
+- Staged tuning — detect first, then prevent after validation — captures the protective value without crippling legitimate business applications
+- Without aggressive blocking, malware and living-off-the-land techniques execute fully before any human can respond
+
+**Attack Prevented:** Malware execution, exploit-based intrusion, malicious scripting, fileless and living-off-the-land attacks
+
 #### ClickOps Implementation
 
 **Step 1: Review Prevention Policy Settings**
@@ -296,6 +332,15 @@ Configure aggressive prevention policies while managing false positive risk.
 
 #### Description
 Organize sensors into logical groups for policy management and staged deployments.
+
+#### Rationale
+**Why This Matters:**
+- Logical host groups let critical systems receive stricter prevention policies than general-purpose endpoints, matching protection to risk
+- Grouping is the foundation for canary and ringed rollouts, so a bad update or policy change can be caught on a small population first
+- Dynamic group rules keep policy assignment consistent as hosts are added, preventing unprotected gaps from configuration drift
+- Without grouping, every endpoint shares one policy and any single change propagates to the entire fleet at once
+
+**Attack Prevented:** Configuration drift, inconsistent protection coverage, fleet-wide change failures, under-protected critical assets
 
 #### ClickOps Implementation
 
@@ -386,6 +431,15 @@ See the SDK pack below for canary health monitoring scripts.
 #### Description
 Document and test rollback procedures for sensor updates.
 
+#### Rationale
+**Why This Matters:**
+- A documented, pre-tested rollback path is the difference between minutes and days of downtime when an update degrades the fleet
+- The July 2024 outage showed that recovery procedures invented under pressure fail; rehearsed steps and break-glass tokens save critical time
+- Testing rollback quarterly verifies protection is maintained throughout the reversion and that the procedure still works as the environment changes
+- Without a known-good rollback, a faulty sensor or content update can leave endpoints unstable or unprotected with no fast recovery option
+
+**Attack Prevented:** Prolonged outage from faulty updates, availability loss, protection gaps during recovery
+
 #### Implementation
 
 **Step 1: Document Rollback Procedure**
@@ -412,6 +466,15 @@ Document and test rollback procedures for sensor updates.
 
 #### Description
 Tune detection rules to reduce noise while maintaining visibility.
+
+#### Rationale
+**Why This Matters:**
+- High volumes of false positives cause alert fatigue, and analysts buried in noise miss the genuine detection that signals a real intrusion
+- Targeted, well-scoped exclusions with documented justification preserve visibility while removing known-benign noise
+- Broad or undocumented exclusions create permanent blind spots that attackers can deliberately operate within
+- Tuning severity to your response SLAs ensures critical detections are escalated promptly rather than lost in a flat queue
+
+**Attack Prevented:** Missed detections, alert-fatigue exploitation, attacker abuse of overly broad exclusions
 
 #### ClickOps Implementation
 
@@ -444,6 +507,15 @@ Tune detection rules to reduce noise while maintaining visibility.
 
 #### Description
 Stream Falcon events to SIEM for correlation and long-term retention.
+
+#### Rationale
+**Why This Matters:**
+- Streaming events to an independent SIEM preserves a tamper-resistant copy of evidence even if an attacker gains console access and deletes activity in Falcon
+- Long-term retention extends investigation and forensic windows well beyond the platform's native data horizon
+- Correlating Falcon telemetry with identity, network, and cloud logs surfaces multi-stage attacks that no single tool sees end to end
+- Centralized logging supports compliance retention mandates and faster, evidence-backed incident response
+
+**Attack Prevented:** Evidence destruction, log tampering, undetected multi-stage intrusions, anti-forensic activity
 
 #### ClickOps Implementation
 
@@ -567,4 +639,5 @@ Stream Falcon events to SIEM for correlation and long-term retention.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial guide with July 2024 lessons | Claude Code (Opus 4.5) |
