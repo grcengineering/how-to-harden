@@ -6,9 +6,9 @@ slug: "clari"
 tier: "2"
 category: "Productivity"
 description: "Revenue platform hardening for Clari including SAML SSO, user permissions, and forecast data security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Clari security including SAML SSO, user permissions, forecast 
 #### Description
 Configure SAML SSO for Clari access. Clari integrates with SSO/MFA solutions via SAML 2.0.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Clari authentication in the corporate IdP so every login inherits MFA, conditional access, and session policy
+- Eliminates standalone Clari passwords that bypass IdP controls and are prime targets for credential stuffing and phishing
+- Lets the IdP revoke access in one place when a sales rep or RevOps user leaves, closing standing access to revenue data
+- Clari holds pipeline, forecast, and CRM-derived data that exposes deal strategy and financial performance, so a single rogue login can leak it
+
+**Attack Prevented:** Credential theft, phishing, password reuse, unauthorized access to revenue data
+
 #### Prerequisites
 - Clari admin access
 - Enterprise tier subscription
@@ -98,6 +107,15 @@ Configure SAML SSO for Clari access. Clari integrates with SSO/MFA solutions via
 #### Description
 Require MFA for all Clari users via IdP integration.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor blocks attackers who already hold a valid username and password
+- Password-only access to revenue forecasts and pipeline data is trivially defeated by phishing, reuse, and brute force
+- Phishing-resistant factors such as FIDO2 or WebAuthn for admins stop real-time relay and prompt-bombing attacks
+- Because Clari delegates MFA to the IdP, enforcing it there guarantees coverage across every SSO login
+
+**Attack Prevented:** Credential stuffing, phishing, password spraying, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -122,6 +140,15 @@ Require MFA for all Clari users via IdP integration.
 
 #### Description
 Implement least privilege for Clari access using custom roles.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure each user can reach only the forecast and CRM data their job actually requires
+- Over-broad permissions let a single compromised or curious account read the entire revenue pipeline
+- Role-scoped access limits the blast radius when credentials are stolen or an insider acts maliciously
+- Regular access reviews catch permission creep before it becomes an audit finding or a data-exposure path
+
+**Attack Prevented:** Privilege escalation, insider data harvesting, lateral exposure of sensitive deals
 
 #### ClickOps Implementation
 
@@ -150,6 +177,15 @@ Implement least privilege for Clari access using custom roles.
 #### Description
 Control who can view forecast data.
 
+#### Rationale
+**Why This Matters:**
+- Forecast data reveals deal values, close probabilities, and revenue strategy that competitors and insiders would exploit
+- Hierarchy-aligned visibility prevents reps on one team from viewing another team's sensitive pipeline
+- Tying visibility to existing CRM access keeps Clari from becoming a backdoor around Salesforce or other CRM controls
+- Scoped visibility contains exposure if a single account is compromised, rather than revealing the entire forecast
+
+**Attack Prevented:** Unauthorized data disclosure, insider snooping, cross-team data leakage
+
 #### ClickOps Implementation
 
 **Step 1: Configure Visibility Rules**
@@ -175,6 +211,15 @@ Control who can view forecast data.
 
 #### Description
 Manage user provisioning and deprovisioning.
+
+#### Rationale
+**Why This Matters:**
+- Prompt deprovisioning removes a departed employee's access before it can be used to exfiltrate revenue data
+- Because Clari lacks native SCIM outside Okta directory sync, orphaned accounts persist unless lifecycle is managed deliberately
+- Documented onboarding and offboarding ensures consistent, auditable access grants and revocations
+- Periodic access reviews surface dormant and orphaned accounts that attackers and insiders target
+
+**Attack Prevented:** Orphaned-account access, post-offboarding insider data theft, standing-access abuse
 
 #### ClickOps Implementation
 
@@ -202,6 +247,15 @@ Manage user provisioning and deprovisioning.
 #### Description
 Minimize and protect admin accounts.
 
+#### Rationale
+**Why This Matters:**
+- Admin accounts can change permissions, alter forecasts, and reach all org data, making them the highest-value target
+- Fewer admins means a smaller attack surface and fewer credentials that grant full control if compromised
+- Requiring MFA and monitoring admin activity detects and slows takeover attempts on privileged accounts
+- Inventorying admins prevents forgotten or excess privileged accounts from becoming silent backdoors
+
+**Attack Prevented:** Privileged account takeover, unauthorized configuration change, undetected admin abuse
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admins**
@@ -228,6 +282,15 @@ Minimize and protect admin accounts.
 
 #### Description
 Enable and monitor audit logs (Enterprise tier).
+
+#### Rationale
+**Why This Matters:**
+- Audit logs provide the evidence trail needed to detect, investigate, and prove the scope of a security incident
+- Without logging of authentication, permission changes, and forecast edits, malicious activity goes unnoticed
+- Monitoring key events enables early detection of account takeover and unauthorized data manipulation
+- Exported logs support compliance attestations such as SOC 2 and ISO 27001 and forensic reconstruction after an event
+
+**Attack Prevented:** Undetected intrusion, repudiation, delayed breach discovery, tampering with revenue data
 
 #### ClickOps Implementation
 
@@ -297,6 +360,7 @@ Enable and monitor audit logs (Enterprise tier).
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
 
 ---

@@ -6,9 +6,9 @@ slug: "hubspot"
 tier: "2"
 category: "Marketing"
 description: "CRM security for private apps, OAuth scopes, and data export controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -53,6 +53,15 @@ This guide covers HubSpot security configurations including authentication, mark
 #### Description
 Require SAML SSO with MFA for all HubSpot access.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes HubSpot authentication in your corporate IdP, enforcing MFA and conditional access on every login
+- Local password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- SAML SSO lets you deprovision departed employees in one place, eliminating standing access to CRM data
+- Portals hold customer PII, sales pipelines, and marketing lists, so a single compromised login can expose all of it
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, orphaned-account access
+
 #### ClickOps Implementation (Enterprise)
 
 **Step 1: Configure SAML SSO**
@@ -80,6 +89,15 @@ Require SAML SSO with MFA for all HubSpot access.
 
 #### Description
 Configure permission sets limiting access to CRM data and features.
+
+#### Rationale
+**Why This Matters:**
+- Permission sets enforce least privilege so each user only reaches the CRM data and features their role requires
+- Limiting Super Admin to 2-3 accounts shrinks the blast radius if any privileged login is compromised
+- Scoping contacts and deals to assigned records prevents lateral browsing of the entire customer database
+- Reduces insider-misuse risk and limits what a hijacked account can view, export, or alter
+
+**Attack Prevented:** Privilege escalation, insider data theft, lateral access, over-broad admin compromise
 
 #### ClickOps Implementation
 
@@ -159,6 +177,15 @@ Require approval for marketplace app installations.
 #### Description
 Regularly audit OAuth grants to marketplace apps.
 
+#### Rationale
+**Why This Matters:**
+- OAuth and marketplace app tokens keep working after the app is uninstalled unless access is explicitly revoked
+- Periodic review surfaces stale, unused, or over-scoped grants that quietly accumulate broad CRM access
+- A forgotten grant is an invisible backdoor an attacker can ride to exfiltrate contacts and pipeline data
+- User-level app authorizations bypass admin oversight and need their own review cadence
+
+**Attack Prevented:** Persistent token access, OAuth abuse, supply-chain data exfiltration, orphaned grants
+
 #### ClickOps Implementation
 
 **Step 1: Review Connected Apps**
@@ -185,6 +212,15 @@ Regularly audit OAuth grants to marketplace apps.
 
 #### Description
 Manage private app access tokens with appropriate restrictions.
+
+#### Rationale
+**Why This Matters:**
+- Private app tokens are long-lived bearer credentials that grant direct API access to CRM data with no MFA prompt
+- Scoping each app to the minimum required APIs limits what a leaked token can reach
+- Storing tokens in a secrets manager and rotating them keeps them out of source code and shortens exposure windows
+- A token committed to a repository or leaked in logs gives an attacker silent, ongoing access to customer records
+
+**Attack Prevented:** Token leakage, hardcoded-secret exposure, over-scoped API access, credential reuse
 
 #### ClickOps Implementation
 
@@ -213,6 +249,15 @@ Manage private app access tokens with appropriate restrictions.
 #### Description
 Design integrations with HubSpot's rate limits in mind.
 
+#### Rationale
+**Why This Matters:**
+- Designing within HubSpot's published limits prevents integrations from being throttled or failing mid-sync
+- Monitoring request volume surfaces runaway loops, misconfigured jobs, or abuse before they disrupt operations
+- A sudden spike toward the burst ceiling can signal a compromised token being used for bulk data extraction
+- Graceful backoff keeps critical sync pipelines reliable instead of silently dropping records
+
+**Attack Prevented:** Denial of service, integration outages, bulk-scraping abuse, undetected exfiltration spikes
+
 #### Rate Limits
 
 | App Type | Rate Limit |
@@ -236,6 +281,15 @@ Design integrations with HubSpot's rate limits in mind.
 
 #### Description
 Enable GDPR compliance features for data privacy.
+
+#### Rationale
+**Why This Matters:**
+- Requiring a legal basis and tracking consent history enforces lawful processing of contact data at the source
+- Data retention policies automatically purge records past their lifecycle, shrinking the volume exposed in any breach
+- Consent records provide the audit trail regulators and customers expect for subject-access and deletion requests
+- Reduces regulatory liability and limits how much stale PII an attacker could harvest
+
+**Attack Prevented:** Regulatory non-compliance, excessive PII retention, consent violations, breach blast-radius expansion
 
 #### ClickOps Implementation
 
@@ -262,6 +316,15 @@ Enable GDPR compliance features for data privacy.
 #### Description
 Control bulk data export capabilities.
 
+#### Rationale
+**Why This Matters:**
+- Bulk export is the fastest path to exfiltrate an entire contact database in a single action
+- Disabling export for non-admin users removes that capability from the accounts most likely to be phished
+- Monitoring and alerting on export events gives early warning of mass data theft in progress
+- Combined with permission sets, this contains both insider misuse and hijacked-account scraping
+
+**Attack Prevented:** Bulk data exfiltration, insider data theft, account-takeover scraping, undetected mass export
+
 #### ClickOps Implementation
 
 **Step 1: Restrict Export Permissions**
@@ -285,6 +348,15 @@ Control bulk data export capabilities.
 
 #### Description
 Monitor HubSpot activity through audit logs.
+
+#### Rationale
+**Why This Matters:**
+- Security activity logs record logins, permission changes, and user modifications needed to detect and investigate abuse
+- Exporting events to a SIEM enables correlation, alerting, and retention beyond HubSpot's native window
+- Without centralized logs, account compromise and data theft can proceed undetected for long periods
+- Audit trails are required evidence for incident response and compliance attestations
+
+**Attack Prevented:** Undetected account compromise, delayed breach detection, audit-trail gaps, insider abuse
 
 #### ClickOps Implementation (Enterprise)
 
@@ -357,4 +429,5 @@ Monitor HubSpot activity through audit logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial HubSpot hardening guide | Claude Code (Opus 4.5) |

@@ -6,9 +6,9 @@ slug: "gong"
 tier: "2"
 category: "Productivity"
 description: "Revenue intelligence platform hardening for Gong including SAML SSO, data access controls, and recording security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Gong security including SAML SSO, user permissions, data acces
 #### Description
 Configure SAML SSO for Gong access.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Gong authentication in your corporate IdP so MFA, conditional access, and session policies apply to every login
+- Local Gong passwords bypass IdP controls and become standalone credentials attackers can phish or stuff
+- Centralized SSO lets you instantly revoke access for departed employees, preventing lingering access to recorded sales conversations
+- Gong holds recorded calls, deal data, and customer PII, so a single compromised login can expose the entire revenue conversation archive
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - Gong admin access
 - Enterprise plan
@@ -93,6 +102,15 @@ Configure SAML SSO for Gong access.
 #### Description
 Require MFA for all Gong users.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor blocks attackers who have already obtained a valid Gong password
+- Sales and revenue teams are frequent phishing targets because their accounts expose customer and deal intelligence
+- Phishing-resistant MFA for admins protects the accounts that can change org-wide security and access settings
+- Without MFA, a single leaked or reused credential gives direct access to confidential call recordings
+
+**Attack Prevented:** Credential stuffing, phishing, account takeover, password reuse
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -115,6 +133,15 @@ Require MFA for all Gong users.
 
 #### Description
 Implement least privilege for Gong access.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure users only see the calls and data needed for their job, limiting exposure of sensitive conversations
+- Over-permissioned accounts expand the blast radius when any single account is compromised
+- Visibility and team boundaries keep one team's confidential deal discussions from leaking to unrelated users
+- Right-sized roles reduce the chance of accidental or malicious bulk export of recorded conversations
+
+**Attack Prevented:** Privilege escalation, lateral data access, insider misuse, oversharing of confidential calls
 
 #### ClickOps Implementation
 
@@ -145,6 +172,15 @@ Implement least privilege for Gong access.
 #### Description
 Control access to call recordings.
 
+#### Rationale
+**Why This Matters:**
+- Call recordings often capture pricing, negotiation strategy, customer PII, and other material that should not be broadly visible
+- Default-restrictive visibility prevents every user from browsing the entire recording library
+- Marking and restricting sensitive calls protects high-risk conversations such as executive, legal, or HR discussions
+- Auditing access patterns surfaces unusual viewing that may indicate insider snooping or a compromised account
+
+**Attack Prevented:** Unauthorized data access, insider snooping, confidential-data leakage, regulatory exposure
+
 #### ClickOps Implementation
 
 **Step 1: Configure Access Rules**
@@ -170,6 +206,15 @@ Control access to call recordings.
 
 #### Description
 Minimize and protect admin accounts.
+
+#### Rationale
+**Why This Matters:**
+- Admin accounts can change security settings, access all recordings, and manage every user, making them the highest-value target
+- Reducing the number of admins shrinks the attack surface and the set of credentials that must be tightly protected
+- Requiring MFA and monitoring admin activity detects and slows takeover of these privileged accounts
+- A compromised admin can disable controls, export data, or grant attacker access org-wide
+
+**Attack Prevented:** Privilege escalation, admin account takeover, unauthorized configuration changes, mass data exfiltration
 
 #### ClickOps Implementation
 
@@ -198,6 +243,15 @@ Minimize and protect admin accounts.
 #### Description
 Configure recording retention policies.
 
+#### Rationale
+**Why This Matters:**
+- Retaining recordings only as long as needed limits the volume of sensitive data exposed in any breach
+- Automatic deletion enforces consistent disposal and removes reliance on manual cleanup
+- Defined retention periods support privacy regulations and contractual obligations governing customer conversation data
+- Indefinitely stored call archives accumulate PII and deal intelligence that become a growing liability over time
+
+**Attack Prevented:** Excessive data exposure, compliance violations, data-hoarding liability, breach blast-radius growth
+
 #### ClickOps Implementation
 
 **Step 1: Configure Retention**
@@ -218,6 +272,15 @@ Configure recording retention policies.
 
 #### Description
 Secure third-party integrations.
+
+#### Rationale
+**Why This Matters:**
+- Connected apps and API tokens can read Gong data, so each integration is a potential path to your recorded conversations
+- Removing unnecessary integrations reduces the number of third parties that can be compromised to reach your data
+- Least-privilege scopes ensure a breached integration cannot access more than the minimum it needs
+- Monitoring integration activity detects abnormal data access from a compromised or rogue connected app
+
+**Attack Prevented:** Supply-chain compromise, token abuse, third-party data exfiltration, OAuth scope abuse
 
 #### ClickOps Implementation
 
@@ -277,6 +340,7 @@ Secure third-party integrations.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
 
 ---

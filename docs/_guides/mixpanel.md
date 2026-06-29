@@ -6,9 +6,9 @@ slug: "mixpanel"
 tier: "2"
 category: "Data"
 description: "Product analytics platform hardening for Mixpanel including SAML SSO, project access controls, and data governance"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Mixpanel security including SAML SSO, organization/project acc
 #### Description
 Configure SAML SSO to centralize authentication for Mixpanel users.
 
+#### Rationale
+**Why This Matters:**
+- Routes every Mixpanel login through your corporate IdP, enforcing centralized MFA, conditional access, and session policies on each authentication
+- Local email and password logins bypass IdP controls and are vulnerable to credential stuffing, phishing, and password reuse
+- Centralized identity lets you instantly revoke Mixpanel access when an employee leaves, eliminating orphaned accounts with standing data access
+- Mixpanel projects expose detailed user behavior, funnel, and revenue analytics — a single compromised login can leak sensitive product and customer insight
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - Mixpanel organization admin access
 - Enterprise plan
@@ -95,6 +104,15 @@ Configure SAML SSO to centralize authentication for Mixpanel users.
 #### Description
 Require 2FA for all Mixpanel users.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor blocks account takeover even when a password is stolen, guessed, or reused from another breach
+- Analytics accounts are attractive targets because they reveal user funnels, retention curves, and revenue signals valuable to competitors and attackers
+- Phishing-resistant methods for admins prevent real-time relay or interception of one-time codes
+- Defense in depth: 2FA protects any login path that does not transit the IdP, including legacy or break-glass accounts
+
+**Attack Prevented:** Account takeover, credential stuffing, phishing, brute-force password attacks
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA Requirement**
@@ -120,6 +138,15 @@ Require 2FA for all Mixpanel users.
 #### Description
 Configure access request workflow for new users.
 
+#### Rationale
+**Why This Matters:**
+- Requiring explicit approval before new users gain access prevents self-service or unvetted account creation
+- An approval gate enforces least privilege at onboarding rather than remediating over-provisioned access after the fact
+- Documented approvers create an audit trail showing who authorized each grant, supporting compliance reviews
+- Forcing a deliberate decision for every new member curbs access sprawl and default-broad permissions
+
+**Attack Prevented:** Unauthorized access, privilege creep, insider threat, audit-trail gaps
+
 #### ClickOps Implementation
 
 **Step 1: Enable Access Requests**
@@ -142,6 +169,15 @@ Configure access request workflow for new users.
 
 #### Description
 Implement least privilege using Mixpanel roles.
+
+#### Rationale
+**Why This Matters:**
+- Assigning the minimum necessary role limits what each user can view and change, shrinking the blast radius of a compromised account
+- Over-privileged Member or Admin accounts let an attacker modify projects, export data, or alter billing if their credentials are stolen
+- Team-based assignment scales access management and makes periodic access reviews straightforward
+- Separating Owner, Admin, Billing Admin, and Member duties enforces separation of concerns across the organization
+
+**Attack Prevented:** Privilege escalation, lateral movement, unauthorized data export, insider misuse
 
 #### ClickOps Implementation
 
@@ -173,6 +209,15 @@ Implement least privilege using Mixpanel roles.
 #### Description
 Control access to specific projects.
 
+#### Rationale
+**Why This Matters:**
+- Scoping users and teams to only the projects they need prevents broad visibility into unrelated analytics data
+- Separating production and test projects keeps real customer data out of lower-trust environments
+- Restricting sensitive project access contains exposure if any single account is compromised
+- Project-level roles such as Admin, Analyst, and Consumer further constrain the actions a user can perform within each project
+
+**Attack Prevented:** Unauthorized data access, cross-project data leakage, insider browsing, data exfiltration
+
 #### ClickOps Implementation
 
 **Step 1: Configure Project Permissions**
@@ -202,6 +247,15 @@ Control access to specific projects.
 #### Description
 Minimize and protect administrator accounts.
 
+#### Rationale
+**Why This Matters:**
+- Owner and admin accounts can change security settings, manage all users, and export data, making them the highest-value targets
+- Keeping the number of privileged accounts small reduces the attack surface and simplifies monitoring
+- Requiring 2FA and SSO on admins ensures the most powerful accounts carry the strongest authentication
+- Monitoring admin activity surfaces anomalous privileged actions early, before they cause broad damage
+
+**Attack Prevented:** Privileged-account takeover, unauthorized configuration change, mass data export, persistence
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admins**
@@ -230,6 +284,15 @@ Minimize and protect administrator accounts.
 #### Description
 Secure Mixpanel service accounts and API tokens.
 
+#### Rationale
+**Why This Matters:**
+- Service accounts and API tokens authenticate automated access and, if leaked, grant programmatic data ingestion or export without a human login
+- Scoping each token to a single project and a least-privilege role limits the damage from a leaked credential
+- Regular rotation invalidates exposed or stale tokens before they can be abused
+- Documenting each account's purpose makes orphaned or unused tokens easy to identify and revoke
+
+**Attack Prevented:** API token theft, credential leakage, automated data exfiltration, orphaned-credential abuse
+
 #### ClickOps Implementation
 
 **Step 1: Review Service Accounts**
@@ -255,6 +318,15 @@ Secure Mixpanel service accounts and API tokens.
 
 #### Description
 Implement data governance controls.
+
+#### Rationale
+**Why This Matters:**
+- Data views and property hiding restrict who can see sensitive fields, enforcing need-to-know access on analytics data
+- PII classification and masking reduce exposure of personal data to analysts who do not require it
+- Supporting deletion requests keeps the platform aligned with GDPR and CCPA obligations and limits retained personal data
+- Minimizing the personal data that any account can access shrinks the impact of a compromise or insider misuse
+
+**Attack Prevented:** PII exposure, privacy violations, regulatory non-compliance, insider data misuse
 
 #### ClickOps Implementation
 
@@ -283,6 +355,15 @@ Implement data governance controls.
 
 #### Description
 Enable and monitor activity logs.
+
+#### Rationale
+**Why This Matters:**
+- Activity logs record authentication, permission changes, and data exports, providing the evidence needed to detect and investigate incidents
+- Without monitoring, malicious or accidental changes go unnoticed until the damage is already done
+- Exporting logs to a SIEM enables alerting on suspicious patterns and retention beyond what the platform stores
+- Audit trails satisfy compliance requirements and support forensic reconstruction after an incident
+
+**Attack Prevented:** Undetected breaches, unauthorized changes, data exfiltration, audit and forensic gaps
 
 #### ClickOps Implementation
 
@@ -347,6 +428,7 @@ Enable and monitor activity logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, access controls, and data governance | Claude Code (Opus 4.5) |
 
 ---

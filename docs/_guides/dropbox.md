@@ -6,9 +6,9 @@ slug: "dropbox"
 tier: "3"
 category: "Data"
 description: "Cloud storage security for sharing policies, linked apps, and admin controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -81,6 +81,17 @@ Require SSO with MFA for all Dropbox Business access.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
+#### Description
+Configure team folder permissions using least privilege so members can only reach the content their role requires, and restrict access to sensitive admin folders.
+
+#### Rationale
+**Why This Matters:**
+- Default-open or overly broad folder permissions let any member browse content well beyond their role, widening the blast radius of a single compromised account
+- Least-privilege access on team and admin folders limits how much data an attacker or malicious insider can reach if they obtain a valid session
+- Restricting admin folder access protects the most sensitive governance and configuration content from lateral movement
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider data access, over-broad data exposure
+
 #### ClickOps Implementation
 
 **Step 1: Configure Team Folder Permissions**
@@ -96,6 +107,17 @@ Require SSO with MFA for all Dropbox Business access.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-21
+
+#### Description
+Restrict external sharing, default shared links to team members only, require passwords on links, and enforce a maximum link expiration so files are not exposed beyond intended recipients.
+
+#### Rationale
+**Why This Matters:**
+- Unrestricted shared links can be forwarded, indexed, or guessed, exposing files to anyone on the internet with no authentication
+- Password protection and team-only defaults ensure shared content reaches only the intended recipients
+- Link expiration prevents stale links from granting indefinite access long after a project ends or a recipient leaves the organization
+
+**Attack Prevented:** Data leakage, unauthorized external access, link forwarding, accidental public exposure
 
 #### ClickOps Implementation
 
@@ -118,6 +140,9 @@ Require SSO with MFA for all Dropbox Business access.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
+
+#### Description
+Review, approve, and revoke third-party OAuth apps connected to your Dropbox tenant, and require admin approval before new apps can be linked.
 
 #### Rationale
 **Why This Matters:**
@@ -144,6 +169,17 @@ Require SSO with MFA for all Dropbox Business access.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
+
+#### Description
+Enable the Dropbox activity log, export it to your SIEM, and configure alerts on sensitive events such as mass downloads, permission changes, and new app links.
+
+#### Rationale
+**Why This Matters:**
+- Without exported audit logs, suspicious file access, sharing, and admin changes go undetected until the damage is already done
+- Centralizing activity in a SIEM enables correlation with other security signals and long-term retention beyond Dropbox's native log window
+- Alerts on sensitive events shorten the time to detect and contain a breach, supporting both incident response and compliance evidence
+
+**Attack Prevented:** Undetected data exfiltration, delayed breach detection, insufficient forensic evidence, audit gaps
 
 #### ClickOps Implementation
 
@@ -195,4 +231,5 @@ Require SSO with MFA for all Dropbox Business access.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Dropbox hardening guide | Claude Code (Opus 4.5) |

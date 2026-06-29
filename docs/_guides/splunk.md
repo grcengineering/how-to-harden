@@ -6,9 +6,9 @@ slug: "splunk"
 tier: "1"
 category: "Security"
 description: "SIEM platform hardening for Splunk Cloud including SAML SSO, role-based access control, and data security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Splunk Cloud Platform security including SAML SSO, role-based 
 
 #### Description
 Configure SAML SSO to centralize authentication for Splunk Cloud users.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes Splunk authentication in your corporate IdP, enforcing MFA and conditional access on every login
+- Local Splunk password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- SAML attribute mapping ties Splunk roles to IdP groups, so disabling a user in the IdP immediately revokes their Splunk access
+- Splunk aggregates sensitive security logs, authentication events, and SIEM data — a single compromised login can expose the entire monitoring estate
+
+**Attack Prevented:** Credential theft, phishing, password reuse, MFA bypass, orphaned-account access
 
 #### Prerequisites
 - Administrator access with change_authentication capability
@@ -101,6 +110,15 @@ Configure SAML SSO to centralize authentication for Splunk Cloud users.
 #### Description
 Maintain local admin access for emergency recovery.
 
+#### Rationale
+**Why This Matters:**
+- A locally defined admin account preserves administrative access if the IdP or SAML integration fails, preventing total lockout
+- Without a break-glass account, an IdP outage or SAML misconfiguration can leave the SIEM unmanageable during an active incident
+- The fallback account bypasses SSO and MFA, so it must be tightly controlled with a long password, vault storage, and monitoring
+- Splunk is often the primary detection platform — losing admin access blinds the SOC exactly when visibility matters most
+
+**Attack Prevented:** Loss of access from IdP outage, lockout during incident response, break-glass credential abuse
+
 #### ClickOps Implementation
 
 **Step 1: Create Local Admin**
@@ -132,6 +150,15 @@ Maintain local admin access for emergency recovery.
 
 #### Description
 Implement least privilege using Splunk's role model.
+
+#### Rationale
+**Why This Matters:**
+- Splunk roles scope capabilities and index access so users can only see and do what their job requires
+- Over-privileged accounts let a single compromise expose all indexed data and administrative functions
+- Limiting the admin role to 2-3 users shrinks the attack surface for the most powerful capabilities
+- Custom roles enforce separation of duties between analysts, power users, and administrators
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider data access, blast-radius expansion
 
 #### ClickOps Implementation
 
@@ -167,6 +194,15 @@ Implement least privilege using Splunk's role model.
 #### Description
 Restrict access to indexes based on role.
 
+#### Rationale
+**Why This Matters:**
+- Index-level access controls confine sensitive data such as security logs and PII to the roles that genuinely need it
+- Without index restrictions, any authenticated user could search across every dataset ingested into the platform
+- Restricting sensitive indexes to the security team enforces need-to-know and data segregation
+- SIEM indexes hold authentication and audit logs that attackers mine for reconnaissance and pivoting
+
+**Attack Prevented:** Unauthorized data access, reconnaissance via log mining, cross-team data exposure
+
 #### ClickOps Implementation
 
 **Step 1: Review Index Permissions**
@@ -195,6 +231,15 @@ Restrict access to indexes based on role.
 #### Description
 Control what data users can search.
 
+#### Rationale
+**Why This Matters:**
+- Role-based search restrictions and sourcetype allowlists limit the data each user can query
+- Search job quotas prevent a single user or compromised account from exhausting cluster resources
+- Unbounded or runaway searches degrade SIEM performance, delaying detection and alerting
+- Constraining searchable data reduces the chance of accidental or malicious bulk data extraction
+
+**Attack Prevented:** Resource exhaustion and denial of service, bulk data exfiltration, unauthorized data discovery
+
 #### ClickOps Implementation
 
 **Step 1: Configure Search Restrictions**
@@ -220,6 +265,15 @@ Control what data users can search.
 
 #### Description
 Ensure data encryption in transit and at rest.
+
+#### Rationale
+**Why This Matters:**
+- TLS in transit protects log data and credentials from interception as they move across the network
+- Encryption at rest protects stored indexes if the underlying storage layer is compromised
+- Customer-managed keys give the organization direct control over key rotation and revocation
+- SIEM data is highly sensitive, so encryption limits exposure from network sniffing and storage theft
+
+**Attack Prevented:** Man-in-the-middle interception, network eavesdropping, data theft from storage compromise
 
 #### ClickOps Implementation
 
@@ -247,6 +301,15 @@ Ensure data encryption in transit and at rest.
 
 #### Description
 Monitor administrative and security events.
+
+#### Rationale
+**Why This Matters:**
+- The _audit index records authentication, configuration, and search activity, providing accountability for every action
+- Alerting on admin role changes and failed authentications surfaces compromise and privilege abuse early
+- Without audit monitoring, malicious admin changes and reconnaissance activity go undetected
+- Audit trails are required evidence for incident investigation and compliance frameworks like SOC 2 and NIST
+
+**Attack Prevented:** Undetected privilege abuse, configuration tampering, account compromise, audit evasion
 
 #### ClickOps Implementation
 
@@ -318,6 +381,7 @@ Monitor administrative and security events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and data security | Claude Code (Opus 4.5) |
 
 ---

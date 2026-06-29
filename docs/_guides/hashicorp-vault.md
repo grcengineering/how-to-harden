@@ -6,9 +6,9 @@ slug: "hashicorp-vault"
 tier: "1"
 category: "Security"
 description: "Secrets management security including auth methods, policies, and audit logging"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -125,6 +125,15 @@ Configure Vault authentication methods appropriate to each use case. Avoid using
 #### Description
 Create fine-grained policies limiting access to specific paths. Avoid wildcard policies that grant excessive access.
 
+#### Rationale
+**Why This Matters:**
+- Vault policies are deny-by-default, so a wildcard or overly broad policy silently grants access to every secret path it matches
+- A token scoped by a tight policy can only reach the handful of paths it needs, containing the blast radius if it is stolen
+- Path-scoped capabilities (read vs. create vs. update vs. sudo) let you grant just enough access rather than full control of a mount
+- Separating base, team, and application policies makes access auditable and prevents privilege creep as teams add new secrets
+
+**Attack Prevented:** Privilege escalation, lateral movement, over-broad secret access, blast-radius expansion
+
 #### ClickOps Implementation
 
 **Step 1: Create Hierarchical Policy Structure**
@@ -144,6 +153,15 @@ Create fine-grained policies limiting access to specific paths. Avoid wildcard p
 
 #### Description
 Use Vault's identity system to manage users and groups across auth methods, enabling consistent policy application.
+
+#### Rationale
+**Why This Matters:**
+- Vault entities tie multiple auth-method aliases (OIDC, LDAP, AppRole) to one identity, so policy is applied consistently no matter how a user logs in
+- Group-based policy assignment lets you change or revoke access for many users at once instead of editing tokens individually
+- Mapping external IdP groups to Vault groups keeps authorization in sync with joiner-mover-leaver processes, removing orphaned access automatically
+- Entity-level audit data attributes every request to a real human or workload, which is essential for investigation and accountability
+
+**Attack Prevented:** Orphaned-account access, inconsistent authorization, privilege drift, untraceable activity
 
 {% include pack-code.html vendor="hashicorp-vault" section="1.3" %}
 
@@ -178,6 +196,15 @@ Configure dynamic secrets engines that generate credentials on-demand with autom
 #### Description
 Enable KV v2 secrets engine with versioning for audit trail and rollback capability.
 
+#### Rationale
+**Why This Matters:**
+- KV v2 versioning keeps a history of every secret change, so an accidental or malicious overwrite can be rolled back instead of causing an outage
+- Version metadata records when a secret changed, providing the audit trail required to investigate tampering
+- Regular rotation reduces the window in which a leaked credential remains valid
+- Soft-delete and destroy controls let you remove exposed secret values while retaining the change history for forensics
+
+**Attack Prevented:** Secret tampering, accidental destruction, prolonged credential exposure, undetected modification
+
 {% include pack-code.html vendor="hashicorp-vault" section="2.2" %}
 
 ---
@@ -189,6 +216,15 @@ Enable KV v2 secrets engine with versioning for audit trail and rollback capabil
 
 #### Description
 Use Transit secrets engine for application-level encryption without exposing encryption keys.
+
+#### Rationale
+**Why This Matters:**
+- Transit performs encryption and decryption inside Vault so application servers never hold the raw key material, removing a common theft target
+- Centralized key management enables key rotation and re-wrapping without re-encrypting data in every application
+- Access to encrypt vs. decrypt vs. rewrap is governed by policy, so a compromised service can be limited to a single operation
+- Keeping keys in Vault, backed by audit logging, produces a clear record of every cryptographic operation for compliance
+
+**Attack Prevented:** Encryption-key theft, plaintext data exposure, unauthorized decryption, key sprawl
 
 {% include pack-code.html vendor="hashicorp-vault" section="2.3" %}
 
@@ -204,6 +240,15 @@ Use Transit secrets engine for application-level encryption without exposing enc
 #### Description
 Secure Vault API with TLS, client certificates, and rate limiting.
 
+#### Rationale
+**Why This Matters:**
+- All Vault traffic carries secrets and tokens; without TLS those values are exposed to network sniffing and man-in-the-middle attacks
+- Enforcing strong TLS and client certificates ensures only trusted callers can reach the API, not anyone who can route to the listener
+- Rate limiting on the API blunts brute-force and credential-stuffing attempts against authentication endpoints
+- A hardened listener prevents downgrade and protocol attacks that could strip transport protection
+
+**Attack Prevented:** Man-in-the-middle interception, token sniffing, credential brute force, protocol downgrade
+
 #### ClickOps Implementation
 
 {% include pack-code.html vendor="hashicorp-vault" section="3.1" %}
@@ -218,6 +263,15 @@ Secure Vault API with TLS, client certificates, and rate limiting.
 #### Description
 Configure rate limiting to prevent abuse and detect anomalous access patterns.
 
+#### Rationale
+**Why This Matters:**
+- Rate limit quotas cap how fast a client can hit Vault, stopping a single compromised token from enumerating secrets at scale
+- Throttling authentication paths slows brute-force and credential-stuffing attacks against login endpoints
+- Limiting request volume protects the cluster from resource exhaustion that could deny service to legitimate workloads
+- Quota breaches are observable, turning abnormal request spikes into an early signal of abuse or misconfiguration
+
+**Attack Prevented:** Brute-force authentication, secret enumeration, denial of service, automated abuse
+
 ---
 
 ## 4. Audit Logging
@@ -229,6 +283,15 @@ Configure rate limiting to prevent abuse and detect anomalous access patterns.
 
 #### Description
 Enable audit logging to file and SIEM for all Vault operations.
+
+#### Rationale
+**Why This Matters:**
+- Audit devices record every request and response, giving the tamper-evident trail needed to detect and investigate secret access
+- Multiple devices (file, syslog, socket) ensure logging survives a single failure and can stream to a SIEM in real time
+- Vault blocks requests if it cannot write to a configured audit device, guaranteeing no secret access goes unrecorded
+- Forwarding logs off-box prevents an attacker who compromises the node from quietly erasing their tracks
+
+**Attack Prevented:** Undetected secret access, log tampering, repudiation, delayed breach discovery
 
 #### ClickOps Implementation
 
@@ -244,6 +307,18 @@ Enable audit logging to file and SIEM for all Vault operations.
 ### 4.2 Configure Audit Log Alerting
 
 **Profile Level:** L1 (Crawl)
+
+#### Description
+Build detection rules and alerts on Vault audit logs so that suspicious operations -- such as root token use, policy changes, or bulk secret reads -- trigger timely security notifications.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs only add value if someone acts on them; alerting turns passive records into timely detection of abuse
+- Real-time alerts on high-risk events (root token use, policy edits, mass secret reads) shrink attacker dwell time
+- Detecting anomalous access patterns surfaces compromised tokens before they are used to exfiltrate large numbers of secrets
+- Routing alerts to on-call and SIEM workflows ensures security teams respond during, not after, an incident
+
+**Attack Prevented:** Delayed breach detection, undetected token abuse, silent privilege changes, bulk secret exfiltration
 
 #### Detection Use Cases
 
@@ -285,6 +360,15 @@ Use GitHub Actions OIDC to authenticate to Vault without storing long-lived toke
 
 Configure JWT authentication for GitHub Actions using OIDC federation. This eliminates long-lived tokens by using GitHub's OIDC provider to authenticate directly to Vault with short-lived JWTs bound to specific repositories and branches.
 
+#### Rationale
+**Why This Matters:**
+- GitHub Actions OIDC lets workflows authenticate to Vault with short-lived JWTs, eliminating long-lived tokens stored as repository secrets
+- Tokens stored in CI are a prime exfiltration target; removing them closes off a common supply-chain attack path
+- Binding the Vault role to specific repositories, branches, and claims ensures only the intended pipeline can obtain secrets
+- Short-lived credentials expire automatically, so a token leaked from a build log is useless minutes later
+
+**Attack Prevented:** CI secret theft, supply-chain compromise, long-lived token abuse, unauthorized pipeline access
+
 {% include pack-code.html vendor="hashicorp-vault" section="5.2" %}
 
 ---
@@ -299,6 +383,15 @@ Configure JWT authentication for GitHub Actions using OIDC federation. This elim
 #### Description
 Configure auto-unseal using cloud KMS to eliminate manual unseal key management.
 
+#### Rationale
+**Why This Matters:**
+- Auto-unseal stores the unseal key in a cloud KMS, removing the need to distribute and manually enter Shamir key shares on every restart
+- Eliminating manual unseal removes the risk of key shares being mishandled, lost, or captured by an operator
+- KMS-backed unsealing ties Vault availability to a hardened, access-controlled key service with its own audit trail
+- Automated recovery lets clusters restart unattended, avoiding prolonged outages where secrets are unavailable
+
+**Attack Prevented:** Unseal-key compromise, insider key capture, operational key mishandling, prolonged seal outages
+
 {% include pack-code.html vendor="hashicorp-vault" section="6.1" %}
 
 ---
@@ -312,6 +405,15 @@ Configure auto-unseal using cloud KMS to eliminate manual unseal key management.
 Configure Vault disaster recovery and backup procedures.
 
 Use Raft snapshots for backup and restore operations. Create snapshots regularly, verify their integrity, and test restoration procedures. For Enterprise deployments, configure DR replication for automated failover.
+
+#### Rationale
+**Why This Matters:**
+- Regular Raft snapshots ensure a corrupted, deleted, or ransomware-encrypted Vault can be restored without losing all secrets
+- Verifying snapshot integrity and testing restores confirms backups actually work before a real disaster strikes
+- DR replication provides automated failover so a region or node loss does not leave applications unable to retrieve credentials
+- Off-site, access-controlled backups protect against both accidental loss and an attacker attempting to destroy the only copy of secrets
+
+**Attack Prevented:** Data destruction, ransomware lockout, single-point failure, irrecoverable secret loss
 
 {% include pack-code.html vendor="hashicorp-vault" section="6.2" %}
 
@@ -381,4 +483,5 @@ Use Raft snapshots for backup and restore operations. Create snapshots regularly
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial HashiCorp Vault hardening guide | Claude Code (Opus 4.5) |

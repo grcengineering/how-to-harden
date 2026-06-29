@@ -6,9 +6,9 @@ slug: "mailchimp"
 tier: "4"
 category: "Marketing"
 description: "Email marketing security for API keys, audience protection, and domain authentication"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -50,6 +50,18 @@ This guide covers Mailchimp security configurations including authentication, ac
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
+#### Description
+Require two-factor authentication for all Mailchimp account users so a stolen or guessed password alone cannot grant access.
+
+#### Rationale
+**Why This Matters:**
+- Passwords are routinely phished, reused, and leaked; a second factor blocks login even when the password is known
+- Mailchimp's repeated account compromises began with stolen or phished employee credentials — MFA on every user raises the bar against that exact playbook
+- A compromised marketing account can blast phishing from a trusted sender domain and export subscriber data
+- Enforcing MFA for all users, not just the owner, removes weak links where one unprotected account undermines the whole org
+
+**Attack Prevented:** Credential theft, password reuse, phishing, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Enable Two-Factor Authentication**
@@ -68,6 +80,18 @@ This guide covers Mailchimp security configurations including authentication, ac
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
+
+#### Description
+Assign each Mailchimp user the minimum access level (Owner, Admin, Manager, Author, or Viewer) required for their role and review those assignments regularly.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege access limits what a compromised or malicious account can do — a Viewer cannot export audiences or send campaigns
+- Over-privileged users expand the blast radius of any single account takeover
+- Separating roles keeps content authors from changing security settings, API keys, or user permissions
+- Quarterly review catches privilege creep and orphaned accounts left over from role changes or departures
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, orphaned-account access
 
 #### ClickOps Implementation
 
@@ -101,6 +125,14 @@ Manage Mailchimp API keys securely.
 #### Rationale
 **Attack Scenario:** Compromised API key exports entire subscriber list; enables mass phishing through trusted sending domain.
 
+**Why This Matters:**
+- API keys grant programmatic access that bypasses the login MFA prompt, so a leaked key is a standing backdoor
+- Scoping a separate key per integration limits exposure and lets you revoke one key without breaking everything
+- Deleting unused keys removes credentials no one is monitoring that attackers can quietly abuse
+- Rotating keys on a schedule shortens the window a leaked key stays valid
+
+**Attack Prevented:** API key leakage, subscriber data exfiltration, mass phishing via trusted domain, persistent unauthorized access
+
 #### ClickOps Implementation
 
 **Step 1: Audit API Keys**
@@ -119,6 +151,18 @@ Manage Mailchimp API keys securely.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
+
+#### Description
+Review and prune OAuth-connected apps and integrations so only necessary, trusted third parties retain access to your Mailchimp data.
+
+#### Rationale
+**Why This Matters:**
+- Every connected app holds a token that can read or modify audience data without a fresh login or MFA prompt
+- Abandoned or forgotten integrations become an unmonitored access path if that vendor is later breached
+- Excessive integration permissions widen the data exposed if any single third party is compromised
+- Documenting and auditing authorizations makes unexpected or rogue connected apps easy to spot and revoke
+
+**Attack Prevented:** Third-party and supply-chain compromise, OAuth token abuse, unauthorized data access, integration scope creep
 
 #### ClickOps Implementation
 
@@ -141,6 +185,18 @@ Manage Mailchimp API keys securely.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
+#### Description
+Restrict and monitor subscriber-list exports and segment access so audience data cannot be quietly bulk-exported.
+
+#### Rationale
+**Why This Matters:**
+- Subscriber lists are the crown-jewel asset — full of customer PII and the basis of sender reputation
+- The most damaging Mailchimp incidents ended in mass export of audience data, so limiting and alerting on exports is the direct countermeasure
+- Restricting export rights to a small set of users reduces who can walk away with the entire list
+- Segmenting access keeps sensitive audiences out of reach of users who have no need for them
+
+**Attack Prevented:** Bulk subscriber data exfiltration, PII exposure, unauthorized export, insider data theft
+
 #### ClickOps Implementation
 
 **Step 1: Configure Export Restrictions**
@@ -159,6 +215,18 @@ Manage Mailchimp API keys securely.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-3
+
+#### Description
+Authenticate your sending domains with DKIM, SPF, and DMARC so receiving mail servers can verify that messages genuinely originate from your domain.
+
+#### Rationale
+**Why This Matters:**
+- SPF, DKIM, and DMARC let receiving servers reject mail that spoofs your domain
+- Without an enforced DMARC policy, attackers can impersonate your brand to phish your own subscribers
+- Domain authentication protects the sender reputation and deliverability that spoofing and abuse would erode
+- A monitored DMARC policy surfaces who is sending mail as your domain, exposing abuse early
+
+**Attack Prevented:** Email spoofing, domain impersonation, phishing of subscribers, brand and reputation abuse
 
 #### ClickOps Implementation
 
@@ -180,6 +248,18 @@ Manage Mailchimp API keys securely.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
+
+#### Description
+Regularly review Mailchimp login history and account activity to detect unauthorized or suspicious access.
+
+#### Rationale
+**Why This Matters:**
+- Login and activity logs are the primary signal that an account has been taken over
+- Reviewing for unfamiliar locations, devices, or times catches intrusions before data is exported
+- Mailchimp's breaches involved attacker access to support and admin tools — activity monitoring shortens detection time
+- Without routine review, a compromised account can operate undetected for extended periods
+
+**Attack Prevented:** Undetected account takeover, unauthorized access, delayed breach detection
 
 #### ClickOps Implementation
 
@@ -230,4 +310,5 @@ Manage Mailchimp API keys securely.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Mailchimp hardening guide | Claude Code (Opus 4.5) |

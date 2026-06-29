@@ -6,9 +6,9 @@ slug: "paylocity"
 tier: "2"
 category: "HR/Finance"
 description: "HCM platform hardening for Paylocity including SAML SSO configuration, MFA enforcement, and role-based access controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Paylocity security including SAML SSO, MFA, role-based access 
 
 #### Description
 Configure SAML SSO to centralize authentication for Paylocity users.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes Paylocity authentication in your corporate IdP, so MFA, conditional access, and password policy are enforced on every login
+- Local Paylocity passwords bypass IdP controls and become standalone targets for credential stuffing and phishing
+- IdP-driven provisioning and deprovisioning revokes access automatically when employees leave, eliminating orphaned payroll accounts
+- Paylocity holds employee PII, SSNs, bank routing details, and payroll data — a single compromised login can expose the entire workforce
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
 
 #### Prerequisites
 - Paylocity account with SSO feature enabled
@@ -137,6 +146,15 @@ Require MFA for all Paylocity users.
 #### Description
 Configure session timeout and security controls.
 
+#### Rationale
+**Why This Matters:**
+- Idle and absolute session timeouts limit how long a stolen or abandoned session remains usable
+- Conditional access ties session validity to device compliance and risk signals, blocking sessions from untrusted endpoints
+- Short-lived sessions shrink the window for session hijacking and reduce exposure on shared or kiosk machines
+- Payroll and HR sessions grant access to direct-deposit and PII data, so an unattended session left open is a direct exfiltration path
+
+**Attack Prevented:** Session hijacking, session fixation, unauthorized access from unattended devices, token replay
+
 #### ClickOps Implementation
 
 **Step 1: Configure Session Controls**
@@ -207,6 +225,15 @@ Implement least privilege using Paylocity's RBAC model.
 #### Description
 Minimize and protect administrator accounts.
 
+#### Rationale
+**Why This Matters:**
+- Administrator roles can change pay rates, bank accounts, and access for the entire organization, making them the highest-value target
+- Reducing the number of admins shrinks the attack surface and limits the blast radius of any single compromised account
+- Requiring phishing-resistant MFA on admins blocks the most common takeover paths for privileged accounts
+- Monitoring admin activity surfaces malicious or mistaken privileged changes before they cause payroll fraud
+
+**Attack Prevented:** Privilege escalation, payroll fraud, insider abuse, admin account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admin Users**
@@ -238,6 +265,15 @@ Minimize and protect administrator accounts.
 #### Description
 Configure appropriate manager access for self-service functions.
 
+#### Rationale
+**Why This Matters:**
+- Scoping manager access to direct reports only prevents browsing of unrelated employees' compensation and personal data
+- Approval workflows create separation of duties so a single manager cannot unilaterally alter time, pay, or expenses
+- Over-broad manager permissions are a common source of accidental PII exposure across an organization
+- Self-service convenience must not become a lateral path into sensitive HR records for the whole company
+
+**Attack Prevented:** Excessive data exposure, unauthorized record access, lateral data browsing, approval bypass
+
 #### ClickOps Implementation
 
 **Step 1: Define Manager Permissions**
@@ -266,6 +302,15 @@ Configure appropriate manager access for self-service functions.
 #### Description
 Control access to sensitive employee data.
 
+#### Rationale
+**Why This Matters:**
+- Restricting SSN, salary, and benefits fields to authorized roles enforces least privilege on the most sensitive data in the platform
+- Data classification ensures protection effort is concentrated where exposure would cause the most harm
+- Field-level restrictions limit what an attacker or curious insider can reach even after they authenticate
+- Unrestricted access to PII drives regulatory exposure under data-protection and breach-notification laws
+
+**Attack Prevented:** PII exposure, insider data theft, identity theft, regulatory non-compliance
+
 #### ClickOps Implementation
 
 **Step 1: Classify Data Sensitivity**
@@ -291,6 +336,15 @@ Control access to sensitive employee data.
 
 #### Description
 Control access to HR reports and analytics.
+
+#### Rationale
+**Why This Matters:**
+- Reports and exports aggregate sensitive data across many employees, so a single download can expose the entire workforce at once
+- Restricting report access by role prevents low-privilege users from pulling compensation and PII datasets
+- Limiting export capability reduces the risk of bulk data leaving the platform onto unmanaged devices
+- Monitoring report generation creates an audit trail to detect mass-extraction attempts
+
+**Attack Prevented:** Bulk data exfiltration, unauthorized reporting, mass PII download, data leakage
 
 #### ClickOps Implementation
 
@@ -320,6 +374,15 @@ Control access to HR reports and analytics.
 #### Description
 Enable and monitor audit logs for security events.
 
+#### Rationale
+**Why This Matters:**
+- Audit logs of authentication, data access, and configuration changes are the primary evidence for detecting and investigating incidents
+- Without comprehensive logging, malicious changes to pay or banking data can go unnoticed until financial loss occurs
+- Retained logs support forensic reconstruction and meet compliance evidence requirements for HR and payroll systems
+- Monitoring permission and configuration changes catches privilege abuse and unauthorized tampering early
+
+**Attack Prevented:** Undetected breaches, payroll tampering, insider abuse, evidence gaps during investigation
+
 #### ClickOps Implementation
 
 **Step 1: Review Audit Capabilities**
@@ -346,6 +409,15 @@ Enable and monitor audit logs for security events.
 
 #### Description
 Configure controls for regulatory compliance.
+
+#### Rationale
+**Why This Matters:**
+- Audit trails for payroll changes and documented approval workflows enforce separation of duties required by financial controls like SOX
+- Regular access reviews catch privilege creep and ensure access aligns with current job function
+- Reviewing terminated-employee access closes a frequent gap that leaves orphaned accounts with standing data access
+- Documented compliance status provides the evidence auditors require and reduces regulatory and financial risk
+
+**Attack Prevented:** Compliance violations, orphaned-account access, segregation-of-duties failures, undetected privilege creep
 
 #### ClickOps Implementation
 
@@ -410,6 +482,7 @@ Configure controls for regulatory compliance.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and data protection | Claude Code (Opus 4.5) |
 
 ---

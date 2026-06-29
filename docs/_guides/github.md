@@ -6,9 +6,9 @@ slug: "github"
 tier: "1"
 category: "DevOps"
 description: "Comprehensive source control and CI/CD security hardening for GitHub organizations, Actions, supply chain protection, and Enterprise Cloud/Server"
-version: "0.6.0"
+version: "0.6.1"
 maturity: "draft"
-last_updated: "2026-03-31"
+last_updated: "2026-06-29"
 ---
 
 
@@ -161,6 +161,14 @@ Require all organization members to enable MFA on their GitHub accounts. This pr
 Set default organization member permissions to minimal access. Members should only have write access to repositories they actively work on.
 
 #### Rationale
+**Why This Matters:**
+- Base permissions apply to every member across every repository — a "Write" or "Admin" default silently grants every employee push access to code they have no reason to touch.
+- A single compromised member account, or a stolen OAuth or personal access token tied to that account, inherits the base permission, so an overly broad default turns one account takeover into org-wide write access.
+- A "No permission" base combined with team-granted access enforces least privilege and produces an explicit, auditable record of who can reach each repository.
+- Restricting repository creation and private-repo forking on the same settings screen limits unsanctioned code sprawl and accidental exposure of private source.
+
+**Attack Prevented:** Privilege creep, lateral movement via a single compromised account, unauthorized code modification, accidental private-repository exposure through forking
+
 **Attack Impact:** When CircleCI was breached, attackers gained access to GitHub OAuth tokens. If those tokens had overly broad permissions, attackers could modify any repository in affected organizations.
 
 **Least Privilege Principle:** Default to no repository access; grant write access only as needed.
@@ -207,6 +215,14 @@ Set default organization member permissions to minimal access. Members should on
 Integrate GitHub with your corporate identity provider (Okta, Azure AD, Google Workspace) via SAML SSO and configure SCIM provisioning for automated user lifecycle management. This centralizes authentication and enables conditional access policies.
 
 #### Rationale
+**Why This Matters:**
+- SAML SSO routes every GitHub login through your corporate identity provider, so MFA, conditional access, device-compliance, and session policies are enforced centrally instead of depending on each developer to configure GitHub MFA individually.
+- SCIM provisioning automatically deprovisions departed employees the moment their IdP account is disabled, closing the gap between termination and access revocation that otherwise leaves orphaned accounts with standing repository access.
+- Without SSO, a former employee's cached GitHub credentials or personal access tokens can retain access long after they leave, with no single place to revoke them.
+- Centralized identity gives security teams one authoritative source for who can reach source code, secrets, and CI/CD — essential for audits and incident response.
+
+**Attack Prevented:** Orphaned-account access, credential persistence after offboarding, MFA bypass, access from unmanaged or non-compliant devices
+
 **Centralized Control:** If employee leaves company, disable their IdP account and they immediately lose GitHub access. SCIM enables automatic deprovisioning when employees leave, closing the gap between termination and access revocation.
 
 **Conditional Access:** Enforce device compliance, location-based access, session timeouts via IdP.
@@ -352,6 +368,14 @@ Implement least privilege for organization and enterprise administrators. Limit 
 Restrict enterprise access to approved IP addresses using IP allow lists. This limits the network locations from which users and services can access your GitHub Enterprise instance.
 
 #### Rationale
+**Why This Matters:**
+- An IP allow list adds a network-layer gate so that even valid credentials or stolen tokens cannot reach GitHub resources from outside approved corporate, VPN, or CI/CD egress ranges.
+- It is defense-in-depth that complements MFA and SSO — if an attacker phishes a session or exfiltrates a personal access token, the request still fails when it originates from an unapproved network location.
+- Scoping access to known IP ranges shrinks the attack surface for credential-stuffing and automated abuse, which originate from arbitrary internet addresses.
+- Applying the allow list to installed GitHub Apps extends the same network boundary to machine integrations, not just human users.
+
+**Attack Prevented:** Credential and token reuse from untrusted networks, stolen-session abuse, credential stuffing, off-network access to source code
+
 **Attack Prevention:** Even with stolen credentials or tokens, attackers outside your corporate network cannot access GitHub resources. This is a defense-in-depth measure that complements MFA and SSO.
 
 #### ClickOps Implementation
@@ -1158,6 +1182,14 @@ Prevent use of arbitrary third-party Actions by restricting to GitHub-verified c
 Set GitHub Actions `GITHUB_TOKEN` permissions to read-only by default. Grant write permissions only when explicitly needed per workflow. Audit legacy repositories (created before February 2023) that may still use the dangerous `write-all` default.
 
 #### Rationale
+**Why This Matters:**
+- The `GITHUB_TOKEN` is automatically injected into every workflow run; if it defaults to `write-all`, any workflow — or any malicious step that executes inside one — can modify code, push packages, create releases, and approve pull requests.
+- Repositories created before February 2023 keep the legacy `write-all` default permanently; it is never auto-upgraded, so those repos stay over-privileged until explicitly remediated.
+- Declaring `permissions: {}` at the top level and granting only the minimal scope each job needs ensures a compromised action or injected step cannot escalate beyond read access.
+- Disabling the token's ability to create and approve pull requests preserves the integrity of branch-protection review gates, which self-approval would otherwise defeat.
+
+**Attack Prevented:** Token privilege abuse, unauthorized package and release publishing, self-approved pull requests, supply-chain worm propagation through over-privileged tokens
+
 **Default Risk:** Repositories created before February 2023 still default to `write-all` GITHUB_TOKEN permissions. Workflows in these repos can modify code, create releases, push packages, and approve PRs without any explicit permission declaration. New repos (post-Feb 2023) default to read-only, but the legacy default is never automatically updated.
 
 **Real-World Incident:** The Shai Hulud worm (November 2025) propagated through repositories with `write-all` GITHUB_TOKEN defaults. The worm exploited `pull_request_target` workflows to steal PATs from PostHog and AsyncAPI, then used those tokens to publish backdoored npm packages that spread to 25,000+ repositories. Repos with restrictive token permissions were not affected.
@@ -1223,6 +1255,14 @@ In each workflow file, explicitly declare required permissions. See the workflow
 Require manual approval before running workflows triggered by first-time contributors. Prevents malicious PR attacks that exfiltrate secrets.
 
 #### Rationale
+**Why This Matters:**
+- On public repositories anyone can fork the repo and open a pull request; without an approval gate, the proposed workflow runs automatically with access to the runner and any secrets exposed to PR-triggered workflows.
+- An attacker's opening move is often a single malicious PR that edits a workflow to dump or exfiltrate secrets — requiring maintainer approval forces a human to review that change before any code executes.
+- Gating only first-time contributors lets trusted collaborators keep a fast feedback loop while untrusted newcomers are held for review, balancing security with open-source velocity.
+- The approval step gives maintainers a chance to catch expression-injection and `pull_request_target` abuse patterns (Sections 3.8 and 3.13) before the workflow ever runs.
+
+**Attack Prevented:** Secret exfiltration via malicious fork pull requests, unreviewed workflow execution from untrusted contributors, poisoned-pipeline attacks
+
 **Attack:** Attacker forks your public repo, modifies workflow to exfiltrate secrets, opens PR. Workflow runs automatically and steals `{% raw %}${{ secrets }}{% endraw %}`.
 
 **Prevention:** Require maintainer to review and approve workflow runs from new contributors. For deeper `pull_request_target` workflow hardening patterns (split-workflow, artifact handoff, expression injection prevention), see Section 3.8.
@@ -3621,6 +3661,7 @@ Before allowing any third-party integration access to GitHub, assess risk:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.6.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-03-23 | 0.5.2 | draft | Expand section 2.4 with Gitsign/Sigstore keyless signing, GitHub verification limitations, and CI signing; expand section 3.10 with composite action transitive dependency auditing, container image digest pinning, poutine/frizbee/octopin tools; expand section 5.2 with Docker Hub OIDC gap, GHCR migration path, PyPI/npm OIDC status, irreducible static secrets | Claude Code (Opus 4.6) |
 | 2026-03-23 | 0.5.1 | draft | Add section 1.8 (service account cross-org isolation) from TeamPCP Phase 3 findings; update section 6.6 with atomic credential rotation requirement; expand Security Incidents with full three-phase TeamPCP campaign (CanisterWorm, ICP C2, VS Code extension, org defacement) | Claude Code (Opus 4.6) |
 | 2026-03-07 | 0.3.0 | draft | Revamp sections 4-9: OAuth app auditing, GHAS unbundling, push protection delegated bypass, custom secret patterns, OIDC, build provenance, Copilot governance, custom roles, required workflows, security overview dashboard | Claude Code (Opus 4.6) |

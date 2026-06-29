@@ -6,9 +6,9 @@ slug: "oracle-hcm"
 tier: "3"
 category: "HR/Finance"
 description: "Enterprise HR security for security profiles, HDL controls, and IDCS integration"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -84,6 +84,18 @@ Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
+#### Description
+Define a least-privilege role hierarchy and map duties (IT Security, Application Administrator, HR Analyst, Line Manager, Employee) to job and data roles so each user receives only the access their function requires.
+
+#### Rationale
+**Why This Matters:**
+- Role-based access control keeps HR analysts, managers, and employees scoped to the data their job demands instead of the entire worker population
+- Overlapping or overly broad roles let a single compromised account read or change records across the whole organization
+- A clear role hierarchy enforces separation of duties so no one user can both configure security and approve their own access
+- Well-defined data roles make access reviews and recertification tractable, surfacing privilege creep before auditors do
+
+**Attack Prevented:** Privilege escalation, excessive data access, separation-of-duties bypass, insider abuse
+
 #### ClickOps Implementation
 
 **Step 1: Define Role Hierarchy**
@@ -114,6 +126,15 @@ Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
 
 #### Description
 Implement data-level security using security profiles.
+
+#### Rationale
+**Why This Matters:**
+- Person, organization, and position security profiles restrict which employee records each user can even see, enforcing data segmentation beyond functional role
+- Without scoped profiles, any user with a reporting or self-service role could enumerate compensation, payroll, and personal data for the entire workforce
+- Country- and org-specific restrictions keep multinational data within the jurisdictions and teams authorized to handle it
+- Limiting compensation and payroll visibility reduces the blast radius of a compromised or curious internal account
+
+**Attack Prevented:** Unauthorized data access, mass PII exposure, cross-jurisdiction data leakage, insider snooping
 
 #### ClickOps Implementation
 
@@ -146,6 +167,14 @@ Implement data-level security using security profiles.
 Harden REST API integrations for HCM data.
 
 #### Rationale
+**Why This Matters:**
+- REST APIs expose the same Workers, payroll, and compensation data as the UI but at machine speed and scale, so a weak OAuth client becomes a bulk-extraction channel
+- Confidential clients using the authorization_code grant with exact-match redirect URIs prevent token theft and authorization-code interception
+- Minimum-scope tokens ensure a compromised integration cannot reach data beyond its single business purpose
+- Tight client configuration is the difference between an API leaking one record and leaking the entire global employee directory
+
+**Attack Prevented:** OAuth client compromise, token theft, bulk PII extraction, over-scoped API access
+
 **Attack Scenario:** Compromised OAuth client accesses Workers API; bulk extraction of global employee PII enables identity theft at scale.
 
 #### Implementation
@@ -176,6 +205,15 @@ Harden REST API integrations for HCM data.
 #### Description
 Secure bulk data operations via HDL.
 
+#### Rationale
+**Why This Matters:**
+- HCM Data Loader moves data in bulk, so a single misused HDL session can read or overwrite thousands of worker records at once
+- Restricting HDL privileges to a small, approved set of users limits who can perform high-impact mass operations
+- Encrypted file transfer and integrity validation stop tampering and interception of payroll and personal data in flight
+- Detailed logging and bulk-extract monitoring give defenders the audit trail needed to detect and investigate large data movements
+
+**Attack Prevented:** Bulk data exfiltration, mass record tampering, data-in-transit interception, unauthorized bulk loads
+
 #### Implementation
 
 **Step 1: Restrict HDL Access**
@@ -201,6 +239,18 @@ Secure bulk data operations via HDL.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
+#### Description
+Verify that data is encrypted at rest by default and in transit with TLS 1.2 or higher, then apply field-level security and masking to sensitive attributes such as SSN and bank account numbers.
+
+#### Rationale
+**Why This Matters:**
+- Encryption at rest protects payroll, banking, and national-identifier data if underlying storage or backups are ever exposed
+- TLS 1.2+ in transit prevents interception of HR data moving between clients, integrations, and the cloud platform
+- Field-level masking limits exposure of the most sensitive attributes even to users who legitimately access the record
+- Auditing sensitive-data access ties encryption to detection, so unusual reads of protected fields are visible
+
+**Attack Prevented:** Data-at-rest exposure, network eavesdropping, sensitive field disclosure, backup theft
+
 #### ClickOps Implementation
 
 **Step 1: Verify Encryption Settings**
@@ -222,6 +272,18 @@ Secure bulk data operations via HDL.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-12
+
+#### Description
+Configure retention periods by data type, enable automated purge of records past their retention window, and support data-subject access and consent workflows for privacy compliance.
+
+#### Rationale
+**Why This Matters:**
+- Holding HR and payroll data longer than necessary expands the attack surface and the volume of PII at risk in any breach
+- Automated purge enforces retention policy consistently instead of relying on manual cleanup that quietly lapses
+- Data-subject access, consent, and processing records are required to satisfy GDPR and similar privacy regimes for global workforces
+- Documented retention reduces legal and regulatory exposure and demonstrates due diligence to auditors
+
+**Attack Prevented:** Excessive data retention, privacy-regulation violations, over-exposure of stale PII, non-compliance penalties
 
 #### Implementation
 
@@ -248,6 +310,18 @@ Secure bulk data operations via HDL.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
+#### Description
+Enable audit policies for authentication events, data read/write activity, and security configuration changes, retain the logs for at least one year, and forward them to a SIEM with alerting.
+
+#### Rationale
+**Why This Matters:**
+- Auditing authentication, data access, and configuration changes creates the evidence trail needed to detect and reconstruct incidents
+- Without comprehensive logging, unauthorized access to compensation and payroll data can occur with no trace
+- Exporting to a SIEM enables correlation and alerting across HCM and the wider environment rather than siloed, manually reviewed logs
+- A minimum one-year retention supports forensic investigation and meets common compliance and breach-notification timelines
+
+**Attack Prevented:** Undetected unauthorized access, audit-trail gaps, delayed breach detection, untraceable tampering
+
 #### ClickOps Implementation
 
 **Step 1: Configure Audit Policies**
@@ -271,6 +345,18 @@ Secure bulk data operations via HDL.
 ### 4.2 Monitor Integration Activity
 
 **Profile Level:** L2 (Walk)
+
+#### Description
+Continuously monitor REST API, SOAP, and HDL integration activity for anomalous volume, off-hours access, and bulk extracts that indicate a compromised client or insider exfiltration.
+
+#### Rationale
+**Why This Matters:**
+- Integrations run with broad, standing access, so a compromised OAuth client or service account can quietly pull large volumes of HR data
+- Baselining normal integration behavior makes spikes in record counts, new endpoints, and off-hours calls stand out as detections
+- Bulk extracts through APIs or HDL are a primary exfiltration path and warrant dedicated alerting
+- Early detection of anomalous integration activity shortens dwell time and limits how much workforce data an attacker can remove
+
+**Attack Prevented:** Integration account compromise, API-based data exfiltration, anomalous bulk extraction, insider misuse
 
 #### Detection Queries
 
@@ -312,4 +398,5 @@ Secure bulk data operations via HDL.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Oracle HCM Cloud hardening guide | Claude Code (Opus 4.5) |

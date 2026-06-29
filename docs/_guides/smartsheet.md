@@ -6,9 +6,9 @@ slug: "smartsheet"
 tier: "5"
 category: "Productivity"
 description: "Work management security for sharing defaults, connector controls, and activity logging"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -50,6 +50,18 @@ This guide covers Smartsheet security configurations including authentication, a
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
+#### Description
+Require SAML single sign-on with multi-factor authentication for all Smartsheet access so every login is brokered through your corporate identity provider.
+
+#### Rationale
+**Why This Matters:**
+- Routing every Smartsheet login through your IdP enforces MFA, conditional access, and central session policy on each authentication attempt
+- Native email-and-password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- SSO with automated provisioning deprovisions departed users centrally, eliminating orphaned accounts that retain access to project data
+- Smartsheet workspaces hold project plans, resource and budget data, and form submissions, so a single compromised login can expose all of it
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, password reuse, orphaned-account access
+
 #### ClickOps Implementation
 
 **Step 1: Configure SAML SSO (Enterprise)**
@@ -68,6 +80,18 @@ This guide covers Smartsheet security configurations including authentication, a
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
+
+#### Description
+Define Smartsheet user types and group-based roles so each account holds only the administrative and licensing privileges its job actually requires.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege role assignment limits what a compromised or misused account can reach and change
+- Reserving System Admin for a small, deliberate set of accounts shrinks the blast radius of an admin takeover
+- Group-based permissions make access reviews and offboarding consistent and auditable instead of ad hoc
+- Over-provisioned admin or licensed accounts let an attacker alter sharing, integrations, and security settings across the whole organization
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider misuse, excessive standing access
 
 #### ClickOps Implementation
 
@@ -100,6 +124,14 @@ Control sheet and workspace sharing.
 #### Rationale
 **Attack Scenario:** Public links to project sheets expose sensitive timelines; form submissions accessible to unauthorized users.
 
+**Why This Matters:**
+- Restrictive default sharing prevents sheets and workspaces from being exposed beyond their intended audience by accident
+- Published items and public links bypass account-level access controls and are reachable by anyone who holds the URL
+- Workspace-scoped sharing defaults contain external collaboration to the teams that need it instead of the entire organization
+- Project sheets and form responses often hold schedules, budgets, and personal data that should never be world-readable
+
+**Attack Prevented:** Data exposure via public links, unauthorized external sharing, accidental data leakage, oversharing
+
 #### ClickOps Implementation
 
 **Step 1: Global Sharing Settings**
@@ -121,6 +153,18 @@ Control sheet and workspace sharing.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-21
 
+#### Description
+Restrict who can view form submissions, limit form sharing, and configure submission notifications so collected responses reach only authorized recipients.
+
+#### Rationale
+**Why This Matters:**
+- Forms often collect sensitive intake data such as requests, approvals, contact details, and internal reporting that must not be visible to unauthorized users
+- Limiting submission visibility and form sharing keeps response data scoped to the team that owns the process
+- Submission notifications give owners timely awareness of new entries and of unexpected or anomalous activity
+- Unrestricted forms and their result sheets are an easy path for harvesting business or personal data at scale
+
+**Attack Prevented:** Unauthorized data access, data harvesting, information disclosure, oversharing of submissions
+
 #### ClickOps Implementation
 
 **Step 1: Form Access Controls**
@@ -136,6 +180,18 @@ Control sheet and workspace sharing.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
+
+#### Description
+Review connected apps and connectors in the Admin Center, remove unused ones, and audit personal API access tokens, revoking any that are no longer needed.
+
+#### Rationale
+**Why This Matters:**
+- Every connector and API token is a standing, often long-lived credential that can read or modify project data outside the SSO and MFA path
+- Unused or forgotten integrations expand the attack surface and are rarely monitored, making them ideal footholds for attackers
+- Auditing and revoking stale tokens enforces least privilege and limits damage if a token is leaked or a third party is breached
+- A single over-scoped connector compromise can exfiltrate or alter data across many sheets and workspaces
+
+**Attack Prevented:** Token abuse, third-party and supply-chain compromise, data exfiltration, stale credential exploitation
 
 #### ClickOps Implementation
 
@@ -156,6 +212,18 @@ Control sheet and workspace sharing.
 **Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-7
 
+#### Description
+Control which Smartsheet premium apps (such as Dynamic View, Control Center, and Data Shuttle) are enabled and configure their access permissions to match genuine business need.
+
+#### Rationale
+**Why This Matters:**
+- Premium apps extend data access and data-movement capabilities, so each enabled app widens what an attacker or misconfiguration can reach
+- Enabling apps only where there is a clear business need keeps the platform's functionality and data-flow surface minimal
+- Scoped access permissions prevent premium apps from exposing or moving data beyond the teams authorized to use them
+- Apps such as Data Shuttle move data in and out of Smartsheet, so unmanaged enablement can create unmonitored data egress paths
+
+**Attack Prevented:** Unauthorized data movement, data exfiltration, excessive feature exposure, misconfiguration abuse
+
 #### ClickOps Implementation
 
 **Step 1: Control Premium Apps**
@@ -171,6 +239,18 @@ Control sheet and workspace sharing.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
+
+#### Description
+Enable and review the Enterprise Activity Log and export its events to your SIEM so administrative and user actions are recorded and monitored.
+
+#### Rationale
+**Why This Matters:**
+- Comprehensive activity logging is what makes account compromise, data exfiltration, and insider misuse detectable rather than silent
+- Exporting events to a SIEM enables correlation, alerting, and retention beyond the platform's native console
+- An audit trail of sharing changes, logins, and admin actions is essential for incident investigation and forensics
+- Without centralized logging, attacker actions and policy changes go unnoticed until after the damage is done
+
+**Attack Prevented:** Undetected compromise, insider misuse, delayed incident response, audit gaps
 
 #### ClickOps Implementation
 
@@ -221,4 +301,5 @@ Control sheet and workspace sharing.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Smartsheet hardening guide | Claude Code (Opus 4.5) |

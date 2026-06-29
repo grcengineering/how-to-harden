@@ -432,21 +432,29 @@ document.addEventListener('DOMContentLoaded', function() {
     clearTimeout(scrollArmTimer);
   });
 
+  var searchScrolled = false;
   searchInput.addEventListener('input', function() {
     filterGuides();
-    // On mobile, scroll to guides so results are visible.
-    // Disarm scroll-blur first so the programmatic scroll
-    // doesn't dismiss the virtual keyboard.
-    if (window.innerWidth <= 640) {
+    // When the user starts typing, navigate down to the (now-filtered) guide
+    // grid so results are immediately visible — on every viewport, not just
+    // mobile. Scroll once per typing session to avoid re-jerking on each
+    // keystroke; re-arm after the field is cleared.
+    var hasTerm = searchInput.value.trim() !== '';
+    if (hasTerm && !searchScrolled) {
       var guidesEl = document.getElementById('guides');
       if (guidesEl) {
+        // Disarm scroll-blur first so the programmatic scroll doesn't dismiss
+        // the mobile virtual keyboard.
         scrollArmed = false;
         guidesEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        searchScrolled = true;
         clearTimeout(scrollArmTimer);
         scrollArmTimer = setTimeout(function() {
           scrollArmed = true;
         }, 600);
       }
+    } else if (!hasTerm) {
+      searchScrolled = false;
     }
   });
 

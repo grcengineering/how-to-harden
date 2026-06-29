@@ -6,9 +6,9 @@ slug: "intercom"
 tier: "2"
 category: "Marketing"
 description: "Customer messaging platform hardening for Intercom including SAML SSO, workspace security, and data protection"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Intercom security including SAML SSO, workspace access, conver
 #### Description
 Configure SAML SSO to centralize authentication for Intercom teammates.
 
+#### Rationale
+**Why This Matters:**
+- Routes every Intercom teammate login through your corporate IdP, enforcing MFA, conditional access, and device posture on each sign-in
+- Standalone Intercom passwords bypass IdP controls and are prime targets for credential stuffing and phishing
+- Central provisioning and deprovisioning removes access the moment an employee leaves, eliminating orphaned teammate accounts
+- Intercom inboxes hold customer conversations and PII, so a single compromised login can expose sensitive customer data
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - Intercom admin access
 - Enterprise or Pro plan
@@ -95,6 +104,15 @@ Configure SAML SSO to centralize authentication for Intercom teammates.
 #### Description
 Require 2FA for all Intercom teammates.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor blocks account takeover even when a teammate password is stolen, guessed, or reused
+- Support and marketing staff are frequent phishing targets because their inboxes hold customer data and outbound messaging reach
+- Workspace-wide enforcement closes the gap where individual teammates skip optional 2FA
+- Without 2FA, a single leaked credential gives an attacker full read access to customer conversations
+
+**Attack Prevented:** Account takeover, credential stuffing, phishing, password reuse
+
 #### ClickOps Implementation
 
 **Step 1: Enable Workspace 2FA**
@@ -121,6 +139,15 @@ Require 2FA for all Intercom teammates.
 #### Description
 Configure session timeout and security settings.
 
+#### Rationale
+**Why This Matters:**
+- Idle session timeouts limit the window an attacker can hijack an authenticated browser session on a shared or unattended device
+- Shorter sessions force periodic reauthentication, reducing exposure from stolen session tokens
+- Support agents often work on shared workstations, where lingering sessions risk unauthorized access to customer inboxes
+- Session controls bound the blast radius of a device left logged in or a cookie exfiltrated by malware
+
+**Attack Prevented:** Session hijacking, unauthorized access from unattended devices, token replay
+
 #### ClickOps Implementation
 
 **Step 1: Configure Timeout**
@@ -143,6 +170,15 @@ Configure session timeout and security settings.
 
 #### Description
 Implement least privilege using Intercom roles.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure teammates can only access the conversations and settings their job requires
+- Overly broad roles let a single compromised account read all customer data or change workspace security settings
+- Scoping admin capabilities to a few users limits who can export data, manage teammates, or alter configuration
+- Role separation contains insider misuse and reduces the damage from any one compromised teammate
+
+**Attack Prevented:** Privilege escalation, excessive data exposure, insider misuse, lateral movement
 
 #### ClickOps Implementation
 
@@ -173,6 +209,15 @@ Implement least privilege using Intercom roles.
 #### Description
 Control access to conversation inboxes.
 
+#### Rationale
+**Why This Matters:**
+- Limiting inbox visibility to the teams that need it prevents teammates from reading customer conversations outside their remit
+- Customer inboxes contain PII and sensitive support details that should not be broadly accessible
+- Restricting reassignment and routing prevents conversations from being silently moved to unauthorized agents
+- Scoped inbox access reduces the data a single compromised or malicious teammate account can reach
+
+**Attack Prevented:** Unauthorized data access, insider snooping, excessive data exposure
+
 #### ClickOps Implementation
 
 **Step 1: Configure Inbox Permissions**
@@ -198,6 +243,15 @@ Control access to conversation inboxes.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Admin and owner accounts can change security settings, manage teammates, and export all customer data, making them the highest-value targets
+- Keeping the admin count small shrinks the attack surface and makes anomalous admin activity easier to spot
+- Requiring 2FA on every admin account blocks takeover even if an admin password leaks
+- A single compromised admin can disable SSO, remove logging, or exfiltrate the entire conversation history
+
+**Attack Prevented:** Admin account takeover, privilege escalation, configuration tampering, mass data exfiltration
 
 #### ClickOps Implementation
 
@@ -227,6 +281,15 @@ Minimize and protect administrator accounts.
 #### Description
 Control data export capabilities.
 
+#### Rationale
+**Why This Matters:**
+- Bulk export is the fastest path to large-scale data theft, so restricting it to admins limits who can pull customer records at scale
+- Auditing export activity surfaces unusual data pulls that may indicate a compromised account or malicious insider
+- Defined retention and handling policies reduce how much exportable historical data exists to be stolen
+- Customer conversations contain PII subject to GDPR and CCPA, so uncontrolled export is both a breach and a compliance risk
+
+**Attack Prevented:** Bulk data exfiltration, insider data theft, regulatory non-compliance
+
 #### ClickOps Implementation
 
 **Step 1: Review Export Permissions**
@@ -252,6 +315,15 @@ Control data export capabilities.
 
 #### Description
 Protect sensitive conversation data.
+
+#### Rationale
+**Why This Matters:**
+- Masking and PII detection keep sensitive data such as payment details and personal identifiers out of plaintext conversation views
+- Retention and deletion policies ensure customer data is not kept longer than needed, shrinking the breach blast radius
+- Deletion workflows are required to honor GDPR and CCPA erasure requests in a timely, auditable way
+- Limiting exposure of sensitive fields reduces what an attacker or over-permissioned teammate can harvest from inboxes
+
+**Attack Prevented:** PII exposure, data over-retention, regulatory non-compliance, sensitive data harvesting
 
 #### ClickOps Implementation
 
@@ -280,6 +352,15 @@ Protect sensitive conversation data.
 
 #### Description
 Enable and monitor activity logs.
+
+#### Rationale
+**Why This Matters:**
+- Activity logs provide the audit trail needed to detect account compromise, role changes, and unusual data exports
+- Without monitoring, attacker actions such as privilege changes or bulk exports go unnoticed until damage is done
+- Logged authentication and configuration events support incident investigation and forensic timelines
+- Many compliance frameworks require auditable records of security-relevant activity for customer-data platforms
+
+**Attack Prevented:** Undetected account compromise, unmonitored privilege changes, delayed breach detection
 
 #### ClickOps Implementation
 
@@ -345,6 +426,7 @@ Enable and monitor activity logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, roles, and data protection | Claude Code (Opus 4.5) |
 
 ---

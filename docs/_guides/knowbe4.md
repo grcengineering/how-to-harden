@@ -6,9 +6,9 @@ slug: "knowbe4"
 tier: "2"
 category: "Security"
 description: "Security awareness training platform hardening for KnowBe4 including SAML SSO, admin access, and campaign security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers KnowBe4 console security including SAML SSO, admin access, cam
 #### Description
 Configure SAML SSO for KnowBe4 console access.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes KnowBe4 console authentication in your corporate IdP, applying MFA, conditional access, and session policy to every admin login
+- Local KnowBe4 passwords bypass IdP controls and are prime targets for credential stuffing and phishing
+- IdP-driven provisioning and deprovisioning removes departed admins automatically, eliminating orphaned accounts that retain access to training data and campaign tooling
+- A compromised KnowBe4 admin can view employee PII and training records and launch fake phishing campaigns that erode the program's credibility
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - KnowBe4 admin access
 - Platinum or Diamond subscription
@@ -93,6 +102,15 @@ Configure SAML SSO for KnowBe4 console access.
 #### Description
 Require MFA for all KnowBe4 admin users.
 
+#### Rationale
+**Why This Matters:**
+- MFA blocks account takeover even when an admin password is phished, leaked, or reused from another breach
+- KnowBe4 admin accounts control phishing simulations and employee training data, so a single stolen password should never be enough to reach them
+- Phishing-resistant methods such as FIDO2/WebAuthn defeat real-time relay and adversary-in-the-middle attacks that bypass one-time codes
+- The platform's purpose is anti-phishing, so an admin account compromised by phishing would directly undermine the program's goals
+
+**Attack Prevented:** Credential stuffing, password reuse, phishing, adversary-in-the-middle
+
 #### ClickOps Implementation
 
 **Step 1: Enable Console MFA**
@@ -119,6 +137,15 @@ Require MFA for all KnowBe4 admin users.
 
 #### Description
 Implement least privilege for admin access.
+
+#### Rationale
+**Why This Matters:**
+- Assigning the least-privileged role limits what a compromised or misused admin account can change or exfiltrate
+- Reports Only access lets analysts review training and phishing results without the ability to alter account settings, users, or campaigns
+- Scoping admins to specific sub-accounts contains the blast radius in multi-team or managed-service deployments
+- Over-privileged Full Admin accounts give an attacker full control over training data, user records, and simulation configuration
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, excessive blast radius
 
 #### ClickOps Implementation
 
@@ -150,6 +177,15 @@ Implement least privilege for admin access.
 #### Description
 Minimize and protect admin accounts.
 
+#### Rationale
+**Why This Matters:**
+- Fewer Account Owner and Full Admin accounts means fewer high-value targets for attackers to phish or compromise
+- Maintaining an inventory of admins makes unauthorized or orphaned privileged accounts visible during access reviews
+- Requiring MFA and monitoring activity on every admin account detects and slows misuse before damage spreads
+- Each unnecessary admin is standing access to employee PII, training records, and campaign tooling that can be abused
+
+**Attack Prevented:** Account takeover, insider misuse, orphaned-account access, undetected privileged activity
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admins**
@@ -177,6 +213,15 @@ Minimize and protect admin accounts.
 #### Description
 Secure phishing simulation campaigns.
 
+#### Rationale
+**Why This Matters:**
+- Notifying IT and security and allowlisting simulation domains prevents your own teams from chasing simulated phishing as a live incident
+- Restricting access to campaign results protects sensitive data on which employees clicked or failed, preventing it from being used to single out or shame staff
+- Configuring data retention limits how long employee click and failure data is stored, reducing exposure if the account is breached
+- Misconfigured landing pages or leaked results can themselves become a vector for harvesting credentials or damaging employee trust
+
+**Attack Prevented:** Simulation data leakage, employee privacy exposure, wasted false-incident response, landing-page abuse
+
 #### ClickOps Implementation
 
 **Step 1: Configure Campaign Notifications**
@@ -202,6 +247,15 @@ Secure phishing simulation campaigns.
 
 #### Description
 Secure API access.
+
+#### Rationale
+**Why This Matters:**
+- KnowBe4 API keys grant programmatic access to user lists, training records, and phishing results, so a leaked key exposes all of it without a login
+- Storing keys in a secret manager rather than code or config files prevents accidental exposure in repositories, logs, or backups
+- Regular rotation limits the window in which a leaked or copied key remains usable
+- Monitoring API usage surfaces anomalous bulk data pulls that indicate a compromised or abused key
+
+**Attack Prevented:** Credential leakage, bulk data exfiltration, unauthorized API access, stale-key abuse
 
 #### ClickOps Implementation
 
@@ -263,6 +317,7 @@ Secure API access.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and campaign security | Claude Code (Opus 4.5) |
 
 ---

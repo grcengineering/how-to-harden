@@ -6,9 +6,9 @@ slug: "netsuite"
 tier: "2"
 category: "Data"
 description: "ERP security for role-based access, SuiteScript controls, and integration hardening"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -53,6 +53,14 @@ This guide covers NetSuite security configurations including authentication, Sui
 #### Description
 Require 2FA for all NetSuite users, especially those with financial data access.
 
+#### Rationale
+**Why This Matters:**
+- 2FA blocks account takeover even when a NetSuite password is phished, reused, or leaked in a breach
+- Administrator and Financial Controller roles can move money, alter records, and export financial data, so a single compromised login is catastrophic
+- A short session timeout limits the window an attacker has on an unattended or hijacked session
+
+**Attack Prevented:** Credential stuffing, phishing, password reuse, session hijacking
+
 #### ClickOps Implementation
 
 **Step 1: Configure 2FA**
@@ -82,6 +90,14 @@ Require 2FA for all NetSuite users, especially those with financial data access.
 #### Description
 Configure NetSuite roles with least-privilege access to financial data.
 
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles limit the blast radius when any single account is compromised
+- Segregation of duties prevents one user from both creating and approving payments or journal entries, closing off fraud paths
+- Subsidiary and report restrictions stop lateral access to financial data outside a user's responsibility
+
+**Attack Prevented:** Privilege escalation, insider fraud, unauthorized financial data access, lateral movement
+
 #### ClickOps Implementation
 
 **Step 1: Design Role Structure**
@@ -109,6 +125,14 @@ Configure NetSuite roles with least-privilege access to financial data.
 
 #### Description
 Restrict NetSuite access to known IP addresses.
+
+#### Rationale
+**Why This Matters:**
+- IP allowlisting blocks logins from unexpected geographies and networks even when valid credentials are stolen
+- Restricting sensitive roles to corporate or VPN egress IPs adds a network-layer control on top of authentication
+- Approved integration IPs ensure API access only originates from sanctioned systems
+
+**Attack Prevented:** Stolen-credential reuse, remote brute force, unauthorized API access from rogue hosts
 
 #### ClickOps Implementation
 
@@ -184,6 +208,14 @@ Harden Token-Based Authentication (TBA) for API integrations.
 #### Description
 Prefer OAuth 2.0 over TBA for SuiteApp authentication.
 
+#### Rationale
+**Why This Matters:**
+- OAuth 2.0 issues short-lived access tokens, shrinking the value and lifespan of any leaked credential
+- Token refresh enables revocation without re-provisioning the integration, unlike static TBA tokens
+- Scoped authorization grants limit each SuiteApp to only the data and actions it needs
+
+**Attack Prevented:** Persistent token compromise, over-privileged integrations, credential replay
+
 #### Implementation
 
 For new integrations:
@@ -202,6 +234,14 @@ For new integrations:
 
 #### Description
 Implement approval process for SuiteApp installations.
+
+#### Rationale
+**Why This Matters:**
+- SuiteApps run with the permissions you grant them, so an unvetted bundle can read or exfiltrate financial and customer data
+- A review gate catches excessive permission requests and untrusted vendors before code reaches production
+- Restricting installation to Administrators and requiring change approval prevents silent introduction of malicious or vulnerable code
+
+**Attack Prevented:** Supply chain compromise, malicious bundle installation, over-privileged third-party access
 
 #### ClickOps Implementation
 
@@ -235,6 +275,14 @@ Before installing any SuiteApp:
 #### Description
 Secure custom RESTlets and SuiteScripts.
 
+#### Rationale
+**Why This Matters:**
+- RESTlets are internet-facing endpoints that, if unauthenticated or poorly validated, expose financial records directly
+- Custom SuiteScript that trusts user input can leak data or perform unauthorized actions under elevated governance
+- Scoping scripts to least privilege limits what a compromised or buggy customization can reach
+
+**Attack Prevented:** Injection through custom endpoints, unauthorized data access, privilege abuse via scripts
+
 #### Best Practices
 
 {% include pack-code.html vendor="netsuite" section="3.2" %}
@@ -250,6 +298,14 @@ Secure custom RESTlets and SuiteScripts.
 
 #### Description
 Restrict access to sensitive financial fields.
+
+#### Rationale
+**Why This Matters:**
+- Field-level restrictions keep credit card numbers, bank details, SSNs, and salary data hidden from roles that don't need them
+- Limiting exposure reduces both insider misuse and the data available to any compromised account
+- Encrypting sensitive fields protects data at rest and supports PCI DSS and privacy obligations
+
+**Attack Prevented:** Sensitive data exposure, insider data theft, PCI/PII compliance violations
 
 #### ClickOps Implementation
 
@@ -275,6 +331,14 @@ Restrict access to sensitive financial fields.
 #### Description
 Enable comprehensive audit trails for financial transactions.
 
+#### Rationale
+**Why This Matters:**
+- System notes and login audit trails create the forensic record needed to investigate fraud and unauthorized changes
+- Comprehensive logging is a SOX and SOC 2 requirement for financial systems
+- Tamper-evident history deters insider manipulation and supports accountability for every transaction change
+
+**Attack Prevented:** Undetected tampering, repudiation of fraudulent changes, audit and compliance gaps
+
 #### ClickOps Implementation
 
 **Step 1: Configure System Notes**
@@ -293,6 +357,17 @@ Enable comprehensive audit trails for financial transactions.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-4
+
+#### Description
+Configure NetSuite saved searches to alert on suspicious activity such as failed logins, privilege changes, and anomalous data access.
+
+#### Rationale
+**Why This Matters:**
+- Detection turns NetSuite's audit data into actionable alerts so incidents are caught in time to respond
+- Monitoring failed logins, permission changes, and token usage surfaces account compromise and privilege abuse early
+- Without alerting, fraudulent transactions and data exfiltration can continue undetected for long periods
+
+**Attack Prevented:** Undetected account compromise, slow-burn fraud, unmonitored data exfiltration
 
 #### Detection Queries (via Saved Searches)
 
@@ -344,4 +419,5 @@ Enable comprehensive audit trails for financial transactions.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial NetSuite hardening guide | Claude Code (Opus 4.5) |

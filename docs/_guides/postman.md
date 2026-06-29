@@ -6,9 +6,9 @@ slug: "postman"
 tier: "2"
 category: "DevOps"
 description: "API platform security hardening for Postman Enterprise including SSO, team policies, and API key management"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -161,6 +161,14 @@ Configure SCIM for automatic user provisioning and deprovisioning synced with yo
 #### Description
 Require MFA for team members accessing Postman.
 
+#### Rationale
+**Why This Matters:**
+- MFA stops attackers who have stolen or phished a Postman password from logging in with credentials alone
+- Postman accounts hold collections, environments, and tokens that map an organization's entire API attack surface
+- Enforcing MFA for both SSO and non-SSO members closes the gap left by local password logins that bypass IdP controls
+
+**Attack Prevented:** Credential stuffing, phishing, password reuse, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Enforce MFA via SSO**
@@ -193,6 +201,15 @@ Require MFA for team members accessing Postman.
 
 #### Description
 Configure workspace-level permissions following least privilege principles.
+
+#### Rationale
+**Why This Matters:**
+- Workspaces hold collections, environments, and saved requests that often embed real endpoints and credentials
+- Default-broad visibility lets any member read or modify sensitive API definitions they have no need to access
+- Scoping each workspace to Personal, Private, or Team and assigning Viewer/Editor/Admin roles limits the blast radius of a compromised account
+- Least-privilege roles prevent accidental edits or deletions of shared API assets
+
+**Attack Prevented:** Privilege escalation, unauthorized data access, lateral movement, insider misuse
 
 #### ClickOps Implementation
 
@@ -230,6 +247,14 @@ Configure workspace-level permissions following least privilege principles.
 #### Description
 Implement role-based access control for team administration.
 
+#### Rationale
+**Why This Matters:**
+- Team-level Admin rights can change SSO, billing, security policy, and membership for the entire organization
+- Limiting Admin to a small set of essential personnel reduces the number of high-value accounts an attacker can target
+- Separating billing and developer duties enforces separation of duties and prevents over-provisioned standing access
+
+**Attack Prevented:** Privilege escalation, admin account takeover, insider abuse, unauthorized policy changes
+
 #### ClickOps Implementation
 
 **Step 1: Review Team Roles**
@@ -263,6 +288,14 @@ Implement role-based access control for team administration.
 #### Description
 Control who can invite new members to the team.
 
+#### Rationale
+**Why This Matters:**
+- Unrestricted invitations let any member add outsiders, growing the team's access footprint without oversight
+- Restricting invites to admins and approved email domains keeps untrusted accounts out of workspaces holding API secrets
+- Domain capture consolidates users under managed identities so shadow accounts cannot accumulate access
+
+**Attack Prevented:** Unauthorized access, account sprawl, social engineering, shadow IT
+
 #### ClickOps Implementation
 
 **Step 1: Configure Invitation Policies**
@@ -290,6 +323,15 @@ Control who can invite new members to the team.
 
 #### Description
 Restrict the creation of public workspaces to prevent accidental data exposure.
+
+#### Rationale
+**Why This Matters:**
+- Public workspaces are discoverable by anyone on the internet, including automated secret-harvesting bots
+- Collections and environments frequently contain live API keys, access tokens, and internal endpoint URLs
+- Misconfigured workspace visibility is the leading cause of Postman data leaks, not a platform flaw — restricting creation removes the human-error path
+- Requiring approval gives security teams a chance to review content before anything is exposed publicly
+
+**Attack Prevented:** Credential leakage, data exposure, token harvesting, accidental disclosure
 
 #### ClickOps Implementation
 
@@ -354,6 +396,15 @@ Configure Postman API key expiration to limit credential lifetime.
 
 #### Description
 Centrally manage team API keys with visibility and revocation capabilities.
+
+#### Rationale
+**Why This Matters:**
+- Postman API keys can read and modify collections, environments, and team data programmatically
+- Without central visibility, departed-employee and forgotten keys persist as unmonitored standing access
+- Centralized management lets admins audit every active key and revoke compromised or orphaned credentials immediately
+- Enforced duration and approval policies prevent long-lived keys from accumulating across the team
+
+**Attack Prevented:** Orphaned-credential access, API key abuse, unauthorized automation, standing access
 
 #### Prerequisites
 - Postman Enterprise plan
@@ -429,6 +480,15 @@ Use Postman Local Vault to store sensitive credentials locally, never syncing to
 #### Description
 Use Postman's Secret Scanner to detect exposed credentials in public workspaces.
 
+#### Rationale
+**Why This Matters:**
+- Developers routinely paste real tokens into collections and environments while testing APIs
+- Once a secret reaches a public workspace, automated scrapers can find and abuse it within minutes
+- The Secret Scanner provides continuous detection so exposed credentials are caught and can be rotated before attackers use them
+- Alerting and response procedures turn a silent leak into an actionable security event
+
+**Attack Prevented:** Credential leakage, token harvesting, secret exposure, supply chain compromise
+
 #### ClickOps Implementation
 
 **Step 1: Verify Secret Scanner Status**
@@ -461,6 +521,15 @@ Use Postman's Secret Scanner to detect exposed credentials in public workspaces.
 
 #### Description
 Regularly review audit logs for security events and compliance.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs are the primary record of sign-ins, role changes, API key events, and SSO configuration changes
+- Without regular review, account compromise and privilege abuse go undetected until damage is done
+- Streaming logs to a SIEM enables alerting on failed logins, new public workspaces, and admin changes in near real time
+- Retained logs provide the forensic trail needed for incident response and compliance evidence
+
+**Attack Prevented:** Undetected intrusion, privilege abuse, delayed incident response, audit gaps
 
 #### ClickOps Implementation
 
@@ -499,6 +568,15 @@ Regularly review audit logs for security events and compliance.
 #### Description
 Restrict API requests to approved domains to prevent data exfiltration.
 
+#### Rationale
+**Why This Matters:**
+- Postman clients can send requests carrying tokens and data to any destination by default
+- A malicious or compromised collection could quietly forward secrets to an attacker-controlled endpoint
+- Allowlisting approved API domains blocks requests to unapproved hosts, cutting off the exfiltration path
+- A documented exception process keeps the control enforceable without breaking legitimate integrations
+
+**Attack Prevented:** Data exfiltration, token leakage, malicious collection abuse, command-and-control callbacks
+
 #### ClickOps Implementation
 
 **Step 1: Configure Domain Allowlist**
@@ -524,6 +602,15 @@ Restrict API requests to approved domains to prevent data exfiltration.
 
 #### Description
 Implement data governance policies for collections and workspaces.
+
+#### Rationale
+**Why This Matters:**
+- Collections and workspaces accumulate sensitive endpoint, payload, and credential data over time without consistent handling rules
+- Data classification ensures Confidential and Restricted assets receive stronger access controls than public examples
+- Mapping workspaces to classification levels prevents sensitive API definitions from landing in loosely governed spaces
+- Training and regular reviews keep handling practices aligned with regulatory and contractual obligations
+
+**Attack Prevented:** Data mishandling, unauthorized exposure, compliance violations, inconsistent access control
 
 #### ClickOps Implementation
 
@@ -619,6 +706,7 @@ Implement data governance policies for collections and workspaces.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, team security, and API key management | Claude Code (Opus 4.5) |
 
 ---

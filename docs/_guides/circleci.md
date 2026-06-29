@@ -6,9 +6,9 @@ slug: "circleci"
 tier: "2"
 category: "DevOps"
 description: "CI/CD pipeline security including contexts, secrets, and runner hardening"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -102,6 +102,15 @@ Require SAML SSO with MFA for all CircleCI access. The January 2023 breach demon
 #### Description
 Use CircleCI's organization roles to limit access based on job function.
 
+#### Rationale
+**Why This Matters:**
+- Broad default access lets any member modify contexts, secrets, or pipeline configuration that hold production credentials
+- Limiting Admin to a handful of users reduces the number of accounts that can alter org-wide security settings
+- Scoped roles enforce least privilege so a single compromised contributor account cannot escalate to full control
+- Project-level permissions prevent unauthorized users from triggering builds that consume sensitive secrets
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, unauthorized pipeline triggering
+
 #### ClickOps Implementation
 
 **Step 1: Configure Organization Roles**
@@ -129,6 +138,15 @@ Use CircleCI's organization roles to limit access based on job function.
 
 #### Description
 Implement regular rotation of personal API tokens and audit existing tokens.
+
+#### Rationale
+**Why This Matters:**
+- API tokens grant programmatic access that bypasses interactive SSO and MFA entirely
+- Long-lived, forgotten tokens become standing credentials that attackers reuse after a leak
+- Scoping tokens to the minimum required permissions limits the blast radius of any single leaked token
+- Regular rotation invalidates credentials that may have been silently exfiltrated, as seen in the 2023 breach
+
+**Attack Prevented:** Credential theft, token reuse, persistent unauthorized access, MFA bypass
 
 #### ClickOps Implementation
 
@@ -195,6 +213,15 @@ Use CircleCI contexts with security restrictions to limit secret exposure. Conte
 #### Description
 Configure environment variables with appropriate protection.
 
+#### Rationale
+**Why This Matters:**
+- Project environment variables are accessible to every job that runs and to anyone with project access
+- Secrets echoed into build logs or printed to stdout are exposed to all viewers of the build
+- Centralizing secrets in restricted contexts limits their distribution and enables consistent rotation
+- The 2023 breach exfiltrated environment variables, demonstrating the cost of broadly scattered secrets
+
+**Attack Prevented:** Secret leakage, build-log exposure, over-broad secret access, credential exfiltration
+
 #### ClickOps Implementation
 
 **Step 1: Use Contexts Over Project Variables**
@@ -223,6 +250,15 @@ Following the 2023 breach, CircleCI recommended:
 #### Description
 Use OIDC tokens instead of static credentials for cloud provider authentication.
 
+#### Rationale
+**Why This Matters:**
+- Static cloud credentials stored in CircleCI are long-lived secrets that remain usable if exfiltrated
+- OIDC issues short-lived, job-scoped tokens that expire automatically and cannot be replayed later
+- Federated trust ties cloud access to the specific pipeline identity rather than a shared static key
+- Eliminating stored cloud keys removes the highest-value target exposed in the 2023 breach
+
+**Attack Prevented:** Static credential theft, long-lived key reuse, cloud account takeover, lateral movement to cloud
+
 #### Implementation
 
 {% include pack-code.html vendor="circleci" section="2.3" %}
@@ -238,6 +274,15 @@ Use OIDC tokens instead of static credentials for cloud provider authentication.
 
 #### Description
 Control who can trigger pipelines and from which sources.
+
+#### Rationale
+**Why This Matters:**
+- Forked pull requests can run attacker-supplied configuration with access to project secrets
+- Unrestricted triggers allow untrusted contributors to execute arbitrary code inside the pipeline
+- Limiting who and what can start a build prevents poisoned-pipeline execution
+- Branch restrictions ensure only trusted code paths reach jobs that hold production secrets
+
+**Attack Prevented:** Poisoned pipeline execution, secret exfiltration via forked PRs, unauthorized code execution
 
 #### ClickOps Implementation
 
@@ -261,6 +306,15 @@ Control who can trigger pipelines and from which sources.
 #### Description
 Include security scanning in CI/CD pipeline.
 
+#### Rationale
+**Why This Matters:**
+- Vulnerable dependencies and hardcoded secrets reach production when builds skip scanning
+- Automated SAST, SCA, and secret scanning catch supply-chain risks before deployment
+- Failing the build on critical findings prevents known-vulnerable artifacts from shipping
+- In-pipeline scanning gives consistent, enforceable coverage that manual review routinely misses
+
+**Attack Prevented:** Vulnerable dependency introduction, leaked secrets, supply chain compromise, shipping known CVEs
+
 {% include pack-code.html vendor="circleci" section="3.2" %}
 
 ---
@@ -272,6 +326,15 @@ Include security scanning in CI/CD pipeline.
 
 #### Description
 Use verified, pinned Docker images in CI/CD pipelines.
+
+#### Rationale
+**Why This Matters:**
+- Mutable image tags such as latest can be repointed to a malicious image without warning
+- Pinning by digest guarantees the exact, audited image runs on every build
+- Unverified base images may carry backdoors or vulnerable components that execute with build privileges
+- A compromised CI image can read every secret the job touches because the build runs as trusted code
+
+**Attack Prevented:** Supply chain attacks, image substitution, malicious base images, tag-mutation tampering
 
 {% include pack-code.html vendor="circleci" section="3.3" %}
 
@@ -286,6 +349,15 @@ Use verified, pinned Docker images in CI/CD pipelines.
 
 #### Description
 Secure self-hosted runners for sensitive workloads.
+
+#### Rationale
+**Why This Matters:**
+- Self-hosted runners execute pipeline code directly on infrastructure you own and must isolate
+- Persistent runners retain state between jobs, letting a malicious build poison later runs
+- Unrestricted network egress from runners can reach internal systems and pivot deeper
+- Ephemeral, least-privilege runners limit the blast radius of any single compromised job
+
+**Attack Prevented:** Cross-job contamination, runner persistence, lateral movement to internal networks, privilege abuse
 
 #### Implementation
 
@@ -302,6 +374,15 @@ Secure self-hosted runners for sensitive workloads.
 
 #### Description
 Configure and monitor CircleCI audit logs for security events.
+
+#### Rationale
+**Why This Matters:**
+- Without audit logs, context changes, secret edits, and permission grants happen invisibly
+- Exporting logs to a SIEM enables alerting on anomalous access and configuration tampering
+- During the 2023 breach, audit trails were essential to scope the extent of unauthorized access
+- Retained logs provide the forensic evidence and compliance record needed after an incident
+
+**Attack Prevented:** Undetected tampering, slow breach detection, unauthorized configuration changes, audit gaps
 
 #### ClickOps Implementation
 
@@ -411,4 +492,5 @@ If you suspect CircleCI compromise:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial CircleCI hardening guide with 2023 breach lessons | Claude Code (Opus 4.5) |

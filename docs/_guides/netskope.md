@@ -6,9 +6,9 @@ slug: "netskope"
 tier: "1"
 category: "Security"
 description: "Security hardening for Netskope CASB, SWG, and ZTNA deployment"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -104,6 +104,15 @@ Secure Netskope Admin Console with SSO, MFA, and role-based access controls.
 #### Description
 Apply Netskope's recommended tenant hardening configurations.
 
+#### Rationale
+**Why This Matters:**
+- Default tenant settings favor ease of setup over security, leaving session timeouts and audit logging weaker than they should be
+- Short admin session timeouts limit the window an attacker can ride a hijacked or unattended console session
+- Admin audit logging is the forensic record that proves who changed which security policy and when
+- IP allowlisting restricts console access to known corporate ranges, blocking admin logins from arbitrary internet locations
+
+**Attack Prevented:** Session hijacking, unauthorized admin access, undetected policy tampering, credential abuse from untrusted networks
+
 #### ClickOps Implementation
 
 **Step 1: Access Tenant Settings**
@@ -177,6 +186,15 @@ Enable comprehensive visibility into all cloud applications in use, including sh
 #### Description
 Configure real-time protection policies to control access to cloud applications based on user, app, activity, and data.
 
+#### Rationale
+**Why This Matters:**
+- Inline real-time policies are the enforcement layer that turns application visibility into actual blocking of risky activity
+- Without granular policies, users can upload corporate data to personal or high-risk cloud instances unchecked
+- Activity-level control (upload, share, download) stops data movement that app-level allow/block alone cannot catch
+- Personal-instance detection prevents employees from routing sanctioned-app data into unmanaged personal accounts
+
+**Attack Prevented:** Data exfiltration, shadow IT data leakage, unauthorized uploads to personal cloud accounts, risky-app access
+
 #### ClickOps Implementation
 
 **Step 1: Access Real-Time Protection**
@@ -218,6 +236,15 @@ Configure real-time protection policies to control access to cloud applications 
 
 #### Description
 Configure API-enabled protection to scan and protect data at rest in sanctioned SaaS applications.
+
+#### Rationale
+**Why This Matters:**
+- Inline steering only inspects traffic in motion; API scanning reaches data already sitting at rest inside SaaS apps
+- Files shared or uploaded before policies existed, or via unmanaged devices, are only discoverable through API connectors
+- Continuous API scanning detects externally shared sensitive files and over-permissioned access after the fact
+- Out-of-band remediation can quarantine files and revoke external sharing without breaking the user's live session
+
+**Attack Prevented:** Latent sensitive-data exposure, oversharing of SaaS files, external data leakage, malware resident in cloud storage
 
 #### ClickOps Implementation
 
@@ -311,6 +338,15 @@ Configure Data Loss Prevention profiles to detect and protect sensitive data acr
 #### Description
 Apply DLP profiles to real-time protection and API protection policies.
 
+#### Rationale
+**Why This Matters:**
+- A DLP profile detects nothing until it is bound to an enforcement policy that acts on its matches
+- Attaching DLP to real-time policies blocks sensitive data in motion before it leaves the organization
+- Attaching DLP to API policies catches sensitive data at rest that inline inspection never sees
+- Coaching and alert actions balance enforcement with user productivity while still recording every violation
+
+**Attack Prevented:** Accidental and intentional data leakage, compliance violations, unmonitored exfiltration of regulated data
+
 #### ClickOps Implementation
 
 **Step 1: Add DLP to Real-Time Policy**
@@ -343,6 +379,15 @@ Apply DLP profiles to real-time protection and API protection policies.
 
 #### Description
 Configure Netskope's threat protection to detect and prevent malware in cloud traffic.
+
+#### Rationale
+**Why This Matters:**
+- Cloud apps are now a primary delivery and distribution channel for malware, bypassing traditional perimeter defenses
+- Scanning uploads and downloads stops infected files from spreading through shared cloud storage to other users
+- Cloud sandboxing detonates unknown files to catch zero-day and evasive malware that signatures alone miss
+- Blocking phishing URLs inline stops credential-harvesting attacks before the user ever reaches the malicious page
+
+**Attack Prevented:** Malware delivery, ransomware propagation, zero-day payloads, phishing and credential theft
 
 #### ClickOps Implementation
 
@@ -381,6 +426,15 @@ Configure Netskope's threat protection to detect and prevent malware in cloud tr
 
 #### Description
 Create comprehensive threat protection policies following Netskope best practices.
+
+#### Rationale
+**Why This Matters:**
+- Layered threat policies cover the full attack chain — known malware, suspicious categories, and behavioral anomalies
+- Blocking newly registered, uncategorized, and parked domains cuts off common command-and-control and phishing infrastructure
+- Behavioral analytics surfaces compromised-account and insider activity that signature-based controls cannot detect
+- Inline, no-exception enforcement on known threats removes the gaps attackers probe for weak spots
+
+**Attack Prevented:** Malware and C2 communication, phishing via fresh domains, account compromise, insider data exfiltration
 
 #### Best Practice Policy Configuration
 
@@ -466,6 +520,15 @@ Configure Netskope Client steering to ensure traffic is properly routed through 
 #### Description
 Deploy Netskope Client to endpoints to enable inline inspection and steering.
 
+#### Rationale
+**Why This Matters:**
+- The client is what forces endpoint traffic through Netskope; without it, inline inspection and policy enforcement never happen
+- Endpoints off the corporate network would otherwise bypass all CASB, DLP, and threat controls entirely
+- Fail-close mode ensures traffic is denied rather than passed uninspected when the client cannot reach the cloud
+- MDM-managed deployment and certificate installation prevent users from removing or evading the agent
+
+**Attack Prevented:** Inspection bypass, unmonitored off-network traffic, policy evasion, data exfiltration through uncontrolled endpoints
+
 #### ClickOps Implementation
 
 **Step 1: Download Client Installer**
@@ -499,6 +562,15 @@ Deploy Netskope Client to endpoints to enable inline inspection and steering.
 
 #### Description
 Configure comprehensive logging and alerting for security monitoring.
+
+#### Rationale
+**Why This Matters:**
+- Security controls are only effective if violations are detected and acted on, which requires comprehensive logging
+- Real-time alerts on DLP, malware, and admin changes shrink the time between a security event and the response
+- Forwarding logs to a SIEM preserves an independent, tamper-resistant record for investigation and compliance
+- Admin-change alerts catch unauthorized policy modifications that would otherwise silently weaken protection
+
+**Attack Prevented:** Undetected breaches, delayed incident response, log tampering, stealthy policy weakening
 
 #### ClickOps Implementation
 
@@ -603,6 +675,7 @@ Configure comprehensive logging and alerting for security monitoring.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with CASB, DLP, and threat protection | Claude Code (Opus 4.5) |
 
 ---

@@ -6,9 +6,9 @@ slug: "amplitude"
 tier: "2"
 category: "Data"
 description: "Product analytics platform hardening for Amplitude including SAML SSO, project access, and data governance"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Amplitude security including SAML SSO, organization/project ac
 #### Description
 Configure SAML SSO to centralize authentication for Amplitude users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Amplitude authentication in your corporate IdP, enforcing MFA, conditional access, and password policy on every login
+- Local Amplitude password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- SSO paired with SCIM deprovisioning removes departed employees automatically, eliminating orphaned accounts with standing access to behavioral data
+- Amplitude holds detailed user-behavior and product datasets, so a single compromised login can expose customer analytics and PII
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - Amplitude admin access
 - Enterprise or Growth plan
@@ -95,6 +104,15 @@ Configure SAML SSO to centralize authentication for Amplitude users.
 #### Description
 Require 2FA for all Amplitude users.
 
+#### Rationale
+**Why This Matters:**
+- Adds a second authentication factor so a stolen or guessed password alone cannot grant access to analytics data
+- Phishing-resistant MFA for admins blocks attackers who harvest credentials through fake login pages
+- Reduces risk from password reuse where credentials leaked in unrelated breaches are replayed against Amplitude
+- Protects access to dashboards, data exports, and API keys that expose user behavior and PII
+
+**Attack Prevented:** Credential stuffing, phishing, password reuse, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -121,6 +139,15 @@ Require 2FA for all Amplitude users.
 #### Description
 Configure session timeout settings.
 
+#### Rationale
+**Why This Matters:**
+- Idle session timeouts limit the window in which an attacker can hijack an unattended or abandoned session
+- Shorter sessions reduce exposure on shared, public, or unmanaged devices
+- Forcing periodic re-authentication limits the value of stolen session tokens or cookies
+- Protects analytics consoles left open on workstations from opportunistic misuse
+
+**Attack Prevented:** Session hijacking, unattended-session abuse, token replay
+
 #### ClickOps Implementation
 
 **Step 1: Configure Timeout**
@@ -143,6 +170,15 @@ Configure session timeout settings.
 
 #### Description
 Implement least privilege using Amplitude roles.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege role assignment ensures users can only perform the actions their job actually requires
+- Limiting Admin and Manager roles shrinks the blast radius of any single compromised account
+- Read-only Viewer roles let analysts consume data without the ability to alter taxonomy, settings, or exports
+- Prevents broad standing access to data exports and configuration changes across the organization
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, unauthorized configuration changes
 
 #### ClickOps Implementation
 
@@ -174,6 +210,15 @@ Implement least privilege using Amplitude roles.
 #### Description
 Control access to specific projects.
 
+#### Rationale
+**Why This Matters:**
+- Project-level permissions ensure users only see the datasets relevant to their work
+- Separating production and test projects prevents accidental exposure or modification of live customer data
+- Restricting sensitive projects limits who can view regulated or high-value behavioral data
+- Contains the impact of a compromised account to a single project rather than all organizational data
+
+**Attack Prevented:** Unauthorized data access, cross-project data exposure, insider data exfiltration
+
 #### ClickOps Implementation
 
 **Step 1: Configure Project Permissions**
@@ -199,6 +244,15 @@ Control access to specific projects.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Admin accounts can change security settings, manage members, and access all projects, making each one a high-value target
+- Keeping admins to a small number reduces the attack surface an adversary can aim at for full organizational control
+- Requiring SSO and 2FA on admins raises the bar against credential theft and phishing
+- Monitoring admin activity surfaces unauthorized configuration or privilege changes early
+
+**Attack Prevented:** Admin account takeover, privilege escalation, unauthorized security-setting changes
 
 #### ClickOps Implementation
 
@@ -227,6 +281,15 @@ Minimize and protect administrator accounts.
 
 #### Description
 Secure Amplitude API keys.
+
+#### Rationale
+**Why This Matters:**
+- API keys grant programmatic access to ingest and query analytics data, so a leaked key enables data theft or injection
+- Keeping secret keys server-side only prevents exposure in client code, browsers, or mobile app bundles
+- Storing keys in a vault and rotating them limits the lifetime and reach of any leaked credential
+- Monitoring key usage detects abuse such as bulk data scraping or anomalous export volumes
+
+**Attack Prevented:** API key leakage, unauthorized data ingestion, data exfiltration, credential abuse
 
 #### ClickOps Implementation
 
@@ -258,6 +321,15 @@ Secure Amplitude API keys.
 
 #### Description
 Implement data governance controls.
+
+#### Rationale
+**Why This Matters:**
+- A defined event taxonomy and property classification identify which fields contain PII and need protection
+- PII detection and data masking prevent sensitive personal data from being collected or exposed in reports
+- Retention and deletion policies enforce data minimization and support GDPR and CCPA subject requests
+- Strong governance reduces regulatory exposure and limits the sensitive data available if access is compromised
+
+**Attack Prevented:** PII over-collection, privacy-regulation violations, sensitive-data exposure, non-compliant retention
 
 #### ClickOps Implementation
 
@@ -291,6 +363,15 @@ Implement data governance controls.
 
 #### Description
 Enable and monitor activity logs.
+
+#### Rationale
+**Why This Matters:**
+- Activity logs create an audit trail of authentication, permission, and data-export events for forensics
+- Monitoring permission and project changes detects unauthorized privilege escalation
+- Tracking data exports surfaces potential exfiltration of behavioral and product data
+- Without logging, breaches and insider misuse go undetected and incident response is blind
+
+**Attack Prevented:** Undetected breach, insider data exfiltration, unauthorized privilege changes, audit gaps
 
 #### ClickOps Implementation
 
@@ -366,6 +447,7 @@ Enable and monitor activity logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, access controls, and data governance | Claude Code (Opus 4.5) |
 
 ---

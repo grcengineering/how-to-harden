@@ -6,9 +6,9 @@ slug: "servicenow"
 tier: "1"
 category: "IT Operations"
 description: "IT service management platform hardening for ServiceNow including SSO configuration, Security Center, and high-security plugins"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -132,6 +132,14 @@ Configure Account Recovery (ACR) administrator for SSO fallback.
 #### Description
 Enforce MFA for all authentication methods.
 
+#### Rationale
+**Why This Matters:**
+- Passwords alone are routinely compromised through phishing, credential stuffing, and reuse — a second factor blocks the overwhelming majority of automated account-takeover attempts
+- ServiceNow instances hold sensitive ITSM data, change records, and privileged workflows, so a single stolen admin credential without MFA grants an attacker full platform control
+- Phishing-resistant methods (FIDO2, PIV/CAC) for administrators defeat real-time phishing and push-fatigue attacks that weaker OTP or push MFA cannot stop
+
+**Attack Prevented:** Credential stuffing, phishing, password reuse, account takeover, MFA-prompt bombing
+
 #### ClickOps Implementation
 
 **Step 1: Verify MFA Settings**
@@ -157,6 +165,14 @@ Enforce MFA for all authentication methods.
 
 #### Description
 Use Security Center to monitor and improve instance security.
+
+#### Rationale
+**Why This Matters:**
+- Security Center surfaces misconfigurations and a hardening compliance score, giving administrators a single place to find drift from ServiceNow's recommended secure baseline
+- Without continuous visibility, insecure default settings and configuration drift accumulate silently until they are exploited
+- Prioritizing and remediating findings closes gaps before attackers discover them, and documenting accepted risks creates an auditable security baseline
+
+**Attack Prevented:** Security misconfiguration, configuration drift, exploitation of insecure defaults, unmonitored attack surface
 
 #### ClickOps Implementation
 
@@ -185,6 +201,14 @@ Use Security Center to monitor and improve instance security.
 
 #### Description
 Activate high-security plugins for enhanced protection.
+
+#### Rationale
+**Why This Matters:**
+- The High Security Settings plugin switches ACL evaluation to default-deny, so any table or field without an explicit allow rule is protected instead of inadvertently exposed
+- Centralized security settings and the dedicated security administrator role separate security configuration from general admin duties, supporting separation of duties
+- Default-deny is the only safe posture on a platform with thousands of tables, since an allow-by-default model leaves new and custom records unprotected by oversight
+
+**Attack Prevented:** Unauthorized data access, privilege escalation, insecure-default exposure, broken access control
 
 #### ClickOps Implementation
 
@@ -217,6 +241,14 @@ Activate high-security plugins for enhanced protection.
 #### Description
 Implement least privilege using ServiceNow's role model.
 
+#### Rationale
+**Why This Matters:**
+- Granting users only the roles required for their job limits the blast radius if any single account is phished or compromised
+- Over-assigned admin roles turn ordinary user accounts into high-value targets and violate separation of duties
+- Explicit allow ACLs layered on default-deny ensure access to records and fields is intentional and auditable rather than accidental
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider misuse, broken access control
+
 #### ClickOps Implementation
 
 **Step 1: Review Role Structure**
@@ -246,6 +278,14 @@ Implement least privilege using ServiceNow's role model.
 #### Description
 Minimize and protect administrator accounts.
 
+#### Rationale
+**Why This Matters:**
+- Each admin account is a high-value target, so reducing the count to a small set of authorized personnel shrinks the attack surface for account takeover
+- Using the dedicated security_admin role for security tasks enforces separation of duties so no single account holds unchecked power
+- Fewer privileged accounts are easier to monitor, MFA-protect, and review during audits, making anomalous admin activity stand out
+
+**Attack Prevented:** Admin account takeover, privilege abuse, insider threat, excessive standing privilege
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admin Users**
@@ -274,6 +314,14 @@ Minimize and protect administrator accounts.
 
 #### Description
 Enable and monitor audit logs for security events.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs on critical tables, configuration changes, and user management create the forensic record needed to detect and investigate unauthorized activity
+- Without comprehensive logging and alerting, attacker actions and privilege changes go unnoticed until damage is done
+- Dashboards and alerts on suspicious activity turn passive logs into active detection, shortening the window between compromise and response
+
+**Attack Prevented:** Undetected intrusion, insider data tampering, repudiation, delayed incident response
 
 #### ClickOps Implementation
 
@@ -345,6 +393,7 @@ Enable and monitor audit logs for security events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, Security Center, and access controls | Claude Code (Opus 4.5) |
 
 ---

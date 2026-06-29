@@ -6,9 +6,9 @@ slug: "sentinelone"
 tier: "1"
 category: "Security"
 description: "Endpoint Detection and Response (EDR) hardening for SentinelOne Singularity platform"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -102,6 +102,15 @@ Secure SentinelOne Management Console with SSO, MFA, and role-based access contr
 #### Description
 Secure SentinelOne API access and token management.
 
+#### Rationale
+**Why This Matters:**
+- API tokens grant programmatic access to the console, often with the same power as a logged-in administrator
+- Long-lived or over-scoped tokens become persistent backdoors if leaked in source code, logs, or CI systems
+- Separate, minimally-scoped tokens per integration limit what an attacker can do with any single stolen credential
+- Rotation and immediate revocation ensure a compromised token can be cut off quickly without disrupting every integration
+
+**Attack Prevented:** Token theft, credential leakage, privilege escalation, persistent unauthorized API access
+
 #### ClickOps Implementation
 
 **Step 1: Manage API Tokens**
@@ -181,6 +190,15 @@ Configure SentinelOne agents to "Protect" mode for automatic threat mitigation.
 #### Description
 Configure SentinelOne's detection engines for optimal threat detection.
 
+#### Rationale
+**Why This Matters:**
+- Each engine covers a different attack stage, so disabling any one leaves a detection blind spot attackers can exploit
+- Static AI catches malware on write while behavioral AI catches fileless and living-off-the-land techniques at runtime
+- Anti-tampering stops adversaries from disabling or uninstalling the agent before executing their payload
+- Cloud intelligence and deep visibility enrich local detection with reputation and telemetry the endpoint alone cannot see
+
+**Attack Prevented:** Malware execution, fileless attacks, agent tampering, single-layer detection evasion
+
 #### ClickOps Implementation
 
 **Step 1: Enable All Detection Engines**
@@ -217,6 +235,15 @@ Configure SentinelOne's detection engines for optimal threat detection.
 #### Description
 Configure SentinelOne's ransomware protection and rollback capabilities.
 
+#### Rationale
+**Why This Matters:**
+- Ransomware encrypts data faster than human responders can react, so automated kill-and-quarantine is essential
+- VSS-based rollback restores encrypted files without paying a ransom or relying solely on offline backups
+- A dedicated anti-ransomware engine detects mass-encryption behavior even when the malware family is novel
+- Testing rollback in advance confirms recovery actually works before a real incident, not during one
+
+**Attack Prevented:** Ransomware encryption, data destruction, extortion, unrecoverable data loss
+
 #### ClickOps Implementation
 
 **Step 1: Enable Ransomware Protection**
@@ -247,6 +274,15 @@ Configure SentinelOne's ransomware protection and rollback capabilities.
 
 #### Description
 Configure network control features for threat containment and investigation.
+
+#### Rationale
+**Why This Matters:**
+- Network isolation severs an infected endpoint from the rest of the environment, stopping lateral movement and C2 traffic
+- Containing a compromised host preserves it for forensic investigation instead of forcing an immediate wipe
+- Auto-isolation on critical threats contains breaches at machine speed when responders are offline or asleep
+- Firewall control adds host-level segmentation that limits which services an attacker can reach from a foothold
+
+**Attack Prevented:** Lateral movement, command-and-control communication, data exfiltration, ransomware spread
 
 #### ClickOps Implementation
 
@@ -329,6 +365,15 @@ Manage exclusions to prevent false positives while maintaining security coverage
 #### Description
 Create custom detection rules for organization-specific threats and behaviors.
 
+#### Rationale
+**Why This Matters:**
+- Out-of-the-box detections cannot anticipate threats specific to your applications, naming conventions, or environment
+- Custom Deep Visibility rules detect attacker behaviors and policy violations the default engines do not flag
+- Tuning severity and automated actions per rule lets high-confidence detections respond without analyst delay
+- Codifying threat-hunting findings into rules turns one-time discoveries into permanent, repeatable detection
+
+**Attack Prevented:** Targeted attacks, insider threats, environment-specific TTPs, detection coverage gaps
+
 #### ClickOps Implementation
 
 **Step 1: Access Custom Rules**
@@ -393,6 +438,15 @@ Enable Local Upgrade Authorization to control agent upgrades and prevent unautho
 #### Description
 Configure automated threat response to minimize dwell time and analyst workload.
 
+#### Rationale
+**Why This Matters:**
+- Automated mitigation kills and quarantines threats in seconds, minimizing dwell time before damage spreads
+- Manual-only response leaves a window where malware can persist, spread, or exfiltrate while waiting on an analyst
+- Auto-remediation reverses file, registry, and system changes so endpoints return to a known-good state automatically
+- Machine-speed response covers off-hours and high-alert-volume periods when human triage cannot keep up
+
+**Attack Prevented:** Malware persistence, lateral spread, data exfiltration, prolonged dwell time
+
 #### ClickOps Implementation
 
 **Step 1: Configure Auto-Mitigation**
@@ -423,6 +477,15 @@ Configure automated threat response to minimize dwell time and analyst workload.
 #### Description
 Integrate threat intelligence feeds for enhanced detection.
 
+#### Rationale
+**Why This Matters:**
+- Threat intelligence feeds let the platform recognize known-bad indicators before they execute or connect
+- STIX/TAXII and custom IOC lists extend detection to threats specific to your industry and known adversaries
+- Reputation lookups via cloud intelligence flag malicious files and domains already seen elsewhere in the wild
+- Alerting on IOC matches surfaces early-stage intrusions tied to active campaigns targeting your sector
+
+**Attack Prevented:** Known-malware execution, malicious C2 connections, campaign-based attacks, IOC-matched intrusions
+
 #### ClickOps Implementation
 
 **Step 1: Enable Built-in Intelligence**
@@ -452,6 +515,15 @@ Integrate threat intelligence feeds for enhanced detection.
 
 #### Description
 Configure alerting and notifications for threat visibility and response.
+
+#### Rationale
+**Why This Matters:**
+- Timely alerts ensure critical threats reach responders immediately instead of sitting unseen in the console
+- SIEM and syslog export centralize EDR telemetry with other logs for correlation and long-term retention
+- Notifications on agent-offline and policy changes catch coverage gaps and unauthorized configuration drift
+- Routing critical alerts to monitored channels shortens the time between detection and human response
+
+**Attack Prevented:** Undetected breaches, delayed incident response, silent protection gaps, missed policy tampering
 
 #### ClickOps Implementation
 
@@ -484,6 +556,15 @@ Configure alerting and notifications for threat visibility and response.
 
 #### Description
 Monitor agent health to ensure consistent protection coverage.
+
+#### Rationale
+**Why This Matters:**
+- An endpoint without a healthy, reporting agent is effectively unprotected and invisible to the SOC
+- Tracking coverage and online status surfaces gaps before attackers find and exploit the unmonitored host
+- Outdated agent versions lack the latest detections and may carry their own known vulnerabilities
+- Policy-compliance monitoring confirms every endpoint actually enforces the protections you configured
+
+**Attack Prevented:** Unmonitored endpoints, coverage gaps, exploitation of outdated agents, policy drift
 
 #### Key Metrics to Monitor
 
@@ -523,6 +604,15 @@ Monitor agent health to ensure consistent protection coverage.
 
 #### Description
 Keep SentinelOne agents updated to ensure latest protection capabilities.
+
+#### Rationale
+**Why This Matters:**
+- Updates deliver new detection logic, engine improvements, and fixes for vulnerabilities in the agent itself
+- Outdated agents miss protections against the latest malware families and evasion techniques
+- Auto-update with maintenance windows keeps the fleet current without manual per-host effort
+- Tracking and investigating failed updates prevents a slow drift toward a stale, under-protected endpoint population
+
+**Attack Prevented:** Exploitation of agent vulnerabilities, evasion by newer malware, protection gaps from stale agents
 
 #### ClickOps Implementation
 
@@ -593,6 +683,7 @@ Keep SentinelOne agents updated to ensure latest protection capabilities.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with policy configuration and detection tuning | Claude Code (Opus 4.5) |
 
 ---

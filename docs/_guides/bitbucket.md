@@ -6,9 +6,9 @@ slug: "bitbucket"
 tier: "2"
 category: "DevOps"
 description: "Code repository security hardening for Bitbucket Cloud including workspace security, branch permissions, and access controls"
-version: "0.1.1"
+version: "0.1.2"
 maturity: "draft"
-last_updated: "2026-02-19"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -100,6 +100,15 @@ Require two-step verification (2SV) for all workspace members to protect against
 #### Description
 Configure SAML SSO using Atlassian Access to centralize identity management.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Bitbucket authentication in your corporate IdP, so MFA, conditional access, and session policies apply on every login
+- Local Atlassian-account logins bypass IdP controls and remain valid after an employee leaves unless manually deprovisioned
+- Directory and SCIM provisioning deprovision departed users automatically, eliminating orphaned accounts with standing access to source code
+- A single compromised developer login can expose proprietary source, CI/CD secrets, and deployment pipelines
+
+**Attack Prevented:** Credential theft, phishing, orphaned-account access, session hijacking
+
 #### ClickOps Implementation
 
 **Step 1: Verify Domain**
@@ -177,6 +186,15 @@ Restrict Bitbucket access to approved IP addresses to prevent access from unauth
 #### Description
 Implement least privilege access for workspace members and manage user lifecycle.
 
+#### Rationale
+**Why This Matters:**
+- Least-privilege groups limit how much code and infrastructure any single compromised account can reach
+- Removing departed and inactive users closes standing access that attackers and insiders exploit
+- Role-based groups make access auditable and prevent permission sprawl as teams grow
+- Shared accounts destroy attribution, so audit logs cannot tie actions to an individual
+
+**Attack Prevented:** Privilege escalation, insider abuse, orphaned-account access, lateral movement
+
 #### ClickOps Implementation
 
 **Step 1: Review Workspace Members**
@@ -220,6 +238,15 @@ Implement least privilege access for workspace members and manage user lifecycle
 #### Description
 Configure project-level permissions to manage access at scale across multiple repositories.
 
+#### Rationale
+**Why This Matters:**
+- Project-scoped permissions enforce consistent least-privilege access across every repository in a project
+- Grouping sensitive repositories under restricted projects keeps confidential code away from the broader workspace
+- Centralized project access reduces the chance of a misconfigured individual repo exposing data
+- Managing access at the project tier prevents the permission drift that accumulates when each repo is configured by hand
+
+**Attack Prevented:** Unauthorized code access, privilege sprawl, data exposure, misconfiguration
+
 #### ClickOps Implementation
 
 **Step 1: Create Project Structure**
@@ -257,6 +284,15 @@ Configure project-level permissions to manage access at scale across multiple re
 #### Description
 Control which third-party applications can access workspace data.
 
+#### Rationale
+**Why This Matters:**
+- OAuth apps and integrations often hold broad, long-lived access to source code and can become a supply-chain entry point
+- Reviewing and removing unused apps shrinks the attack surface exposed to third-party compromise
+- Requiring admin approval prevents users from silently granting risky apps access to the workspace
+- A compromised or malicious app can exfiltrate code, secrets, and pipeline configuration at scale
+
+**Attack Prevented:** Supply-chain compromise, OAuth token abuse, data exfiltration, unauthorized access
+
 #### ClickOps Implementation
 
 **Step 1: Review Installed Apps**
@@ -290,6 +326,15 @@ Control which third-party applications can access workspace data.
 
 #### Description
 Prevent unauthorized code distribution by disabling forking for private repositories.
+
+#### Rationale
+**Why This Matters:**
+- Forks of private repos create uncontrolled copies of proprietary code outside protected-branch and access policies
+- Disabling forking keeps intellectual property and any embedded secrets within governed repositories
+- Forked copies are not covered by the original repo's branch restrictions, scanning, or audit controls
+- Restricting forks to within the workspace limits how easily code can leave the organization's boundary
+
+**Attack Prevented:** Source code exfiltration, intellectual property theft, secret leakage, policy bypass
 
 #### ClickOps Implementation
 
@@ -360,6 +405,15 @@ Configure branch permissions to protect important branches from unauthorized cha
 #### Description
 Require pull request reviews before code can be merged to protected branches.
 
+#### Rationale
+**Why This Matters:**
+- Mandatory peer review catches malicious or accidental changes before they reach protected branches
+- Resetting approvals on new commits prevents an attacker from sneaking changes in after a clean review
+- Default reviewers ensure the right code owners examine sensitive changes every time
+- Required approvals enforce separation of duties so no single account can merge unreviewed code to production
+
+**Attack Prevented:** Malicious code injection, unauthorized changes, insider tampering, separation-of-duties bypass
+
 #### ClickOps Implementation
 
 **Step 1: Configure Default Reviewers**
@@ -394,6 +448,15 @@ Require pull request reviews before code can be merged to protected branches.
 #### Description
 Require GPG or SSH signed commits to verify commit authenticity.
 
+#### Rationale
+**Why This Matters:**
+- Signed commits cryptographically verify that code originates from a trusted, identified author
+- Verification blocks attackers from spoofing commit author identities to slip in malicious changes
+- Signature requirements defend the integrity of the software supply chain at the commit level
+- Unsigned commits can be forged with any name and email, undermining attribution and trust
+
+**Attack Prevented:** Commit spoofing, author impersonation, supply-chain tampering, repudiation
+
 #### ClickOps Implementation
 
 **Step 1: Configure Signature Requirements**
@@ -421,6 +484,15 @@ Require GPG or SSH signed commits to verify commit authenticity.
 
 #### Description
 Securely manage secrets and variables used in Bitbucket Pipelines.
+
+#### Rationale
+**Why This Matters:**
+- Secured variables mask secrets in build logs, preventing credential exposure to anyone with log or artifact access
+- Scoping secrets to the right repository, workspace, or deployment level limits the blast radius if one is leaked
+- Centrally managed pipeline secrets avoid hardcoding credentials in source, where they persist in Git history
+- Leaked CI/CD credentials grant attackers access to cloud accounts, registries, and production systems
+
+**Attack Prevented:** Secret leakage, credential theft, hardcoded-secret exposure, pipeline compromise
 
 #### ClickOps Implementation
 
@@ -454,6 +526,15 @@ Securely manage secrets and variables used in Bitbucket Pipelines.
 #### Description
 Restrict who can trigger deployments to production environments.
 
+#### Rationale
+**Why This Matters:**
+- Restricting production deployments to authorized users prevents unauthorized or accidental releases
+- Branch and manual-trigger restrictions ensure only reviewed code reaches production environments
+- Environment-scoped permissions enforce separation between staging and production access
+- Unrestricted deploy access lets a single compromised account push malicious code straight to production
+
+**Attack Prevented:** Unauthorized deployment, malicious release, production tampering, separation-of-duties bypass
+
 #### ClickOps Implementation
 
 **Step 1: Configure Deployment Environments**
@@ -484,6 +565,15 @@ Restrict who can trigger deployments to production environments.
 #### Description
 Implement secret scanning to prevent credentials from being committed.
 
+#### Rationale
+**Why This Matters:**
+- Secret scanning catches API keys, tokens, and passwords before they are committed and exposed
+- Committed secrets persist in Git history even after deletion, so prevention at commit time is critical
+- Automated scanning provides consistent coverage that manual review of every diff cannot match
+- Leaked credentials in repositories are a primary target for attackers harvesting source code
+
+**Attack Prevented:** Credential leakage, hardcoded-secret exposure, supply-chain compromise, account takeover
+
 #### Code Implementation
 
 {% include pack-code.html vendor="bitbucket" section="4.3" %}
@@ -503,6 +593,15 @@ Implement secret scanning to prevent credentials from being committed.
 
 #### Description
 Enable and monitor audit logs for security events and compliance.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs provide the forensic record needed to detect, investigate, and scope a security incident
+- Monitoring permission changes and repository activity surfaces unauthorized access while it is still actionable
+- SIEM integration enables real-time alerting instead of discovering breaches long after the fact
+- Without audit trails, attacker actions go undetected and incident response cannot reconstruct what happened
+
+**Attack Prevented:** Undetected intrusion, insider abuse, privilege misuse, delayed incident response
 
 #### ClickOps Implementation
 
@@ -540,6 +639,15 @@ Enable and monitor audit logs for security events and compliance.
 
 #### Description
 Conduct regular security reviews of workspace configuration and access.
+
+#### Rationale
+**Why This Matters:**
+- Recurring reviews catch configuration drift and excess access before attackers exploit it
+- Periodic audits of members and apps remove standing access that accumulates silently over time
+- Reviewing for public repositories prevents accidental exposure of proprietary code
+- Without regular reviews, misconfigurations and stale permissions persist as an open attack surface
+
+**Attack Prevented:** Configuration drift, privilege creep, accidental exposure, stale-access abuse
 
 #### Review Checklist
 
@@ -632,6 +740,7 @@ Conduct regular security reviews of workspace configuration and access.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.2 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with workspace security, branch protection, and pipeline security | Claude Code (Opus 4.5) |
 | 2026-02-19 | 0.1.1 | draft | Extract inline code blocks to Code Pack files (sections 4.2, 4.3) | Claude Code (Opus 4.6) |
 

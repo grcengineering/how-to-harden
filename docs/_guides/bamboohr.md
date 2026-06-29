@@ -6,9 +6,9 @@ slug: "bamboohr"
 tier: "5"
 category: "HR/Finance"
 description: "HR platform security for API keys, access levels, and sensitive field protection"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -50,6 +50,18 @@ This guide covers BambooHR security configurations including authentication, acc
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
+#### Description
+Require SAML single sign-on with multi-factor authentication for all BambooHR access, routing every login through your corporate identity provider.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes BambooHR authentication in your corporate IdP, enforcing MFA, conditional access, and session policy on every login
+- Standalone BambooHR passwords bypass IdP controls and are prime targets for credential stuffing, phishing, and password reuse
+- SSO lets you deprovision a departing employee once in the IdP rather than chasing every SaaS account, closing orphaned-access gaps
+- BambooHR stores SSNs, compensation, bank details, and performance reviews, so a single compromised login can expose the entire HR record set
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, password reuse, orphaned-account access
+
 #### ClickOps Implementation
 
 **Step 1: Configure SAML SSO**
@@ -68,6 +80,18 @@ This guide covers BambooHR security configurations including authentication, acc
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
+
+#### Description
+Define granular access levels and field-level permissions so each role (Admin, HR Manager, Manager, Employee) can see and edit only the employee data its job requires.
+
+#### Rationale
+**Why This Matters:**
+- Enforces least privilege so a manager or employee account cannot read compensation, SSN, or records outside its scope
+- Field-level permissions prevent broad over-sharing of sensitive PII to roles that have no business need for it
+- Limits the blast radius of a single compromised or insider account to the data that role legitimately accesses
+- Default or overly permissive access levels are a common cause of accidental PII exposure across HR platforms
+
+**Attack Prevented:** Privilege escalation, insider data harvesting, unauthorized PII access, excessive-permission exposure
 
 #### ClickOps Implementation
 
@@ -100,6 +124,14 @@ Manage BambooHR API keys securely.
 #### Rationale
 **Attack Scenario:** Compromised API key enables full employee database export; SSN, compensation, and personal data exposed.
 
+**Why This Matters:**
+- BambooHR API keys often grant broad, programmatic read access to the full employee dataset with no interactive MFA prompt
+- Separate keys per integration limit blast radius and let you revoke one integration without breaking the others
+- Routine rotation and removal of unused keys shrinks the window a leaked or stale credential can be abused
+- Documented key ownership makes anomalous API usage easier to detect and attribute during an incident
+
+**Attack Prevented:** API key compromise, bulk employee-data exfiltration, credential sprawl, stale-key abuse
+
 #### ClickOps Implementation
 
 **Step 1: Audit API Keys**
@@ -118,6 +150,18 @@ Manage BambooHR API keys securely.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
+
+#### Description
+Review, approve, and periodically audit third-party apps and marketplace integrations connected to BambooHR, scrutinizing the OAuth scopes each one is granted.
+
+#### Rationale
+**Why This Matters:**
+- Connected apps inherit OAuth access to employee data and become an extension of your attack surface
+- Over-scoped or abandoned integrations provide a persistent, often unmonitored path to sensitive HR records
+- Requiring admin approval prevents employees from silently authorizing risky apps that exfiltrate data
+- A compromised or malicious marketplace vendor can abuse standing access without ever touching a user password
+
+**Attack Prevented:** Supply-chain compromise, OAuth scope abuse, shadow-IT integrations, third-party data exfiltration
 
 #### ClickOps Implementation
 
@@ -140,6 +184,18 @@ Manage BambooHR API keys securely.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
+#### Description
+Identify the most sensitive employee fields (SSN, compensation, and bank account details) and restrict their visibility and apply masking by access level.
+
+#### Rationale
+**Why This Matters:**
+- SSNs, salary, and bank account numbers are the highest-value PII in the HR record and the primary target of attackers and insiders
+- Restricting field visibility by role enforces need-to-know so most accounts never see this data at all
+- Masking limits exposure even for authorized users and reduces what a screenshot, export, or shoulder-surf can reveal
+- Concentrating protection on these fields aligns with privacy regulations and breach-notification thresholds for SSN and financial data
+
+**Attack Prevented:** PII and SSN theft, payroll-redirect fraud, insider data harvesting, over-broad data exposure
+
 #### ClickOps Implementation
 
 **Step 1: Configure Field Security**
@@ -159,6 +215,18 @@ Manage BambooHR API keys securely.
 **Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-21
 
+#### Description
+Restrict which users can build and share reports so bulk extracts of employee data cannot be created or distributed without authorization.
+
+#### Rationale
+**Why This Matters:**
+- Reports can aggregate sensitive fields across the entire workforce into a single high-value export
+- Uncontrolled report sharing can leak compensation or PII internally or externally beyond the intended audience
+- Limiting report authors keeps bulk-data access tied to a small, accountable set of users
+- Reporting tools are a common exfiltration path that bypasses the field-level controls applied to individual record views
+
+**Attack Prevented:** Bulk data exfiltration, unauthorized report sharing, aggregation-based PII exposure
+
 #### ClickOps Implementation
 
 **Step 1: Restrict Report Access**
@@ -174,6 +242,18 @@ Manage BambooHR API keys securely.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
+
+#### Description
+Review BambooHR login history and security logs to monitor failed logins and investigate suspicious or anomalous access to employee records.
+
+#### Rationale
+**Why This Matters:**
+- Login and activity logs are the primary signal for detecting credential stuffing, account takeover, and insider misuse
+- Monitoring failed logins surfaces brute-force and password-spray attempts before they succeed
+- Timely review shortens attacker dwell time and supports forensic reconstruction after an incident
+- Without active monitoring, unauthorized access to SSNs and compensation data can go undetected until it is reported externally
+
+**Attack Prevented:** Undetected account takeover, brute-force and password-spray attacks, insider misuse, delayed breach detection
 
 #### ClickOps Implementation
 
@@ -231,4 +311,5 @@ Manage BambooHR API keys securely.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial BambooHR hardening guide | Claude Code (Opus 4.5) |

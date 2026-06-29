@@ -6,9 +6,9 @@ slug: "coupa"
 tier: "2"
 category: "HR/Finance"
 description: "Procurement and spend management platform hardening for Coupa including SAML SSO, role-based access control, and data security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Coupa security including SAML SSO, role-based access control, 
 #### Description
 Configure SAML SSO to centralize authentication for Coupa users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Coupa authentication in your corporate IdP, so every login inherits enterprise password policy, MFA, and conditional access
+- Local Coupa logins bypass IdP controls and become standing targets for credential stuffing and phishing
+- IdP-driven provisioning deprovisions departed employees automatically, eliminating orphaned accounts that retain access to spend and supplier data
+- Coupa holds purchase orders, invoices, and supplier bank details, so a single compromised login can enable fraudulent payments
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - Coupa admin access
 - SAML 2.0 compatible identity provider
@@ -98,6 +107,15 @@ Configure SAML SSO to centralize authentication for Coupa users.
 #### Description
 Require MFA for all Coupa users.
 
+#### Rationale
+**Why This Matters:**
+- MFA blocks account takeover even when a Coupa password is phished, leaked, or guessed
+- Approvers and admins authorize real financial movement, so a stolen password-only credential can release fraudulent payments
+- Phishing-resistant methods for approvers defeat real-time relay and prompt-bombing attacks
+- Layering MFA on top of SSO closes the gap left by any remaining password-only logins
+
+**Attack Prevented:** Credential stuffing, phishing, MFA-less account takeover, prompt bombing
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -123,6 +141,15 @@ Require MFA for all Coupa users.
 
 #### Description
 Configure session timeout and security settings.
+
+#### Rationale
+**Why This Matters:**
+- Short session timeouts limit the window in which an attacker can ride a hijacked or unattended session
+- Idle finance and procurement sessions on shared or unlocked workstations are a common path to unauthorized spend actions
+- IP allowlisting restricts Coupa access to corporate networks and VPN, shrinking the attack surface from the open internet
+- Bounded sessions reduce the value of any stolen session token
+
+**Attack Prevented:** Session hijacking, token replay, unattended-workstation abuse
 
 #### ClickOps Implementation
 
@@ -151,6 +178,15 @@ Configure session timeout and security settings.
 
 #### Description
 Implement least privilege using Coupa's role model.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure users can only perform the procurement functions their job actually requires
+- Separating requestor from approver enforces segregation of duties, a core financial control
+- Over-provisioned accounts give an attacker who compromises one user broad reach across spend and supplier records
+- Granular custom roles limit the blast radius of any single compromised or insider account
+
+**Attack Prevented:** Privilege escalation, insider fraud, segregation-of-duties bypass, lateral movement
 
 #### ClickOps Implementation
 
@@ -183,6 +219,15 @@ Implement least privilege using Coupa's role model.
 #### Description
 Organize users into groups for efficient access management.
 
+#### Rationale
+**Why This Matters:**
+- Group-based access keeps permissions consistent and auditable instead of drifting per individual user
+- Department and function groups make least-privilege reviews and recertification tractable at scale
+- Centralized membership management lets you revoke access for a role change or departure in one place
+- Reducing permission sprawl removes the misconfigurations that create unnoticed access to financial data
+
+**Attack Prevented:** Permission sprawl, access creep, orphaned-permission abuse
+
 #### ClickOps Implementation
 
 **Step 1: Create Groups**
@@ -208,6 +253,15 @@ Organize users into groups for efficient access management.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Admin accounts can change approval chains, roles, and security settings, so each one is a high-value target
+- Keeping admins to a small, MFA-protected set shrinks the attack surface for full-tenant compromise
+- Separating admin from approver roles prevents one account from both weakening controls and authorizing spend
+- Inventorying and pruning admin rights removes standing privilege that attackers and insiders exploit
+
+**Attack Prevented:** Admin account takeover, privilege abuse, control tampering, insider fraud
 
 #### ClickOps Implementation
 
@@ -275,6 +329,15 @@ Configure approval workflows for spend controls.
 #### Description
 Control supplier creation and management.
 
+#### Rationale
+**Why This Matters:**
+- Approval-gated supplier creation stops fraudulent or fake vendors from being added to the payment system
+- Restricting and auditing bank-detail changes defends against payment-redirection and business-email-compromise fraud
+- Supplier verification and risk assessment catch high-risk or sanctioned vendors before they transact
+- Tight control over the supplier master record protects the integrity of every downstream payment
+
+**Attack Prevented:** Vendor fraud, business email compromise, payment redirection, fake-supplier injection
+
 #### ClickOps Implementation
 
 **Step 1: Configure Supplier Workflows**
@@ -303,6 +366,15 @@ Control supplier creation and management.
 #### Description
 Enable and monitor audit logs.
 
+#### Rationale
+**Why This Matters:**
+- Audit logs of authentication, approvals, and config changes provide the evidence needed to detect and investigate abuse
+- Without reliable logging, fraudulent approvals or supplier changes go unnoticed and forensics is impossible
+- Monitoring key events enables timely alerting on anomalous spend and privilege activity
+- Retained logs satisfy SOX and SOC 2 evidence requirements for financial systems
+
+**Attack Prevented:** Undetected fraud, repudiation, delayed breach detection, tampering without a trail
+
 #### ClickOps Implementation
 
 **Step 1: Review Audit Settings**
@@ -329,6 +401,15 @@ Enable and monitor audit logs.
 
 #### Description
 Configure compliance and audit reports.
+
+#### Rationale
+**Why This Matters:**
+- Scheduled compliance reports surface segregation-of-duties violations and excessive access before they are exploited
+- Regular access and approval reviews catch privilege creep and dormant accounts that bypass controls
+- SOX-focused reporting provides the recurring evidence auditors and regulators require
+- Routine review turns raw audit data into actionable detection of policy and control drift
+
+**Attack Prevented:** Undetected privilege creep, control drift, segregation-of-duties violations, compliance gaps
 
 #### ClickOps Implementation
 
@@ -390,6 +471,7 @@ Configure compliance and audit reports.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and approval workflows | Claude Code (Opus 4.5) |
 
 ---

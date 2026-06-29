@@ -6,9 +6,9 @@ slug: "orca"
 tier: "2"
 category: "Security"
 description: "Cloud security platform hardening for Orca Security including SAML SSO, role-based access, and cloud account integration"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Orca platform security including SSO, RBAC, cloud account inte
 #### Description
 Configure SAML SSO for Orca platform access.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Orca authentication in your corporate IdP, enforcing MFA and conditional access on every login to the cloud security console
+- Local password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- Centralized provisioning and deprovisioning removes access for departed users automatically, eliminating orphaned accounts with standing visibility
+- Orca holds a complete map of cloud assets, vulnerabilities, and misconfigurations — a single compromised login hands an attacker a blueprint of where you are weakest
+
+**Attack Prevented:** Credential theft, phishing, orphaned-account access, reconnaissance of cloud weaknesses
+
 #### Prerequisites
 - Orca admin access
 - SAML 2.0 compatible IdP
@@ -96,6 +105,15 @@ Configure SAML SSO for Orca platform access.
 #### Description
 Require MFA for all Orca users.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor stops attackers who have already stolen or guessed a valid Orca password
+- Orca's console exposes the organization's full cloud risk posture, so a single-factor compromise leaks high-value security intelligence
+- Phishing-resistant methods such as FIDO2/WebAuthn for admins defeat real-time credential-relay and one-time-code interception
+- Enforcing MFA on every account closes the gap left by reused or previously breached corporate passwords
+
+**Attack Prevented:** Credential stuffing, password reuse, phishing, MFA-bypass via stolen passwords
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -122,6 +140,15 @@ Require MFA for all Orca users.
 
 #### Description
 Implement least privilege using Orca roles.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure each user can only see and act on what their job requires, limiting the blast radius of any one compromised account
+- Default broad roles let analysts or viewers reach sensitive findings and configuration controls they should never touch
+- Custom roles scoped to specific accounts prevent lateral visibility across unrelated business units
+- Quarterly access reviews catch privilege creep and remove standing access that accumulated beyond need
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider misuse, excessive data exposure
 
 #### ClickOps Implementation
 
@@ -161,6 +188,15 @@ Implement least privilege using Orca roles.
 #### Description
 Limit user access to specific cloud accounts.
 
+#### Rationale
+**Why This Matters:**
+- Restricting users to only the cloud accounts they support contains exposure if their credentials are compromised
+- Separating production visibility prevents non-production staff from viewing sensitive production findings and assets
+- Business-unit boundaries enforce the data segregation many compliance regimes require
+- Scoped access reduces the value of any single Orca account to an attacker who obtains it
+
+**Attack Prevented:** Cross-tenant data exposure, lateral movement, unauthorized production access
+
 #### ClickOps Implementation
 
 **Step 1: Configure Scoped Access**
@@ -185,6 +221,15 @@ Limit user access to specific cloud accounts.
 
 #### Description
 Minimize and protect admin accounts.
+
+#### Rationale
+**Why This Matters:**
+- Admin accounts can modify integrations, roles, and platform settings, so each one is a high-value target and fewer admins means fewer paths to full control
+- Limiting admins to a small set and requiring MFA shrinks the attack surface for takeover of the security platform itself
+- Monitoring admin activity provides early detection of misuse or a hijacked admin session
+- An attacker controlling an Orca admin could disable monitoring or alter integrations to hide an active cloud compromise
+
+**Attack Prevented:** Admin-account takeover, privilege escalation, tampering with security monitoring
 
 #### ClickOps Implementation
 
@@ -217,6 +262,15 @@ Minimize and protect admin accounts.
 #### Description
 Secure cloud account integrations.
 
+#### Rationale
+**Why This Matters:**
+- Orca's cloud integrations grant it standing access into your cloud accounts, so least-privilege, read-only roles limit what a compromise of that trust relationship could reach
+- Following Orca's recommended IAM policies avoids over-permissioning that an attacker could abuse for write or delete actions
+- Regular permission reviews catch scope creep and stale grants that widen the integration's blast radius
+- A misconfigured integration role is a direct pathway from the security platform into the production cloud environment
+
+**Attack Prevented:** Cloud integration abuse, privilege escalation into cloud accounts, supply-chain pivot
+
 #### ClickOps Implementation
 
 **Step 1: Review Integrations**
@@ -246,6 +300,15 @@ Secure cloud account integrations.
 
 #### Description
 Secure Orca API access.
+
+#### Rationale
+**Why This Matters:**
+- Orca API keys can read findings and drive automation, so an exposed key gives an attacker programmatic access to your cloud risk data
+- Storing keys in a secrets manager rather than in code or config prevents accidental leaks through repositories and logs
+- Regular rotation limits the useful lifetime of any key that does leak
+- Monitoring key usage surfaces anomalous access that signals a stolen or misused credential
+
+**Attack Prevented:** API key leakage, unauthorized data access, automation abuse, credential replay
 
 #### ClickOps Implementation
 
@@ -307,6 +370,7 @@ Secure Orca API access.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and integration security | Claude Code (Opus 4.5) |
 
 ---

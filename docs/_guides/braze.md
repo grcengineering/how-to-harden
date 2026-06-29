@@ -6,9 +6,9 @@ slug: "braze"
 tier: "2"
 category: "Marketing"
 description: "Customer engagement platform hardening for Braze including SAML SSO, permission sets, and API security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Braze security including SAML SSO, permission sets, API key ma
 #### Description
 Configure SAML SSO to centralize authentication for Braze users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Braze dashboard authentication in your corporate IdP, enforcing MFA and conditional access policies on every login
+- Local Braze passwords bypass IdP controls and are prime targets for credential stuffing and phishing
+- Centralized provisioning and deprovisioning removes access for departed users immediately, eliminating orphaned accounts with standing access to customer data
+- The Braze dashboard exposes customer PII, message content, and campaign automation, so a single compromised login can expose subscriber lists and send rogue messages
+
+**Attack Prevented:** Credential theft, phishing, account takeover, orphaned-account access
+
 #### Prerequisites
 - Braze admin access
 - SAML 2.0 compatible IdP
@@ -95,6 +104,15 @@ Configure SAML SSO to centralize authentication for Braze users.
 #### Description
 Require 2FA for all Braze users.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor stops attackers who have already obtained a valid password from logging in
+- Marketing platform credentials are frequently exposed through password reuse, phishing, and infostealer malware
+- Enforcing 2FA company-wide closes the gap left by users who would otherwise skip optional MFA
+- Braze accounts control customer messaging at scale, so account takeover can lead to mass spam, phishing of subscribers, and data exfiltration
+
+**Attack Prevented:** Credential stuffing, password reuse, phishing, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Enable Company-Wide 2FA**
@@ -120,6 +138,15 @@ Require 2FA for all Braze users.
 
 #### Description
 Restrict dashboard access to approved IP ranges.
+
+#### Rationale
+**Why This Matters:**
+- Restricting dashboard logins to known corporate or VPN egress ranges blocks login attempts from arbitrary locations
+- Even with valid stolen credentials, an attacker outside the allowlist cannot reach the dashboard
+- Network-layer restrictions add defense in depth on top of SSO and 2FA
+- Limits exposure of customer PII and campaign tooling to a defined, auditable set of source networks
+
+**Attack Prevented:** Remote credential abuse, account takeover from unknown locations, unauthorized dashboard access
 
 #### ClickOps Implementation
 
@@ -148,6 +175,15 @@ Restrict dashboard access to approved IP ranges.
 
 #### Description
 Implement least privilege using Braze permission sets.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege permission sets ensure each user can only access the data and functions their role requires
+- Over-permissioned accounts expand the blast radius when any single account is compromised
+- Granular roles limit who can export customer data, send campaigns, or change platform settings
+- Separating marketer, analyst, developer, and admin duties reduces both insider risk and accidental misuse
+
+**Attack Prevented:** Privilege escalation, insider data theft, lateral movement, accidental data exposure
 
 #### ClickOps Implementation
 
@@ -184,6 +220,15 @@ Implement least privilege using Braze permission sets.
 #### Description
 Control access to workspaces and app groups.
 
+#### Rationale
+**Why This Matters:**
+- Workspace and app-group boundaries keep each team's customer data and campaigns isolated from one another
+- Limiting cross-workspace access prevents one compromised account from reaching every brand or environment
+- Separating production from test data reduces the chance of accidental sends or leaks of real subscriber data
+- Scoped access supports tenant separation and data-handling requirements in multi-brand deployments
+
+**Attack Prevented:** Cross-tenant data exposure, lateral movement, accidental production sends, scope creep
+
 #### ClickOps Implementation
 
 **Step 1: Review Workspace Structure**
@@ -209,6 +254,15 @@ Control access to workspaces and app groups.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Admin accounts can change security settings, manage users, and access all customer data, making them high-value targets
+- Keeping the admin count small reduces the attack surface and simplifies monitoring of privileged activity
+- Requiring 2FA on admins protects the accounts capable of disabling other security controls
+- A compromised admin could remove SSO enforcement, create rogue API keys, or exfiltrate the entire subscriber base
+
+**Attack Prevented:** Admin account takeover, privilege abuse, security control tampering, mass data exfiltration
 
 #### ClickOps Implementation
 
@@ -237,6 +291,15 @@ Minimize and protect administrator accounts.
 
 #### Description
 Secure API keys and access tokens.
+
+#### Rationale
+**Why This Matters:**
+- Braze REST API keys can read and write customer data and trigger messages, so a leaked key is equivalent to a compromised account
+- Scoping keys to the minimum required permissions limits what an attacker can do if a key is exposed
+- Separate keys per integration enable targeted rotation and revocation without breaking every integration
+- Regular rotation and secure vault storage prevent long-lived secrets from lingering in code, logs, or config files
+
+**Attack Prevented:** API key leakage, unauthorized data access, message spoofing, hardcoded-credential exposure
 
 #### ClickOps Implementation
 
@@ -269,6 +332,15 @@ Secure API keys and access tokens.
 #### Description
 Restrict API access to approved IP ranges.
 
+#### Rationale
+**Why This Matters:**
+- Binding API keys to your application server IP ranges renders a stolen key useless from any other location
+- IP restrictions add a network-layer control that survives even if a key is exposed in code or logs
+- Constraining API origins makes anomalous access from unexpected addresses easy to detect and block
+- Protects high-volume data and messaging endpoints from abuse by external actors
+
+**Attack Prevented:** Stolen API key reuse, credential abuse from unknown hosts, automated API abuse
+
 #### ClickOps Implementation
 
 **Step 1: Configure IP Restrictions**
@@ -297,6 +369,15 @@ Restrict API access to approved IP ranges.
 #### Description
 Enable and monitor activity logs.
 
+#### Rationale
+**Why This Matters:**
+- Activity logs provide the audit trail needed to detect unauthorized logins, permission changes, and API key creation
+- Without logging, account compromise and insider misuse can go unnoticed until customer data is already exposed
+- Monitoring authentication and configuration events enables timely alerting and incident response
+- Retained logs are essential evidence for forensic investigation and compliance audits
+
+**Attack Prevented:** Undetected account compromise, insider abuse, delayed breach detection, audit gaps
+
 #### ClickOps Implementation
 
 **Step 1: Access Activity Logs**
@@ -323,6 +404,15 @@ Enable and monitor activity logs.
 
 #### Description
 Configure data retention policies.
+
+#### Rationale
+**Why This Matters:**
+- Limiting how long customer PII and event data are retained shrinks the volume of sensitive data exposed in any breach
+- Defined retention and deletion workflows satisfy GDPR and CCPA data-subject deletion obligations
+- Purging stale data reduces the regulatory and reputational impact of a compromise
+- Documented retention policies prevent indefinite accumulation of sensitive subscriber records
+
+**Attack Prevented:** Excessive data exposure in a breach, regulatory non-compliance, data-subject rights violations
 
 #### ClickOps Implementation
 
@@ -388,6 +478,7 @@ Configure data retention policies.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, permissions, and API security | Claude Code (Opus 4.5) |
 
 ---

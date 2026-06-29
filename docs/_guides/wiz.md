@@ -6,9 +6,9 @@ slug: "wiz"
 tier: "2"
 category: "Security"
 description: "Cloud security platform hardening for connector security and RBAC controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -96,6 +96,15 @@ Require SAML SSO with MFA for all Wiz console access.
 #### Description
 Configure Wiz roles with least-privilege access.
 
+#### Rationale
+**Why This Matters:**
+- Wiz aggregates vulnerability, misconfiguration, and attack-path data across the entire cloud estate, so broad default access exposes all of it to every user
+- Least-privilege roles ensure analysts, developers, and auditors see only what their job requires, shrinking the blast radius of a single compromised account
+- Project-based access scopes findings to specific teams and environments, preventing lateral visibility across tenants and business units
+- Restricting Admin to a small, tightly controlled set limits who can alter platform settings, connectors, and integrations
+
+**Attack Prevented:** Privilege escalation, insider data harvesting, lateral reconnaissance, unauthorized configuration changes
+
 #### ClickOps Implementation
 
 **Step 1: Define Role Strategy**
@@ -182,6 +191,15 @@ Harden cloud connector IAM permissions to minimum required.
 #### Description
 Implement regular rotation of cloud connector credentials.
 
+#### Rationale
+**Why This Matters:**
+- Cloud connector credentials grant Wiz standing read access to your entire cloud environment, making long-lived secrets a durable target if leaked
+- Regular rotation bounds the window during which a stolen IAM external ID, Azure app secret, or GCP service-account key remains usable
+- Scheduled rotation forces removal of forgotten or unused credentials that would otherwise persist indefinitely
+- A rotation cadence creates an audit trail and clear ownership around connector secrets
+
+**Attack Prevented:** Credential theft reuse, long-lived secret abuse, stale-credential persistence, connector hijacking
+
 #### Implementation
 
 | Cloud | Credential Type | Rotation |
@@ -205,6 +223,15 @@ Implement regular rotation of cloud connector credentials.
 
 #### Description
 Secure Wiz API service accounts.
+
+#### Rationale
+**Why This Matters:**
+- Wiz API service accounts read sensitive vulnerability and posture data programmatically, so a shared or over-scoped account exposes that data to every integration holding it
+- Purpose-specific accounts with minimum scopes ensure a compromised SIEM or ticketing integration cannot pivot beyond its intended permissions
+- Quarterly credential rotation limits the lifetime of any leaked API token
+- Separate accounts per integration make abuse attributable and revocation surgical
+
+**Attack Prevented:** API token theft, over-privileged integration abuse, data exfiltration, credential sprawl
 
 #### ClickOps Implementation
 
@@ -242,6 +269,15 @@ Secure Wiz API service accounts.
 #### Description
 Monitor API usage for anomalies.
 
+#### Rationale
+**Why This Matters:**
+- API abuse — bulk pulls of findings, unusual query volume, or off-hours access — is often the first signal of a compromised service-account token
+- Monitoring establishes a behavioral baseline so anomalous extraction of vulnerability data is detected before it becomes a breach
+- Alerting on usage spikes enables rapid token revocation, shrinking the exfiltration window
+- Visibility into API activity supports incident response and provides compliance evidence
+
+**Attack Prevented:** Stealthy data exfiltration, compromised-token abuse, undetected reconnaissance, bulk scraping
+
 #### Implementation
 
 {% include pack-code.html vendor="wiz" section="3.2" %}
@@ -257,6 +293,15 @@ Monitor API usage for anomalies.
 
 #### Description
 Control export of security findings and vulnerability data.
+
+#### Rationale
+**Why This Matters:**
+- Wiz findings and vulnerability reports are effectively a map of exploitable weaknesses across your cloud, so uncontrolled export hands attackers a ready-made target list
+- Restricting bulk export to Admins and logging every export limits who can remove this data and creates accountability
+- Expiring, password-protected, internal-only share links prevent sensitive reports from leaking through forwarded or public URLs
+- Alerting on large exports surfaces insider data theft or a compromised account exfiltrating posture data
+
+**Attack Prevented:** Bulk data exfiltration, insider theft, leaked report links, attack-surface disclosure
 
 #### ClickOps Implementation
 
@@ -284,6 +329,18 @@ Control export of security findings and vulnerability data.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
+
+#### Description
+Enable Wiz audit logging and forward authentication, configuration-change, and API-access events to your SIEM for correlation and alerting.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs are the primary record of who accessed Wiz, what they changed, and which API calls ran, so without them a compromise is invisible and unforensicable
+- Forwarding events to a SIEM enables correlation with cloud and identity telemetry, catching attack patterns that span systems
+- Capturing authentication and configuration changes detects unauthorized role grants, connector edits, and disabled controls in near real time
+- Centralized, exported logs survive tampering or deletion within the Wiz console itself
+
+**Attack Prevented:** Undetected account compromise, audit-trail tampering, stealthy configuration changes, delayed breach detection
 
 #### ClickOps Implementation
 
@@ -347,4 +404,5 @@ Control export of security findings and vulnerability data.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Wiz hardening guide | Claude Code (Opus 4.5) |

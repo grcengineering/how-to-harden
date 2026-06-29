@@ -6,9 +6,9 @@ slug: "harness"
 tier: "2"
 category: "DevOps"
 description: "Software delivery platform hardening for Harness including SAML SSO, RBAC, secret management, and pipeline security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Harness security including SAML SSO, RBAC, secret management, 
 #### Description
 Configure SAML SSO to centralize authentication for Harness users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Harness authentication in your corporate IdP, enforcing MFA, conditional access, and a consistent password policy on every login
+- Harness controls deployment pipelines, infrastructure connectors, and cloud credentials, so a single compromised login can push malicious code to production
+- IdP-driven provisioning deprovisions departed users automatically, eliminating orphaned accounts with standing pipeline access
+- Local Harness logins bypass IdP controls and become a soft target for credential stuffing and phishing
+
+**Attack Prevented:** Credential theft, phishing, credential stuffing, orphaned-account access
+
 #### Prerequisites
 - Harness admin access
 - SAML 2.0 compatible IdP
@@ -95,6 +104,15 @@ Configure SAML SSO to centralize authentication for Harness users.
 #### Description
 Require 2FA for all Harness users.
 
+#### Rationale
+**Why This Matters:**
+- Adds a second factor so a stolen or guessed password alone cannot grant access to deployment controls
+- Harness operators can trigger production deployments and reference pipeline secrets, so a single-factor compromise exposes the whole delivery chain
+- Phishing-resistant MFA for admins blocks real-time credential relay and MFA-fatigue attacks
+- Enforcing 2FA at the IdP covers all SSO users consistently instead of relying on per-user opt-in
+
+**Attack Prevented:** Password reuse, credential stuffing, phishing, account takeover, MFA fatigue
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA Requirement**
@@ -125,6 +143,15 @@ Require 2FA for all Harness users.
 #### Description
 Restrict access to approved IP ranges.
 
+#### Rationale
+**Why This Matters:**
+- Restricts Harness console and API access to known corporate or VPN egress ranges, shrinking the externally reachable attack surface
+- Even if credentials or session tokens are stolen, an attacker outside the allowed ranges cannot reach the platform
+- Confines automation and API tokens used in CI to their expected network locations
+- Adds a network-layer control that complements identity controls for defense in depth
+
+**Attack Prevented:** Stolen-credential reuse from untrusted networks, token replay, unauthorized API access
+
 #### ClickOps Implementation
 
 **Step 1: Configure IP Allowlist**
@@ -151,6 +178,15 @@ Restrict access to approved IP ranges.
 
 #### Description
 Implement least privilege using Harness RBAC.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure users and service accounts can only act on the pipelines, secrets, and connectors they actually need
+- Custom roles paired with resource groups prevent the over-broad standing access that turns one compromised account into account-wide control
+- Scoping limits blast radius — a developer role cannot modify production governance or read every secret
+- Regular access reviews catch privilege creep before it becomes an audit or breach finding
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider misuse, excessive standing access
 
 #### ClickOps Implementation
 
@@ -191,6 +227,15 @@ Implement least privilege using Harness RBAC.
 #### Description
 Use hierarchy for access isolation.
 
+#### Rationale
+**Why This Matters:**
+- Separating business units, and especially production from development, into distinct organizations and projects enforces tenant isolation
+- Scoped project-level access prevents a developer on one team from touching another team's pipelines, connectors, or secrets
+- Hierarchy creates clear boundaries for least privilege and for auditing cross-project access
+- Isolation contains the blast radius of a compromised account or misconfigured role to a single scope
+
+**Attack Prevented:** Cross-project access, lateral movement, accidental or malicious production changes
+
 #### ClickOps Implementation
 
 **Step 1: Define Organization Structure**
@@ -220,6 +265,15 @@ Use hierarchy for access isolation.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Account admins can change authentication, governance, RBAC, and every connector, so minimizing their number reduces high-value targets
+- Requiring SSO and 2FA on admin accounts hardens the most powerful credentials against phishing and reuse
+- A small, documented admin set makes anomalous admin activity easy to spot and investigate
+- Fewer standing admins limits the damage from a single compromised privileged account
+
+**Attack Prevented:** Privileged-account takeover, configuration tampering, persistence, audit evasion
 
 #### ClickOps Implementation
 
@@ -252,6 +306,15 @@ Minimize and protect administrator accounts.
 
 #### Description
 Securely manage secrets for pipelines.
+
+#### Rationale
+**Why This Matters:**
+- Centralizing secrets in a dedicated manager (Vault, a cloud KMS, or the built-in store) keeps credentials out of pipeline YAML and source control
+- Referenced secrets are injected at runtime and masked in logs, avoiding plaintext exposure to anyone who can read the pipeline
+- External managers add rotation, versioning, and access auditing that hardcoded credentials lack
+- Pipelines hold deploy keys and cloud credentials, so leaking one can compromise production infrastructure
+
+**Attack Prevented:** Hardcoded-secret leakage, credential exposure in logs or VCS, supply-chain compromise via stolen deploy keys
 
 #### ClickOps Implementation
 
@@ -287,6 +350,15 @@ Securely manage secrets for pipelines.
 #### Description
 Control access to secrets.
 
+#### Rationale
+**Why This Matters:**
+- Scoping secrets to the narrowest level (project over account) ensures only the pipelines that need a credential can read it
+- Restricting who can create and view secrets prevents quiet exfiltration of cloud and registry credentials
+- Auditing secret access provides the trail needed to detect and investigate misuse
+- Limiting account- and org-wide secrets stops one compromised project from reaching every other team's credentials
+
+**Attack Prevented:** Unauthorized secret access, credential exfiltration, lateral movement, insider misuse
+
 #### ClickOps Implementation
 
 **Step 1: Scope Secrets**
@@ -319,6 +391,15 @@ Control access to secrets.
 #### Description
 Implement pipeline governance controls.
 
+#### Rationale
+**Why This Matters:**
+- OPA policies enforce baseline standards (approved steps, images, and connectors) so non-compliant or risky pipelines cannot run
+- Mandatory approval gates for production insert human review between a change and its deployment
+- Governance prevents an attacker or careless user from silently altering a pipeline to ship malicious artifacts
+- Policy-as-code makes controls consistent, auditable, and resistant to one-off bypasses
+
+**Attack Prevented:** Poisoned pipeline execution, unauthorized or unreviewed production deploys, policy bypass, supply-chain tampering
+
 #### ClickOps Implementation
 
 **Step 1: Configure OPA Policies**
@@ -348,6 +429,15 @@ Implement pipeline governance controls.
 
 #### Description
 Enable and monitor audit logs.
+
+#### Rationale
+**Why This Matters:**
+- Logging pipeline runs, configuration changes, permission edits, and secret access creates the evidence needed to detect and investigate incidents
+- Without an audit trail, malicious deploys, privilege changes, and secret access go unnoticed and cannot be reconstructed
+- Monitoring and retention support breach forensics and satisfy compliance evidence requirements
+- A reliable audit record deters insiders and makes persistence and configuration drift visible
+
+**Attack Prevented:** Undetected intrusion, insider misuse, repudiation, delayed breach detection
 
 #### ClickOps Implementation
 
@@ -416,6 +506,7 @@ Enable and monitor audit logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and secret management | Claude Code (Opus 4.5) |
 
 ---

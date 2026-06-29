@@ -6,9 +6,9 @@ slug: "jira-cloud"
 tier: "2"
 category: "Productivity"
 description: "Issue tracking platform hardening for Atlassian Jira Cloud including SAML SSO, organization security, and access controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Atlassian Jira Cloud security including SAML SSO, organization
 #### Description
 Configure SAML SSO to centralize authentication for Jira Cloud users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Jira Cloud authentication in your corporate IdP so MFA, conditional access, and session policies are enforced on every login
+- Atlassian-native password logins bypass your IdP controls and are a prime target for credential stuffing and phishing
+- Jira projects hold roadmaps, vulnerability tickets, customer issues, and internal workflows that a single compromised login can expose
+- SSO gives one place to revoke access instantly when an employee leaves, eliminating standing access through local credentials
+
+**Attack Prevented:** Credential stuffing, phishing, password reuse, MFA bypass
+
 #### Prerequisites
 - Atlassian organization with verified domain
 - Atlassian Guard Standard subscription
@@ -100,6 +109,15 @@ Configure SAML SSO to centralize authentication for Jira Cloud users.
 #### Description
 Create authentication policies to enforce SSO.
 
+#### Rationale
+**Why This Matters:**
+- Configuring SSO alone does not force users to use it; without a policy, managed users can still authenticate with a local Atlassian password
+- Authentication policies bind users from your verified domains to SSO so the IdP controls cannot be sidestepped
+- A separate admin fallback policy preserves break-glass recovery so a misconfigured IdP never locks every administrator out
+- Policy-level enforcement turns SSO from an option into a guarantee across the whole organization
+
+**Attack Prevented:** SSO bypass, password-based account takeover, IdP-control circumvention, admin lockout
+
 #### ClickOps Implementation
 
 **Step 1: Access Authentication Policies**
@@ -129,6 +147,15 @@ Create authentication policies to enforce SSO.
 
 #### Description
 Require two-step verification for all users.
+
+#### Rationale
+**Why This Matters:**
+- A stolen or guessed password alone is not enough to access Jira when a second factor is required
+- Two-step verification is among the most effective controls against automated credential-stuffing and phishing campaigns
+- Phishing-resistant factors for administrators raise the bar against real-time proxy and prompt-bombing attacks
+- Enforcing 2SV organization-wide closes the gap left by users who would otherwise opt out
+
+**Attack Prevented:** Credential stuffing, phishing, password spraying, account takeover
 
 #### ClickOps Implementation
 
@@ -160,6 +187,15 @@ Require two-step verification for all users.
 #### Description
 Enable Just-In-Time provisioning for automatic account creation.
 
+#### Rationale
+**Why This Matters:**
+- JIT provisioning creates accounts from authoritative IdP identity data rather than manual entry, reducing misconfigured or duplicate accounts
+- Attribute and group mapping at login keeps Jira access aligned with the IdP's current role assignments
+- Provisioning through SSO means users never receive standalone credentials that could be phished or reused
+- Consistent, automated account creation reduces the manual errors that lead to over-privileged or orphaned accounts
+
+**Attack Prevented:** Orphaned accounts, privilege creep, manual provisioning errors, shadow accounts
+
 #### ClickOps Implementation
 
 **Step 1: Enable JIT Provisioning**
@@ -188,6 +224,15 @@ Enable Just-In-Time provisioning for automatic account creation.
 #### Description
 Enable Atlassian Guard for enhanced security features.
 
+#### Rationale
+**Why This Matters:**
+- Atlassian Guard is the subscription that unlocks SAML SSO, enforced 2SV, audit logging, and data security policies for the organization
+- Without Guard, the organization cannot centrally enforce authentication or monitor administrative activity across Jira Cloud
+- Guard's security policies let you detect and respond to risky configuration changes and account activity
+- It establishes the foundation that nearly every other hardening control in this guide depends on
+
+**Attack Prevented:** Unmonitored access, unenforced authentication, undetected configuration tampering
+
 #### ClickOps Implementation
 
 **Step 1: Subscribe to Atlassian Guard**
@@ -214,6 +259,15 @@ Enable Atlassian Guard for enhanced security features.
 #### Description
 Verify domains to claim and manage user accounts.
 
+#### Rationale
+**Why This Matters:**
+- Domain verification is the prerequisite for claiming employee accounts into organization management and applying SSO and 2SV to them
+- Unclaimed accounts on your domain are unmanaged shadow accounts that sit outside your security policies and offboarding process
+- Once verified, the organization controls password resets, authentication policy, and deprovisioning for those identities
+- Claiming accounts consolidates fragmented identities and eliminates blind spots in your user inventory
+
+**Attack Prevented:** Shadow accounts, unmanaged identities, offboarding gaps, policy evasion
+
 #### ClickOps Implementation
 
 **Step 1: Add Domain**
@@ -239,6 +293,15 @@ Verify domains to claim and manage user accounts.
 
 #### Description
 Manage organization administrator access.
+
+#### Rationale
+**Why This Matters:**
+- Organization admins can change SSO, authentication policies, billing, and user access across every Atlassian product, making the role the highest-value target
+- Limiting org admins to a small set and using product admins for narrower tasks applies least privilege and shrinks the blast radius of a compromise
+- Regularly reviewing and removing unnecessary admin access prevents privilege accumulation over time
+- Fewer highly-privileged accounts means fewer credentials an attacker can phish to seize full control
+
+**Attack Prevented:** Privilege escalation, admin account takeover, excessive standing privilege, insider misuse
 
 #### ClickOps Implementation
 
@@ -268,6 +331,15 @@ Manage organization administrator access.
 #### Description
 Configure project-level permissions for least privilege.
 
+#### Rationale
+**Why This Matters:**
+- Default permission schemes are often broad, granting users more access to projects, issues, and workflows than their role requires
+- Least-privilege permission schemes ensure users can see and modify only the projects relevant to their work
+- Assigning permissions through groups rather than individuals keeps access consistent and auditable as people change roles
+- Regular access reviews catch permission drift before it becomes a data exposure or tampering risk
+
+**Attack Prevented:** Unauthorized data access, privilege creep, lateral movement, insider data exposure
+
 #### ClickOps Implementation
 
 **Step 1: Review Permission Schemes**
@@ -294,6 +366,15 @@ Configure project-level permissions for least privilege.
 #### Description
 Control access for external users and guests.
 
+#### Rationale
+**Why This Matters:**
+- External users and guests sit outside your identity controls, so unbounded access can expose internal project data to third parties
+- Limiting guest capabilities to the minimum needed reduces the data an external account can reach if it is compromised
+- Enforcing authentication for Jira Service Management portal customers prevents anonymous or weakly-authenticated access to support data
+- Using a separate IdP for external customers keeps their authentication isolated from internal employee identities
+
+**Attack Prevented:** Data leakage to third parties, unauthorized external access, guest-account abuse
+
 #### ClickOps Implementation
 
 **Step 1: Configure Guest Access**
@@ -319,6 +400,15 @@ Control access for external users and guests.
 
 #### Description
 Control third-party app access and permissions.
+
+#### Rationale
+**Why This Matters:**
+- Marketplace and third-party apps run with OAuth scopes that can read and modify Jira data, extending your attack surface to each app vendor's security
+- A compromised or malicious app with broad scopes can exfiltrate issues, attachments, and user data
+- Removing unused apps and limiting scopes to what each app actually needs enforces least privilege on integrations
+- Regular app audits catch over-permissioned or abandoned integrations before they become a supply-chain entry point
+
+**Attack Prevented:** Supply-chain compromise, OAuth scope abuse, data exfiltration via integrations, third-party data exposure
 
 #### ClickOps Implementation
 
@@ -348,6 +438,15 @@ Control third-party app access and permissions.
 #### Description
 Enable and monitor audit logs (requires Atlassian Guard).
 
+#### Rationale
+**Why This Matters:**
+- Audit logs are the primary record for detecting unauthorized access, privilege changes, and configuration tampering in Jira Cloud
+- Without logging of provisioning, permission, and SSO changes, malicious or accidental actions go unnoticed until damage is done
+- Exporting logs to external analysis preserves evidence for incident response and meets compliance retention requirements
+- Monitoring admin actions and authentication changes provides early warning of an account compromise in progress
+
+**Attack Prevented:** Undetected intrusion, configuration tampering, insider misuse, loss of forensic evidence
+
 #### ClickOps Implementation
 
 **Step 1: Access Audit Logs**
@@ -374,6 +473,15 @@ Enable and monitor audit logs (requires Atlassian Guard).
 
 #### Description
 Configure alerts for security events.
+
+#### Rationale
+**Why This Matters:**
+- Logs alone are passive; real-time alerts on critical events ensure the security team is notified while a threat can still be contained
+- Alerting on admin changes, failed authentication, and policy modifications shortens the window between compromise and response
+- Integrating alerts with a SIEM correlates Jira events with the rest of your environment to catch coordinated attacks
+- Regular review of alerts ensures findings are acted on rather than accumulating unaddressed
+
+**Attack Prevented:** Delayed incident response, undetected account takeover, slow breach containment
 
 #### ClickOps Implementation
 
@@ -456,6 +564,7 @@ Configure alerts for security events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, organization security, and access controls | Claude Code (Opus 4.5) |
 
 ---

@@ -6,9 +6,9 @@ slug: "ukg"
 tier: "2"
 category: "HR/Finance"
 description: "HCM platform hardening for UKG Pro including SAML SSO configuration, authentication upgrade features, and access controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers UKG Pro security including SAML SSO, authentication features, 
 
 #### Description
 Configure SAML SSO to centralize authentication for UKG Pro users.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes UKG Pro authentication in your corporate IdP, enforcing MFA and conditional access on every login
+- Local UKG passwords bypass IdP controls and are a prime target for credential stuffing and phishing
+- IdP-driven lifecycle (SCIM/provisioning) deprovisions departed employees automatically, closing standing access to payroll and HR data
+- UKG Pro holds SSNs, salaries, and direct-deposit banking details — a single compromised login can expose an entire workforce
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, orphaned-account access
 
 #### Prerequisites
 - Contact UKG Pro support to enable SAML SSO
@@ -198,6 +207,15 @@ Ensure SAML responses are properly signed.
 #### Description
 Implement least privilege using UKG's role model.
 
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure each user sees only the employee data and functions their job actually requires
+- Over-broad roles let ordinary users reach payroll, compensation, and PII far beyond their need to know
+- Separating HR and Payroll administrative duties prevents any single account from both editing pay rates and approving disbursements
+- Regular access reviews catch role creep and stale access from transfers and terminations before it becomes a breach path
+
+**Attack Prevented:** Privilege escalation, insider data misuse, excessive data exposure, payroll fraud
+
 #### ClickOps Implementation
 
 **Step 1: Review Security Roles**
@@ -229,6 +247,15 @@ Implement least privilege using UKG's role model.
 #### Description
 Minimize and protect administrator accounts.
 
+#### Rationale
+**Why This Matters:**
+- Administrator accounts can alter security settings, reassign roles, and access every employee record in the tenant
+- Each additional admin widens the attack surface and the blast radius of a single compromised credential
+- Requiring MFA on all admins blocks takeover from phished or reused passwords
+- Monitoring admin activity surfaces unauthorized configuration changes and suspicious bulk data access early
+
+**Attack Prevented:** Account takeover, privilege abuse, unauthorized configuration change, lateral movement
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admin Users**
@@ -255,6 +282,15 @@ Minimize and protect administrator accounts.
 #### Description
 Configure system security settings.
 
+#### Rationale
+**Why This Matters:**
+- System security settings govern SSO enforcement, session behavior, and tenant-wide authentication policy
+- Insecure or default settings can leave password fallback paths and weak session controls active alongside SSO
+- Restricting SuperUser-level configuration access prevents unauthorized changes to the platform's security posture
+- A hardened baseline reduces drift and keeps security controls enforced after upgrades and changes
+
+**Attack Prevented:** Security misconfiguration, SSO bypass, unauthorized settings change, weak session handling
+
 #### ClickOps Implementation
 
 **For UKG Workforce Central:**
@@ -278,6 +314,15 @@ Configure system security settings.
 
 #### Description
 Control access to sensitive employee data.
+
+#### Rationale
+**Why This Matters:**
+- UKG Pro stores highly sensitive fields including SSNs, salaries, and direct-deposit banking details
+- Field-level and role-based restrictions ensure users only see the data their role legitimately requires
+- Classifying data by sensitivity drives proportionate controls and supports privacy and compliance obligations
+- Auditing data access creates accountability and detects unusual viewing of high-value PII
+
+**Attack Prevented:** Sensitive data exposure, PII leakage, insider snooping, privacy violations
 
 #### ClickOps Implementation
 
@@ -304,6 +349,15 @@ Control access to sensitive employee data.
 
 #### Description
 Control access to HR reports and analytics.
+
+#### Rationale
+**Why This Matters:**
+- Reports and analytics can aggregate sensitive HR and payroll data into a single exportable view
+- Unrestricted report access lets users assemble and exfiltrate large datasets beyond their day-to-day need
+- Limiting export capabilities reduces the risk of bulk PII leaving the platform via spreadsheets and downloads
+- Monitoring report generation detects abnormal extraction patterns that signal data theft
+
+**Attack Prevented:** Bulk data exfiltration, unauthorized reporting, mass PII export, insider data theft
 
 #### ClickOps Implementation
 
@@ -332,6 +386,15 @@ Control access to HR reports and analytics.
 
 #### Description
 Enable and monitor audit logs.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs of authentication, data access, and configuration changes are the primary evidence for detecting and investigating incidents
+- Without comprehensive logging, account compromise and insider misuse can go unnoticed for long periods
+- Capturing admin actions and config changes supports tamper detection and change accountability
+- Retained logs satisfy SOC 2, ISO 27001, and similar compliance evidence requirements
+
+**Attack Prevented:** Undetected breach, log tampering, concealed insider activity, delayed incident response
 
 #### ClickOps Implementation
 
@@ -395,6 +458,7 @@ Enable and monitor audit logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and security controls | Claude Code (Opus 4.5) |
 
 ---

@@ -6,9 +6,9 @@ slug: "rippling"
 tier: "5"
 category: "HR/Finance"
 description: "Workforce platform security for app provisioning, device management, and SCIM controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -50,6 +50,18 @@ This guide covers Rippling security configurations including authentication, acc
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
+#### Description
+Require SAML SSO with MFA for all Rippling access, routing every login through your corporate identity provider and enforcing phishing-resistant second factors.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes Rippling authentication in your corporate IdP, enforcing MFA and conditional access on every login
+- Local password logins bypass IdP controls and are a prime target for credential stuffing and phishing
+- Rippling holds HR, payroll, IT, and spend data, so a single compromised admin login can cascade across every connected business function
+- Phishing-resistant MFA (FIDO2/WebAuthn) defeats real-time proxy and push-fatigue attacks that bypass weaker factors
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Configure SSO**
@@ -68,6 +80,18 @@ This guide covers Rippling security configurations including authentication, acc
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
+
+#### Description
+Define least-privilege permission sets and custom roles so each administrator and employee can access only the HR, IT, finance, or self-service functions their job requires.
+
+#### Rationale
+**Why This Matters:**
+- Rippling spans HR, payroll, device management, and spend, so broad admin grants give any single compromised account control over multiple business domains
+- Least-privilege roles contain the blast radius of a stolen or misused credential to one functional area
+- Separating HR, IT, and finance duties enforces segregation of duties and limits insider abuse
+- Custom permission sets prevent privilege creep as employees change teams and accumulate access
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider abuse, excessive standing access
 
 #### ClickOps Implementation
 
@@ -102,6 +126,14 @@ Secure Rippling app integrations.
 #### Rationale
 **Attack Scenario:** Compromised Rippling admin provisions access to connected apps; single compromise cascades across all integrated SaaS.
 
+**Why This Matters:**
+- Rippling acts as an identity and provisioning hub, so a compromised admin can grant or modify access across every connected SaaS application
+- Unused or orphaned app integrations widen the attack surface and often retain standing OAuth grants long after they are needed
+- Over-scoped SCIM auto-provisioning can silently push access or accounts into downstream apps without review
+- Regular review of connected apps and deprovisioning flows ensures departed users lose access everywhere, not just in Rippling
+
+**Attack Prevented:** Supply chain compromise, OAuth token abuse, orphaned-account access, over-provisioning
+
 #### ClickOps Implementation
 
 **Step 1: Review Connected Apps**
@@ -121,6 +153,18 @@ Secure Rippling app integrations.
 **Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-7
 
+#### Description
+Configure device management policies in Rippling IT to require enrollment and enforce baseline security controls on every endpoint that accesses workforce data.
+
+#### Rationale
+**Why This Matters:**
+- Devices enrolled through Rippling access corporate apps and employee PII, so unmanaged endpoints are a direct path into sensitive data
+- Enforced enrollment and security policies such as encryption, screen lock, and OS patching reduce data loss from lost or stolen devices
+- Device posture checks let you block compromised or non-compliant endpoints before they reach connected SaaS
+- Centralized device control supports rapid remote wipe and access revocation during offboarding or incidents
+
+**Attack Prevented:** Endpoint compromise, data exfiltration from lost/stolen devices, non-compliant device access
+
 #### ClickOps Implementation
 
 **Step 1: Device Policies**
@@ -136,6 +180,18 @@ Secure Rippling app integrations.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
+
+#### Description
+Restrict field-level visibility and reporting so sensitive employee data such as SSNs, bank accounts, and compensation is exposed only to roles with a legitimate need.
+
+#### Rationale
+**Why This Matters:**
+- Rippling stores highly sensitive PII and financial data that carries legal, regulatory, and identity-theft consequences if exposed
+- Field-level access controls enforce need-to-know and prevent managers or analysts from viewing data outside their scope
+- Limiting bulk exports and report access stops large-scale data scraping by a single compromised or malicious account
+- Auditing data access creates accountability and supports breach detection and compliance evidence
+
+**Attack Prevented:** PII exposure, identity theft, mass data exfiltration, unauthorized data access
 
 #### ClickOps Implementation
 
@@ -156,6 +212,18 @@ Secure Rippling app integrations.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
+#### Description
+Limit payroll administrator access and require approvals for payroll changes so direct-deposit and compensation modifications cannot be made by a single unchecked account.
+
+#### Rationale
+**Why This Matters:**
+- Payroll controls direct-deposit destinations and pay amounts, making it a high-value target for financial fraud
+- Restricting payroll admin access reduces the number of accounts that can redirect funds or alter compensation
+- Requiring approval for payroll changes enforces dual control and catches fraudulent or erroneous edits before money moves
+- Tight payroll permissions limit the damage an attacker or malicious insider can do with a single compromised credential
+
+**Attack Prevented:** Payroll diversion fraud, direct-deposit hijacking, unauthorized compensation changes, insider fraud
+
 #### ClickOps Implementation
 
 **Step 1: Payroll Access**
@@ -171,6 +239,18 @@ Secure Rippling app integrations.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
+
+#### Description
+Enable and regularly review Rippling audit logs to capture administrative activity and configuration changes across HR, IT, payroll, and access management.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs provide the forensic record needed to detect, investigate, and scope unauthorized activity across Rippling's many functions
+- Monitoring admin actions and configuration changes surfaces privilege abuse, suspicious provisioning, and policy weakening early
+- Without comprehensive logging, attacker and insider activity goes unnoticed and breaches are impossible to reconstruct
+- Retained audit trails support compliance obligations such as SOC 2 and ISO 27001 and provide incident response evidence
+
+**Attack Prevented:** Undetected intrusion, insider abuse, audit-trail gaps, delayed breach detection
 
 #### ClickOps Implementation
 
@@ -218,4 +298,5 @@ Secure Rippling app integrations.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Rippling hardening guide | Claude Code (Opus 4.5) |

@@ -6,9 +6,9 @@ slug: "fullstory"
 tier: "3"
 category: "Data"
 description: "Digital experience intelligence platform hardening for Fullstory including SAML SSO, data privacy controls, and access management"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Fullstory security including SAML SSO, privacy controls, acces
 #### Description
 Configure SAML SSO to centralize authentication for Fullstory users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Fullstory authentication in your corporate IdP, enforcing MFA and conditional access on every login
+- Local password logins bypass IdP controls and are a prime target for credential stuffing and phishing
+- SSO enables automatic deprovisioning so departed employees immediately lose access to recorded session data
+- Fullstory captures full user sessions that can contain PII, so a single compromised login can expose sensitive customer interaction data
+
+**Attack Prevented:** Credential theft, phishing, credential stuffing, orphaned-account access
+
 #### Prerequisites
 - Fullstory admin access
 - Enterprise plan
@@ -93,6 +102,15 @@ Configure SAML SSO to centralize authentication for Fullstory users.
 #### Description
 Require 2FA for all Fullstory users.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor blocks account takeover even when a password is leaked, reused, or guessed
+- Fullstory dashboards expose recorded sessions, heatmaps, and analytics that can contain customer PII
+- Phishing-resistant factors for admins stop attackers from using stolen credentials to alter security settings
+- Enforcing MFA at the IdP applies it uniformly across every SSO user without per-account configuration
+
+**Attack Prevented:** Password reuse, credential stuffing, phishing, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -115,6 +133,15 @@ Require 2FA for all Fullstory users.
 
 #### Description
 Implement least privilege using Fullstory roles.
+
+#### Rationale
+**Why This Matters:**
+- Assigning the minimum necessary role limits what each user can see and change, shrinking the blast radius of a compromised account
+- Viewer and Standard roles keep most analysts away from administrative and configuration functions
+- Over-provisioned accounts let a single phished user export session data or disable privacy controls
+- Regular access reviews catch role creep before it becomes a standing risk
+
+**Attack Prevented:** Privilege escalation, insider misuse, excessive data exposure
 
 #### ClickOps Implementation
 
@@ -145,6 +172,15 @@ Implement least privilege using Fullstory roles.
 #### Description
 Minimize and protect administrator accounts.
 
+#### Rationale
+**Why This Matters:**
+- Administrators can change privacy masking, retention, and SSO enforcement, making each admin account a high-value target
+- Keeping the admin count small reduces the number of credentials an attacker can target to gain full control
+- Requiring SSO and MFA for admins ensures these powerful accounts inherit your strongest authentication controls
+- Monitoring admin activity surfaces unauthorized configuration changes that could weaken data protections
+
+**Attack Prevented:** Privilege escalation, admin account takeover, unauthorized configuration changes
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admins**
@@ -173,6 +209,15 @@ Minimize and protect administrator accounts.
 #### Description
 Configure privacy controls to protect user data.
 
+#### Rationale
+**Why This Matters:**
+- Element exclusions and field masking prevent Fullstory from ever capturing passwords, payment details, and other sensitive PII
+- Private-by-default capture excludes data unless it is explicitly allowed, reducing the chance of accidental collection
+- Minimizing what is recorded shrinks the data exposed if the Fullstory account or stored sessions are breached
+- Excluding sensitive pages and fields supports GDPR, CCPA, and PCI obligations to avoid storing regulated data
+
+**Attack Prevented:** Sensitive data exposure, PII leakage, regulatory non-compliance
+
 #### ClickOps Implementation
 
 **Step 1: Configure Exclusions**
@@ -199,6 +244,15 @@ Configure privacy controls to protect user data.
 
 #### Description
 Configure data retention policies.
+
+#### Rationale
+**Why This Matters:**
+- Bounding retention ensures recorded sessions are automatically deleted once they are no longer needed, limiting long-term exposure
+- Less retained data means a smaller pool of PII for an attacker to steal if the platform is compromised
+- Configurable deletion supports GDPR and CCPA right-to-erasure requests within required timeframes
+- Shorter retention reduces storage of stale customer interaction data that provides no ongoing business value
+
+**Attack Prevented:** Excessive data retention, regulatory non-compliance, sensitive data exposure
 
 #### ClickOps Implementation
 
@@ -256,6 +310,7 @@ Configure data retention policies.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and privacy controls | Claude Code (Opus 4.5) |
 
 ---

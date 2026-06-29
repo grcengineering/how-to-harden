@@ -6,9 +6,9 @@ slug: "miro"
 tier: "4"
 category: "Productivity"
 description: "Visual collaboration security for board sharing, app controls, and export restrictions"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -50,6 +50,18 @@ This guide covers Miro security configurations including authentication, access 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
+#### Description
+Require SAML SSO with enforced multi-factor authentication for all Miro access, or 2FA where SSO is unavailable, so every login is brokered through the corporate identity provider.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes Miro authentication in the corporate IdP, enforcing MFA and conditional access on every login
+- Local password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- Enforced SSO lets you deprovision departed users centrally, eliminating orphaned accounts with standing board access
+- Boards hold architecture diagrams, roadmaps, and strategic planning — a single compromised login can expose all of it
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, password reuse, orphaned-account access
+
 #### ClickOps Implementation
 
 **Step 1: Configure SAML SSO (Enterprise)**
@@ -67,6 +79,18 @@ This guide covers Miro security configurations including authentication, access 
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
+
+#### Description
+Define least-privilege team roles (Admin, Member, Guest) and configure member permissions and guest access policies so users receive only the board access their function requires.
+
+#### Rationale
+**Why This Matters:**
+- Role separation limits how much any single account can do, containing the blast radius if it is compromised
+- Unrestricted Admin or Member rights let any user reshare or export sensitive boards
+- Scoping guests to specific boards confines external collaborators instead of exposing the whole team space
+- Periodic review of roles catches privilege creep and stale guest access that should have been revoked
+
+**Attack Prevented:** Privilege escalation, lateral movement, excessive access, insider data exposure
 
 #### ClickOps Implementation
 
@@ -98,6 +122,14 @@ Control board sharing to prevent data exposure.
 #### Rationale
 **Attack Scenario:** Public boards containing architecture diagrams indexed by search engines; competitive intelligence exposed.
 
+**Why This Matters:**
+- Public and "anyone with the link" boards are reachable without authentication and can be indexed by search engines
+- Default-open sharing leaks sensitive diagrams the moment a board is created, before anyone reviews permissions
+- Domain restrictions keep boards inside the organization and block accidental external sharing
+- Disabling public boards forces every share decision through an authenticated, auditable path
+
+**Attack Prevented:** Unauthenticated data exposure, search-engine indexing of internal diagrams, competitive intelligence leakage, accidental oversharing
+
 #### ClickOps Implementation
 
 **Step 1: Disable Public Sharing**
@@ -117,6 +149,18 @@ Control board sharing to prevent data exposure.
 **Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-21
 
+#### Description
+Restrict who can export boards and limit high-resolution image and PDF exports so board content cannot be bulk-extracted outside Miro's access controls.
+
+#### Rationale
+**Why This Matters:**
+- Exports create offline copies that escape Miro's sharing permissions, audit logging, and revocation
+- Unrestricted high-resolution export lets a single user exfiltrate entire boards of sensitive design data
+- Keeping content inside the platform preserves the ability to monitor and revoke access
+- Export limits reduce the value of a compromised account, since stolen access cannot be turned into portable files
+
+**Attack Prevented:** Data exfiltration, bulk content extraction, insider data theft, loss of access control over copied content
+
 #### ClickOps Implementation
 
 **Step 1: Restrict Exports**
@@ -132,6 +176,18 @@ Control board sharing to prevent data exposure.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
+
+#### Description
+Audit installed Miro apps, remove unused integrations, and require admin approval before new apps can be installed so third-party access to boards is reviewed and minimized.
+
+#### Rationale
+**Why This Matters:**
+- Installed apps receive OAuth access to board content and can read or export data on a user's behalf
+- Unvetted or abandoned apps expand the attack surface and may hold excessive permissions
+- Requiring admin approval prevents users from granting third parties access without review
+- Removing unused apps eliminates standing integration access that could be abused if the vendor is compromised
+
+**Attack Prevented:** Malicious or over-permissioned OAuth apps, supply-chain compromise, unauthorized data access, shadow-IT integrations
 
 #### ClickOps Implementation
 
@@ -151,6 +207,18 @@ Control board sharing to prevent data exposure.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
+
+#### Description
+Audit and revoke personal access tokens, review authorized OAuth apps, limit token scopes, and rotate credentials periodically to control programmatic access to Miro.
+
+#### Rationale
+**Why This Matters:**
+- Access tokens are long-lived credentials that bypass interactive login and MFA if they leak
+- Over-scoped tokens grant far more API access than the integration needs, widening the impact of a leak
+- Unused or unrotated tokens accumulate as forgotten standing access that attackers can reuse
+- Periodic rotation and revocation limit how long a stolen token remains valid
+
+**Attack Prevented:** Token theft and replay, over-privileged API access, credential leakage via code or logs, persistent unauthorized access
 
 #### Implementation
 
@@ -172,6 +240,18 @@ Control board sharing to prevent data exposure.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
+
+#### Description
+Enable Miro Enterprise audit logs, review activity events, and forward them to a SIEM so security-relevant actions across boards and the team space are recorded and monitored.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs provide the evidence trail needed to detect misuse, investigate incidents, and meet compliance requirements
+- Without centralized logging, account compromise, mass sharing, or bulk exports go unnoticed
+- SIEM forwarding enables alerting on anomalous activity in near real time instead of after the fact
+- Retained logs support forensic reconstruction of what an attacker accessed or changed
+
+**Attack Prevented:** Undetected account compromise, insider misuse, delayed breach detection, gaps in forensic evidence
 
 #### ClickOps Implementation
 
@@ -220,4 +300,5 @@ Control board sharing to prevent data exposure.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Miro hardening guide | Claude Code (Opus 4.5) |

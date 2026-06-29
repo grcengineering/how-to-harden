@@ -6,9 +6,9 @@ slug: "databricks"
 tier: "2"
 category: "Data"
 description: "Data platform security for workspace access, Unity Catalog, and secrets management"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
-last_updated: "2026-02-19"
+last_updated: "2026-06-29"
 ---
 
 
@@ -52,6 +52,15 @@ This guide covers Databricks security configurations including authentication, U
 
 #### Description
 Require SAML SSO with MFA for all Databricks access.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes Databricks authentication in your corporate IdP, enforcing MFA and conditional access on every login
+- Local password logins bypass IdP controls and are a prime target for credential stuffing and phishing
+- SCIM provisioning deprovisions departed users automatically, eliminating orphaned accounts with standing data access
+- Workspaces hold raw enterprise data, ML models, and training datasets — a single compromised login can expose all of it
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, orphaned-account access
 
 #### ClickOps Implementation
 
@@ -125,6 +134,15 @@ Secure service principals used for automation and integrations.
 #### Description
 Restrict Databricks access to known IP ranges.
 
+#### Rationale
+**Why This Matters:**
+- Restricting access to known corporate, VPN, and integration IP ranges blocks logins from unexpected networks even when credentials are valid
+- Public workspace endpoints are continuously scanned and brute-forced by automated attackers
+- IP allowlists add a network-layer control that complements identity-layer SSO/MFA (defense in depth)
+- Stolen tokens or API keys are far less useful to an attacker operating outside the allowed network
+
+**Attack Prevented:** Credential reuse from untrusted networks, token replay, automated endpoint scanning
+
 #### ClickOps Implementation
 
 **Step 1: Configure IP Access Lists**
@@ -148,6 +166,15 @@ Restrict Databricks access to known IP ranges.
 
 #### Description
 Configure Unity Catalog for centralized data governance.
+
+#### Rationale
+**Why This Matters:**
+- Unity Catalog provides a single, centralized permission model across all workspaces, replacing inconsistent per-workspace ACLs
+- Without centralized governance, access grants sprawl and over-permissioning goes undetected
+- Catalog-, schema-, and table-level grants enforce least privilege and make access reviews tractable
+- Row- and column-level controls limit the blast radius if an account or query is compromised
+
+**Attack Prevented:** Over-permissioned access, privilege sprawl, unauthorized data exposure, lateral movement across data domains
 
 #### ClickOps Implementation
 
@@ -175,6 +202,15 @@ Create row filter functions to restrict data visibility by group membership and 
 #### Description
 Implement dynamic data masking for sensitive columns. Create masking functions that return the full value for privileged roles and masked values for all others, then apply them to sensitive columns.
 
+#### Rationale
+**Why This Matters:**
+- Dynamic masking returns real values only to privileged roles, so analysts and BI tools can work without exposing PII/PHI
+- Sensitive columns (SSNs, card numbers, health data) are a primary exfiltration target and a regulatory liability
+- Masking enforced in Unity Catalog applies consistently across every query path, not just curated dashboards
+- Reduces the impact of a compromised low-privilege account or an overly broad query
+
+**Attack Prevented:** PII/PHI exposure, data exfiltration via ad-hoc queries, insider snooping
+
 {% include pack-code.html vendor="databricks" section="2.2" %}
 
 ---
@@ -186,6 +222,15 @@ Implement dynamic data masking for sensitive columns. Create masking functions t
 
 #### Description
 Enable comprehensive audit logging for data access.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs of data access are required to detect bulk exports, unusual query patterns, and credential misuse
+- Without logging, a breach is invisible and forensic reconstruction after an incident is impossible
+- System tables provide a queryable trail for compliance evidence (SOC 2, HIPAA, PCI DSS)
+- Retained logs support anomaly detection and alerting on service-principal and human access alike
+
+**Attack Prevented:** Undetected data exfiltration, insider abuse, post-incident evidence gaps
 
 #### ClickOps Implementation
 
@@ -212,6 +257,15 @@ Query the `system.access.audit` table to review data access events. See the DB Q
 #### Description
 Implement cluster policies to enforce security configurations.
 
+#### Rationale
+**Why This Matters:**
+- Cluster policies constrain Spark versions, node types, and init scripts so users cannot spin up insecure or unapproved compute
+- Unrestricted init scripts are an arbitrary-code-execution path into the data plane
+- Enforced auto-termination limits the window an idle, credential-bearing cluster stays exposed
+- Policies make secure configuration the default, removing reliance on individual user discipline
+
+**Attack Prevented:** Malicious init-script execution, unapproved or insecure compute, runaway-cluster credential exposure
+
 #### ClickOps Implementation
 
 **Step 1: Create Secure Cluster Policy**
@@ -235,6 +289,15 @@ Implement cluster policies to enforce security configurations.
 #### Description
 Deploy Databricks with network isolation.
 
+#### Rationale
+**Why This Matters:**
+- Customer-managed VPC/VNet deployment keeps the data plane off the public internet, shrinking the external attack surface
+- Private endpoints ensure traffic to storage and the control plane never traverses public networks
+- Disabling public cluster IPs prevents direct inbound access to compute nodes
+- Network isolation contains lateral movement if a single workload is compromised
+
+**Attack Prevented:** Public-internet exposure of compute, data-plane interception, lateral movement
+
 #### Implementation
 
 **VPC/VNet Deployment:**
@@ -257,6 +320,15 @@ The account-level Terraform example for private workspace deployment with VPC is
 
 #### Description
 Store credentials in Databricks secret scopes rather than notebooks.
+
+#### Rationale
+**Why This Matters:**
+- Hardcoding credentials in notebooks leaks them into source control, notebook revision history, and shared exports
+- Secret scopes centralize credentials with ACLs and automatically redact values in cell output and logs
+- Scope ACLs enforce least privilege so only the groups that need a credential can read it
+- Centralized secrets enable rotation without editing every notebook that uses them
+
+**Attack Prevented:** Credential leakage via notebooks and logs, secret sprawl, unauthorized credential access
 
 #### ClickOps Implementation
 
@@ -286,6 +358,15 @@ Access secrets via `dbutils.secrets.get()` in notebooks. Secret values are autom
 #### Description
 Integrate with external secrets managers.
 
+#### Rationale
+**Why This Matters:**
+- Key Vault-backed scopes fetch secrets at runtime, so credentials are never stored inside Databricks
+- Centralizing secrets in an enterprise vault gives one place for rotation, expiry, and access auditing
+- External KMS/HSM-backed stores meet stricter compliance and key-custody requirements
+- Revoking a secret in the vault instantly cuts access across every workspace that references it
+
+**Attack Prevented:** Standing credential storage, fragmented secret management, delayed revocation
+
 #### Azure Key Vault Integration
 
 Create an Azure Key Vault-backed secret scope so secrets are fetched directly from Key Vault at runtime rather than stored in Databricks. This provides centralized secret lifecycle management and audit logging through Azure.
@@ -300,6 +381,18 @@ Create an Azure Key Vault-backed secret scope so secrets are fetched directly fr
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-4
+
+#### Description
+Continuously monitor Databricks for security-relevant events — bulk data access, unusual exports, and service-principal anomalies — and alert on suspicious activity.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs only provide value when actively monitored and alerted on; passive retention does not stop an in-progress breach
+- Bulk-access and large-export patterns are the clearest signal of data exfiltration
+- Service principals run unattended, so anomalous machine activity must be baselined and watched
+- Early detection shrinks attacker dwell time and limits the volume of data lost
+
+**Attack Prevented:** Undetected exfiltration, service-principal abuse, slow data theft
 
 #### Detection Queries
 
@@ -360,6 +453,7 @@ Detection queries for bulk data access, unusual exports, and service principal a
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.2.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Databricks hardening guide | Claude Code (Opus 4.5) |
 | 2026-02-19 | 0.2.0 | draft | Migrate all remaining inline code to Code Packs (sections 2.1, 2.2, 2.3, 3.1, 3.2, 4.1, 5.1); zero inline code blocks remain | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.1.1 | draft | Migrate inline CLI code in sections 4.1, 4.2 to Code Pack files | Claude Code (Opus 4.6) |

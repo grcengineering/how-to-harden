@@ -6,9 +6,9 @@ slug: "shopify"
 tier: "2"
 category: "Productivity"
 description: "E-commerce platform hardening for Shopify Plus including SAML SSO, staff permissions, and store security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Shopify Plus security including SAML SSO, organization managem
 #### Description
 Configure SAML SSO for Shopify Plus organization users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Shopify Plus authentication in your corporate IdP, enforcing MFA and conditional access on every staff login
+- Local Shopify password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- Centralized deprovisioning through the IdP removes a departing employee's access instantly, eliminating orphaned accounts with standing reach into orders and customer data
+- Shopify admin holds customer PII, order history, and payout settings, so a single compromised staff login can expose all of it
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - Shopify Plus plan
 - Organization owner access
@@ -95,6 +104,15 @@ Configure SAML SSO for Shopify Plus organization users.
 #### Description
 Require 2FA for all Shopify staff accounts.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor blocks login even when a staff password is stolen, leaked, or reused across sites
+- E-commerce admin accounts are high-value targets for takeover that redirects payouts, alters store content, or exfiltrates customer data
+- Phishing-resistant factors such as security keys and authenticator apps defeat the credential-replay attacks aimed at retail platforms
+- Requiring 2FA organization-wide closes the gap left by individual staff who would otherwise opt out
+
+**Attack Prevented:** Credential stuffing, password reuse, phishing, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA Requirement**
@@ -120,6 +138,15 @@ Require 2FA for all Shopify staff accounts.
 #### Description
 Control allowed login methods.
 
+#### Rationale
+**Why This Matters:**
+- Restricting login to SSO-only removes weaker fallback paths that attackers exploit to bypass your IdP
+- Disabling unused authentication options shrinks the attack surface and reduces the number of credential sets to defend
+- Forcing all access through a single monitored channel ensures every login is subject to MFA and conditional-access policy
+- Legacy or social login providers may not enforce your organization's MFA and session controls
+
+**Attack Prevented:** Authentication bypass, MFA downgrade, weak-login-path access
+
 #### ClickOps Implementation
 
 **Step 1: Review Login Options**
@@ -142,6 +169,15 @@ Control allowed login methods.
 
 #### Description
 Implement least privilege for staff accounts.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege permission groups ensure a compromised staff account can only reach the data and actions its role strictly needs
+- Separating duties across orders, products, customers, and reports limits the blast radius of any single account takeover or insider misuse
+- Over-broad permissions let routine staff export customer PII or change payout settings far beyond their job function
+- Regular access reviews catch privilege creep and remove leftover access after role changes
+
+**Attack Prevented:** Privilege escalation, insider data theft, lateral movement, excessive data exposure
 
 #### ClickOps Implementation
 
@@ -174,6 +210,15 @@ Implement least privilege for staff accounts.
 #### Description
 Control access to individual stores.
 
+#### Rationale
+**Why This Matters:**
+- Scoping staff to only the stores they operate prevents one compromised account from reaching every store in the organization
+- Separating production from development stores keeps test access from exposing live customer and order data
+- Auditing cross-store access surfaces accounts that have quietly accumulated reach beyond their responsibilities
+- In multi-store organizations, unpartitioned access multiplies the blast radius of any single breach
+
+**Attack Prevented:** Lateral movement across stores, unauthorized data access, blast-radius expansion
+
 #### ClickOps Implementation
 
 **Step 1: Configure Store Permissions**
@@ -194,6 +239,15 @@ Control access to individual stores.
 
 #### Description
 Minimize and protect organization owner accounts.
+
+#### Rationale
+**Why This Matters:**
+- Organization owners hold the highest privileges, so fewer owners means fewer high-value accounts an attacker can target
+- Owners can change billing, add or remove staff, and alter security settings, meaning one compromised owner controls the entire organization
+- Requiring 2FA and monitoring owner activity makes takeover of these accounts substantially harder and faster to detect
+- Documenting and pruning owner access prevents standing super-admin privileges from outliving their need
+
+**Attack Prevented:** Privilege escalation, full-organization takeover, unauthorized security-setting changes
 
 #### ClickOps Implementation
 
@@ -223,6 +277,15 @@ Minimize and protect organization owner accounts.
 #### Description
 Secure API apps and access tokens.
 
+#### Rationale
+**Why This Matters:**
+- API apps and access tokens are non-interactive credentials that often bypass MFA, making over-scoped tokens a direct path to bulk data exfiltration
+- Removing unnecessary apps shrinks the third-party supply-chain surface, since a breached vendor app can read orders and customer PII
+- Minimum-scope tokens limit what a leaked credential can do, and regular rotation shortens the window a stolen token stays valid
+- Shopify's history includes third-party app vendors exposing thousands of stores' data through over-privileged integrations
+
+**Attack Prevented:** Token theft, over-scoped API abuse, third-party app compromise, bulk data exfiltration
+
 #### ClickOps Implementation
 
 **Step 1: Review Apps**
@@ -248,6 +311,15 @@ Secure API apps and access tokens.
 
 #### Description
 Configure secure checkout settings.
+
+#### Rationale
+**Why This Matters:**
+- HTTPS on checkout protects payment and personal data in transit from interception and man-in-the-middle attacks
+- Fraud analysis flags high-risk orders before fulfillment, reducing chargebacks and abuse from stolen payment cards
+- reCAPTCHA blocks automated bots from carding attacks, credential stuffing, and fake-account creation at checkout
+- The checkout flow is where customer payment data is most exposed, making it a primary target for skimming and fraud
+
+**Attack Prevented:** Man-in-the-middle interception, payment fraud, carding, bot abuse
 
 #### ClickOps Implementation
 
@@ -307,6 +379,7 @@ Configure secure checkout settings.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and permissions | Claude Code (Opus 4.5) |
 
 ---

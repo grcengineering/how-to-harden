@@ -6,9 +6,9 @@ slug: "duo"
 tier: "2"
 category: "Identity"
 description: "Multi-factor authentication hardening for Cisco Duo, admin policies, and bypass protection"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -143,6 +143,15 @@ Protect Duo integration keys, secret keys, and API credentials as highly sensiti
 #### Description
 Configure the Global Policy as the baseline security policy for all Duo-protected applications.
 
+#### Rationale
+**Why This Matters:**
+- The Global Policy is the default baseline inherited by every Duo-protected application, so one weak setting silently exposes all of them
+- Setting the authentication policy to "Enforce MFA" guarantees no application falls back to single-factor access
+- A "Deny access" new user policy prevents un-enrolled accounts from logging in without ever completing second-factor setup
+- Leaving the global default permissive means newly added applications inherit insecure behavior unless an admin remembers to override it
+
+**Attack Prevented:** Single-factor access, MFA enrollment bypass, policy misconfiguration drift
+
 #### ClickOps Implementation
 
 **Step 1: Access Global Policy**
@@ -268,6 +277,15 @@ Configure policies to require phishing-resistant authentication methods like Web
 #### Description
 Configure authorized network policies to adjust MFA requirements based on network location while maintaining security.
 
+#### Rationale
+**Why This Matters:**
+- Network-based policies let you tighten authentication for untrusted locations without weakening protection for trusted ones
+- Allowing 2FA-free access from "authorized" IP ranges turns a stolen VPN session or spoofed source address into a full MFA bypass
+- IP allowlists are easily defeated by an attacker operating inside the corporate network or routing through a compromised VPN
+- Requiring MFA even on trusted networks preserves defense in depth against lateral movement and insider misuse
+
+**Attack Prevented:** IP allowlist bypass, VPN session abuse, lateral movement, insider misuse
+
 #### ClickOps Implementation
 
 **Step 1: Define Authorized Networks**
@@ -344,6 +362,15 @@ Identify and manage inactive Duo accounts to prevent account takeover and unauth
 #### Description
 Configure secure user enrollment processes that verify identity before granting MFA access.
 
+#### Rationale
+**Why This Matters:**
+- Enrollment binds an authentication device to a user identity, so a weak process lets an attacker register their own device against a victim's account
+- Unexpired or widely distributed enrollment links can be intercepted and used to enroll an attacker-controlled authenticator
+- Verifying identity before enrollment stops social-engineering of the help desk into provisioning MFA for an impostor
+- Privileged accounts warrant stronger (in-person or HR-validated) enrollment because their compromise has the highest impact
+
+**Attack Prevented:** Attacker device enrollment, enrollment link interception, help-desk social engineering, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Configure Enrollment Methods**
@@ -381,6 +408,15 @@ Configure secure user enrollment processes that verify identity before granting 
 
 #### Description
 Configure Duo's Trusted Endpoints feature to verify device compliance before granting access.
+
+#### Rationale
+**Why This Matters:**
+- Trusted Endpoints ensures access comes only from managed, compliant devices — not personal or attacker-controlled machines
+- Valid credentials plus a working second factor still let an unmanaged or compromised endpoint reach sensitive applications without device checks
+- Blocking untrusted devices stops credential replay and stolen-session reuse from machines outside corporate control
+- Device posture is a control that phishing and MFA-fatigue attacks cannot satisfy from an unmanaged device
+
+**Attack Prevented:** Unmanaged-device access, credential replay, session-token theft, BYOD compromise
 
 #### Prerequisites
 - Duo Beyond or Duo Advantage plan
@@ -447,6 +483,15 @@ Monitor device registrations to detect suspicious activity that could indicate a
 #### Description
 Create application-specific policies with appropriate security controls based on application sensitivity.
 
+#### Rationale
+**Why This Matters:**
+- A single global policy forces low- and high-sensitivity applications to share one authentication strength, either over-restricting users or under-protecting crown-jewel systems
+- Application-tiered policies let critical systems (admin portals, financial apps) require WebAuthn-only while standard apps accept broader methods
+- Scoping the strongest controls to the highest-risk applications concentrates protection where a breach would be most damaging
+- Per-application policy reduces the blast radius when one application or one authentication method is compromised
+
+**Attack Prevented:** Privilege escalation to sensitive apps, weak-method abuse on critical systems, over-broad access
+
 #### ClickOps Implementation
 
 **Step 1: Assess Applications**
@@ -492,6 +537,15 @@ Create application-specific policies with appropriate security controls based on
 #### Description
 Configure Duo for Windows Logon and RDP with appropriate security settings.
 
+#### Rationale
+**Why This Matters:**
+- Windows Logon and RDP are primary targets for ransomware operators and lateral movement after an initial compromise
+- A "Deny access" new user policy ensures un-enrolled accounts cannot log in to endpoints without completing MFA first
+- Tightly bounded offline access (short expiration, limited login count) prevents indefinite single-factor logins when Duo is unreachable
+- A careless "fail open" mode lets attackers force an MFA bypass simply by disrupting Duo connectivity, so the fail mode must be chosen deliberately
+
+**Attack Prevented:** RDP brute force, ransomware lateral movement, offline-access abuse, fail-open MFA bypass
+
 #### ClickOps Implementation
 
 **Step 1: Configure New User Policy**
@@ -527,6 +581,15 @@ Configure Duo for Windows Logon and RDP with appropriate security settings.
 
 #### Description
 Configure Duo logging and integrate with SIEM for security monitoring and incident investigation.
+
+#### Rationale
+**Why This Matters:**
+- Authentication logs are the primary evidence for detecting MFA fatigue, brute force, and bypass abuse while an attack is in progress
+- Without SIEM integration, Duo events stay siloed and cannot be correlated with other security signals during an investigation
+- Centralized, retained logs are required to reconstruct an incident timeline and meet audit and compliance obligations
+- Real-time alerting on failed authentications and bypass usage shortens attacker dwell time
+
+**Attack Prevented:** Undetected MFA fatigue, brute-force attempts, bypass abuse, delayed incident response
 
 #### ClickOps Implementation
 
@@ -664,6 +727,7 @@ Configure Duo's session protection features to defend against session hijacking 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, policies, and monitoring | Claude Code (Opus 4.5) |
 
 ---

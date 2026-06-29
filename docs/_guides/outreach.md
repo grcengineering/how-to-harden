@@ -6,9 +6,9 @@ slug: "outreach"
 tier: "2"
 category: "Productivity"
 description: "Sales engagement platform hardening for Outreach including SAML SSO, user permissions, and data security"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Outreach security including SAML SSO, user permissions, data a
 #### Description
 Configure SAML SSO for Outreach access.
 
+#### Rationale
+**Why This Matters:**
+- Routes every Outreach login through your corporate IdP, so centralized password policy, MFA, and conditional access apply on each authentication
+- Standalone Outreach passwords sit outside IdP visibility and are prime targets for credential stuffing and phishing against sales teams
+- Centralized provisioning and deprovisioning means a terminated rep loses Outreach access the moment their IdP account is disabled, preventing orphaned accounts
+- Outreach holds prospect contact data, email sequences, and CRM-synced pipeline intelligence, so a single hijacked login can expose the entire book of business
+
+**Attack Prevented:** Credential stuffing, phishing, orphaned-account access, account takeover
+
 #### Prerequisites
 - Outreach admin access
 - SAML 2.0 compatible IdP
@@ -90,6 +99,15 @@ Configure SAML SSO for Outreach access.
 #### Description
 Require MFA for all Outreach users.
 
+#### Rationale
+**Why This Matters:**
+- A second authentication factor blocks attackers who have already obtained a valid username and password
+- Sales reps are heavily targeted by phishing because their accounts reach customers, partners, and revenue data
+- MFA enforced at the IdP applies uniformly to every Outreach user without relying on individual opt-in
+- Without MFA, one reused or leaked password grants full access to customer communications and outbound email automation
+
+**Attack Prevented:** Phishing, credential stuffing, password reuse, automated brute force
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -111,6 +129,15 @@ Require MFA for all Outreach users.
 
 #### Description
 Implement least privilege using profiles.
+
+#### Rationale
+**Why This Matters:**
+- Profile-based permissions limit each user to only the data and actions their role requires, shrinking the blast radius of any one compromised account
+- Default or over-broad profiles let ordinary reps export prospect lists, alter sequences, or view other teams' pipelines
+- Least-privilege assignments make insider misuse and accidental data exposure easier to detect and contain
+- Regular access reviews catch permission creep before it accumulates into standing risk
+
+**Attack Prevented:** Privilege escalation, insider data exfiltration, lateral movement, excessive data exposure
 
 #### ClickOps Implementation
 
@@ -138,6 +165,15 @@ Implement least privilege using profiles.
 #### Description
 Configure governance and compliance controls.
 
+#### Rationale
+**Why This Matters:**
+- Governance and communication policies constrain how reps can contact prospects, reducing regulatory and reputational exposure
+- Centralized compliance settings enforce consistent rules across the whole org instead of leaving them to individual discretion
+- Documented communication policies create an auditable record that supports SOC 2, GDPR, and similar attestations
+- Without governance controls, outbound automation can violate consent and anti-spam requirements at scale
+
+**Attack Prevented:** Compliance violations, unauthorized outreach, regulatory exposure, policy drift
+
 #### ClickOps Implementation
 
 **Step 1: Configure Governance**
@@ -158,6 +194,15 @@ Configure governance and compliance controls.
 
 #### Description
 Minimize and protect admin accounts.
+
+#### Rationale
+**Why This Matters:**
+- Admin accounts can change security settings, manage all users, and access every record, making each one a high-value target
+- Reducing the number of admins shrinks both the attack surface and the chance of accidental misconfiguration
+- Requiring MFA on admins and monitoring their activity surfaces compromise and abuse quickly
+- A single hijacked admin account can disable SSO, exfiltrate the entire prospect database, or weaponize email automation
+
+**Attack Prevented:** Admin account takeover, privilege abuse, configuration tampering, mass data exfiltration
 
 #### ClickOps Implementation
 
@@ -185,6 +230,15 @@ Minimize and protect admin accounts.
 
 #### Description
 Secure third-party integrations.
+
+#### Rationale
+**Why This Matters:**
+- Connected apps and OAuth integrations often hold broad, long-lived access to Outreach data and can become a back door if compromised
+- Removing unused integrations eliminates dormant tokens that attackers can abuse without touching user passwords or MFA
+- Granting each integration the minimum scope limits what a breached third party can read or change
+- Sales data flowing to external tools expands the supply-chain attack surface that bypasses your primary authentication controls
+
+**Attack Prevented:** Supply-chain compromise, OAuth token abuse, third-party data leakage, over-privileged integrations
 
 #### ClickOps Implementation
 
@@ -241,6 +295,7 @@ Secure third-party integrations.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
 
 ---

@@ -6,9 +6,9 @@ slug: "marketo"
 tier: "3"
 category: "Marketing"
 description: "Marketing automation security for API users, LaunchPoint services, and lead database"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -80,6 +80,18 @@ Require SAML SSO with MFA for Marketo access.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
+#### Description
+Define least-privilege roles in Marketo and assign each user only the Design Studio, Marketing Activities, Admin, and API permissions their job actually requires.
+
+#### Rationale
+**Why This Matters:**
+- Marketo admins control the entire lead database, email sending, and API integrations, so over-provisioned accounts dramatically expand the blast radius of any single compromise
+- Least-privilege roles keep designers, analysts, and standard users from exporting prospect lists or altering campaigns outside their remit
+- Restricting Admin to a small handful of users limits who can create LaunchPoint services, mint API credentials, or change SSO settings
+- Separating API access into its own permission prevents interactive accounts from being repurposed for bulk data extraction
+
+**Attack Prevented:** Privilege escalation, insider data exfiltration, unauthorized campaign manipulation, lateral movement
+
 #### ClickOps Implementation
 
 **Step 1: Define Roles**
@@ -110,6 +122,15 @@ Require SAML SSO with MFA for Marketo access.
 #### Description
 Segment access using workspaces and partitions.
 
+#### Rationale
+**Why This Matters:**
+- Workspaces and lead partitions enforce data segregation so a user in one business unit or region cannot view or export another's prospect records
+- Partitioning contains the damage from a compromised account to a single segment rather than exposing the entire lead database
+- Regional partitions help meet data-residency and privacy obligations by isolating regulated leads from other teams
+- Mapping partitions to workspaces prevents accidental cross-pollination of leads between brands or business units
+
+**Attack Prevented:** Cross-segment data exposure, unauthorized lead access, data-residency violations, lateral movement between business units
+
 #### ClickOps Implementation
 
 **Step 1: Create Workspaces**
@@ -137,6 +158,14 @@ Harden REST API integrations.
 #### Rationale
 **Attack Scenario:** Compromised API credentials enable lead database export; bulk extraction of prospect PII with behavioral data enables targeted phishing campaigns.
 
+**Why This Matters:**
+- Marketo REST APIs can read and export the entire lead database, making credential hygiene on Client ID and Secret pairs critical
+- Dedicated API-only users provisioned through LaunchPoint keep automation credentials separate from interactive logins and easy to revoke
+- Assigning each integration the minimum required role limits what a leaked token can reach to a single workspace or function
+- Storing Client ID and Secret in a secrets manager rather than code or config prevents accidental exposure in repositories and logs
+
+**Attack Prevented:** Credential theft, bulk PII exfiltration, API token abuse, phishing-list harvesting
+
 #### ClickOps Implementation
 
 **Step 1: Create API-Only Users**
@@ -160,6 +189,18 @@ Harden REST API integrations.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-8
 
+#### Description
+Secure Marketo webhook calls to external endpoints by enforcing HTTPS, validating signatures, allowlisting destination IPs, and minimizing the data each webhook transmits.
+
+#### Rationale
+**Why This Matters:**
+- Webhooks push lead data from Marketo to external systems in real time, so an unencrypted or spoofable endpoint leaks prospect information in transit
+- HTTPS and signature validation ensure payloads cannot be intercepted or forged by a man-in-the-middle
+- IP allowlisting restricts which destinations Marketo will call, preventing redirection of sensitive data to attacker-controlled hosts
+- Sending only the minimum fields, and using tokens for sensitive retrieval, limits exposure if a downstream endpoint is compromised
+
+**Attack Prevented:** Man-in-the-middle interception, payload spoofing, data exfiltration to rogue endpoints, PII oversharing
+
 #### Implementation
 
 **Step 1: Secure Webhook Endpoints**
@@ -181,6 +222,18 @@ Harden REST API integrations.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
+#### Description
+Protect the Marketo lead database with field-level security and smart-list controls that restrict which sensitive fields appear on forms and who can bulk-export lead records.
+
+#### Rationale
+**Why This Matters:**
+- The lead database is Marketo's crown jewel: prospect PII and behavioral data are exactly what attackers and malicious insiders want to bulk-export
+- Field-level security keeps sensitive fields off public forms and out of reach of unauthorized editors, reducing accidental exposure
+- Restricting smart-list export and access by role prevents any single user from downloading the entire prospect database
+- Auditing list downloads creates a detection trail for abnormal bulk-extraction activity
+
+**Attack Prevented:** Bulk lead exfiltration, insider data theft, unauthorized field disclosure, scraping of prospect PII
+
 #### ClickOps Implementation
 
 **Step 1: Configure Field-Level Security**
@@ -199,6 +252,18 @@ Harden REST API integrations.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SI-3
+
+#### Description
+Configure SPF, DKIM, and DMARC for Marketo sending domains and govern email templates with editing restrictions and approval workflows.
+
+#### Rationale
+**Why This Matters:**
+- SPF, DKIM, and DMARC authenticate Marketo as a legitimate sender, stopping attackers from spoofing your domain to launch phishing from a trusted source
+- Marketo can send to your entire prospect and customer base, so a hijacked or unapproved template can distribute malicious content at scale
+- Requiring approval and locking production templates prevents unauthorized or weaponized email from reaching recipients
+- Proper email authentication protects deliverability and brand reputation while reducing the platform's value to phishers
+
+**Attack Prevented:** Domain spoofing, phishing distribution, brand impersonation, malicious template injection
 
 #### ClickOps Implementation
 
@@ -223,6 +288,18 @@ Harden REST API integrations.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
 
+#### Description
+Enable the Marketo Audit Trail and configure alerts to capture login history, asset and admin changes, failed logins, and API usage.
+
+#### Rationale
+**Why This Matters:**
+- Without an audit trail, account compromise, data export, and configuration tampering go undetected and cannot be reconstructed during incident response
+- Logging login history and failed logins surfaces credential-stuffing and brute-force attempts against the platform
+- Tracking admin activities and asset changes reveals unauthorized role grants, LaunchPoint service creation, or campaign tampering
+- Alerting on abnormal API usage provides early warning of bulk lead extraction through stolen credentials
+
+**Attack Prevented:** Undetected account compromise, credential stuffing, unauthorized configuration changes, silent data exfiltration
+
 #### ClickOps Implementation
 
 **Step 1: Enable Audit Trail**
@@ -244,6 +321,18 @@ Harden REST API integrations.
 ### 4.2 Integration Monitoring
 
 **Profile Level:** L2 (Walk)
+
+#### Description
+Monitor Marketo LaunchPoint integrations and API activity for anomalous behavior that signals a compromised service or credential.
+
+#### Rationale
+**Why This Matters:**
+- LaunchPoint services and API integrations hold standing access to the lead database, making them high-value targets that warrant continuous monitoring
+- Watching for unusual API call volumes or off-hours activity helps detect a compromised integration before large-scale data is exported
+- Maintaining an inventory of active integrations catches rogue or forgotten LaunchPoint services that quietly expand the attack surface
+- Correlating integration behavior against established baselines surfaces credential abuse that single-event logging would miss
+
+**Attack Prevented:** Compromised integration abuse, stealthy API data exfiltration, rogue service persistence, credential misuse
 
 #### Detection Queries
 
@@ -283,4 +372,5 @@ Harden REST API integrations.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Adobe Marketo hardening guide | Claude Code (Opus 4.5) |

@@ -6,9 +6,9 @@ slug: "rapid7"
 tier: "2"
 category: "Security"
 description: "Vulnerability management platform hardening for Rapid7 InsightVM and Command Platform including SSO, console security, and user management"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -109,6 +109,15 @@ Configure SAML SSO for centralized authentication to the Rapid7 Command Platform
 #### Description
 Configure SAML SSO directly on InsightVM Security Console for local authentication.
 
+#### Rationale
+**Why This Matters:**
+- Routing console logins through your corporate IdP enforces MFA, conditional access, and centralized session policy on a host that aggregates enterprise-wide vulnerability data
+- Local console accounts bypass IdP controls and become standing targets for credential stuffing and brute force, especially on an internet-reachable console
+- SAML-based authorization ties console access to IdP group membership, so deprovisioning a user in the IdP immediately removes their access to scan results and exploitable-asset inventories
+- Disabling local authentication after the grace period eliminates the parallel password login path that attackers prefer
+
+**Attack Prevented:** Credential stuffing, password brute force, MFA bypass via local accounts, orphaned-account access
+
 #### ClickOps Implementation
 
 **Step 1: Access SAML Configuration**
@@ -146,6 +155,15 @@ Configure SAML SSO directly on InsightVM Security Console for local authenticati
 #### Description
 Require MFA for all Rapid7 platform users.
 
+#### Rationale
+**Why This Matters:**
+- MFA stops an attacker who has already stolen a valid password from logging in, the single most effective control against account takeover
+- Rapid7 accounts expose the organization's full vulnerability posture and exploitable-asset map, exactly the reconnaissance data an attacker wants
+- Phishing-resistant MFA for administrators blocks real-time proxy phishing and push-fatigue attacks that defeat weaker second factors
+- Enforcing MFA at both the IdP and the console layer closes any local login path that would otherwise skip the second factor
+
+**Attack Prevented:** Credential theft, phishing, password reuse, account takeover, push-bombing
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP (Recommended)**
@@ -178,6 +196,15 @@ Require MFA for all Rapid7 platform users.
 
 #### Description
 Secure network access to the InsightVM Security Console.
+
+#### Rationale
+**Why This Matters:**
+- The Security Console aggregates every discovered vulnerability across the estate, so limiting who can reach it on the network shrinks a high-value attack surface
+- A valid TLS certificate prevents man-in-the-middle interception and the certificate-warning fatigue that trains users to ignore trust errors
+- Restricting ports 3780 and 40814 to management networks blocks internet-based attackers from reaching the console and scan-engine channels
+- Session timeouts and lockouts limit the window for hijacked sessions and slow online password guessing
+
+**Attack Prevented:** Network reconnaissance, man-in-the-middle, session hijacking, brute force, unauthorized internet exposure
 
 #### ClickOps Implementation
 
@@ -212,6 +239,15 @@ Secure network access to the InsightVM Security Console.
 #### Description
 Apply hardening configurations to the Security Console server.
 
+#### Rationale
+**Why This Matters:**
+- Timely updates close known vulnerabilities in the console software before they can be exploited against a security-critical system
+- Enforcing TLS 1.2 or higher and disabling weak ciphers prevents downgrade attacks and decryption of administrative traffic
+- Removing unnecessary OS services and patching the host reduces the lateral-movement and privilege-escalation paths available after any initial foothold
+- A hardened console protects the integrity of the vulnerability data that downstream remediation and compliance decisions depend on
+
+**Attack Prevented:** Exploitation of unpatched software, TLS downgrade, weak-cipher decryption, host-level lateral movement
+
 #### ClickOps Implementation
 
 **Step 1: Update Console Regularly**
@@ -242,6 +278,15 @@ Apply hardening configurations to the Security Console server.
 
 #### Description
 Secure scan engine configurations and communications.
+
+#### Rationale
+**Why This Matters:**
+- Scan engines hold privileged credentials and reach deep into network segments, so compromising one can give an attacker broad access to scan targets
+- Encrypted console-to-engine communication prevents interception of scan results and credentials in transit
+- Unique, rotatable pairing keys ensure a leaked key cannot be reused to register a rogue engine or impersonate a trusted one
+- Removing inactive engines and placing engines in the correct segments limits the standing footprint an attacker could hijack
+
+**Attack Prevented:** Rogue engine registration, credential interception, man-in-the-middle on scan traffic, lateral movement via compromised engines
 
 #### ClickOps Implementation
 
@@ -275,6 +320,15 @@ Secure scan engine configurations and communications.
 
 #### Description
 Configure granular roles for least privilege access.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure a compromised or insider account can only touch the sites, scans, and reports it genuinely needs, limiting blast radius
+- Granular custom roles prevent over-provisioning, where every analyst inherits configuration or administrative rights they will never use
+- Restricting Global Administrator to a handful of users reduces the number of accounts that, if taken over, could reconfigure scanning or exfiltrate the full vulnerability inventory
+- Documented assignments make access reviews and audits enforceable rather than guesswork
+
+**Attack Prevented:** Privilege escalation, insider abuse, lateral movement, excessive standing access
 
 #### ClickOps Implementation
 
@@ -351,6 +405,15 @@ Protect and limit administrator account access.
 #### Description
 Enable and monitor audit logs for security events.
 
+#### Rationale
+**Why This Matters:**
+- Audit logs are the primary evidence trail for detecting account compromise, unauthorized configuration changes, and abnormal scan activity on the platform
+- Forwarding logs to a SIEM enables correlation and alerting that surfaces attacks the console alone would never flag
+- A minimum 90-day retention preserves the forensic window needed to reconstruct an incident, since attackers often dwell for weeks before discovery
+- Logging provisioning, role changes, and admin logins catches privilege abuse and stealthy backdoor accounts early
+
+**Attack Prevented:** Undetected account compromise, log tampering, privilege abuse, delayed breach detection
+
 #### ClickOps Implementation
 
 **Step 1: Access Audit Logs**
@@ -388,6 +451,15 @@ Enable and monitor audit logs for security events.
 #### Description
 Secure vulnerability scanning configurations.
 
+#### Rationale
+**Why This Matters:**
+- Scan credentials are high-value secrets that, if stolen, grant authenticated access to every asset they were meant to scan
+- Using least-privilege scan accounts instead of domain admin ensures a compromised credential cannot be used to take over the entire domain
+- Vaulting and rotating credentials via CyberArk or HashiCorp Vault removes long-lived static secrets and limits the value of any single leak
+- Auditing and restricting who can view or edit credentials prevents insiders from harvesting privileged accounts from the scanner
+
+**Attack Prevented:** Credential theft, domain compromise via over-privileged scan accounts, insider credential harvesting, lateral movement
+
 #### ClickOps Implementation
 
 **Step 1: Secure Scan Credentials**
@@ -418,6 +490,15 @@ Secure vulnerability scanning configurations.
 
 #### Description
 Enable policy compliance scanning for hardening verification.
+
+#### Rationale
+**Why This Matters:**
+- Policy compliance scans continuously verify that hardening baselines like CIS Benchmarks and DISA STIGs are actually applied, catching configuration drift before attackers exploit it
+- Automated assessment surfaces insecure defaults and misconfigurations that manual reviews routinely miss across a large fleet
+- Tracking remediation converts findings into accountable, time-bound fixes instead of unaddressed risk
+- Scheduled assessments provide auditable evidence of an ongoing control rather than a point-in-time snapshot
+
+**Attack Prevented:** Exploitation of configuration drift, insecure-default abuse, compliance gaps, unremediated misconfigurations
 
 #### ClickOps Implementation
 
@@ -451,6 +532,15 @@ Enable policy compliance scanning for hardening verification.
 
 #### Description
 Integrate InsightVM with InsightIDR for security monitoring.
+
+#### Rationale
+**Why This Matters:**
+- Sharing vulnerability context with InsightIDR lets detection rules prioritize alerts on assets that are both exposed and actually exploitable, cutting attacker dwell time
+- Combining vulnerability and detection data closes the gap between knowing a weakness exists and seeing it being exploited in real time
+- Alerts on critical vulnerabilities drive faster response before a known exploit is weaponized against the environment
+- Automated responses contain threats at machine speed, shrinking the window an attacker has to act
+
+**Attack Prevented:** Delayed threat detection, exploitation of known vulnerabilities, extended attacker dwell time, missed lateral movement
 
 #### ClickOps Implementation
 
@@ -517,6 +607,7 @@ Integrate InsightVM with InsightIDR for security monitoring.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, console security, and user management | Claude Code (Opus 4.5) |
 
 ---

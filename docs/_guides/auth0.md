@@ -6,9 +6,9 @@ slug: "auth0"
 tier: "2"
 category: "Identity"
 description: "Identity platform hardening for Auth0 tenant security, MFA, and attack protection"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -181,6 +181,15 @@ Breached Password Detection checks user passwords against known breached credent
 #### Description
 Configure CAPTCHA and bot detection to prevent automated attacks against authentication flows.
 
+#### Rationale
+**Why This Matters:**
+- Distinguishes human users from automated scripts that drive credential stuffing and mass account-creation abuse
+- CAPTCHA challenges raise the cost of large-scale automated login and signup attempts to an uneconomic level
+- Applying detection to login, signup, and password reset closes the flows bots most often exploit for enumeration and takeover
+- Layers on top of rate limiting and brute force protection so attackers cannot simply rotate IPs to evade fixed thresholds
+
+**Attack Prevented:** Credential stuffing, automated account creation, account enumeration, scripted brute force
+
 #### ClickOps Implementation
 
 **Step 1: Enable Bot Detection**
@@ -216,6 +225,15 @@ Configure CAPTCHA and bot detection to prevent automated attacks against authent
 
 #### Description
 Configure password policies that enforce complexity requirements while balancing usability.
+
+#### Rationale
+**Why This Matters:**
+- Minimum length and complexity requirements directly increase the work factor for online and offline password guessing
+- Blocking common-password dictionaries stops the weak, predictable credentials attackers try first
+- Password history prevents users from cycling back to a previously compromised password after a forced reset
+- Stronger policies shrink the pool of guessable accounts that feed credential stuffing and brute force campaigns
+
+**Attack Prevented:** Brute force, password guessing, dictionary attacks, credential reuse
 
 #### ClickOps Implementation
 
@@ -295,6 +313,15 @@ Require MFA for user authentication. Configure phishing-resistant options like W
 #### Description
 Configure Adaptive MFA to trigger additional authentication based on risk signals like new device, location, or suspicious behavior.
 
+#### Rationale
+**Why This Matters:**
+- Risk-based step-up authentication challenges suspicious logins without adding friction to routine, low-risk access
+- Signals like new device, impossible travel, and high-risk IP catch credential abuse that static, always-on policies miss
+- Forcing an extra factor on anomalous logins blocks attackers who already hold valid stolen credentials
+- Concentrating challenges where real risk exists keeps MFA adoption high while preserving a smooth user experience
+
+**Attack Prevented:** Account takeover with stolen credentials, session hijacking, impossible-travel logins, anomalous-device access
+
 #### ClickOps Implementation
 
 **Step 1: Enable Adaptive MFA**
@@ -324,6 +351,15 @@ Configure Adaptive MFA to trigger additional authentication based on risk signal
 
 #### Description
 Limit Dashboard admin access to essential personnel and require MFA for all admins.
+
+#### Rationale
+**Why This Matters:**
+- The Auth0 Dashboard controls authentication for every connected application, making admin accounts the highest-value target in the tenant
+- Least-privilege roles ensure a compromised member account cannot rewrite security policies or exfiltrate user data
+- Requiring MFA for all Dashboard users blocks takeover of admin accounts via phished or stuffed credentials
+- Removing unnecessary admins shrinks the attack surface and eliminates standing access left behind by departed staff
+
+**Attack Prevented:** Admin account takeover, privilege escalation, tenant-wide misconfiguration, insider misuse
 
 #### ClickOps Implementation
 
@@ -389,6 +425,15 @@ Use separate tenants for production and non-production environments to isolate s
 #### Description
 Protect Auth0 API credentials (Client ID, Client Secret, Management API tokens) as sensitive secrets.
 
+#### Rationale
+**Why This Matters:**
+- A leaked Client Secret or Management API token lets an attacker mint tokens, read users, and reconfigure the tenant programmatically
+- Secrets committed to source control are routinely harvested by automated scanners within minutes of a public push
+- Per-environment credentials and regular rotation limit the blast radius and lifespan of any single exposed secret
+- A central vault provides access control, audit trails, and revocation that scattered config files and environment variables cannot
+
+**Attack Prevented:** Credential leakage, secret harvesting from source control, unauthorized Management API access, tenant compromise
+
 #### Implementation
 1. Store secrets in secure vault (HashiCorp Vault, AWS Secrets Manager)
 2. Never commit secrets to source control
@@ -410,6 +455,15 @@ Protect Auth0 API credentials (Client ID, Client Secret, Management API tokens) 
 
 #### Description
 Configure database and social connections with security best practices.
+
+#### Rationale
+**Why This Matters:**
+- Connections are the entry points where users authenticate, so weak settings here undermine every downstream application
+- Enforcing password policy and brute force protection per connection blocks guessing attacks at the source
+- Disabling open sign-ups on controlled connections prevents attacker-created accounts and self-registration abuse
+- Scoping social OAuth apps to minimum permissions and validated redirect URIs limits token theft and consent abuse
+
+**Attack Prevented:** Brute force, unauthorized account registration, OAuth scope abuse, redirect-URI manipulation
 
 #### ClickOps Implementation
 
@@ -440,6 +494,15 @@ Configure database and social connections with security best practices.
 
 #### Description
 Configure Auth0 applications with security best practices.
+
+#### Rationale
+**Why This Matters:**
+- Exact-match callback and logout URLs prevent the open-redirect and token-interception attacks that wildcard URLs enable
+- Choosing the correct application type and Private Key JWT authentication avoids exposing client secrets in public clients
+- Short access-token lifetimes shrink the window in which a stolen or leaked token remains usable
+- Refresh-token rotation detects and invalidates replayed tokens, containing session theft early
+
+**Attack Prevented:** Open redirect, authorization code and token interception, token replay, session hijacking
 
 #### ClickOps Implementation
 
@@ -474,6 +537,15 @@ Configure Auth0 applications with security best practices.
 #### Description
 Secure Auth0 Rules and Actions to prevent injection and ensure proper error handling.
 
+#### Rationale
+**Why This Matters:**
+- Rules and Actions run privileged custom code inside the authentication pipeline, so a flaw there compromises every login
+- Conditionally bypassing MFA on weak signals like device fingerprint or geolocation hands attackers a reliable evasion path
+- Validating all inputs prevents injection and logic abuse through attacker-controlled profile and request data
+- Graceful error handling avoids leaking secrets, tokens, or internal details that aid further attacks
+
+**Attack Prevented:** MFA bypass, injection into the auth pipeline, sensitive information disclosure, authentication logic abuse
+
 #### Security Best Practices
 1. **Never bypass MFA conditionally** based on:
    - Silent authentication
@@ -499,6 +571,15 @@ Secure Auth0 Rules and Actions to prevent injection and ensure proper error hand
 
 #### Description
 Configure Auth0 logging and integrate with SIEM for security monitoring.
+
+#### Rationale
+**Why This Matters:**
+- Streaming authentication logs to a SIEM enables near real-time detection of credential stuffing, brute force, and anomalous admin activity
+- Auth0 retains logs for a limited window, so exporting them preserves the evidence needed for incident response and forensics
+- Correlating login and Management API events surfaces account takeover and privilege abuse that isolated events hide
+- Centralized monitoring satisfies audit and compliance requirements for security event logging and review
+
+**Attack Prevented:** Undetected account takeover, credential stuffing, unauthorized admin activity, delayed breach detection
 
 #### ClickOps Implementation
 
@@ -594,6 +675,7 @@ Configure Auth0 logging and integrate with SIEM for security monitoring.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with attack protection, MFA, and tenant security | Claude Code (Opus 4.5) |
 
 ---

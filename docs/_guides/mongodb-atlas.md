@@ -6,9 +6,9 @@ slug: "mongodb-atlas"
 tier: "1"
 category: "Data"
 description: "Database-as-a-Service security hardening for MongoDB Atlas network access, authentication, and encryption"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -214,6 +214,15 @@ Create database users with role-based access control (RBAC) following the princi
 #### Description
 Require MFA for all users accessing the MongoDB Atlas console.
 
+#### Rationale
+**Why This Matters:**
+- The Atlas console controls network access lists, database users, encryption keys, and cluster configuration — a single compromised admin login can expose or destroy all data
+- Passwords alone are vulnerable to phishing, credential stuffing, and reuse from prior breaches; MFA adds a second factor an attacker cannot obtain with the password alone
+- MongoDB's own December 2023 corporate breach began with a phishing attack, underscoring that console and identity compromise is a realistic threat
+- Authenticator apps (TOTP) resist the SIM-swap and interception attacks that undermine SMS-based codes
+
+**Attack Prevented:** Credential theft, phishing, credential stuffing, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Configure Organization MFA**
@@ -239,6 +248,15 @@ Require MFA for all users accessing the MongoDB Atlas console.
 
 #### Description
 Configure X.509 certificate authentication for stronger machine-to-machine authentication.
+
+#### Rationale
+**Why This Matters:**
+- Certificate-based authentication removes static database passwords that leak through source code, config files, logs, and environment variables
+- X.509 credentials are bound to a private key the client holds, making them far harder to phish or replay than a shared secret
+- Certificates carry an explicit expiration, forcing periodic rotation and limiting the useful lifetime of a stolen credential
+- Atlas-managed or self-managed CA issuance enables centralized revocation when a host or service is decommissioned or compromised
+
+**Attack Prevented:** Credential leakage, password reuse, credential replay, orphaned-credential access
 
 #### ClickOps Implementation
 
@@ -268,6 +286,15 @@ Configure X.509 certificate authentication for stronger machine-to-machine authe
 
 #### Description
 Configure granular roles for Atlas console access at organization and project levels.
+
+#### Rationale
+**Why This Matters:**
+- Granular org and project roles enforce least privilege so each user holds only the access their job requires, shrinking the blast radius of any compromised account
+- Limiting Organization Owner assignments prevents broad, unchecked control over billing, clusters, and security settings
+- Separating data-access administration from cluster management enforces separation of duties for sensitive operations
+- Read-only roles let auditors and stakeholders review configuration without the ability to change it
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider misuse, excessive standing access
 
 #### ClickOps Implementation
 
@@ -303,6 +330,15 @@ Configure granular roles for Atlas console access at organization and project le
 
 #### Description
 Verify that default encryption at rest and in transit is enabled (cannot be disabled in Atlas).
+
+#### Rationale
+**Why This Matters:**
+- Encryption at rest (AES-256) protects data on disk, in backups, and in snapshots if the underlying storage media is stolen, mishandled, or improperly decommissioned
+- Encryption in transit (TLS 1.2+) prevents interception or tampering of data as it travels between applications and the cluster
+- Verifying these defaults provides documented evidence for SOC 2, PCI DSS, HIPAA, and ISO 27001 audits
+- Confirming TLS is enforced ensures no client can negotiate an unencrypted or downgraded connection
+
+**Attack Prevented:** Data theft at rest, network eavesdropping, man-in-the-middle, TLS downgrade
 
 #### Atlas Default Security
 
@@ -407,6 +443,15 @@ Configure Client-Side Field Level Encryption (CSFLE) to encrypt sensitive fields
 #### Description
 Enable database auditing to log authentication attempts and data access.
 
+#### Rationale
+**Why This Matters:**
+- Audit logs capture authentication attempts and data access, providing the forensic trail needed to detect and investigate unauthorized activity
+- Without auditing, a breach or insider abuse can occur with no record of who accessed what data and when
+- Exporting audit events to a SIEM or object storage enables real-time alerting and tamper-resistant long-term retention
+- Comprehensive audit trails are required to demonstrate compliance with frameworks such as SOC 2, PCI DSS, and HIPAA
+
+**Attack Prevented:** Undetected data exfiltration, insider abuse, repudiation, delayed breach detection
+
 #### ClickOps Implementation
 
 **Step 1: Enable Auditing**
@@ -439,6 +484,15 @@ Enable database auditing to log authentication attempts and data access.
 
 #### Description
 Monitor Atlas Activity Feed for administrative and security events.
+
+#### Rationale
+**Why This Matters:**
+- The Activity Feed records administrative actions — user logins, configuration changes, and access-list edits — that signal account compromise or misconfiguration
+- Alerting on failed authentication attempts surfaces brute-force and credential-stuffing attempts before they succeed
+- Alerting on configuration changes catches unauthorized modifications such as opening the IP access list or adding privileged users
+- Continuous monitoring shortens detection and response time, limiting an attacker's dwell time
+
+**Attack Prevented:** Account takeover, unauthorized configuration change, brute-force attempts, delayed incident response
 
 #### ClickOps Implementation
 
@@ -525,6 +579,7 @@ Monitor Atlas Activity Feed for administrative and security events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with network, authentication, and encryption controls | Claude Code (Opus 4.5) |
 
 ---

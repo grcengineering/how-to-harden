@@ -6,9 +6,9 @@ slug: "drata"
 tier: "2"
 category: "Security"
 description: "Compliance automation platform hardening for Drata including access controls, integration security, and monitoring configuration"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,14 @@ This guide covers Drata platform security including access controls, integration
 #### Description
 Configure SAML SSO to centralize authentication and enforce organizational security policies.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Drata authentication in your corporate IdP so MFA, conditional access, and session policies apply to every login
+- Local password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- Drata holds compliance evidence, audit data, and security control configurations — a single compromised login can expose or alter the integrity of the entire program
+
+**Attack Prevented:** Credential theft, phishing, password reuse, unauthorized access to compliance data
+
 #### ClickOps Implementation
 
 **Step 1: Access SSO Settings**
@@ -94,6 +102,14 @@ Configure SAML SSO to centralize authentication and enforce organizational secur
 
 #### Description
 Require MFA for all users accessing Drata platform.
+
+#### Rationale
+**Why This Matters:**
+- MFA blocks account takeover even when a password is phished, leaked, or guessed
+- Drata accounts can read evidence from connected production systems and modify control and policy state, making them high-value targets
+- Enforcing MFA for every user, especially admins, closes the most common path to unauthorized access
+
+**Attack Prevented:** Credential stuffing, password spraying, phishing-based account takeover
 
 #### ClickOps Implementation
 
@@ -160,6 +176,14 @@ Configure role-based access to implement least privilege for Drata users.
 
 #### Description
 Follow CIS Control recommendations for admin privilege management.
+
+#### Rationale
+**Why This Matters:**
+- Admin accounts can reconfigure controls, integrations, and security settings across the entire compliance program
+- Minimizing the number of admins shrinks the attack surface and the blast radius of any single compromised credential
+- Stronger authentication such as hardware keys plus active monitoring on admins detects and contains abuse faster
+
+**Attack Prevented:** Privilege escalation, insider abuse, lateral movement via over-privileged accounts
 
 #### ClickOps Implementation
 
@@ -232,6 +256,14 @@ Configure Drata integrations with minimum necessary permissions.
 #### Description
 Securely configure cloud provider (AWS, GCP, Azure) integrations.
 
+#### Rationale
+**Why This Matters:**
+- Cloud integrations grant Drata standing access to read configuration across your AWS, GCP, or Azure environments
+- A dedicated, least-privilege IAM role scoped with an external ID prevents the confused-deputy problem and limits what a compromised connection can reach
+- Read-only scoping ensures the integration can never modify or delete cloud resources even if abused
+
+**Attack Prevented:** Confused-deputy attacks, over-privileged cross-account access, cloud resource tampering
+
 #### ClickOps Implementation
 
 **Step 1: Use Dedicated IAM Roles**
@@ -262,6 +294,14 @@ Securely configure cloud provider (AWS, GCP, Azure) integrations.
 
 #### Description
 Securely configure identity provider integrations for user sync and compliance monitoring.
+
+#### Rationale
+**Why This Matters:**
+- The IdP integration reads user, group, and MFA-status data that drives access reviews and compliance evidence
+- Granting read-only access prevents Drata from being able to alter identity data or user entitlements
+- Accurate IdP sync ensures departed users are detected and orphaned-account findings are surfaced
+
+**Attack Prevented:** Identity data tampering, orphaned-account persistence, excessive integration permissions
 
 #### ClickOps Implementation
 
@@ -296,6 +336,14 @@ Securely configure identity provider integrations for user sync and compliance m
 #### Description
 Properly manage policy templates and maintain version control.
 
+#### Rationale
+**Why This Matters:**
+- Policies are the documented source of truth auditors rely on, so unauthorized or undocumented changes undermine their integrity
+- Version history and tracked approvals create an audit trail proving who changed what and when
+- Assigned owners and review schedules keep policies current and prevent silent drift out of compliance
+
+**Attack Prevented:** Unauthorized policy tampering, audit-trail gaps, stale or repudiated policy changes
+
 #### ClickOps Implementation
 
 **Step 1: Configure Policies**
@@ -327,6 +375,14 @@ Properly manage policy templates and maintain version control.
 #### Description
 Configure continuous control monitoring for real-time compliance visibility.
 
+#### Rationale
+**Why This Matters:**
+- Continuous automated tests catch control failures and configuration drift in near real time rather than at audit time
+- Mapping controls to integrations replaces point-in-time manual checks with ongoing automated evidence collection
+- Assigned owners and remediation deadlines ensure failures are actioned instead of accumulating silently
+
+**Attack Prevented:** Undetected control failure, compliance drift, evidence gaps at audit time
+
 #### ClickOps Implementation
 
 **Step 1: Map Controls**
@@ -357,6 +413,14 @@ Configure continuous control monitoring for real-time compliance visibility.
 
 #### Description
 Properly manage control exceptions and evidence gaps.
+
+#### Rationale
+**Why This Matters:**
+- Exceptions are deliberate gaps in coverage, and without approval workflows they become unmonitored holes in the program
+- Required justification, expiration dates, and compensating controls keep exceptions time-bound and accountable
+- Tracked remediation prevents temporary exceptions from quietly becoming permanent, unreviewed risk acceptance
+
+**Attack Prevented:** Unapproved risk acceptance, indefinite control bypass, unmonitored coverage gaps
 
 #### ClickOps Implementation
 
@@ -390,6 +454,14 @@ Properly manage control exceptions and evidence gaps.
 
 #### Description
 Enable and monitor audit logs for security events.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs capture who logged in, changed policies, modified controls, and altered integrations — the record needed for incident investigation
+- Exporting logs to a SIEM with defined retention preserves evidence beyond platform defaults and protects it from tampering
+- Without comprehensive logging, malicious or accidental changes go undetected and forensic reconstruction becomes impossible
+
+**Attack Prevented:** Undetected tampering, repudiation, post-incident evidence loss
 
 #### ClickOps Implementation
 
@@ -427,6 +499,14 @@ Enable and monitor audit logs for security events.
 #### Description
 Configure alerts for compliance and security events.
 
+#### Rationale
+**Why This Matters:**
+- Alerts turn passive logs into timely signals so control failures and integration outages are noticed immediately
+- Routing notifications to owners and escalation paths shortens the window between a failure and its remediation
+- Detecting evidence gaps and disconnected integrations early prevents silent compliance degradation
+
+**Attack Prevented:** Delayed incident response, silent integration failure, unnoticed compliance drift
+
 #### ClickOps Implementation
 
 **Step 1: Configure Alerts**
@@ -455,6 +535,14 @@ Configure alerts for compliance and security events.
 
 #### Description
 Regularly monitor compliance dashboard for drift and issues.
+
+#### Rationale
+**Why This Matters:**
+- The dashboard surfaces failing controls and posture trends so drift is caught before it becomes an audit finding
+- Reviewing trends reveals recurring issues that point to systemic gaps rather than isolated one-off failures
+- Maintaining audit-ready evidence and reviewing auditor access reduces scramble and limits exposure during audits
+
+**Attack Prevented:** Compliance drift, recurring control failures, excessive auditor access exposure
 
 #### ClickOps Implementation
 
@@ -527,6 +615,7 @@ Regularly monitor compliance dashboard for drift and issues.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with access controls, integrations, and monitoring | Claude Code (Opus 4.5) |
 
 ---

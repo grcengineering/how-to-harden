@@ -6,9 +6,9 @@ slug: "zscaler"
 tier: "1"
 category: "Security"
 description: "Security hardening for Zscaler ZIA, ZPA, and Client Connector deployment"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -208,6 +208,15 @@ Configure URL filtering policies to block access to malicious, risky, and policy
 #### Description
 Enable Zscaler's advanced threat protection capabilities including cloud sandbox, malware protection, and behavioral analysis.
 
+#### Rationale
+**Why This Matters:**
+- Cloud sandbox detonates unknown files in an isolated environment, catching zero-day and evasive malware that signature-only engines miss
+- Inline malware blocking stops known and suspected threats before they reach the endpoint, removing the dwell time of post-infection cleanup
+- Behavioral analysis flags payloads that look benign at download but act maliciously, closing the gap that staged and drive-by downloads exploit
+- As a cloud proxy in the traffic path, Zscaler can quarantine threats for every user and location without per-device agents
+
+**Attack Prevented:** Zero-day malware, ransomware delivery, drive-by downloads, evasive/polymorphic payloads, command-and-control callbacks
+
 #### ClickOps Implementation
 
 **Step 1: Configure Malware Protection**
@@ -244,6 +253,15 @@ Enable Zscaler's advanced threat protection capabilities including cloud sandbox
 
 #### Description
 Configure Zscaler Cloud Firewall policies to control non-web traffic including protocols, ports, and applications.
+
+#### Rationale
+**Why This Matters:**
+- A default-deny posture ensures only explicitly approved protocols and ports leave the environment, shrinking the egress attack surface
+- Many threats and exfiltration channels ride non-web protocols (DNS tunneling, raw TCP, SSH) that URL filtering alone never inspects
+- Blocking unencrypted and tunneling protocols prevents users and malware from routing around inspection and corporate controls
+- Cloud-delivered firewall rules apply consistently to remote and on-network users without backhauling traffic to a datacenter appliance
+
+**Attack Prevented:** Data exfiltration over non-web protocols, DNS tunneling, command-and-control over arbitrary ports, inspection bypass via VPN/SSH tunnels
 
 #### ClickOps Implementation
 
@@ -324,6 +342,15 @@ Define application segments in ZPA to control access to internal applications wi
 #### Description
 Create ZPA access policies that define who can access which applications based on user identity, device posture, and context.
 
+#### Rationale
+**Why This Matters:**
+- Identity- and context-aware access enforces least privilege so users reach only the specific applications their role requires
+- A default-deny model means no application is reachable until access is explicitly granted, unlike flat VPNs that expose everything once connected
+- Binding access to device posture and IdP group membership blocks compromised or non-compliant endpoints from reaching sensitive apps
+- Per-application policies eliminate the lateral movement that follows a single VPN credential compromise
+
+**Attack Prevented:** Lateral movement, over-privileged access, compromised-credential application access, unauthorized internal app exposure
+
 #### ClickOps Implementation
 
 **Step 1: Create Access Policy Rule**
@@ -361,6 +388,15 @@ Create ZPA access policies that define who can access which applications based o
 #### Description
 Configure device posture checks to verify endpoint security status before granting application access.
 
+#### Rationale
+**Why This Matters:**
+- Posture checks confirm a device is encrypted, patched, and running active endpoint protection before it is trusted with application access
+- Without posture validation, a stolen credential on an unmanaged or jailbroken device can reach internal applications directly
+- Tying access to OS version, disk encryption, firewall, and antivirus state continuously enforces the organization's endpoint baseline
+- Non-compliant devices are blocked automatically, removing reliance on users to self-report or remediate
+
+**Attack Prevented:** Access from compromised/unmanaged endpoints, credential theft on insecure devices, malware-resident device access, endpoint policy drift
+
 #### ClickOps Implementation
 
 **Step 1: Create Posture Profile**
@@ -394,6 +430,15 @@ Configure device posture checks to verify endpoint security status before granti
 
 #### Description
 Deploy Zscaler Client Connector with security-optimized settings to ensure all traffic is properly tunneled and inspected.
+
+#### Rationale
+**Why This Matters:**
+- Routing all traffic through Z-Tunnel 2.0 guarantees web, firewall, and DLP policies apply everywhere the user works, not just on the corporate network
+- Always-On enforcement prevents users from disabling the connector and browsing unprotected, a common way threats enter
+- Tightly scoped split-tunnel rules stop sensitive traffic from leaking around inspection while still allowing approved optimizations
+- Auto-update keeps the connector patched against known vulnerabilities without manual rollout effort
+
+**Attack Prevented:** Protection bypass, uninspected traffic, off-network compromise, man-in-the-middle on untrusted networks
 
 #### ClickOps Implementation
 
@@ -468,6 +513,15 @@ Deploy Zscaler root certificate to enable SSL inspection of encrypted traffic.
 
 #### Description
 Lock Client Connector configuration to prevent users from disabling or bypassing Zscaler protection.
+
+#### Rationale
+**Why This Matters:**
+- Locking the ZIA/ZPA switches prevents users from turning off protection to reach blocked sites or evade inspection
+- Password-protecting uninstall stops malware and users alike from removing the connector to operate unmonitored
+- Removing admin override codes (L3) closes the temporary-bypass window that attackers and insiders exploit
+- Enforced configuration means security coverage does not depend on user cooperation or discipline
+
+**Attack Prevented:** Protection tampering, agent uninstall/disable, inspection evasion, insider bypass, malware persistence
 
 #### ClickOps Implementation
 
@@ -552,6 +606,15 @@ Enable SSL/TLS inspection to decrypt, inspect, and re-encrypt HTTPS traffic for 
 #### Description
 Thoroughly test SSL inspection before production deployment to identify and resolve application compatibility issues.
 
+#### Rationale
+**Why This Matters:**
+- Validating applications before rollout prevents broken certificate-pinned apps from driving users to disable or bypass inspection
+- Confirming malware detection and DLP fire on decrypted traffic proves the control actually works rather than silently failing open
+- Catching certificate-chain and pinning issues in testing avoids emergency bypass exceptions that permanently weaken coverage
+- A documented test and validation pass provides auditable evidence that inspection was deployed without degrading critical services
+
+**Attack Prevented:** Inspection gaps from broken apps, silent fail-open, unmanaged bypass exceptions, undetected threats in encrypted traffic
+
 #### Testing Checklist
 
 **Pre-Deployment Testing:**
@@ -583,6 +646,15 @@ Thoroughly test SSL inspection before production deployment to identify and reso
 
 #### Description
 Configure comprehensive logging and integrate with SIEM for security monitoring and incident investigation.
+
+#### Rationale
+**Why This Matters:**
+- Streaming web, firewall, DNS, and sandbox logs to a SIEM gives security teams the visibility to detect and investigate threats in real time
+- Without centralized logging, malicious activity and bypass attempts go unnoticed and post-incident forensic reconstruction is impossible
+- Alerting on malware hits, admin changes, and authentication failures shortens the time to detect account compromise and configuration tampering
+- Retained, exported logs satisfy audit and compliance evidence requirements that on-console retention alone cannot meet
+
+**Attack Prevented:** Undetected intrusions, delayed incident response, admin account abuse, audit-trail gaps, log tampering
 
 #### ClickOps Implementation
 
@@ -697,6 +769,7 @@ Configure comprehensive logging and integrate with SIEM for security monitoring 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with ZIA/ZPA hardening and Client Connector security | Claude Code (Opus 4.5) |
 
 ---

@@ -6,9 +6,9 @@ slug: "chatgpt-enterprise"
 tier: "1"
 category: "Productivity"
 description: "Enterprise AI security hardening for ChatGPT, SSO configuration, data privacy, admin controls, and workspace agent governance"
-version: "0.2.1"
+version: "0.2.2"
 maturity: "draft"
-last_updated: "2026-05-14"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -123,6 +123,14 @@ Configure SAML-based SSO to authenticate ChatGPT Enterprise users through your c
 #### Description
 Enforce multi-factor authentication for all ChatGPT Enterprise users. With SSO, MFA should be enforced through your identity provider. For non-SSO deployments, enable ChatGPT's native TOTP-based MFA.
 
+#### Rationale
+**Why This Matters:**
+- Passwords alone are routinely phished, reused, and stolen; a second factor stops an attacker who already holds valid credentials
+- ChatGPT Enterprise accounts hold conversation history, uploaded files, and connected-app access — a single takeover can expose all of it
+- Enforcing MFA at the IdP applies one consistent policy across every SaaS app, including ChatGPT, rather than relying on per-app toggles
+
+**Attack Prevented:** Credential stuffing, password reuse, phishing, account takeover
+
 #### ClickOps Implementation
 
 **Option A: MFA via SSO (Recommended)**
@@ -230,6 +238,14 @@ Configure role-based access using ChatGPT Enterprise's three role types: Owner, 
 #### Description
 ChatGPT Enterprise provides specific data privacy guarantees that differentiate it from consumer versions. Understanding these guarantees is essential for risk assessment.
 
+#### Rationale
+**Why This Matters:**
+- Risk and compliance teams cannot approve a tool whose data handling they have not validated against the contractual guarantees
+- The commitment that inputs and outputs are excluded from model training is what makes Enterprise acceptable for confidential workloads where the consumer edition is not
+- Documenting the encryption, ownership, and retention commitments gives auditors the evidence trail required for SOC 2, ISO 27001, and vendor reviews
+
+**Attack Prevented:** Inadvertent data-for-training leakage, unmanaged shadow use of consumer ChatGPT, compliance gaps from unverified vendor claims
+
 #### Key Privacy Features
 
 | Feature | ChatGPT Enterprise | ChatGPT Consumer |
@@ -262,6 +278,14 @@ According to OpenAI's Enterprise Privacy commitments:
 #### Description
 Configure data retention policies to balance compliance requirements with data minimization principles. Shorter retention reduces breach impact.
 
+#### Rationale
+**Why This Matters:**
+- Data that no longer exists cannot be stolen, subpoenaed, or leaked — shorter retention directly shrinks the breach blast radius
+- GDPR mandates data minimization while sectors such as financial services mandate minimum retention; an explicit policy reconciles the two
+- Indefinite conversation storage accumulates sensitive prompts and uploaded files with no expiry, expanding exposure for no business benefit
+
+**Attack Prevented:** Excessive data exposure on breach, retention-policy compliance violations, e-discovery over-collection
+
 #### ClickOps Implementation
 
 **Step 1: Access Retention Settings**
@@ -292,6 +316,14 @@ Configure data retention policies to balance compliance requirements with data m
 
 #### Description
 Deploy Enterprise Key Management to use your own encryption keys for ChatGPT data, providing customer-controlled encryption.
+
+#### Rationale
+**Why This Matters:**
+- Customer-managed keys let your organization revoke OpenAI's access to encrypted data unilaterally, an essential control for highly regulated workloads
+- Key rotation and access logging stay under your governance rather than depending solely on the provider's internal controls
+- Holding the keys enables a cryptographic-shredding response — destroying the key renders the stored data unrecoverable on demand
+
+**Attack Prevented:** Provider-side data exposure, inability to revoke access during an incident, key-management compliance gaps
 
 #### Prerequisites
 - ChatGPT Enterprise with EKM add-on
@@ -404,6 +436,14 @@ Control which GPTs (custom ChatGPT applications) can be used by your organizatio
 #### Description
 Control which ChatGPT features and integrations are available to users. All apps are disabled by default in Enterprise.
 
+#### Rationale
+**Why This Matters:**
+- Each enabled capability — web browsing, code interpreter, file uploads — adds an independent data-exposure or execution surface that must be justified
+- Web browsing can send internal queries to external sites and file uploads move sensitive documents into the platform; both warrant deliberate approval
+- Enabling only the features the business actually needs keeps the attack surface minimal and the data flows auditable
+
+**Attack Prevented:** Data exfiltration through outbound browsing, oversharing via uploads, unnecessary code-execution surface
+
 #### ClickOps Implementation
 
 **Step 1: Access App Settings**
@@ -434,6 +474,14 @@ Control which ChatGPT features and integrations are available to users. All apps
 #### Description
 Set organization-wide custom instructions that apply to all conversations, embedding security reminders and usage guidelines.
 
+#### Rationale
+**Why This Matters:**
+- Workspace-wide instructions deliver consistent security guidance at the point of use, when users are most likely to act on it
+- Embedding reminders not to paste secrets, PII, or proprietary code reinforces the acceptable-use policy in every session automatically
+- Centrally managed instructions cannot be quietly disabled by individual users, unlike one-time training
+
+**Attack Prevented:** Inadvertent disclosure of sensitive data, inconsistent user behavior, acceptable-use policy drift
+
 #### ClickOps Implementation
 
 **Step 1: Access Custom Instructions**
@@ -459,6 +507,14 @@ Set organization-wide custom instructions that apply to all conversations, embed
 
 #### Description
 Monitor ChatGPT Enterprise usage through the admin console analytics dashboard for security visibility and compliance reporting.
+
+#### Rationale
+**Why This Matters:**
+- You cannot detect misuse or anomalous activity in a tool you are not watching; analytics establish the baseline of normal behavior
+- Sudden spikes in message volume, accounts created outside provisioning, or unexpected feature usage are early indicators of compromise or policy violation
+- Exported usage data is the evidence auditors expect that the deployment is actively monitored, not merely configured
+
+**Attack Prevented:** Undetected account abuse, shadow usage, unmonitored data movement
 
 #### ClickOps Implementation
 
@@ -489,6 +545,14 @@ Monitor ChatGPT Enterprise usage through the admin console analytics dashboard f
 #### Description
 For organizations using Microsoft 365, integrate ChatGPT Enterprise with Microsoft Purview for advanced data governance and compliance controls.
 
+#### Rationale
+**Why This Matters:**
+- Purview extends your existing M365 sensitivity labels and DLP policies to AI interactions, closing the gap where ChatGPT would otherwise be an ungoverned data channel
+- A single governance plane across email, files, and AI prevents the inconsistent rules that attackers and careless users exploit
+- Centralizing AI activity in the Purview compliance dashboard supports investigations and regulatory reporting from one place
+
+**Attack Prevented:** Sensitive data leaving M365 governance, DLP blind spots in AI chats, fragmented compliance reporting
+
 #### Prerequisites
 - Microsoft 365 E5 or Purview add-on
 - ChatGPT Enterprise
@@ -512,6 +576,14 @@ For organizations using Microsoft 365, integrate ChatGPT Enterprise with Microso
 
 #### Description
 Establish regular audit trail reviews to detect policy violations, unusual usage patterns, and potential security incidents.
+
+#### Rationale
+**Why This Matters:**
+- Logs and analytics only add value when someone reviews them on a cadence; an unread audit trail catches nothing
+- Scheduled weekly, monthly, and quarterly reviews surface drift — new admins, stale SSO/SCIM config, retention violations — before it becomes an incident
+- A documented review rhythm is itself an auditable control that demonstrates continuous oversight to assessors
+
+**Attack Prevented:** Undetected privilege creep, configuration drift, slow incident discovery
 
 #### Implementation
 
@@ -1114,6 +1186,7 @@ If agents will be deployed to Slack, approve the `ChatGPT Agents` app in Slack a
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.2.2 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-05-14 | 0.2.1 | draft | Reconciled Section 6 against OpenAI's *Workspace Agents Security Overview* (April 29, 2026). Added the fifth RBAC dimension `publish_agents_with_shared_connections` (6.1). Replaced reconstructed event-type list with the PDF's authoritative agent lifecycle / run / connector-call / OAuth-resolution / skill / trigger / memory event families (6.6). Added Logs Platform technical specs (~10-min windows, p99 < 30 min, at-least-once, event_id dedup). Added control 6.7 implementing OpenAI's six-step pre-launch checklist. Updated Sigma rules and the SIEM-streaming and trifecta-detection scripts with PDF-verified event names and app catalog. New pack file: `config/hth-chatgpt-enterprise-6.07-prelaunch-checklist.jsonc`. | Claude Code (Opus 4.7) |
 | 2026-05-14 | 0.2.0 | draft | [SECURITY] Added Section 6 Workspace Agents Hardening (6 controls covering RBAC, connector posture, approval policy, lethal-trifecta detection, suspension runbook, Compliance API SIEM export). Added Code Packs under `packs/chatgpt-enterprise/` (api, config, siem/sigma). Updated NIST and GDPR mappings. Expanded References with workspace agent, Compliance API, and agent-security research links. | Claude Code (Opus 4.7) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, data privacy, GPT controls, and compliance | Claude Code (Opus 4.5) |

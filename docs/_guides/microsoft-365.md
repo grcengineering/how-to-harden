@@ -6,9 +6,9 @@ slug: "microsoft-365"
 tier: "1"
 category: "Productivity"
 description: "Comprehensive security hardening for Microsoft 365, Exchange Online, SharePoint, Teams, and OneDrive"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -581,6 +581,15 @@ Implement Microsoft Purview sensitivity labels to classify and protect sensitive
 #### Description
 Restrict external sharing in SharePoint and OneDrive to prevent unauthorized data exposure.
 
+#### Rationale
+**Why This Matters:**
+- Anonymous "Anyone" links let sensitive SharePoint and OneDrive files reach anyone who obtains the URL, with no authentication or audit trail
+- Unrestricted external sharing is a primary path for accidental data leakage and intentional exfiltration by departing employees
+- Requiring guests to authenticate with the invited account closes link-forwarding gaps and ties every external access to a verifiable identity
+- Limiting sharing to approved domains or security groups keeps corporate documents out of personal and untrusted tenants
+
+**Attack Prevented:** Anonymous link exposure, data exfiltration, link forwarding, unauthorized external access
+
 #### ClickOps Implementation
 
 **Step 1: Configure SharePoint Sharing**
@@ -664,6 +673,15 @@ Enable and configure unified audit logging to capture user and admin activities 
 
 #### Description
 Enable Microsoft Defender for Office 365 and configure alert policies for suspicious activities.
+
+#### Rationale
+**Why This Matters:**
+- Without active alerting, malicious sign-ins, phishing campaigns, and admin abuse go unnoticed until the damage is already done
+- Defender for Office 365 detonates malicious links and attachments before they reach users, blocking phishing and malware at delivery
+- Alerts on high-risk events (new admin roles, Conditional Access changes, suspicious OAuth grants) shorten attacker dwell time and speed incident response
+- Timely detection is the difference between a contained incident and a full tenant compromise
+
+**Attack Prevented:** Phishing, malware delivery, undetected account takeover, privilege escalation, OAuth consent abuse
 
 #### ClickOps Implementation
 
@@ -798,6 +816,7 @@ Enable Microsoft Defender for Office 365 and configure alert policies for suspic
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with authentication, OAuth, data security, and monitoring controls | Claude Code (Opus 4.5) |
 
 ---

@@ -6,9 +6,9 @@ slug: "zendesk"
 tier: "4"
 category: "Productivity"
 description: "Support platform security for API tokens, app marketplace, and ticket redaction"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -50,6 +50,18 @@ This guide covers Zendesk security configurations including authentication, acce
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
+#### Description
+Require SAML single sign-on and two-factor authentication for all Zendesk account access, routing every agent and admin login through your corporate identity provider.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes Zendesk authentication in your IdP, enforcing MFA, conditional access, and centralized deprovisioning on every login
+- Local username and password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- Agent and admin accounts can read every customer ticket, chat transcript, and PII record, so a single compromised login exposes the entire support history
+- Requiring SSO plus 2FA closes the gap where a leaked password alone is enough to take over an account
+
+**Attack Prevented:** Credential theft, phishing, password reuse and credential stuffing, MFA bypass
+
 #### ClickOps Implementation
 
 **Step 1: Configure SAML SSO**
@@ -68,6 +80,18 @@ This guide covers Zendesk security configurations including authentication, acce
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
+
+#### Description
+Define custom roles and grant each agent the minimum permissions their job requires, restricting full admin access to a small number of users.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles ensure agents can only perform the ticket actions their job needs, limiting what a compromised account can do
+- Light agents and scoped roles keep contractors and read-only staff from modifying or exporting customer data
+- Keeping the admin population small reduces the number of accounts that can change security settings, install apps, or bulk-export tickets
+- Granular roles create clear accountability and make audit-log review meaningful
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement from a compromised low-privilege account, over-provisioned access
 
 #### ClickOps Implementation
 
@@ -92,6 +116,18 @@ This guide covers Zendesk security configurations including authentication, acce
 **Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-6
 
+#### Description
+Restrict Zendesk Admin Center and agent access to an allowlist of trusted corporate or VPN IP ranges.
+
+#### Rationale
+**Why This Matters:**
+- Limiting access to known network ranges blocks login attempts originating from attacker infrastructure and anonymizing proxies
+- Even with valid stolen credentials, an attacker outside the allowlisted network cannot reach the instance
+- Network-layer restriction adds defense in depth on top of SSO and MFA
+- Constraining admin access to corporate egress reduces exposure of high-value configuration and bulk-export functions
+
+**Attack Prevented:** Credential-based remote access, account takeover from untrusted networks, automated credential stuffing
+
 #### ClickOps Implementation
 
 **Step 1: Enable IP Restrictions**
@@ -114,6 +150,14 @@ Manage Zendesk API tokens securely.
 #### Rationale
 **Attack Scenario:** Stolen API token enables bulk ticket export; customer PII and support history exfiltrated for social engineering.
 
+**Why This Matters:**
+- API tokens grant programmatic access that can read and bulk-export every ticket, comment, and customer record without a browser login
+- Tokens that never expire and aren't inventoried become long-lived secrets that survive employee departures and leak through code or logs
+- Scoped OAuth apps limit each integration to only the permissions it needs, shrinking the blast radius of a leaked credential
+- Auditing and removing unused tokens eliminates forgotten standing access that attackers actively hunt for
+
+**Attack Prevented:** Token theft, bulk data exfiltration, leaked-credential abuse, orphaned-token access
+
 #### ClickOps Implementation
 
 **Step 1: Audit API Tokens**
@@ -132,6 +176,18 @@ Manage Zendesk API tokens securely.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
+
+#### Description
+Review installed Zendesk Marketplace apps and integrations, require admin approval for new installs, and remove apps that are no longer used.
+
+#### Rationale
+**Why This Matters:**
+- Marketplace apps and integrations request OAuth scopes that can read tickets and customer data, expanding the attack surface beyond Zendesk itself
+- A compromised or malicious third-party app inherits its granted permissions and can quietly exfiltrate support data
+- Requiring admin approval prevents agents from installing unvetted apps that introduce supply-chain risk
+- Regularly auditing and removing unused apps closes standing integration access that is easy to forget
+
+**Attack Prevented:** Malicious or over-permissioned third-party apps, supply-chain compromise, OAuth scope abuse, data exfiltration through integrations
 
 #### ClickOps Implementation
 
@@ -154,6 +210,18 @@ Manage Zendesk API tokens securely.
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
 
+#### Description
+Enable automatic redaction of sensitive data such as credit card numbers in tickets, and configure deletion, archiving, and GDPR erasure workflows for retained support data.
+
+#### Rationale
+**Why This Matters:**
+- Tickets and chat transcripts routinely capture payment card numbers, credentials, and PII that should never persist in plaintext
+- Automatic redaction removes sensitive values before they accumulate across thousands of tickets and agent views
+- Defined deletion and archiving schedules enforce data minimization, shrinking the volume exposed in any breach
+- GDPR deletion workflows satisfy data-subject erasure rights and reduce compliance and regulatory risk
+
+**Attack Prevented:** PII and cardholder data exposure, data hoarding, over-retention amplifying breach impact, regulatory non-compliance
+
 #### ClickOps Implementation
 
 **Step 1: Enable Ticket Redaction**
@@ -172,6 +240,18 @@ Manage Zendesk API tokens securely.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28
+
+#### Description
+Control ticket attachment file types and sizes, enable malware scanning, and require authentication with expiring URLs for attachment access.
+
+#### Rationale
+**Why This Matters:**
+- Customer-submitted attachments are an untrusted upload channel that can carry malware onto agent workstations
+- Malware scanning and file-type restrictions block weaponized attachments before agents open them
+- Requiring authentication and expiring links prevents unauthenticated retrieval of attachments containing sensitive customer data
+- Secure attachment URLs stop link-sharing and URL guessing from exposing files outside the intended ticket
+
+**Attack Prevented:** Malware delivery, unauthenticated attachment access, data leakage via shared or guessable URLs, attachment enumeration
 
 #### ClickOps Implementation
 
@@ -193,6 +273,18 @@ Manage Zendesk API tokens securely.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
+
+#### Description
+Enable and regularly review Zendesk audit logs to track authentication events, configuration changes, and administrative actions.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs provide the authoritative record needed to detect account takeover, unauthorized configuration changes, and bulk data access
+- Without comprehensive logging, breaches go unnoticed and post-incident forensics become impossible
+- Monitoring authentication and admin events surfaces suspicious behavior such as new API tokens, app installs, or permission changes
+- Retained logs support compliance obligations and provide evidence for incident response
+
+**Attack Prevented:** Undetected account takeover, unauthorized configuration changes, insider data access, delayed breach detection
 
 #### ClickOps Implementation
 
@@ -247,4 +339,5 @@ Manage Zendesk API tokens securely.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Zendesk hardening guide | Claude Code (Opus 4.5) |

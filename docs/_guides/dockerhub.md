@@ -6,9 +6,9 @@ slug: "dockerhub"
 tier: "3"
 category: "DevOps"
 description: "Container registry security for access tokens, image signing, and repository controls"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
-last_updated: "2026-03-23"
+last_updated: "2026-06-29"
 ---
 
 
@@ -80,6 +80,15 @@ Require MFA for Docker Hub accounts, especially those with push access.
 #### Description
 Use personal access tokens instead of passwords for automation.
 
+#### Rationale
+**Why This Matters:**
+- Personal access tokens can be scoped to read-only or to specific repositories, so a leaked CI token cannot push or delete images
+- Tokens are individually revocable and rotatable without changing the account password or disrupting other automation
+- An account password unlocks the full Docker Hub UI, MFA settings, and every repository, so a single leaked password is a total account compromise
+- Docker Hub secret-exposure research repeatedly finds credentials baked into public image layers, so push credentials must be narrowly scoped and easy to revoke
+
+**Attack Prevented:** Credential theft, password reuse, over-privileged CI tokens, full-account takeover from a leaked secret
+
 #### ClickOps Implementation
 
 **Step 1: Create Scoped Tokens**
@@ -111,6 +120,15 @@ Use personal access tokens instead of passwords for automation.
 #### Description
 Use Docker Scout for vulnerability scanning.
 
+#### Rationale
+**Why This Matters:**
+- Continuous CVE scanning surfaces known-vulnerable packages and base images before they reach production
+- Docker Hub hosts millions of images at widely varying patch levels, so unscanned pulls silently inherit upstream vulnerabilities
+- Scout maps findings to specific layers and remediation paths, shortening the window between disclosure and patch
+- Policy gates can fail a build when critical vulnerabilities are present, keeping vulnerable images out of the deploy pipeline
+
+**Attack Prevented:** Exploitation of known CVEs, vulnerable base images, outdated dependencies, unpatched components
+
 #### Implementation
 
 {% include pack-code.html vendor="dockerhub" section="2.1" %}
@@ -126,6 +144,15 @@ Use Docker Scout for vulnerability scanning.
 Enable Docker Content Trust for image signing.
 
 **Important:** Docker is officially retiring DCT (Docker Content Trust) for Docker Official Images. For new deployments, use Cosign/Sigstore (Section 2.4) instead. DCT is documented here for existing deployments.
+
+#### Rationale
+**Why This Matters:**
+- Signature enforcement requires images to carry a valid cryptographic signature before they will pull or run, proving they were published by a trusted key holder
+- Without signing, anyone with push access or a stolen token can replace an image and clients accept it silently
+- Any tampering in transit or at rest in the registry invalidates the signature, so modified images are detected and rejected
+- For new pipelines, Cosign/Sigstore (Section 2.4) is the recommended successor, but enforcing a trusted signature is the underlying control either way
+
+**Attack Prevented:** Image tampering, malicious image substitution, man-in-the-middle registry attacks, unsigned-image deployment
 
 {% include pack-code.html vendor="dockerhub" section="2.2" %}
 
@@ -297,6 +324,18 @@ Generate SLSA provenance attestations and Software Bill of Materials (SBOM) for 
 
 **Profile Level:** L1 (Crawl)
 
+#### Description
+Default Docker Hub repositories to private, grant access through teams rather than individual users, and review repository permissions on a regular schedule.
+
+#### Rationale
+**Why This Matters:**
+- Public repositories expose image contents, including any secrets accidentally baked into layers, to the entire internet
+- Team-based access keeps permissions consistent and lets you deprovision a departing user in one place instead of per repository
+- Quarterly permission audits catch stale grants and orphaned accounts that accumulate standing push access over time
+- Docker Hub secret-exposure research has found thousands of public images leaking API keys and cloud credentials, often from repositories that were never meant to be public
+
+**Attack Prevented:** Inadvertent source and secret disclosure, unauthorized image access, permission creep, orphaned-account access
+
 #### ClickOps Implementation
 
 1. Set repositories to **Private** by default
@@ -308,6 +347,18 @@ Generate SLSA provenance attestations and Software Bill of Materials (SBOM) for 
 ### 3.2 Prevent Secret Exposure
 
 **Profile Level:** L1 (Crawl)
+
+#### Description
+Scan images for embedded secrets before pushing, use multi-stage builds to keep build-time credentials out of final layers, and never hardcode credentials in Dockerfiles.
+
+#### Rationale
+**Why This Matters:**
+- Secrets copied into an image persist in its layer history even if a later layer deletes them, so they remain extractable from the published image
+- Pre-push secret scanning catches leaked API keys, cloud credentials, and tokens before they ever reach a public or shared registry
+- Multi-stage builds discard build-time secrets and tooling, shrinking both the attack surface and the chance of credential leakage
+- Once a secret is pushed to Docker Hub it must be treated as compromised and rotated, which is far costlier than preventing the leak
+
+**Attack Prevented:** Secret leakage in image layers, hardcoded-credential exposure, credential harvesting from public images, supply chain credential theft
 
 #### Implementation
 
@@ -323,6 +374,18 @@ Generate SLSA provenance attestations and Software Bill of Materials (SBOM) for 
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2
+
+#### Description
+Enable and regularly review Docker Hub activity logs so authentication events and image pushes are recorded and monitored for anomalies such as unexpected accounts, unfamiliar IP addresses, or off-schedule tag changes.
+
+#### Rationale
+**Why This Matters:**
+- Activity logs are the primary evidence trail for detecting a compromised account or stolen push token before damage spreads
+- Without log review, malicious pushes, tag moves, and ghost-image releases go unnoticed until downstream consumers are already affected
+- Correlating push events against expected CI/CD schedules and source releases distinguishes legitimate automation from attacker activity
+- Retained activity logs are essential for incident response, forensics, and demonstrating monitoring controls to auditors
+
+**Attack Prevented:** Undetected account compromise, unauthorized image pushes, tag manipulation, delayed incident response
 
 #### Detection Focus
 
@@ -440,5 +503,6 @@ For high-security environments, consider:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.2.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-03-23 | 0.2.0 | draft | Add digest pinning, Cosign verification, build provenance, ghost image detection controls (Trivy Docker Hub supply chain attack) | Claude Code (Opus 4.6) |
 | 2025-12-14 | 0.1.0 | draft | Initial Docker Hub hardening guide | Claude Code (Opus 4.5) |

@@ -6,9 +6,9 @@ slug: "pendo"
 tier: "3"
 category: "Data"
 description: "Product experience platform hardening for Pendo including SAML SSO, subscription access, and data privacy controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Pendo security including SAML SSO, subscription access, API se
 #### Description
 Configure SAML SSO to centralize authentication for Pendo users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Pendo authentication in your corporate IdP so MFA, conditional access, and session policies apply to every login
+- Local Pendo passwords bypass IdP controls and are prime targets for credential stuffing and phishing
+- Centralized provisioning and deprovisioning removes departed users automatically, eliminating orphaned accounts with access to product analytics
+- Pendo holds detailed user behavior data and controls in-app messaging that reaches your end users, so a single compromised login has broad reach
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - Pendo admin access
 - Enterprise plan
@@ -93,6 +102,14 @@ Configure SAML SSO to centralize authentication for Pendo users.
 #### Description
 Require 2FA for all Pendo users.
 
+#### Rationale
+**Why This Matters:**
+- A second factor blocks account takeover even when a password is stolen, guessed, or phished
+- Admin accounts can edit in-app guides, export analytics, and manage integration keys, so a single takeover carries outsized impact
+- Phishing-resistant methods such as FIDO2/WebAuthn defeat real-time relay and push-fatigue attacks against high-value admins
+
+**Attack Prevented:** Credential stuffing, phishing, password reuse, MFA push fatigue
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -115,6 +132,14 @@ Require 2FA for all Pendo users.
 
 #### Description
 Implement least privilege using Pendo roles.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege role assignment limits what a compromised or careless account can see and change
+- Read-only roles let analysts view data without the ability to alter guides, settings, or integration keys
+- Restricting the Admin role to a few users shrinks the attack surface for privilege abuse and accidental misconfiguration
+
+**Attack Prevented:** Privilege escalation, insider misuse, accidental data exposure, lateral movement
 
 #### ClickOps Implementation
 
@@ -145,6 +170,14 @@ Implement least privilege using Pendo roles.
 #### Description
 Control access to different subscriptions/apps.
 
+#### Rationale
+**Why This Matters:**
+- Separating production and development subscriptions prevents test users from touching live customer analytics and guides
+- Scoping access per subscription contains the blast radius if one set of credentials is compromised
+- Segmentation enforces need-to-know boundaries between teams that manage different applications
+
+**Attack Prevented:** Cross-environment data exposure, lateral movement, unauthorized access to production data
+
 #### ClickOps Implementation
 
 **Step 1: Configure Access**
@@ -165,6 +198,14 @@ Control access to different subscriptions/apps.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Admin accounts can modify in-app guides, export behavior data, and manage integration keys, making them the highest-value targets in Pendo
+- Keeping the admin count small and requiring SSO reduces the number of credentials an attacker can target
+- Monitoring admin activity surfaces unauthorized changes and supports incident investigation and audit
+
+**Attack Prevented:** Admin account takeover, privilege abuse, unauthorized configuration changes
 
 #### ClickOps Implementation
 
@@ -194,6 +235,14 @@ Minimize and protect administrator accounts.
 #### Description
 Secure Pendo integration keys.
 
+#### Rationale
+**Why This Matters:**
+- Integration and API keys authenticate programmatic access to Pendo data and must be treated as secrets
+- A key leaked in public client-side code or a source repository lets attackers read analytics or push content to users
+- Prompt rotation of compromised keys limits the window in which an exposed credential can be abused
+
+**Attack Prevented:** API key leakage, unauthorized data access, secret exposure in source code
+
 #### ClickOps Implementation
 
 **Step 1: Review Keys**
@@ -219,6 +268,14 @@ Secure Pendo integration keys.
 
 #### Description
 Configure data privacy controls.
+
+#### Rationale
+**Why This Matters:**
+- Excluding sensitive fields and masking values prevents PII from being collected into Pendo unnecessarily
+- Minimizing collected metadata reduces the impact of any breach and aligns with data-minimization principles
+- Supporting deletion and GDPR/CCPA requests keeps the organization compliant and avoids regulatory penalties
+
+**Attack Prevented:** PII over-collection, privacy violations, regulatory non-compliance, sensitive data exposure
 
 #### ClickOps Implementation
 
@@ -278,6 +335,7 @@ Configure data privacy controls.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
 
 ---

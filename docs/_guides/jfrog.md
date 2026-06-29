@@ -6,9 +6,9 @@ slug: "jfrog"
 tier: "2"
 category: "DevOps"
 description: "Artifact management security for repository permissions, Xray policies, and access tokens"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -52,6 +52,15 @@ This guide covers JFrog Artifactory security configurations including authentica
 
 #### Description
 Require SAML SSO with MFA for all Artifactory access.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes Artifactory authentication in your corporate IdP so MFA and conditional access apply to every login
+- Local password and anonymous logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- SSO with provisioning deprovisions departed users automatically, eliminating orphaned accounts with standing access to artifacts
+- Artifactory is the central distribution point for build artifacts and dependencies, so a single compromised login can poison everything downstream
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, orphaned-account access
 
 #### ClickOps Implementation
 
@@ -140,6 +149,15 @@ Configure granular permissions for repository access.
 #### Description
 Manage API keys and access tokens securely.
 
+#### Rationale
+**Why This Matters:**
+- Long-lived, broadly scoped tokens are bearer credentials that grant standing access if leaked in CI logs, source, or config files
+- Auditing and revoking unused tokens removes forgotten credentials that attackers can quietly reuse
+- Scoping tokens to the minimum repositories and actions limits blast radius if one is compromised
+- Regular rotation bounds the window an exposed token remains valid
+
+**Attack Prevented:** Token leakage, credential reuse, privilege escalation, persistent unauthorized access
+
 #### ClickOps Implementation
 
 **Step 1: Audit Existing Keys**
@@ -175,6 +193,15 @@ See the CLI pack below for scoped token creation commands.
 #### Description
 Harden repository configurations to prevent unauthorized access.
 
+#### Rationale
+**Why This Matters:**
+- Anonymous access and open content browsing let unauthenticated users enumerate and pull internal artifacts
+- Ordering internal repositories ahead of remote ones in virtual repositories blocks dependency confusion substitution
+- Disabling file listing and properties search reduces the reconnaissance surface for attackers mapping the repository
+- Include/exclude patterns constrain which paths can be resolved, preventing accidental exposure of sensitive artifacts
+
+**Attack Prevented:** Unauthorized artifact access, dependency confusion, repository reconnaissance, data exposure
+
 #### ClickOps Implementation
 
 **Step 1: Review Repository Settings**
@@ -208,6 +235,15 @@ Harden repository configurations to prevent unauthorized access.
 #### Description
 Secure remote repository (proxy) configurations.
 
+#### Rationale
+**Why This Matters:**
+- Remote repositories proxy untrusted public registries, so unvalidated content can introduce malicious or tampered packages
+- Checksum validation and MIME-type blocking detect artifacts that have been swapped or corrupted in transit or at the source
+- Exclude patterns stop the proxy from fetching internal package names from public registries, closing a dependency confusion path
+- Storing artifacts locally creates a stable, auditable copy that survives upstream deletion or compromise
+
+**Attack Prevented:** Malicious package injection, artifact tampering, dependency confusion, upstream compromise
+
 #### ClickOps Implementation
 
 **Step 1: Configure Remote Repository Settings**
@@ -238,6 +274,15 @@ See the CLI pack below for recommended exclude patterns.
 
 #### Description
 Configure Artifactory to prevent dependency confusion attacks.
+
+#### Rationale
+**Why This Matters:**
+- Dependency confusion exploits resolvers that prefer a public package over an internal one with the same name
+- Prioritizing internal repositories in resolution order ensures trusted packages always win over public look-alikes
+- Reserving internal package names in public proxies blocks attackers from registering matching names externally
+- A single confused dependency can execute attacker-controlled code inside every build that resolves it
+
+**Attack Prevented:** Dependency confusion, namespace squatting, malicious package substitution, build-time code execution
 
 #### Implementation
 
@@ -270,6 +315,15 @@ See the CLI pack below for virtual repository configuration.
 #### Description
 Require artifact signing for production deployments.
 
+#### Rationale
+**Why This Matters:**
+- Cryptographic signatures bind each artifact to a trusted producer, proving it was not altered after build
+- Verifying signatures on download lets consumers reject artifacts that were tampered with or injected into the repository
+- Signing combined with Xray enforcement blocks unsigned or unverified artifacts from reaching production
+- Without signatures, a compromised repository or man-in-the-middle can substitute artifacts undetected
+
+**Attack Prevented:** Artifact tampering, supply chain injection, unsigned-artifact deployment, build integrity loss
+
 #### Implementation
 
 **Step 1: Configure GPG Signing**
@@ -297,6 +351,15 @@ See the CLI pack below for download verification commands.
 
 #### Description
 Make release artifacts immutable to prevent tampering.
+
+#### Rationale
+**Why This Matters:**
+- Immutable release versions prevent silent replacement of a published artifact with a malicious one under the same coordinates
+- Blocking re-deployment guarantees that what was tested and approved is exactly what ships
+- Restricting delete permissions to admins stops attackers from removing and re-uploading tampered versions
+- Mutable releases break reproducibility and let supply chain attacks hide behind unchanged version numbers
+
+**Attack Prevented:** Artifact tampering, version overwrite, supply chain substitution, reproducibility loss
 
 #### ClickOps Implementation
 
@@ -327,6 +390,15 @@ Make release artifacts immutable to prevent tampering.
 #### Description
 Configure JFrog Xray for vulnerability and license scanning.
 
+#### Rationale
+**Why This Matters:**
+- Automated scanning surfaces known CVEs and risky licenses in dependencies before they propagate into builds
+- Blocking download of critical-severity artifacts stops vulnerable components from entering the pipeline by default
+- Watches tie policies to specific repositories so production paths are continuously enforced, not just scanned once
+- Unscanned artifacts let known-vulnerable and non-compliant components ship into production unnoticed
+
+**Attack Prevented:** Vulnerable dependency introduction, known-CVE exploitation, license compliance violations, supply chain risk
+
 #### ClickOps Implementation
 
 **Step 1: Create Security Policy**
@@ -355,6 +427,18 @@ Configure JFrog Xray for vulnerability and license scanning.
 
 **Profile Level:** L1 (Crawl)
 
+#### Description
+Establish a repeatable workflow to triage, track, and remediate the vulnerabilities Xray detects, including alerting, ticketing, and blocking of affected artifacts.
+
+#### Rationale
+**Why This Matters:**
+- Detection without a remediation process leaves known vulnerabilities sitting in the repository indefinitely
+- Routing CVE alerts into ticketing with assigned owners ensures findings are actioned rather than ignored
+- Blocking affected artifacts prevents continued distribution of components with unpatched critical flaws
+- A bounded remediation SLA limits the window attackers have to exploit a publicly known vulnerability
+
+**Attack Prevented:** Known-CVE exploitation, unpatched dependency distribution, vulnerability backlog, supply chain risk
+
 #### Implementation
 
 **Step 1: Monitor CVE Alerts**
@@ -381,6 +465,15 @@ See the CLI pack below for Xray policy configuration.
 
 #### Description
 Configure comprehensive audit logging.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs of authentication, permission changes, and artifact deploys are the primary evidence for detecting and investigating abuse
+- Shipping logs to a SIEM enables correlation and alerting that local logs alone cannot provide
+- Adequate retention ensures records survive long enough to investigate slow-moving supply chain compromises
+- Without comprehensive logging, artifact tampering and unauthorized access can occur with no forensic trail
+
+**Attack Prevented:** Undetected intrusion, repudiation, delayed breach discovery, forensic blind spots
 
 #### ClickOps Implementation
 
@@ -462,4 +555,5 @@ See the DB pack below for SIEM detection queries.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial JFrog Artifactory hardening guide | Claude Code (Opus 4.5) |

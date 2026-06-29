@@ -6,9 +6,9 @@ slug: "buildkite"
 tier: "2"
 category: "DevOps"
 description: "CI/CD platform hardening for Buildkite including SAML SSO, team permissions, agent security, and pipeline controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Buildkite security including SAML SSO, team permissions, agent
 #### Description
 Configure SAML SSO to centralize authentication for Buildkite users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Buildkite authentication in your corporate IdP, enforcing MFA, conditional access, and session policy on every login
+- Local Buildkite passwords bypass IdP controls and are prime targets for credential stuffing and phishing
+- Group-to-team mapping plus IdP deprovisioning removes departed employees' access automatically, eliminating orphaned accounts
+- Buildkite pipelines hold deployment credentials and source-build access, so a single compromised login can poison the software supply chain
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, orphaned-account access
+
 #### Prerequisites
 - Buildkite organization admin access
 - Enterprise or Business tier
@@ -99,6 +108,15 @@ Configure SAML SSO to centralize authentication for Buildkite users.
 #### Description
 Require 2FA for all Buildkite users.
 
+#### Rationale
+**Why This Matters:**
+- A second factor blocks attackers who have already obtained a valid Buildkite password through phishing, reuse, or a breach
+- CI/CD accounts can trigger builds and deployments, so a single-factor takeover can reach production
+- Org-wide enforcement closes the gap left by users who would otherwise never enable 2FA voluntarily
+- Phishing-resistant factors for admins protect the highest-privilege accounts against real-time relay attacks
+
+**Attack Prevented:** Credential stuffing, password reuse, phishing, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA Requirement**
@@ -130,6 +148,15 @@ Require 2FA for all Buildkite users.
 
 #### Description
 Implement least privilege using Buildkite teams.
+
+#### Rationale
+**Why This Matters:**
+- Scoping each team to only the pipelines it needs limits the blast radius if any one account is compromised
+- Granular permission levels (Read & Build versus Full Access) prevent over-broad rights that let any user modify pipeline configuration
+- Quarterly membership reviews catch privilege creep and remove access from people who changed roles
+- Function-based teams make access auditable and map cleanly to compliance least-privilege requirements
+
+**Attack Prevented:** Privilege escalation, lateral movement, insider misuse, unauthorized pipeline changes
 
 #### ClickOps Implementation
 
@@ -168,6 +195,15 @@ Implement least privilege using Buildkite teams.
 #### Description
 Control access to specific pipelines.
 
+#### Rationale
+**Why This Matters:**
+- Per-pipeline visibility keeps sensitive production and deployment pipelines hidden from users who have no need to see them
+- Restricting who can trigger builds prevents unauthorized or accidental runs against production
+- Limiting manual builds on production reduces the chance of an attacker forcing a malicious deployment
+- Auditing build triggers creates accountability for every pipeline execution
+
+**Attack Prevented:** Unauthorized deployment, pipeline tampering, supply chain injection, information disclosure
+
 #### ClickOps Implementation
 
 **Step 1: Configure Pipeline Visibility**
@@ -197,6 +233,15 @@ Control access to specific pipelines.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Organization admins can change SSO, permissions, agent tokens, and billing, so a compromised admin account compromises everything
+- Keeping admins to a small set reduces the number of high-value targets an attacker can phish
+- Requiring SSO and 2FA on admins ensures the most powerful accounts get the strongest authentication
+- Monitoring admin activity surfaces anomalous configuration changes before they cause damage
+
+**Attack Prevented:** Admin account takeover, privilege escalation, configuration tampering, persistence
 
 #### ClickOps Implementation
 
@@ -230,6 +275,15 @@ Minimize and protect administrator accounts.
 #### Description
 Securely manage agent registration tokens.
 
+#### Rationale
+**Why This Matters:**
+- Agent tokens let any holder register a build agent and execute pipeline jobs, so a leaked token is effectively code execution in your CI
+- Scoping tokens per environment confines a leaked token to a single cluster rather than the whole organization
+- Regular rotation shrinks the window an exposed token remains usable
+- Revoking unused tokens removes standing credentials that attackers could discover in code, logs, or images
+
+**Attack Prevented:** Agent impersonation, unauthorized job execution, credential leakage, supply chain compromise
+
 #### ClickOps Implementation
 
 **Step 1: Create Scoped Tokens**
@@ -259,6 +313,15 @@ Securely manage agent registration tokens.
 
 #### Description
 Isolate agents by environment or sensitivity.
+
+#### Rationale
+**Why This Matters:**
+- Separating production, development, and sensitive builds prevents a compromised low-trust agent from reaching production secrets
+- Targeting pipelines to specific clusters enforces a hard boundary that a malicious build cannot cross
+- Restricting production cluster access limits which jobs can touch deployment credentials and live systems
+- Cluster-level isolation contains the blast radius of any single compromised build host
+
+**Attack Prevented:** Lateral movement, secret exfiltration, cross-environment contamination, privilege escalation
 
 #### ClickOps Implementation
 
@@ -292,6 +355,15 @@ Isolate agents by environment or sensitivity.
 #### Description
 Secure agent host infrastructure.
 
+#### Rationale
+**Why This Matters:**
+- Agents execute arbitrary pipeline code, so a hardened host is the primary defense against builds being used to attack your network
+- Ephemeral agents destroy any attacker foothold after each job, preventing persistence and cross-build contamination
+- Minimizing installed software and applying OS hardening reduces the exploitable attack surface on every build host
+- Restricting agent network access prevents a compromised build from pivoting to internal systems or exfiltrating data
+
+**Attack Prevented:** Build host compromise, persistence, lateral movement, data exfiltration
+
 #### ClickOps Implementation
 
 **Step 1: Harden Agent Hosts**
@@ -323,6 +395,15 @@ Secure agent host infrastructure.
 
 #### Description
 Enable and monitor audit logs.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs of authentication, pipeline changes, and permission edits are the primary evidence for detecting and investigating compromise
+- Monitoring agent token usage surfaces stolen tokens being used from unexpected sources
+- Appropriate retention ensures records survive long enough to support incident response and compliance audits
+- Without logging, attacker actions such as permission changes and malicious pipeline edits go unnoticed
+
+**Attack Prevented:** Undetected intrusion, repudiation, delayed incident response, audit gaps
 
 #### ClickOps Implementation
 
@@ -394,6 +475,7 @@ Enable and monitor audit logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, teams, and agent security | Claude Code (Opus 4.5) |
 
 ---

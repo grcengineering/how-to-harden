@@ -6,9 +6,9 @@ slug: "heap"
 tier: "3"
 category: "Data"
 description: "Digital insights platform hardening for Heap including SAML SSO, environment access, and data governance"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -54,6 +54,15 @@ This guide covers Heap security including SAML SSO, environment access, API secu
 #### Description
 Configure SAML SSO to centralize authentication for Heap users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Heap login in your corporate IdP, enforcing MFA and conditional access on every authentication
+- Local username/password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- SSO with SCIM provisioning deprovisions departed users automatically, eliminating orphaned accounts that retain standing access to analytics data
+- Heap autocaptures user interaction data that can include sensitive product behavior, so a single compromised login can expose broad datasets
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
 #### Prerequisites
 - Heap admin access
 - Business or Enterprise plan
@@ -93,6 +102,15 @@ Configure SAML SSO to centralize authentication for Heap users.
 #### Description
 Require 2FA for all Heap users.
 
+#### Rationale
+**Why This Matters:**
+- Adds a second factor so a stolen, guessed, or reused password alone cannot grant access to Heap
+- Defends against credential stuffing fueled by password reuse from unrelated third-party breaches
+- Admin and Architect accounts can alter data collection, export datasets, and manage users, so protecting those sessions is critical
+- Phishing-resistant factors for admins block real-time credential relay and proxy phishing attacks
+
+**Attack Prevented:** Credential stuffing, password reuse, phishing, account takeover
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -115,6 +133,15 @@ Require 2FA for all Heap users.
 
 #### Description
 Implement least privilege using Heap roles.
+
+#### Rationale
+**Why This Matters:**
+- Granting the minimum necessary role limits what a compromised or insider account can view and change
+- Assigning Read-only to most users prevents accidental or malicious modification of event definitions, dashboards, and reports
+- Restricting Architect and Admin roles reduces the number of accounts that can alter data capture or export raw datasets
+- Regular access reviews catch privilege creep and stale grants before they become an attack path
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, unauthorized data modification
 
 #### ClickOps Implementation
 
@@ -147,6 +174,15 @@ Implement least privilege using Heap roles.
 #### Description
 Control access to different environments.
 
+#### Rationale
+**Why This Matters:**
+- Separating production from development limits exposure of real user data to lower-trust test workflows
+- Restricting production environment access shrinks the population of accounts that can reach live analytics data
+- Environment-scoped permissions prevent a development-only user from reading or altering production datasets
+- Isolating sensitive-data environments contains the blast radius of any single compromised account
+
+**Attack Prevented:** Cross-environment data exposure, unauthorized production access, blast-radius expansion
+
 #### ClickOps Implementation
 
 **Step 1: Configure Environment Permissions**
@@ -167,6 +203,15 @@ Control access to different environments.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Owner and admin accounts control SSO configuration, user management, data collection, and exports, making each a high-value target
+- Fewer privileged accounts means fewer credentials an attacker can phish or steal to gain full control of the workspace
+- Requiring SSO for admins routes privileged logins through enforced MFA and conditional access
+- Monitoring admin activity surfaces suspicious configuration changes or bulk data exports early
+
+**Attack Prevented:** Account takeover, privilege abuse, unauthorized configuration change, insider misuse
 
 #### ClickOps Implementation
 
@@ -195,6 +240,15 @@ Minimize and protect administrator accounts.
 
 #### Description
 Implement data governance controls.
+
+#### Rationale
+**Why This Matters:**
+- Heap autocaptures interactions by default, which can sweep in PII or sensitive fields unless redaction and blocking are configured
+- Data masking and PII protection reduce the sensitivity of stored analytics, limiting harm if the data store is exposed
+- Blocking sensitive-data capture keeps regulated values such as payment, health, or credential fields out of the analytics store entirely
+- Supporting deletion requests sustains compliance with privacy regulations like GDPR and CCPA and honors user data rights
+
+**Attack Prevented:** PII leakage, sensitive-data overcollection, regulatory non-compliance, privacy violations
 
 #### ClickOps Implementation
 
@@ -253,6 +307,7 @@ Implement data governance controls.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
 
 ---

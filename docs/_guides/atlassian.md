@@ -6,9 +6,9 @@ slug: "atlassian"
 tier: "2"
 category: "Productivity"
 description: "Jira/Confluence security for organization policies, app controls, and data residency"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
-last_updated: "2026-02-19"
+last_updated: "2026-06-29"
 ---
 
 
@@ -107,6 +107,15 @@ Require SAML SSO with MFA for all Atlassian Cloud access, eliminating local pass
 #### Description
 Configure product-level and project-level access controls.
 
+#### Rationale
+**Why This Matters:**
+- Default-open product and project access lets every licensed user read every Jira project and Confluence space, far beyond what their role requires
+- Granular permission schemes enforce least privilege so a compromised account or insider only reaches the projects and spaces explicitly granted
+- Disabling anonymous Confluence access prevents unauthenticated readers from harvesting internal documentation, architecture diagrams, and secrets pasted into pages
+- Limiting browse and comment permissions per project contains the blast radius when a single account is phished
+
+**Attack Prevented:** Lateral movement, privilege creep, insider data harvesting, anonymous information disclosure
+
 #### ClickOps Implementation
 
 **Step 1: Configure Product Access**
@@ -138,6 +147,15 @@ Configure product-level and project-level access controls.
 
 #### Description
 Control API token creation and implement expiration policies.
+
+#### Rationale
+**Why This Matters:**
+- API tokens authenticate as the user and bypass interactive SSO and MFA, so an exposed token is a standing credential carrying the full access of its owner
+- Non-expiring tokens linger in scripts, CI systems, and developer laptops indefinitely, granting attackers persistent access long after a credential leaks
+- Restricting who can mint tokens and forcing short expiration shrinks the window an exfiltrated token remains valid
+- Auditing and revoking unused tokens removes forgotten credentials that attackers routinely find in code repositories and config files
+
+**Attack Prevented:** Token theft, MFA bypass, persistent unauthorized access, credential sprawl
 
 #### ClickOps Implementation
 
@@ -218,6 +236,15 @@ Before approving any app:
 #### Description
 Monitor Marketplace app API calls and data access.
 
+#### Rationale
+**Why This Matters:**
+- Installed apps run with broad delegated scopes and can read or move large volumes of Jira and Confluence data without a human in the loop
+- A compromised or malicious app behaves like a legitimate integration, so its abuse is invisible without monitoring API call patterns
+- Baselining normal app data-access volume surfaces sudden bulk reads or exports that indicate exfiltration in progress
+- Activity logs give responders the evidence to scope and revoke a rogue app before it drains an entire instance
+
+**Attack Prevented:** Malicious app data exfiltration, supply-chain abuse, undetected bulk export
+
 #### Code Implementation
 
 {% include pack-code.html vendor="atlassian" section="2.2" %}
@@ -233,6 +260,15 @@ Monitor Marketplace app API calls and data access.
 
 #### Description
 Harden AppLinks between Atlassian products to prevent impersonation attacks.
+
+#### Rationale
+**Why This Matters:**
+- AppLinks establish trust between Atlassian products, and a misconfigured link lets one application impersonate users on another
+- OAuth 1.0a and unverified trust directions allow an attacker who controls one linked system to forge requests the trusting system accepts as authenticated
+- Auditing and removing stale AppLinks eliminates standing trust relationships to systems that are no longer maintained or have changed ownership
+- Restricting AppLink creation to administrators prevents an attacker or insider from quietly establishing a trusted impersonation channel
+
+**Attack Prevented:** User impersonation, cross-product request forgery, trust-relationship abuse
 
 #### ClickOps Implementation (Data Center)
 
@@ -260,6 +296,15 @@ Harden AppLinks between Atlassian products to prevent impersonation attacks.
 #### Description
 Secure webhook configurations to prevent data leakage.
 
+#### Rationale
+**Why This Matters:**
+- Webhooks push issue and page data to external URLs automatically, so a hostile or hijacked endpoint receives a continuous feed of internal content
+- Without HTTPS, webhook payloads traverse the network in cleartext and can be intercepted in transit
+- Missing signature validation lets an attacker spoof webhook calls to downstream services or replay captured payloads
+- Scoping events with JQL filters limits each webhook to the minimum data it needs, reducing what leaks if the destination is compromised
+
+**Attack Prevented:** Data leakage, payload interception, webhook spoofing, over-broad data exposure
+
 #### ClickOps Implementation
 
 **Step 1: Audit Webhooks**
@@ -286,6 +331,15 @@ Secure webhook configurations to prevent data leakage.
 #### Description
 Manage OAuth tokens for third-party integrations.
 
+#### Rationale
+**Why This Matters:**
+- OAuth grants let third-party applications act on a user's behalf, and forgotten authorizations remain valid until explicitly revoked
+- Over-scoped grants give an integration far more access than it needs, so its compromise exposes data well beyond its function
+- Requiring admin approval for new apps and sensitive scopes stops users from authorizing risky integrations that bypass procurement and security review
+- Periodically reviewing and revoking connected apps removes dormant grants that attackers exploit through compromised third-party vendors
+
+**Attack Prevented:** OAuth grant abuse, over-privileged integrations, third-party compromise, consent phishing
+
 #### ClickOps Implementation
 
 **Step 1: Review Authorized Applications**
@@ -311,6 +365,15 @@ Manage OAuth tokens for third-party integrations.
 #### Description
 Configure data residency for compliance with data localization requirements.
 
+#### Rationale
+**Why This Matters:**
+- Regulations such as GDPR and various data-sovereignty laws require certain data to remain within specific geographic boundaries
+- Pinning Atlassian data to an approved realm prevents inadvertent cross-border storage that creates legal and contractual exposure
+- Documented residency controls provide the evidence auditors and customers require to demonstrate localization compliance
+- Controlling where data lives also limits which jurisdictions' legal processes can compel access to it
+
+**Attack Prevented:** Compliance violations, unauthorized cross-border data transfer, jurisdictional overreach
+
 #### ClickOps Implementation (Enterprise)
 
 **Step 1: Configure Data Residency**
@@ -330,6 +393,15 @@ Configure data residency for compliance with data localization requirements.
 
 #### Description
 Use data classification to restrict access to sensitive content.
+
+#### Rationale
+**Why This Matters:**
+- Without classification, all content is treated the same and sensitive material is protected no better than routine notes
+- Labeling spaces and projects by sensitivity drives access decisions so confidential and restricted content is gated to the right audiences
+- Classification gives users a clear signal not to paste secrets or regulated data into low-sensitivity, broadly readable spaces
+- Consistent labels enable automated policy and DLP enforcement and provide auditable evidence of how sensitive data is handled
+
+**Attack Prevented:** Sensitive data exposure, over-sharing, mishandling of regulated content
 
 #### ClickOps Implementation
 
@@ -357,6 +429,15 @@ Use data classification to restrict access to sensitive content.
 
 #### Description
 Configure and monitor Atlassian audit logs.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs are the primary record of authentication, permission changes, app installs, and data exports needed to detect and investigate abuse
+- Without centralized logging, malicious activity such as a quiet permission escalation or bulk export goes unnoticed until damage is done
+- Streaming logs to a SIEM preserves evidence beyond the platform's retention window and correlates Atlassian events with the rest of the environment
+- Reliable audit trails are required for incident response and for SOC 2, ISO 27001, and similar compliance attestations
+
+**Attack Prevented:** Undetected intrusion, repudiation, delayed incident response, tampering concealment
 
 #### ClickOps Implementation
 
@@ -388,6 +469,15 @@ Configure and monitor Atlassian audit logs.
 #### Description
 Enable Atlassian Access anomaly detection (Enterprise).
 
+#### Rationale
+**Why This Matters:**
+- Anomaly detection flags behavior that static rules miss, such as impossible-travel logins or atypical bulk data access
+- Account takeover and insider abuse often look like ordinary activity until viewed against the user's established baseline
+- Automated alerts shrink dwell time by surfacing suspicious events in near real time rather than during a periodic log review
+- Early warning on permission changes catches an attacker escalating privileges before they reach sensitive projects
+
+**Attack Prevented:** Account takeover, insider abuse, credential stuffing, stealthy privilege escalation
+
 #### ClickOps Implementation
 
 1. Navigate to: **admin.atlassian.com → Security → Anomaly detection**
@@ -407,6 +497,15 @@ Enable Atlassian Access anomaly detection (Enterprise).
 
 #### Description
 Recent critical vulnerabilities require immediate attention.
+
+#### Rationale
+**Why This Matters:**
+- Critical Confluence and Jira vulnerabilities have included broken access control and OGNL injection enabling unauthenticated remote code execution and rogue admin account creation
+- These flaws are weaponized and actively exploited within days of disclosure, so unpatched Data Center and Server instances are high-value targets
+- Prompt patching plus log review for exploitation attempts and unauthorized admin accounts limits both initial compromise and attacker persistence
+- A defined CVE response process ensures advisories are acted on immediately instead of waiting for the next maintenance window
+
+**Attack Prevented:** Remote code execution, authentication bypass, unauthorized admin creation, data destruction
 
 #### Recent Critical CVEs
 
@@ -500,5 +599,6 @@ Recent critical vulnerabilities require immediate attention.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.2.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Atlassian hardening guide | Claude Code (Opus 4.5) |
 | 2026-02-19 | 0.2.0 | draft | Extract inline code to Code Packs (api, sdk) | Claude Code (Opus 4.6) |

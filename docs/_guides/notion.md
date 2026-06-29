@@ -6,9 +6,9 @@ slug: "notion"
 tier: "2"
 category: "Productivity"
 description: "Collaboration platform hardening for Notion including SAML SSO, workspace security, and data protection controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Notion workspace and organization security including SAML SSO,
 #### Description
 Configure SAML SSO to centralize authentication for Notion users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizing Notion logins in your corporate IdP applies MFA, conditional access, and session policy to every workspace member from a single control point
+- Without SSO, each user keeps a separate Notion password that lives outside IdP oversight and can be phished or reused from a breached service
+- Domain-verified SAML ties Notion identities to your authoritative directory so access decisions follow the same governance as the rest of your stack
+- Workspaces hold product specs, roadmaps, contracts, and internal knowledge — a single account takeover can expose all of it
+
+**Attack Prevented:** Credential stuffing, phishing, password reuse, MFA bypass
+
 #### Prerequisites
 - Notion Business or Enterprise plan
 - At least one verified domain
@@ -100,6 +109,15 @@ Configure SAML SSO to centralize authentication for Notion users.
 #### Description
 Require SAML authentication for all workspace members.
 
+#### Rationale
+**Why This Matters:**
+- Configuring SSO without enforcing it leaves email/password and social logins active as parallel paths that skip IdP controls
+- Requiring "Only SAML SSO" closes those bypass routes so every member authenticates through your IdP's MFA and conditional access
+- Attackers target the weakest enabled login method; removing alternatives shrinks the authentication attack surface to one governed path
+- The deliberate owner email-login exception preserves break-glass recovery without re-opening daily logins to weaker methods
+
+**Attack Prevented:** SSO bypass, credential stuffing, phishing, account takeover via fallback login
+
 #### ClickOps Implementation
 
 **Step 1: Configure Login Method**
@@ -130,6 +148,15 @@ Require SAML authentication for all workspace members.
 
 #### Description
 Configure SCIM for automated user lifecycle management.
+
+#### Rationale
+**Why This Matters:**
+- Automated provisioning and deprovisioning grants access on hire and revokes it the moment a user is removed from the IdP
+- Manual offboarding is slow and error-prone, leaving orphaned accounts that retain standing access to sensitive workspace content
+- SCIM keeps Notion group and role membership synchronized with your directory, preventing privilege drift over time
+- Suppressing SCIM invite emails lets security control rollout communication rather than auto-notifying every provisioned user
+
+**Attack Prevented:** Orphaned-account access, privilege creep, insider misuse after offboarding
 
 #### ClickOps Implementation
 
@@ -164,6 +191,15 @@ Configure SCIM for automated user lifecycle management.
 #### Description
 Control who can access workspaces and create accounts.
 
+#### Rationale
+**Why This Matters:**
+- Restricting allowed email domains keeps workspace membership limited to corporate identities and blocks personal or attacker-controlled addresses
+- Disabling automatic account creation prevents anyone who passes SSO from self-provisioning into the workspace without explicit approval
+- Uncontrolled joining lets unauthorized or stale accounts accumulate, expanding who can read internal pages and databases
+- Regular membership review enforces least privilege and removes users who no longer need access
+
+**Attack Prevented:** Unauthorized account creation, rogue workspace access, membership sprawl
+
 #### ClickOps Implementation
 
 **Step 1: Configure Allowed Email Domains**
@@ -195,6 +231,15 @@ Control who can access workspaces and create accounts.
 #### Description
 Organize content using team spaces for access control.
 
+#### Rationale
+**Why This Matters:**
+- Team spaces partition content so each team sees only the pages relevant to its function rather than the entire workspace
+- Segmentation limits the blast radius of a compromised account to a single team space instead of all organizational knowledge
+- Per-space sharing and export restrictions let sensitive teams such as legal, finance, and HR apply tighter controls than the default
+- Without segmentation, broad default membership exposes confidential content to every member by accident
+
+**Attack Prevented:** Lateral movement, over-broad data exposure, accidental cross-team disclosure
+
 #### ClickOps Implementation
 
 **Step 1: Create Team Spaces**
@@ -220,6 +265,15 @@ Organize content using team spaces for access control.
 
 #### Description
 Minimize and protect workspace owner accounts.
+
+#### Rationale
+**Why This Matters:**
+- Workspace owners hold the highest privilege — they control SSO, security settings, membership, and export policy for the entire org
+- Minimizing owners to a small, documented set reduces the number of high-value accounts an attacker can target for full takeover
+- Excess admin accounts are often dormant and unmonitored, making them ideal footholds for privilege escalation
+- Assigning regular users the member role enforces least privilege and keeps administrative power scoped to those who need it
+
+**Attack Prevented:** Admin account takeover, privilege escalation, unauthorized configuration changes
 
 #### ClickOps Implementation
 
@@ -248,6 +302,15 @@ Minimize and protect workspace owner accounts.
 
 #### Description
 Control how content can be shared internally and externally.
+
+#### Rationale
+**Why This Matters:**
+- Default "Anyone with link" and public-page settings can silently expose internal content to the open internet and search engines
+- Constraining guest permissions and link sharing ensures content is shared only with explicitly authorized people
+- Auditing and disabling unneeded public pages closes accidental data leaks that bypass authentication entirely
+- Notion pages frequently contain customer data, credentials, and strategy docs that must never be reachable by an anonymous link
+
+**Attack Prevented:** Data leakage, unauthorized external access, public exposure of confidential pages
 
 #### ClickOps Implementation
 
@@ -280,6 +343,15 @@ Control how content can be shared internally and externally.
 #### Description
 Prevent members from copying pages to other workspaces.
 
+#### Rationale
+**Why This Matters:**
+- Page duplication to external or personal workspaces lets members copy sensitive content outside organizational control
+- Disabling duplication removes a low-friction exfiltration path that bypasses sharing and export restrictions
+- Copied content leaves no audit trail in the source workspace, making data loss hard to detect and investigate
+- Scoping any exceptions to specific team spaces keeps the control tight while accommodating genuine business needs
+
+**Attack Prevented:** Data exfiltration, content theft, unauthorized data movement
+
 #### ClickOps Implementation
 
 **Step 1: Enable Duplication Controls**
@@ -305,6 +377,15 @@ Prevent members from copying pages to other workspaces.
 
 #### Description
 Control ability to export content from Notion.
+
+#### Rationale
+**Why This Matters:**
+- Bulk export to PDF, HTML, or Markdown can extract entire workspaces in a single action, a classic mass-exfiltration vector
+- Disabling export by default and enabling it only where needed limits who can pull content out of Notion
+- Reviewing export logs surfaces unusual or bulk activity that may signal a compromised account or departing insider
+- Without export controls, a single compromised member can offload large volumes of intellectual property undetected
+
+**Attack Prevented:** Mass data exfiltration, insider data theft, intellectual property loss
 
 #### ClickOps Implementation
 
@@ -334,6 +415,15 @@ Control ability to export content from Notion.
 #### Description
 Monitor user activity through audit logs (Enterprise).
 
+#### Rationale
+**Why This Matters:**
+- Audit logs provide the authoritative record of who did what and when across the organization's Notion activity
+- Monitoring provisioning, permission changes, exports, and SSO configuration changes enables timely detection of misuse
+- Without logs, security incidents go unnoticed and forensic investigation after a breach becomes impossible
+- Exporting audit events to a SIEM correlates Notion activity with the rest of the security stack for centralized alerting
+
+**Attack Prevented:** Undetected breaches, insider misuse, configuration tampering without accountability
+
 #### ClickOps Implementation
 
 **Step 1: Access Audit Logs**
@@ -360,6 +450,15 @@ Monitor user activity through audit logs (Enterprise).
 
 #### Description
 Use analytics to monitor workspace activity.
+
+#### Rationale
+**Why This Matters:**
+- Workspace analytics reveal usage patterns that establish a behavioral baseline for normal activity
+- Tracking guest access and sharing trends helps spot anomalous behavior such as sudden spikes in external sharing
+- Reviewing member activity surfaces dormant or compromised accounts that deviate from expected patterns
+- Analytics complement audit logs by turning raw events into trends that drive proactive security review
+
+**Attack Prevented:** Undetected anomalous activity, unmonitored guest and sharing abuse, slow incident detection
 
 #### ClickOps Implementation
 
@@ -439,6 +538,7 @@ Use analytics to monitor workspace activity.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, organization security, and data protection | Claude Code (Opus 4.5) |
 
 ---

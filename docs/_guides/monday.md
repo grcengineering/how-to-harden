@@ -6,9 +6,9 @@ slug: "monday"
 tier: "2"
 category: "Productivity"
 description: "Work management platform hardening for Monday.com including SAML SSO, authentication policies, and admin controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Monday.com security including SAML SSO, authentication policie
 #### Description
 Configure SAML SSO to centralize authentication for Monday.com users.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Monday.com authentication in your corporate IdP, enforcing MFA and conditional access on every login
+- Local email-and-password logins bypass IdP controls and are a prime target for credential stuffing and phishing
+- IdP-managed provisioning and deprovisioning removes departed users automatically, eliminating orphaned accounts with standing access to project data
+- Work boards hold project plans, customer records, and business operations data — a single compromised login can expose the whole account
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, orphaned-account access
+
 #### Prerequisites
 - Monday.com Enterprise plan
 - SAML 2.0 compatible IdP
@@ -99,6 +108,15 @@ Configure SAML SSO to centralize authentication for Monday.com users.
 #### Description
 Configure login policies to enforce SSO or allow exceptions.
 
+#### Rationale
+**Why This Matters:**
+- Enforcing SSO as the only login path closes the password-based side door that attackers use to skip the IdP entirely
+- Unrestricted exceptions let users authenticate with weak local passwords that lack MFA and conditional access
+- A tightly scoped, documented break-glass account preserves emergency access during an IdP outage without leaving a permanent bypass
+- Every uncontrolled exception is a standing weakness that can be discovered and abused long after it was created
+
+**Attack Prevented:** SSO bypass, password-based account takeover, credential stuffing, unauthorized exception abuse
+
 #### ClickOps Implementation
 
 **Step 1: Access Login Policies**
@@ -129,6 +147,15 @@ Configure login policies to enforce SSO or allow exceptions.
 #### Description
 Enable certificate encryption for SAML assertions.
 
+#### Rationale
+**Why This Matters:**
+- Encrypting SAML assertions keeps identity attributes and authentication claims confidential as they pass through the browser between IdP and Monday.com
+- Unencrypted assertions can be read or tampered with by anyone able to intercept the redirect, enabling identity spoofing
+- Signing and encryption together ensure assertions are both authentic and unreadable, defeating replay and forgery attempts
+- Protects the trust relationship at the core of SSO, where a forged assertion equals a full account login
+
+**Attack Prevented:** SAML assertion interception, assertion tampering, identity spoofing, replay attacks
+
 #### ClickOps Implementation
 
 **Step 1: Configure Certificate**
@@ -154,6 +181,15 @@ Enable certificate encryption for SAML assertions.
 
 #### Description
 Configure Google Single Sign-On (available on Pro and Enterprise).
+
+#### Rationale
+**Why This Matters:**
+- Google SSO centralizes authentication so login security inherits your Google Workspace MFA and policy controls
+- Restricting to organizational Google accounts blocks sign-in from personal Gmail addresses that the organization cannot govern or revoke
+- Centralized login lets administrators disable a Google account once and cut off Monday.com access immediately
+- Without domain restriction, anyone with a personal Google account could establish an unmanaged foothold in the workspace
+
+**Attack Prevented:** Unauthorized personal-account access, unmanaged account sprawl, orphaned-account access, credential theft
 
 #### ClickOps Implementation
 
@@ -182,6 +218,15 @@ Configure Google Single Sign-On (available on Pro and Enterprise).
 #### Description
 Control who can join your Monday.com account.
 
+#### Rationale
+**Why This Matters:**
+- Restricting account membership prevents unauthorized self-signup that would silently grant outsiders access to internal boards
+- Just-In-Time provisioning creates accounts automatically on first login, so an over-broad join policy can spawn unmanaged users
+- Explicit provisioning gives administrators a deliberate gate over who exists in the account and what they can see
+- Every uncontrolled member is an additional attack surface and a potential path to project and customer data
+
+**Attack Prevented:** Unauthorized account access, uncontrolled JIT account creation, account sprawl, data exposure to outsiders
+
 #### ClickOps Implementation
 
 **Step 1: Configure Membership Restrictions**
@@ -207,6 +252,15 @@ Control who can join your Monday.com account.
 #### Description
 Configure session timeout and security settings.
 
+#### Rationale
+**Why This Matters:**
+- Bounded session timeouts limit how long an abandoned or unlocked session stays usable, shrinking the window for hijacking
+- Long-lived sessions on shared or unattended devices let anyone resume an authenticated session without re-authenticating
+- Forcing periodic re-authentication ensures revoked or deprovisioned access actually takes effect on active sessions
+- A stolen session token loses value quickly when sessions expire on a tight schedule
+
+**Attack Prevented:** Session hijacking, unattended-device access, stolen-token reuse, lingering-session abuse
+
 #### ClickOps Implementation
 
 **Step 1: Access Session Settings**
@@ -231,6 +285,15 @@ Configure session timeout and security settings.
 
 #### Description
 Minimize and protect administrator accounts.
+
+#### Rationale
+**Why This Matters:**
+- Admin accounts can change security settings, manage users, and access every board, so each one is a high-value target
+- Limiting admins to a small, documented set reduces the blast radius if any single admin credential is compromised
+- Regular review removes lingering admin rights from users who no longer need them, closing privilege-creep gaps
+- A compromised admin can disable SSO, exfiltrate data, and lock out legitimate users — minimizing their number contains that risk
+
+**Attack Prevented:** Privilege escalation, admin-account takeover, insider abuse, security-control tampering
 
 #### ClickOps Implementation
 
@@ -260,6 +323,15 @@ Minimize and protect administrator accounts.
 #### Description
 Configure permissions across workspaces and boards.
 
+#### Rationale
+**Why This Matters:**
+- Scoping workspace and board access to the people who need it enforces least privilege and limits who can see sensitive project data
+- Default-open or over-shared boards expose plans, customer details, and operational data to users far beyond the intended audience
+- Viewer-only access for stakeholders prevents accidental or malicious edits while still supporting visibility
+- Tight permissions contain lateral movement, so a single compromised account cannot reach every board in the account
+
+**Attack Prevented:** Unauthorized data access, over-sharing, lateral movement, accidental or malicious data modification
+
 #### ClickOps Implementation
 
 **Step 1: Configure Workspace Access**
@@ -286,6 +358,15 @@ Configure permissions across workspaces and boards.
 #### Description
 Control guest access to workspaces and boards.
 
+#### Rationale
+**Why This Matters:**
+- Guests are external collaborators outside your identity governance, so their access must be scoped to only the boards they truly need
+- Over-permissioned guests can view or edit internal project data that should never leave the organization
+- Board-level restrictions and activity monitoring catch guest accounts being misused or left active after a project ends
+- Each unrestricted guest is a potential data-leakage path and a lower-trust account that attackers may target
+
+**Attack Prevented:** Data leakage to external parties, guest-account abuse, over-privileged external access, lingering guest access
+
 #### ClickOps Implementation
 
 **Step 1: Configure Guest Settings**
@@ -310,6 +391,15 @@ Control guest access to workspaces and boards.
 
 #### Description
 Control third-party integrations and apps.
+
+#### Rationale
+**Why This Matters:**
+- Third-party apps and integrations request OAuth scopes that can read or modify board data, making them a direct supply-chain attack surface
+- Limiting who can install apps prevents employees from connecting unvetted tools that quietly siphon project data
+- Reviewing granted permissions and removing unused integrations shrinks the set of external services holding tokens to your account
+- A compromised or malicious integration can exfiltrate data continuously without ever triggering a user login alert
+
+**Attack Prevented:** Malicious or compromised app installs, OAuth scope abuse, supply-chain data exfiltration, token theft
 
 #### ClickOps Implementation
 
@@ -339,6 +429,15 @@ Control third-party integrations and apps.
 #### Description
 Monitor account activity through audit logs.
 
+#### Rationale
+**Why This Matters:**
+- Audit logs record logins, permission changes, admin actions, and SSO configuration changes, providing the evidence trail to detect abuse
+- Without logging, account compromise and insider misuse go unnoticed until damage is already done
+- Reviewable history enables incident investigation, forensics, and root-cause analysis after a security event
+- Audit records also satisfy compliance and accountability requirements for who did what and when
+
+**Attack Prevented:** Undetected account compromise, insider misuse, unauthorized configuration changes, evidence tampering
+
 #### ClickOps Implementation
 
 **Step 1: Access Audit Logs**
@@ -365,6 +464,15 @@ Monitor account activity through audit logs.
 
 #### Description
 Control ability to export data from Monday.com.
+
+#### Rationale
+**Why This Matters:**
+- Bulk export turns dispersed board data into a single portable file, so unrestricted export is a fast path to mass data exfiltration
+- Limiting who can export and monitoring export activity deters and detects both insider theft and compromised-account abuse
+- Requiring documented approval for exports creates accountability around data leaving the platform
+- A departing employee or attacker with export rights can walk away with the entire project and customer dataset in one action
+
+**Attack Prevented:** Data exfiltration, insider data theft, bulk data extraction, unauthorized data movement
 
 #### ClickOps Implementation
 
@@ -444,6 +552,7 @@ Control ability to export data from Monday.com.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, authentication policies, and admin controls | Claude Code (Opus 4.5) |
 
 ---

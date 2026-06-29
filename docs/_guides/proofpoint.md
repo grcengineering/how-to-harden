@@ -6,9 +6,9 @@ slug: "proofpoint"
 tier: "2"
 category: "Security"
 description: "Email security platform hardening for Proofpoint including SAML SSO, admin access controls, and threat protection policies"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-02-05"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -55,6 +55,15 @@ This guide covers Proofpoint administration security including SAML SSO, admin a
 #### Description
 Configure SAML SSO for Proofpoint administration console.
 
+#### Rationale
+**Why This Matters:**
+- Centralizes Proofpoint admin authentication in your corporate IdP, enforcing MFA and conditional access on every console login
+- Local console passwords bypass IdP controls and are prime targets for credential stuffing and phishing
+- IdP-driven deprovisioning removes departed admins automatically, eliminating orphaned accounts that retain control over email security policy
+- The Proofpoint console governs your entire email threat-protection posture, so a single compromised admin login can weaken or disable filtering org-wide
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, orphaned-account access
+
 #### Prerequisites
 - Proofpoint admin access
 - SAML 2.0 compatible IdP
@@ -94,6 +103,15 @@ Configure SAML SSO for Proofpoint administration console.
 #### Description
 Require MFA for all Proofpoint admin users.
 
+#### Rationale
+**Why This Matters:**
+- MFA stops an attacker who has only a stolen or guessed password from reaching the admin console
+- Admins control email filtering, routing, and quarantine release, privileges attackers actively seek to weaken protection or read mail
+- Phishing-resistant factors such as FIDO2/WebAuthn defeat real-time proxy and push-fatigue attacks that one-time codes do not
+- Enforcing MFA through the IdP guarantees the control applies on every login path, not just the primary one
+
+**Attack Prevented:** Credential stuffing, password spraying, phishing, push-fatigue / MFA-bombing
+
 #### ClickOps Implementation
 
 **Step 1: Configure via IdP**
@@ -116,6 +134,15 @@ Require MFA for all Proofpoint admin users.
 
 #### Description
 Implement least privilege for admin access.
+
+#### Rationale
+**Why This Matters:**
+- Scoped roles ensure each admin holds only the permissions their job requires, shrinking what any one compromised account can do
+- Read-only and delegated roles let analysts review threats without the ability to alter filtering policy or release quarantined mail
+- Least privilege limits the blast radius of a stolen credential, insider mistake, or misconfiguration
+- Granular roles produce clearer audit trails by tying sensitive actions to a small, accountable set of users
+
+**Attack Prevented:** Privilege escalation, insider abuse, lateral movement, accidental policy change
 
 #### ClickOps Implementation
 
@@ -142,6 +169,15 @@ Implement least privilege for admin access.
 
 #### Description
 Minimize and protect admin accounts.
+
+#### Rationale
+**Why This Matters:**
+- Every admin account is a high-value target, so fewer admins means a smaller, more defensible attack surface
+- Removing unnecessary or dormant admin privileges eliminates standing access attackers can quietly inherit
+- Requiring MFA and monitoring on the remaining admins makes compromise harder and detection faster
+- Concentrated, well-audited admin access prevents quiet, unauthorized changes to email security policy
+
+**Attack Prevented:** Account takeover, orphaned-account abuse, insider threat, unauthorized configuration change
 
 #### ClickOps Implementation
 
@@ -171,6 +207,15 @@ Minimize and protect admin accounts.
 #### Description
 Configure threat protection policies.
 
+#### Rationale
+**Why This Matters:**
+- Spam, malware, phishing, URL-defense, and attachment-defense policies are the core controls that keep malicious mail out of user inboxes
+- Default or loosely tuned policies let credential-harvesting links and weaponized attachments reach end users
+- Impersonation protection blocks display-name and look-alike-domain spoofing used in business email compromise
+- Email is the most common initial-access vector, so weak protection policies directly enable downstream compromise
+
+**Attack Prevented:** Phishing, malware delivery, business email compromise, malicious URLs and attachments
+
 #### ClickOps Implementation
 
 **Step 1: Review Policies**
@@ -196,6 +241,15 @@ Configure threat protection policies.
 
 #### Description
 Enhanced protection for executives and VIPs.
+
+#### Rationale
+**Why This Matters:**
+- Executives and finance staff are disproportionately targeted because their authority can authorize payments or access sensitive data
+- Stricter scanning and impersonation alerts on a defined VIP list catch tailored spear-phishing that generic policies may miss
+- Attackers impersonate VIPs to pressure subordinates into wire transfers or credential disclosure
+- Monitoring VIP-targeted attacks gives early warning of an active, focused campaign against the organization
+
+**Attack Prevented:** Spear-phishing, executive impersonation, business email compromise, wire-transfer fraud
 
 #### ClickOps Implementation
 
@@ -224,6 +278,15 @@ Enhanced protection for executives and VIPs.
 
 #### Description
 Enable and monitor admin audit logs.
+
+#### Rationale
+**Why This Matters:**
+- Audit logs of policy changes, user management, and configuration edits create the record needed to detect and investigate abuse
+- Without monitored logs, an attacker who weakens filtering or releases malicious mail can act undetected
+- Exporting logs to a SIEM enables alerting on suspicious admin actions and preserves evidence beyond the console's retention window
+- Audit trails are required to demonstrate accountability and meet SOC 2 and NIST audit-control obligations
+
+**Attack Prevented:** Undetected configuration tampering, insider abuse, log gaps that hinder incident response, audit/compliance failure
 
 #### ClickOps Implementation
 
@@ -287,6 +350,7 @@ Enable and monitor admin audit logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and threat protection | Claude Code (Opus 4.5) |
 
 ---

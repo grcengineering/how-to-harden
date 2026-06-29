@@ -111,12 +111,18 @@
 
         } else if (tag === 'P') {
           var strong = node.querySelector('strong');
-          if (strong) {
-            var keyText = strong.textContent.trim();
+          var nodeText = node.textContent.trim();
+          var strongText = strong ? strong.textContent.trim() : '';
+          // Only treat the paragraph as a "**Key:** value" line when the bold
+          // label LEADS the paragraph (e.g. "**Profile Level:** L1"). A
+          // paragraph that merely contains an inline bold term mid-sentence is
+          // ordinary prose and should still be captured as the Description.
+          var isLeadingKey = strong && nodeText.indexOf(strongText) === 0;
+          if (isLeadingKey) {
+            var keyText = strongText;
             // Strip trailing colon for matching
             var keyLower = keyText.replace(/:$/, '').trim().toLowerCase();
             // Value = node text minus the strong text (and optional colon)
-            var nodeText = node.textContent.trim();
             var afterKey = nodeText.slice(nodeText.indexOf(keyText) + keyText.length)
                                    .replace(/^\s*:?\s*/, '').trim();
 
@@ -128,8 +134,7 @@
               prevWasWhy = true;
             }
           } else if (inDescription && !ctrl.description) {
-            var txt = node.textContent.trim();
-            if (txt) { ctrl.description = txt; inDescription = false; }
+            if (nodeText) { ctrl.description = nodeText; inDescription = false; }
           }
 
         } else if (tag === 'UL') {
@@ -147,7 +152,10 @@
           var typeMatch = typeEl ? typeEl.className.match(/pack-type-(\w+)/) : null;
           var packType = typeMatch ? typeMatch[1] : 'code';
           var srcLink = node.querySelector('.pack-source-link');
-          if (srcLink) {
+          // Dedupe by pack type: a control may include the same pack twice
+          // (e.g. in both an implementation step and a validation step), which
+          // would otherwise render duplicate badges (e.g. CONFIG CONFIG).
+          if (srcLink && !ctrl.packLinks.some(function(p) { return p.type === packType; })) {
             ctrl.packLinks.push({ type: packType, url: srcLink.href });
           }
 
@@ -281,6 +289,22 @@
     }
 
     try { sessionStorage.setItem(STORAGE_KEY, mode); } catch(e) {}
+    syncUrl(mode);
+  }
+
+  // Reflect the current view in the URL so a Cheat Sheet view is shareable via
+  // a plain link (…/guides/<vendor>/?view=cheat). replaceState keeps the back
+  // button clean while still updating the address bar for copy/share.
+  function syncUrl(mode) {
+    try {
+      var url = new URL(window.location.href);
+      if (mode === 'cheat') {
+        url.searchParams.set('view', 'cheat');
+      } else {
+        url.searchParams.delete('view');
+      }
+      window.history.replaceState(null, '', url.toString());
+    } catch (e) {}
   }
 
   function jumpToControl(num) {
@@ -300,6 +324,12 @@
   window.jumpToControl = jumpToControl;
 
   document.addEventListener('DOMContentLoaded', function() {
+    // URL param wins over sessionStorage so a shared ?view=cheat link always
+    // opens in Cheat Sheet view regardless of the visitor's prior toggle.
+    var fromUrl = null;
+    try { fromUrl = new URLSearchParams(window.location.search).get('view'); } catch(e) {}
+    if (fromUrl === 'cheat') { setGuideView('cheat'); return; }
+    if (fromUrl === 'full')  { setGuideView('full'); return; }
     try {
       if (sessionStorage.getItem(STORAGE_KEY) === 'cheat') setGuideView('cheat');
     } catch(e) {}

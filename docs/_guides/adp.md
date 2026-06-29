@@ -6,9 +6,9 @@ slug: "adp"
 tier: "3"
 category: "HR/Finance"
 description: "Payroll platform security for API connections, SSO, and data access controls"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -85,6 +85,15 @@ Require MFA for all ADP access, especially administrator and payroll processor a
 #### Description
 Configure ADP roles with segregation of duties for payroll functions.
 
+#### Rationale
+**Why This Matters:**
+- Payroll functions span sensitive operations — running payroll, changing tax withholding, and editing bank account details — that no single person should control end to end
+- Segregation of duties ensures one individual cannot both create a fraudulent payee and approve payment to it
+- Least-privilege roles confine each user to the data they need, so a compromised HR account cannot also manipulate payroll runs
+- Dual approval on large payrolls and bank-account changes adds a human checkpoint against insider fraud and account takeover
+
+**Attack Prevented:** Insider payroll fraud, privilege escalation, unauthorized bank-account redirection, fraudulent payee creation
+
 #### ClickOps Implementation
 
 **Step 1: Define Role Structure**
@@ -113,6 +122,15 @@ Configure ADP roles with segregation of duties for payroll functions.
 #### Description
 Harden API integrations with ADP Marketplace partners.
 
+#### Rationale
+**Why This Matters:**
+- ADP Marketplace integrations and API connections can read W-2, salary, SSN, and bank data — an over-scoped or stale connection is a direct path to bulk PII exfiltration
+- The 2024 BSH partner compromise shows a breached integration partner can expose employee payroll data even when ADP itself is not breached
+- OAuth scopes set to the minimum required limit the blast radius if a partner's credentials are stolen
+- Rotating API credentials and monitoring API usage surface anomalous bulk reads before large-scale data theft completes
+
+**Attack Prevented:** Third-party partner compromise, API credential theft, over-scoped data access, bulk PII exfiltration
+
 #### Implementation
 
 **Step 1: Audit Connected Apps**
@@ -137,6 +155,15 @@ Harden API integrations with ADP Marketplace partners.
 #### Description
 Implement controls to prevent W-2 data theft.
 
+#### Rationale
+**Why This Matters:**
+- W-2 forms contain the SSN, wages, and address an attacker needs to file fraudulent tax returns and claim refunds in an employee's name
+- The 2016 "flowjacking" attack stole W-2 data through the self-service registration workflow and used it for tax-refund fraud
+- Restricting W-2 access to authorized personnel and alerting on generation and download limits both insider abuse and credential-theft impact
+- Heightened auditing during tax season catches abnormal access patterns when W-2 fraud risk peaks
+
+**Attack Prevented:** W-2 theft, tax-refund fraud, identity theft, unauthorized PII access
+
 #### Implementation
 
 1. Restrict W-2 access to authorized personnel only
@@ -152,6 +179,18 @@ Implement controls to prevent W-2 data theft.
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-3
+
+#### Description
+Enable comprehensive audit logging across ADP for authentication, access, and payroll-change events, and forward the logs to your SIEM for monitoring and retention.
+
+#### Rationale
+**Why This Matters:**
+- Without complete audit logs, credential stuffing, insider abuse, and fraudulent payroll changes go undetected and cannot be reconstructed after the fact
+- Logging authentication and W-2 access events enables detection of the credential-stuffing pattern behind the 2016 flowjacking attack
+- Forwarding logs to a SIEM enables alerting on anomalies such as bulk W-2 downloads or off-hours bank-account changes
+- Retained audit trails are required for SOX, SOC 2, and tax-fraud investigations and incident response
+
+**Attack Prevented:** Undetected credential stuffing, insider fraud, account takeover, unlogged data exfiltration
 
 #### Detection Focus Areas
 
@@ -199,4 +238,5 @@ Implement controls to prevent W-2 data theft.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial ADP hardening guide | Claude Code (Opus 4.5) |

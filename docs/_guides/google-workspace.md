@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "Productivity"
 description: "Platform-wide security hardening for Google Workspace — the Common Controls hub (authentication, OAuth, DLP engine, audit logging) shared by the Gmail, Google Drive, and Google Chat product guides."
-version: "0.3.0"
+version: "0.3.1"
 maturity: "draft"
-last_updated: "2026-05-29"
+last_updated: "2026-06-29"
 ---
 
 ## Overview
@@ -302,6 +302,14 @@ Implement context-aware access policies that evaluate device, location, and user
 #### Description
 Restrict Admin Console access to specific IP ranges (corporate network, VPN) to prevent unauthorized administrative access.
 
+#### Rationale
+**Why This Matters:**
+- The Admin Console holds the keys to the entire tenant, so binding it to corporate egress IPs or VPN ranges makes a stolen admin credential useless from an attacker's network
+- A network-location gate layers on top of authentication and MFA, shrinking the exposure window for credential stuffing and password spray that originate from arbitrary internet locations
+- Session reauthentication controls force admins to re-prove identity for sensitive operations even if a session is hijacked
+
+**Attack Prevented:** Stolen-credential admin access from untrusted networks, remote admin takeover, credential stuffing and password spray from external IPs
+
 #### ClickOps Implementation
 
 **Step 1: Configure Allowed IPs**
@@ -446,6 +454,15 @@ Disable "Less Secure Apps" access which allows applications to authenticate with
 
 #### Description
 Configure Google Workspace DLP rules to detect and prevent sharing of sensitive information like credit cards, SSNs, and confidential documents.
+
+#### Rationale
+**Why This Matters:**
+- Sensitive data such as PII, financial records, and secrets routinely leaks through Drive and Chat sharing, most often by accident rather than malice
+- DLP enforces policy at the moment of sharing, blocking external exposure or warning users before regulated data leaves the organization
+- Automated content inspection with predefined detectors and OCR on images catches sensitive content that manual review and user judgment miss
+- Rule matches generate admin alerts and audit evidence that privacy and compliance regimes require
+
+**Attack Prevented:** Data exfiltration, accidental oversharing of PII and financial data, insider data leakage, compliance violations
 
 #### Prerequisites
 - Google Workspace Enterprise Standard or Plus
@@ -670,6 +687,7 @@ Enable and configure audit logging across all Google Workspace services. Use the
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.3.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-05-29 | 0.3.0 | draft | Restructured Google Workspace into a multi-product platform (GRC-496): split Google Chat into the [google-chat](/guides/google-chat/) guide and Google Drive into the [google-drive](/guides/google-drive/) guide; this guide is now the Common Controls hub (authentication, OAuth, DLP engine, admin audit logging). Added a Gmail product stub. Repointed cross-references and compliance tables to the product guides; reorganized code packs into packs/google-chat and packs/google-drive. | Jai (PAI) |
 | 2026-05-28 | 0.2.0 | draft | Added Google Chat hardening: app/webhook allowlisting (3.3), external chat & spaces restrictions (4.3), Chat file sharing (4.4), history & Vault retention (4.5), and Chat audit logging & content reporting (5.2). Mapped to CISA SCuBA GWS.CHAT baseline; added Chat code packs and references. | Claude Code (Opus 4.7) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with authentication, OAuth, data security, and monitoring controls | Claude Code (Opus 4.5) |

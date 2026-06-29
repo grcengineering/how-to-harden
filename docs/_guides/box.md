@@ -6,9 +6,9 @@ slug: "box"
 tier: "3"
 category: "Data"
 description: "Enterprise content security for sharing policies, app controls, and classification"
-version: "0.1.0"
+version: "0.1.1"
 maturity: "draft"
-last_updated: "2025-12-14"
+last_updated: "2026-06-29"
 ---
 
 
@@ -50,6 +50,18 @@ This guide covers Box security configurations including authentication, access c
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-2(1)
 
+#### Description
+Require SAML single sign-on with two-step verification (MFA) for all Box access, so every user authenticates through your corporate identity provider instead of a standalone Box password.
+
+#### Rationale
+**Why This Matters:**
+- Centralizes Box authentication in your corporate IdP, enforcing MFA and conditional access on every login
+- Local Box passwords bypass IdP controls and are prime targets for credential stuffing and phishing
+- IdP-driven deprovisioning removes departed users in one place, eliminating orphaned accounts with standing access to enterprise content
+- Box holds contracts, financial records, and sensitive documents — a single compromised login can expose all of it
+
+**Attack Prevented:** Credential theft, phishing, MFA bypass, password reuse, orphaned-account access
+
 #### ClickOps Implementation
 
 **Step 1: Configure SSO**
@@ -68,6 +80,18 @@ This guide covers Box security configurations including authentication, access c
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-3, AC-6
 
+#### Description
+Assign Box administrative and content permissions using least-privilege roles (Co-Admin, Group Admin, Content Manager, User) so each person receives only the access their job actually requires.
+
+#### Rationale
+**Why This Matters:**
+- Least-privilege roles limit how much content and how many users any single account can reach or modify
+- Granting full admin broadly means one compromised account can change sharing settings, exfiltrate content, or remove other admins
+- Scoped roles such as Content Manager and Group Admin contain the blast radius of a compromised or insider account
+- Clear role separation supports audit and accountability for who can change enterprise content and settings
+
+**Attack Prevented:** Privilege escalation, insider abuse, lateral movement, excessive-permission compromise
+
 #### ClickOps Implementation
 
 | Role | Permissions |
@@ -85,6 +109,18 @@ This guide covers Box security configurations including authentication, access c
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-21
+
+#### Description
+Restrict default shared-link scope, external collaboration domains, and link passwords so Box content cannot be shared publicly or with untrusted parties by default.
+
+#### Rationale
+**Why This Matters:**
+- Open or public shared links can expose confidential documents to anyone who discovers or guesses the URL
+- Misconfigured custom shared-link URLs have historically led to mass exposure of enterprise data stored on Box
+- Defaulting links to company-only and requiring passwords forces a deliberate choice before content leaves the organization
+- Restricting external collaboration to approved domains blocks accidental sharing with personal or attacker-controlled accounts
+
+**Attack Prevented:** Data leakage, public link exposure, unauthorized external access, accidental oversharing
 
 #### ClickOps Implementation
 
@@ -111,6 +147,18 @@ This guide covers Box security configurations including authentication, access c
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** CM-7
 
+#### Description
+Inventory connected OAuth applications, remove unused ones, and require admin approval and scope review before any new app can access Box content.
+
+#### Rationale
+**Why This Matters:**
+- Connected OAuth apps hold delegated, often long-lived access to enterprise content without re-prompting for credentials
+- A malicious or compromised third-party app can read or exfiltrate documents using its granted token, bypassing user MFA
+- Unused or over-scoped apps expand the attack surface and create forgotten access paths into Box data
+- Admin approval and scope auditing prevent users from consenting to risky integrations that violate data-handling policy
+
+**Attack Prevented:** OAuth token abuse, malicious app integration, consent phishing, supply-chain access, data exfiltration
+
 #### ClickOps Implementation
 
 **Step 1: Review Apps**
@@ -130,6 +178,18 @@ This guide covers Box security configurations including authentication, access c
 **Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-5
 
+#### Description
+Scope Box service accounts to specific folders, rotate their credentials on a regular schedule, and monitor their activity so non-human integrations cannot become an unchecked access path.
+
+#### Rationale
+**Why This Matters:**
+- Service accounts often hold broad, non-interactive access and are not protected by user MFA
+- Long-lived or shared service-account credentials are high-value targets that grant persistent access if leaked
+- Scoping each account to specific folders limits what a compromised integration can reach
+- Regular rotation and activity monitoring shorten the window of misuse and surface anomalous automated access
+
+**Attack Prevented:** Credential leakage, standing-access abuse, lateral movement, undetected automated exfiltration
+
 #### Implementation
 
 1. Create dedicated service accounts
@@ -144,6 +204,18 @@ This guide covers Box security configurations including authentication, access c
 ### 4.1 Enable Box Shield
 
 **Profile Level:** L2 (Walk)
+
+#### Description
+Deploy Box Shield to add ML-driven threat detection, anomalous-download and external-sharing alerts, and classification-based access controls on top of Box's native permissions.
+
+#### Rationale
+**Why This Matters:**
+- Native permissions prevent unauthorized access but do little to detect a compromised account behaving abnormally
+- Shield's anomaly detection flags unusual download volumes and access patterns that signal account takeover or insider exfiltration
+- Real-time external-sharing and classification alerts catch risky data movement before sensitive content leaves the organization
+- Classification-based access controls enforce handling rules consistently rather than relying on user discretion
+
+**Attack Prevented:** Account takeover, insider data theft, anomalous bulk download, undetected external sharing
 
 #### Features
 
@@ -190,4 +262,5 @@ This guide covers Box security configurations including authentication, access c
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Box hardening guide | Claude Code (Opus 4.5) |
