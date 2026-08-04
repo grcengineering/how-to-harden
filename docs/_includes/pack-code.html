@@ -123,6 +123,23 @@
 </div>
 {% endif %}
 
+{% if control.siem %}
+<div class="pack-code-section">
+<details class="pack-details">
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: SIEM Queries</span></summary>
+<div class="pack-details-content">
+<div class="pack-file-header">
+<span class="pack-file-type pack-type-siem">{{ control.siem.filename }}</span>
+<a href="{{ control.siem.source_url }}" target="_blank" rel="noopener noreferrer" class="pack-source-link">View source on GitHub &nearr;</a>
+</div>
+{% for excerpt in control.siem.excerpts %}
+<pre><code class="language-{{ control.siem.lang }}">{{ excerpt[1].content | strip | xml_escape }}</code></pre>
+{% endfor %}
+</div>
+</details>
+</div>
+{% endif %}
+
 {% if control.sigma %}
 <div class="pack-code-section">
 <details class="pack-details">

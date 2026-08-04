@@ -132,6 +132,7 @@ detect_type() {
     */db/*)         echo "db" ;;
     */config/*)     echo "config" ;;
     */siem/sigma/*) echo "sigma" ;;
+    */siem/*)       echo "siem" ;;
     */scripts/*)    echo "scripts" ;;
     *)              echo "other" ;;
   esac
@@ -183,6 +184,7 @@ process_vendor() {
   declare -A section_sdk
   declare -A section_db
   declare -A section_config
+  declare -A section_siem
   declare -A section_sigma
 
   for file in "${marked_files[@]}"; do
@@ -221,6 +223,9 @@ process_vendor() {
         ;;
       config)
         section_config["${section}"]="${file}|${rel_path}|${basename}"
+        ;;
+      siem)
+        section_siem["${section}"]="${file}|${rel_path}|${basename}"
         ;;
       sigma)
         # Sigma can have multiple files per section (-b, -c, etc.)
@@ -379,6 +384,30 @@ process_vendor() {
       done
     fi
 
+    # SIEM (Splunk SPL / Sentinel KQL queries — detection content that runs in a
+    # SIEM, not in a vendor database; distinct from db which is vendor-native SQL)
+    if [ -n "${section_siem[${section}]+x}" ]; then
+      IFS='|' read -r siem_file siem_rel siem_basename <<< "${section_siem[${section}]}"
+      local siem_lang
+      siem_lang=$(detect_lang "${siem_basename}")
+
+      echo "  siem:" >> "${tmp_file}"
+      echo "    lang: \"${siem_lang}\"" >> "${tmp_file}"
+      echo "    filename: \"${siem_basename}\"" >> "${tmp_file}"
+      echo "    source_url: \"${GITHUB_BASE}/${siem_rel}\"" >> "${tmp_file}"
+      echo "    excerpts:" >> "${tmp_file}"
+
+      local regions
+      regions=$(list_regions "${siem_file}")
+      for region in ${regions}; do
+        local content
+        content=$(extract_region "${siem_file}" "${region}")
+        echo "      ${region}:" >> "${tmp_file}"
+        echo "        content: |2" >> "${tmp_file}"
+        echo "${content}" | sed 's/^/          /' >> "${tmp_file}"
+      done
+    fi
+
     # Sigma (array — multiple files possible)
     if [ -n "${section_sigma[${section}]+x}" ]; then
       echo "  sigma:" >> "${tmp_file}"
@@ -413,9 +442,16 @@ process_vendor() {
   [ ${#sections_seen[@]} -gt 0 ] 2>/dev/null && section_count=${#sections_seen[@]}
   local file_count=${#marked_files[@]}
 
-  # Validate YAML before copying to destination (catches corruption early)
+  # Validate YAML before copying to destination (catches corruption early).
+  # On Git Bash for Windows, python3 is a native Windows exe that cannot open
+  # POSIX /tmp paths — translate with cygpath or the validator "fails" on
+  # FileNotFoundError for every vendor.
   if command -v python3 &>/dev/null; then
-    if ! python3 -c "import yaml; yaml.safe_load(open('${tmp_file}'))" 2>/dev/null; then
+    local check_file="${tmp_file}"
+    if command -v cygpath &>/dev/null; then
+      check_file=$(cygpath -w "${tmp_file}")
+    fi
+    if ! python3 -c "import sys, yaml; yaml.safe_load(open(sys.argv[1], encoding='utf-8'))" "${check_file}" 2>/dev/null; then
       echo "  ✗ ${vendor}: YAML validation FAILED — skipping (see ${tmp_file})" >&2
       return 1
     fi
@@ -439,8 +475,12 @@ for vendor_dir in "${PACKS_DIR}"/*/; do
      ls "${vendor_dir}"/sdk/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/db/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/config/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
+     ls "${vendor_dir}"/siem/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/siem/sigma/hth-*.yml 2>/dev/null | head -1 > /dev/null 2>&1; then
-    process_vendor "${vendor}"
+    # `|| true`: one vendor's validation failure must not abort the whole sync
+    # (set -e would otherwise stop at the first bad vendor and silently leave
+    # every later vendor's yml stale).
+    process_vendor "${vendor}" || true
   fi
 done
 

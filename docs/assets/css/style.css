@@ -1027,6 +1027,63 @@ body {
   color: var(--color-accent);
 }
 
+/* ── Multi-link doc buttons: expand-in-place dropdown (same effect as the
+   platform cards on the home page — chevron rotate, overlay merges into the
+   button with no seam, opacity/translate transition). Rendered when a
+   doc_links.yml entry is a LIST of {label, url} instead of a single URL. */
+.doc-link-group { position: relative; display: inline-flex; }
+.doc-link-group .doc-link-btn { cursor: pointer; }
+.doc-link-chevron { transition: transform 0.2s ease; }
+.doc-link-group.expanded .doc-link-chevron { transform: rotate(180deg); }
+.doc-link-group.expanded > .doc-link-btn {
+  z-index: 60;
+  border-bottom: none;               /* merge into the dropdown — no seam line */
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: var(--color-bg-elevated);
+}
+.doc-link-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: max(100%, 220px);
+  z-index: 60;
+  padding: 4px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-light);
+  border-top: none;
+  border-radius: 0 6px 6px 6px;
+  box-shadow: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  /* clip the shadow at the top edge so it can't bleed upward over the button
+     junction (same fix as the platform-card dropdown seam) */
+  clip-path: inset(0px -60px -60px -60px);
+}
+.doc-link-group.expanded .doc-link-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  pointer-events: auto;
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.25);
+}
+.doc-link-menu a {
+  display: block;
+  padding: 6px 10px;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  border-radius: 4px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.doc-link-menu a:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-tertiary);
+}
+
 
 /* Code Pack buttons — displayed after doc link buttons */
 .guide-code-pack {
@@ -1796,6 +1853,11 @@ body {
   color: #fb923c;
 }
 
+.pack-type-siem {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
 .pack-type-config {
   background: rgba(6, 182, 212, 0.15);
   color: #22d3ee;
@@ -1856,6 +1918,10 @@ body {
 
 [data-theme="light"] .pack-type-db {
   color: #ea580c;
+}
+
+[data-theme="light"] .pack-type-siem {
+  color: #dc2626;
 }
 
 [data-theme="light"] .pack-type-config {
@@ -2589,6 +2655,7 @@ body {
 .cs-pack-badge.cs-pack-config    { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35); }
 .cs-pack-badge.cs-pack-sdk       { background: rgba(236, 72, 153, 0.15); color: #f472b6; border-color: rgba(236, 72, 153, 0.35); }
 .cs-pack-badge.cs-pack-db        { background: rgba(6, 182, 212, 0.15);  color: #22d3ee; border-color: rgba(6, 182, 212, 0.35); }
+.cs-pack-badge.cs-pack-siem      { background: rgba(239, 68, 68, 0.15);  color: #f87171; border-color: rgba(239, 68, 68, 0.35); }
 .cs-pack-badge.cs-pack-sigma     { background: rgba(239, 68, 68, 0.15);  color: #f87171; border-color: rgba(239, 68, 68, 0.35); }
 
 /* ── Rationale cell ──────────────────────────────────────────────────── */
@@ -2629,6 +2696,7 @@ body {
 [data-theme="light"] .cs-pack-badge.cs-pack-config    { background: rgba(245, 158, 11, 0.08); color: #d97706; border-color: rgba(245, 158, 11, 0.25); }
 [data-theme="light"] .cs-pack-badge.cs-pack-sdk       { background: rgba(236, 72, 153, 0.08); color: #be185d; border-color: rgba(236, 72, 153, 0.25); }
 [data-theme="light"] .cs-pack-badge.cs-pack-db        { background: rgba(6, 182, 212, 0.08);  color: #0891b2; border-color: rgba(6, 182, 212, 0.25); }
+[data-theme="light"] .cs-pack-badge.cs-pack-siem      { background: rgba(239, 68, 68, 0.08);  color: #dc2626; border-color: rgba(239, 68, 68, 0.25); }
 [data-theme="light"] .cs-pack-badge.cs-pack-sigma     { background: rgba(239, 68, 68, 0.08);  color: #dc2626; border-color: rgba(239, 68, 68, 0.25); }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
@@ -2693,6 +2761,11 @@ body {
   border-top: none;
   border-radius: 0 0 12px 12px;
   box-shadow: none;   /* applied ONLY when expanded (below) so it can't ghost while collapsed */
+  /* The expanded shadow below is 0 16px 28px — blur (28) exceeds offset (16), so
+     without clipping it bleeds 12px UPWARD over the card's bottom edge and paints
+     a gray "seam" band across the card/dropdown junction. Clip the shadow at the
+     dropdown's top edge; generous negative insets keep the side/bottom shadow. */
+  clip-path: inset(0px -60px -60px -60px);
   opacity: 0;
   visibility: hidden;
   transform: translateY(-6px);

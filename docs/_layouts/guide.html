@@ -53,25 +53,89 @@ layout: default
     {% assign links = site.data.doc_links[page.slug] %}
     {% if links %}
     <div class="guide-doc-links">
+      {% comment %} Each link class accepts either a single URL string or a LIST
+      of {label, url} entries. Lists render as an expand-in-place dropdown using
+      the same effect as the multi-product platform cards on the home page. {% endcomment %}
       {% if links.product_docs and links.product_docs != "" %}
+      {% if links.product_docs.first %}
+      <div class="doc-link-group">
+        <button type="button" class="doc-link-btn doc-link-product" aria-expanded="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          Product Docs
+          <svg class="doc-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="doc-link-menu">
+          {% for l in links.product_docs %}<a href="{{ l.url }}" target="_blank" rel="noopener noreferrer">{{ l.label }}</a>{% endfor %}
+        </div>
+      </div>
+      {% else %}
       <a href="{{ links.product_docs }}" target="_blank" rel="noopener noreferrer" class="doc-link-btn doc-link-product">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
         Product Docs
       </a>
       {% endif %}
+      {% endif %}
       {% if links.api_docs and links.api_docs != "" %}
+      {% if links.api_docs.first %}
+      <div class="doc-link-group">
+        <button type="button" class="doc-link-btn doc-link-api" aria-expanded="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          API Docs
+          <svg class="doc-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="doc-link-menu">
+          {% for l in links.api_docs %}<a href="{{ l.url }}" target="_blank" rel="noopener noreferrer">{{ l.label }}</a>{% endfor %}
+        </div>
+      </div>
+      {% else %}
       <a href="{{ links.api_docs }}" target="_blank" rel="noopener noreferrer" class="doc-link-btn doc-link-api">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
         API Docs
       </a>
       {% endif %}
+      {% endif %}
       {% if links.hardening_docs and links.hardening_docs != "" %}
+      {% if links.hardening_docs.first %}
+      <div class="doc-link-group">
+        <button type="button" class="doc-link-btn doc-link-hardening" aria-expanded="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Hardening Guide
+          <svg class="doc-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="doc-link-menu">
+          {% for l in links.hardening_docs %}<a href="{{ l.url }}" target="_blank" rel="noopener noreferrer">{{ l.label }}</a>{% endfor %}
+        </div>
+      </div>
+      {% else %}
       <a href="{{ links.hardening_docs }}" target="_blank" rel="noopener noreferrer" class="doc-link-btn doc-link-hardening">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
         Hardening Guide
       </a>
       {% endif %}
+      {% endif %}
     </div>
+    <script>
+    // Expand/collapse for multi-link doc buttons (mirrors platform-card behavior)
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.doc-link-group > .doc-link-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var group = btn.parentElement;
+          var isOpen = group.classList.toggle('expanded');
+          btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          document.querySelectorAll('.doc-link-group.expanded').forEach(function(g) {
+            if (g !== group) { g.classList.remove('expanded'); g.querySelector('.doc-link-btn').setAttribute('aria-expanded', 'false'); }
+          });
+        });
+      });
+      document.addEventListener('click', function() {
+        document.querySelectorAll('.doc-link-group.expanded').forEach(function(g) {
+          g.classList.remove('expanded');
+          g.querySelector('.doc-link-btn').setAttribute('aria-expanded', 'false');
+        });
+      });
+    });
+    </script>
     {% comment %} Data-driven code pack buttons: only renders buttons for pack types that actually exist in _data/packs/{slug}.yml {% endcomment %}
     {% assign vendor_packs = site.data.packs[page.slug] %}
     {% if vendor_packs and links.code_pack and links.code_pack != "" %}
@@ -501,12 +565,18 @@ document.addEventListener('DOMContentLoaded', function() {
     var padding = 16;
     var naturalHeight = lineCount * lineHeight + padding;
     var maxHeight = 500; // ~26 lines before scrolling
-    var height = Math.max(Math.min(naturalHeight, maxHeight), 40);
-    container.style.height = height + 'px';
 
     loadMonaco().then(function(monaco) {
-      // Hide the original pre, insert Monaco container
+      // Height-match the Monaco container to the Tier-1 block it replaces.
+      // Any height DELTA at swap time shifts the page while the user scrolls —
+      // that layout shift is what made the sticky ToC (and the whole page)
+      // stutter on guide pages with many packs. Zero delta = zero shift.
       var replaceTarget = findReplaceTarget(preEl);
+      var tier1Height = replaceTarget.offsetHeight;
+      var height = tier1Height > 0
+        ? Math.min(tier1Height, maxHeight)
+        : Math.max(Math.min(naturalHeight, maxHeight), 40);
+      container.style.height = height + 'px';
       replaceTarget.style.display = 'none';
       wrapper.appendChild(container);
 
@@ -553,11 +623,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
       editors.push(editor);
 
-      // Auto-size height after content is laid out, respecting max-height
+      // Auto-size height after content is laid out, respecting max-height.
+      // Suppress sub-8px corrections (not worth a layout shift), and when the
+      // block sits ABOVE the viewport compensate the scroll position by the
+      // delta so the visible content never jumps under the reader.
       function resizeEditor() {
         var contentHeight = editor.getContentHeight();
         var cappedHeight = Math.max(Math.min(contentHeight, maxHeight), 40);
-        container.style.height = cappedHeight + 'px';
+        var currentHeight = container.offsetHeight;
+        var delta = cappedHeight - currentHeight;
+        if (Math.abs(delta) > 8) {
+          var rect = container.getBoundingClientRect();
+          container.style.height = cappedHeight + 'px';
+          if (rect.bottom < 0) window.scrollBy(0, delta);
+        }
         editor.updateOptions({
           scrollbar: { vertical: contentHeight > maxHeight ? 'auto' : 'hidden' }
         });
@@ -628,7 +707,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     }, {
-      rootMargin: '300px 0px'
+      // Upgrade well OUTSIDE the viewport so the pre→Monaco swap (and any
+      // residual height correction) happens far from what the reader is
+      // looking at — swaps near the viewport read as scroll stutter.
+      rootMargin: '1200px 0px'
     });
 
     wrappedBlocks.forEach(function(info) {
