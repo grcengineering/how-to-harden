@@ -948,5 +948,9 @@ zoom:
 zscaler:
   product_docs: "https://help.zscaler.com/"
   api_docs: "https://help.zscaler.com/zia/getting-started-zia-api"
-  hardening_docs: "https://help.zscaler.com/zia/best-practices-security-policy"
+  hardening_docs:
+    - label: "ZIA Policy Leading Practices Guide"
+      url: "https://help.zscaler.com/zscaler-deployments-operations/zia-policy-leading-practices-guide"
+    - label: "TLS/SSL Inspection Leading Practices"
+      url: "https://help.zscaler.com/zscaler-deployments-operations/zia-ssl-inspection-leading-practices-guide"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/zscaler"
