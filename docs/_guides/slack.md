@@ -169,6 +169,10 @@ Enable SCIM (System for Cross-domain Identity Management) to automatically provi
 
 **Time to Complete:** ~30 minutes
 
+#### Code Implementation
+
+{% include pack-code.html vendor="slack" section="1.2" %}
+
 #### Validation & Testing
 1. Create user in IdP - verify appears in Slack
 2. Update user in IdP - verify changes sync
