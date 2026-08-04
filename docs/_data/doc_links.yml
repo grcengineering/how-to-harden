@@ -160,7 +160,7 @@ cloudflare:
 concur:
   product_docs: "https://help.sap.com/docs/SAP_CONCUR"
   api_docs: "https://developer.concur.com"
-  hardening_docs: "https://help.sap.com/docs/SAP_CONCUR_SECURITY/b92b8c7fc75a4c8faf62a6584077b022/9c81735f180a4fe380d05549f6d32d12.html"
+  hardening_docs: "https://help.sap.com/docs/sap-concur-security/protect-your-sap-concur-cloud/protect-your-sap-concur-cloud"
 
 coupa:
   product_docs: "https://compass.coupa.com/en-us/products/product-documentation"
@@ -223,7 +223,7 @@ dockerhub:
 docusign:
   product_docs: "https://support.docusign.com/s/?language=en_US"
   api_docs: "https://developers.docusign.com/docs/esign-rest-api/reference/"
-  hardening_docs: "https://support.docusign.com/s/document-item?language=en_US&bundleId=ieh1606952453299&topicId=swt1606952443828.html&_LANG=enus"
+  hardening_docs: "https://support.docusign.com/s/document-item?language=en_US&bundleId=pik1583277475390&topicId=kzt1583277327503.html&_LANG=enus"
 
 drata:
   product_docs: "https://help.drata.com/en/"
