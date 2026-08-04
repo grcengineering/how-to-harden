@@ -6,9 +6,9 @@ slug: "github"
 tier: "1"
 category: "DevOps"
 description: "Comprehensive source control and CI/CD security hardening for GitHub organizations, Actions, supply chain protection, and Enterprise Cloud/Server"
-version: "0.6.1"
+version: "0.7.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-03"
 ---
 
 
@@ -1318,6 +1318,8 @@ Require manual approval before running workflows triggered by first-time contrib
 
 **Prevention:** Require maintainer to review and approve workflow runs from new contributors. For deeper `pull_request_target` workflow hardening patterns (split-workflow, artifact handoff, expression injection prevention), see Section 3.8.
 
+**Platform Supplement (since 2026-07-28):** GitHub now automatically holds workflow runs it flags as potentially malicious, pending approval from a user with write access to the repository. This applies to public repositories on github.com only and is not available on GitHub Enterprise Server. It **supplements rather than replaces** the setting below — the automatic hold is heuristic and only catches what GitHub's detection flags, so keep the explicit first-time-contributor approval requirement configured. Source: [GitHub Changelog, 2026-07-28](https://github.blog/changelog/2026-07-28-github-actions-holds-potentially-malicious-workflows-for-approval).
+
 #### ClickOps Implementation
 
 1. **Repository Settings** -> **Actions** -> **General**
@@ -1352,6 +1354,7 @@ Secure self-hosted runners to prevent compromise of build environment. Self-host
 - A compromised runner can steal secrets from subsequent jobs
 - Runners on the corporate network can pivot to internal systems
 - Public repositories should NEVER use self-hosted runners (anyone can trigger workflow runs)
+- Outdated runner software carries unpatched vulnerabilities in the component that handles untrusted workflow input — GitHub now enforces a minimum runner version and will stop scheduling jobs on runners that fall behind
 
 #### ClickOps Implementation
 
@@ -1375,6 +1378,14 @@ Secure self-hosted runners to prevent compromise of build environment. Self-host
 2. Production deployments: dedicated secure runners
 3. Public fork builds: isolated runners with no secrets access
 
+**Step 4: Meet the Enforced Minimum Runner Version**
+1. GitHub enforces a minimum self-hosted runner version of **2.329.0**, and requires each subsequent runner release to be installed within **30 days** of publication
+2. Enforcement dates: **2026-07-31** for GitHub Enterprise Cloud with data residency (GHEC-DR) and **2026-09-25** for GitHub Enterprise Cloud. Non-compliant runners stop executing jobs entirely — treat this as a build-availability risk as well as a security one
+3. Leave runner auto-update enabled unless you have a specific reason to pin. If you disable auto-update (common when runners are baked into ephemeral container or VM images), you own the 30-day patch cadence and must rebuild those images on every runner release
+4. Track the runner release feed and alert when any registered runner reports a version older than the current minimum
+
+Source: [GitHub Changelog, 2026-06-12](https://github.blog/changelog/2026-06-12-github-actions-minimum-version-enforcement-timeline-for-self-hosted-runners).
+
 #### Code Implementation
 
 {% include pack-code.html vendor="github" section="3.9" %}
@@ -1388,6 +1399,8 @@ Secure self-hosted runners to prevent compromise of build environment. Self-host
 2. Test that public repos cannot access production runner groups
 3. Verify network segmentation between runner groups
 4. Confirm secrets are not accessible from public runner groups
+5. Confirm every registered self-hosted runner reports version 2.329.0 or later
+6. Confirm runner images with auto-update disabled are rebuilt within 30 days of each runner release
 
 #### Compliance Mappings
 
@@ -1659,6 +1672,8 @@ Prevent `pull_request_target` workflows from executing untrusted PR code with el
 
 #### ClickOps Implementation
 
+**Platform Change — `actions/checkout` v7 defaults:** `actions/checkout` v7 now **fails the job** when it detects a fork-PR checkout pattern running under `pull_request_target` or `workflow_run`, and this enforcement was backported to earlier major versions starting 2026-07-20. The unsafe patterns described below therefore surface as a hard build failure rather than a silent compromise. The failure can be suppressed with the action's `allow-unsafe-pr-checkout` input — treat that input as a banned string across your organization. Its presence means someone deliberately re-enabled the exact pattern this control exists to prevent, and it should be caught in review, not discovered in an incident. Source: [GitHub Changelog, 2026-06-18](https://github.blog/changelog/2026-06-18-safer-pull_request_target-defaults-for-github-actions-checkout).
+
 **Step 1: Audit Existing Workflows**
 1. Search your `.github/workflows/` directory for `pull_request_target`
 2. For each workflow found, verify it does NOT checkout PR head code:
@@ -1666,6 +1681,8 @@ Prevent `pull_request_target` workflows from executing untrusted PR code with el
    - Check for `actions/checkout` with `ref: {% raw %}${{ github.event.pull_request.head.ref }}{% endraw %}`
    - Either of these patterns is UNSAFE when combined with `pull_request_target`
 3. Verify no `run:` blocks interpolate `{% raw %}${{ github.event.pull_request.title }}{% endraw %}`, `{% raw %}${{ github.event.pull_request.body }}{% endraw %}`, or other attacker-controlled fields directly (expression injection)
+4. Grep every workflow for `allow-unsafe-pr-checkout`. Any occurrence is a finding — it disables the v7 safety check and restores the vulnerable behavior. Remove it and refactor to one of the safe patterns in Step 2 rather than keeping the escape hatch
+5. Confirm workflows reference `actions/checkout` at v7 (or a pinned SHA of a backported earlier major) so the enforcement is actually active
 
 **Step 2: Apply Safe Patterns**
 1. **Split-workflow pattern (recommended):** Run untrusted builds in `pull_request` (no secrets), perform trusted operations (labeling, commenting, deploying) in a separate `pull_request_target` workflow that never checks out PR code
@@ -1688,6 +1705,8 @@ Prevent `pull_request_target` workflows from executing untrusted PR code with el
 2. No `run:` blocks directly interpolate `{% raw %}${{ github.event.pull_request.* }}{% endraw %}`
 3. zizmor audit passes with no `pull_request_target` findings
 4. Fork the repo, submit a test PR, verify the workflow does not expose secrets
+5. No workflow anywhere in the organization sets `allow-unsafe-pr-checkout` on `actions/checkout`
+6. A deliberately unsafe test workflow using `pull_request_target` plus fork-head checkout fails at the checkout step rather than proceeding
 
 #### Compliance Mappings
 
@@ -2142,6 +2161,135 @@ Before adopting any new Action, evaluate:
 | **NIST 800-53** | SA-12, RA-3 | Supply chain protection; risk assessment |
 | **SLSA** | Build L3 | Audited build platform |
 | **CIS Controls** | 2.5 | Allowlist authorized software |
+
+---
+
+### 3.15 Restrict Who and What Can Trigger Workflows
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.1, 6.8 |
+| NIST 800-53 | AC-3, AC-6, CM-5 |
+
+#### Description
+Configure GitHub's workflow execution protections — Actor Rules and Event Rules — to constrain which users may trigger GitHub Actions workflows and which events are permitted to start them. These policies are set at the enterprise, organization, or repository level under Settings → Actions → Policies, and they close a gap that branch protection and environment approvals do not cover: by default, **every user with write access can trigger any workflow**, and every trigger event the workflow declares is honored. Source: [GitHub Changelog, 2026-06-18](https://github.blog/changelog/2026-06-18-control-who-and-what-triggers-github-actions-workflows).
+
+#### Rationale
+**Why This Matters:**
+- The default grant is far broader than most organizations assume. Write access is routinely handed to contractors, automation accounts, and every engineer on a team, and each of those identities can start a workflow that holds production secrets and deployment credentials.
+- A compromised low-privilege developer account has historically been enough to reach production, because the workflow — not the actor — held the privileges. Actor Rules make the trigger itself an authorization decision.
+- Event Rules shrink the trigger surface independently of workflow file contents. A repository that should only ever build on `push` and `pull_request` can have `workflow_dispatch`, `repository_dispatch`, and `schedule` disallowed centrally, so an attacker who lands a workflow file edit still cannot invoke it on demand.
+- These controls sit above the workflow files, which means they survive a malicious or careless change to `.github/workflows/`. Controls written inside the workflow can be edited by whoever can edit the workflow; policy set at the org or enterprise level cannot.
+- Evaluate (shadow) mode lets you measure the blast radius of a proposed rule against real traffic before it starts blocking, which is what makes this deployable on a busy monorepo without an outage.
+
+**Attack Prevented:** Unauthorized workflow invocation by over-provisioned or compromised write-access accounts; on-demand triggering (`workflow_dispatch` / `repository_dispatch`) of privileged pipelines by an attacker who has obtained write access or landed a workflow file change
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Current Triggering Activity**
+1. Navigate to: **Enterprise** (or **Organization**, or **Repository**) **Settings** → **Actions** → **Policies**
+2. Before writing any rule, review recent workflow runs in the Actions tab and the audit log to establish who actually triggers workflows and via which events — the goal is a rule that matches observed legitimate use, not a guess
+3. Pay particular attention to bot and service accounts, which are easy to omit and expensive to break
+
+**Step 2: Define Actor Rules**
+1. In **Actions** → **Policies**, create an **Actor Rule** specifying which users, teams, or roles may trigger workflows
+2. Scope tightly for repositories holding production deployment credentials: typically the release team plus named automation identities, not all write-access users
+3. Apply at the enterprise or organization level where possible so the policy cannot be edited by repository administrators
+
+**Step 3: Define Event Rules**
+1. Create an **Event Rule** listing the trigger events permitted for the scoped repositories
+2. Deny `workflow_dispatch` and `repository_dispatch` on repositories that have no legitimate manual or API-triggered workflows — these are the events an attacker uses to invoke a pipeline on demand
+3. Deny `schedule` where cron-triggered runs are not expected, since scheduled workflows run with repository context and are easy to overlook in review
+
+**Step 4: Run in Evaluate Mode First**
+1. Set new rules to **evaluate** (shadow) mode, which records what the rule *would* have blocked without blocking it
+2. Let the rule run through at least one full release cycle so weekly and monthly scheduled jobs are represented in the sample
+3. Review the recorded would-block events, correct any legitimate actor or event the rule missed, then switch the rule to enforcing
+
+**Time to Complete:** ~30 minutes to configure; 1-2 weeks in evaluate mode before enforcing
+
+#### Validation & Testing
+1. An account with write access but outside the Actor Rule cannot trigger a protected workflow
+2. A `workflow_dispatch` request against a repository where that event is denied is rejected
+3. Evaluate-mode findings are reviewed and reach zero legitimate would-block events before the rule is switched to enforcing
+4. Rules are defined at enterprise or organization scope and cannot be removed by a repository administrator
+5. Scheduled and bot-triggered workflows continue to run after enforcement is enabled
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC6.3 | Logical access security; role-based access enforcement |
+| **NIST 800-53** | AC-3, AC-6 | Access enforcement; least privilege |
+| **ISO 27001** | A.8.2 | Privileged access rights |
+| **SLSA** | Build L3 | Audited, access-controlled build platform |
+| **CIS Controls** | 4.1, 6.8 | Secure configuration; role-based access control |
+
+---
+
+### 3.16 Prevent GitHub Actions Cache Poisoning
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 16.4 |
+| NIST 800-53 | SI-7, SA-12, SC-4 |
+
+#### Description
+Ensure no workflow writes attacker-influenceable content into the GitHub Actions cache scope shared with the default branch. Cache poisoning is a supply chain attack in which an untrusted trigger — a fork pull request, an issue comment, a `workflow_run` follow-up — writes a cache entry that a later privileged build on the default branch restores and executes. GitHub now issues read-only cache tokens for untrusted triggers, which closes the primary path, but workflows can still poison the cache through their own logic. Source: [GitHub Changelog, 2026-06-26](https://github.blog/changelog/2026-06-26-read-only-actions-cache-for-untrusted-triggers).
+
+#### Rationale
+**Why This Matters:**
+- The Actions cache is restorable across workflows and branches within a repository, so a cache entry is effectively shared mutable state between an untrusted build and a trusted one. Anything an attacker can write there, a privileged job may later restore and run.
+- Cached content is not signed, attested, or dependency-reviewed. A poisoned compiler cache, `node_modules` tree, or build output bypasses SHA pinning (Section 3.10), dependency review (Section 6.1), and cool-down periods (Section 6.7) entirely, because none of those controls inspect cache entries.
+- The payoff is high and the signal is low. A poisoned cache entry produces a normal-looking green build; the malicious code arrives as "restored from cache" rather than as a reviewable diff, so it survives code review by never appearing in one.
+- Since 2026-06-26 GitHub issues **read-only** cache tokens for untrusted triggers, so a fork PR can restore from the default-branch scope but can no longer write to it. This is a meaningful default improvement, but it does not cover a trusted workflow that caches a path an attacker influenced — for example caching a directory after running a fork's build script, or keying a cache on an attacker-controlled value.
+- Cache keys are a second injection surface. A key derived from a branch name, PR title, or other attacker-supplied string lets an attacker choose which entry a later job restores.
+
+**Attack Prevented:** Actions cache poisoning — persistence of attacker-controlled build artifacts, dependencies, or tooling into privileged default-branch builds without any reviewable code change
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Cache Usage**
+1. Search `.github/workflows/` for `actions/cache`, `actions/setup-*` steps with caching enabled (`cache: npm`, `cache: pip`, `cache: gradle`), and any third-party caching action
+2. For each, record the cached paths and the cache key expression
+3. Note which trigger events the containing workflow responds to
+
+**Step 2: Identify Untrusted Write Paths**
+1. Flag any cache-writing step that runs after untrusted code has executed in the same job — a fork's build script, test suite, install hooks, or generated files
+2. Flag any cache key that interpolates attacker-controlled data such as branch names, PR titles, or issue comment bodies; keys must be derived from trusted inputs like lockfile hashes and the runner OS
+3. Flag any workflow that both responds to an untrusted trigger (`pull_request_target`, `workflow_run`, `issue_comment`) and writes a cache entry — these are the highest-severity findings
+
+**Step 3: Separate Trusted and Untrusted Cache Scopes**
+1. Restrict cache writes on the default branch to workflows that only ever process trusted code
+2. For fork PR builds, either accept restore-only behavior (now the platform default) or use a cache key prefix that isolates untrusted entries from the trusted scope
+3. Never cache a directory that an untrusted build step has written to
+
+**Step 4: Verify the Platform Default Applies**
+1. Confirm the repository is on github.com or a GHES version that includes read-only cache tokens for untrusted triggers
+2. Confirm self-hosted runner setups have not substituted a third-party cache backend that reintroduces write access for untrusted triggers — self-hosted cache proxies commonly bypass GitHub's token scoping
+
+**Time to Complete:** ~45 minutes to audit a mid-size repository
+
+#### Validation & Testing
+1. No workflow triggered by `pull_request_target`, `workflow_run`, or `issue_comment` writes a cache entry
+2. No cache key interpolates a branch name, PR title, PR body, or comment body
+3. No cached path is written by a step that executes untrusted code
+4. A test fork pull request attempting a cache write against the default-branch scope is rejected by the read-only token
+5. Third-party or self-hosted cache backends, if used, enforce the same read-only behavior for untrusted triggers
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC8.1 | Logical access security; change management |
+| **NIST 800-53** | SI-7, SA-12 | Software and information integrity; supply chain protection |
+| **ISO 27001** | A.8.28 | Secure coding |
+| **SLSA** | Build L3 | Build integrity, isolated build environment |
+| **CIS Controls** | 16.4 | Secure application development |
 
 ---
 
@@ -2705,6 +2853,71 @@ Define organization-level repository custom properties (for example a required `
 
 ---
 
+### 5.7 Enable Secret Scanning Public Monitoring for the Enterprise
+
+**Profile Level:** L2 (Walk)
+**Requires:** GitHub Enterprise Cloud with Secret Protection or GitHub Advanced Security
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.1, 17.4 |
+| NIST 800-53 | IA-5, SI-4, IR-4 |
+
+#### Description
+Enable secret scanning **Public monitoring** from the enterprise Security tab to surface enterprise-owned secrets that are already exposed anywhere public on github.com — including repositories your enterprise does not own. GitHub attributes leaked credentials back to your enterprise using enterprise members and verified domains, so a secret leaked from a personal fork, a departed employee's public repo, or an unrelated third-party project is still reported to you. Source: [GitHub Changelog, 2026-07-01](https://github.blog/changelog/2026-07-01-secret-scanning-public-monitoring-for-enterprises).
+
+#### Rationale
+**Why This Matters:**
+- Push protection and repository secret scanning only see repositories you control. The leaks that cause incidents are frequently outside that boundary — a developer's personal fork, a public gist, a sample repository, a vendor's open source project that hardcoded your API key.
+- Attribution via enterprise members and verified domains is the piece that makes this actionable. A credential string in an unrelated public repo is noise; the same string attributed to your enterprise's verified domain is an incident with an owner.
+- Time-to-rotation is the entire game with leaked credentials. Automated scanning of the public surface compresses discovery from "whenever someone notices" to near-real-time, which is the difference between rotating a key and investigating what was done with it.
+- Coverage is already paid for on Secret Protection and GHAS plans on GitHub Enterprise Cloud, so on those plans the control is a configuration change rather than a purchase.
+- The privacy boundary is worth stating explicitly to reviewers and to your own developers: Public monitoring **never scans private repositories**. It examines only content that is already public on github.com.
+
+**Attack Prevented:** Exploitation of credentials leaked outside enterprise-owned repositories — personal forks, departed-employee repositories, third-party projects, and public gists that reference enterprise infrastructure
+
+#### ClickOps Implementation
+
+**Step 1: Verify Prerequisites**
+1. Confirm the enterprise is on GitHub Enterprise Cloud with **Secret Protection** or **GitHub Advanced Security** enabled
+2. Confirm your domains are verified: **Enterprise Settings** → **Verified and approved domains**. Attribution quality depends directly on this — unverified domains mean leaks attributable to your organization go unattributed
+3. Confirm enterprise membership is current, since departed accounts that remain enterprise members widen the attribution net and stale non-members narrow it
+
+**Step 2: Enable Public Monitoring**
+1. Navigate to: **Enterprise Settings** → **Security** (the enterprise Security tab)
+2. Locate **Secret scanning** → **Public monitoring** and enable it
+3. Confirm which teams have access to the enterprise Security tab, since alerts surface there rather than in individual repositories
+
+**Step 3: Assign Triage Ownership**
+1. Nominate an owning team for public monitoring alerts — these do not land in a repository's alert queue and will be missed if nobody is watching the enterprise view
+2. Define an SLA for triage. A publicly exposed credential should be treated as already compromised, so the first action is revoke-and-rotate, not investigate
+3. Route alerts into your existing incident process rather than reviewing them ad hoc in the UI
+
+**Step 4: Close the Loop on Findings**
+1. For each alert: revoke the credential, rotate it, then determine the exposure window and review logs for use of the credential during that window
+2. Trace the leak back to its source repository or person and address the practice that caused it, not just the individual secret
+3. Feed recurring patterns back into push protection (Section 5.3) and custom pattern definitions (Section 5.4) so the same credential class is blocked at push time in repositories you do control
+
+**Time to Complete:** ~15 minutes to enable; ongoing triage effort
+
+#### Validation & Testing
+1. Public monitoring shows as enabled in the enterprise Security tab
+2. Enterprise domains are verified and the verified domain list is current
+3. A named team owns enterprise public monitoring alerts and has access to the enterprise Security tab
+4. A documented revoke-and-rotate runbook exists and has been exercised at least once
+5. Confirm with reviewers that no private repository content is scanned by this feature
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC7.2 | Logical access security; monitoring for security events |
+| **NIST 800-53** | IA-5, SI-4, IR-4 | Authenticator management; system monitoring; incident handling |
+| **ISO 27001** | A.5.17 | Authentication information |
+| **CIS Controls** | 3.1, 17.4 | Data management; incident response process |
+
+---
+
 ## 6. Dependency & Supply Chain Security
 
 ### 6.1 Enable Dependency Review for Pull Requests
@@ -3031,7 +3244,7 @@ Establish an incident response playbook for when a GitHub Action or CI/CD depend
 **CIS Controls:** 2.5, 16.4
 
 #### Description
-Configure dependency update tooling to enforce a minimum cool-down period (stabilityDays) before automatically merging new package versions. Newly published or recently updated packages are statistically more likely to be malicious — 877,000+ known malicious packages exist across registries (npm, PyPI, RubyGems, Go), and many are discovered within the first 24-72 hours of publication.
+Configure dependency update tooling to enforce a minimum cool-down period before automatically adopting new package versions. Newly published or recently updated packages are statistically more likely to be malicious — 877,000+ known malicious packages exist across registries (npm, PyPI, RubyGems, Go), and many are discovered within the first 24-72 hours of publication. **Dependabot now supports cool-down natively** via the `cooldown` block in `.github/dependabot.yml`, and since 2026-07-14 version updates apply a **3-day default cooldown** even with no configuration; Renovate remains the alternative where finer per-ecosystem control is needed. Source: [GitHub Changelog, 2026-07-14](https://github.blog/changelog/2026-07-14-dependabot-version-updates-introduce-default-package-cooldown).
 
 #### Rationale
 **Attack Prevention:**
@@ -3047,20 +3260,27 @@ Configure dependency update tooling to enforce a minimum cool-down period (stabi
 
 #### ClickOps Implementation
 
-**Step 1: Configure Renovate with stabilityDays**
-1. In your repository, create or update `renovate.json`
-2. Set `stabilityDays` to a minimum of 3 days for production dependencies
-3. Set `minimumReleaseAge` (Renovate v35+) as the preferred setting — this replaces `stabilityDays` with the same functionality
+**Step 1: Use Dependabot's Native Cooldown (Default Path)**
+1. In your repository, create or update `.github/dependabot.yml` and add a `cooldown` block to each `updates:` entry
+2. Since 2026-07-14, Dependabot version updates apply a **3-day cooldown by default** with no configuration required, so an unconfigured repository already gets baseline protection. Configure the block explicitly anyway — an explicit value is auditable and survives a future default change
+3. Set longer cooldowns for major and minor version bumps than for patches; `cooldown` supports separate day counts by semver level and per-package include/exclude lists
+4. **Dependabot security updates are exempt from cooldown and continue to apply immediately.** This is the correct behavior: a known-vulnerable dependency is a present risk, while an unvetted new release is a speculative one
+5. GitHub Enterprise Server 3.23 and later inherit this behavior
 
-**Step 2: Configure Different Policies by Dependency Type**
+**Step 2: Use Renovate Where Finer Control Is Required (Alternative)**
+1. Renovate remains the better fit when you need per-ecosystem, per-package-group, or conditional cool-down rules beyond what `cooldown` expresses
+2. In `renovate.json`, set `minimumReleaseAge` (Renovate v35+) to a minimum of 3 days for production dependencies. This is the current setting name; older configurations use `stabilityDays`, which it replaces with identical functionality
+3. Running both tools on the same repository produces duplicate and conflicting update PRs — pick one per ecosystem
+
+**Step 3: Configure Different Policies by Dependency Type**
 1. Production dependencies: minimum 3-day cool-down
 2. Development dependencies: minimum 1-day cool-down
-3. Security patches (Dependabot security updates): 0-day cool-down (apply immediately)
-4. GitHub Actions: minimum 3-day cool-down (combined with SHA pinning from Section 3.10)
+3. Security patches: 0-day cool-down, applied immediately (Dependabot security updates do this by default)
+4. GitHub Actions: minimum 3-day cool-down, combined with SHA pinning from Section 3.10
 
-**Step 3: Monitor for Overrides**
-1. Review Renovate logs for cool-down overrides
-2. Ensure security team is notified if cool-down is bypassed for non-security updates
+**Step 4: Monitor for Overrides**
+1. Review Dependabot and Renovate logs for cool-down bypasses and manual version pins that skip the waiting period
+2. Ensure the security team is notified if cool-down is bypassed for a non-security update
 
 **Time to Complete:** ~10 minutes
 
@@ -3068,18 +3288,17 @@ Configure dependency update tooling to enforce a minimum cool-down period (stabi
 
 {% include pack-code.html vendor="github" section="6.20" %}
 
-**Dependabot equivalent (`.github/dependabot.yml`):**
-Dependabot does not natively support cool-down periods. If using Dependabot instead of Renovate, implement cool-down by:
-1. Setting `open-pull-requests-limit: 5` to throttle updates
-2. Requiring manual review for all dependency PRs (branch protection)
-3. Using dependency-review-action (Section 6.1) to block known-vulnerable versions
-4. Consider migrating to Renovate for native cool-down support
+**Supporting controls (apply with either tool):**
+1. Set `open-pull-requests-limit` to throttle the volume of update PRs so each one actually gets reviewed
+2. Require manual review for all dependency PRs via branch protection
+3. Use dependency-review-action (Section 6.1) to block known-vulnerable versions regardless of age
 
 #### Validation & Testing
-1. Renovate config includes `minimumReleaseAge` of at least 3 days for production dependencies
-2. Cool-down is not applied to security vulnerability patches
-3. Dependency PRs created by Renovate respect the configured cool-down period
-4. CI pipeline does not auto-merge dependency updates before cool-down expires
+1. `.github/dependabot.yml` declares an explicit `cooldown` block, or the repository is confirmed to be running on the 3-day platform default
+2. If Renovate is used instead, its config sets `minimumReleaseAge` to at least 3 days for production dependencies
+3. Cool-down is not applied to security vulnerability patches — verify a security update PR opens without delay
+4. Dependency PRs respect the configured cool-down period: a package published today does not produce an update PR today
+5. CI pipeline does not auto-merge dependency updates before cool-down expires
 
 #### Compliance Mappings
 
@@ -3709,6 +3928,7 @@ Before allowing any third-party integration access to GitHub, assess risk:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-03 | 0.7.0 | draft | Add sections 3.15 (workflow execution protections: Actor Rules and Event Rules) and 3.16 (Actions cache poisoning) and 5.7 (secret scanning Public monitoring for enterprises); correct section 6.7 to present Dependabot native `cooldown` and the 3-day default as the primary path with Renovate as the alternative; add `actions/checkout` v7 fork-PR checkout enforcement and `allow-unsafe-pr-checkout` ban to section 3.8; add self-hosted runner minimum version 2.329.0 and 30-day update requirement to section 3.4; note automatic hold of potentially malicious workflows in section 3.3 | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.6.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-03-23 | 0.5.2 | draft | Expand section 2.4 with Gitsign/Sigstore keyless signing, GitHub verification limitations, and CI signing; expand section 3.10 with composite action transitive dependency auditing, container image digest pinning, poutine/frizbee/octopin tools; expand section 5.2 with Docker Hub OIDC gap, GHCR migration path, PyPI/npm OIDC status, irreducible static secrets | Claude Code (Opus 4.6) |
 | 2026-03-23 | 0.5.1 | draft | Add section 1.8 (service account cross-org isolation) from TeamPCP Phase 3 findings; update section 6.6 with atomic credential rotation requirement; expand Security Incidents with full three-phase TeamPCP campaign (CanisterWorm, ICP C2, VS Code extension, org defacement) | Claude Code (Opus 4.6) |

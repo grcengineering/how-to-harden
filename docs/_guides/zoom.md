@@ -6,15 +6,15 @@ slug: "zoom"
 tier: "2"
 category: "Productivity"
 description: "Video conferencing security for meeting policies, recording controls, and app marketplace"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-03"
 ---
 
 
 ## Overview
 
-Zoom commands **55.91% global market share** with **70% of Fortune 100** as customers. The App Marketplace, OAuth tokens (access valid 14 days, refresh perpetual), and SDK integrations create supply chain risk. Recent CVE-2025-49457 (CVSS 9.6) demonstrates ongoing vulnerability management challenges. Customer Managed Key (CMK) provides encryption control for sensitive communications.
+Zoom commands **55.91% global market share** with **70% of Fortune 100** as customers. The App Marketplace, OAuth tokens (access tokens valid 1 hour, refresh tokens valid 90 days and rotated on every use), and SDK integrations create supply chain risk. CVE-2025-49457 (CVSS 9.6) and CVE-2026-53412 (CVSS 9.8, unauthenticated remote account takeover) demonstrate ongoing client-side vulnerability management challenges. Customer Managed Key (CMK) provides encryption control for sensitive communications.
 
 ### Intended Audience
 - Security engineers managing collaboration tools
@@ -126,6 +126,69 @@ Implement role-based access and user provisioning.
 
 ---
 
+### 1.3 Enforce a Minimum Zoom Client Version
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 2.2, 7.3 |
+| NIST 800-53 | SI-2, CM-7(5) |
+
+#### Description
+Use Zoom's **System Updates** account setting to require a minimum client version per platform and force non-compliant clients to sign out and upgrade before they can rejoin. This is the account-level enforcement mechanism that actually closes client-side CVEs — patch availability alone does nothing if users keep running an old build.
+
+#### Rationale
+**Why This Matters:**
+- Zoom's critical vulnerabilities are overwhelmingly *client-side*, so a patched server tenant does not protect an endpoint still running a vulnerable desktop build
+- CVE-2025-49457 (CVSS 9.6, DLL hijacking) and CVE-2026-53412 (CVSS 9.8, unauthenticated remote account takeover in Zoom Workplace for Windows before 7.0.0 and the VDI client) are both fixed only by upgrading the client
+- Without a minimum-version floor, upgrade is user-discretionary and long-tail endpoints stay exploitable for months after a fix ships
+- Setting the floor per platform lets you enforce Windows, macOS, Linux, and mobile independently as fixes land on different schedules
+
+**Attack Prevented:** Exploitation of known client CVEs, DLL hijacking, remote account takeover via unpatched endpoints
+
+#### ClickOps Implementation
+
+**Step 1: Open System Updates**
+1. Navigate to: **Admin → Account Management → Account Settings → General**
+2. Locate the **System Updates** section (Zoom desktop client and mobile app updates)
+
+**Step 2: Set the Minimum Version Floor**
+1. Enable: **Zoom desktop client and mobile app version control**
+2. For each platform (Windows, macOS, Linux, iOS, Android), set the **minimum version** to the current fixed release — at minimum, Zoom Workplace for Windows **7.0.0** or later to remediate CVE-2026-53412
+3. Choose the enforcement behavior: require users below the minimum to **sign out and upgrade** before rejoining
+
+**Step 3: Enable Automatic Updates**
+1. In the same **System Updates** section, enable automatic client updates
+2. Select the **Slow** channel for stability or **Fast** for earliest fixes (L3 environments should prefer Fast for security releases)
+3. Lock the setting so users and group admins cannot opt out
+
+**Step 4: Re-baseline After Each Bulletin**
+1. Subscribe to the [Zoom Security Bulletins](https://www.zoom.com/en/trust/security-bulletin/)
+2. Raise the minimum version whenever a bulletin patches a High or Critical client vulnerability
+
+**Time to Complete:** ~20 minutes
+
+#### Validation & Testing
+1. Sign in from a deliberately out-of-date client and confirm Zoom blocks the session and prompts for upgrade
+2. Confirm the enforced minimum is visible and locked at the account level so groups cannot lower it
+3. Review **Admin → Account Management → Reports → Active Hosts** or the sign-in report to confirm no sessions remain on versions below the floor
+
+**Expected result:** Clients below the configured minimum version are forced to sign out and upgrade before they can join any meeting.
+
+**Reference:** [Zoom — Managing system updates for the Zoom client](https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0067165)
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.1 | Vulnerability identification and remediation |
+| **NIST 800-53** | SI-2 | Flaw remediation |
+| **NIST 800-53** | CM-7(5) | Authorized software / allowlisting |
+| **ISO 27001:2022** | A.8.8 | Management of technical vulnerabilities |
+
+---
+
 ## 2. Meeting Security
 
 ### 2.1 Enforce Meeting Password and Waiting Room
@@ -225,6 +288,71 @@ Secure Zoom Phone configurations.
 
 ---
 
+### 2.4 Disable and Lock Remote Control
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.1, 4.8 |
+| NIST 800-53 | AC-3, CM-7, SC-7 |
+
+#### Description
+Turn the in-meeting **Remote control** feature off for the entire account and lock it so no host, group admin, or user can re-enable it. Remote control lets one participant take keyboard and mouse control of another's machine, and Zoom's own consent dialog is the only thing standing between a social-engineering pretext and full endpoint takeover.
+
+#### Rationale
+**Why This Matters:**
+- The remote-control consent prompt is a single click, and the display name of the requester is fully attacker-controlled — an attacker who renames themselves "Zoom" makes the prompt read like a routine system notification rather than a hand-over of the machine
+- Trail of Bits documented the **ELUSIVE COMET** campaign (2025) using exactly this technique: attackers posing as media or investment interviewers requested remote control mid-call, then stole cryptocurrency and installed persistent malware
+- Because Zoom is already an approved, signed application, the takeover generates no malware alert and no unusual process lineage — the attacker simply drives an existing trusted session
+- Almost no organization has a genuine business need for participant-to-participant remote control; support teams should use a dedicated, audited remote-support tool instead
+
+**Attack Prevented:** Social-engineered endpoint takeover, ELUSIVE COMET-style remote-control abuse, cryptocurrency theft, malware installation via trusted session
+
+**Real-World Incidents:**
+- **2025 — ELUSIVE COMET:** A threat actor targeted cryptocurrency holders through fake podcast and media interview invitations, requesting Zoom remote control during the call while impersonating a system prompt, then draining wallets and deploying malware ([Trail of Bits](https://blog.trailofbits.com/2025/04/17/mitigating-elusive-comet-zoom-remote-control-attacks/))
+
+#### ClickOps Implementation
+
+**Step 1: Disable Remote Control Account-Wide**
+1. Navigate to: **Admin → Account Management → Account Settings**
+2. Select the **Meeting** tab
+3. Scroll to **In Meeting (Basic)**
+4. Locate **Remote control** and toggle it **Off**
+
+**Step 2: Lock the Setting**
+1. Click the **lock icon** next to **Remote control**
+2. Confirm the lock — this prevents groups, hosts, and individual users from re-enabling it
+
+**Step 3: Disable Related Control Surfaces**
+1. In the same **In Meeting (Basic)** section, disable and lock **Remote support** (host-initiated desktop control)
+2. Verify no group under **Admin → User Management → Group Management → Settings** has an overriding value
+
+**Step 4: Brief High-Risk Users**
+1. Tell executives, finance, and treasury staff that Zoom will never ask for remote control, and that any such prompt during an external call is an attack
+2. Where possible, have high-risk users remove the Zoom client entirely and join sensitive external calls from the browser client, which does not implement remote control
+
+**Time to Complete:** ~15 minutes
+
+#### Validation & Testing
+1. Start a test meeting with two accounts and confirm the **Request remote control** option is absent from the participant and screen-share menus
+2. As a group admin, confirm the setting appears greyed out and cannot be re-enabled
+3. Confirm the lock persists after a user signs out and back in
+
+**Expected result:** Remote control is unavailable to every participant on the account and cannot be re-enabled at the group or user level.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security |
+| **SOC 2** | CC6.6 | Protection against external threats |
+| **NIST 800-53** | CM-7 | Least functionality |
+| **NIST 800-53** | AC-3 | Access enforcement |
+| **ISO 27001:2022** | A.8.19 | Installation of software on operational systems |
+
+---
+
 ## 3. Marketplace App Security
 
 ### 3.1 Implement App Approval Workflow
@@ -238,8 +366,9 @@ Control Zoom App Marketplace installations.
 #### Rationale
 **Why This Matters:**
 - Marketplace apps access meeting data and recordings
-- OAuth tokens have long validity (access: 14 days, refresh: perpetual)
+- OAuth refresh tokens remain valid for 90 days, so an abandoned integration keeps standing access to meeting content for a full quarter
 - Compromised apps can access all user meetings
+- JWT-type apps were fully deprecated on **September 1, 2023** and no longer function, but their credentials frequently remain provisioned and unmanaged in the account
 
 #### ClickOps Implementation
 
@@ -263,6 +392,17 @@ Control Zoom App Marketplace installations.
    - Social
    - Productivity (if not required)
 
+**Step 4: Audit for Deprecated JWT Apps**
+1. Navigate to: **Admin → Advanced → App Marketplace → Manage**
+2. Filter the created/installed app list for any app whose type is **JWT**
+3. For each JWT app found:
+   - Confirm the owning team and identify the Server-to-Server OAuth or general OAuth app that replaced it
+   - Delete the JWT app to deprovision its API Key and API Secret
+   - Rotate any copies of that Key/Secret still held in CI systems, secret managers, `.env` files, or scripts
+4. Treat any JWT credential discovered outside Zoom as exposed and rotate the successor app's credentials as well
+
+> **Note:** JWT app credentials stopped working on **September 1, 2023** ([Zoom JWT app type deprecation](https://developers.zoom.us/changelog/platform/jwt-app-type-deprecation/)). They no longer grant API access, but leftover secrets are unmanaged credential material — they pollute secret scanning, obscure ownership, and signal integrations that were never properly migrated.
+
 ---
 
 ### 3.2 OAuth Token Management
@@ -275,10 +415,11 @@ Manage OAuth tokens for marketplace apps.
 
 #### Rationale
 **Why This Matters:**
-- Zoom access tokens stay valid for 14 days and refresh tokens are perpetual, so a leaked token grants long-lived access to meetings and recordings
-- Reviewing and revoking unused tokens removes standing access held by abandoned or compromised integrations
-- Monitoring token usage surfaces apps still reaching meeting content that no longer have a business justification
-- Prompt revocation on offboarding or app removal closes the window in which an attacker can ride a stolen token
+- Zoom access tokens expire after **1 hour** for every app type, so a stolen access token has a short blast radius — the durable credential to protect is the refresh token
+- Refresh tokens are valid for **90 days** and **rotate on every use**: each refresh returns a new refresh token and invalidates the previous one, so a leaked refresh token still grants up to 90 days of renewable access until it is used or revoked
+- Because refresh tokens rotate, a refresh failure on a legitimate integration can indicate an attacker used the token first — treat unexplained refresh errors as a possible compromise signal, not just a bug
+- Server-to-Server OAuth apps use **no refresh token at all**: they mint a fresh 1-hour access token directly from the account ID, client ID, and client secret, which makes the **client secret** the standing credential requiring rotation and vaulting
+- Reviewing and revoking unused tokens removes standing access held by abandoned or compromised integrations, and prompt revocation on offboarding closes the window in which an attacker can ride a stolen token
 
 **Attack Prevented:** OAuth token theft, persistent third-party access, data exfiltration via compromised apps
 
@@ -286,8 +427,11 @@ Manage OAuth tokens for marketplace apps.
 
 | Token Type | Default Validity | Recommendation |
 |------------|-----------------|----------------|
-| Access Token | 14 days | N/A (Zoom managed) |
-| Refresh Token | Perpetual | Monitor usage, revoke unused |
+| Access Token (all app types) | 1 hour | N/A (Zoom managed, non-configurable) |
+| Refresh Token (user-level / account-level OAuth) | 90 days, rotates on every use | Monitor refresh failures as compromise signals; revoke on offboarding or app removal |
+| Server-to-Server OAuth | No refresh token — access token minted from client credentials | Vault the client secret and rotate on a defined schedule |
+
+**Reference:** [Zoom — OAuth token lifetimes and refresh behavior](https://developers.zoom.us/docs/integrations/oauth/)
 
 #### User-Level Revocation
 1. Users: **Profile → Apps → Uninstall**
@@ -357,6 +501,72 @@ Secure meeting recordings.
 1. Configure: **Who can access cloud recordings**
 2. Enable: **Viewer authentication required**
 3. Set: **Default expiration:** 30 days (L2)
+
+---
+
+### 4.3 Restrict Zoom Team Chat External Permissions
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.3 |
+| NIST 800-53 | AC-3, AC-20, AC-21 |
+
+#### Description
+Use **External Permissions** in Zoom Team Chat to control whether external (non-account) users can be added to group chats and channels, whether internal users can join externally owned chats, and which of those actions require admin approval. Team Chat persists messages and files outside the meeting lifecycle and is governed separately from meeting settings.
+
+#### Rationale
+**Why This Matters:**
+- Team Chat is a persistent store of messages and file attachments that survives long after a meeting ends, and it is monitored far less rigorously than email or cloud storage
+- Unrestricted external chat is a low-friction exfiltration channel — a user can add an outside address to a channel and quietly mirror internal discussion and shared files to it
+- Internal users joining externally *owned* channels puts your staff in a room whose retention, membership, and admin controls belong entirely to someone else's tenant
+- External chat is a proven social-engineering staging ground: an attacker with a foothold in a shared channel gains internal context, org-chart knowledge, and a trusted-looking path to deliver lures
+- Admin-approval workflows preserve legitimate partner collaboration while making every external connection a reviewed, attributable decision
+
+**Attack Prevented:** Data exfiltration via chat, unauthorized external collaboration, social engineering through trusted channels, uncontrolled data residency in third-party tenants
+
+#### ClickOps Implementation
+
+**Step 1: Open External Permissions**
+1. Navigate to: **Admin → Account Management → Account Settings**
+2. Select the **Chat** tab
+3. Locate the **External Permissions** section
+
+**Step 2: Restrict External Membership**
+1. Set who may add external users to internal group chats and channels — restrict to specific roles, or disable entirely for L2/L3
+2. Where external collaboration is required, allow it only for **allowlisted domains** rather than any external address
+3. Disable or gate the ability for internal users to **join externally owned chats and channels**
+
+**Step 3: Require Admin Approval**
+1. Enable the admin-approval workflow for external chat connections so each external channel or contact is reviewed before it becomes active
+2. Assign a named owner for the approval queue — an unwatched queue defaults to either blocking business or rubber-stamping requests
+
+**Step 4: Lock and Verify Group Overrides**
+1. Lock the External Permissions settings at the account level
+2. Navigate to: **Admin → User Management → Group Management → Settings → Chat** and confirm no group carries a more permissive override
+
+**Time to Complete:** ~30 minutes
+
+#### Validation & Testing
+1. As a standard user, attempt to add an external email address to an internal channel and confirm it is blocked or routed to admin approval
+2. Attempt to join an externally owned channel from an invitation and confirm the configured restriction applies
+3. Confirm the settings display as locked and cannot be raised at the group level
+4. Review **Admin → Account Management → Reports** chat and operation logs to confirm external chat events are being recorded
+
+**Expected result:** External participation in Team Chat is limited to approved domains or blocked entirely, and every external connection is admin-reviewed and logged.
+
+**Reference:** [Zoom — Managing Team Chat external permissions](https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0074841)
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security |
+| **SOC 2** | CC6.7 | Restricted transmission of information |
+| **NIST 800-53** | AC-20 | Use of external systems |
+| **NIST 800-53** | AC-21 | Information sharing |
+| **ISO 27001:2022** | A.5.14 | Information transfer |
 
 ---
 
@@ -453,7 +663,9 @@ Configure Zoom audit logging.
 
 **Security Incidents:**
 - **2020 -- Credential Stuffing / Account Sales:** Over 500,000 Zoom user accounts were compromised via credential stuffing and their details posted for sale on the dark web. This prompted significant security improvements to the platform.
-- **2025 -- DLL Hijacking Vulnerability (CVE-2025-49457, CVSS 9.6):** A critical vulnerability in how the Zoom Windows client loads DLLs allowed attackers to position a malicious DLL for execution. Patched via client update. Zoom disclosed 30 vulnerabilities in 2025 (average CVSS 6.3) and 36 in 2024.
+- **2025 -- DLL Hijacking Vulnerability (CVE-2025-49457, CVSS 9.6):** A critical vulnerability in how the Zoom Windows client loads DLLs allowed attackers to position a malicious DLL for execution. Patched via client update. Zoom disclosed 30 vulnerabilities in 2025 (average CVSS 6.3) and 36 in 2024. Mitigated by enforcing a minimum client version -- see [1.3 Enforce a Minimum Zoom Client Version](#13-enforce-a-minimum-zoom-client-version).
+- **2025 -- ELUSIVE COMET Remote-Control Campaign:** A threat actor lured cryptocurrency holders into fake podcast and media interviews on Zoom, then requested in-meeting remote control while impersonating a Zoom system prompt via a controlled display name. Victims who approved the prompt handed over keyboard and mouse control, leading to wallet theft and malware installation. Documented by [Trail of Bits](https://blog.trailofbits.com/2025/04/17/mitigating-elusive-comet-zoom-remote-control-attacks/); mitigated by [2.4 Disable and Lock Remote Control](#24-disable-and-lock-remote-control).
+- **2026 -- Unauthenticated Remote Account Takeover (CVE-2026-53412, CVSS 9.8):** A critical flaw in Zoom Workplace for Windows before version 7.0.0 and the corresponding VDI client allowed unauthenticated remote attackers to take over accounts. Patched in July 2026; remediation requires upgrading the client, making minimum-version enforcement the operative control. ([The Hacker News](https://thehackernews.com/2026/07/zoom-patches-critical-windows-flaw-that.html))
 
 ---
 
@@ -461,6 +673,7 @@ Configure Zoom audit logging.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-03 | 0.2.0 | draft | Correct OAuth token lifetimes (1h access, 90d rotating refresh, S2S has none); add JWT deprecation audit to 3.1; add 1.3 minimum client version, 2.4 remote control lock (ELUSIVE COMET), 4.3 Team Chat external permissions; add CVE-2026-53412 | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Zoom hardening guide | Claude Code (Opus 4.5) |
 

@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "Productivity"
 description: "Platform-wide security hardening for Google Workspace — the Common Controls hub (authentication, OAuth, DLP engine, audit logging) shared by the Gmail, Google Drive, and Google Chat product guides."
-version: "0.3.1"
+version: "0.4.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-03"
 ---
 
 ## Overview
@@ -288,6 +288,98 @@ Implement context-aware access policies that evaluate device, location, and user
 
 ---
 
+### 1.4 Require Multi-Party Approvals for Sensitive Admin Actions
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4, 6.8 |
+| NIST 800-53 | AC-3(2), AC-6(1) |
+
+#### Description
+Multi-party approvals (MPA) require a second Super Admin to approve a sensitive administrative change before it takes effect. Google shipped granular per-action controls in **June 2025**, letting you choose exactly which actions are gated instead of accepting a single all-or-nothing switch, and extended coverage to **Vault export creation in December 2025**. Gated actions include changes to 2-Step Verification enforcement, account recovery settings, domain-wide delegation grants, and the creation of Vault exports. Source: [More granular controls for multi-party approvals for sensitive admin actions](https://workspaceupdates.googleblog.com/2025/06/more-granular-controls-for-multi-party-approvals-for-sensitive-admin-actions.html).
+
+#### Rationale
+**Why This Matters:**
+- A single compromised Super Admin is otherwise sufficient to disable 2SV enforcement tenant-wide, which unwinds [1.1](#11-enforce-multi-factor-authentication-for-all-users) in one click and leaves no approval trail
+- Domain-wide delegation is the most valuable persistence mechanism in Google Workspace — a delegated service account can impersonate any user without triggering a user-facing sign-in, so gating the grant is far cheaper than detecting its abuse afterward
+- Vault export creation is a bulk data-exfiltration primitive with a legitimate business purpose, which makes it hard to alert on; requiring a second approver converts it from a silent action into a reviewed one
+- Account recovery changes are the classic path back in after a credential reset, and attackers modify them precisely because they are rarely monitored
+- Granular per-action selection means you can gate the four highest-blast-radius operations without adding friction to routine user administration
+
+**Attack Prevented:** Single-admin compromise leading to tenant-wide MFA rollback, covert domain-wide delegation for persistence, silent bulk data export via Vault, account-recovery hijacking
+
+#### Prerequisites
+- Google Workspace Enterprise Standard or Plus, Education Standard or Plus, or Cloud Identity Premium
+- At least two Super Admin accounts (MPA cannot function with a single Super Admin)
+- Both Super Admins enrolled in 2-Step Verification, ideally with security keys per [1.2](#12-restrict-super-admin-account-usage)
+- A documented break-glass procedure for the case where the second approver is unavailable
+
+#### ClickOps Implementation
+
+**Step 1: Confirm Approver Coverage**
+1. Navigate to: **Admin Console** → **Account** → **Admin roles**
+2. Confirm at least two active Super Admin accounts exist and that both are reachable through separate communication channels
+3. Do not enable MPA against a single Super Admin — you will lock yourself out of the gated actions
+
+**Step 2: Enable Multi-Party Approvals**
+1. Navigate to: **Admin Console** → **Account** → **Account settings** → **Multi-party approvals**
+2. Set the feature to **On**
+3. Click **Save**
+
+**Step 3: Select Which Actions Require Approval**
+1. In the same **Multi-party approvals** panel, review the per-action list
+2. Enable approval for, at minimum:
+   - **2-Step Verification** setting changes
+   - **Account recovery** setting changes
+   - **Domain-wide delegation** grants
+   - **Vault export** creation
+3. Leave lower-risk actions ungated so routine administration is not blocked
+4. Click **Save**
+
+**Step 4: Brief Your Admins on the Approval Flow**
+1. Explain that a gated change enters a pending state and notifies other Super Admins rather than applying immediately
+2. Establish an expected approval turnaround so legitimate changes are not stalled
+3. Document how to identify and reject an approval request that no admin recognizes — an unexpected request is a compromise signal, not a formality
+
+**Time to Complete:** ~30 minutes
+
+#### Validation & Testing
+**How to verify the control is working:**
+1. As Super Admin A, attempt a gated change — for example, modifying 2SV enforcement on a test organizational unit
+2. Confirm the change does not apply immediately and enters a pending-approval state
+3. Confirm Super Admin B receives an approval request
+4. Reject the request and confirm the original setting is unchanged
+5. Repeat with approval and confirm the change applies only after the second admin approves
+6. Review **Reporting** → **Audit and investigation** → **Admin log events** and confirm both the request and the approval decision are recorded
+
+**Expected result:** Gated actions cannot be completed by a single administrator, and every request and decision is captured in the admin audit log
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|----------|
+| **User Experience** | None | Affects administrators only; end users see no change |
+| **System Performance** | None | No performance impact |
+| **Maintenance Burden** | Low-Medium | Requires a reachable second approver and an agreed turnaround time |
+| **Rollback Difficulty** | Easy | Disable in Account settings, though disabling may itself be a gated action |
+
+**Potential Issues:**
+- Single-Super-Admin tenants cannot use MPA — provision a second Super Admin first
+- Time-sensitive incident response can be delayed if the second approver is unreachable; agree on an on-call rotation before enabling
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.3 | Access modification authorization |
+| **NIST 800-53** | AC-3(2) | Dual authorization for privileged actions |
+| **NIST 800-53** | AC-6(1) | Least privilege |
+| **ISO 27001** | A.5.15 | Access control |
+
+---
+
 ## 2. Network Access Controls
 
 ### 2.1 Configure Allowed IP Ranges for Admin Console
@@ -408,36 +500,67 @@ Restrict which third-party applications can access Google Workspace data via OAu
 
 ---
 
-### 3.2 Disable Less Secure Apps
+### 3.2 Retire Legacy App Access (Less Secure Apps & App Passwords)
 
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
 | CIS Controls | 4.2 |
-| NIST 800-53 | IA-2 |
+| NIST 800-53 | IA-2, CM-7 |
 
 #### Description
-Disable "Less Secure Apps" access which allows applications to authenticate with just username/password, bypassing 2-Step Verification.
+Less Secure Apps (LSA) — the setting that let applications sign in with only a username and password, bypassing 2-Step Verification — no longer exists. Google completed the platform-wide removal of LSA support on **May 1, 2025**, and the **Security → Less secure apps** page has been retired from the Admin Console. There is nothing left to toggle. What remains for administrators is the residual legacy-access surface: **app passwords** issued before the cutover, and OAuth clients that inherited the access those legacy connections used to provide. Source: [Control access to less secure apps](https://knowledge.workspace.google.com/admin/apps/control-access-to-less-secure-apps).
+
+If you are working from an older checklist or a prior version of this guide that instructs you to navigate to **Security → Less secure apps**, treat that step as complete-by-platform rather than as an outstanding gap — the migration was performed by Google, not by your tenant.
 
 #### Rationale
 **Why This Matters:**
-- Less Secure Apps bypass MFA completely
-- Legacy protocols are targets for password spray
-- Google has deprecated this feature, but some tenants may still have it enabled
+- LSA removal closed the largest MFA-bypass path in Google Workspace, but it did not revoke the app passwords users generated while LSA was still supported — those credentials are single-factor by design and survive the deprecation
+- An app password grants mail and calendar access without ever presenting a 2SV challenge, so a leaked one defeats the enforcement you configured in [1.1](#11-enforce-multi-factor-authentication-for-all-users)
+- Integrations that used to authenticate over basic credentials were migrated to OAuth, which moves the risk rather than eliminating it — the same vendor now holds a token with explicit scopes, and those scopes need the same governance as any other third-party app
+- Auditing a control that no longer exists wastes assessment effort and produces false findings; auditing the credentials the deprecation left behind produces real ones
+
+**Attack Prevented:** MFA bypass via residual single-factor app passwords, persistent access by legacy integrations that were never re-reviewed after the OAuth migration, password spray against legacy authentication paths
 
 #### ClickOps Implementation
 
-**Step 1: Disable Less Secure Apps**
-1. Navigate to: **Admin Console** → **Security** → **Less secure apps**
-2. Select **Disable access to less secure apps (Recommended)**
-3. Click **Save**
+**Step 1: Confirm the Legacy Setting Is Gone**
+1. Navigate to: **Admin Console** → **Security** → **Access and data control**
+2. Confirm no **Less secure apps** entry is present — its absence is the expected state on every tenant, and it is not a misconfiguration
+3. Record this in your control evidence as "removed by vendor, effective 2025-05-01" so future assessments do not re-open it
 
-> **Note:** This should be disabled by default for most tenants as of recent Google updates.
+**Step 2: Audit and Remove Outstanding App Passwords**
+1. Navigate to: **Admin Console** → **Directory** → **Users**
+2. Open an individual user, then select **Security**
+3. Review **App passwords** — the panel shows the count of active app passwords for that account
+4. Click **Revoke all** for any user who no longer needs a legacy client, prioritizing Super Admins and other privileged accounts
+5. For a tenant-wide view, run a **Reporting** → **Audit and investigation** → **Token log events** search and look for authentications that are not attributable to an approved OAuth client
 
-#### Code Implementation
+**Step 3: Govern the OAuth Access That Replaced It**
+1. Work through [3.1 Enable OAuth App Whitelisting](#31-enable-oauth-app-whitelisting) — the app access control policy defined there is now the enforcement point for every integration that previously relied on basic credentials
+2. In **Security** → **API controls** → **App access control**, review any app added during the LSA migration window and confirm it still has a business owner and a justification
+3. Set the default policy to block unconfigured third-party apps so no migrated integration silently retains access
 
-{% include pack-code.html vendor="google-workspace" section="3.2" %}
+**Time to Complete:** ~45 minutes
+
+#### Validation & Testing
+**How to verify the control is working:**
+1. Confirm the **Less secure apps** page returns no result in Admin Console search — this is the expected post-deprecation state
+2. Pick a sample of privileged users and confirm the **App passwords** count is zero on each
+3. Attempt an IMAP or SMTP sign-in using a plain account password against a test account — it should fail, because basic authentication is no longer accepted
+4. Cross-check the approved OAuth app list against your integration inventory and confirm no unowned app remains from the migration
+
+**Expected result:** No legacy-app setting exists, no residual app passwords remain on privileged accounts, and every surviving integration is an explicitly approved OAuth client
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security |
+| **NIST 800-53** | IA-2 | Identification and authentication of organizational users |
+| **NIST 800-53** | CM-7 | Least functionality — removal of legacy authentication paths |
+| **ISO 27001** | A.9.4.2 | Secure log-on procedures |
 
 ---
 
@@ -489,6 +612,99 @@ Configure Google Workspace DLP rules to detect and prevent sharing of sensitive 
 {% include pack-code.html vendor="google-workspace" section="4.2" %}
 
 > **Google Chat DLP:** The same data protection rules apply to Chat messages and attachments. When creating a rule, set **Apps** to **Chat**, choose the conversation type (**internal** or **external**), and enable OCR to scan images. Attachments over 50 MB are sent without scanning. See [Chat 2.2](/guides/google-chat/#22-restrict-google-chat-file-sharing) to also cap what file types can be shared.
+
+---
+
+### 4.3 Govern AI and Agent Access with the AI Control Center
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.3, 6.8 |
+| NIST 800-53 | AC-3, AC-4, SC-28 |
+
+#### Description
+The AI control center is the single Admin Console surface for governing how Gemini and other AI agents reach Workspace data. It reached general availability in **May 2026** for Enterprise Standard and Enterprise Plus. It combines service-level Gemini controls, classification labels paired with trust rules and data-protection rules that constrain what AI can surface, and centralized visibility into AI usage across the tenant. Source: [Securely manage AI and agent access to Workspace data with the AI control center](https://workspaceupdates.googleblog.com/2026/05/securely-manage-AI-and-agent-access-to-Workspace-data-with-the-AI-control-center.html).
+
+#### Rationale
+**Why This Matters:**
+- AI assistants inherit the permissions of the user invoking them, which means existing oversharing inside Drive becomes retrievable on demand rather than merely discoverable — a document a user technically could have found is now something an assistant will summarize for them unprompted
+- Agent access is a new integration surface with the same supply-chain properties as OAuth apps: a third-party agent granted broad scopes can read across mailboxes and drives continuously, without the visible interaction pattern that makes human exfiltration noticeable
+- Classification labels combined with trust rules let you mark sensitive content once and have every AI surface honor that boundary, rather than re-authoring exclusion logic per product
+- Without centralized usage visibility, AI adoption inside a tenant is invisible to security teams until an incident forces an inventory
+- Service-level controls let you stage rollout by organizational unit, so regulated teams can be excluded while the rest of the organization proceeds
+
+**Attack Prevented:** AI-assisted discovery and exfiltration of overshared internal data, third-party agent overreach into mailboxes and drives, inadvertent exposure of regulated content through AI summarization, unsanctioned shadow-AI usage
+
+#### Prerequisites
+- Google Workspace Enterprise Standard or Enterprise Plus
+- Super Admin access to the Admin Console
+- A defined data classification scheme, and DLP configured per [4.2](#42-enable-data-loss-prevention-dlp)
+- An inventory of AI tools and agents already in use, cross-referenced against the OAuth app list from [3.1](#31-enable-oauth-app-whitelisting)
+
+#### ClickOps Implementation
+
+**Step 1: Open the AI Control Center**
+1. Navigate to: **Admin Console** → **Generative AI** → **AI control center**
+2. Review the usage overview to establish a baseline of which AI features are already active and in which organizational units
+
+**Step 2: Set Service-Level Gemini Controls**
+1. In the AI control center, open the service controls for Gemini
+2. Enable or disable each AI service per organizational unit, starting restrictive and expanding after review
+3. Exclude organizational units that handle regulated data until a data-protection rule covering that data is in place
+4. Click **Save**
+
+**Step 3: Apply Classification Labels and Trust Rules**
+1. Confirm your classification labels are defined under **Security** → **Access and data control**
+2. In the AI control center, create trust rules that prevent labeled content from being surfaced by AI features
+3. Pair each trust rule with a data-protection rule so the same classification drives both DLP enforcement and AI exclusion
+4. Verify that the labels applied to your most sensitive Drive content actually match the rule conditions
+
+**Step 4: Govern Third-Party Agent Access**
+1. Review the agents and AI integrations listed in the control center
+2. For each, confirm there is a business owner and that its scopes match its stated function
+3. Remove or block any agent that cannot be attributed to an owner
+4. Route all new agent requests through the same approval workflow as OAuth apps in [3.1](#31-enable-oauth-app-whitelisting)
+
+**Step 5: Establish Ongoing Review**
+1. Use the centralized usage visibility to track adoption by organizational unit
+2. Set a recurring review to catch newly enabled AI features and newly granted agents
+
+**Time to Complete:** ~1.5 hours
+
+#### Validation & Testing
+**How to verify the control is working:**
+1. As a test user in an organizational unit where Gemini is disabled, confirm the AI features are unavailable
+2. Apply a sensitive classification label to a test document, then ask an AI feature a question whose answer lives in that document — confirm the content is not surfaced
+3. Remove the label and confirm the content becomes available again, proving the trust rule is the operative gate rather than a permissions accident
+4. Confirm that a blocked agent can no longer retrieve Workspace data
+5. Check the usage view and confirm activity is being recorded for the organizational units where AI is enabled
+
+**Expected result:** AI features are available only where explicitly enabled, labeled content is excluded from AI surfacing, and every active agent is attributable to an owner
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|----------|
+| **User Experience** | Medium | Users in restricted organizational units lose access to AI features they may already rely on |
+| **System Performance** | None | No performance impact |
+| **Maintenance Burden** | Medium | Labels and trust rules need upkeep as classification schemes evolve |
+| **Rollback Difficulty** | Easy | Re-enable services or disable trust rules in the AI control center |
+
+**Potential Issues:**
+- Requires Enterprise Standard or Enterprise Plus; lower editions have no equivalent surface
+- Trust rules are only as good as label coverage — unlabeled sensitive content remains reachable by AI
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security |
+| **SOC 2** | CC6.7 | Restriction of information transmission |
+| **NIST 800-53** | AC-3 | Access enforcement |
+| **NIST 800-53** | AC-4 | Information flow enforcement |
+| **ISO 27001** | A.5.12 | Classification of information |
 
 ---
 
@@ -594,8 +810,11 @@ Enable and configure audit logging across all Google Workspace services. Use the
 |-----------|------------------|---------------|
 | CC6.1 | MFA for all users | [1.1](#11-enforce-multi-factor-authentication-for-all-users) |
 | CC6.1 | OAuth app controls | [3.1](#31-enable-oauth-app-whitelisting) |
+| CC6.1 | Legacy app access retirement | [3.2](#32-retire-legacy-app-access-less-secure-apps--app-passwords) |
 | CC6.2 | Super Admin restrictions | [1.2](#12-restrict-super-admin-account-usage) |
+| CC6.3 | Multi-party approvals for sensitive admin actions | [1.4](#14-require-multi-party-approvals-for-sensitive-admin-actions) |
 | CC6.6 | External sharing restrictions | [Drive 1.1](/guides/google-drive/#11-configure-external-drive-sharing-restrictions) |
+| CC6.7 | AI and agent access governance | [4.3](#43-govern-ai-and-agent-access-with-the-ai-control-center) |
 | CC6.6 | Chat external & file-sharing restrictions | [Chat 2.1](/guides/google-chat/#21-restrict-external-google-chat--spaces), [Chat 2.2](/guides/google-chat/#22-restrict-google-chat-file-sharing) |
 | CC7.2 | Audit logging | [5.1](#51-enable-audit-logging-and-investigation-tool) |
 | CC7.2 | Chat audit logging & content reporting | [Chat 3.1](/guides/google-chat/#31-enable-google-chat-audit-logging--content-reporting) |
@@ -606,14 +825,19 @@ Enable and configure audit logging across all Google Workspace services. Use the
 |---------|------------------|---------------|
 | IA-2(1) | MFA enforcement | [1.1](#11-enforce-multi-factor-authentication-for-all-users) |
 | AC-6(1) | Least privilege admin | [1.2](#12-restrict-super-admin-account-usage) |
+| AC-3(2) | Dual authorization for sensitive admin actions | [1.4](#14-require-multi-party-approvals-for-sensitive-admin-actions) |
 | AC-3 | OAuth app control | [3.1](#31-enable-oauth-app-whitelisting) |
+| CM-7 | Legacy authentication path removal | [3.2](#32-retire-legacy-app-access-less-secure-apps--app-passwords) |
+| AC-4 | Information flow enforcement for AI and agents | [4.3](#43-govern-ai-and-agent-access-with-the-ai-control-center) |
 | CM-7 | Chat app restriction | [Chat 1.1](/guides/google-chat/#11-restrict--allowlist-google-chat-apps) |
 | AC-20 | Chat external messaging | [Chat 2.1](/guides/google-chat/#21-restrict-external-google-chat--spaces) |
 | AU-9 | Chat history protection | [Chat 2.3](/guides/google-chat/#23-enforce-google-chat-history--retention) |
 | AU-2 | Audit logging | [5.1](#51-enable-audit-logging-and-investigation-tool) |
 | IR-6 | Chat content reporting | [Chat 3.1](/guides/google-chat/#31-enable-google-chat-audit-logging--content-reporting) |
 
-### CIS Google Workspace Foundations Benchmark Mapping
+### CIS Google Workspace Foundations Benchmark v1.3.0 Mapping
+
+The recommendation IDs below are drawn from the **CIS Google Workspace Foundations Benchmark v1.3.0**. CIS renumbers recommendations between releases, so an ID that matches here will not necessarily match in v1.2.0 or a future v1.4.0 — always confirm the ID against the benchmark revision your auditor is using rather than assuming continuity. Download the current revision from [CIS Google Workspace Benchmark](https://www.cisecurity.org/benchmark/google_workspace).
 
 | Recommendation | Google Workspace Control | Guide Section |
 |---------------|------------------|---------------|
@@ -623,6 +847,20 @@ Enable and configure audit logging across all Google Workspace services. Use the
 | 3.1 | Restrict external sharing | [Drive 1.1](/guides/google-drive/#11-configure-external-drive-sharing-restrictions) |
 | 3.1.4.2.2 | Restrict Google Chat externally to allowlisted domains | [Chat 2.1](/guides/google-chat/#21-restrict-external-google-chat--spaces) |
 
+Controls [1.4](#14-require-multi-party-approvals-for-sensitive-admin-actions) and [4.3](#43-govern-ai-and-agent-access-with-the-ai-control-center) cover Google features that postdate v1.3.0 and have no corresponding CIS recommendation ID yet.
+
+### CISA SCuBA Secure Configuration Baseline Mapping
+
+CISA publishes Secure Configuration Baselines for Google Workspace and ships [ScubaGoggles](https://github.com/cisagov/ScubaGoggles), an open-source assessment tool that evaluates a live tenant against those baselines and produces a pass/fail report. The GWS Common Controls baseline is the one that overlaps this guide, and running ScubaGoggles is the fastest way to get independent evidence that these controls are actually in effect rather than merely documented.
+
+| SCuBA Baseline Area | ScubaGoggles Checks | Guide Section |
+|---------------------|---------------------|---------------|
+| GWS Common Controls — 2SV enforcement | Verifies 2-Step Verification is enforced and that allowed methods exclude SMS and voice | [1.1](#11-enforce-multi-factor-authentication-for-all-users) |
+| GWS Common Controls — account recovery restrictions | Verifies self-service account recovery is disabled for administrators and users | [1.2](#12-restrict-super-admin-account-usage), [1.4](#14-require-multi-party-approvals-for-sensitive-admin-actions) |
+| GWS Common Controls — break-glass configuration | Verifies a documented emergency-access account exists and is appropriately constrained | [1.2](#12-restrict-super-admin-account-usage) |
+| GWS Common Controls — post-SSO verification | Verifies additional verification is applied after SSO sign-in so a compromised IdP session is not sufficient on its own | [1.1](#11-enforce-multi-factor-authentication-for-all-users), [1.3](#13-configure-context-aware-access) |
+| GWS Common Controls — third-party app access | Verifies app access control blocks unconfigured third-party applications | [3.1](#31-enable-oauth-app-whitelisting) |
+
 ## Appendix A: Edition/Tier Compatibility
 
 | Control | Business Starter | Business Standard | Business Plus | Enterprise Standard | Enterprise Plus |
@@ -631,6 +869,8 @@ Enable and configure audit logging across all Google Workspace services. Use the
 | Security Keys enforcement | ✅ | ✅ | ✅ | ✅ | ✅ |
 | OAuth app whitelisting | ❌ | ✅ | ✅ | ✅ | ✅ |
 | Context-Aware Access | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Multi-party approvals | ❌ | ❌ | ❌ | ✅ | ✅ |
+| AI control center | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Data Loss Prevention | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Security Investigation Tool | ❌ | ❌ | ❌ | ✅ | ✅ |
 | BigQuery export | ❌ | ❌ | ❌ | ✅ | ✅ |
@@ -644,20 +884,27 @@ Enable and configure audit logging across all Google Workspace services. Use the
 ## Appendix B: References
 
 **Official Google Documentation:**
-- [Google Workspace Admin Help](https://support.google.com/a)
-- [Security Best Practices](https://support.google.com/a/answer/7587183)
+- [Google Workspace Admin Help](https://knowledge.workspace.google.com/)
+- [Security checklist for medium and large businesses](https://knowledge.workspace.google.com/admin/security/security-checklist-for-medium-and-large-businesses-100-users)
+- [Control access to less secure apps (LSA removal, effective 2025-05-01)](https://knowledge.workspace.google.com/admin/apps/control-access-to-less-secure-apps)
 - [Google Cloud MFA Requirement](https://docs.cloud.google.com/docs/authentication/mfa-requirement)
 - [Data Protection and Compliance](https://business.safety.google/compliance/)
 - [Compliance Reports Manager](https://cloud.google.com/security/compliance/compliance-reports-manager)
 
+> **Documentation domain migration:** Google moved Workspace admin documentation from `support.google.com/a` to `knowledge.workspace.google.com`. Old article-ID links mostly redirect, but some retired articles land on the domain homepage instead of equivalent content — if you follow a `support.google.com/a/answer/NNNNNNN` link from an older checklist and arrive at a generic page, the article was retired rather than moved. Google Vault documentation has not migrated and still lives on `support.google.com/vault`.
+
+**Admin Console Feature Announcements:**
+- [More granular controls for multi-party approvals for sensitive admin actions (June 2025)](https://workspaceupdates.googleblog.com/2025/06/more-granular-controls-for-multi-party-approvals-for-sensitive-admin-actions.html)
+- [Securely manage AI and agent access to Workspace data with the AI control center (May 2026)](https://workspaceupdates.googleblog.com/2026/05/securely-manage-AI-and-agent-access-to-Workspace-data-with-the-AI-control-center.html)
+
 **Google Chat Hardening:**
-- [Control external Chat & spaces chat options](https://support.google.com/a/answer/9269229)
-- [Allow users to install Chat apps](https://support.google.com/a/answer/7651360)
-- [Control file sharing in Chat](https://support.google.com/a/answer/10277783)
-- [Turn chat history on or off for users](https://support.google.com/a/answer/7664184)
-- [Set a space history option for users](https://support.google.com/a/answer/9948515)
-- [Prevent data leaks from Chat messages & attachments (DLP)](https://support.google.com/a/answer/10846568)
-- [Chat log events](https://support.google.com/a/answer/9142478)
+- [Control external Chat & spaces chat options](https://knowledge.workspace.google.com/admin/chat/control-external-chat-and-spaces-chat-options)
+- [Allow users to install Chat apps](https://knowledge.workspace.google.com/admin/chat/allow-users-to-install-chat-apps)
+- [Control file sharing in Chat](https://knowledge.workspace.google.com/admin/chat/control-file-sharing-in-chat)
+- [Turn chat history on or off for users](https://knowledge.workspace.google.com/admin/chat/turn-chat-history-on-or-off-for-an-organization)
+- [Set a space history option for users](https://knowledge.workspace.google.com/admin/chat/set-a-space-history-option-for-users)
+- [Prevent data leaks from Chat messages & attachments (DLP)](https://knowledge.workspace.google.com/admin/security/prevent-data-leaks-from-chat-messages-and-attachments)
+- [Chat log events](https://knowledge.workspace.google.com/admin/reports/chat-log-events)
 - [Chat Audit Activity Events (Reports API)](https://developers.google.com/workspace/admin/reports/v1/appendix/activity/chat)
 - [Retain Google Chat messages with Vault](https://support.google.com/vault/answer/7657597)
 - [Vault API — manage holds (HANGOUTS_CHAT corpus)](https://developers.google.com/workspace/vault/guides/holds)
@@ -678,8 +925,8 @@ Enable and configure audit logging across all Google Workspace services. Use the
 **Third-Party Security Guides:**
 - [CISA Google Common Controls](https://www.cisa.gov/resources-tools/services/gws-commoncontrols)
 - [CISA SCuBA Secure Configuration Baseline for Google Chat](https://www.cisa.gov/resources-tools/services/gws-chat)
-- [CISA ScubaGoggles (GWS assessment tool & baselines)](https://github.com/cisagov/ScubaGoggles)
-- [CIS Google Workspace Benchmark](https://www.cisecurity.org/benchmark/google_workspace)
+- [CISA ScubaGoggles (GWS assessment tool & baselines)](https://github.com/cisagov/ScubaGoggles) — run against a live tenant to validate the Common Controls baseline items mapped in §7
+- [CIS Google Workspace Benchmark](https://www.cisecurity.org/benchmark/google_workspace) — §7 maps to **v1.3.0**; recommendation IDs shift between releases, so confirm against the revision your auditor uses
 
 ---
 
@@ -687,6 +934,7 @@ Enable and configure audit logging across all Google Workspace services. Use the
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-03 | 0.4.0 | draft | Currency pass. Rewrote §3.2 — Less Secure Apps was fully removed by Google on 2025-05-01 and the Admin Console page no longer exists, so the control is now "Retire Legacy App Access (Less Secure Apps & App Passwords)" covering residual app-password auditing and OAuth governance. Added §1.4 multi-party approvals for sensitive admin actions (2SV changes, account recovery, domain-wide delegation, Vault export creation) and §4.3 AI control center for Gemini and agent access governance (GA May 2026, Enterprise Standard/Plus). Migrated 9 `support.google.com/a` citations to `knowledge.workspace.google.com`. Labeled the CIS mapping as Foundations Benchmark v1.3.0 with a note that IDs shift between releases, and added a CISA SCuBA / ScubaGoggles baseline mapping table. | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.3.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-05-29 | 0.3.0 | draft | Restructured Google Workspace into a multi-product platform (GRC-496): split Google Chat into the [google-chat](/guides/google-chat/) guide and Google Drive into the [google-drive](/guides/google-drive/) guide; this guide is now the Common Controls hub (authentication, OAuth, DLP engine, admin audit logging). Added a Gmail product stub. Repointed cross-references and compliance tables to the product guides; reorganized code packs into packs/google-chat and packs/google-drive. | Jai (PAI) |
 | 2026-05-28 | 0.2.0 | draft | Added Google Chat hardening: app/webhook allowlisting (3.3), external chat & spaces restrictions (4.3), Chat file sharing (4.4), history & Vault retention (4.5), and Chat audit logging & content reporting (5.2). Mapped to CISA SCuBA GWS.CHAT baseline; added Chat code packs and references. | Claude Code (Opus 4.7) |
