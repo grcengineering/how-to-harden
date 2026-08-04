@@ -6,28 +6,34 @@
 1password:
   product_docs: "https://support.1password.com/"
   api_docs: "https://developer.1password.com/"
-  hardening_docs: "https://support.1password.com/business-security-practices/"
+  hardening_docs:
+    - label: "Business Security Practices"
+      url: "https://support.1password.com/business-security-practices/"
+    - label: "Team Policies"
+      url: "https://support.1password.com/team-policies/"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/1password"
 
 abnormal:
   product_docs: "https://abnormalsecurity.my.site.com/knowledgebase/s/"
   api_docs: "https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.1.0"
-  hardening_docs: "https://security.abnormal.ai/"
 
 adp:
   product_docs: "https://support.adp.com/"
   api_docs: "https://developers.adp.com/"
-  hardening_docs: "https://www.adp.com/about-adp/data-security/best-practices.aspx"
+  hardening_docs: "https://support.adp.com/netsecure/pages/pub/docs/9.0/en_us/ADP_Security_Management_OnlineHelp.pdf"
 
 airtable:
   product_docs: "https://support.airtable.com/"
   api_docs: "https://airtable.com/developers/web/api/introduction"
-  hardening_docs: "https://support.airtable.com/docs/airtable-security-practices"
+  hardening_docs:
+    - label: "Admin Panel Settings"
+      url: "https://support.airtable.com/docs/settings-airtable-admin-panel"
+    - label: "Enterprise Admin Panel"
+      url: "https://support.airtable.com/docs/en/enterprise-admin-panel"
 
 amplitude:
   product_docs: "https://amplitude.com/docs"
   api_docs: "https://www.docs.developers.amplitude.com/analytics/apis/"
-  hardening_docs: "https://amplitude.com/security-and-privacy"
 
 anthropic-claude:
   product_docs: "https://docs.anthropic.com/"
@@ -38,50 +44,73 @@ anthropic-claude:
 asana:
   product_docs: "https://help.asana.com/s/"
   api_docs: "https://developers.asana.com/"
-  hardening_docs: "https://asana.com/features/admin-security"
+  hardening_docs: "https://help.asana.com/s/article/security-controls-in-asana"
 
 atlassian:
   product_docs: "https://support.atlassian.com/"
   api_docs: "https://developer.atlassian.com/"
-  hardening_docs: "https://support.atlassian.com/jira/kb/how-to-configure-jira-applications-for-security-best-practices/"
+  hardening_docs:
+    - label: "Jira Security Best Practices (Data Center)"
+      url: "https://support.atlassian.com/jira/kb/how-to-configure-jira-applications-for-security-best-practices/"
+    - label: "Keep My Organization Secure (Cloud)"
+      url: "https://support.atlassian.com/security-and-access-policies/docs/how-to-keep-my-organization-secure/"
+    - label: "Atlassian Admin Security Guide"
+      url: "https://www.atlassian.com/whitepapers/atlassian-admin-security-guide"
 
 auth0:
   product_docs: "https://auth0.com/docs"
   api_docs: "https://auth0.com/docs/api"
-  hardening_docs: "https://auth0.com/docs/best-practices"
+  hardening_docs:
+    - label: "Secure — Security Guidance"
+      url: "https://auth0.com/docs/secure"
+    - label: "Security Guidance Details"
+      url: "https://auth0.com/docs/secure/security-guidance"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/auth0"
 
 aws-iam-identity-center:
   product_docs: "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html"
   api_docs: "https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html"
-  hardening_docs: "https://docs.aws.amazon.com/singlesignon/latest/userguide/security.html"
+  hardening_docs:
+    - label: "IAM Identity Center Security"
+      url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/security.html"
+    - label: "IAM Best Practices"
+      url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html"
+    - label: "CIS AWS Foundations Benchmark"
+      url: "https://www.cisecurity.org/benchmark/amazon_web_services"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/aws-iam-identity-center"
 
 azure-devops:
   product_docs: "https://learn.microsoft.com/en-us/azure/devops/"
   api_docs: "https://learn.microsoft.com/en-us/rest/api/azure/devops/"
-  hardening_docs: "https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-best-practices"
+  hardening_docs:
+    - label: "Security Best Practices"
+      url: "https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-best-practices"
+    - label: "Pipeline Security"
+      url: "https://learn.microsoft.com/en-us/azure/devops/pipelines/security/overview"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/azure-devops"
 
 bamboohr:
   product_docs: "https://help.bamboohr.com/s/"
   api_docs: "https://documentation.bamboohr.com/docs/getting-started"
-  hardening_docs: "https://trust.bamboohr.com/"
 
 beyondtrust:
   product_docs: "https://www.beyondtrust.com/docs"
   api_docs: "https://docs.beyondtrust.com/pra/reference/api-guide"
-  hardening_docs: "https://www.beyondtrust.com/docs/beyondinsight-password-safe/appliance/hardening/index.htm"
+  hardening_docs: "https://docs.beyondtrust.com/bips/docs/u-series-best-practices"
 
 bitbucket:
   product_docs: "https://support.atlassian.com/bitbucket-cloud/"
   api_docs: "https://developer.atlassian.com/cloud/bitbucket/rest/"
-  hardening_docs: "https://support.atlassian.com/bitbucket-cloud/docs/security/"
+  hardening_docs: "https://support.atlassian.com/security-and-access-policies/docs/how-to-keep-my-organization-secure/"
 
 box:
   product_docs: "https://support.box.com/hc/en-us"
   api_docs: "https://developer.box.com/"
-  hardening_docs: "https://support.box.com/hc/en-us/articles/360044193273-Best-Practice-Choosing-Security-Settings"
+  hardening_docs:
+    - label: "Best Practice: Security Settings"
+      url: "https://support.box.com/hc/en-us/articles/360044193273-Best-Practice-Choosing-Security-Settings"
+    - label: "Enterprise Settings: Security Tab"
+      url: "https://support.box.com/hc/en-us/articles/4402040225427-Enterprise-Settings-Security-Tab"
 
 braze:
   product_docs: "https://www.braze.com/docs/user_guide/introduction"
@@ -91,13 +120,23 @@ braze:
 buildkite:
   product_docs: "https://buildkite.com/docs"
   api_docs: "https://buildkite.com/docs/apis"
-  hardening_docs: "https://buildkite.com/docs/pipelines/best-practices/security-controls"
+  hardening_docs:
+    - label: "Security Controls Best Practices"
+      url: "https://buildkite.com/docs/pipelines/best-practices/security-controls"
+    - label: "Self-Hosted Agent Security"
+      url: "https://buildkite.com/docs/agent/self-hosted/security"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/buildkite"
 
 chatgpt-enterprise:
   product_docs: "https://help.openai.com/en/collections/5688074-chatgpt-enterprise"
   api_docs: "https://platform.openai.com/docs/api-reference/introduction"
-  hardening_docs: "https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-in-apps-enterprise-edu-and-business"
+  hardening_docs:
+    - label: "Enterprise Admin Quickstart"
+      url: "https://help.openai.com/en/articles/20001264-chatgpt-enterprise-admin-quickstart"
+    - label: "Admin Controls, Security & Compliance"
+      url: "https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-in-apps-enterprise-edu-and-business"
+    - label: "ChatGPT Enterprise Help Collection"
+      url: "https://help.openai.com/en/collections/5688074-chatgpt-enterprise"
 
 circleci:
   product_docs: "https://circleci.com/docs/"
@@ -107,12 +146,15 @@ circleci:
 clari:
   product_docs: "https://community.clari.com/"
   api_docs: "https://developer.clari.com/"
-  hardening_docs: "https://www.clari.com/security/"
 
 cloudflare:
   product_docs: "https://developers.cloudflare.com/"
   api_docs: "https://developers.cloudflare.com/api/"
-  hardening_docs: "https://developers.cloudflare.com/fundamentals/security/"
+  hardening_docs:
+    - label: "Account Security"
+      url: "https://developers.cloudflare.com/fundamentals/account/account-security/"
+    - label: "Fundamentals Best Practices"
+      url: "https://developers.cloudflare.com/fundamentals/reference/best-practices/"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/cloudflare"
 
 concur:
@@ -128,13 +170,16 @@ coupa:
 crowdstrike:
   product_docs: "https://falcon.crowdstrike.com/documentation/"
   api_docs: "https://developer.crowdstrike.com/docs/openapi/"
-  hardening_docs: "https://www.crowdstrike.com/en-us/resources/guides/"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/crowdstrike"
 
 cursor:
   product_docs: "https://cursor.com/docs"
   api_docs: ""
-  hardening_docs: "https://cursor.com/security"
+  hardening_docs:
+    - label: "LLM Safety & Controls (Enterprise)"
+      url: "https://cursor.com/docs/enterprise/llm-safety-and-controls"
+    - label: "Enterprise Docs"
+      url: "https://cursor.com/docs/enterprise"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/cursor"
 
 cyberark:
@@ -146,19 +191,33 @@ cyberark:
 databricks:
   product_docs: "https://docs.databricks.com/aws/en/"
   api_docs: "https://docs.databricks.com/api/workspace/introduction"
-  hardening_docs: "https://docs.databricks.com/aws/en/lakehouse-architecture/security-compliance-and-privacy/best-practices"
+  hardening_docs:
+    - label: "Security, Compliance & Privacy Best Practices"
+      url: "https://docs.databricks.com/aws/en/lakehouse-architecture/security-compliance-and-privacy/best-practices"
+    - label: "Security Best Practices Hub"
+      url: "https://www.databricks.com/trust/security-features/best-practices"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/databricks"
 
 datadog:
   product_docs: "https://docs.datadoghq.com/"
   api_docs: "https://docs.datadoghq.com/api/latest/"
-  hardening_docs: "https://docs.datadoghq.com/account_management/safety_center/"
+  hardening_docs:
+    - label: "Safety Center"
+      url: "https://docs.datadoghq.com/account_management/safety_center/"
+    - label: "Organization Settings"
+      url: "https://docs.datadoghq.com/account_management/org_settings/"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/datadog"
 
 dockerhub:
   product_docs: "https://docs.docker.com/docker-hub/"
   api_docs: "https://docs.docker.com/reference/api/hub/latest/"
-  hardening_docs: "https://docs.docker.com/engine/security/"
+  hardening_docs:
+    - label: "Organization Access Tokens"
+      url: "https://docs.docker.com/enterprise/security/access-tokens/"
+    - label: "Roles & Permissions"
+      url: "https://docs.docker.com/docker-hub/roles-and-permissions/"
+    - label: "Registry Access Management"
+      url: "https://docs.docker.com/enterprise/security/hardened-desktop/registry-access-management/"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/dockerhub"
 
 docusign:
@@ -169,111 +228,207 @@ docusign:
 drata:
   product_docs: "https://help.drata.com/en/"
   api_docs: "https://developers.drata.com/api-docs/"
-  hardening_docs: "https://drata.com/security"
+  hardening_docs:
+    - label: "SSO Integration Guide"
+      url: "https://help.drata.com/en/articles/5209416-single-sign-on-sso-integration-guide"
+    - label: "Settings"
+      url: "https://help.drata.com/en/collections/16396683-settings"
 
 dropbox:
   product_docs: "https://help.dropbox.com/"
   api_docs: "https://www.dropbox.com/developers/documentation/http/overview"
-  hardening_docs: "https://assets.dropbox.com/www/en-us/business/solutions/solutions/dfb_security_whitepaper.pdf"
+  hardening_docs:
+    - label: "Customize Security Settings"
+      url: "https://help.dropbox.com/security/customize-security"
+    - label: "Team Security Admin Course"
+      url: "https://learn.dropbox.com/self-guided-learning/business-admin-course/what-can-i-do-to-make-my-teams-account-even-more-secure"
 
 duo:
   product_docs: "https://duo.com/docs"
   api_docs: "https://duo.com/docs/adminapi"
-  hardening_docs: "https://duo.com/docs/policy"
+  hardening_docs:
+    - label: "Policy & Control"
+      url: "https://duo.com/docs/policy"
+    - label: "Administration: Admins"
+      url: "https://duo.com/docs/administration-admins"
+    - label: "Administration: Settings"
+      url: "https://duo.com/docs/administration-settings"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/duo"
 
 figma:
   product_docs: "https://help.figma.com/hc/en-us"
   api_docs: "https://developers.figma.com/docs/rest-api/"
-  hardening_docs: "https://help.figma.com/hc/en-us/articles/360040056294-Privacy-and-security-in-organizations"
+  hardening_docs:
+    - label: "Privacy & Security in Organizations"
+      url: "https://help.figma.com/hc/en-us/articles/360040056294-Privacy-and-security-in-organizations"
+    - label: "Manage Security Features"
+      url: "https://help.figma.com/hc/en-us/sections/20833164749719-Manage-security-features"
 
 fivetran:
   product_docs: "https://fivetran.com/docs/getting-started"
   api_docs: "https://fivetran.com/docs/rest-api/api-reference"
-  hardening_docs: "https://fivetran.com/docs/security"
+  hardening_docs:
+    - label: "Account Settings (SAML, Sessions)"
+      url: "https://fivetran.com/docs/using-fivetran/fivetran-dashboard/account-settings"
+    - label: "Role-Based Access Control"
+      url: "https://fivetran.com/docs/using-fivetran/fivetran-dashboard/account-settings/role-based-access-control"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/fivetran"
 
 freshservice:
   product_docs: "https://support.freshservice.com/support/solutions"
   api_docs: "https://api.freshservice.com/"
-  hardening_docs: "https://www.freshworks.com/security/"
+  hardening_docs:
+    - label: "Password Policy Setup"
+      url: "https://support.freshservice.com/support/solutions/articles/218835-setting-up-a-password-policy-in-freshservice"
+    - label: "Multi-Portal Security Settings"
+      url: "https://support.freshservice.com/support/solutions/articles/224085-security-settings-for-multi-portal-set-up"
+    - label: "Admin Access Controls"
+      url: "https://support.freshservice.com/support/solutions/articles/50000005579-account-admin-guide-access-controls"
 
 fullstory:
   product_docs: "https://help.fullstory.com/hc/en-us"
   api_docs: "https://developer.fullstory.com/"
-  hardening_docs: "https://help.fullstory.com/hc/en-us/articles/360020624254-Security-and-Privacy-Documentation-Overview"
+  hardening_docs:
+    - label: "Privacy Settings"
+      url: "https://help.fullstory.com/hc/en-us/articles/34807885576215-Privacy-Settings-in-Fullstory"
+    - label: "Protect User Privacy"
+      url: "https://help.fullstory.com/hc/en-us/articles/360020623574-How-do-I-protect-my-users-privacy-in-Fullstory"
 
 github:
   product_docs: "https://docs.github.com/en"
   api_docs: "https://docs.github.com/en/rest"
-  hardening_docs: "https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions"
+  hardening_docs:
+    - label: "Actions Security Hardening"
+      url: "https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions"
+    - label: "Securing Accounts (Supply Chain)"
+      url: "https://docs.github.com/en/code-security/supply-chain-security/end-to-end-supply-chain/securing-accounts"
+    - label: "CIS Software Supply Chain Benchmark"
+      url: "https://www.cisecurity.org/benchmark/software-supply-chain-security"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/github"
 
 gitlab:
   product_docs: "https://docs.gitlab.com/"
   api_docs: "https://docs.gitlab.com/api/rest/"
-  hardening_docs: "https://docs.gitlab.com/security/hardening/"
+  hardening_docs:
+    - label: "GitLab Hardening Docs"
+      url: "https://docs.gitlab.com/security/hardening/"
+    - label: "Instance Security Index"
+      url: "https://docs.gitlab.com/security/"
+    - label: "CIS Software Supply Chain Benchmark"
+      url: "https://www.cisecurity.org/benchmark/software-supply-chain-security"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/gitlab"
 
 gong:
   product_docs: "https://help.gong.io/"
   api_docs: "https://gong.app.gong.io/settings/api/documentation"
-  hardening_docs: "https://help.gong.io/docs/summary-of-security-features"
+  hardening_docs:
+    - label: "Permission Profiles"
+      url: "https://help.gong.io/docs/about-permission-profiles"
+    - label: "Set Up a Permission Profile"
+      url: "https://help.gong.io/docs/set-up-a-permission-profile"
 
 google-workspace:
   product_docs: "https://support.google.com/a/"
   api_docs: "https://developers.google.com/workspace"
-  hardening_docs: "https://support.google.com/a/answer/7587183"
+  hardening_docs:
+    - label: "Security Checklist (Medium & Large Orgs)"
+      url: "https://knowledge.workspace.google.com/admin/security/security-checklist-for-medium-and-large-businesses-100-users"
+    - label: "Admin Account Security Best Practices"
+      url: "https://knowledge.workspace.google.com/admin/users/security-best-practices-for-administrator-accounts"
+    - label: "CIS Google Workspace Benchmark"
+      url: "https://www.cisecurity.org/benchmark/google_workspace"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/google-workspace"
 
 google-chat:
   product_docs: "https://support.google.com/chat/"
   api_docs: "https://developers.google.com/chat"
-  hardening_docs: "https://support.google.com/a/answer/7587183"
+  hardening_docs:
+    - label: "Control External Chat & Spaces"
+      url: "https://knowledge.workspace.google.com/admin/chat/control-external-chat-and-spaces-chat-options"
+    - label: "DLP for Chat"
+      url: "https://knowledge.workspace.google.com/admin/security/prevent-data-leaks-from-chat-messages-and-attachments"
+    - label: "CIS Google Workspace Benchmark"
+      url: "https://www.cisecurity.org/benchmark/google_workspace"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/google-chat"
 
 google-drive:
   product_docs: "https://support.google.com/drive/"
   api_docs: "https://developers.google.com/drive"
-  hardening_docs: "https://support.google.com/a/answer/7587183"
+  hardening_docs:
+    - label: "Manage External Sharing"
+      url: "https://knowledge.workspace.google.com/admin/drive/manage-external-sharing-for-your-organization"
+    - label: "Drive Sharing Trust Rules"
+      url: "https://knowledge.workspace.google.com/admin/security/create-and-manage-trust-rules-for-drive-sharing"
+    - label: "CIS Google Workspace Benchmark"
+      url: "https://www.cisecurity.org/benchmark/google_workspace"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/google-drive"
 
 gmail:
   product_docs: "https://support.google.com/mail/"
   api_docs: "https://developers.google.com/gmail/api"
-  hardening_docs: "https://support.google.com/a/answer/7587183"
+  hardening_docs:
+    - label: "Advanced Phishing & Malware Protection"
+      url: "https://knowledge.workspace.google.com/admin/gmail/advanced/advanced-phishing-and-malware-protection"
+    - label: "Set Up SPF"
+      url: "https://knowledge.workspace.google.com/admin/security/set-up-spf"
+    - label: "CIS Google Workspace Benchmark"
+      url: "https://www.cisecurity.org/benchmark/google_workspace"
 
 gusto:
   product_docs: "https://support.gusto.com/"
   api_docs: "https://docs.gusto.com/"
-  hardening_docs: "https://gusto.com/security"
+  hardening_docs:
+    - label: "2-Step Verification Setup"
+      url: "https://support.gusto.com/article/106622317100000/set-up-manage-and-troubleshoot-2-step-verification"
+    - label: "Admin Roles & Permissions"
+      url: "https://support.gusto.com/article/114138050100000/manage-roles-and-permissions-in-gusto-for-primary-admins"
 
 harness:
   product_docs: "https://developer.harness.io/docs/"
   api_docs: "https://apidocs.harness.io/"
-  hardening_docs: "https://developer.harness.io/docs/continuous-integration/secure-ci/security-hardening/"
+  hardening_docs:
+    - label: "CI Security Hardening"
+      url: "https://developer.harness.io/docs/continuous-integration/secure-ci/security-hardening/"
+    - label: "Delegate Architecture Best Practices"
+      url: "https://developer.harness.io/docs/platform/reference-architectures/delegate-architecture-bestpractices/"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/harness"
 
 hashicorp-vault:
   product_docs: "https://developer.hashicorp.com/vault/docs"
   api_docs: "https://developer.hashicorp.com/vault/api-docs"
-  hardening_docs: "https://developer.hashicorp.com/vault/docs/concepts/production-hardening"
+  hardening_docs:
+    - label: "Production Hardening"
+      url: "https://developer.hashicorp.com/vault/docs/concepts/production-hardening"
+    - label: "Vault Security Model"
+      url: "https://developer.hashicorp.com/vault/docs/internals/security"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/hashicorp-vault"
 
 heap:
   product_docs: "https://help.heap.io/hc/en-us"
   api_docs: "https://developers.heap.io/"
-  hardening_docs: "https://www.heap.io/platform/security"
+  hardening_docs:
+    - label: "SAML SSO Integration"
+      url: "https://help.heap.io/hc/en-us/articles/37271982657425-SAML-SSO-Integration-Guide"
+    - label: "Secure Access"
+      url: "https://help.heap.io/hc/en-us/sections/36055227332753-Secure-Access"
 
 hubspot:
   product_docs: "https://knowledge.hubspot.com/"
   api_docs: "https://developers.hubspot.com/docs"
-  hardening_docs: "https://knowledge.hubspot.com/account-security/manage-your-account-security-using-hubspost-security-health"
+  hardening_docs:
+    - label: "Security Health"
+      url: "https://knowledge.hubspot.com/account-security/manage-your-account-security-using-hubspost-security-health"
+    - label: "Account Security & Passwords"
+      url: "https://knowledge.hubspot.com/account-security/account-security-and-passwords"
 
 intercom:
   product_docs: "https://www.intercom.com/help/en/"
   api_docs: "https://developers.intercom.com/"
-  hardening_docs: "https://www.intercom.com/help/en/collections/384-security-privacy"
+  hardening_docs:
+    - label: "Protect Your Account (2FA/SSO)"
+      url: "https://www.intercom.com/help/en/articles/181-protect-your-account-with-2fa-google-sign-on-or-saml-sso"
+    - label: "Teammate Access Management"
+      url: "https://www.intercom.com/help/en/collections/12296073-teammate-account-access-management"
 
 jamf:
   product_docs: "https://www.jamf.com/resources/product-documentation/"
@@ -284,19 +439,33 @@ jamf:
 jenkins:
   product_docs: "https://www.jenkins.io/doc/"
   api_docs: "https://www.jenkins.io/doc/book/using/remote-access-api/"
-  hardening_docs: "https://www.jenkins.io/doc/book/security/securing-jenkins/"
+  hardening_docs:
+    - label: "Securing Jenkins"
+      url: "https://www.jenkins.io/doc/book/security/securing-jenkins/"
+    - label: "Security Index"
+      url: "https://www.jenkins.io/doc/book/security/"
+    - label: "Access Control"
+      url: "https://www.jenkins.io/doc/book/security/access-control/"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/jenkins"
 
 jfrog:
   product_docs: "https://jfrog.com/help/"
   api_docs: "https://jfrog.com/help/r/jfrog-rest-apis/jfrog-rest-apis"
-  hardening_docs: "https://jfrog.com/help/r/jfrog-platform-administration-documentation/security-configuration"
+  hardening_docs:
+    - label: "Security Configuration"
+      url: "https://jfrog.com/help/r/jfrog-platform-administration-documentation/security-configuration"
+    - label: "Security Configuration (docs)"
+      url: "https://docs.jfrog.com/administration/docs/security-configuration"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/jfrog"
 
 jira-cloud:
   product_docs: "https://support.atlassian.com/jira-software-cloud/"
   api_docs: "https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/"
-  hardening_docs: "https://support.atlassian.com/jira/kb/how-to-configure-jira-applications-for-security-best-practices/"
+  hardening_docs:
+    - label: "Keep My Organization Secure"
+      url: "https://support.atlassian.com/security-and-access-policies/docs/how-to-keep-my-organization-secure/"
+    - label: "Authentication Policies"
+      url: "https://support.atlassian.com/security-and-access-policies/docs/understand-authentication-policies/"
 
 jumpcloud:
   product_docs: "https://jumpcloud.com/support"
@@ -313,7 +482,13 @@ keeper:
 langchain:
   product_docs: "https://docs.langchain.com/"
   api_docs: "https://api.smith.langchain.com/docs"
-  hardening_docs: "https://docs.langchain.com/oss/python/security-policy"
+  hardening_docs:
+    - label: "LangSmith Administration"
+      url: "https://docs.langchain.com/langsmith/administration-overview"
+    - label: "LangSmith RBAC"
+      url: "https://docs.langchain.com/langsmith/rbac"
+    - label: "Security Policy & Best Practices"
+      url: "https://docs.langchain.com/oss/python/security-policy"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/langchain"
 
 klaviyo:
@@ -324,23 +499,41 @@ klaviyo:
 knowbe4:
   product_docs: "https://support.knowbe4.com/hc/en-us"
   api_docs: "https://developer.knowbe4.com/"
-  hardening_docs: "https://support.knowbe4.com/hc/en-us/sections/20033755383827-Best-Practices"
+  hardening_docs:
+    - label: "Session Settings"
+      url: "https://support.knowbe4.com/hc/en-us/articles/1500004792801-Session-Settings-Guide"
+    - label: "Enable MFA"
+      url: "https://support.knowbe4.com/hc/en-us/articles/225681448-Enable-Two-Factor-or-Multi-Factor-Authentication-on-Your-Account"
+    - label: "Admin Panel IP Allowlists"
+      url: "https://support.knowbe4.com/hc/en-us/articles/49615616937235-Configuring-IP-Allowlists-for-the-Admin-Panel"
 
 lastpass:
   product_docs: "https://support.lastpass.com/"
   api_docs: "https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/api_enterprise.html"
-  hardening_docs: "https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/admin_best_practices.html"
+  hardening_docs:
+    - label: "Security Bulletin: Admin Actions"
+      url: "https://support.lastpass.com/help/security-bulletin-recommended-actions-for-business-administrators"
+    - label: "General Policies"
+      url: "https://support.lastpass.com/s/document-item?bundleId=lastpass&topicId=LastPass/uac_policies_generalpolicies.html&_LANG=enus"
+    - label: "Multifactor Policies"
+      url: "https://support.lastpass.com/s/document-item?bundleId=lastpass&topicId=LastPass/uac_policies_multifactor.html&_LANG=enus"
 
 launchdarkly:
   product_docs: "https://launchdarkly.com/docs/home"
   api_docs: "https://apidocs.launchdarkly.com/"
-  hardening_docs: "https://launchdarkly.com/security/"
+  hardening_docs: "https://launchdarkly.com/docs/home/account/secure"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/launchdarkly"
 
 linear:
   product_docs: "https://linear.app/docs"
   api_docs: "https://developers.linear.app/docs"
-  hardening_docs: "https://linear.app/security"
+  hardening_docs:
+    - label: "Login Methods (Admin)"
+      url: "https://linear.app/docs/login-methods"
+    - label: "SAML & Access Control"
+      url: "https://linear.app/docs/saml-and-access-control"
+    - label: "Security Docs"
+      url: "https://linear.app/docs/security"
 
 looker:
   product_docs: "https://docs.cloud.google.com/looker/docs"
