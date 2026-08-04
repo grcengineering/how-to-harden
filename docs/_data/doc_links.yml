@@ -543,29 +543,46 @@ looker:
 mailchimp:
   product_docs: "https://mailchimp.com/help/"
   api_docs: "https://mailchimp.com/developer/"
-  hardening_docs: "https://mailchimp.com/help/best-practices-for-account-security/"
+  hardening_docs:
+    - label: "Set Account Security Options"
+      url: "https://mailchimp.com/help/set-account-security-options/"
+    - label: "Manage User Levels"
+      url: "https://mailchimp.com/help/manage-user-levels-in-your-account/"
 
 marketo:
   product_docs: "https://experienceleague.adobe.com/en/docs/marketo/using/home"
   api_docs: "https://developer.adobe.com/marketo-apis/"
-  hardening_docs: "https://www.adobe.com/content/dam/cc/en/trust-center/ungated/whitepapers/experience-cloud/adobe_marketo_data_protection_overview.pdf"
+  hardening_docs:
+    - label: "Configure Protocols (SPF/DKIM, Allowlisting)"
+      url: "https://experienceleague.adobe.com/en/docs/marketo/using/getting-started/initial-setup/configure-protocols-for-marketo"
+    - label: "Document Your Setup"
+      url: "https://experienceleague.adobe.com/en/docs/marketo/using/getting-started/implementing-a-new-marketo-engage-instance/document-your-setup"
 
 microsoft-365:
   product_docs: "https://learn.microsoft.com/en-us/microsoft-365/"
   api_docs: "https://developer.microsoft.com/en-us/graph"
-  hardening_docs: "https://www.cisecurity.org/benchmark/microsoft_365"
+  hardening_docs:
+    - label: "CIS Microsoft 365 Foundations Benchmark"
+      url: "https://www.cisecurity.org/benchmark/microsoft_365"
+    - label: "CISA SCuBA Baselines (ScubaGear)"
+      url: "https://github.com/cisagov/ScubaGear/tree/main/PowerShell/ScubaGear/baselines"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/microsoft-365"
 
 microsoft-entra-id:
   product_docs: "https://learn.microsoft.com/en-us/entra/"
   api_docs: "https://learn.microsoft.com/en-us/graph/identity-network-access-overview"
-  hardening_docs: "https://learn.microsoft.com/en-us/entra/architecture/secure-best-practices"
+  hardening_docs:
+    - label: "Best Practices to Secure with Entra ID"
+      url: "https://learn.microsoft.com/en-us/entra/architecture/secure-best-practices"
+    - label: "CIS Microsoft 365 Foundations Benchmark"
+      url: "https://www.cisecurity.org/benchmark/microsoft_365"
+    - label: "CISA SCuBA Entra ID Baseline"
+      url: "https://github.com/cisagov/ScubaGear/blob/main/PowerShell/ScubaGear/baselines/aad.md"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/microsoft-entra-id"
 
 mimecast:
   product_docs: "https://docs.mimecast.com/"
   api_docs: "https://developer.services.mimecast.com/"
-  hardening_docs: "https://community.mimecast.com/s/article/email-security-cloud-gateway-security-best-practice"
 
 miro:
   product_docs: "https://help.miro.com/hc/en-us"
@@ -580,12 +597,15 @@ mixpanel:
 monday:
   product_docs: "https://support.monday.com/hc/en-us"
   api_docs: "https://developer.monday.com/api-reference/"
-  hardening_docs: "https://monday.com/trustcenter"
 
 mongodb-atlas:
   product_docs: "https://www.mongodb.com/docs/atlas/"
   api_docs: "https://www.mongodb.com/docs/atlas/api/"
-  hardening_docs: "https://www.cisecurity.org/benchmark/mongodb"
+  hardening_docs:
+    - label: "Atlas Cluster Security Setup"
+      url: "https://www.mongodb.com/docs/atlas/setup-cluster-security/"
+    - label: "CIS MongoDB Benchmark (self-hosted)"
+      url: "https://www.cisecurity.org/benchmark/mongodb"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/mongodb-atlas"
 
 netskope:
@@ -597,18 +617,18 @@ netskope:
 netsuite:
   product_docs: "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/index.html"
   api_docs: "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_1559132836.html"
-  hardening_docs: "https://www.netsuite.com/portal/platform/infrastructure/operational-security.shtml"
+  hardening_docs: "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_4607562099.html"
 
 new-relic:
   product_docs: "https://docs.newrelic.com/"
   api_docs: "https://docs.newrelic.com/docs/apis/intro-apis/introduction-new-relic-apis/"
-  hardening_docs: "https://docs.newrelic.com/docs/security/overview/"
+  hardening_docs: "https://docs.newrelic.com/docs/accounts/accounts-billing/new-relic-one-user-management/authentication-domains-saml-sso-scim-more/"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/new-relic"
 
 notion:
   product_docs: "https://www.notion.com/help"
   api_docs: "https://developers.notion.com/"
-  hardening_docs: "https://www.notion.com/help/guides/notion-enterprise-security-provisions"
+  hardening_docs: "https://www.notion.com/help/category/security-and-privacy/all"
 
 okta:
   product_docs: "https://help.okta.com/en-us/content/index.htm"
@@ -619,25 +639,27 @@ okta:
 onelogin:
   product_docs: "https://support.onelogin.com/"
   api_docs: "https://developers.onelogin.com/"
-  hardening_docs: "https://www.onelogin.com/blog/best-practices-when-deploying-advanced-authentication"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/onelogin"
 
 oracle-hcm:
   product_docs: "https://docs.oracle.com/en/cloud/saas/human-resources/"
   api_docs: "https://docs.oracle.com/en/cloud/saas/human-resources/24d/farws/index.html"
-  hardening_docs: "https://docs.oracle.com/en/cloud/saas/human-resources/24d/ochus/best-practices-for-hcm-data-roles-and-security-profiles.html"
+  hardening_docs: "https://docs.oracle.com/en/cloud/saas/human-resources/ochus/overview-of-securing-oracle-hcm-cloud.html"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/oracle-hcm"
 
 orca:
   product_docs: "https://docs.orcasecurity.io/"
   api_docs: "https://app.orcasecurity.io/api-doc"
-  hardening_docs: "https://orca.security/resources/"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/orca"
 
 outreach:
   product_docs: "https://support.outreach.io/hc/en-us"
   api_docs: "https://developers.outreach.io/api/"
-  hardening_docs: "https://www.outreach.io/platform/security"
+  hardening_docs:
+    - label: "Governance Profile Settings"
+      url: "https://support.outreach.io/support/solutions/articles/159000425938-outreach-governance-profile-settings-overview"
+    - label: "User Admin Settings"
+      url: "https://support.outreach.io/support/solutions/articles/159000425772-outreach-user-admin-settings-general-org-overview"
 
 pagerduty:
   product_docs: "https://support.pagerduty.com/"
@@ -648,7 +670,6 @@ pagerduty:
 paylocity:
   product_docs: "https://www.paylocity.com/contact/client-support/"
   api_docs: "https://developer.paylocity.com/"
-  hardening_docs: "https://trust.paylocity.com/controls"
 
 pendo:
   product_docs: "https://support.pendo.io/hc/en-us"
@@ -664,22 +685,29 @@ ping-identity:
 postman:
   product_docs: "https://learning.postman.com/docs/introduction/overview/"
   api_docs: "https://learning.postman.com/docs/developer/postman-api/intro-api"
-  hardening_docs: "https://www.postman.com/trust/postman-security-features/"
+  hardening_docs:
+    - label: "Team Security"
+      url: "https://learning.postman.com/docs/administration/security/team-security/"
+    - label: "Admin SSO"
+      url: "https://learning.postman.com/docs/administration/sso/admin-sso"
 
 power-bi:
   product_docs: "https://learn.microsoft.com/en-us/power-bi/"
   api_docs: "https://learn.microsoft.com/en-us/rest/api/power-bi/"
-  hardening_docs: "https://learn.microsoft.com/en-us/power-bi/guidance/white-paper-powerbi-security"
+  hardening_docs:
+    - label: "Tenant-Level Security Planning"
+      url: "https://learn.microsoft.com/en-us/power-bi/guidance/powerbi-implementation-planning-security-tenant-level-planning"
+    - label: "Tenant Setup Guidance"
+      url: "https://learn.microsoft.com/en-us/power-bi/guidance/powerbi-implementation-planning-tenant-setup"
 
 proofpoint:
   product_docs: "https://help.proofpoint.com/"
   api_docs: "https://help.proofpoint.com/Threat_Insight_Dashboard/API_Documentation"
-  hardening_docs: "https://prod.docs.oit.proofpoint.com/configuration_guide/security_best_practices.htm"
 
 qualys:
   product_docs: "https://www.qualys.com/documentation/"
   api_docs: "https://www.qualys.com/documentation/"
-  hardening_docs: "https://www.qualys.com/docs/qualys-security-configuration-assessment-guide.pdf"
+  hardening_docs: "https://docs.qualys.com/en/vm/latest/setup/win_security.htm"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/qualys"
 
 rapid7:
