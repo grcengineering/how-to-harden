@@ -736,7 +736,11 @@ rippling:
 sailpoint:
   product_docs: "https://documentation.sailpoint.com/"
   api_docs: "https://developer.sailpoint.com/docs/api/v3/"
-  hardening_docs: "https://www.sailpoint.com/why-us/trust/cybersecurity"
+  hardening_docs:
+    - label: "ISC Security Settings"
+      url: "https://documentation.sailpoint.com/saas/help/security/index.html"
+    - label: "Security Integrations"
+      url: "https://documentation.sailpoint.com/saas/help/security/security_integrations.html"
 
 salesforce:
   product_docs: "https://help.salesforce.com/"
@@ -758,7 +762,7 @@ segment:
 sendgrid:
   product_docs: "https://www.twilio.com/docs/sendgrid"
   api_docs: "https://www.twilio.com/docs/sendgrid/api-reference"
-  hardening_docs: "https://sendgrid.com/en-us/blog/7-best-practices-to-protect-your-twilo-sendgrid-account-and-sending-reputation"
+  hardening_docs: "https://www.twilio.com/en-us/blog/company/7-best-practices-to-protect-your-twilo-sendgrid-account-and-sending-reputation"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/sendgrid"
 
 sentinelone:
@@ -769,13 +773,17 @@ sentinelone:
 sentry:
   product_docs: "https://docs.sentry.io/"
   api_docs: "https://docs.sentry.io/api/"
-  hardening_docs: "https://sentry.io/security/"
+  hardening_docs:
+    - label: "Organization Authentication (SSO)"
+      url: "https://docs.sentry.io/organization/authentication/"
+    - label: "Two-Factor Authentication"
+      url: "https://docs.sentry.io/organization/authentication/two-factor-authentication/"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/sentry"
 
 servicenow:
   product_docs: "https://docs.servicenow.com/"
   api_docs: "https://developer.servicenow.com/dev.do#!/reference"
-  hardening_docs: "https://www.servicenow.com/docs/bundle/washingtondc-platform-security/page/administer/security/reference/security-best-practices-instance-security-hardening.html"
+  hardening_docs: "https://www.servicenow.com/docs/r/platform-security/instance-security-hardening-settings/security-hardening-settings.html"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/servicenow"
 
 shopify:
@@ -791,24 +799,38 @@ slack:
 smartsheet:
   product_docs: "https://help.smartsheet.com/"
   api_docs: "https://developers.smartsheet.com/"
-  hardening_docs: "https://www.smartsheet.com/trust/security"
+  hardening_docs:
+    - label: "Building Secure Smartsheet (Admin Track)"
+      url: "https://help.smartsheet.com/learning-track/system-admin-account-setup-and-basic-management/building-secure-smartsheet"
+    - label: "Admin Center Security & Controls"
+      url: "https://help.smartsheet.com/articles/2482070-admin-center-manage-security-and-controls"
 
 snowflake:
   product_docs: "https://docs.snowflake.com/"
   api_docs: "https://docs.snowflake.com/en/developer-guide/snowflake-rest-api/reference"
-  hardening_docs: "https://www.cisecurity.org/benchmark/snowflake"
+  hardening_docs:
+    - label: "CIS Snowflake Foundations Benchmark"
+      url: "https://www.cisecurity.org/benchmark/snowflake"
+    - label: "Securing Snowflake Overview"
+      url: "https://docs.snowflake.com/en/guides-overview-secure"
+    - label: "Access Control Considerations"
+      url: "https://docs.snowflake.com/en/user-guide/security-access-control-considerations"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/snowflake"
 
 snyk:
   product_docs: "https://docs.snyk.io/"
   api_docs: "https://apidocs.snyk.io/"
-  hardening_docs: "https://snyk.io/blog/application-security-best-practices/"
+  hardening_docs:
+    - label: "Authentication & Access (Enterprise)"
+      url: "https://docs.snyk.io/implementation-guides/enterprise-implementation-guide/configure-group-settings-and-policies/authentication-and-access"
+    - label: "Service Accounts"
+      url: "https://docs.snyk.io/snyk-platform-administration/service-accounts"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/snyk"
 
 splunk:
   product_docs: "https://docs.splunk.com/"
   api_docs: "https://dev.splunk.com/enterprise/reference"
-  hardening_docs: "https://docs.splunk.com/Documentation/Splunk/latest/Security/Hardeningstandards"
+  hardening_docs: "https://help.splunk.com/en/splunk-enterprise/administer/manage-users-and-security/10.2/introduction-to-securing-the-splunk-platform/how-to-secure-and-harden-your-splunk-platform-instance"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/splunk"
 
 square:
@@ -819,7 +841,11 @@ square:
 stripe:
   product_docs: "https://support.stripe.com/"
   api_docs: "https://docs.stripe.com/api"
-  hardening_docs: "https://docs.stripe.com/security"
+  hardening_docs:
+    - label: "Security at Stripe"
+      url: "https://docs.stripe.com/security"
+    - label: "API Keys Best Practices"
+      url: "https://docs.stripe.com/keys-best-practices"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/stripe"
 
 tableau:
@@ -835,7 +861,11 @@ tenable:
 terraform-cloud:
   product_docs: "https://developer.hashicorp.com/terraform/cloud-docs"
   api_docs: "https://developer.hashicorp.com/terraform/cloud-docs/api-docs"
-  hardening_docs: "https://developer.hashicorp.com/terraform/cloud-docs/recommended-practices"
+  hardening_docs:
+    - label: "HCP Terraform Security Model"
+      url: "https://developer.hashicorp.com/terraform/cloud-docs/architectural-details/security-model"
+    - label: "Permissions Model"
+      url: "https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/permissions"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/terraform-cloud"
 
 twilio:
@@ -874,22 +904,29 @@ wiz:
 workato:
   product_docs: "https://docs.workato.com/"
   api_docs: "https://docs.workato.com/oem/oem-api.html"
-  hardening_docs: "https://www.workato.com/security"
+  hardening_docs:
+    - label: "Workspace Admin Settings"
+      url: "https://docs.workato.com/en/workspace-admin-settings.html"
+    - label: "Single Sign-On"
+      url: "https://docs.workato.com/user-accounts-and-teams/single-sign-on.html"
 
 workday:
   product_docs: "https://doc.workday.com/"
   api_docs: "https://community.workday.com/api"
-  hardening_docs: "https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html"
 
 zendesk:
   product_docs: "https://support.zendesk.com/hc/en-us"
   api_docs: "https://developer.zendesk.com/api-reference/"
-  hardening_docs: "https://support.zendesk.com/hc/en-us/articles/4408888782618-General-security-best-practices"
+  hardening_docs:
+    - label: "General Security Best Practices"
+      url: "https://support.zendesk.com/hc/en-us/articles/4408888782618-General-security-best-practices"
+    - label: "Improve Your Security Posture"
+      url: "https://support.zendesk.com/hc/en-us/articles/9774890665370-Analyzing-and-improving-the-security-posture-of-your-Zendesk-account"
 
 zoom:
   product_docs: "https://support.zoom.com/"
   api_docs: "https://developers.zoom.us/docs/api/"
-  hardening_docs: "https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0060720"
+  hardening_docs: "https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0059545"
 
 zscaler:
   product_docs: "https://help.zscaler.com/"
