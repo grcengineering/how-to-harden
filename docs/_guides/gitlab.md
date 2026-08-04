@@ -527,3 +527,11 @@ See the DB Code Pack below for SQL queries that detect unusual repository clonin
 | 2026-02-19 | 0.1.2 | draft | Migrate all remaining inline code to Code Packs (2.1, 2.3, 3.1, 4.1, 4.2, 6.1); zero inline blocks | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.1.1 | draft | Migrate inline code to CLI Code Packs (1.1, 3.1, 3.2, 5.1) | Claude Code (Opus 4.6) |
 | 2025-12-14 | 0.1.0 | draft | Initial GitLab hardening guide | Claude Code (Opus 4.5) |
+
+## Contributing
+
+Found an issue or want to improve this guide?
+
+- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
+- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
+- **Submit improvements:** See [Contributing Guide](/contributing/)

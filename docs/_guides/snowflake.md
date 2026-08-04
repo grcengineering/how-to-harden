@@ -554,3 +554,11 @@ Export Snowflake audit logs to SIEM (Splunk, Datadog, Sumo Logic) for real-time 
 | 2026-02-19 | 0.3.0 | draft | Migrate all remaining inline code to Code Packs (sections 1.1, 2.1, 2.2, 3.1, 4.3); zero inline code blocks remain | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.2.0 | draft | Migrate inline code to Code Packs (sections 1.2, 3.2, 4.2, 5.2, 6.2) | Claude Code (Opus 4.6) |
 | 2025-12-14 | 0.1.0 | draft | Initial Snowflake hardening guide | Claude Code (Opus 4.5) |
+
+## Contributing
+
+Found an issue or want to improve this guide?
+
+- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
+- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
+- **Submit improvements:** See [Contributing Guide](/contributing/)

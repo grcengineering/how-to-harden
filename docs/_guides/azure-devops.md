@@ -668,3 +668,11 @@ See the DB Code Pack below for Azure Sentinel / Log Analytics KQL queries that d
 | 2025-12-14 | 0.1.0 | draft | Initial Azure DevOps hardening guide | Claude Code (Opus 4.5) |
 | 2026-02-19 | 0.1.2 | draft | Migrate all remaining inline code to Code Packs (1.2, 2.1, 3.1, 3.3, 4.2, 5.2, 6.1); zero inline blocks | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.1.1 | draft | Migrate inline PowerShell to CLI Code Packs (1.3, 2.2, 3.3, 6.1) | Claude Code (Opus 4.6) |
+
+## Contributing
+
+Found an issue or want to improve this guide?
+
+- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
+- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
+- **Submit improvements:** See [Contributing Guide](/contributing/)

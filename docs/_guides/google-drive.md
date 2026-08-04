@@ -135,6 +135,13 @@ Data Loss Prevention for Drive (content-aware rules that scan Drive files for se
 
 ---
 
+## References
+
+- [Manage external sharing for your organization](https://knowledge.workspace.google.com/admin/drive/manage-external-sharing-for-your-organization) — Google Workspace Admin Help
+- [Create and manage trust rules for Drive sharing](https://knowledge.workspace.google.com/admin/security/create-and-manage-trust-rules-for-drive-sharing) — Google Workspace Admin Help
+- [Security checklist for medium and large businesses](https://knowledge.workspace.google.com/admin/security/security-checklist-for-medium-and-large-businesses-100-users) — Google Workspace Admin Help
+- [CIS Google Workspace Foundations Benchmark](https://www.cisecurity.org/benchmark/google_workspace) — Center for Internet Security
+
 ## Changelog
 
 | Version | Date | Changes |

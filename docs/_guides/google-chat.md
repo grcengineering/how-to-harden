@@ -415,6 +415,13 @@ Monitor Google Chat through the Chat log events report (and Reports API / BigQue
 
 ---
 
+## References
+
+- [Control external chat and spaces options](https://knowledge.workspace.google.com/admin/chat/control-external-chat-and-spaces-chat-options) — Google Workspace Admin Help
+- [Prevent data leaks from Chat messages and attachments (DLP for Chat)](https://knowledge.workspace.google.com/admin/security/prevent-data-leaks-from-chat-messages-and-attachments) — Google Workspace Admin Help
+- [Security checklist for medium and large businesses](https://knowledge.workspace.google.com/admin/security/security-checklist-for-medium-and-large-businesses-100-users) — Google Workspace Admin Help
+- [CIS Google Workspace Foundations Benchmark](https://www.cisecurity.org/benchmark/google_workspace) — Center for Internet Security
+
 ## Changelog
 
 | Version | Date | Changes |

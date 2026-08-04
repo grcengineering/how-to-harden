@@ -457,3 +457,11 @@ Detection queries for bulk data access, unusual exports, and service principal a
 | 2025-12-14 | 0.1.0 | draft | Initial Databricks hardening guide | Claude Code (Opus 4.5) |
 | 2026-02-19 | 0.2.0 | draft | Migrate all remaining inline code to Code Packs (sections 2.1, 2.2, 2.3, 3.1, 3.2, 4.1, 5.1); zero inline code blocks remain | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.1.1 | draft | Migrate inline CLI code in sections 4.1, 4.2 to Code Pack files | Claude Code (Opus 4.6) |
+
+## Contributing
+
+Found an issue or want to improve this guide?
+
+- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
+- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
+- **Submit improvements:** See [Contributing Guide](/contributing/)

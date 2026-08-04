@@ -531,3 +531,11 @@ Before allowing any third-party integration, assess risk:
 **Questions or Improvements?**
 - Open an issue: [GitHub Issues](https://github.com/yourproject/how-to-harden/issues)
 - Contribute: [Contributing Guide](/contributing/)
+
+## Contributing
+
+Found an issue or want to improve this guide?
+
+- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
+- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
+- **Submit improvements:** See [Contributing Guide](/contributing/)

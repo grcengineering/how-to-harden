@@ -855,3 +855,11 @@ A `bogware/langsmith` Terraform provider exists on the Terraform Registry, but i
 - [Enabling Audit Logs in Self-Hosted LangSmith](https://kb.langchain.com/articles/5478528798-enabling-audit-logs-in-self-hosted-langsmith)
 - [OWASP Top 10 for LLM Applications 2025](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 - [LangChain Sandbox](https://github.com/langchain-ai/langchain-sandbox)
+
+## Contributing
+
+Found an issue or want to improve this guide?
+
+- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
+- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
+- **Submit improvements:** See [Contributing Guide](/contributing/)

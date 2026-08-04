@@ -2460,3 +2460,11 @@ Use this checklist to verify controls are implemented for your compliance requir
 **Questions or Improvements?**
 - Open an issue: [GitHub Issues](https://github.com/grcengineering/how-to-harden/issues)
 - Contribute: [Contributing Guide](/contributing/)
+
+## Contributing
+
+Found an issue or want to improve this guide?
+
+- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
+- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
+- **Submit improvements:** See [Contributing Guide](/contributing/)
