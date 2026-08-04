@@ -6,9 +6,9 @@ slug: "microsoft-entra-id"
 tier: "1"
 category: "Identity"
 description: "Identity Provider hardening for Azure Active Directory, Conditional Access, PIM, and Zero Trust"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-03"
 ---
 
 ## Overview
@@ -53,7 +53,6 @@ This guide covers Microsoft Entra ID security configurations including authentic
 |-----------|---------|
 | CIS Controls | 6.3, 6.5 |
 | NIST 800-53 | IA-2(1), IA-2(6) |
-| CIS Azure | 1.1.1 |
 
 #### Description
 Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business, or certificate-based authentication) for all users. Microsoft reports that MFA blocks over 99.9% of automated attacks.
@@ -126,7 +125,7 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 | **SOC 2** | CC6.1 | Logical access security |
 | **NIST 800-53** | IA-2(1), IA-2(6) | Multi-factor authentication |
 | **ISO 27001** | A.9.4.2 | Secure log-on procedures |
-| **CIS Azure** | 1.1.1 | Ensure MFA is enabled for all users |
+| **CIS M365 Foundations** | v7.0.0 | MFA enforcement (see benchmark for current IDs) |
 
 ---
 
@@ -138,7 +137,6 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 |-----------|---------|
 | CIS Controls | 5.1 |
 | NIST 800-53 | AC-2 |
-| CIS Azure | 1.1.5 |
 
 #### Description
 Create highly protected emergency access accounts excluded from Conditional Access and MFA policies to ensure tenant access during outages or lockout scenarios.
@@ -214,7 +212,6 @@ Create highly protected emergency access accounts excluded from Conditional Acce
 |-----------|---------|
 | CIS Controls | 4.2 |
 | NIST 800-53 | IA-2, AC-17 |
-| CIS Azure | 1.1.2 |
 
 #### Description
 Block legacy authentication protocols (Basic Auth, POP, IMAP, SMTP AUTH) that cannot enforce MFA and are commonly exploited in password spray attacks.
@@ -257,7 +254,6 @@ Block legacy authentication protocols (Basic Auth, POP, IMAP, SMTP AUTH) that ca
 |-----------|---------|
 | CIS Controls | 6.3 |
 | NIST 800-53 | IA-2(1) |
-| CIS Azure | 1.1.3 |
 
 #### Description
 Create Conditional Access policy requiring MFA for all interactive sign-ins to all cloud applications.
@@ -287,6 +283,8 @@ Create Conditional Access policy requiring MFA for all interactive sign-ins to a
 #### Code Implementation
 
 {% include pack-code.html vendor="microsoft-entra-id" section="2.2" %}
+
+> **Enforcement floor (2024-2026):** Microsoft now **system-enforces MFA** — it cannot be disabled — for sign-in to the Azure portal, Entra admin center, and Intune admin center (Phase 1, rolled out H2 2024) and the Microsoft 365 admin center (February 2025). Phase 2 (begun October 1, 2025, postponable only to July 1, 2026) extends enforcement to Azure CLI, Azure PowerShell, the Azure mobile app, IaC tools, and REST API/SDK create/update/delete operations. Break-glass accounts are **included** in this enforcement — register a FIDO2 passkey or certificate-based authentication for them (see [1.2](#12-configure-emergency-access-break-glass-accounts)). Treat this control as your tenant-wide floor on top of Microsoft's portal-level enforcement, not a substitute for it. ([Microsoft: mandatory MFA](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-mandatory-multifactor-authentication))
 
 ---
 
@@ -375,6 +373,111 @@ Use Entra ID Protection to automatically block sign-ins classified as high risk 
 
 ---
 
+### 2.5 Review Microsoft-Managed Conditional Access Policies and Retire Per-User MFA
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3, 4.1 |
+| NIST 800-53 | IA-2(1), CM-2 |
+
+#### Description
+Review the Conditional Access policies Microsoft now auto-creates in every eligible tenant (shown as "Created by: Microsoft"), exclude your emergency access accounts from them before they auto-enable, and complete the migration of any users still on legacy per-user MFA — which Microsoft explicitly no longer recommends — onto Conditional Access.
+
+#### Rationale
+**Why This Matters:**
+- Microsoft deploys these policies in report-only mode and enables them automatically after 45 days unless an admin acts — an unreviewed auto-enable can lock out break-glass accounts that were never excluded
+- The managed set ("Block legacy authentication", "Block device code flow", "MFA for admins accessing Microsoft Admin portals", "MFA for all users", "MFA for per-user MFA users") overlaps your custom policies; reconciling them prevents conflicting or redundant enforcement
+- Per-user MFA is a deprecated mechanism with no conditional logic; leaving users on it fragments your MFA posture
+
+**Attack Prevented:** Admin lockout from unreviewed auto-enabled policy, MFA-coverage gaps from deprecated per-user MFA
+
+#### ClickOps Implementation
+
+**Step 1: Review Microsoft-Managed Policies**
+1. Navigate to: **Protection** → **Conditional Access** → **Policies**
+2. Filter or look for policies labeled **Created by: Microsoft**
+3. For each, open and review scope and state (Report-only vs On)
+
+**Step 2: Exclude Emergency Access Accounts**
+1. Edit each Microsoft-managed policy
+2. Under **Users** → **Exclude**, add your break-glass accounts
+3. Save
+
+**Step 3: Complete Per-User MFA Migration**
+1. Confirm the "MFA for per-user MFA users" managed policy is in effect, or create an equivalent Conditional Access policy
+2. Disable per-user MFA for migrated users (legacy per-user MFA portal)
+
+**Time to Complete:** ~30 minutes
+
+#### Validation & Testing
+1. Every "Created by: Microsoft" policy has emergency accounts excluded
+2. No users remain in per-user MFA "Enforced"/"Enabled" state
+3. Managed policies are either enabled deliberately or replaced by equivalent custom policies
+
+**Expected result:** Managed policies are consciously adopted, break-glass access preserved, per-user MFA retired. ([Microsoft-managed policies](https://learn.microsoft.com/en-us/entra/identity/conditional-access/managed-policies))
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security |
+| **NIST 800-53** | CM-2 | Baseline configuration |
+| **CISA SCuBA (Entra ID)** | MS.AAD | Conditional Access baseline policies |
+
+---
+
+### 2.6 Block Device Code Flow
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.8 |
+| NIST 800-53 | AC-3, IA-2 |
+
+#### Description
+Block the OAuth device code flow tenant-wide via a Conditional Access authentication-flows policy unless a specific, inventoried device-login use case (conference-room hardware, input-constrained devices) requires it — in which case scope an exception to those accounts only.
+
+#### Rationale
+**Why This Matters:**
+- Device code phishing (tracked by Microsoft as **Storm-2372**, active since 2025) tricks users into entering an attacker-generated device code at a legitimate Microsoft URL, handing the attacker access and refresh tokens without ever capturing a password
+- The stolen token satisfies MFA — this attack class bypasses MFA entirely, making preventive blocking the only strong control
+- Microsoft now ships "Block device code flow" as an auto-enabling Microsoft-managed policy; adopting it deliberately (with your exceptions) beats waiting for auto-enable
+
+**Attack Prevented:** Device code phishing (Storm-2372), MFA-bypassing token theft
+
+#### ClickOps Implementation
+
+**Step 1: Create the Authentication-Flows Policy**
+1. Navigate to: **Protection** → **Conditional Access** → **Policies** → **+ New policy**
+2. Configure:
+   - **Name:** Block device code flow
+   - **Users:** All users (exclude emergency accounts and any inventoried device-login service accounts)
+   - **Cloud apps:** All cloud apps
+   - **Conditions** → **Authentication flows** → check **Device code flow**
+   - **Grant:** Block access
+3. Enable policy: **On** (use Report-only first if you must inventory legitimate usage)
+
+**Time to Complete:** ~15 minutes
+
+#### Validation & Testing
+1. Attempt a device-code sign-in (`az login --use-device-code`) as a standard user — it should be blocked
+2. Review sign-in logs for device-code authentication attempts to catch legitimate usage before full enforcement
+
+**Expected result:** Device code flow blocked tenant-wide except for scoped exceptions. ([Microsoft Storm-2372 advisory](https://www.microsoft.com/en-us/security/blog/2025/02/13/storm-2372-conducts-device-code-phishing-campaign/))
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security |
+| **NIST 800-53** | AC-3 | Access enforcement |
+| **CISA SCuBA (Entra ID)** | MS.AAD | Risk-based Conditional Access |
+
+---
+
 ## 3. Privileged Identity Management
 
 ### 3.1 Enable Just-In-Time Access for Admin Roles
@@ -385,7 +488,6 @@ Use Entra ID Protection to automatically block sign-ins classified as high risk 
 |-----------|---------|
 | CIS Controls | 5.4, 6.8 |
 | NIST 800-53 | AC-2(7), AC-6(1) |
-| CIS Azure | 1.1.4 |
 
 #### Description
 Implement Privileged Identity Management (PIM) to eliminate standing admin privileges. Require just-in-time activation with MFA, justification, and optional approval for privileged role access.
@@ -493,6 +595,60 @@ Enable recurring access reviews for privileged roles and group memberships to en
 
 ---
 
+### 3.3 Protect High-Value Accounts with Restricted Management Administrative Units
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4, 6.8 |
+| NIST 800-53 | AC-6(1), AC-2(11) |
+
+#### Description
+Place executive, break-glass, and other high-value accounts (and sensitive groups) into a Restricted Management Administrative Unit so that only role assignments scoped to that AU can modify them — tenant-wide role holders, including Helpdesk Administrators and even unscoped Global Administrator role assignments, cannot reset their passwords or change their MFA methods.
+
+#### Rationale
+**Why This Matters:**
+- Tenant-wide helpdesk and user-management roles can reset any user's password or MFA by default — a socially engineered helpdesk agent becomes a path to your CEO's mailbox
+- PIM and access reviews govern who HOLDS roles; Restricted Management AUs govern which ACCOUNTS those roles can touch — a complementary blast-radius control
+- Scoping modification rights to a small, named set of admins makes targeted account-takeover materially harder
+
+**Attack Prevented:** Helpdesk social engineering against executives, privileged-account takeover via tenant-wide role abuse
+
+#### Prerequisites
+- Microsoft Entra ID P1 license
+- Inventory of high-value accounts (executives, break-glass, service-critical)
+
+#### ClickOps Implementation
+
+**Step 1: Create the Restricted Management AU**
+1. Navigate to: **Microsoft Entra admin center** → **Identity** → **Roles & admins** → **Admin units** → **+ Add**
+2. Name it (e.g., "Protected Accounts")
+3. Set **Restricted management administrative unit** to **Yes**
+4. Create, then add the high-value users/groups as members
+
+**Step 2: Scope Management Rights**
+1. In the AU, open **Roles and administrators**
+2. Assign the minimum roles (e.g., Privileged Authentication Administrator) scoped to this AU, to a small named set of admins
+
+**Time to Complete:** ~30 minutes
+
+#### Validation & Testing
+1. As a tenant-wide Helpdesk Administrator, attempt a password reset on a protected account — it must fail
+2. Confirm the AU-scoped admin can perform the same reset
+3. Review AU membership quarterly alongside access reviews ([3.2](#32-configure-access-reviews))
+
+**Expected result:** Only AU-scoped role holders can modify protected accounts. ([Restricted management AUs](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/admin-units-restricted-management))
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.3 | Access modification restriction |
+| **NIST 800-53** | AC-6(1) | Least privilege — authorize access |
+
+---
+
 ## 4. Application Security
 
 ### 4.1 Restrict User Consent to Applications
@@ -503,10 +659,9 @@ Enable recurring access reviews for privileged roles and group memberships to en
 |-----------|---------|
 | CIS Controls | 2.5 |
 | NIST 800-53 | AC-3, CM-7 |
-| CIS Azure | 2.1 |
 
 #### Description
-Prevent users from granting OAuth consent to third-party applications. Require admin approval for all new application access requests.
+Prevent users from granting OAuth consent to third-party applications and from registering new application objects. Require admin approval for all new application access requests. Both settings default to permissive in every new tenant.
 
 #### Rationale
 **Why This Matters:**
@@ -534,7 +689,15 @@ Prevent users from granting OAuth consent to third-party applications. Require a
 4. Configure notification settings
 5. Click **Save**
 
-**Time to Complete:** ~15 minutes
+**Step 3: Block User App Registration**
+1. Navigate to: **Identity** → **Users** → **User settings**
+2. Set **Users can register applications** to **No**
+3. Grant the **Application Developer** role only to the specific users who legitimately need to register apps
+4. Click **Save**
+
+> By default every user can register application objects — a shadow-IT and consent-phishing surface distinct from the consent setting above. ([Delegate app registration](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/delegate-app-roles))
+
+**Time to Complete:** ~20 minutes
 
 #### Code Implementation
 
@@ -582,6 +745,57 @@ Regularly audit enterprise applications for excessive permissions, especially hi
 #### Code Implementation
 
 {% include pack-code.html vendor="microsoft-entra-id" section="4.2" %}
+
+---
+
+### 4.3 Retire Azure AD Graph API Usage
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 2.2, 16.13 |
+| NIST 800-53 | SA-22, SI-2 |
+
+#### Description
+Inventory and migrate any application, script, or automation still calling the deprecated Azure AD Graph API (`graph.windows.net`) to Microsoft Graph, and add detection for anomalous actor attribution in audit logs.
+
+#### Rationale
+**Why This Matters:**
+- **CVE-2025-55241** (CVSS 10.0) chained undocumented internal "Actor tokens" with a tenant-validation failure in the legacy Azure AD Graph API to let an attacker impersonate any user — including Global Admins — in any tenant, leaving no sign-in log trail; Microsoft patched the validation flaw (July 17, 2025) and blocked apps from requesting Actor tokens against Azure AD Graph (August 6, 2025)
+- Azure AD Graph is deprecated; anything still calling it is riding an unmaintained, incident-prone surface
+- The attack's audit signature — a service display name (e.g., Exchange, SharePoint) paired with a user UPN as actor — is detectable in audit logs
+
+**Attack Prevented:** Cross-tenant impersonation via legacy-API token abuse, silent Global Admin takeover
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Azure AD Graph Callers**
+1. Navigate to: **Monitoring** → **Sign-in logs** → **Service principal sign-ins**
+2. Filter by **Resource** = Windows Azure Active Directory (`graph.windows.net`)
+3. List every application still calling the legacy API
+
+**Step 2: Migrate to Microsoft Graph**
+1. For each caller, migrate API calls to Microsoft Graph (`graph.microsoft.com`) equivalents
+2. Remove Azure AD Graph permissions from the app registrations once migrated
+
+**Step 3: Add Actor-Mismatch Detection**
+1. In your SIEM (see [5.1](#51-enable-sign-in-and-audit-logging)), alert on directory audit events where the initiating actor pairs a first-party service display name (Exchange, SharePoint) with a user UPN — the CVE-2025-55241 signature
+
+**Time to Complete:** ~1-2 hours (plus migration effort per app)
+
+#### Validation & Testing
+1. Service-principal sign-in logs show zero `graph.windows.net` calls from your own apps
+2. Detection rule fires on simulated mismatched-actor audit events
+
+**Expected result:** No first-party dependence on Azure AD Graph; actor-mismatch detection live. ([CVE-2025-55241 research](https://dirkjanm.io/obtaining-global-admin-in-every-entra-id-tenant-with-actor-tokens/))
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.1 | Vulnerability management |
+| **NIST 800-53** | SA-22 | Unsupported system components |
 
 ---
 
@@ -727,15 +941,30 @@ Regularly review Identity Secure Score to track security posture and identify im
 | AC-2(3) | Access reviews | [3.2](#32-configure-access-reviews) |
 | AU-2 | Audit logging | [5.1](#51-enable-sign-in-and-audit-logging) |
 
-### CIS Microsoft Azure Foundations Benchmark Mapping
+### CIS Microsoft 365 Foundations Benchmark Mapping
 
-| Recommendation | Entra ID Control | Guide Section |
+> **Benchmark note:** Entra ID identity controls (MFA, legacy authentication, Conditional Access, consent, PIM) live in the **CIS Microsoft 365 Foundations Benchmark** — not the CIS Azure Foundations Benchmark this guide previously cited. CIS M365 Foundations **v7.0.0** (May 2026) added 21 controls and rehomed 12 identity recommendations from the Azure benchmark; consult the [current benchmark](https://www.cisecurity.org/benchmark/microsoft_365) for exact recommendation IDs, which shift across major versions.
+
+| Benchmark Area | Entra ID Control | Guide Section |
 |---------------|------------------|---------------|
-| 1.1.1 | Ensure MFA is enabled | [1.1](#11-enforce-phishing-resistant-mfa) |
-| 1.1.2 | Block legacy authentication | [2.1](#21-block-legacy-authentication) |
-| 1.1.4 | Ensure PIM is used | [3.1](#31-enable-just-in-time-access-for-admin-roles) |
-| 1.1.5 | Emergency access accounts | [1.2](#12-configure-emergency-access-break-glass-accounts) |
-| 2.1 | Restrict user consent | [4.1](#41-restrict-user-consent-to-applications) |
+| MFA enforcement | Phishing-resistant MFA | [1.1](#11-enforce-phishing-resistant-mfa) |
+| Legacy authentication | Block legacy auth | [2.1](#21-block-legacy-authentication) |
+| Privileged access | PIM just-in-time roles | [3.1](#31-enable-just-in-time-access-for-admin-roles) |
+| Emergency access | Break-glass accounts | [1.2](#12-configure-emergency-access-break-glass-accounts) |
+| Application consent | Restrict user consent & registration | [4.1](#41-restrict-user-consent-to-applications) |
+
+### CISA SCuBA Secure Configuration Baseline (Entra ID) Mapping
+
+The [CISA SCuBA baseline for Entra ID](https://github.com/cisagov/ScubaGear/blob/main/PowerShell/ScubaGear/baselines/aad.md) (assessable with the ScubaGear tool) maps to this guide:
+
+| SCuBA Policy Area | Guide Section |
+|-------------------|---------------|
+| Block legacy authentication (MS.AAD.1) | [2.1](#21-block-legacy-authentication) |
+| Risk-based Conditional Access (MS.AAD.2) | [2.4](#24-block-high-risk-sign-ins) |
+| Phishing-resistant MFA & secure registration (MS.AAD.3) | [1.1](#11-enforce-phishing-resistant-mfa) |
+| Centralized logging to SOC (MS.AAD.4) | [5.1](#51-enable-sign-in-and-audit-logging) |
+| App registration & consent restriction (MS.AAD.5) | [4.1](#41-restrict-user-consent-to-applications) |
+| Highly privileged / just-in-time access (MS.AAD.7) | [3.1](#31-enable-just-in-time-access-for-admin-roles) |
 
 ---
 
@@ -773,11 +1002,15 @@ Regularly review Identity Secure Score to track security posture and identify im
 - [Microsoft Entra Identity Standards Overview](https://learn.microsoft.com/en-us/entra/standards/standards-overview)
 
 **Hardening Benchmarks:**
-- [CIS Microsoft Azure Foundations Benchmark](https://www.cisecurity.org/benchmark/azure)
+- [CIS Microsoft 365 Foundations Benchmark](https://www.cisecurity.org/benchmark/microsoft_365) — v7.0.0 houses the Entra ID identity controls (rehomed from the Azure Foundations Benchmark in May 2026)
+- [CISA SCuBA Secure Configuration Baseline for Entra ID](https://github.com/cisagov/ScubaGear/blob/main/PowerShell/ScubaGear/baselines/aad.md) — assessable with ScubaGear
+- [Microsoft-managed Conditional Access policies](https://learn.microsoft.com/en-us/entra/identity/conditional-access/managed-policies)
+- [Mandatory MFA for Microsoft admin portals](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-mandatory-multifactor-authentication)
 
 **Security Incidents:**
 - [Midnight Blizzard Attack Guidance (January 2024)](https://www.microsoft.com/en-us/security/blog/2024/01/25/midnight-blizzard-guidance-for-responders-on-nation-state-attack/) — Test account without MFA led to corporate email compromise via password spray
-- **CVE-2025-55241:** Critical Entra ID privilege escalation vulnerability (CVSS 10.0) potentially impacting any tenant
+- [CVE-2025-55241 — Actor tokens / Azure AD Graph cross-tenant impersonation](https://dirkjanm.io/obtaining-global-admin-in-every-entra-id-tenant-with-actor-tokens/) (CVSS 10.0; see [4.3](#43-retire-azure-ad-graph-api-usage))
+- [Storm-2372 device code phishing](https://www.microsoft.com/en-us/security/blog/2025/02/13/storm-2372-conducts-device-code-phishing-campaign/) (see [2.6](#26-block-device-code-flow))
 
 ---
 
@@ -785,6 +1018,7 @@ Regularly review Identity Secure Score to track security posture and identify im
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-03 | 0.2.0 | draft | Currency update: mandatory-MFA enforcement floor, Microsoft-managed CA policies + per-user MFA retirement (2.5), block device code flow / Storm-2372 (2.6), Restricted Management AUs (3.3), app-registration restriction (4.1), retire Azure AD Graph + CVE-2025-55241 detection (4.3); remap compliance from CIS Azure to CIS M365 Foundations v7.0.0; add CISA SCuBA mapping | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with authentication, Conditional Access, PIM, and monitoring | Claude Code (Opus 4.5) |
 
