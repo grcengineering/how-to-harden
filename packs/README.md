@@ -32,7 +32,9 @@ Code Packs are classified along two axes: **what the code does** (Functional Typ
 | **CLI Scripts** | `cli/` | `.sh` | Vendor-native CLIs (`gh`, `op`, `gcloud`, `az`, `okta`) |
 | **SDK Scripts** | `sdk/` | `.py`, `.ps1`, `.go` | Python, PowerShell, Go vendor SDKs |
 | **Config-as-Code** | `terraform/` | `.tf` | Terraform, Pulumi, CloudFormation |
-| **DB Queries** | `db/` | `.sql`, `.js` | SQL (Snowflake, Databricks), NoSQL (MongoDB) |
+| **Config Files** | `config/` | `.jsonc`, `.yml`, `.sh` | Vendor-native settings files and config-emitting scripts |
+| **DB Queries** | `db/` | `.sql`, `.dax`, `.js` | Vendor-native query surfaces only: SQL (Snowflake, Databricks), BigQuery log-export SQL (Google Workspace), SOQL (Salesforce), DAX (Power BI) |
+| **SIEM Queries** | `siem/` | `.spl`, `.kql` | Splunk SPL and Sentinel/Log Analytics KQL detection queries — these run in the SIEM, not in a vendor database, so they are never `db/` content |
 | **Detection Rules** | `siem/sigma/` | `.yml` | Sigma (converts to Splunk, Elastic, Sentinel, etc.) |
 
 ### The Matrix
