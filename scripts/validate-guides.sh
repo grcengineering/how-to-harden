@@ -17,6 +17,13 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Git Bash for Windows: native-exe python3 can't open POSIX /c/... paths.
+# Use Windows-style paths for everything handed to python, and force UTF-8
+# so Windows python doesn't fall back to cp1252 when reading guides.
+if command -v cygpath &>/dev/null; then
+  REPO_ROOT="$(cygpath -m "${REPO_ROOT}")"
+fi
+export PYTHONUTF8=1
 GUIDES_DIR="${REPO_ROOT}/docs/_guides"
 DATA_DIR="${REPO_ROOT}/docs/_data/packs"
 
@@ -36,9 +43,12 @@ if [ -d "${DATA_DIR}" ]; then
   yaml_failures=0
   for f in "${DATA_DIR}"/*.yml; do
     [ -f "$f" ] || continue
+    # Git Bash for Windows: python3 is a native exe that can't open POSIX paths
+    pyf="$f"
+    command -v cygpath &>/dev/null && pyf=$(cygpath -w "$f")
     if ! python3 -c "
 import yaml, sys
-with open('${f}') as fh:
+with open(r'${pyf}', encoding='utf-8') as fh:
     try:
         yaml.safe_load(fh)
     except yaml.YAMLError as e:
