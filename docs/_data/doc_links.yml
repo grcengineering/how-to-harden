@@ -850,7 +850,11 @@ splunk:
 square:
   product_docs: "https://squareup.com/help/us/en"
   api_docs: "https://developer.squareup.com/reference/square"
-  hardening_docs: "https://squareup.com/us/en/security"
+  hardening_docs:
+    - label: "2-Step Verification"
+      url: "https://squareup.com/help/us/en/article/5593-2-step-verification"
+    - label: "Employee Permissions"
+      url: "https://squareup.com/help/us/en/article/5822-employee-permissions"
 
 stripe:
   product_docs: "https://support.stripe.com/"
@@ -870,7 +874,7 @@ tableau:
 tenable:
   product_docs: "https://docs.tenable.com/"
   api_docs: "https://developer.tenable.com/"
-  hardening_docs: "https://docs.tenable.com/nessus/Content/SettingsAdvanced.htm"
+  hardening_docs: "https://docs.tenable.com/vulnerability-management/best-practices/security/Content/VMSecurityBestPracticesOverview.htm"
 
 terraform-cloud:
   product_docs: "https://developer.hashicorp.com/terraform/cloud-docs"
@@ -891,12 +895,12 @@ twilio:
 ukg:
   product_docs: "https://community.ukg.com/"
   api_docs: "https://developer.ukg.com/"
-  hardening_docs: "https://trustcenter.ukg.com/"
+  hardening_docs: "https://library.ukg.com/a/200134"
 
 vanta:
   product_docs: "https://help.vanta.com/"
   api_docs: "https://developer.vanta.com/reference/"
-  hardening_docs: "https://vanta.com/security"
+  hardening_docs: "https://help.vanta.com/en/articles/12069112-using-vanta-secure-implementation-guidelines"
 
 vercel:
   product_docs: "https://vercel.com/docs"
@@ -912,7 +916,6 @@ webex:
 wiz:
   product_docs: "https://docs.wiz.io/"
   api_docs: "https://docs.wiz.io/"
-  hardening_docs: "https://www.wiz.io/resources"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/wiz"
 
 workato:

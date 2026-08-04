@@ -1,7 +1,7 @@
-id: "github-5.10"
+id: "github-5.6"
 vendor: "github"
 title: "Configure Repository Custom Properties for Security Classification"
-section: "5.10"
+section: "5.6"
 profile_level: 2
 severity: "medium"
 guide_url: "https://howtoharden.com/guides/github/#56-configure-repository-custom-properties-for-security-classification"

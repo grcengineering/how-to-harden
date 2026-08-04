@@ -1068,6 +1068,57 @@ Enable immutable releases at the organization level to prevent release artifacts
 
 ---
 
+### 2.8 Enable Private Vulnerability Reporting
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 17.1 |
+| NIST 800-53 | SI-2, SI-5, IR-6 |
+
+#### Description
+Enable private vulnerability reporting on your public repositories so security researchers can disclose vulnerabilities to maintainers privately through GitHub, instead of opening public issues or emailing ad-hoc addresses.
+
+#### Rationale
+**Why This Matters:**
+- Without a private channel, researchers disclose via public issues — publishing the vulnerability to attackers at the same moment you learn of it
+- The reports arrive as draft security advisories, feeding directly into GitHub's advisory and CVE workflow
+- An explicit intake channel is the difference between coordinated disclosure and surprise zero-day publication
+
+**Attack Prevented:** Public zero-day disclosure of vulnerabilities in your repositories before a fix exists
+
+#### ClickOps Implementation
+
+**Step 1: Enable Per Repository**
+1. Navigate to: **Repository** → **Settings** → **Advanced Security**
+2. Under **Private vulnerability reporting**, click **Enable**
+
+**Step 2: Enable Org-Wide**
+1. Navigate to: **Organization Settings** → **Advanced Security** (code security configurations)
+2. Enable **Private vulnerability reporting** in your applied security configuration so new and existing public repositories inherit it
+
+**Time to Complete:** ~10 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="2.11" %}
+
+#### Validation & Testing
+1. The repository's **Security** tab shows **Report a vulnerability**
+2. A test report arrives as a draft security advisory visible to maintainers only
+3. The Sigma rule alerts if private vulnerability reporting is disabled on a repository
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.4 | Incident response |
+| **NIST 800-53** | SI-5 | Security alerts and advisories |
+| **CIS Controls** | 17.1 | Designate incident-handling personnel |
+
+---
+
 ## 3. GitHub Actions & CI/CD Security
 
 ### 3.1 Restrict Third-Party GitHub Actions to Verified Creators Only
@@ -1228,7 +1279,7 @@ In each workflow file, explicitly declare required permissions. See the workflow
 
 #### Legacy write-all Audit
 
-{% include pack-code.html vendor="github" section="3.16" %}
+{% include pack-code.html vendor="github" section="3.26" %}
 
 #### Common Permission Combinations
 
@@ -1566,6 +1617,10 @@ Run these tools periodically to audit organization-wide security posture.
 
 **Time to Complete:** ~30 minutes for initial setup
 
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="3.28" %}
+
 #### Validation & Testing
 1. zizmor and actionlint run on PRs and report findings
 2. All actions in workflows are pinned to commit SHAs
@@ -1847,6 +1902,8 @@ Enforce CODEOWNERS-based review for all changes to `.github/workflows/` and `.gi
 
 {% include pack-code.html vendor="github" section="3.30" %}
 
+{% include pack-code.html vendor="github" section="3.6" %}
+
 #### Validation & Testing
 1. CODEOWNERS file exists with rules covering `.github/workflows/` and `.github/actions/`
 2. Branch protection requires CODEOWNERS review on the default branch
@@ -1917,7 +1974,7 @@ Prevent prompt injection attacks where untrusted input (issue titles, PR descrip
 
 #### Code Implementation
 
-{% include pack-code.html vendor="github" section="3.24" %}
+{% include pack-code.html vendor="github" section="3.27" %}
 
 #### Validation & Testing
 1. No workflow passes raw `github.event.*.body`, `.title`, or `.comment` directly to AI tools
@@ -2594,6 +2651,57 @@ The pack below shows the anti-patterns to eliminate and the explicit-passing pat
 | **NIST 800-53** | AC-6, IA-5 | Least privilege, authenticator management |
 | **ISO 27001** | A.9.4.1 | Information access restriction |
 | **CIS Controls** | 6.3 | Require MFA for externally-exposed applications |
+
+---
+
+### 5.6 Configure Repository Custom Properties for Security Classification
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 1.1, 3.7 |
+| NIST 800-53 | RA-2, SC-16, CM-8 |
+
+#### Description
+Define organization-level repository custom properties (for example a required `security-tier` single-select) and use them to classify every repository, so security policy — rulesets, security configurations, review requirements — can target repositories by classification instead of by hand-maintained lists.
+
+#### Rationale
+**Why This Matters:**
+- Security controls scale only when they can select their targets; a required custom property forces every repository to declare its classification at creation
+- Organization rulesets can target repositories by property value, so "critical"-tier repos automatically inherit stricter branch protection and workflow rules
+- A property inventory replaces tribal knowledge about which repositories are sensitive — the classification survives team churn
+
+**Attack Prevented:** Policy gaps on sensitive repositories that were never added to hand-maintained protection lists
+
+#### ClickOps Implementation
+
+**Step 1: Define the Property**
+1. Navigate to: **Organization Settings** → **Repository** → **Custom properties**
+2. Click **New property**; name it `security-tier`, type **Single select**, values `critical` / `high` / `standard` / `low`, set **Required** with default `standard`
+
+**Step 2: Classify and Target**
+1. Set the property on existing repositories (**Repository settings** → **Custom properties**, or bulk via the org properties UI)
+2. In organization rulesets ([2.3](#23-configure-repository-rulesets)), target repositories **by property** (e.g. `security-tier: critical`) instead of by name list
+
+**Time to Complete:** ~45 minutes initial classification
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="5.12" %}
+
+#### Validation & Testing
+1. Creating a new repository requires choosing a security tier (or receives the default)
+2. A ruleset targeted at `security-tier: critical` applies to a test repo the moment its property is set
+3. The Sigma rule alerts on property modifications
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC3.2 | Risk identification |
+| **NIST 800-53** | RA-2 | Security categorization |
+| **CIS Controls** | 1.1 | Asset inventory |
 
 ---
 
@@ -3391,6 +3499,8 @@ Apply GitHub's code security configurations to all repositories in the organizat
 #### Code Implementation
 
 {% include pack-code.html vendor="github" section="5.8" %}
+
+{% include pack-code.html vendor="github" section="8.4" %}
 
 **Note:** No Terraform provider support exists for code security configurations at this time.
 
