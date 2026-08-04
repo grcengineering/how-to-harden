@@ -286,6 +286,50 @@ Admin API keys (`sk-ant-admin...`) grant organization-wide management access. Th
 
 ---
 
+### 1.4 Enforce Tenant Restrictions at the Network Edge
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 12.3, 3.3 |
+| NIST 800-53 | SC-7, AC-4 |
+
+#### Description
+Configure your egress proxy to inject the `anthropic-allowed-org-ids` header on traffic to Anthropic, so only your organization's Claude tenants are reachable from corporate networks — blocking personal Claude accounts across web, desktop, API keys, and OAuth (Enterprise and Console).
+
+#### Rationale
+**Why This Matters:**
+- Product-level controls govern YOUR org; they do nothing about an employee pasting corporate data into a personal Claude account from the corporate network
+- Tenant pinning at the network edge is the platform-wide backstop that the per-product controls (connector verified-domain protection, Claude Code org pinning) each cover only partially
+- Enforcement spans surfaces: claude.ai web, desktop apps, API key usage, and OAuth flows
+
+**Attack Prevented:** Corporate-data exfiltration through personal Claude tenants on managed networks
+
+#### ClickOps Implementation
+
+1. Collect your organization IDs (claude.ai org and Console org)
+2. Configure the egress proxy/SWG to inject `anthropic-allowed-org-ids: <org-id>[,<org-id>]` on requests to Anthropic domains
+3. Roll out in monitor mode first, then enforce
+4. Pair with [Claude Code login pinning](/guides/claude-code/) (`forceLoginOrgUUID`) for the client-side half
+
+**Time to Complete:** ~2 hours with proxy change control
+
+#### Validation & Testing
+1. From a corporate network, sign-in to a personal Claude account is refused
+2. Org-tenant access works unchanged across web, desktop, and API
+
+**Expected result:** Only sanctioned tenants reachable from managed networks. ([Tenant Restrictions](https://support.claude.com/en/articles/13198485-enforce-network-level-access-control-with-tenant-restrictions))
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.7 | Restrict transmission of information |
+| **NIST 800-53** | SC-7 | Boundary protection |
+
+---
+
 ## 2. Third-Party Integration Security
 
 ### 2.1 Audit and Clean Up Pending Invites

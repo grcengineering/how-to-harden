@@ -43,7 +43,21 @@ anthropic-api:
 anthropic-claude:
   product_docs: "https://docs.anthropic.com/"
   api_docs: "https://docs.anthropic.com/en/api/"
+  hardening_docs:
+    - label: "Claude Enterprise Administrator Guide"
+      url: "https://claude.com/resources/tutorials/claude-enterprise-administrator-guide"
+    - label: "Tenant Restrictions (Network Control)"
+      url: "https://support.claude.com/en/articles/13198485-enforce-network-level-access-control-with-tenant-restrictions"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
+
+claude-enterprise:
+  product_docs: "https://support.claude.com/"
+  api_docs: "https://platform.claude.com/docs/en/manage-claude/compliance-api"
+  hardening_docs:
+    - label: "Claude Enterprise Administrator Guide"
+      url: "https://claude.com/resources/tutorials/claude-enterprise-administrator-guide"
+    - label: "Claude in Chrome Admin Controls"
+      url: "https://support.claude.com/en/articles/13065128-claude-in-chrome-admin-controls"
 
 claude-code:
   product_docs: "https://code.claude.com/docs/"
