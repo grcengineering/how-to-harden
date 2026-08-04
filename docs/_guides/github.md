@@ -1845,16 +1845,7 @@ Enforce CODEOWNERS-based review for all changes to `.github/workflows/` and `.gi
 
 #### Code Implementation
 
-**`.github/CODEOWNERS`:**
-```text
-# Security/Platform team must approve all CI/CD changes
-.github/workflows/    @org/security-team @org/platform-team
-.github/actions/      @org/security-team @org/platform-team
-
-# Also protect Dependabot and Renovate configs
-.github/dependabot.yml  @org/security-team
-renovate.json           @org/security-team
-```
+{% include pack-code.html vendor="github" section="3.30" %}
 
 #### Validation & Testing
 1. CODEOWNERS file exists with rules covering `.github/workflows/` and `.github/actions/`
@@ -2585,31 +2576,9 @@ Prohibit the use of `secrets: inherit` when calling reusable workflows. Instead,
 
 #### Code Implementation
 
-**Anti-Pattern — Do NOT use:**
-```yaml
-# BAD: passes every secret to the reusable workflow
-jobs:
-  deploy:
-    uses: ./.github/workflows/deploy.yml
-    secrets: inherit
-```
+The pack below shows the anti-patterns to eliminate and the explicit-passing pattern to adopt:
 
-**Correct — explicit secret passing:**
-```yaml
-# GOOD: only passes the secrets the workflow actually needs
-jobs:
-  deploy:
-    uses: ./.github/workflows/deploy.yml
-    secrets:
-      DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-      REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
-```
-
-**Anti-Pattern — Do NOT use:**
-```yaml
-# BAD: serializes all secrets into a single string
-- run: echo '${{ toJSON(secrets) }}' | jq .
-```
+{% include pack-code.html vendor="github" section="5.20" %}
 
 #### Validation & Testing
 1. No workflow files in the organization contain `secrets: inherit`
@@ -2989,38 +2958,7 @@ Configure dependency update tooling to enforce a minimum cool-down period (stabi
 
 #### Code Implementation
 
-**Renovate configuration (`renovate.json`):**
-```json
-{
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "minimumReleaseAge": "3 days",
-  "packageRules": [
-    {
-      "description": "Production dependencies: 3-day cool-down",
-      "matchDepTypes": ["dependencies"],
-      "minimumReleaseAge": "3 days"
-    },
-    {
-      "description": "Dev dependencies: 1-day cool-down",
-      "matchDepTypes": ["devDependencies"],
-      "minimumReleaseAge": "1 day"
-    },
-    {
-      "description": "Security patches: no cool-down",
-      "matchUpdateTypes": ["patch"],
-      "matchDepTypes": ["dependencies"],
-      "isVulnerabilityAlert": true,
-      "minimumReleaseAge": "0 days"
-    },
-    {
-      "description": "GitHub Actions: 3-day cool-down",
-      "matchManagers": ["github-actions"],
-      "minimumReleaseAge": "3 days"
-    }
-  ]
-}
-```
+{% include pack-code.html vendor="github" section="6.20" %}
 
 **Dependabot equivalent (`.github/dependabot.yml`):**
 Dependabot does not natively support cool-down periods. If using Dependabot instead of Renovate, implement cool-down by:

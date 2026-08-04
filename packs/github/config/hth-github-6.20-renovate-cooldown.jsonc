@@ -1,0 +1,39 @@
+// HTH GitHub Control 6.7: Enforce Dependency Cool-Down Periods
+// Profile: L2 | NIST: SA-15, SI-2
+// https://howtoharden.com/guides/github/#67-enforce-dependency-cool-down-periods
+//
+// Renovate configuration enforcing cool-down (minimumReleaseAge) so a
+// freshly published, potentially hijacked package version cannot enter
+// the build the moment it appears. Security patches bypass the delay.
+
+// HTH Guide Excerpt: begin config-renovate-cooldown
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "minimumReleaseAge": "3 days",
+  "packageRules": [
+    {
+      "description": "Production dependencies: 3-day cool-down",
+      "matchDepTypes": ["dependencies"],
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Dev dependencies: 1-day cool-down",
+      "matchDepTypes": ["devDependencies"],
+      "minimumReleaseAge": "1 day"
+    },
+    {
+      "description": "Security patches: no cool-down",
+      "matchUpdateTypes": ["patch"],
+      "matchDepTypes": ["dependencies"],
+      "isVulnerabilityAlert": true,
+      "minimumReleaseAge": "0 days"
+    },
+    {
+      "description": "GitHub Actions: 3-day cool-down",
+      "matchManagers": ["github-actions"],
+      "minimumReleaseAge": "3 days"
+    }
+  ]
+}
+// HTH Guide Excerpt: end config-renovate-cooldown
