@@ -35,10 +35,23 @@ amplitude:
   product_docs: "https://amplitude.com/docs"
   api_docs: "https://www.docs.developers.amplitude.com/analytics/apis/"
 
+anthropic-api:
+  product_docs: "https://docs.anthropic.com/"
+  api_docs: "https://docs.anthropic.com/en/api/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
+
 anthropic-claude:
   product_docs: "https://docs.anthropic.com/"
   api_docs: "https://docs.anthropic.com/en/api/"
-  hardening_docs: "https://code.claude.com/docs/en/security"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
+
+claude-code:
+  product_docs: "https://code.claude.com/docs/"
+  hardening_docs:
+    - label: "Claude Code Security"
+      url: "https://code.claude.com/docs/en/security"
+    - label: "Claude Code IAM & Enterprise Auth"
+      url: "https://code.claude.com/docs/en/iam"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
 
 asana:

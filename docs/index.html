@@ -91,6 +91,7 @@ title: Home
           <label class="filter-option"><input type="radio" name="category" value="productivity"> <span class="dot dot-productivity"></span> Productivity</label>
           <label class="filter-option"><input type="radio" name="category" value="hr"> <span class="dot dot-hr"></span> HR/Finance</label>
           <label class="filter-option"><input type="radio" name="category" value="marketing"> <span class="dot dot-marketing"></span> Marketing</label>
+          <label class="filter-option"><input type="radio" name="category" value="ai"> <span class="dot dot-ai"></span> AI</label>
         </div>
       </div>
 
@@ -147,6 +148,9 @@ title: Home
       {% elsif cat contains "hr" or cat contains "payroll" or cat contains "finance" %}
         {% assign data_cat = "hr" %}
         {% assign cat_label = "HR/Finance" %}
+      {% elsif cat contains "ai/ml" or cat contains "ai platform" %}
+        {% assign data_cat = "ai" %}
+        {% assign cat_label = "AI" %}
       {% elsif cat contains "marketing" or cat contains "crm" or cat contains "ai" %}
         {% assign data_cat = "marketing" %}
         {% assign cat_label = "Marketing" %}
@@ -213,7 +217,19 @@ title: Home
         {% assign p_has_pack = false %}
         {% assign p_names = "" %}
         {% for g in pg.items %}{% if site.data.packs[g.slug] %}{% assign p_has_pack = true %}{% endif %}{% assign p_names = p_names | append: " " | append: g.slug %}{% endfor %}
-        <div class="guide-card platform-card" data-category="productivity" data-name="{{ p_names }}" data-reviewed="ai-drafted" data-has-pack="{{ p_has_pack }}">
+        {% comment %} Platform card category derives from the hub guide's own
+        category (previously hardcoded "productivity", which misfiled any
+        non-productivity platform under the wrong filter). {% endcomment %}
+        {% assign pcat = p0.category | downcase %}
+        {% if pcat contains "ai/ml" or pcat contains "ai platform" %}{% assign p_data_cat = "ai" %}
+        {% elsif pcat contains "identity" %}{% assign p_data_cat = "identity" %}
+        {% elsif pcat contains "security" %}{% assign p_data_cat = "security" %}
+        {% elsif pcat contains "devops" %}{% assign p_data_cat = "devops" %}
+        {% elsif pcat contains "data" %}{% assign p_data_cat = "data" %}
+        {% elsif pcat contains "hr" or pcat contains "finance" %}{% assign p_data_cat = "hr" %}
+        {% elsif pcat contains "marketing" %}{% assign p_data_cat = "marketing" %}
+        {% else %}{% assign p_data_cat = "productivity" %}{% endif %}
+        <div class="guide-card platform-card" data-category="{{ p_data_cat }}" data-name="{{ p_names }}" data-reviewed="ai-drafted" data-has-pack="{{ p_has_pack }}">
           <div class="guide-card-header platform-card-header">
             <h3>{{ p0.platform }}</h3>
             <span class="platform-count">{{ pg.items.size }} guides

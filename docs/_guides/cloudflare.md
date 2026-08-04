@@ -6,9 +6,9 @@ slug: "cloudflare"
 tier: "1"
 category: "Security"
 description: "Security hardening for Cloudflare Zero Trust, Access, Gateway, and WARP deployment"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-03"
 ---
 
 ## Overview
@@ -227,6 +227,139 @@ Configure granular admin roles in Cloudflare to limit dashboard access based on 
 
 {% include pack-code.html vendor="cloudflare" section="1.4" %}
 
+### 1.5 Retire the Global API Key and Enforce Scoped API Tokens
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4, 6.8 |
+| NIST 800-53 | AC-6(1), IA-5 |
+
+#### Description
+Eliminate use of the Global API Key — a single credential with full account-wide privileges that never expires — and replace it with scoped API tokens that carry explicit permissions, an expiry (TTL), and client IP restrictions. For automation, CI/CD, and Terraform, use Account-Owned API Tokens so credentials belong to the account rather than to an individual member. Cloudflare states directly that the Global API Key is not recommended and that customers should migrate to API tokens ([Cloudflare API keys documentation](https://developers.cloudflare.com/fundamentals/api/get-started/keys/)).
+
+#### Rationale
+**Why This Matters:**
+- The Global API Key grants full control of every zone and account setting the user can reach, so a single leaked key is equivalent to a full account takeover with no way to limit the damage short of rotating it
+- The Global API Key has no scope, no expiry, and no IP restriction, which means a key pasted into a script, log, or support ticket stays valid indefinitely — Cloudflare rotated 104 API tokens after the 2025 Salesloft Drift incident precisely because credentials end up in support case text
+- Scoped API tokens grant only the specific permissions a task needs (for example, DNS edit on one zone) and support a TTL and Client IP Address Filtering, so a stolen token is time-bound and usable only from expected networks
+- Member-owned tokens die when the member is offboarded, silently breaking production automation; Account-Owned API Tokens (generally available since November 2024) are scoped to the account rather than to a person, so Terraform and CI/CD credentials survive admin turnover and are managed centrally by Super Administrators ([Cloudflare blog: account-owned tokens](https://blog.cloudflare.com/account-owned-tokens-automated-actions-zaraz/))
+
+**Attack Prevented:** Full-account takeover via leaked credentials, unlimited credential lifetime, lateral privilege escalation, orphaned automation credentials surviving offboarding
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Global API Key Usage**
+1. Navigate to: **Cloudflare Dashboard** → **My Profile** → **API Tokens**
+2. Under **API Keys**, note whether the Global API Key has been viewed or distributed
+3. Search internal scripts, CI/CD secret stores, Terraform variable files, and runbooks for the header names `X-Auth-Email` and `X-Auth-Key` — these indicate Global API Key usage that must be migrated
+
+**Step 2: Create a Scoped User API Token**
+1. Navigate to: **My Profile** → **API Tokens** → **Create Token**
+2. Start from a template or select **Create Custom Token**
+3. Under **Permissions**, grant only the specific product, scope, and level required (for example, **Zone** → **DNS** → **Edit**)
+4. Under **Zone Resources** / **Account Resources**, restrict the token to the exact zones or accounts it needs — never "All zones" unless genuinely required
+5. Under **Client IP Address Filtering**, add the egress IP or CIDR of the system that will use the token
+6. Under **TTL**, set an explicit start and expiry date rather than leaving the token permanent
+7. Click **Continue to summary** → **Create Token** and store the value in a secrets manager immediately (it is displayed only once)
+
+**Step 3: Create Account-Owned Tokens for Automation (L2)**
+1. Navigate to: **Manage Account** → **API Tokens** (account scope, not profile scope)
+2. Click **Create Token** and configure permissions, resources, IP filtering, and TTL as above
+3. Use these tokens for Terraform, CI/CD pipelines, and any integration that must outlive an individual employee
+4. Restrict who can create and view account-owned tokens to Super Administrators
+
+**Step 4: Decommission the Global API Key**
+1. Migrate every remaining consumer to a scoped token
+2. Navigate to: **My Profile** → **API Tokens** → **API Keys** → **Global API Key** → **Change** to roll the key, invalidating any copies that remain in circulation
+3. Repeat the roll for every account member who has ever retrieved their Global API Key
+
+**Time to Complete:** ~60 minutes plus migration effort
+
+#### Validation & Testing
+1. Confirm no running system authenticates with `X-Auth-Email` / `X-Auth-Key` headers — all callers should send an `Authorization: Bearer` token instead
+2. Verify each token's restrictions by calling the token verification endpoint from an IP outside the allowlist; the request must fail
+3. Attempt an action outside the token's granted permissions (for example, editing a zone the token does not cover) and confirm it is rejected
+4. Review **Audit Logs** for token creation events and confirm every token has a named owner and documented purpose
+5. Set a calendar reminder ahead of each token's TTL expiry so rotation is planned rather than reactive
+
+#### Compliance Mappings
+
+| Framework | Control | Requirement |
+|-----------|---------|-------------|
+| CIS Controls v8 | 5.4 | Restrict administrator privileges to dedicated administrator accounts |
+| CIS Controls v8 | 6.8 | Define and maintain role-based access control |
+| NIST 800-53 Rev 5 | AC-6(1) | Authorize access to security functions on a least-privilege basis |
+| NIST 800-53 Rev 5 | IA-5 | Authenticator management, including lifetime and rotation |
+| SOC 2 | CC6.1 | Logical access credentials are restricted and managed |
+
+---
+
+### 1.6 Enforce Two-Factor Authentication for Account Members
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.5 |
+| NIST 800-53 | IA-2(1) |
+
+#### Description
+Turn on account-level 2FA Enforcement so that every Cloudflare account member must have two-factor authentication enabled before they can accept an invitation or continue using the account. This control protects the administrators of the platform itself and is distinct from the MFA you require of end users through Access policies (section 1.2) ([Cloudflare two-factor authentication documentation](https://developers.cloudflare.com/fundamentals/account/account-security/2fa/)).
+
+#### Rationale
+**Why This Matters:**
+- Access policies enforce MFA for the people using protected applications, but they do nothing for the administrators who log into the Cloudflare dashboard — those accounts control DNS, WAF, Zero Trust policy, and tunnel configuration for the entire estate
+- A single compromised administrator password without 2FA lets an attacker disable Gateway policies, publish a tunnel hostname without an Access application, or repoint DNS, defeating every other control in this guide at once
+- Relying on individual members to enable 2FA voluntarily produces uneven coverage; account-level enforcement makes it a condition of membership, so a member who has not enrolled cannot accept an invite or keep using the account
+- Enforcement applies continuously rather than only at invitation time, so members who disable 2FA later are prompted back into compliance instead of silently dropping below the baseline
+
+**Attack Prevented:** Administrator credential theft, phishing of dashboard logins, password reuse leading to platform-wide configuration compromise, account takeover
+
+#### ClickOps Implementation
+
+**Step 1: Enable 2FA on Your Own Account First**
+1. Navigate to: **My Profile** → **Authentication**
+2. Under **Two-Factor Authentication**, click **Manage**
+3. Enrol an authenticator app or security key and complete verification
+4. Download and securely store the backup codes — enforcement will lock out an unenrolled Super Administrator
+
+**Step 2: Turn On Account-Level 2FA Enforcement**
+1. Navigate to: **Manage Account** → **Configurations** → **Authentication**
+2. Locate **Two-Factor Authentication Enforcement** (available to Super Administrators)
+3. Enable enforcement for the account
+4. Members without 2FA are required to enable it before accepting an invitation or continuing to use the account
+
+**Step 3: Communicate and Remediate**
+1. Notify members ahead of enabling enforcement so they can enrol without disruption
+2. Review **Manage Account** → **Members** for anyone in a pending or non-compliant state
+3. Prefer hardware security keys (WebAuthn) over one-time codes for Super Administrators, since keys resist real-time phishing relay
+
+**Step 4: Pair with SSO Where Available (L2)**
+1. On Enterprise plans, configure SSO for dashboard login so administrator authentication inherits the IdP's phishing-resistant factors and conditional access rules
+2. Keep 2FA enforcement enabled as a backstop for any account not covered by SSO
+
+**Time to Complete:** ~30 minutes
+
+#### Validation & Testing
+1. From **Manage Account** → **Members**, confirm every member shows a compliant 2FA status
+2. Invite a test member and confirm the invitation cannot be accepted until 2FA is configured
+3. Attempt a dashboard login with a valid password on a test account without 2FA and confirm the second factor is demanded
+4. Review **Audit Logs** for `2fa` and membership events to confirm enforcement was enabled and by whom
+5. Re-check member compliance on a recurring schedule (at least quarterly) as part of access review
+
+#### Compliance Mappings
+
+| Framework | Control | Requirement |
+|-----------|---------|-------------|
+| CIS Controls v8 | 6.5 | Require MFA for administrative access |
+| NIST 800-53 Rev 5 | IA-2(1) | Multi-factor authentication to privileged accounts |
+| SOC 2 | CC6.1 | Authentication controls restrict access to authorized users |
+| ISO 27001:2022 | A.5.17 | Authentication information management |
+
+---
+
 ## 2. Access Application Policies
 
 ### 2.1 Create Secure Application Policies
@@ -376,6 +509,156 @@ Define device posture checks to verify endpoint security status before granting 
 
 
 {% include pack-code.html vendor="cloudflare" section="2.3" %}
+
+### 2.4 Replace Long-Lived SSH Keys with Access for Infrastructure
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.4, 8.5 |
+| NIST 800-53 | AC-17, IA-5(2), AU-14 |
+
+#### Description
+Use Cloudflare Access for Infrastructure to broker SSH sessions with short-lived certificates issued at login rather than long-lived private keys distributed to engineers. Targets are registered in Zero Trust, policies bind an identity to a specific target and Unix username, and session commands can be recorded and stored encrypted ([Cloudflare SSH with Access for Infrastructure documentation](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/use-cases/ssh/ssh-infrastructure-access/)).
+
+#### Rationale
+**Why This Matters:**
+- Long-lived SSH private keys sit on laptops, in build agents, and in backup archives indefinitely; anyone who obtains a copy has persistent access that no identity provider decision can revoke
+- Short-lived certificates are minted only after a successful Access login, so revoking a user in the IdP or failing a device posture check immediately ends their ability to obtain new SSH sessions
+- Per-target and per-Unix-username policies stop the common pattern where a single shared key grants root-equivalent access to a whole fleet, limiting what one compromised identity can reach
+- Encrypted SSH command logging produces a per-session record of what was actually executed, which is essential for insider-threat investigation and for demonstrating privileged-session accountability to auditors
+- Because the target is reached through a Cloudflare Tunnel, the SSH port never needs to be exposed to the internet, removing it from the reach of credential-stuffing and scanning bots
+
+**Attack Prevented:** Stolen or copied SSH private keys, persistent access after offboarding, lateral movement via shared keys, unaudited privileged sessions, internet-exposed SSH brute forcing
+
+#### Prerequisites
+- A Cloudflare Tunnel connecting the target network (see section 5.1)
+- WARP deployed and enrolled on the client devices that will connect
+- An identity provider configured (see section 1.1)
+
+#### ClickOps Implementation
+
+**Step 1: Route the Target Network Through a Tunnel**
+1. Navigate to: **Zero Trust** → **Networks** → **Tunnels**
+2. Select or create the tunnel serving the environment that hosts the SSH servers
+3. Under **Private Network**, add the CIDR range containing the target hosts
+
+**Step 2: Register Infrastructure Targets**
+1. Navigate to: **Zero Trust** → **Networks** → **Targets**
+2. Click **Add a target**
+3. Enter the target hostname, IP address, and the virtual network it belongs to
+4. Repeat for each server that should be reachable over SSH
+
+**Step 3: Create an Infrastructure Application**
+1. Navigate to: **Zero Trust** → **Access controls** → **Applications**
+2. Click **Add an application** and select **Infrastructure**
+3. Select the targets to include and set the protocol to **SSH** with port 22
+4. Add a policy: set **Action** to Allow, include your IdP group (for example, Platform Engineering), and add **Require** rules for login method and device posture
+5. Under the policy's connection context, specify the exact Unix usernames the group may assume — avoid granting `root` where a named account will do
+
+**Step 4: Configure the Server to Trust the Cloudflare SSH CA**
+1. In the application configuration, download the Cloudflare SSH CA public key for your account
+2. On each target host, install the CA public key and point `TrustedUserCAKeys` at it in the SSH daemon configuration
+3. Restart the SSH daemon and confirm certificate-based authentication succeeds
+4. Once verified, disable password authentication and remove distributed `authorized_keys` entries that are no longer needed
+
+**Step 5: Enable SSH Command Logging (L3)**
+1. In the Infrastructure application settings, enable SSH command logging
+2. Provide the public key used to encrypt session logs and store the corresponding private key in your secrets manager
+3. Configure a Logpush job to deliver the encrypted session logs to your SIEM or object storage
+
+**Time to Complete:** ~90 minutes for the first target, ~15 minutes per additional target
+
+#### Validation & Testing
+1. Connect to a target as an authorized user and confirm the session succeeds without any local private key present
+2. Remove the test user from the IdP group and confirm a new connection attempt is denied while no long-lived key remains that would still work
+3. Attempt to connect as a Unix username not listed in the policy and confirm the session is refused
+4. Attempt to reach port 22 on the target directly from the public internet and confirm there is no listener
+5. Retrieve an encrypted session log, decrypt it with the stored private key, and confirm the executed commands are recorded
+
+#### Compliance Mappings
+
+| Framework | Control | Requirement |
+|-----------|---------|-------------|
+| CIS Controls v8 | 6.4 | Require MFA for remote network access |
+| CIS Controls v8 | 8.5 | Collect detailed audit logs for privileged activity |
+| NIST 800-53 Rev 5 | AC-17 | Remote access authorization, monitoring, and control |
+| NIST 800-53 Rev 5 | IA-5(2) | Public key-based authentication |
+| NIST 800-53 Rev 5 | AU-14 | Session audit and recording |
+| SOC 2 | CC6.6 | Access to infrastructure is restricted to authorized personnel |
+
+---
+
+### 2.5 Gate Access Policies on User Risk Score
+
+**Profile Level:** L3 (Run)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 13.1 |
+| NIST 800-53 | AC-2(12) |
+
+#### Description
+Enable Cloudflare's behavioural risk scoring and use the resulting Low, Medium, or High score as a condition in Access policies, so that users exhibiting suspicious behaviour are blocked or forced to reauthenticate rather than continuing with the access their group membership would normally grant ([Cloudflare user risk score documentation](https://developers.cloudflare.com/cloudflare-one/team-and-resources/users/risk-score/)).
+
+#### Rationale
+**Why This Matters:**
+- Static policies evaluate identity and device at the moment of login, so an account that is compromised after enrolment keeps its access until someone notices and intervenes manually
+- Risk behaviours such as impossible travel, repeated DLP policy violations, and contact with known malware infrastructure are strong signals that an account or endpoint is under adversary control
+- Binding a High risk score to a Block or reauthentication action turns detection into enforcement automatically, closing the gap between an alert firing and an analyst responding
+- Every risk behaviour is disabled by default, so an organisation that assumes risk scoring is on out of the box is operating with no behavioural signal at all — the behaviours must be explicitly enabled to produce scores
+- Scores are per-user and visible in the dashboard, giving investigators a prioritised queue rather than an undifferentiated stream of Gateway and Access logs
+
+**Attack Prevented:** Session hijacking and account takeover after initial login, insider data exfiltration, continued access by a compromised endpoint, credential sharing across geographies
+
+#### Prerequisites
+- Cloudflare Zero Trust Enterprise plan
+- WARP deployed with Gateway logging enabled so behavioural signals are collected
+- Identity provider integration configured (see section 1.1)
+
+#### ClickOps Implementation
+
+**Step 1: Enable Risk Behaviours**
+1. Navigate to: **Zero Trust** → **Teams & Resources** → **Users** → **Risk score**
+2. Review the available behaviours — all are disabled by default
+3. Enable the behaviours relevant to your environment, such as impossible travel, high number of DLP policy violations, and contact with known malware or command-and-control destinations
+4. Set the risk level each behaviour contributes (Low, Medium, or High) to match your tolerance
+
+**Step 2: Reference Risk Score in Access Policies**
+1. Navigate to: **Zero Trust** → **Access controls** → **Applications** and edit a sensitive application
+2. Add a policy with **Action** set to Block and an include rule using the **User Risk Score** selector set to High
+3. Order the block policy above the allow policies so it is evaluated first
+4. For lower-sensitivity applications, use a Medium score to trigger reauthentication rather than an outright block
+
+**Step 3: Extend Risk Gating to Gateway (L3)**
+1. Navigate to: **Gateway** → **Firewall Policies** and add policies matching on user risk score
+2. Restrict high-risk users from reaching sensitive SaaS destinations or from uploading data
+
+**Step 4: Define the Response Runbook**
+1. Document who reviews the risk score dashboard and how often
+2. Define the criteria for clearing a user's risk score after investigation, and record who is authorised to clear it
+3. Feed risk score changes into your SIEM through Logpush so they correlate with other alerts
+
+**Time to Complete:** ~60 minutes
+
+#### Validation & Testing
+1. Confirm the behaviours you intended to enable show as enabled on the risk score page — verify rather than assume, since the default is off
+2. Trigger a test behaviour in a controlled way (for example, a deliberate DLP policy violation by a test account) and confirm the user's score changes
+3. Attempt to reach a protected application as the elevated-risk test user and confirm the block or reauthentication policy fires
+4. Confirm the block appears in Access logs with the risk score as the reason
+5. Clear the test user's risk score and confirm normal access is restored
+
+#### Compliance Mappings
+
+| Framework | Control | Requirement |
+|-----------|---------|-------------|
+| CIS Controls v8 | 13.1 | Centralize security event alerting and response |
+| NIST 800-53 Rev 5 | AC-2(12) | Account monitoring for atypical usage |
+| NIST 800-53 Rev 5 | SI-4 | System monitoring and automated response |
+| SOC 2 | CC7.2 | Anomalies are detected and evaluated |
+
+---
 
 ## 3. Gateway Security Policies
 
@@ -563,6 +846,82 @@ Enable Cloudflare Browser Isolation to execute web sessions in a secure cloud en
 
 
 {% include pack-code.html vendor="cloudflare" section="3.4" %}
+
+### 3.5 Configure Gateway Data Loss Prevention Profiles
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.13 |
+| NIST 800-53 | AC-4, SC-7(10) |
+
+#### Description
+Use Gateway DLP profiles to inspect HTTP and SaaS traffic for sensitive data and block or log transfers that match. Two predefined profiles — Financial Information, and Social Security, Insurance, and Tax Identification Numbers — are available even on Free and Pay-as-you-go plans; custom profiles and additional detection entries require the Enterprise DLP add-on ([Cloudflare data loss prevention documentation](https://developers.cloudflare.com/cloudflare-one/policies/data-loss-prevention/)).
+
+#### Rationale
+**Why This Matters:**
+- Gateway HTTP filtering blocks what is coming in, but without DLP nothing inspects what is leaving — payment card numbers, national identifiers, and source code can be pasted into a personal cloud drive or an AI chat interface with no record and no control
+- Two predefined profiles are usable on Free and Pay-as-you-go plans, so the common assumption that DLP requires an Enterprise purchase leaves basic coverage unused at no additional cost
+- DLP policies match on the payload rather than the destination category, catching exfiltration to a newly registered or uncategorised domain that reputation-based filtering would allow
+- DLP detections feed the user risk score (see section 2.5), so a user repeatedly triggering DLP policies can be automatically escalated and blocked rather than merely logged
+- Running DLP in log-only mode first produces the evidence needed to tune profiles before enforcement, avoiding the false-positive backlash that causes teams to disable DLP entirely
+
+**Attack Prevented:** Data exfiltration by insiders or compromised accounts, unintentional disclosure of regulated data to unsanctioned SaaS, sensitive data pasted into third-party AI or file-sharing services
+
+#### Prerequisites
+- Gateway HTTP filtering enabled with TLS inspection configured (see section 3.2)
+- WARP deployed with the Cloudflare root certificate installed on managed devices
+
+#### ClickOps Implementation
+
+**Step 1: Enable TLS Inspection**
+1. Navigate to: **Zero Trust** → **Settings** → **Network**
+2. Enable **TLS decryption** — DLP cannot inspect payloads inside encrypted sessions without it
+3. Confirm the Cloudflare root certificate is deployed to managed devices, and document any inspection bypasses required for banking or healthcare sites
+
+**Step 2: Review the Predefined Profiles**
+1. Navigate to: **Zero Trust** → **DLP** → **DLP profiles**
+2. Open **Financial Information** and review its detection entries (payment card numbers and similar)
+3. Open **Social Security, Insurance, and Tax Identification Numbers** and review its entries
+4. Set the confidence threshold and minimum match count on each entry to reduce false positives
+
+**Step 3: Create a Log-Only HTTP Policy**
+1. Navigate to: **Gateway** → **Firewall Policies** → **HTTP**
+2. Add a policy with the **DLP Profile** selector set to the profiles enabled above
+3. Set **Action** to Allow with logging so matches are recorded without blocking
+4. Run for one to two weeks and review matches in Gateway HTTP logs
+
+**Step 4: Move to Enforcement**
+1. After tuning, change the action to Block for the highest-confidence profiles
+2. Scope enforcement by destination where appropriate — for example, block uploads of matched data to personal file-sharing and unsanctioned AI services while allowing sanctioned applications
+3. Configure a custom block page explaining why the upload was stopped and how to request an exception
+
+**Step 5: Add Custom Profiles (L3, Enterprise DLP add-on)**
+1. Navigate to: **DLP** → **DLP profiles** → **Create profile**
+2. Define custom detection entries for organisation-specific identifiers such as customer account number formats or internal project codenames
+3. Apply the same log-then-enforce progression before blocking
+
+**Time to Complete:** ~60 minutes to configure, plus one to two weeks of tuning
+
+#### Validation & Testing
+1. From a WARP-enrolled test device, upload a file containing synthetic test data matching a predefined profile (use documented test values, never real customer data) and confirm the match appears in Gateway HTTP logs
+2. After enforcement is enabled, repeat the upload and confirm it is blocked and the block page is displayed
+3. Confirm that traffic on documented TLS inspection bypass lists is not inspected, and that this exposure is accepted and recorded
+4. Review one week of DLP matches and calculate the false-positive rate before widening enforcement
+5. Confirm DLP match events reach your SIEM through Logpush
+
+#### Compliance Mappings
+
+| Framework | Control | Requirement |
+|-----------|---------|-------------|
+| CIS Controls v8 | 3.13 | Deploy a data loss prevention solution |
+| NIST 800-53 Rev 5 | AC-4 | Information flow enforcement |
+| NIST 800-53 Rev 5 | SC-7(10) | Prevent exfiltration of information |
+| SOC 2 | CC6.7 | Transmission of sensitive data is restricted and monitored |
+| PCI DSS v4.0 | 3.2 | Limit storage and transmission of cardholder data |
+
+---
 
 ## 4. WARP Client Hardening
 
@@ -780,6 +1139,80 @@ Always protect tunnel endpoints with Access policies before exposing them public
 
 {% include pack-code.html vendor="cloudflare" section="5.2" %}
 
+### 5.3 Detect and Block TryCloudflare Quick Tunnel Abuse
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.8, 13.3 |
+| NIST 800-53 | CM-7(2), SI-4 |
+
+#### Description
+TryCloudflare quick tunnels create an ephemeral `*.trycloudflare.com` hostname without requiring a Cloudflare account. Proofpoint has tracked threat actors abusing this since February 2024 to stage and deliver remote access trojans through what looks like legitimate Cloudflare infrastructure. Block outbound access to `trycloudflare.com` through Gateway and alert on unauthorized `cloudflared` execution on managed endpoints ([Proofpoint threat research](https://www.proofpoint.com/us/blog/threat-insight/threat-actor-abuses-cloudflare-tunnels-deliver-rats)).
+
+#### Rationale
+**Why This Matters:**
+- Quick tunnels require no Cloudflare account, no domain, and no payment, so an attacker can stand up a delivery or command-and-control endpoint in seconds with no attributable registration trail
+- The resulting hostname sits on a Cloudflare domain with a valid TLS certificate, so reputation and category filtering that would flag a newly registered domain often lets the traffic through
+- Proofpoint has observed campaigns using these tunnels to deliver AsyncRAT, Xworm, VenomRAT, and similar remote access trojans through malicious LNK and shortcut files that fetch payloads over the tunnel
+- The same technique works in reverse for exfiltration and unauthorized remote access: an insider or an attacker who lands on an endpoint can run `cloudflared` to expose an internal service outbound, bypassing every inbound firewall rule
+- Because your organisation almost certainly uses named, authenticated tunnels (section 5.1) rather than anonymous quick tunnels, blocking the quick tunnel domain outright costs nothing operationally while removing a live abuse channel
+
+**Attack Prevented:** RAT delivery over trusted infrastructure, command-and-control tunnelling, unauthorized outbound exposure of internal services, data exfiltration through anonymous tunnels
+
+#### ClickOps Implementation
+
+**Step 1: Block the Quick Tunnel Domain in Gateway DNS**
+1. Navigate to: **Gateway** → **Firewall Policies** → **DNS**
+2. Click **Add a policy** and name it "Block TryCloudflare Quick Tunnels"
+3. Configure the rule:
+   - **Selector:** Domain
+   - **Operator:** is
+   - **Value:** trycloudflare.com
+4. Set **Action** to Block and save
+5. Confirm the policy is ordered so no broader allow rule precedes it
+
+**Step 2: Add an HTTP Policy for Defence in Depth**
+1. Navigate to: **Gateway** → **Firewall Policies** → **HTTP**
+2. Add a policy matching the **Host** selector against `trycloudflare.com` and any subdomain
+3. Set **Action** to Block so requests that bypass DNS resolution are still stopped
+
+**Step 3: Restrict cloudflared Execution on Endpoints**
+1. In your endpoint management or EDR platform, create an application control rule permitting `cloudflared` to run only on the servers where a named tunnel is intentionally deployed
+2. Alert on any `cloudflared` process starting on a user workstation
+3. Alert on command lines containing quick tunnel invocation flags, since a legitimate named tunnel is run as a service with a credentials file rather than an ad-hoc URL flag
+
+**Step 4: Hunt for Existing Abuse**
+1. Review Gateway DNS and HTTP logs for historical resolutions of `trycloudflare.com` before the block was applied
+2. Review endpoint telemetry for `cloudflared` binaries in user-writable directories such as download and temporary folders
+3. Investigate any LNK or shortcut file execution that preceded a quick tunnel connection, which matches the documented delivery chain
+
+**Step 5: Sanction the Legitimate Path**
+1. Confirm every business-justified tunnel is a named tunnel owned by the account and protected by an Access policy (see sections 5.1 and 5.2)
+2. Document the exception process for developers who previously used quick tunnels for local testing, and point them at named tunnels instead
+
+**Time to Complete:** ~30 minutes for blocking, plus hunting effort
+
+#### Validation & Testing
+1. From a WARP-enrolled test device, attempt to resolve and reach a `trycloudflare.com` hostname and confirm the Gateway block page or NXDOMAIN response is returned
+2. Confirm the block event appears in Gateway DNS logs with the correct policy name
+3. Run `cloudflared` on a test workstation and confirm the endpoint alert fires within your expected detection window
+4. Verify that named tunnels serving production applications continue to function and were not affected by the block
+5. Re-run the historical log hunt after 30 days to confirm no further quick tunnel activity
+
+#### Compliance Mappings
+
+| Framework | Control | Requirement |
+|-----------|---------|-------------|
+| CIS Controls v8 | 4.8 | Uninstall or disable unnecessary services on enterprise assets |
+| CIS Controls v8 | 13.3 | Deploy network intrusion detection |
+| NIST 800-53 Rev 5 | CM-7(2) | Prevent program execution contrary to policy |
+| NIST 800-53 Rev 5 | SI-4 | System monitoring for unauthorized connections |
+| SOC 2 | CC7.2 | Anomalous network activity is detected and evaluated |
+
+---
+
 ## 6. Monitoring & Detection
 
 ### 6.1 Configure Logging
@@ -843,6 +1276,10 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 | Admin changes | Audit Logs | Unauthorized modifications |
 | Tunnel disconnection | Tunnel Logs | Service availability |
 | Isolation triggered | Gateway HTTP | High-risk browsing |
+| API token created or rolled | Audit Logs | Unauthorized credential creation |
+| trycloudflare.com resolution | Gateway DNS/HTTP | Quick tunnel abuse, RAT delivery |
+| DLP profile match | Gateway HTTP | Sensitive data exfiltration |
+| User risk score elevated | Risk Score / Access Logs | Account compromise, insider activity |
 
 ---
 
@@ -854,10 +1291,16 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 |-----------|-------------------|---------------|
 | CC6.1 | IdP authentication | [1.1](#11-configure-identity-provider-integration) |
 | CC6.1 | MFA enforcement | [1.2](#12-configure-multi-factor-authentication) |
+| CC6.1 | Scoped API tokens | [1.5](#15-retire-the-global-api-key-and-enforce-scoped-api-tokens) |
+| CC6.1 | Account 2FA enforcement | [1.6](#16-enforce-two-factor-authentication-for-account-members) |
 | CC6.2 | Admin roles | [1.4](#14-configure-admin-role-restrictions) |
 | CC6.6 | Access policies | [2.1](#21-create-secure-application-policies) |
+| CC6.6 | SSH infrastructure access | [2.4](#24-replace-long-lived-ssh-keys-with-access-for-infrastructure) |
+| CC6.7 | Gateway DLP | [3.5](#35-configure-gateway-data-loss-prevention-profiles) |
 | CC7.1 | Gateway filtering | [3.1](#31-configure-dns-filtering) |
 | CC7.2 | Logging | [6.1](#61-configure-logging) |
+| CC7.2 | User risk score gating | [2.5](#25-gate-access-policies-on-user-risk-score) |
+| CC7.2 | Quick tunnel abuse detection | [5.3](#53-detect-and-block-trycloudflare-quick-tunnel-abuse) |
 
 ### NIST 800-53 Rev 5 Mapping
 
@@ -865,9 +1308,15 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 |---------|-------------------|---------------|
 | IA-2 | IdP integration | [1.1](#11-configure-identity-provider-integration) |
 | IA-2(1) | MFA | [1.2](#12-configure-multi-factor-authentication) |
+| IA-2(1) | Account member 2FA | [1.6](#16-enforce-two-factor-authentication-for-account-members) |
+| IA-5 | API token lifetime and rotation | [1.5](#15-retire-the-global-api-key-and-enforce-scoped-api-tokens) |
 | AC-3 | Access policies | [2.1](#21-create-secure-application-policies) |
 | AC-2(11) | Device posture | [2.3](#23-configure-device-posture-checks) |
+| AC-2(12) | User risk score gating | [2.5](#25-gate-access-policies-on-user-risk-score) |
+| AC-4 | Gateway DLP | [3.5](#35-configure-gateway-data-loss-prevention-profiles) |
+| AC-17 | SSH infrastructure access | [2.4](#24-replace-long-lived-ssh-keys-with-access-for-infrastructure) |
 | SC-7 | Gateway policies | [3.1](#31-configure-dns-filtering) |
+| CM-7(2) | Quick tunnel blocking | [5.3](#53-detect-and-block-trycloudflare-quick-tunnel-abuse) |
 | AU-2 | Logging | [6.1](#61-configure-logging) |
 
 ---
@@ -908,7 +1357,7 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 
 **Security Incidents:**
 - **November 2023 — Nation-state actor accessed internal Atlassian systems.** Using credentials stolen during the October 2023 Okta breach that Cloudflare failed to rotate, attackers accessed Cloudflare's self-hosted Atlassian Confluence, Jira, and Bitbucket between November 14-24, 2023. No customer data or systems were impacted. Cloudflare rotated over 5,000 production credentials, reimaged all machines across its global network, and physically segmented test/staging systems. ([Cloudflare Blog](https://blog.cloudflare.com/thanksgiving-2023-security-incident/))
-- **March 2025 — Third-party vendor breaches (Salesloft/Drift) exposed limited customer data.** Attackers compromised Cloudflare's marketing vendors, gaining indirect access to a subset of customer information. Cloudflare's core infrastructure was not affected. ([The Register](https://www.theregister.com/2024/02/02/cloudflare_okta_atlassian/))
+- **August 2025 — Salesloft Drift supply chain compromise exposed Cloudflare's Salesforce data.** The threat actor tracked as GRUB1 abused the Salesloft Drift integration with Salesforce to access Cloudflare's Salesforce tenant between August 12-17, 2025, exfiltrating support case data — including the text customers had typed into those cases. Cloudflare found 104 API tokens in the exposed data and rotated all of them as a precaution; no core infrastructure or services were compromised. Cloudflare disclosed the incident on September 2, 2025, disconnected Salesloft, rotated every credential shared through support cases, and moved to enforce least privilege and IP restrictions on third-party application connections. ([Cloudflare Blog](https://blog.cloudflare.com/response-to-salesloft-drift-incident/))
 
 ---
 
@@ -916,6 +1365,7 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-03 | 0.2.0 | draft | Add API token/Global API Key retirement (1.5), account 2FA enforcement (1.6), Access for Infrastructure SSH (2.4), user risk score gating (2.5), Gateway DLP (3.5), TryCloudflare quick tunnel abuse detection (5.3); correct the Salesloft Drift incident entry to the August 2025 Salesforce compromise with Cloudflare's own disclosure | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with Access, Gateway, and WARP hardening | Claude Code (Opus 4.5) |
 

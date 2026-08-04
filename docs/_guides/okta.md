@@ -6,9 +6,9 @@ slug: "okta"
 tier: "1"
 category: "Identity"
 description: "Identity Provider hardening for SSO, MFA policies, and API token security"
-version: "0.3.1"
+version: "0.4.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-03"
 ---
 
 
@@ -882,6 +882,200 @@ Enable all five end-user security notification types in Okta so that users recei
 
 ---
 
+### 1.12 Enforce Device Assurance Policies
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.1, 7.3 |
+| NIST 800-53 | CM-6, IA-3, SI-2 |
+
+#### Description
+Device Assurance policies define the minimum security posture a device must meet before its user is permitted to authenticate, and they are bound to access decisions through device conditions in application sign-in policy rules. Each policy is scoped to a single platform (Android, ChromeOS, iOS, macOS, or Windows) and evaluates signals such as minimum OS version and patch level, disk encryption, screen lock, jailbreak or root status, and secure hardware presence, collected by Okta Verify or by Chrome Device Trust on managed Chrome browsers. See Okta's [Device assurance policies guide](https://developer.okta.com/docs/guides/device-assurance-policies/main/) for the full attribute model and the underlying Device Assurance Policies API.
+
+#### Rationale
+**Why This Matters:**
+- Phishing-resistant MFA proves who is signing in but says nothing about what they are signing in from — a correctly authenticated user on a compromised endpoint hands a valid session to whatever else is running on that device
+- Minimum OS version and patch-level requirements deny authentication from devices carrying known-exploited vulnerabilities instead of waiting for endpoint management to catch up
+- Jailbreak and root detection prevents attackers from defeating the platform keystore protections that Okta Verify and FastPass rely on for device-bound credentials
+- Device Assurance is the enforcement point for blocking the outdated Okta Verify and Okta Browser Plugin versions identified through the advisory monitoring process in Section 7.2
+- Okta Verify Advanced Posture Checks (early access, announced February 2026) extends the model with administrator-written osquery rules that evaluate device hygiene at sign-in — installed applications, persistent services, running processes, binaries and configuration files in common install paths, Homebrew and npm packages, listening ports, and Docker artifacts — so unwanted software on a corporate device denies access at the authentication decision rather than surfacing hours later in an EDR console. See Okta Threat Intelligence, [Detecting OpenClaw](https://sec.okta.com/articles/2026/02/st-detecting-openclaw/)
+
+**Attack Prevented:** Authentication from compromised, unpatched, jailbroken, or unmanaged endpoints; session theft from devices running credential-stealing or unsanctioned remote-access software; policy bypass via outdated client versions
+
+#### Prerequisites
+- Okta Identity Engine tenant with Device Assurance available in your edition
+- Okta Verify deployed to managed endpoints, or Chrome Device Trust configured for managed browsers
+- Device registration or endpoint management integration already in place (see Section 1.3)
+- Super Admin access
+
+#### ClickOps Implementation
+
+**Step 1: Confirm the Device Signal Source**
+1. Navigate to: **Security → Authenticators** and confirm **Okta Verify** is active with **Okta FastPass** enabled (see Section 1.3)
+2. For managed Chrome browsers, navigate to: **Security → Device Integrations** and add the **Chrome Device Trust** connector
+3. Navigate to: **Directory → Devices** and confirm managed endpoints are reporting with a registered/managed status
+
+**Step 2: Create a Device Assurance Policy per Platform**
+1. Navigate to: **Security → Device Assurance Policies**
+2. Click **Add a policy**
+3. Enter a descriptive name that includes the platform (e.g., "Windows — Corporate Baseline")
+4. Select the **Platform**: Android, ChromeOS, iOS, macOS, or Windows — one policy per platform
+5. Configure the attributes available for that platform:
+
+| Attribute | Recommended Setting |
+|-----------|---------------------|
+| Minimum OS version | Current vendor-supported release at the latest security patch level |
+| Disk encryption | Required |
+| Screen lock | Required |
+| Jailbroken or rooted device | Blocked (iOS and Android) |
+| Secure hardware | Required (TPM or Secure Enclave-backed keys) |
+
+6. Click **Save**
+7. Repeat for every platform present in your fleet — a platform with no policy is a platform with no assurance
+
+**Step 3: Bind the Policy to Application Sign-In Rules**
+1. Navigate to: **Security → Authentication Policies**
+2. Select the policy protecting your most sensitive applications — start with the **Okta Admin Console** policy
+3. Click **Actions** next to the rule you want to harden and select **Edit**
+4. Under the device conditions, set device state to **Registered** and select the device assurance policies created in Step 2
+5. Set the rule action to **Allowed** only when the assurance policy is satisfied, then add a lower-priority rule that denies access when it is not
+6. Click **Save**
+7. Repeat for each authentication policy protecting sensitive applications
+
+**Step 4: Configure Grace Periods and Remediation Messaging**
+1. Re-open each device assurance policy
+2. Set a grace period on the OS version requirement so users are warned before enforcement begins — 7 days for L2, 0 days for L3
+3. Enable remediation guidance so end users see the specific failed check and how to fix it rather than a generic denial
+4. Click **Save**
+
+**Step 5: Add Advanced Posture Checks (Early Access, Optional)**
+1. Confirm the Advanced Posture Checks early-access feature is enabled for your tenant under **Settings → Features**
+2. Author custom osquery rules that assert the absence of prohibited software or the presence of required agents on corporate devices
+3. Attach the custom check to the relevant device assurance policy
+4. Roll the check out in a monitoring posture first, review the sign-in outcomes for false positives, then move to enforcement
+
+**Time to Complete:** ~2 hours for initial policy creation across platforms, plus fleet remediation time
+
+#### Validation & Testing
+1. Navigate to **Security → Device Assurance Policies** and verify one active policy exists for every platform in your fleet
+2. Sign in from a compliant managed device — access should succeed
+3. Roll a test device back to an OS version below the minimum and attempt sign-in — access should be denied with remediation guidance displayed
+4. Attempt sign-in from an unregistered or unmanaged device — should be denied by the sign-in policy rule
+5. Attempt sign-in from a jailbroken or rooted test device (iOS or Android) — should be denied
+6. Review the System Log for `policy.evaluate_sign_on` events and confirm the device assurance condition appears in the evaluation result
+
+**Expected result:** Only devices meeting the documented posture baseline can authenticate to protected applications; non-compliant devices are denied with actionable remediation guidance.
+
+#### Monitoring & Maintenance
+**Maintenance schedule:**
+- **Monthly:** Review denial volume by failed attribute to catch fleet-wide patch lag before it becomes a helpdesk surge
+- **Quarterly:** Raise the minimum OS version to track vendor support and patch cadence
+- **On advisory publication:** Update the minimum Okta Verify and Browser Plugin versions per Section 7.2
+- **Annually:** Review the attribute set against new platform signals added by Okta
+
+#### Compliance Mappings
+
+| Framework | Control | Requirement |
+|-----------|---------|-------------|
+| CIS Controls v8 | 4.1 | Establish and maintain a secure configuration process for enterprise assets |
+| CIS Controls v8 | 7.3 | Perform automated operating system patch management |
+| NIST 800-53 | CM-6 | Configuration settings enforced on endpoints before access is granted |
+| NIST 800-53 | IA-3 | Device identification and authentication |
+| NIST 800-53 | SI-2 | Flaw remediation enforced through minimum OS and patch-level requirements |
+| SOC 2 | CC6.6 | Logical access restricted to devices meeting defined security requirements |
+
+---
+
+### 1.13 Require Visual Identity Verification for Help Desk Account Actions
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4, 14.2 |
+| NIST 800-53 | IA-12, IA-5(1), AT-2 |
+
+#### Description
+Require help desk agents to visually verify a caller's identity — a live video call with a government-issued or corporate photo ID, or an equivalent out-of-band proofing step — before performing any account recovery action, including password resets, MFA factor resets, and enrollment of a new authenticator. Okta's own cross-tenant impersonation guidance names this control directly: "Strengthen help desk identity verification processes using visual verification." ([Okta Security — Cross-Tenant Impersonation: Prevention and Detection](https://sec.okta.com/articles/2023/08/cross-tenant-impersonation-prevention-and-detection/))
+
+#### Rationale
+**Why This Matters:**
+- In the August 2023 cross-tenant impersonation campaign, threat actors social-engineered IT service desk personnel into resetting all MFA factors on highly privileged Super Administrator accounts — the technical controls held, the human process did not
+- Every phishing-resistant authenticator configured in Section 1.1 is nullified the moment a help desk agent enrolls an attacker-controlled factor on a legitimate account
+- Voice-only verification depends on knowledge (employee ID, manager name, last four digits of an identifier) that is trivially harvested from OSINT, prior breach corpuses, or an earlier phishing round, and is now cheaply defeated by real-time voice cloning
+- Visual verification against a photo ID on a live video call forces an attacker to defeat a liveness check rather than recite facts, raising the cost of the attack far above the effort of a phone call
+- Factor reset is the highest-privilege operation a help desk agent can perform and it leaves the same log trail as a legitimate reset, so prevention at the process layer is the only reliable control — detection arrives after the attacker already holds the account
+
+**Attack Prevented:** Help desk social engineering leading to MFA factor reset and account takeover, privileged account impersonation, attacker-controlled authenticator enrollment on Super Admin accounts
+
+#### ClickOps Implementation
+
+**Step 1: Define and Publish the Verification Standard**
+Document a written standard requiring, for every password reset, MFA factor reset, and new authenticator enrollment performed by an agent:
+1. A live video call on a corporate-approved platform — never audio-only, never chat
+2. Presentation of a government-issued or corporate photo ID matched against the identity on file
+3. An agent-initiated callback to the number of record plus a second approver when video is genuinely unavailable
+4. Mandatory manager or security-team approval for any action on an account holding an admin role
+5. A ticket record capturing the verification method, the verifier, the timestamp, and an evidence reference
+
+**Step 2: Constrain What the Help Desk Role Can Do**
+1. Navigate to: **Security → Administrators → Roles**
+2. Open the Help Desk custom role created in Section 1.2
+3. Confirm permissions are limited to password reset and account unlock, and exclude `okta.users.manage`, `okta.apps.manage`, and all IdP permissions
+4. Open the role's **Resource sets** and scope it to a group that explicitly **excludes** all administrators — help desk agents should not be technically capable of acting on privileged accounts
+5. Click **Save**
+
+**Step 3: Require Step-Up Authentication for Factor Resets**
+1. Navigate to: **Security → General**
+2. Scroll to **Protected Actions** and click **Edit**
+3. Confirm **Reset user MFA factors** is selected
+4. Set the authenticator requirement to phishing-resistant (FIDO2/WebAuthn)
+5. Click **Save**
+
+**Step 4: Notify the Account Owner on Every Reset**
+1. Navigate to: **Settings → Account** and confirm the **Authenticator reset notification** and **MFA factor reset notification** types are enabled (see Section 1.11)
+2. Navigate to: **Security → General → Suspicious Activity Reporting** and confirm it is **Enabled** so an account owner can report a reset they did not request
+
+**Step 5: Train and Test the Help Desk**
+1. Deliver targeted training on the impersonation techniques used against service desks, using the Okta cross-tenant impersonation writeup as the case study
+2. Give agents explicit authority to refuse or escalate any request that skips verification, with no performance penalty for the resulting delay
+3. Run a social engineering exercise at least twice a year, including at least one attempt impersonating an executive or administrator under manufactured time pressure
+4. Track the refusal rate as a control metric alongside ticket resolution time
+
+**Time to Complete:** ~2 hours for policy drafting, plus training rollout
+
+#### Validation & Testing
+1. A written verification standard exists, is published to the help desk, and names visual verification as mandatory for password resets, factor resets, and new factor enrollment
+2. Review a sample of the last 20 password and factor reset tickets — each must record the verification method and the verifier
+3. Navigate to **Security → Administrators → Roles** and confirm the help desk resource set excludes all admin accounts
+4. Navigate to **Security → General → Protected Actions** and confirm MFA factor reset requires step-up authentication
+5. Conduct an unannounced social engineering test against the help desk — the agent should refuse and escalate
+6. Review System Log `user.mfa.factor.reset` and `user.account.reset_password` events and confirm each maps to a ticket documenting visual verification
+
+**Expected result:** No account recovery action is performed without recorded visual verification, and help desk agents cannot act on privileged accounts at all.
+
+#### Monitoring & Maintenance
+**Maintenance schedule:**
+- **Monthly:** Sample recent reset tickets for verification evidence
+- **Quarterly:** Reconcile System Log reset events against ticket records and investigate any reset without a matching ticket
+- **Semi-annually:** Run a help desk social engineering exercise and retrain on findings
+- **Annually:** Review the verification standard against current impersonation techniques, including synthetic voice and video
+
+#### Compliance Mappings
+
+| Framework | Control | Requirement |
+|-----------|---------|-------------|
+| CIS Controls v8 | 5.4 | Restrict administrator privileges to dedicated administrator accounts |
+| CIS Controls v8 | 14.2 | Train workforce members to recognize social engineering attacks |
+| NIST 800-53 | IA-12 | Identity proofing prior to issuing or resetting authenticators |
+| NIST 800-53 | IA-5(1) | Authenticator management controls for reset and re-issuance |
+| NIST 800-53 | AT-2 | Role-based security awareness training including social engineering |
+| SOC 2 | CC6.1 | Logical access credentials issued and reset only to verified individuals |
+
+---
+
 ## 2. Network Access Controls
 
 ### 2.1 Configure IP Zones and Network Policies
@@ -1307,6 +1501,101 @@ Implement governance for non-human identities: service accounts, API tokens, aut
 - **Quarterly:** Rotate SSWS tokens and OAuth 2.0 client secrets
 - **On employee departure:** Audit and reassign any tokens created by departing admin
 - **Annually:** Rotate OAuth 2.0 private keys
+
+---
+
+### 3.5 Authorize AI Agents and MCP Servers with Cross App Access (XAA)
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4, 6.8 |
+| NIST 800-53 | AC-3, AC-6, IA-4, IA-5, AU-2 |
+
+#### Description
+Cross App Access (XAA) is Okta's extension to OAuth 2.0 that lets an enterprise broker, scope, and audit the connections AI agents and Model Context Protocol (MCP) servers make to business applications, replacing the standing API keys those integrations otherwise require. It combines RFC 8693 token exchange with RFC 7523 JWT bearer authorization so an agent receives a scoped, short-lived, centrally revocable token bound to an enterprise identity instead of a long-lived secret pasted into a configuration file. The Model Context Protocol specification has adopted the pattern as "Enterprise-Managed Authorization," and Okta has stated Okta Integration Network availability for Workforce Identity customers beginning August 2026. ([Okta announces Cross App Access partners](https://www.okta.com/newsroom/press-releases/okta-announces-cross-app-access-partners/))
+
+#### Rationale
+**Why This Matters:**
+- AI agents and MCP servers are being onboarded the way early SaaS integrations were — a human generates a long-lived API key, pastes it into a config, and nobody revisits it — which is exactly the standing-credential pattern Section 3.4 exists to eliminate
+- An agent holding a static key inherits its creator's access indefinitely; when that person changes roles or leaves, the agent keeps working and no part of the joiner-mover-leaver process catches it
+- Keys embedded in agent configuration are routinely readable by the model's own context, committed to repositories, or synced to unmanaged endpoints — the same failure mode as the October 2023 service account credential saved to a personal Google profile
+- XAA issues per-connection tokens scoped to specific resources with enterprise-set lifetimes, so revoking a user or an agent in Okta severs every downstream connection immediately instead of requiring a hunt for issued keys
+- Because the exchange runs through Okta, every agent-to-application call produces a System Log record attributable to an enterprise identity, turning agent activity into auditable access rather than anonymous API traffic in the destination app
+
+**Attack Prevented:** Standing API key theft and replay, orphaned agent access after offboarding, unbounded agent privilege, unauditable AI-to-SaaS data movement, supply chain compromise through third-party MCP servers
+
+#### Prerequisites
+- Okta Workforce Identity Cloud tenant
+- XAA entitlement confirmed with your Okta account team (OIN availability begins August 2026)
+- Completed non-human identity inventory from Section 3.4
+- Super Admin access
+
+#### ClickOps Implementation
+
+**Step 1: Inventory AI Agents and MCP Servers Already in Use**
+1. Navigate to: **Reports → Application Access Audit** and export the current OAuth grants
+2. Navigate to: **Security → API → Tokens** and flag every SSWS token whose consumer is an AI assistant, agent framework, or MCP server
+3. Interview engineering and operations teams about MCP servers running on developer workstations against corporate SaaS — these almost never appear in the application inventory
+4. Record for each agent: the applications it reaches, the credential type it holds, the human who created it, and the scopes granted
+
+**Step 2: Confirm XAA Availability for Your Tenant and Applications**
+1. Confirm your edition and XAA entitlement with your Okta account team
+2. Navigate to: **Applications → Browse App Catalog** and check whether each target application publishes an XAA-enabled integration
+3. For applications without XAA support, keep them on the OAuth 2.0 service app pattern from Section 3.4 and record the gap in your risk register
+
+**Step 3: Register the Agent as an Identity-Bound Client**
+1. Navigate to: **Applications → Applications**
+2. Click **Create App Integration**, select **API Services**, and click **Next**
+3. Name the integration for the agent rather than the person who configured it (e.g., "MCP — Ticket Triage Agent")
+4. Set **Client authentication** to **Public key / Private key** — never a shared client secret
+5. Under **Okta API Scopes** and the resource application's scopes, grant only the scopes the agent's task actually requires, read-only wherever the workflow permits
+6. Click **Save**
+
+**Step 4: Enable the Cross App Access Connection**
+1. Open the resource application's configuration and enable the Cross App Access connection for the registered agent client
+2. Assign the connection to a named group of authorized users rather than to Everyone — the agent's effective access is bounded by the user identity it acts on behalf of
+3. Confirm the agent obtains access through token exchange and holds no application-native API key of its own
+4. Remove the superseded static key from both Okta and the downstream application
+
+**Step 5: Set Token Lifetimes and a Revocation Path**
+1. Navigate to: **Security → API → Authorization Servers → default → Access Policies**
+2. Set the access token lifetime for agent clients to the shortest value the workflow tolerates — start at 1 hour
+3. Document the revocation path: deactivating the app integration or removing the user from the assigned group terminates the agent's access immediately
+4. Add agent connections to the quarterly access review in Section 7.3
+
+**Time to Complete:** ~1 hour per agent integration, plus inventory time
+
+#### Validation & Testing
+1. Every AI agent and MCP server in the inventory maps to either an XAA connection or a documented OAuth 2.0 service app — zero remain on static SSWS tokens
+2. Confirm no agent integration authenticates with a shared client secret; all use private key authentication
+3. Confirm agent scopes are read-only unless a write path is explicitly justified and documented
+4. Revoke a test agent's group assignment and confirm its next call to the downstream application fails
+5. Review the System Log for `app.oauth2.as.token.grant` and token exchange events and confirm each agent call is attributable to a named enterprise identity
+6. Deactivate a test user and confirm the agent connections acting on that user's behalf stop working
+
+**Expected result:** No AI agent or MCP server holds a standing credential; every agent-to-application connection is scoped, time-limited, attributable to an enterprise identity, and revocable from Okta.
+
+#### Monitoring & Maintenance
+**Maintenance schedule:**
+- **Monthly:** Review new agent registrations and confirm each went through security review before receiving scopes
+- **Quarterly:** Re-certify agent connections as part of the access review in Section 7.3
+- **On offboarding:** Confirm the departing user's agent connections are terminated, not just their interactive access
+- **On MCP server addition:** Treat a third-party MCP server as a third-party integration and run it through Section 6.1 risk assessment first
+
+#### Compliance Mappings
+
+| Framework | Control | Requirement |
+|-----------|---------|-------------|
+| CIS Controls v8 | 5.4 | Restrict privileges to dedicated accounts, including non-human identities |
+| CIS Controls v8 | 6.8 | Define and maintain role-based access control for service integrations |
+| NIST 800-53 | AC-3 | Access enforcement through brokered, scoped authorization |
+| NIST 800-53 | AC-6 | Least privilege applied to machine and agent identities |
+| NIST 800-53 | IA-4 | Identifier management for non-human identities |
+| NIST 800-53 | IA-5 | Authenticator management with short-lived, revocable tokens |
+| NIST 800-53 | AU-2 | Auditable event records for every agent-to-application call |
+| SOC 2 | CC6.1 | Logical access to systems restricted to authorized identities |
 
 ---
 
@@ -1836,6 +2125,103 @@ Run Okta HealthInsight regularly to assess your tenant's security posture agains
 
 ---
 
+### 5.7 Deploy Identity Security Posture Management (ISPM)
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.3, 6.2 |
+| NIST 800-53 | CA-7, RA-5, AC-2(3), AC-6(7) |
+
+#### Description
+Identity Security Posture Management is Okta's native posture module that continuously scans the identity graph and reports exploitable weaknesses rather than checking a fixed list of tenant settings. It surfaces shadow admin accounts and permissions, dormant identities unused for 90 days or more, access points without MFA including local accounts, permission creep where users hold more access than their current role requires, and offboarded users who still retain active access. Coverage extends past Okta itself into Microsoft Entra ID and Microsoft 365, AWS, and Salesforce. ([Okta Identity Security Posture Management](https://www.okta.com/products/identity-security-posture-management/))
+
+#### Rationale
+**Why This Matters:**
+- HealthInsight (Section 5.6) checks sixteen fixed tenant settings and answers "is Okta configured correctly" — it cannot see that a user accumulated three overlapping admin grants, or that a contractor's account still holds Salesforce access two months after offboarding
+- Shadow admins hold administrative capability through group nesting, delegated permissions, or app-level roles without ever appearing on the **Security → Administrators** list, so the admin-count review in Section 7.3 misses them entirely
+- Dormant accounts are the preferred takeover target precisely because no legitimate owner will notice the sign-on; Section 1.6 automates suspension inside Okta, but ISPM finds the same problem in connected clouds where no such automation exists
+- MFA coverage gaps rarely present as an obvious policy misconfiguration — they present as a specific local account, a legacy protocol path, or an application still assigned to the Default Policy, and finding those requires graph analysis rather than a settings check
+- Posture findings are continuous and scored, which converts identity hygiene into a trackable metric for leadership and gives auditors evidence of ongoing monitoring instead of a point-in-time review
+
+**Attack Prevented:** Privilege escalation via shadow admin paths, dormant account takeover, MFA bypass through uncovered access points, lateral movement using stale offboarded access, privilege creep exploitation
+
+#### Prerequisites
+- ISPM entitlement confirmed with your Okta account team
+- Super Admin access
+- Read-only service credentials for any connected platform (Entra ID, AWS, Salesforce)
+
+#### ClickOps Implementation
+
+**Step 1: Enable ISPM and Run the First Scan**
+1. Confirm ISPM entitlement for your Okta edition with your account team
+2. In the Admin Console, open **Identity Security Posture Management** from the security navigation
+3. Complete the initial tenant scan and wait for the first posture report to populate
+
+**Step 2: Connect Additional Identity Sources**
+1. Open the ISPM integrations configuration
+2. Connect the platforms that hold privileged access outside Okta: **Microsoft Entra ID / Microsoft 365**, **AWS**, and **Salesforce**
+3. Grant each connector read-only permissions — posture assessment never requires write access
+4. Re-run the scan and confirm each connected source is reporting identities and permissions
+
+**Step 3: Triage the First Posture Report**
+Work the findings in this order:
+
+| Priority | Finding Type | Action |
+|----------|-------------|--------|
+| 1 | Shadow admin accounts and permissions | Remove the implicit path or convert it to an explicit, scoped custom admin role (Section 1.2) |
+| 2 | Offboarded users with active access | Deprovision immediately, then fix the offboarding gap that allowed it |
+| 3 | Access points without MFA | Bring under an explicit authentication policy (Sections 1.1 and 1.9) |
+| 4 | Dormant identities (90+ days) | Suspend per Section 1.6 and extend the same rule to connected platforms |
+| 5 | Over-privileged access and permission creep | Reduce to current-role need at the next access review (Section 7.3) |
+
+**Step 4: Assign Ownership and Route Findings**
+1. Assign a named owner for each finding category
+2. Route new critical findings into your ticketing system so they are tracked to closure rather than admired in a dashboard
+3. Forward ISPM events to your SIEM alongside System Log data (Section 5.1)
+
+**Step 5: Baseline and Track**
+1. Record the initial posture score and per-category finding counts as your baseline
+2. Set a target reduction for each category and review progress monthly
+3. Report the trend to security leadership quarterly alongside the HealthInsight score
+
+**Time to Complete:** ~2 hours for enablement and connector setup, plus remediation time proportional to findings
+
+#### Validation & Testing
+1. ISPM is enabled and has completed a full scan of the Okta tenant
+2. All connected identity platforms report identities and permissions successfully
+3. Baseline posture score and per-category finding counts are documented
+4. Every shadow admin finding is either remediated or carries a documented, time-bounded exception
+5. Create a test user, grant it an indirect admin path via nested group membership, and confirm ISPM reports it as a shadow admin
+6. Confirm the "offboarded users with active access" category shows zero findings after remediation
+
+**Expected result:** Continuous, scored visibility into identity posture across Okta and connected platforms, with shadow admin and stale-access findings driven to zero and tracked over time.
+
+#### Monitoring & Maintenance
+**Maintenance schedule:**
+- **Weekly:** Review new critical and high findings
+- **Monthly:** Full triage pass and posture score trend update
+- **Quarterly:** Report the posture trend to leadership alongside HealthInsight, and reconcile ISPM findings against the access review in Section 7.3
+- **On new platform onboarding:** Connect the platform to ISPM as part of the deployment checklist
+
+> **Note:** ISPM complements rather than replaces HealthInsight (Section 5.6). HealthInsight validates tenant configuration against Okta's sixteen built-in checks; ISPM analyzes the identity graph for exploitable access paths across Okta and connected platforms. Run both.
+
+#### Compliance Mappings
+
+| Framework | Control | Requirement |
+|-----------|---------|-------------|
+| CIS Controls v8 | 5.3 | Disable dormant accounts |
+| CIS Controls v8 | 6.2 | Establish an access revoking process |
+| NIST 800-53 | CA-7 | Continuous monitoring of security posture |
+| NIST 800-53 | RA-5 | Vulnerability monitoring across identity infrastructure |
+| NIST 800-53 | AC-2(3) | Disable accounts that are dormant or no longer required |
+| NIST 800-53 | AC-6(7) | Review of user privileges to validate least privilege |
+| SOC 2 | CC6.1 | Logical access reviewed and restricted to authorized users |
+| SOC 2 | CC7.1 | Detection of configuration and access deviations |
+
+---
+
 ## 6. Third-Party Integration Security
 
 ### 6.1 Integration Risk Assessment Matrix
@@ -2204,8 +2590,12 @@ Document specific response procedures for identity-based security incidents. The
 |-----------|------------------|---------------|
 | CC6.1 | Phishing-resistant MFA | 1.1 |
 | CC6.1 | Access reviews & recertification | 7.3 |
+| CC6.1 | Help desk visual identity verification | 1.13 |
+| CC6.1 | Cross App Access for AI agents | 3.5 |
 | CC6.2 | Admin role separation | 1.2 |
 | CC6.6 | Network zone policies | 2.1 |
+| CC6.6 | Device assurance policies | 1.12 |
+| CC7.1 | Identity Security Posture Management | 5.7 |
 | CC7.2 | System log monitoring | 5.1 |
 | CC7.3 | Identity incident response | 7.5 |
 | CC8.1 | Change management | 7.4 |
@@ -2219,31 +2609,45 @@ Document specific response procedures for identity-based security incidents. The
 | AC-2(3) | Access reviews | 7.3 |
 | AC-3 | Default authentication policy audit | 1.9 |
 | AC-3 | Dynamic network zones | 2.3 |
+| AC-3 | Cross App Access for AI agents | 3.5 |
 | AC-5 | Admin role separation | 1.2 |
+| AC-6 | Cross App Access for AI agents | 3.5 |
 | AC-6(1) | Custom admin roles | 1.2 |
+| AC-6(7) | Identity Security Posture Management | 5.7 |
 | AC-7 | Account lockout | 1.5 |
 | AC-12 | Session timeouts | 4.1 |
+| AT-2 | Help desk social engineering training | 1.13 |
 | AU-2 | System log | 5.1 |
+| AU-2 | Cross App Access audit records | 3.5 |
 | AU-6 | Cross-tenant impersonation monitoring | 5.5 |
 | CA-7 | HealthInsight reviews | 5.6 |
+| CA-7 | Identity Security Posture Management | 5.7 |
 | CM-3 | Change management | 7.4 |
+| CM-6 | Device assurance policies | 1.12 |
 | CM-7 | OAuth app allowlisting | 3.3 |
 | IA-2(1) | MFA enforcement | 1.1 |
 | IA-2(6) | FIDO2 for admins | 1.1 |
 | IA-2(12) | PIV/CAC authentication | 1.7 |
+| IA-3 | Device assurance policies | 1.12 |
 | IA-4 | NHI governance | 3.4 |
+| IA-4 | Cross App Access for AI agents | 3.5 |
+| IA-5 | Cross App Access for AI agents | 3.5 |
 | IA-5(1) | Password policy | 1.4 |
 | IA-5(1) | Self-service recovery hardening | 1.10 |
+| IA-5(1) | Help desk visual identity verification | 1.13 |
 | IA-11 | Self-service recovery hardening | 1.10 |
+| IA-12 | Help desk visual identity verification | 1.13 |
 | IR-4 | Identity incident response | 7.5 |
 | IR-6 | End-user security notifications | 1.11 |
 | RA-5 | Security advisory monitoring | 7.2 |
 | RA-5 | Identity Threat Protection | 5.3 |
+| RA-5 | Identity Security Posture Management | 5.7 |
 | SC-7 | Dynamic network zones | 2.3 |
 | SC-13 | FIPS compliance | 1.8 |
 | SC-23 | Session persistence | 4.2 |
 | SC-23 | Admin session security | 4.3 |
 | SC-28 | HAR file sanitization | 7.1 |
+| SI-2 | Device assurance policies | 1.12 |
 | SI-4 | End-user security notifications | 1.11 |
 | SI-4 | Identity Threat Protection | 5.3 |
 | SI-4 | Behavior detection | 5.4 |
@@ -2333,6 +2737,8 @@ Use this checklist to verify controls are implemented for your compliance requir
 - Self-service recovery hardened — SMS/voice/questions disabled (1.10)
 - End-user security notifications enabled — all five types (1.11)
 - Suspicious activity reporting enabled (1.11)
+- Device assurance policy active for every platform in the fleet (1.12)
+- Help desk visual identity verification required for all resets (1.13)
 - PIV/CAC Smart Card configured (if applicable) (1.7)
 - FIPS compliance enabled (if applicable) (1.8)
 
@@ -2343,6 +2749,7 @@ Use this checklist to verify controls are implemented for your compliance requir
 - OAuth app allowlisting enforced (3.3)
 - Non-human identity governance implemented (3.4)
 - SSWS to OAuth 2.0 migration planned/completed (3.4)
+- AI agents and MCP servers brokered via Cross App Access or scoped OAuth service apps (3.5)
 
 #### Session Management
 - Global session idle timeout configured (4.1)
@@ -2359,6 +2766,7 @@ Use this checklist to verify controls are implemented for your compliance requir
 - Behavior detection rules active (5.4)
 - Cross-tenant impersonation monitoring alerts configured (5.5)
 - HealthInsight reviewed — all 16 checks passed (5.6)
+- Identity Security Posture Management deployed and findings triaged (5.7)
 
 #### Operational Security
 - HAR file sanitization procedure documented (7.1)
@@ -2448,6 +2856,7 @@ Use this checklist to verify controls are implemented for your compliance requir
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-03 | 0.4.0 | draft | Guidance-currency refresh. Added 4 new controls: Device Assurance Policies including Okta Verify Advanced Posture Checks (1.12), Help Desk Visual Identity Verification (1.13), Cross App Access for AI agents and MCP servers (3.5), Identity Security Posture Management (5.7). Expanded SOC 2 and NIST 800-53 mappings and the compliance checklist to cover the new controls. | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.3.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-02-10 | 0.3.0 | draft | Comprehensive audit against Okta SIC, DISA STIG v1.1, NIST 800-63-4, Obsidian/Nudge/AppOmni research. Added 15 new controls: Default Auth Policy Backstop (1.9), Self-Service Recovery (1.10), End-User Notifications (1.11), Dynamic Zones (2.3), OAuth Allowlisting (3.3), NHI Governance (3.4), Admin Session Security (4.3), ITP (5.3), Behavior Detection (5.4), Cross-Tenant Impersonation (5.5), HealthInsight (5.6), HAR Sanitization (7.1), Security Advisory Monitoring (7.2), Access Reviews (7.3), Change Management (7.4), Incident Response (7.5). Expanded compliance mappings with NIST 800-63-4 AAL mapping. | Claude Code (Opus 4.6) |
 | 2025-12-26 | 0.2.0 | draft | Integrated DISA STIG Okta IDaaS V1R1 controls into functional sections | Claude Code (Opus 4.5) |

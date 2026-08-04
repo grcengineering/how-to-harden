@@ -72,6 +72,7 @@
   --color-productivity: #f59e0b; /* Amber */
   --color-hr: #ec4899;          /* Pink */
   --color-marketing: #06b6d4;   /* Cyan */
+  --color-ai: #14b8a6;          /* Teal */
 
   /* Legacy spacing aliases → DS 4px grid */
   --space-xs: var(--space-1);    /* 4 */
@@ -518,6 +519,7 @@ body {
 .dot-productivity { background: var(--color-productivity); }
 .dot-hr { background: var(--color-hr); }
 .dot-marketing { background: var(--color-marketing); }
+.dot-ai { background: var(--color-ai); }
 .dot-drafted { background: #eab308; }
 .dot-reviewed { background: #3b82f6; }
 .dot-verified { background: #22c55e; }
@@ -838,6 +840,9 @@ body {
 .category-productivity { color: var(--color-productivity); background: rgba(245, 158, 11, 0.15); }
 .category-hr { color: var(--color-hr); background: rgba(236, 72, 153, 0.15); }
 .category-marketing { color: var(--color-marketing); background: rgba(6, 182, 212, 0.15); }
+/* "AI/ML Platform" downcases to a class with slash+space — the layout slugifies
+   it to category-ai-ml-platform; keep both spellings covered */
+.category-ai-ml-platform, .category-ai { color: var(--color-ai); background: rgba(20, 184, 166, 0.15); }
 
 /* Pack badge on guide cards — GRC Engineering gradient */
 .pack-badge {
@@ -2923,6 +2928,7 @@ summary:focus-visible,
 [data-theme="light"] .category-devops       { color: #6D28D9; }
 [data-theme="light"] .category-data         { color: #166534; }
 [data-theme="light"] .category-productivity { color: #8A5A00; }
+[data-theme="light"] .category-ai-ml-platform, [data-theme="light"] .category-ai { color: #0F766E; }
 [data-theme="light"] .category-hr           { color: #BE185D; }
 [data-theme="light"] .category-marketing    { color: #0E7490; }
 

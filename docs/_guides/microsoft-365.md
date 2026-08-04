@@ -6,9 +6,9 @@ slug: "microsoft-365"
 tier: "1"
 category: "Productivity"
 description: "Comprehensive security hardening for Microsoft 365, Exchange Online, SharePoint, Teams, and OneDrive"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-03"
 ---
 
 ## Overview
@@ -39,6 +39,8 @@ This guide covers Microsoft 365 tenant-level security configurations including E
 4. [Data Security](#4-data-security)
 5. [Monitoring & Detection](#5-monitoring--detection)
 6. [Third-Party Integration Security](#6-third-party-integration-security)
+8. [Exchange Online Mail Flow & Email Authentication](#8-exchange-online-mail-flow--email-authentication)
+9. [Microsoft Teams External Access Security](#9-microsoft-teams-external-access-security)
 7. [Compliance Quick Reference](#7-compliance-quick-reference)
 
 ---
@@ -180,15 +182,35 @@ Block legacy authentication protocols (POP3, IMAP, SMTP AUTH, Basic Auth) that c
 - Legacy protocols bypass MFA entirely
 - Password spray attacks frequently target legacy auth endpoints
 - Basic Authentication is deprecated by Microsoft
+- Microsoft is retiring the protocols themselves, not just discouraging them — organizations that wait for the forced cutover will experience unplanned application outages instead of a managed migration
 
 **Attack Prevented:** Password spray via legacy protocols, credential theft replay
 
 **Real-World Incidents:**
 - **Midnight Blizzard (2024):** Initial access via password spray would have been blocked if legacy auth was disabled
 
+#### Retirement Timeline (Act Before the Forced Cutover)
+
+Microsoft has published firm end dates for the two protocols most commonly left enabled. Both were accelerated in response to the Midnight Blizzard intrusion, where legacy protocol access contributed to attacker reach.
+
+| Protocol | Milestone | Date |
+|----------|-----------|------|
+| Exchange Web Services (EWS) | Begins being disabled globally for Exchange Online | October 2026 |
+| Exchange Web Services (EWS) | Fully disabled — no exceptions, no re-enablement | April 2027 |
+| SMTP AUTH (Client Submission) with Basic Authentication | Default-disabled across all tenants | End of December 2026 |
+
+**What to do now:**
+- Run the EWS usage reports in the Microsoft 365 admin center to identify every application, mailbox, and vendor integration still calling EWS
+- Migrate each identified consumer to **Microsoft Graph**, which is the only supported successor API — there is no extended-support path for EWS
+- For devices and line-of-business applications still using SMTP AUTH with Basic Authentication, move to OAuth-based authentication, High Volume Email, or Azure Communication Services Email before the December 2026 default-disable
+- Treat any integration whose vendor has no Graph roadmap as a procurement risk, not just a technical one
+
+Source: [Deprecation of Exchange Web Services in Exchange Online](https://learn.microsoft.com/exchange/clients-and-mobile-in-exchange-online/deprecation-of-ews-exchange-online)
+
 #### Prerequisites
 - Inventory of applications using legacy auth
 - Migration plan for legacy applications to modern auth (OAuth 2.0)
+- EWS usage report reviewed and every consumer assigned a Graph migration owner
 
 #### ClickOps Implementation
 
@@ -606,6 +628,91 @@ Restrict external sharing in SharePoint and OneDrive to prevent unauthorized dat
 
 ---
 
+### 4.3 Enable Restricted Content Discovery on High-Risk Sites
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.3, 3.7 |
+| NIST 800-53 | AC-3, AC-21 |
+
+#### Description
+
+Use Restricted Content Discovery to exclude specific SharePoint sites from Microsoft 365 Copilot responses and organization-wide search while permission remediation is in progress. Setting `-RestrictContentOrgWideSearch $true` on a site keeps its content out of Copilot grounding and tenant-wide search results without changing any existing permissions, giving teams a safety valve for oversharing that would otherwise be exposed at machine speed.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Copilot inherits every permission a user already has, so a decade of accumulated oversharing that nobody noticed becomes instantly discoverable through natural-language prompts
+- Legacy sites frequently carry broad "Everyone except external users" grants that were harmless when discovery required knowing the URL, and are dangerous when an AI assistant surfaces the content unprompted
+- Permission remediation across a large SharePoint estate takes months; Restricted Content Discovery provides immediate containment while that cleanup proceeds
+- The setting is non-destructive — users who already have direct access keep it, so applying it does not break active business workflows
+
+**Attack Prevented:** AI-accelerated data discovery, insider reconnaissance via Copilot prompts, inadvertent exposure of HR, legal, and finance content through org-wide search
+
+#### Prerequisites
+
+- SharePoint Advanced Management (a licensed add-on, included with some Microsoft 365 E5 and Copilot bundles)
+- SharePoint Administrator or Global Administrator role
+- SharePoint Online Management Shell for the PowerShell method
+- An inventory of high-risk sites, ideally from the SharePoint admin center Data Access Governance reports
+
+#### ClickOps Implementation
+
+**Step 1: Identify Oversharing Candidates**
+
+1. Navigate to: **SharePoint admin center** → **Reports** → **Data access governance**
+2. Review the **Sharing links** and **Sites with "Everyone except external users"** reports
+3. Export the results and rank sites by sensitivity of content and breadth of access
+4. Prioritize HR, legal, finance, executive, and merger-and-acquisition sites
+
+**Step 2: Apply Restricted Content Discovery Per Site**
+
+1. Navigate to: **SharePoint admin center** → **Sites** → **Active sites**
+2. Select the target site, then open **Settings**
+3. Enable **Restricted Content Discovery** for the site
+4. Save, and repeat for each site on the prioritized list
+
+**Step 3: Apply at Scale via PowerShell**
+
+1. Connect with `Connect-SPOService -Url https://<tenant>-admin.sharepoint.com`
+2. Apply the restriction to a single site with `Set-SPOSite -Identity <site-url> -RestrictContentOrgWideSearch $true`
+3. For bulk application, pipe a reviewed CSV of site URLs through the same cmdlet rather than applying tenant-wide — over-application degrades legitimate Copilot value
+4. Confirm the current state of any site with `Get-SPOSite -Identity <site-url> | Select-Object Url, RestrictContentOrgWideSearch`
+
+**Step 4: Treat It as Temporary, Not Permanent**
+
+1. Record each restricted site in the permission-remediation backlog with a named owner
+2. Remove the restriction once the site's underlying permissions have been corrected
+3. Review the restricted-site list quarterly so the control does not silently become permanent scaffolding around a problem nobody fixed
+
+**Time to Complete:** ~30 minutes for initial application; permission remediation is a multi-month program
+
+Source: [Restricted Content Discovery in SharePoint](https://learn.microsoft.com/en-us/sharepoint/restricted-content-discovery)
+
+#### Validation & Testing
+
+**How to verify the control is working:**
+
+1. Run `Get-SPOSite -Identity <site-url> | Select-Object Url, RestrictContentOrgWideSearch` and confirm the value is `True`
+2. As a user who does not have direct access to the site, prompt Copilot for content known to exist there — it should not be returned
+3. Run the same query in organization-wide SharePoint search and confirm the content does not appear
+4. As a user who *does* have direct site access, confirm they can still open the site and its files normally
+
+**Expected result:** Restricted sites are absent from Copilot grounding and org-wide search, while direct access for legitimately permissioned users is unchanged.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security |
+| **NIST 800-53** | AC-21 | Information sharing |
+| **ISO 27001** | A.8.3 | Information access restriction |
+
+---
+
 ## 5. Monitoring & Detection
 
 ### 5.1 Enable Unified Audit Logging
@@ -732,6 +839,364 @@ Enable Microsoft Defender for Office 365 and configure alert policies for suspic
 
 ---
 
+## 8. Exchange Online Mail Flow & Email Authentication
+
+### 8.1 Reject Direct Send
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 9.7 |
+| NIST 800-53 | SC-7, SI-8 |
+
+#### Description
+
+Disable Direct Send so unauthenticated mail can no longer be submitted to the tenant's Exchange Online Protection endpoint. Direct Send accepts anonymous SMTP on port 25 at the tenant's MX host and allows any sender on the internet to submit mail claiming to be from an accepted domain. Setting `Set-OrganizationConfig -RejectDirectSend $true` causes Exchange Online to reject those submissions.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Direct Send requires no authentication whatsoever — anyone who knows the tenant's MX endpoint can submit mail addressed from an internal domain
+- Messages arriving this way land in internal mailboxes appearing to come from colleagues, which is exactly the pretext phishing needs and exactly the signal users are trained to trust
+- Attackers use Direct Send to bypass gateways and third-party mail filters entirely, because the mail never traverses the path those controls inspect
+- Most tenants have Direct Send enabled without ever using it; Microsoft's own guidance states that most customers do not need it
+- Disabling it is a single tenant-level switch with a clean, diagnosable failure mode — rejected submissions return a 550 5.7.68 response rather than failing silently
+
+**Attack Prevented:** Internal-looking phishing from external senders, mail-filter bypass, brand and domain spoofing against your own employees
+
+#### Prerequisites
+
+- Exchange Online Administrator or Global Administrator role
+- Exchange Online PowerShell module
+- An inventory of devices and applications that currently submit mail via Direct Send (multifunction printers, scanners, monitoring systems, and legacy line-of-business apps are the usual suspects)
+- A migration path for any legitimate Direct Send users — an authenticated SMTP relay connector is the standard replacement
+
+#### ClickOps Implementation
+
+There is no Exchange admin center toggle for this setting; it is configured through PowerShell. The identification work below, however, is done in the portal.
+
+**Step 1: Identify Legitimate Direct Send Traffic Before Blocking**
+
+1. Navigate to: **Exchange admin center** → **Mail flow** → **Message trace**
+2. Run a trace covering at least 30 days, filtering for messages from your accepted domains that arrived without authentication
+3. Record every source IP address that appears, and map each one back to a device or application owner
+4. Confirm each legitimate sender has an alternative path configured — an inbound connector for SMTP relay, or authenticated client submission
+
+**Step 2: Reject Direct Send**
+
+1. Connect to Exchange Online PowerShell with `Connect-ExchangeOnline`
+2. Check the current state with `Get-OrganizationConfig | Select-Object RejectDirectSend`
+3. Apply the setting with `Set-OrganizationConfig -RejectDirectSend $true`
+4. Allow time for the change to propagate across the service before testing
+
+**Step 3: Monitor for Breakage**
+
+1. Watch message trace and your service desk queue for the first two weeks after the change
+2. Any device that was missed in Step 1 will fail loudly with a 550 5.7.68 rejection, which is straightforward to attribute to this control
+3. Rather than reverting the tenant-wide setting for a single missed printer, move that device onto an authenticated relay connector
+
+**Time to Complete:** ~15 minutes to apply; discovery of legitimate senders typically takes 30 days of trace data
+
+Source: [Reject Direct Send in Exchange Online](https://office365itpros.com/2025/04/30/reject-send-exo/)
+
+#### Validation & Testing
+
+**How to verify the control is working:**
+
+1. Run `Get-OrganizationConfig | Select-Object RejectDirectSend` and confirm the value is `True`
+2. From an external host with no authentication, attempt an SMTP submission on port 25 to your tenant MX endpoint using a From address in one of your accepted domains
+3. Confirm the submission is rejected with a 550 5.7.68 response
+4. Send normal internal and external mail through authenticated paths and confirm delivery is unaffected
+
+**Expected result:** Unauthenticated submissions claiming an internal sender are rejected at the service edge; all authenticated and connector-based mail flow continues normally.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.6 | Boundary protection |
+| **NIST 800-53** | SI-8 | Spam protection |
+| **ISO 27001** | A.8.20 | Network security |
+
+---
+
+### 8.2 Block Automatic External Forwarding
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.3 |
+| NIST 800-53 | AC-4, SC-7 |
+| CISA SCuBA | MS.EXO.1.1v2 |
+
+#### Description
+
+Disable automatic forwarding of mail to external recipients at the tenant level using `Set-HostedOutboundSpamFilterPolicy -AutoForwardingMode Off`. Automatic forwarding rules are one of the most reliable indicators of a compromised mailbox and one of the quietest exfiltration channels available to an attacker.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Creating a forwarding rule is the standard first move after a business email compromise, because it gives the attacker durable access to the victim's mail even after the password is reset
+- Forwarded mail leaves no obvious trace for the user — the message still arrives in their inbox, so nothing looks wrong from their side
+- A single rule can exfiltrate months of correspondence, invoices, and credential-reset emails without any further attacker interaction
+- Departing employees use the same mechanism to take customer and pipeline data with them
+- Blocking it tenant-wide is far more reliable than detecting and removing rules one at a time after the fact
+
+**Attack Prevented:** Business email compromise persistence, silent mail exfiltration, insider data theft
+
+#### Prerequisites
+
+- Exchange Online Administrator or Global Administrator role
+- Exchange Online PowerShell module
+- Review of existing forwarding rules so legitimate business cases are identified before the block is applied
+
+#### ClickOps Implementation
+
+**Step 1: Audit Existing Forwarding**
+
+1. Navigate to: **Exchange admin center** → **Reports** → **Mail flow** → **Auto-forwarded messages report**
+2. Review every mailbox currently forwarding externally and identify the business justification, if any
+3. Treat any forwarding rule the mailbox owner cannot explain as a potential compromise indicator and investigate it before proceeding
+
+**Step 2: Set the Outbound Spam Filter Policy**
+
+1. Navigate to: **Microsoft Defender portal** → **Email & collaboration** → **Policies & rules** → **Threat policies** → **Anti-spam**
+2. Open the **Anti-spam outbound policy (Default)**
+3. Set **Automatic forwarding rules** to **Off - Forwarding is disabled**
+4. Save the policy
+
+**Step 3: Apply via PowerShell**
+
+1. Connect with `Connect-ExchangeOnline`
+2. Apply the setting with `Set-HostedOutboundSpamFilterPolicy -Identity Default -AutoForwardingMode Off`
+3. Confirm no other outbound spam filter policies override the default with a weaker setting
+
+**Step 4: Handle Legitimate Exceptions Deliberately**
+
+1. Where a genuine business need exists, use a mail flow rule scoped to specific senders and destinations rather than re-enabling forwarding tenant-wide
+2. Document each exception with an owner and a review date
+
+**Time to Complete:** ~30 minutes including the forwarding audit
+
+Source: [CISA SCuBA Exchange Online Secure Configuration Baseline](https://github.com/cisagov/ScubaGear/blob/main/PowerShell/ScubaGear/baselines/exo.md)
+
+#### Validation & Testing
+
+**How to verify the control is working:**
+
+1. Run `Get-HostedOutboundSpamFilterPolicy | Select-Object Name, AutoForwardingMode` and confirm every policy reports `Off`
+2. As a test user, create an inbox rule forwarding to an external address, then send mail to that user
+3. Confirm the message is not delivered to the external address
+4. Re-run the auto-forwarded messages report after a week and confirm external forwarding volume has dropped to zero
+
+**Expected result:** No mail is automatically forwarded to external recipients; internal forwarding and manual forwarding by users continue to work.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.7 | Restricted data transmission |
+| **NIST 800-53** | AC-4 | Information flow enforcement |
+| **CISA SCuBA** | MS.EXO.1.1v2 | Automatic forwarding to external domains SHALL be disabled |
+
+---
+
+### 8.3 Enforce SPF, DKIM, and DMARC for All Domains
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 9.2 |
+| NIST 800-53 | SC-8, SI-8 |
+| CISA SCuBA | MS.EXO.2.2v3, MS.EXO.3.1v1, MS.EXO.4.1v1 |
+
+#### Description
+
+Publish and enforce the three email authentication standards for every accepted domain: SPF to declare authorized sending sources, DKIM to cryptographically sign outbound mail, and DMARC with a `p=reject` policy plus RUA and RUF reporting addresses to instruct receivers what to do when the first two fail. Domains that do not send mail need these records too — an unused domain without a restrictive policy is a free spoofing asset for an attacker.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Without DMARC enforcement, anyone on the internet can send mail that appears to come from your domain, and receiving mail servers have no instruction to reject it
+- SPF alone breaks on forwarding and DKIM alone does not bind the signature to the visible From address; only the three together produce a verifiable, enforceable result
+- A `p=none` DMARC record is monitoring, not protection — it collects reports while still allowing spoofed mail through, and many organizations leave it there indefinitely
+- RUA and RUF reporting is what makes the eventual move to `p=reject` safe, because it reveals legitimate senders you did not know about before they start bouncing
+- Parked and marketing domains are spoofed precisely because nobody thinks to protect them
+
+**Attack Prevented:** Domain spoofing, brand impersonation, vendor invoice fraud, phishing that uses your own domain against your partners and customers
+
+#### Prerequisites
+
+- Access to DNS for every accepted domain, including parked and marketing domains
+- Exchange Online Administrator or Global Administrator role
+- A complete inventory of legitimate sending sources — marketing platforms, ticketing systems, payroll providers, and CRM tools all send as your domain
+- A DMARC report processing destination, whether a vendor service or an internal mailbox
+
+#### ClickOps Implementation
+
+**Step 1: Publish SPF for Every Domain**
+
+1. Inventory all sending sources for the domain, including third-party platforms
+2. Publish a single TXT record per domain in the form `v=spf1 include:spf.protection.outlook.com -all`, adding an `include:` entry for each additional legitimate sender
+3. Use the hard fail qualifier `-all` rather than the soft fail `~all`; soft fail asks receivers to accept the mail anyway
+4. For domains that send no mail at all, publish `v=spf1 -all`
+5. Stay within the ten DNS lookup limit — exceeding it causes SPF to fail permanently
+
+**Step 2: Enable DKIM Signing**
+
+1. Navigate to: **Microsoft Defender portal** → **Email & collaboration** → **Policies & rules** → **Threat policies** → **Email authentication settings** → **DKIM**
+2. Select each custom domain in the list
+3. Publish the two CNAME selector records the portal displays at your DNS provider
+4. Return to the portal and set **Sign messages for this domain with DKIM signatures** to **Enabled**
+5. Repeat for every accepted domain — the default `onmicrosoft.com` domain is signed automatically, custom domains are not
+
+**Step 3: Publish DMARC at p=reject**
+
+1. Start with a monitoring record at `_dmarc.<domain>`: `v=DMARC1; p=none; rua=mailto:dmarc-rua@yourdomain.com; ruf=mailto:dmarc-ruf@yourdomain.com; pct=100`
+2. Collect and review aggregate reports for 30 to 60 days, resolving every legitimate sender that fails alignment
+3. Move to `p=quarantine`, monitor for a further period, then move to `p=reject`
+4. The end state for every domain is `v=DMARC1; p=reject; rua=mailto:dmarc-rua@yourdomain.com; ruf=mailto:dmarc-ruf@yourdomain.com; pct=100`
+5. For parked and non-sending domains, go straight to `p=reject` — there is no legitimate mail to break
+
+**Step 4: Enable DKIM Signing via PowerShell at Scale**
+
+1. Connect with `Connect-ExchangeOnline`
+2. Review current state with `Get-DkimSigningConfig | Select-Object Domain, Enabled, Status`
+3. Enable a domain with `Set-DkimSigningConfig -Identity <domain> -Enabled $true`
+
+**Time to Complete:** ~2 hours of configuration, plus 30 to 60 days of DMARC monitoring before enforcement
+
+Source: [CISA SCuBA Exchange Online Secure Configuration Baseline](https://github.com/cisagov/ScubaGear/blob/main/PowerShell/ScubaGear/baselines/exo.md)
+
+#### Validation & Testing
+
+**How to verify the control is working:**
+
+1. Query the SPF record for each domain and confirm it ends in `-all` and resolves within ten DNS lookups
+2. Run `Get-DkimSigningConfig | Select-Object Domain, Enabled` and confirm every accepted domain reports `True`
+3. Query the `_dmarc` TXT record for each domain and confirm the policy is `p=reject` with both `rua` and `ruf` addresses present
+4. Send a test message to an external mailbox and inspect the received headers for `spf=pass`, `dkim=pass`, and `dmarc=pass`
+5. Confirm DMARC aggregate reports are arriving at the RUA address and are being reviewed by a named owner
+
+**Expected result:** All three records are published and enforcing for every accepted domain, legitimate mail passes all three checks, and spoofed mail claiming your domain is rejected by receiving servers.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.7 | Transmission integrity |
+| **NIST 800-53** | SC-8 | Transmission confidentiality and integrity |
+| **CISA SCuBA** | MS.EXO.2.2v3 | An SPF policy SHALL be published for each domain |
+| **CISA SCuBA** | MS.EXO.3.1v1 | DKIM SHOULD be enabled for all domains |
+| **CISA SCuBA** | MS.EXO.4.1v1 | A DMARC policy SHALL be published for every second-level domain |
+
+---
+
+## 9. Microsoft Teams External Access Security
+
+### 9.1 Restrict Teams External Access and Unmanaged Accounts
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.8, 9.6 |
+| NIST 800-53 | AC-3, AC-20 |
+
+#### Description
+
+Constrain Teams federation so external contact is limited to an explicit allowlist of partner domains, and disable chat and meeting invitations from unmanaged consumer Teams accounts. Left at its permissive default, Teams external access lets anyone with a Microsoft tenant — including a tenant created minutes ago for the purpose — initiate a chat with your employees inside a trusted interface.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Teams messages carry an implicit trust that email does not; a message arriving in Teams reads as internal even when the sender is external
+- Attackers register trial tenants with display names like "Help Desk" or "IT Support" and message employees directly, a technique that requires no malware and no credential theft to get started
+- The vishing pattern pairs a flood of nuisance email with a Teams call from the fake support account offering to fix it, which is a highly effective pretext because the "problem" is real and the employee is already frustrated
+- Once the target accepts remote assistance, the attacker has hands-on access without ever defeating a technical control
+- An allowlist of known partner domains preserves the collaboration Teams is bought for while removing the anonymous inbound path entirely
+
+**Attack Prevented:** Helpdesk impersonation, Teams-based vishing and social engineering, malicious file delivery through external chat, initial access via trial-tenant federation
+
+**Real-World Incidents:**
+
+- **Storm-1811 / Black Basta (2024-2025):** Operators bombarded targets with high-volume email, then contacted the same users through Teams posing as IT support to talk them into granting remote access, which was used to stage ransomware
+- **Midnight Blizzard (2024):** Used compromised legitimate tenants to send Teams messages carrying credential-theft lures, exploiting the trust users place in Teams over email
+
+#### Prerequisites
+
+- Teams Administrator or Global Administrator role
+- Microsoft Teams PowerShell module for the code path
+- A definitive list of partner domains that require Teams federation, gathered from business owners rather than assumed
+- Coordination with the service desk, since this control changes how external parties reach employees
+
+#### ClickOps Implementation
+
+**Step 1: Decide the Federation Posture**
+
+1. Default to blocking federation entirely if the organization has no standing need for cross-tenant Teams collaboration
+2. Otherwise, move to an explicit allowlist — never leave federation open to all domains
+3. Have each requesting business unit name the specific partner domains and an owner for each
+
+**Step 2: Configure External Access**
+
+1. Navigate to: **Teams admin center** → **Users** → **External access**
+2. Set **Teams and Skype for Business users in external organizations** to **Block all external domains**, or to **Allow only specific external domains** and enter the approved list
+3. Set **Teams accounts not managed by an organization** to **Off** — this closes the consumer-account path
+4. Set **Skype users** to **Off**
+5. Save the configuration
+
+**Step 3: Block Trial-Tenant Federation**
+
+1. Confirm that federation with newly created trial tenants remains blocked, as this is the cheapest way for an attacker to obtain a plausible-looking sending tenant
+2. Review the allowlist quarterly and remove partners whose engagements have ended
+
+**Step 4: Apply via PowerShell**
+
+1. Connect with `Connect-MicrosoftTeams`
+2. To block federation outright, run `Set-CsTenantFederationConfiguration -AllowFederatedUsers $false`
+3. To operate an allowlist instead, build the domain list with `New-CsEdgeDomainPattern` and apply it through `Set-CsTenantFederationConfiguration -AllowedDomains`
+4. Disable consumer accounts with `Set-CsTenantFederationConfiguration -AllowTeamsConsumer $false`
+5. Verify the resulting configuration with `Get-CsTenantFederationConfiguration`
+
+**Step 5: Pair the Technical Control With Out-of-Band Verification**
+
+1. Publish a standing rule that IT support never initiates contact through Teams chat from an external account
+2. Give employees a single, memorable verification path — a known service desk number they call themselves, never a number or link supplied by the caller
+3. Include Teams-originated pretexts in phishing simulation and security awareness content, since most programs still only cover email
+
+**Time to Complete:** ~45 minutes for configuration, plus the time to collect the partner domain list
+
+Source: [Manage external meetings and chat in Microsoft Teams](https://learn.microsoft.com/en-us/microsoftteams/trusted-organizations-external-meetings-chat)
+
+#### Validation & Testing
+
+**How to verify the control is working:**
+
+1. Run `Get-CsTenantFederationConfiguration` and confirm `AllowFederatedUsers`, `AllowedDomains`, and `AllowTeamsConsumer` reflect the intended posture
+2. From a personal or trial Microsoft account outside the allowlist, attempt to start a Teams chat with an internal user and confirm it fails
+3. From an approved partner domain, confirm chat and meeting invitations still work
+4. Confirm the service desk verification procedure is documented and that a sample of employees can describe it correctly
+
+**Expected result:** Only allowlisted partner domains can reach employees through Teams; unmanaged consumer and trial-tenant accounts cannot initiate contact.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access security |
+| **NIST 800-53** | AC-20 | Use of external systems |
+| **ISO 27001** | A.5.14 | Information transfer |
+
+---
+
 ## 7. Compliance Quick Reference
 
 ### SOC 2 Trust Services Criteria Mapping
@@ -740,8 +1205,12 @@ Enable Microsoft Defender for Office 365 and configure alert policies for suspic
 |-----------|------------------|---------------|
 | CC6.1 | MFA for all users | [1.1](#11-enforce-phishing-resistant-mfa-for-all-users) |
 | CC6.1 | Block legacy auth | [1.2](#12-block-legacy-authentication-protocols) |
+| CC6.1 | Teams external access restrictions | [9.1](#91-restrict-teams-external-access-and-unmanaged-accounts) |
 | CC6.2 | Privileged Identity Management | [1.3](#13-implement-privileged-identity-management-pim) |
 | CC6.6 | External sharing restrictions | [4.2](#42-configure-external-sharing-restrictions) |
+| CC6.6 | Reject Direct Send | [8.1](#81-reject-direct-send) |
+| CC6.7 | Block automatic external forwarding | [8.2](#82-block-automatic-external-forwarding) |
+| CC6.7 | SPF, DKIM, and DMARC enforcement | [8.3](#83-enforce-spf-dkim-and-dmarc-for-all-domains) |
 | CC7.2 | Unified audit logging | [5.1](#51-enable-unified-audit-logging) |
 
 ### NIST 800-53 Rev 5 Mapping
@@ -752,9 +1221,16 @@ Enable Microsoft Defender for Office 365 and configure alert policies for suspic
 | IA-2(6) | Phishing-resistant MFA | [1.1](#11-enforce-phishing-resistant-mfa-for-all-users) |
 | AC-2(7) | Privileged user accounts | [1.3](#13-implement-privileged-identity-management-pim) |
 | AC-3 | Access enforcement | [3.1](#31-restrict-user-consent-to-applications) |
+| AC-4 | Information flow enforcement | [8.2](#82-block-automatic-external-forwarding) |
+| AC-20 | Use of external systems | [9.1](#91-restrict-teams-external-access-and-unmanaged-accounts) |
+| AC-21 | Information sharing | [4.3](#43-enable-restricted-content-discovery-on-high-risk-sites) |
 | AU-2 | Audit events | [5.1](#51-enable-unified-audit-logging) |
+| SC-8 | Transmission confidentiality and integrity | [8.3](#83-enforce-spf-dkim-and-dmarc-for-all-domains) |
+| SI-8 | Spam protection | [8.1](#81-reject-direct-send) |
 
-### CIS Microsoft 365 Foundations Benchmark v3.1 Mapping
+### CIS Microsoft 365 Foundations Benchmark v7.0.0 Mapping
+
+The current release of the benchmark is **v7.0.0**. Earlier editions of this guide mapped to v3.1, which is four major releases behind. Recommendation IDs are renumbered across major versions of the benchmark, so the identifiers below are anchored to v7.0.0 and should not be assumed to match any other release. Always confirm the ID against the version of the benchmark your audit is actually being assessed under.
 
 | Recommendation | M365 Control | Guide Section |
 |---------------|------------------|---------------|
@@ -763,6 +1239,26 @@ Enable Microsoft Defender for Office 365 and configure alert policies for suspic
 | 1.1.4 | Enable Conditional Access policies | [1.1](#11-enforce-phishing-resistant-mfa-for-all-users) |
 | 2.1 | Block third-party app consent | [3.1](#31-restrict-user-consent-to-applications) |
 | 5.1 | Enable unified audit logging | [5.1](#51-enable-unified-audit-logging) |
+
+Source: [CIS Microsoft 365 Foundations Benchmark](https://www.cisecurity.org/benchmark/microsoft_365)
+
+### CISA SCuBA Secure Configuration Baseline Mapping
+
+The Cybersecurity and Infrastructure Security Agency publishes the **Secure Cloud Business Applications (SCuBA)** baselines for Microsoft 365, covering Entra ID, Exchange Online, SharePoint and OneDrive, Teams, Defender, and Power Platform. **Binding Operational Directive 25-01**, issued December 2024, makes these baselines mandatory for US federal civilian executive branch agencies, with a compliance deadline of **31 December 2026**. Non-federal organizations increasingly adopt them voluntarily because they are free, prescriptive, and machine-checkable.
+
+**ScubaGear** is CISA's open-source PowerShell assessment tool. It reads the tenant configuration and reports conformance against each baseline policy as Pass, Fail, Warning, or Omit, producing an HTML report suitable for evidence collection. Because it is read-only, it is safe to run against production before any remediation work begins, and it is the fastest way to establish a baseline for the controls in this guide.
+
+| Policy ID | Requirement | Guide Section |
+|-----------|-------------|---------------|
+| MS.EXO.1.1v2 | Automatic forwarding to external domains SHALL be disabled | [8.2](#82-block-automatic-external-forwarding) |
+| MS.EXO.2.2v3 | An SPF policy SHALL be published for each domain | [8.3](#83-enforce-spf-dkim-and-dmarc-for-all-domains) |
+| MS.EXO.3.1v1 | DKIM SHOULD be enabled for all domains | [8.3](#83-enforce-spf-dkim-and-dmarc-for-all-domains) |
+| MS.EXO.4.1v1 | A DMARC policy SHALL be published for every second-level domain | [8.3](#83-enforce-spf-dkim-and-dmarc-for-all-domains) |
+| MS.EXO.4.2v1 | The DMARC message rejection option SHALL be `p=reject` | [8.3](#83-enforce-spf-dkim-and-dmarc-for-all-domains) |
+| MS.EXO.4.3v1 | The DMARC point of contact for aggregate reports SHALL include CISA (federal) or a monitored address | [8.3](#83-enforce-spf-dkim-and-dmarc-for-all-domains) |
+| MS.EXO.4.4v1 | An agency point of contact SHOULD be included for aggregate and failure reports | [8.3](#83-enforce-spf-dkim-and-dmarc-for-all-domains) |
+
+Source: [CISA SCuBA M365 Secure Configuration Baselines and ScubaGear](https://github.com/cisagov/ScubaGear/tree/main/PowerShell/ScubaGear/baselines)
 
 ---
 
@@ -777,6 +1273,11 @@ Enable Microsoft Defender for Office 365 and configure alert policies for suspic
 | Auto-labeling | ❌ | ❌ | ❌ | ✅ | No |
 | Advanced Audit | ❌ | ❌ | ❌ | ✅ | No |
 | Defender for Office 365 P2 | ❌ | ❌ | ❌ | ✅ | Add-on for E3 |
+| Reject Direct Send | ✅ | ✅ | ✅ | ✅ | No |
+| Block automatic external forwarding | ✅ | ✅ | ✅ | ✅ | No |
+| DKIM signing for custom domains | ✅ | ✅ | ✅ | ✅ | No |
+| Teams external access restrictions | ✅ | ✅ | ✅ | ✅ | No |
+| Restricted Content Discovery | ❌ | ❌ | ❌ | ✅ | SharePoint Advanced Management |
 
 ---
 
@@ -788,6 +1289,10 @@ Enable Microsoft Defender for Office 365 and configure alert policies for suspic
 - [Microsoft 365 Security Documentation](https://learn.microsoft.com/en-us/microsoft-365/security/)
 - [Entra ID Conditional Access](https://learn.microsoft.com/en-us/entra/identity/conditional-access/)
 - [Zero Trust Identity and Device Access Policies](https://learn.microsoft.com/en-us/security/zero-trust/zero-trust-identity-device-access-policies-common)
+- [Deprecation of Exchange Web Services in Exchange Online](https://learn.microsoft.com/exchange/clients-and-mobile-in-exchange-online/deprecation-of-ews-exchange-online) — EWS begins being disabled October 2026, fully disabled April 2027
+- [Restricted Content Discovery in SharePoint](https://learn.microsoft.com/en-us/sharepoint/restricted-content-discovery)
+- [Manage external meetings and chat in Microsoft Teams](https://learn.microsoft.com/en-us/microsoftteams/trusted-organizations-external-meetings-chat)
+- [Set-OrganizationConfig cmdlet reference](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-organizationconfig) — includes the `RejectDirectSend` parameter
 
 **API Documentation:**
 - [Microsoft Graph API Reference](https://developer.microsoft.com/en-us/graph)
@@ -799,7 +1304,9 @@ Enable Microsoft Defender for Office 365 and configure alert policies for suspic
 - [Microsoft Compliance Offerings](https://learn.microsoft.com/en-us/compliance/regulatory/offering-home)
 
 **Hardening Benchmarks:**
-- [CIS Microsoft 365 Foundations Benchmark](https://www.cisecurity.org/benchmark/microsoft_365)
+- [CIS Microsoft 365 Foundations Benchmark](https://www.cisecurity.org/benchmark/microsoft_365) — current release is v7.0.0; recommendation IDs are renumbered across major versions
+- [CISA SCuBA M365 Secure Configuration Baselines](https://github.com/cisagov/ScubaGear/tree/main/PowerShell/ScubaGear/baselines) — mandatory for US federal civilian agencies under BOD 25-01, deadline 31 December 2026
+- [CISA SCuBA Exchange Online Baseline](https://github.com/cisagov/ScubaGear/blob/main/PowerShell/ScubaGear/baselines/exo.md)
 - [NIST NCP Checklist](https://ncp.nist.gov/checklist/1140)
 
 **Security Incidents:**
@@ -812,6 +1319,7 @@ Enable Microsoft Defender for Office 365 and configure alert policies for suspic
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-03 | 0.2.0 | draft | Add Exchange Online mail flow section (Reject Direct Send, block automatic external forwarding, SPF/DKIM/DMARC enforcement), Teams external access hardening, and SharePoint Restricted Content Discovery; add CISA SCuBA baseline and ScubaGear mapping; correct CIS benchmark citation from v3.1 to v7.0.0; add EWS and SMTP AUTH retirement timelines to legacy authentication control | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with authentication, OAuth, data security, and monitoring controls | Claude Code (Opus 4.5) |
 
