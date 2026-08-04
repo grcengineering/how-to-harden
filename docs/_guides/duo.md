@@ -92,8 +92,6 @@ Secure Duo Admin Panel access with MFA, role-based access, and monitoring. Admin
 
 **Time to Complete:** ~30 minutes
 
-{% include pack-code.html vendor="duo" section="1.1" %}
-
 ---
 
 ### 1.2 Protect Admin Credentials
@@ -122,10 +120,6 @@ Protect Duo integration keys, secret keys, and API credentials as highly sensiti
 3. **Never commit secrets** to source control
 4. **Rotate keys** if compromise is suspected
 5. **Use environment variables** instead of hardcoded values
-
-**Secret Key Handling:**
-
-{% include pack-code.html vendor="duo" section="1.2" %}
 
 ---
 
@@ -168,8 +162,6 @@ Configure the Global Policy as the baseline security policy for all Duo-protecte
 3. **Never** set to "Allow access without 2FA" for production
 
 **Time to Complete:** ~15 minutes
-
-{% include pack-code.html vendor="duo" section="2.1" %}
 
 ---
 
@@ -217,8 +209,6 @@ Review and minimize bypass access that allows users to skip MFA. Bypass status s
 2. Verify business justification
 3. Consider per-user bypass instead
 
-{% include pack-code.html vendor="duo" section="2.2" %}
-
 ---
 
 ### 2.3 Require Phishing-Resistant MFA
@@ -261,8 +251,6 @@ Configure policies to require phishing-resistant authentication methods like Web
 1. For high-security applications
 2. Create custom policy requiring WebAuthn only
 
-{% include pack-code.html vendor="duo" section="2.3" %}
-
 ---
 
 ### 2.4 Configure Authorized Networks
@@ -301,8 +289,6 @@ Configure authorized network policies to adjust MFA requirements based on networ
    - **Always require MFA**
 
 **Important:** Authorized networks should reduce friction, not bypass security. Continue requiring MFA from trusted networks.
-
-{% include pack-code.html vendor="duo" section="2.4" %}
 
 ---
 
@@ -346,8 +332,6 @@ Identify and manage inactive Duo accounts to prevent account takeover and unauth
 1. Use Duo Admin API for automated reporting
 2. Create process for regular review (monthly)
 
-{% include pack-code.html vendor="duo" section="3.1" %}
-
 ---
 
 ### 3.2 Configure User Enrollment
@@ -390,8 +374,6 @@ Configure secure user enrollment processes that verify identity before granting 
    - Require identity verification before enrollment
    - Use HR systems to validate user
    - Consider in-person enrollment for privileged users
-
-{% include pack-code.html vendor="duo" section="3.2" %}
 
 ---
 
@@ -437,8 +419,6 @@ Configure Duo's Trusted Endpoints feature to verify device compliance before gra
    - **Require devices to be trusted**
    - **Block untrusted devices** or **Allow with warning**
 
-{% include pack-code.html vendor="duo" section="4.1" %}
-
 ---
 
 ### 4.2 Monitor Device Registration
@@ -464,8 +444,6 @@ Monitor device registrations to detect suspicious activity that could indicate a
 2. Review authentication logs for registration events
 3. Use Duo Trust Monitor (Advantage/Premier) for anomaly detection
 4. Integrate with SIEM for correlation
-
-{% include pack-code.html vendor="duo" section="4.2" %}
 
 ---
 
@@ -521,8 +499,6 @@ Create application-specific policies with appropriate security controls based on
 2. Select application
 3. Under **Policy**, select appropriate policy
 
-{% include pack-code.html vendor="duo" section="5.1" %}
-
 ---
 
 ### 5.2 Secure Windows Logon/RDP
@@ -563,8 +539,6 @@ Configure Duo for Windows Logon and RDP with appropriate security settings.
 1. Set **Fail mode** based on security vs. availability:
    - **Fail closed:** Block access if Duo unreachable (more secure)
    - **Fail open:** Allow access if Duo unreachable (more available)
-
-{% include pack-code.html vendor="duo" section="5.2" %}
 
 ---
 
@@ -612,8 +586,6 @@ Configure Duo logging and integrate with SIEM for security monitoring and incide
 
 > **Note:** Trust Monitor will be replaced by Cisco Identity Intelligence after September 2025.
 
-{% include pack-code.html vendor="duo" section="6.1" %}
-
 ---
 
 ### 6.2 Key Events to Monitor
@@ -653,8 +625,6 @@ Configure Duo's session protection features to defend against session hijacking 
 2. Configure session policies with appropriate timeouts
 3. Enable re-authentication for sensitive actions
 4. Monitor for session anomalies
-
-{% include pack-code.html vendor="duo" section="6.3" %}
 
 ---
 

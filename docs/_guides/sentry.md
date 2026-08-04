@@ -90,10 +90,6 @@ Configure SAML SSO to centralize authentication for Sentry users.
 
 **Time to Complete:** ~1-2 hours
 
-#### Code Implementation
-
-{% include pack-code.html vendor="sentry" section="1.1" lang="terraform" %}
-
 ---
 
 ### 1.2 Enforce Two-Factor Authentication
@@ -128,10 +124,6 @@ Require 2FA for all Sentry users.
 1. Enable MFA in identity provider
 2. Use phishing-resistant methods for admins
 3. All SSO users subject to IdP MFA
-
-#### Code Implementation
-
-{% include pack-code.html vendor="sentry" section="1.2" lang="terraform" %}
 
 ---
 
@@ -174,10 +166,6 @@ Implement least privilege using Sentry teams.
 2. Assign minimum necessary role
 3. Regular access reviews
 
-#### Code Implementation
-
-{% include pack-code.html vendor="sentry" section="2.1" lang="terraform" %}
-
 ---
 
 ### 2.2 Configure Project Access
@@ -213,10 +201,6 @@ Control access to specific projects.
 2. Restrict sensitive projects
 3. Audit project access
 
-#### Code Implementation
-
-{% include pack-code.html vendor="sentry" section="2.2" lang="terraform" %}
-
 ---
 
 ### 2.3 Limit Admin Access
@@ -251,10 +235,6 @@ Minimize and protect administrator accounts.
 1. Limit owner to 2-3 users
 2. Require 2FA/SSO for admins
 3. Monitor admin activity
-
-#### Code Implementation
-
-{% include pack-code.html vendor="sentry" section="2.3" lang="terraform" %}
 
 ---
 
@@ -298,10 +278,6 @@ Scrub sensitive data from error reports.
 2. Add custom sensitive fields
 3. Document scrubbing rules
 
-#### Code Implementation
-
-{% include pack-code.html vendor="sentry" section="3.1" lang="terraform" %}
-
 ---
 
 ### 3.2 Configure DSN Security
@@ -342,10 +318,6 @@ Secure Data Source Names (DSNs).
 2. Update applications
 3. Disable old DSNs
 
-#### Code Implementation
-
-{% include pack-code.html vendor="sentry" section="3.2" lang="terraform" %}
-
 ---
 
 ### 3.3 Configure IP Filtering
@@ -375,10 +347,6 @@ Filter events by IP address.
 1. Configure IP filters for projects
 2. Filter internal networks
 3. Document filtering rules
-
-#### Code Implementation
-
-{% include pack-code.html vendor="sentry" section="3.3" lang="terraform" %}
 
 ---
 
@@ -417,10 +385,6 @@ Enable and monitor audit logs.
 2. Permission changes
 3. DSN modifications
 4. Data access events
-
-#### Code Implementation
-
-{% include pack-code.html vendor="sentry" section="4.1" lang="terraform" %}
 
 ---
 

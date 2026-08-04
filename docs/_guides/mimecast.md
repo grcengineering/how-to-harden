@@ -66,8 +66,6 @@ Ensure MX records are properly configured to route all email through Mimecast.
 
 **Step 1: Check MX Records**
 
-{% include pack-code.html vendor="mimecast" section="1.1" %}
-
 **Step 2: Verify Configuration**
 1. MX records should point to Mimecast servers
 2. Priority should be lowest number (e.g., 10)
@@ -117,8 +115,6 @@ Configure email authentication to prevent spoofing and verify sender identity.
 1. Publish DMARC record (see Code Pack below for recommended record format)
 2. Start with `p=none` for monitoring
 3. Progress to `p=quarantine` then `p=reject`
-
-{% include pack-code.html vendor="mimecast" section="1.2" %}
 
 **Step 4: Configure Inbound Checking**
 1. Navigate to: **Administration** → **Gateway** → **Policies** → **Definitions** → **DNS Authentication - Inbound**

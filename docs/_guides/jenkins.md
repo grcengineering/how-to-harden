@@ -83,10 +83,6 @@ Enable authentication to prevent anonymous access to Jenkins. By default, older 
 
 **Time to Complete:** ~30 minutes
 
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="1.1" %}
-
 ---
 
 ### 1.2 Configure LDAP or SAML SSO
@@ -151,10 +147,6 @@ Configure centralized authentication using LDAP or SAML SSO for enterprise ident
    - Group search base: `ou=groups`
 4. Test LDAP connection
 
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="1.2" %}
-
 ---
 
 ### 1.3 Disable Remember Me
@@ -186,8 +178,6 @@ Disable the "Remember me" feature to prevent persistent authentication tokens.
 
 **Step 2: Configure Session Settings**
 1. Edit `jenkins.xml` or use System Properties (see Groovy init script in SDK Code Pack below)
-
-{% include pack-code.html vendor="jenkins" section="1.3" %}
 
 ---
 
@@ -234,10 +224,6 @@ Configure Matrix-based security for fine-grained permission control. This is rec
 1. Remove or restrict the `authenticated` group permissions
 2. Grant permissions to specific groups/users only
 
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="2.1" %}
-
 ---
 
 ### 2.2 Configure Project-Based Matrix Authorization
@@ -277,10 +263,6 @@ Enable project-based authorization for per-project access control.
 1. Navigate to: **Job** → **Configure** → **Enable project-based security**
 2. Add users/groups with project-specific permissions
 3. Example: "Joe can access projects A, B, and C, but not D"
-
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="2.2" %}
 
 ---
 
@@ -331,10 +313,6 @@ Implement role-based access control for scalable permission management.
 2. Assign global roles to users/groups
 3. Assign item roles to users/groups
 
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="2.3" %}
-
 ---
 
 ### 2.4 Restrict Script Console Access
@@ -366,10 +344,6 @@ Restrict access to the Script Console to administrators only.
 1. Review who has admin access
 2. Consider separate admin accounts for privileged operations
 3. Log and alert on Script Console usage
-
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="2.4" %}
 
 ---
 
@@ -406,10 +380,6 @@ Enable Agent → Controller Access Control to prevent compromised agents from at
 3. Review whitelisted commands
 4. Remove unnecessary allowances
 
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="3.1" %}
-
 ---
 
 ### 3.2 Disable Builds on Controller
@@ -440,10 +410,6 @@ Configure Jenkins to run builds only on agents, not on the controller node.
 **Step 2: Configure Labels**
 1. Ensure jobs are configured to run on specific agent labels
 2. Never use "any" or empty label restrictions
-
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="3.2" %}
 
 ---
 
@@ -486,10 +452,6 @@ Use ephemeral (disposable) agents that are created fresh for each build.
 2. Configure scale-up triggers
 3. Set idle timeout for termination
 
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="3.3" %}
-
 ---
 
 ### 3.4 Secure Agent Communication
@@ -523,10 +485,6 @@ Secure communication between agents and controller using JNLP over TLS.
 1. Configure Jenkins to run behind HTTPS reverse proxy
 2. Or configure HTTPS directly in Jenkins (see CLI Code Pack below)
 
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="3.4" %}
-
 ---
 
 ## 4. Pipeline Security
@@ -557,10 +515,6 @@ Enable CSRF protection to prevent cross-site request forgery attacks.
 1. Navigate to: **Manage Jenkins** → **Security** → **Configure Global Security**
 2. Under **CSRF Protection**, select **Default Crumb Issuer**
 3. Optionally enable **Enable proxy compatibility** if behind a reverse proxy
-
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="4.1" %}
 
 ---
 
@@ -612,10 +566,6 @@ Securely manage credentials using Jenkins Credentials Plugin with appropriate sc
 2. Use `withCredentials` in pipelines for explicit binding
 3. Audit which jobs use which credentials
 
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="4.2" %}
-
 ---
 
 ### 4.3 Implement Pipeline Sandbox
@@ -651,10 +601,6 @@ Use Pipeline Groovy Sandbox to restrict what pipeline scripts can do.
 2. Review all approval requests carefully
 3. Consider security implications of each approval
 
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="4.3" %}
-
 ---
 
 ### 4.4 Secure Jenkinsfile Configuration
@@ -680,8 +626,6 @@ Implement secure Jenkinsfile practices to prevent pipeline attacks.
 #### Code Implementation
 
 See the SDK Code Pack below for a secure Jenkinsfile template demonstrating hardened pipeline practices.
-
-{% include pack-code.html vendor="jenkins" section="4.4" %}
 
 ---
 
@@ -731,10 +675,6 @@ Enable comprehensive audit logging for security monitoring.
 - Credential access
 - Build triggers
 
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="5.1" %}
-
 ---
 
 ### 5.2 Keep Jenkins Updated
@@ -774,10 +714,6 @@ Keep Jenkins and all plugins updated with security patches.
 - Stay on latest supported hot-patch release
 - Test updates in non-production first
 - Subscribe to Jenkins security advisories
-
-#### Code Implementation
-
-{% include pack-code.html vendor="jenkins" section="5.2" %}
 
 ---
 

@@ -92,8 +92,6 @@ Configure SAML SSO to centralize authentication for PagerDuty users.
 
 **Time to Complete:** ~1 hour
 
-{% include pack-code.html vendor="pagerduty" section="1.1" %}
-
 ---
 
 ### 1.2 Manage SSO Certificate Rotation
@@ -158,8 +156,6 @@ Understand and protect Account Owner fallback access.
 1. Account Owner can log in during SSO outage
 2. Can temporarily enable password login for all users
 
-{% include pack-code.html vendor="pagerduty" section="1.3" %}
-
 ---
 
 ## 2. User Management
@@ -196,8 +192,6 @@ Configure automatic user provisioning via SSO.
 2. Note: Attributes only used at initial creation
 3. Changes in IdP don't sync to PagerDuty
 
-{% include pack-code.html vendor="pagerduty" section="2.1" %}
-
 ---
 
 ### 2.2 Configure SCIM Provisioning
@@ -231,8 +225,6 @@ Configure SCIM for automated user lifecycle management.
 **Step 2: Configure IdP SCIM**
 1. Add PagerDuty SCIM integration
 2. Enable deprovisioning
-
-{% include pack-code.html vendor="pagerduty" section="2.2" %}
 
 ---
 
@@ -275,8 +267,6 @@ Implement least privilege using PagerDuty roles.
 2. Use Manager for team leads
 3. Use Responder for on-call engineers
 
-{% include pack-code.html vendor="pagerduty" section="3.1" %}
-
 ---
 
 ### 3.2 Limit Admin Access
@@ -310,8 +300,6 @@ Minimize and protect administrator accounts.
 **Step 2: Apply Least Privilege**
 1. Reduce admins to minimum (2-3)
 2. Use Manager role for team administration
-
-{% include pack-code.html vendor="pagerduty" section="3.2" %}
 
 ---
 
@@ -347,8 +335,6 @@ Monitor administrative and security events.
 **Step 2: Export Logs**
 1. Export audit records for analysis
 2. Integrate with SIEM
-
-{% include pack-code.html vendor="pagerduty" section="4.1" %}
 
 ---
 

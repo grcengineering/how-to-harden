@@ -238,8 +238,6 @@ Manage private app access tokens with appropriate restrictions.
 
 **Step 3: Audit Existing Tokens**
 
-{% include pack-code.html vendor="hubspot" section="3.1" %}
-
 ---
 
 ### 3.2 Configure API Rate Limiting Awareness
@@ -267,8 +265,6 @@ Design integrations with HubSpot's rate limits in mind.
 | Burst | 150 requests / 10 seconds |
 
 #### Monitoring
-
-{% include pack-code.html vendor="hubspot" section="3.2" %}
 
 ---
 
@@ -372,8 +368,6 @@ Monitor HubSpot activity through audit logs.
 2. Configure scheduled export
 
 #### Detection Queries
-
-{% include pack-code.html vendor="hubspot" section="5.1" %}
 
 ---
 
