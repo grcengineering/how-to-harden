@@ -1874,7 +1874,6 @@ Configure real-time streaming of Workato audit logs to an external SIEM or log a
 
 #### Code Implementation
 
-{% include pack-code.html vendor="workato" section="8.2" %}
 
 #### Validation & Testing
 1. Verify events stream within expected latency (< 5 minutes)

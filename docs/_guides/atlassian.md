@@ -458,7 +458,6 @@ Configure and monitor Atlassian audit logs.
 
 #### Detection Queries
 
-{% include pack-code.html vendor="atlassian" section="5.1" %}
 
 ---
 

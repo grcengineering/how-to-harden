@@ -970,7 +970,7 @@ For workspace agents, the exportable logs cover *"agent lifecycle events, run cr
 **Step 3: Wire the SIEM**
 
 1. Forward the bucket contents to Splunk (universal forwarder), Microsoft Sentinel (Custom Logs DCR), Google Chronicle, or your existing platform
-2. Deploy the three Sigma rules (6.4–6.6) and confirm they fire against historical events
+2. Deploy the three Sigma rules — first MCP tool call and post-publish scope expansion (both keyed to 6.4) and agent suspension (6.5) — and confirm they fire against historical events
 
 **Time to Complete:** ~4 hours including initial backfill
 

@@ -299,7 +299,6 @@ Implement monitoring for unusual API activity patterns that may indicate comprom
 
 #### Detection Use Cases
 
-{% include pack-code.html vendor="beyondtrust" section="2.3" %}
 
 ---
 
@@ -325,7 +324,6 @@ Deploy BeyondTrust in a segmented network zone with strict ingress/egress contro
 
 **Network Architecture:**
 
-{% include pack-code.html vendor="beyondtrust" section="3.1" %}
 
 **Firewall Rules:**
 - Inbound: HTTPS (443) from WAF only
