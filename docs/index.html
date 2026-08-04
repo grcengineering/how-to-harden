@@ -621,13 +621,29 @@ document.addEventListener('DOMContentLoaded', function() {
     addLine('');
     addLine('  ' + span('term-green term-bold', '\u2714 All 7 controls now passing at L2'));
 
-    // Pause on the final screen, then loop
+    // Pause on the final screen, then loop — but only while the terminal is
+    // actually visible. An unconditional recursion here kept the animation
+    // (typing + DOM appends) running forever, off-screen and in background
+    // tabs, taxing the main thread for every visitor.
     await delay(4000);
-    runDemo();
+    if (demoVisible) {
+      runDemo();
+    } else {
+      demoIdle = true;
+    }
   }
 
-  // Start immediately on page load
-  runDemo();
+  // Run only while in the viewport; restart when scrolled back into view.
+  var demoVisible = false;
+  var demoIdle = true;
+  var demoObserver = new IntersectionObserver(function(entries) {
+    demoVisible = entries.some(function(e) { return e.isIntersecting; });
+    if (demoVisible && demoIdle) {
+      demoIdle = false;
+      runDemo();
+    }
+  }, { threshold: 0.1 });
+  demoObserver.observe(body);
 })();
 </script>
 
