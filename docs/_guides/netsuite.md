@@ -102,8 +102,6 @@ Configure NetSuite roles with least-privilege access to financial data.
 
 **Step 1: Design Role Structure**
 
-{% include pack-code.html vendor="netsuite" section="1.2" %}
-
 **Step 2: Configure Role Permissions**
 1. Navigate to: **Setup → Users/Roles → Manage Roles**
 2. For each role:
@@ -370,8 +368,6 @@ Configure NetSuite saved searches to alert on suspicious activity such as failed
 **Attack Prevented:** Undetected account compromise, slow-burn fraud, unmonitored data exfiltration
 
 #### Detection Queries (via Saved Searches)
-
-{% include pack-code.html vendor="netsuite" section="5.1" %}
 
 ---
 

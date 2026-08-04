@@ -466,10 +466,6 @@ Secure network access for Fivetran connections.
 2. Require encrypted connections
 3. Verify certificate validation
 
-#### Code Implementation
-
-{% include pack-code.html vendor="fivetran" section="3.2" %}
-
 ---
 
 ### 3.3 Configure Destination Security

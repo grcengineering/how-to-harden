@@ -562,10 +562,6 @@ Implement Microsoft Purview sensitivity labels to classify and protect sensitive
 5. Set policy actions (block sharing, notify user, alert admin)
 6. Enable policy
 
-#### Code Implementation
-
-{% include pack-code.html vendor="microsoft-365" section="4.1" %}
-
 ---
 
 ### 4.2 Configure External Sharing Restrictions

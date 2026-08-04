@@ -267,8 +267,6 @@ Monitor federation activity for anomalous patterns indicating compromise.
 
 See the DB pack below for federation monitoring queries.
 
-{% include pack-code.html vendor="ping-identity" section="2.2" %}
-
 ---
 
 ### 2.3 Certificate Lifecycle Management

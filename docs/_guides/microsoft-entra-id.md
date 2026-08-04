@@ -491,10 +491,6 @@ Enable recurring access reviews for privileged roles and group memberships to en
    - **Upon completion:** Remove access for denied users
 4. Start review
 
-#### Code Implementation
-
-{% include pack-code.html vendor="microsoft-entra-id" section="3.2" %}
-
 ---
 
 ## 4. Application Security

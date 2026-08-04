@@ -94,8 +94,6 @@ Configure SAML-based SSO for Zscaler Admin Portal and Client Connector authentic
 
 **Time to Complete:** ~1 hour
 
-{% include pack-code.html vendor="zscaler" section="1.1" %}
-
 ---
 
 ### 1.2 Implement Role-Based Admin Access
@@ -142,8 +140,6 @@ Configure granular admin roles in Zscaler to limit access based on job responsib
 | Security Admin | Policy management, reporting |
 | Help Desk | User management, basic troubleshooting |
 | Auditor | Read-only access to logs and configs |
-
-{% include pack-code.html vendor="zscaler" section="1.2" %}
 
 ---
 
@@ -461,8 +457,6 @@ Deploy Zscaler Client Connector with security-optimized settings to ensure all t
 2. Minimize split tunnel scope
 3. Document exceptions
 
-{% include pack-code.html vendor="zscaler" section="4.1" %}
-
 ---
 
 ### 4.2 Install SSL Certificate for Inspection
@@ -497,8 +491,6 @@ Deploy Zscaler root certificate to enable SSL inspection of encrypted traffic.
 **Step 3: Enable Certificate for Client Connector**
 1. In Client Connector settings, enable "Install Zscaler SSL Certificate"
 2. This auto-installs during Client Connector installation
-
-{% include pack-code.html vendor="zscaler" section="4.2" %}
 
 ---
 
@@ -537,8 +529,6 @@ Lock Client Connector configuration to prevent users from disabling or bypassing
 1. For maximum security, disable admin override codes
 2. Users cannot bypass even temporarily
 3. Implement support process for legitimate issues
-
-{% include pack-code.html vendor="zscaler" section="4.3" %}
 
 ---
 
@@ -629,8 +619,6 @@ Thoroughly test SSL inspection before production deployment to identify and reso
 - Verify malware detection is working
 - Confirm DLP policies are applied
 
-{% include pack-code.html vendor="zscaler" section="5.2" %}
-
 ---
 
 ## 6. Monitoring & Detection
@@ -681,8 +669,6 @@ Configure comprehensive logging and integrate with SIEM for security monitoring 
    - Policy violations
    - Admin changes
    - Authentication failures
-
-{% include pack-code.html vendor="zscaler" section="6.1" %}
 
 ---
 

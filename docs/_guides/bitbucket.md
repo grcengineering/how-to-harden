@@ -170,8 +170,6 @@ Restrict Bitbucket access to approved IP addresses to prevent access from unauth
 
 **Configuration Example:**
 
-{% include pack-code.html vendor="bitbucket" section="1.3" %}
-
 ---
 
 ### 1.4 Manage User Permissions and Access

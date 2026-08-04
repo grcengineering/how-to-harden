@@ -118,8 +118,6 @@ Configure granular RBAC preventing over-privileged access to Falcon console func
 
 See the CLI pack below for the recommended role structure.
 
-{% include pack-code.html vendor="crowdstrike" section="1.2" %}
-
 **Step 2: Create Custom Roles**
 1. Navigate to: **Falcon → Host Setup and Management → Roles**
 2. Click **Create Role**
@@ -233,8 +231,6 @@ Monitor API usage patterns and implement alerting for anomalous activity.
 - Falcon APIs expose detections, host data, and response actions, so unbounded automated access can exfiltrate intelligence or disrupt the fleet
 
 **Attack Prevented:** Bulk data exfiltration, API credential abuse, automated enumeration, denial of service
-
-{% include pack-code.html vendor="crowdstrike" section="2.2" %}
 
 ---
 
@@ -528,8 +524,6 @@ Stream Falcon events to SIEM for correlation and long-term retention.
    - Generic: Use Falcon Data Replicator
 
 **Step 2: Configure Event Forwarding**
-
-{% include pack-code.html vendor="crowdstrike" section="5.2" %}
 
 ---
 

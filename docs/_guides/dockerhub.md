@@ -104,10 +104,6 @@ Use personal access tokens instead of passwords for automation.
 | CI/CD pull | Quarterly |
 | Build/push | Monthly |
 
-#### Code Implementation
-
-{% include pack-code.html vendor="dockerhub" section="1.2" %}
-
 ---
 
 ## 2. Image Security

@@ -2310,8 +2310,6 @@ For U.S. Government systems, display the Standard Mandatory DOD Notice and Conse
 <details>
 <summary>DOD Banner Text (1300 characters)</summary>
 
-{% include pack-code.html vendor="okta" section="8.5" %}
-
 </details>
 
 ---
