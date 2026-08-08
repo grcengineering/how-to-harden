@@ -2918,6 +2918,58 @@ Enable secret scanning **Public monitoring** from the enterprise Security tab to
 
 ---
 
+### 5.8 Audit and Restrict Outside Collaborators
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.1, 6.8 |
+| NIST 800-53 | AC-2, AC-6, PS-4 |
+
+#### Description
+Regularly enumerate the organization's outside collaborators (users granted repository access who are not organization members) and remove access that is no longer needed. Long-term collaborators should be converted to org members governed by teams and the base-permission and SSO/SCIM controls, not left as standing outside grants.
+
+#### Rationale
+**Why This Matters:**
+- Outside collaborators sit outside the organization's SSO, SCIM, and team-based access model — their access is not deprovisioned by your identity lifecycle
+- A stale outside-collaborator grant is a standing path into private source that survives an engagement, contract, or offboarding
+- Enumerating them is the only way to catch access that accumulated from one-off "just add them to this repo" requests
+
+**Attack Prevented:** Persistent private-repository access via forgotten or over-scoped outside-collaborator grants
+
+#### ClickOps Implementation
+
+**Step 1: Enumerate Outside Collaborators**
+1. Navigate to: **Organization** → **People** → **Outside collaborators**
+2. Review each collaborator's repository access and business justification
+
+**Step 2: Remediate**
+1. Remove collaborators whose access is no longer needed
+2. Convert long-term collaborators to organization members assigned to teams with least-privilege repository access
+3. Schedule this audit on a recurring cadence
+
+**Time to Complete:** ~30 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="github" section="5.8" %}
+
+#### Validation & Testing
+1. The audit script (or **People → Outside collaborators**) returns the current collaborator list with repository access
+2. Removed collaborators can no longer access previously shared repositories
+3. The Sigma rule alerts when a new outside collaborator is added to the organization
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.2 | Access provisioning and deprovisioning |
+| **NIST 800-53** | AC-2 | Account management |
+| **NIST 800-53** | PS-4 | Personnel termination |
+
+---
+
 ## 6. Dependency & Supply Chain Security
 
 ### 6.1 Enable Dependency Review for Pull Requests
