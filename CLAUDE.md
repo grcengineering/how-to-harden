@@ -79,16 +79,18 @@ A control renders as a cheat-sheet row ONLY if its `### N.N` section carries `**
 
 `hardening_docs` in `docs/_data/doc_links.yml` = actual hardening/config documentation or an authoritative benchmark, never a Trust Center or marketing security page; omit the key when no honest link exists. Multi-source entries use a list of `{label, url}` (renders an expandable button). Full standard: [AGENTS.md §7](AGENTS.md).
 
-## Authoring Skills
+## Authoring Skills — Use These, Don't Improvise
 
-This repo ships Claude Code skills that encode these workflows end-to-end — prefer them over ad-hoc work:
+This repo ships skills in `.claude/skills/` that encode the core workflows as prescriptive step-by-step processes. They auto-load in Claude Code and are plain markdown for everyone else. **When a task matches, follow the skill:**
 
 | Skill | Use for |
 |-------|---------|
-| `create-hth-guide` | New vendor/product guides, platform breakouts, de-stubbing |
-| `update-hth-guide` | Currency updates, corrections, adding controls |
+| `create-hth-guide` | New vendor/product guides, platform breakouts, de-stubbing placeholders |
+| `update-hth-guide` | Currency updates, corrections, adding controls to existing guides |
 | `create-code-pack` | Any pack authoring or pack wiring |
 | `verify-hth` | The pre-commit verification battery (run after every change) |
+
+Source-selection standards (hardening guide vs Trust Center; which third parties are authoritative — CIS, DISA, CISA SCuBA, NIST, and the expert-vendor standing list) live in [SOURCES.md](SOURCES.md) — all four skills depend on it.
 
 ## File Locations
 

@@ -1,37 +1,51 @@
 ---
 name: update-hth-guide
-description: Update an existing How to Harden guide with current, verified hardening guidance — currency research against vendor docs/CIS/CISA/expert research, error correction, and new controls — without breaking the cheat sheet or numbering. USE WHEN updating a guide, refreshing guidance, adding a control to an existing guide, fixing an inaccuracy, or running a currency pass. NOT FOR creating new guides (use create-hth-guide) or pack code (use create-code-pack).
+description: Update an existing How to Harden guide with current, verified hardening guidance through a prescriptive research-verify-apply process — currency research against vendor docs/CIS/CISA/expert research, error correction, and new controls — without breaking the cheat sheet or numbering. USE WHEN updating a guide, refreshing guidance, adding a control to an existing guide, fixing an inaccuracy, or running a currency pass. NOT FOR creating new guides (use create-hth-guide) or pack code (use create-code-pack).
 ---
 
 # Update an HTH Guide
 
-Bring `docs/_guides/{slug}.md` to verified-current state: find what changed in the world, correct what the guide gets wrong, add what it lacks — every claim on a fetched source.
+A step-by-step currency-and-correction process for `docs/_guides/{slug}.md`. Companion standards: [SOURCES.md](../../../SOURCES.md), [AGENTS.md](../../../AGENTS.md).
 
-## Phase 1 — Currency research (before touching the file)
+## Phase 1 — Baseline the guide
 
-Read the guide's control list (`### N.N` headings), `last_updated`, and changelog. Then hunt MATERIAL deltas from:
+1. Read the guide's frontmatter (`version`, `last_updated`), changelog, and full control list (`### N.N` headings with their claims).
+2. Note every dated or versioned claim the guide makes (token lifetimes, deprecation dates, product names, benchmark versions, plan tiers, cited URLs) — these are the highest-probability rot points.
+3. **Checkpoint:** a written list of the guide's controls and its falsifiable claims.
 
-1. Vendor official security/admin docs and release notes/changelogs
-2. CIS Benchmarks (check the CURRENT version — numbering shifts across majors; GitHub/GitLab live under the CIS Software Supply Chain Security benchmark, not product slugs)
-3. CISA: SCuBA baselines (ScubaGoggles for Google Workspace, ScubaGear for M365/Entra), advisories, BOD directives
-4. Expert research from the last ~12 months: Wiz, Datadog Security Labs, Legit Security, Obsidian, Push Security, Trail of Bits, Praetorian, Mandiant/GTIG, AppOmni, etc.
-5. Incidents that changed best practice
+## Phase 2 — Currency research (fetch-gated)
 
-MATERIAL = new security control/setting shipped · changed default · deprecated mechanism the guide still recommends · new attack class with a documented mitigation · authoritative baseline to map · factual error in the guide. Blog rehashes and marketing are not material.
+Hunt MATERIAL deltas per source tier (SOURCES.md):
 
-**Verification gate:** every source URL must fetch successfully in-session (or verify in a real browser when the host blocks fetchers). A finding without a verified source is dropped, not softened. When research fan-out is large, dispatch research agents with this same gate and the pipe-delimited findings format: `guide | TYPE | title | what-to-say | verified-url | target-section`.
+1. **Tier 1:** the vendor's security/admin docs and release notes/changelogs since `last_updated`. Verify each of the guide's falsifiable claims against current docs.
+2. **Tier 2:** current CIS Benchmark version (numbering shifts between majors — a guide citing v3.1 when v7.0.0 is current is a finding), DISA STIG updates, CISA SCuBA baselines and BODs, KEV entries for the product.
+3. **Tier 3/4:** standing-list vendors and admitted researchers, last ~12 months, product-specific only.
+4. **MATERIAL means:** new security control/setting shipped · changed default · deprecated mechanism the guide still recommends · new attack class with a documented mitigation · authoritative baseline unmapped · factual error in the guide. Blog rehashes and marketing are not material.
+5. **The fetch gate:** every finding needs a URL fetched successfully in-session (real-browser check for blocked hosts). Unverifiable finding = dropped, not softened. Record findings as: `TYPE | title | what the guide should say | verified-url | target section`.
+6. When fanning out research agents, hand them this phase verbatim including the gate and the record format.
+7. **Checkpoint:** a findings list where every row carries a verified URL. Zero findings is a valid outcome — say so and stop.
 
-## Phase 2 — Apply
+## Phase 3 — Apply (errors first, structure-safe)
 
-- **Errors first.** A guide instructing a removed setting (this repo shipped one: a control for Google's Less Secure Apps toggle, deleted by Google in 2025) or asserting a stale fact (Dependabot "has no cooldown"; Zoom tokens "14 days") gets corrected in place, keeping its number.
-- **New controls** go at the END of the best-fit `## N.` section with the next free `### N.M` — never renumber existing controls (pack includes and inbound anchors depend on them). A genuinely new theme may add a new `## N.` section before the compliance/reference sections.
-- Every new control follows the full anatomy in `create-hth-guide` (the cheat-parser contract section) — otherwise it silently misses the cheat sheet.
-- Update notes on changed defaults go INSIDE the affected control as a bolded callout with the source link, not as loose prose.
-- **No pack includes for new controls** unless a verified pack exists (create it via create-code-pack; most SaaS admin settings are ClickOps-only — say so honestly).
-- If a pack automated a now-removed setting, delete the pack file too and re-run the sync — automation for a nonexistent setting is fabrication.
+1. **Corrections first.** A guide instructing a removed setting or asserting a stale fact gets corrected IN PLACE, keeping its number. (Real examples this repo shipped: a control for Google's Less Secure Apps toggle after Google deleted the feature; "Dependabot has no cooldown" after it became a default; Zoom token lifetimes off by two orders of magnitude; "Atlassian Access" a full product-rename behind.)
+2. **Changed defaults** become a bolded callout INSIDE the affected control with the source link — not loose prose.
+3. **New controls** go at the END of the best-fit `## N.` section with the next free `### N.M`. NEVER renumber existing controls — pack includes and inbound anchors depend on them. A genuinely new theme may add a new `## N.` section before the compliance/reference sections.
+4. Every new control follows the full anatomy in `create-hth-guide` Phase 4 (the cheat-parser contract) — otherwise it silently misses the cheat sheet.
+5. **No pack includes for new controls** unless a verified pack exists (create via create-code-pack). Most SaaS admin settings are ClickOps-only — state the automation surface honestly.
+6. If a pack automated a now-removed setting, delete the pack file and re-run `bash scripts/sync-packs-to-data.sh` — automation for a nonexistent setting is fabrication.
+7. Update References/Appendix links that rotted (redirect-chasing per SOURCES.md verification rules).
 
-## Phase 3 — Bookkeeping and verification
+## Phase 4 — Bookkeeping and verification
 
-- Changelog: new top row, date = commit date (`date +%F`), version bumped (minor for new controls, patch for corrections); frontmatter `version` + `last_updated` must match it.
-- Escape any literal `{{...}}` (Vault templates, Handlebars) with `{% raw %}...{% endraw %}` — the repo linter catches this (Test 8) but only outside code spans it recognizes.
-- Run the `verify-hth` skill. Its battery has caught real agent slips (missing changelog rows, unescaped Liquid) — do not skip it.
+1. Changelog: new top row — date `date +%F`, version bump (minor for new controls, patch for corrections only), a one-line summary naming what changed.
+2. Frontmatter `version` and `last_updated` must equal the new changelog row.
+3. Escape any literal `{{...}}` introduced (Vault templates etc.) with `{% raw %}...{% endraw %}`.
+4. **Run the `verify-hth` skill.** Its battery has caught real slips in this exact workflow (missing changelog rows, unescaped Liquid) — never skip it.
+
+## Gotchas
+
+- The most dangerous finding type is the one that looks fine: a control for a setting the vendor REMOVED still reads plausibly. Verify claims against current Tier 1 docs, not against whether the prose sounds right.
+- Conflicting strictness between vendor and benchmark is documented as BOTH-with-callout, never silently resolved (SOURCES.md conflict rules).
+- When two research sources disagree on a date/status, re-fetch the primary; if still ambiguous, state the claim cautiously without asserting the disputed specifics.
+- Version bumps and changelog rows move together — the linter checks structure, not consistency; consistency is on you.
+- On Windows, repo scripts run through Git Bash (`bash scripts/...`).

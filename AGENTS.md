@@ -12,11 +12,25 @@ Guidelines for AI assistants (Claude Code, Copilot, Cursor, etc.) working with t
 |------|------------------|
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Formatting rules, quality standards, PR process |
 | [PHILOSOPHY.md](PHILOSOPHY.md) | Scope definition, design principles, what's in/out |
+| [SOURCES.md](SOURCES.md) | The authoritative-source taxonomy: what counts as a hardening source (and what never does), tiered admission criteria, verification and conflict rules |
 | [templates/vendor-guide-template.md](templates/vendor-guide-template.md) | Full guide structure, control template, all required sections |
 | [README.md](README.md) | Project overview, repository structure |
 | [docs/about.md](docs/about.md) | Categories, guide organization |
 
 This file (AGENTS.md) provides **AI-specific guidance only**—it does not duplicate the above.
+
+## Authoring Playbooks — Use These For Core Workflows
+
+Four prescriptive, step-by-step playbooks live in `.claude/skills/`. They auto-load as skills in Claude Code, and they are plain markdown any agent or human can open and follow. **For the tasks below, follow the playbook rather than improvising:**
+
+| Task | Playbook |
+|------|----------|
+| New vendor/product guide, platform breakout, de-stubbing | [.claude/skills/create-hth-guide/SKILL.md](.claude/skills/create-hth-guide/SKILL.md) |
+| Currency update, correction, adding a control | [.claude/skills/update-hth-guide/SKILL.md](.claude/skills/update-hth-guide/SKILL.md) |
+| Any Code Pack authoring or wiring | [.claude/skills/create-code-pack/SKILL.md](.claude/skills/create-code-pack/SKILL.md) |
+| Pre-commit verification (every change) | [.claude/skills/verify-hth/SKILL.md](.claude/skills/verify-hth/SKILL.md) |
+
+The Task Procedures below remain as quick reference; the playbooks are the full processes.
 
 ---
 

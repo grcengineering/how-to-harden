@@ -4,8 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Guides: 116](https://img.shields.io/badge/Guides-116-blueviolet)](https://howtoharden.com)
-[![Code Packs: 47](https://img.shields.io/badge/Code%20Packs-47-orange)](packs/)
+[![Guides: 125](https://img.shields.io/badge/Guides-125-blueviolet)](https://howtoharden.com)
+[![Code Packs: 55](https://img.shields.io/badge/Code%20Packs-55-orange)](packs/)
 
 **Website:** [howtoharden.com](https://howtoharden.com) | **Organization:** [GRC Engineering](https://grc.engineering)
 
@@ -29,18 +29,19 @@ This is defense-in-depth done right: **First-party controls you configure** to l
 
 ### 1. Platform-Specific Hardening Guides
 
-Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **116 guides** across 9 categories:
+Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **125 guides** across 10 categories:
 
 | Category | Count | Examples |
 |----------|-------|---------|
-| Productivity | 23 | Slack, Airtable, Asana, Notion |
+| Productivity | 25 | Slack, Airtable, Asana, Notion |
 | Security | 21 | CrowdStrike, Snyk, Wiz, Zscaler |
 | Data | 17 | Snowflake, Databricks, MongoDB Atlas |
 | DevOps | 16 | GitHub, GitLab, Jenkins, Terraform Cloud |
 | Identity | 13 | Okta, Auth0, Microsoft Entra ID, Duo |
 | HR/Finance | 11 | BambooHR, ADP, Workday, Stripe |
 | Marketing | 9 | HubSpot, Braze, SendGrid, Twilio |
-| IT Operations | 4 | ServiceNow, Jamf, PagerDuty |
+| AI/ML Platform | 6 | Anthropic (Claude Enterprise, Claude Code, API), ChatGPT Enterprise, LangChain |
+| IT Operations | 5 | ServiceNow, Jamf, PagerDuty |
 | IaC | 2 | Terraform Cloud, Pulumi |
 
 Every control includes:
@@ -51,16 +52,18 @@ Every control includes:
 
 ### 2. Code Packs -- Executable Security Controls
 
-**47 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
+**55 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
 
 | Language Type | Directory | What It Does |
 |---------------|-----------|-------------|
 | Config-as-Code | `terraform/` | Terraform modules to enforce controls declaratively |
 | API Scripts | `api/` | bash + curl + jq against vendor REST APIs |
-| CLI Scripts | `cli/` | Vendor-native CLIs (`gh`, `okta`, `gcloud`, `az`) |
+| CLI Scripts | `cli/` | First-party vendor CLIs (`gh`, `vault`, `databricks`, `az`) |
 | SDK Scripts | `sdk/` | Python, PowerShell, Go vendor SDK integrations |
-| DB Queries | `db/` | SQL queries for Snowflake, Databricks, MongoDB |
+| DB Queries | `db/` | Vendor-native queries (Snowflake/Databricks SQL, BigQuery export SQL, SOQL, DAX) |
+| SIEM Queries | `siem/` | Splunk SPL and Sentinel KQL detection queries |
 | Detection Rules | `siem/sigma/` | Sigma rules (convert to Splunk, Elastic, Sentinel) |
+| Config Files | `config/` | Vendor-native settings files and config-emitting scripts |
 
 Code Packs are profile-level gated -- set `HTH_PROFILE_LEVEL=1` for baseline, `2` for hardened, or `3` for maximum security. See [packs/README.md](packs/README.md) for the full Code Pack Ontology.
 
@@ -123,11 +126,11 @@ how-to-harden/
 │   ├── CNAME                             # Custom domain (howtoharden.com)
 │   ├── index.html                        # Homepage with search, filter, sort
 │   ├── about.md                          # About page
-│   ├── _guides/                          # Platform hardening guides (116 guides)
+│   ├── _guides/                          # Platform hardening guides (125 guides)
 │   │   ├── salesforce.md
 │   │   ├── okta.md
 │   │   ├── github.md
-│   │   └── ... (110+ more platform guides)
+│   │   └── ... (120+ more platform guides)
 │   ├── _data/
 │   │   └── packs/                        # Auto-generated YAML for code pack rendering
 │   ├── _layouts/                         # Jekyll layouts
@@ -140,25 +143,44 @@ how-to-harden/
 │   └── assets/
 │       └── css/
 │           └── style.css                 # Dark + light theme stylesheet
-├── packs/                                # Code Packs (47 vendors)
+├── packs/                                # Code Packs (55 vendors)
 │   ├── README.md                         # Code Pack Ontology documentation
 │   ├── schema/                           # YAML schema definitions
 │   ├── okta/                             # Example vendor pack
 │   │   ├── terraform/                    # Terraform modules
 │   │   ├── api/                          # API scripts (bash + curl)
 │   │   └── siem/sigma/                   # Sigma detection rules
-│   └── ... (60 more vendor packs)
+│   └── ... (50+ more vendor packs)
 ├── scripts/
 │   └── sync-packs-to-data.sh            # Sync pack excerpts → Jekyll data YAML
 ├── templates/
 │   └── vendor-guide-template.md          # Template for new vendor guides
 ├── references/                           # Reference materials (DISA STIGs, etc.)
+├── .claude/skills/                       # Authoring playbooks (plain markdown, any agent/human)
+│   ├── create-hth-guide/SKILL.md         # New guide authoring process
+│   ├── update-hth-guide/SKILL.md         # Currency-update process
+│   ├── create-code-pack/SKILL.md         # Pack authoring process
+│   └── verify-hth/SKILL.md               # Pre-commit verification battery
 ├── VERSIONS.md                           # Central version registry for all guides
 ├── PHILOSOPHY.md                         # Project scope and design principles
+├── SOURCES.md                            # Authoritative-source taxonomy for guide content
 ├── CONTRIBUTING.md                       # Contribution guidelines
 ├── AGENTS.md                             # AI agent task procedures
 └── LICENSE                               # MIT License
 ```
+
+### Authoring Playbooks (for humans and any AI agent)
+
+The four playbooks under `.claude/skills/` are prescriptive, step-by-step processes for the project's core workflows. They load automatically as skills in Claude Code, but they are **plain markdown** — contributors and any other AI tool (Cursor, Copilot, etc.) can open and follow them directly:
+
+| Playbook | Use it when |
+|----------|-------------|
+| [`create-hth-guide`](.claude/skills/create-hth-guide/SKILL.md) | Writing a new vendor/product guide, breaking a platform into product guides, de-stubbing a placeholder |
+| [`update-hth-guide`](.claude/skills/update-hth-guide/SKILL.md) | Refreshing a guide with current guidance, fixing an inaccuracy, adding a control |
+| [`create-code-pack`](.claude/skills/create-code-pack/SKILL.md) | Adding or fixing any Code Pack, wiring pack includes |
+| [`verify-hth`](.claude/skills/verify-hth/SKILL.md) | The pass/fail verification battery — run before every commit |
+
+Source-selection standards (what counts as a "hardening guide" vs a Trust Center, and which third parties are authoritative) live in [SOURCES.md](SOURCES.md).
 
 ---
 
