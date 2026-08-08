@@ -6,9 +6,9 @@ slug: "vercel"
 tier: "5"
 category: "DevOps"
 description: "Comprehensive platform security for authentication, WAF, deployment protection, secrets, network isolation, security headers, and monitoring"
-version: "1.1.0"
+version: "1.2.0"
 maturity: "draft"
-last_updated: "2026-05-11"
+last_updated: "2026-08-08"
 ---
 
 
@@ -438,7 +438,7 @@ Maintain an inventory of all Marketplace integrations, Git connections, deploy h
 
 #### Description
 
-Enable multi-layered deployment protection using Vercel Authentication, password protection, and trusted IPs to prevent unauthorized access to preview and production deployments.
+Enable multi-layered deployment protection using Vercel Authentication, password protection, trusted IPs, or Passport (your own IdP) to prevent unauthorized access to preview and production deployments.
 
 #### Rationale
 
@@ -453,7 +453,7 @@ Enable multi-layered deployment protection using Vercel Authentication, password
 
 #### Protection Methods × Scopes
 
-Vercel documents three protection **methods** and four protection **scopes**. Choose one method and one scope per project.
+Vercel documents four protection **methods** and four protection **scopes**. Choose one method and one scope per project.
 
 **Methods:**
 
@@ -462,6 +462,9 @@ Vercel documents three protection **methods** and four protection **scopes**. Ch
 | Vercel Authentication | Hobby, Pro, Enterprise | Requires team login; covers Routing Middleware |
 | Password Protection | Enterprise, or **Pro + $150/mo Advanced Deployment Protection add-on** | 30-day minimum commitment on Pro add-on |
 | Trusted IPs | Enterprise only | IPv4 CIDR allowlist |
+| Passport | Enterprise only (account-team pricing) | Restricts deployment access to visitors authenticated against **your own IdP** (Entra ID, Okta, any OIDC provider) — see below |
+
+**Passport (Enterprise):** where Vercel Authentication gates on Vercel team membership, [Passport](https://vercel.com/docs/passport) gates on membership in *your* identity provider. You register a Vercel Connect OAuth/OIDC application that stores the issuer, authorization/token endpoints, and client ID/secret; Vercel validates the IdP response and sets a deployment-scoped session cookie for the visitor. Use it when the audience that must reach a protected deployment is your workforce or a customer directory rather than your Vercel team. Successful authentications are recorded as `passport-access-granted` events in both the Activity Log and Audit Logs (see Section 8.2).
 
 **Scopes:**
 
@@ -508,7 +511,8 @@ Vercel documents three protection **methods** and four protection **scopes**. Ch
 4. For iframe scenarios, add query parameter `?x-vercel-set-bypass-cookie=samesitenone`
 5. Bypass does **not** override active DDoS mitigations, rate limits during attacks, or attack-triggered challenges — defense-in-depth is preserved
 6. Regenerating or deleting a bypass secret invalidates previously-deployed builds; a redeploy is required to take effect
-7. L3: Disable automation bypass entirely if not required
+7. **If Passport is the active method**, send the bypass secret on the **original** request — Passport runs before deployment routes and before any Next.js proxy function, so a secret injected downstream by your application never reaches the check
+8. L3: Disable automation bypass entirely if not required
 
 **Time to Complete:** ~20 minutes
 
@@ -757,6 +761,88 @@ Restrict access to production domains — not just preview URLs — to authentic
 
 ---
 
+### 2.5 Enable Protected Source Maps
+
+**Profile Level:** L1 (Crawl)
+
+**NIST 800-53:** AC-3, SC-28, CM-6
+
+#### Description
+
+Protected Source Maps restrict browser `.map` files so they are served only to authenticated viewers instead of to the anonymous internet. The setting is available on all plans and is enabled **by default for newly created projects** — but **existing projects must opt in**, which means any project created before the feature shipped is still publishing its source maps unless someone turned the toggle on.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Public `.map` files reconstruct original, unminified source — including internal route names, feature flags, comments, API shapes, and occasionally hard-coded values that were never meant to leave the build
+- The default-on behaviour applies only to new projects, so the exposure is silent and skews toward your oldest, most business-critical applications
+- Unauthorized requests are answered with **404**, not 401/403, so an attacker cannot use the response code to confirm that a given map path exists
+
+**Attack Prevented:** Source code disclosure via published source maps, reconnaissance of internal application structure ahead of a targeted attack, discovery of secrets accidentally compiled into client bundles.
+
+#### Prerequisites
+
+- Any Vercel plan (Hobby, Pro, Enterprise)
+- Project Admin or Team Owner access
+- An inventory of CI jobs and error trackers that fetch `.map` files from the deployment
+
+#### ClickOps Implementation
+
+**Step 1: Audit Existing Projects**
+
+1. For every project created before the feature shipped, request a known `.map` URL from the production deployment while logged out
+2. Any `200` response means the project is exposed and must be remediated in Step 2
+
+**Step 2: Enable the Toggle**
+
+1. Navigate to: **Project Settings → Deployment Protection → Protected Source Maps**
+2. Toggle to **Enabled**
+3. Confirm new projects inherit the enabled default; do not assume the setting propagated to existing ones
+
+**Step 3: Understand the Scope Boundary**
+
+1. Protection covers **browser `.map` files served from the deployment** only
+2. It does **not** cover inline source maps compiled into the bundle, source maps for server-side Vercel Functions, or maps you upload to a third-party error tracker — those remain governed by wherever they land
+3. If your build inlines source maps, remove the inlining before relying on this control
+
+**Step 4: Repair Legitimate Consumers**
+
+1. CI pipelines that upload maps to an error tracker (Sentry, Datadog, Bugsnag) must send the **Protection Bypass for Automation** header (Section 2.1, Step 5) on the map fetch
+2. Human debugging of a protected deployment goes through **Vercel Toolbar → Debug Mode** rather than a raw fetch
+
+**Step 5: Verify via API (Optional)**
+
+1. The same setting is exposed on the REST API project object as `protectedSourcemaps`; `PATCH /v9/projects/{id}` with that field set to `true` flips it programmatically for bulk remediation
+
+**Time to Complete:** ~15 minutes (plus inventory time proportional to project count)
+
+#### Validation & Testing
+
+1. An unauthenticated request for a known `.map` path returns **404**
+2. An authenticated team member using Vercel Toolbar Debug Mode can still retrieve the map
+3. The error tracker continues to receive uploaded maps from CI (bypass header present)
+4. Every pre-existing project has been checked, not just the newest ones
+
+**Expected result:** No deployment serves browser source maps to anonymous requests, and every legitimate consumer authenticates explicitly.
+
+#### Monitoring & Maintenance
+
+- **On project creation:** Confirm the default remained enabled
+- **Quarterly:** Re-run the logged-out `.map` probe across production domains as part of the Section 1.5 audit
+- **On event:** Re-verify after any change to the build's source-map configuration
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC6.7 | Logical access controls, protection of confidential information |
+| **NIST 800-53** | AC-3, CM-6, SC-28 | Access enforcement, configuration settings, protection of information at rest |
+| **ISO 27001** | A.9.4.1, A.14.2.5 | Information access restriction, secure system engineering principles |
+| **PCI DSS** | 6.5, 1.3 | Secure coding practices, prohibit direct public access |
+
+---
+
 ## 3. Web Application Firewall
 
 ### 3.1 Enable WAF with Managed Rulesets
@@ -871,17 +957,31 @@ Implement IP-based access control and rate limiting to protect against brute for
 #### Rationale
 
 **Why This Matters:**
-- IP blocking available on all plans (Hobby: 10, Pro: 100, Enterprise: custom)
+- IP blocking is available on all plans, but the rule budget is small on Hobby — plan the block list against the limits below rather than assuming headroom
 - Rate limiting prevents brute force, credential stuffing, and API abuse
 - Persistent actions automatically block repeat offenders for configurable durations
 
 **Attack Prevented:** Brute force attacks, credential stuffing, API abuse, scraping, DDoS amplification
 
+#### IP Blocking Limits by Plan (Primary Source)
+
+Per [Vercel WAF docs](https://vercel.com/docs/vercel-firewall/vercel-waf):
+
+| Capability | Hobby | Pro | Enterprise |
+|------------|-------|-----|------------|
+| Project-level IP blocking | Up to 3 | Up to 100 | Up to 1000 |
+| Account-level IP blocking | N/A | N/A | Custom |
+| WAF Custom Rules | 3 | 40 | Up to 1000 |
+
+**CIDR ceiling:** account-level IP blocking rules accept a maximum prefix size of **/16 for IPv4** and **/48 for IPv6** — a broader range must be expressed as multiple rules, which consumes the budget above.
+
+**JA3 (Legacy)** is available as a Custom Rule Parameter on **Enterprise only**; JA4 is the current fingerprint and should be preferred for new rules.
+
 #### ClickOps Implementation
 
 **Step 1: Block Known Bad IPs**
 1. Navigate to: **Project → Firewall → IP Blocking**
-2. Add known malicious IP addresses or ranges
+2. Add known malicious IP addresses or ranges — stay within the per-plan limits above
 3. Use per-host blocking for domain-specific rules
 
 **Step 2: Configure Rate Limiting Rules (Pro+)**
@@ -1060,6 +1160,101 @@ Control traffic from known AI crawlers — training crawlers, search-assistant u
 | **NIST 800-53** | SI-4, AC-4 | Monitoring, information flow enforcement |
 | **ISO 27001** | A.13.1.1, A.13.2.1 | Network controls; information transfer policies |
 | **PCI DSS** | 12.10.5 | Include alerts from monitoring systems |
+
+---
+
+### 3.5 Protect High-Value Routes with Vercel BotID
+
+**Profile Level:** L2 (Walk)
+
+**NIST 800-53:** SC-5, SI-4, IA-2
+
+#### Description
+
+Vercel BotID is an invisible CAPTCHA that protects **specific high-value routes** — checkout, signup, login, expensive AI or search APIs — against sophisticated bots that execute JavaScript and defeat signature-based classification (Playwright, Puppeteer, and their stealth forks). It is a distinct product from Bot Protection (Section 3.1) and the AI Bots Managed Ruleset (Section 3.4): those classify site-wide traffic, BotID gates individual handlers. Unlike every other firewall control in this guide, BotID is implemented in **application code**, not in the dashboard.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Managed bot rulesets classify on request-level signals (user agent, JA4, IP reputation); a headless browser driving a real JS runtime looks like a browser and passes them
+- The cost of bot abuse concentrates on a handful of endpoints — an inference API or a signup form — so per-route protection buys most of the benefit for a fraction of the friction
+- Basic BotID is free on all plans including Hobby, which makes "we couldn't afford bot defense" no longer a valid reason to leave a checkout endpoint open
+
+**Attack Prevented:** Automated account creation and credential stuffing, checkout/inventory abuse and scalping, cost-amplification against metered APIs, scripted scraping of authenticated surfaces.
+
+#### Protection Levels
+
+| Level | What it does | Availability |
+|-------|--------------|--------------|
+| Basic | Challenge-integrity validation on the declared routes | Free on all plans, including Hobby |
+| Deep Analysis | Kasada-powered ML classification, executed **only after** Basic passes | Pro at $1 per 1,000 `checkBotId()` calls; Enterprise custom |
+
+#### Prerequisites
+
+- A project deployed on Vercel (BotID is enforced at the Vercel edge)
+- Next.js 15.3+ for the `instrumentation-client.ts` integration path, or a supported alternative (Nuxt module; `vercel.json` rewrites for other frameworks)
+- A decided list of protected `(path, method)` pairs — BotID is opt-in per route, not global
+
+#### ClickOps Implementation
+
+**Step 1: Enable Deep Analysis (Dashboard)**
+
+1. Navigate to: **Dashboard → Project → Firewall → Rules → Vercel BotID Deep Analysis**
+2. Enable it if you want ML classification on top of the free Basic tier
+3. Note the Pro metering: $1 per 1,000 `checkBotId()` calls — scope the protected route list accordingly
+
+**Step 2: Install and Wire the Package (Code)**
+
+1. Install the `botid` package into the application
+2. Wrap the framework config — for Next.js, wrap `next.config` with `withBotId()`; Nuxt uses the dedicated module; other frameworks proxy the BotID endpoints via `vercel.json` rewrites
+3. This step is what routes the challenge traffic; skipping it silently disables enforcement
+
+**Step 3: Declare Protected Routes Client-Side**
+
+1. Call `initBotId()` with a `protect` array of `(path, method)` pairs in `instrumentation-client.ts` (Next.js 15.3+), or render the `<BotIdClient />` component with the same declarations
+2. **Gotcha:** a route that is checked server-side but never declared client-side will make `checkBotId()` fail — the client declaration is what arms the challenge
+
+**Step 4: Gate the Handler Server-Side**
+
+1. At the top of each protected handler, call `checkBotId()` and return **403** when the result reports `isBot`
+2. Treat this as authorization code: it belongs in the handler, not in middleware (Section 10.2)
+3. **Gotcha:** in local development `checkBotId()` always reports `isBot: false` unless `developmentOptions` is configured — never conclude from a passing local test that enforcement works
+
+**Step 5: Observe and Tune**
+
+1. Use the **Firewall** tab traffic dropdown and filter on **BotID** to see classification volume per route
+2. To exempt a known-good automated client, add a WAF Custom Rule with a **Bypass** action (Section 3.1) rather than removing the route from the protected list
+
+**Time to Complete:** ~45 minutes (dashboard toggle plus application changes)
+
+#### Validation & Testing
+
+1. A headless-browser request to a protected route receives **403**; a normal browser request succeeds
+2. Every route passed to `checkBotId()` server-side also appears in the client-side `protect` declarations
+3. Deep Analysis shows classification events in the Firewall tab's BotID filter (if enabled)
+4. Verification was performed against a **deployed** environment, not local dev
+5. Bypass rules exist for each legitimate automated consumer and are reviewed quarterly
+
+**Expected result:** High-value routes reject JS-capable bots at the edge while ordinary users see nothing.
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|----------|
+| **User Experience** | None | Invisible challenge — no interaction required |
+| **System Performance** | Low | Challenge runs client-side; check adds a single edge call per protected request |
+| **Maintenance Burden** | Medium | Route list must be kept in sync between client declaration and server check |
+| **Rollback Difficulty** | Easy | Remove the `checkBotId()` gate or disable Deep Analysis in the dashboard |
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.6, CC6.1 | External threat protection, logical access controls |
+| **NIST 800-53** | SC-5, SI-4, IA-2 | Denial-of-service protection, system monitoring, identification and authentication |
+| **ISO 27001** | A.13.1.1, A.9.4.1 | Network controls, information access restriction |
+| **PCI DSS** | 6.6, 8.1 | Web application firewall, unique identification |
 
 ---
 
@@ -1340,7 +1535,9 @@ Implement secure environment variable management with proper scoping, **mandator
 - Sensitive variables are **not supported in the Development environment** — local dev secrets must be managed out of band (1Password, HashiCorp Vault, Doppler)
 - Total limit: 64 KB per deployment; Edge Functions: 5 KB per variable
 
-**Attack Prevented:** Secret exposure in client bundles, credential leakage via preview deployments, unauthorized production secret access, mass-exposure during platform incidents affecting non-sensitive storage.
+**Build-log redaction has a length floor.** Per [Vercel's sensitive environment variables docs](https://vercel.com/docs/environment-variables/sensitive-environment-variables), sensitive values are redacted from build logs **only when they are 32 characters or longer** — a short secret (a 16-character API key, a 6-digit PIN, a legacy shared password) still prints in plaintext into build output even when correctly flagged Sensitive. Two platform-managed values, `VERCEL_AUTOMATION_BYPASS_SECRET` and `VERCEL_OIDC_TOKEN`, are always redacted regardless of length. Generate every secret at **32+ characters** so redaction actually engages, and treat any shorter legacy secret as build-log-exposed until rotated. Each redaction also emits an Activity Log event naming the key, project, and deployment (never the value) — a usable detection signal, see Section 8.2.
+
+**Attack Prevented:** Secret exposure in client bundles, credential leakage via preview deployments, unauthorized production secret access, mass-exposure during platform incidents affecting non-sensitive storage, plaintext short-secret leakage into build logs.
 
 **Real-World Incidents:**
 
@@ -1395,8 +1592,9 @@ Implement secure environment variable management with proper scoping, **mandator
 2. Every environment variable in every project has the Sensitive tag (production + preview)
 3. No `NEXT_PUBLIC_` variables contain secret values
 4. Production secrets not accessible in preview environment
-5. Local dev workflow does not depend on Vercel-stored Development env vars for secrets
-6. OIDC federation active for cloud provider access (L2)
+5. Every secret value is ≥32 characters, so build-log redaction engages; any shorter legacy secret has been rotated
+6. Local dev workflow does not depend on Vercel-stored Development env vars for secrets
+7. OIDC federation active for cloud provider access (L2)
 
 **Expected result:** Every secret in every environment is either Sensitive-flagged or replaced by OIDC federation; no secret is readable from the dashboard or API after creation.
 
@@ -1846,21 +2044,27 @@ Specify the desired schema via the REST API `schemas` property when creating or 
 
 #### Description
 
-Enable enterprise audit logging with real-time SIEM streaming to track all administrative actions, configuration changes, and security events.
+Enable enterprise audit logging and forward it to your SIEM as an **Audit Log Drain** to track all administrative actions, configuration changes, and security events.
 
 #### Rationale
 
 **Why This Matters:**
 - Audit logs capture 90 days of immutable administrative activity
 - Tracks: member changes, environment variable CRUD, deployment protection changes, domain changes, integration installs, and more
-- SIEM streaming enables real-time alerting on security-relevant events
+- Real-time forwarding enables alerting on security-relevant events instead of after-the-fact CSV review
 - CSV export available for compliance reporting
 
 **Attack Prevented:** Undetected administrative compromise, unauthorized configuration changes, insider threat
 
+#### Deprecated: Custom SIEM Log Streaming
+
+**The standalone "Custom SIEM Log Streaming" configuration under Team Settings → Security & Privacy → Audit Log → Configure is obsolete as of 2026-08-07 and has been replaced by Audit Log Drains** ([Vercel changelog](https://vercel.com/changelog/audit-log-drains-now-support-datadog-splunk-and-panther)). Audit logs now ride the same Drains surface as runtime, trace, analytics, and Speed Insights data (Sections 8.1 and 8.4) — which also means the drain signature verification in **Section 8.4 now applies to audit log delivery**, not just runtime logs. If your team configured the legacy streaming path, migrate it to a drain; the destination list and delivery guarantees are not identical.
+
 #### Prerequisites
 
-- Vercel Enterprise plan
+- Vercel Enterprise plan (Audit Log Drains remain Enterprise-only)
+- SIEM or object-store destination: **Amazon S3, Splunk, Datadog, Panther, or a custom HTTPS endpoint**
+- Secrets manager to store the per-drain HMAC secret (Section 8.4)
 
 #### ClickOps Implementation
 
@@ -1868,16 +2072,19 @@ Enable enterprise audit logging with real-time SIEM streaming to track all admin
 1. Navigate to: **Team Settings → Security → Audit Log**
 2. Review available event types and current activity
 
-**Step 2: Configure SIEM Streaming**
-1. Navigate to: **Team Settings → Security & Privacy → Audit Log → Configure**
-2. Select SIEM destination: AWS S3, Splunk, Datadog, Google Cloud Storage, or Generic HTTP
-3. Configure authentication (API key, header-based, or AWS credentials)
-4. Select format: JSON or NDJSON
-5. Allowlist Vercel SIEM IPs if endpoint is firewalled
+**Step 2: Create an Audit Log Drain**
+1. Navigate to: **Team Settings → Drains → Add Drain**
+2. Select data type **Audit Log**
+3. Select destination: **Amazon S3**, **Splunk**, **Datadog**, **Panther**, or a **custom HTTPS endpoint**
+4. Configure destination authentication (API key, header-based, or AWS credentials)
+5. Record the drain secret in your secrets manager and verify deliveries per Section 8.4
+6. Via the REST API the same drain is created with the `schemas` property set to `audit_log` version `v1`; pre-flight a custom endpoint with the validate-drain-delivery-configuration call before going live
 
 **Step 3: Build Detection Rules**
 1. Create alerts for critical events: `team.member.role.updated`, `project.env_variable.created`, `password_protection.disabled`, `saml.updated`
-2. Monitor for unusual patterns: bulk member additions, env var decryption events, integration installs
+2. Alert on `passport-access-granted` — successful Passport authentications (Section 2.1) are written to both the Activity Log and Audit Logs with the visitor, protected hostname, and project, making them the authoritative record of who reached a Passport-protected deployment
+3. Treat sensitive-environment-variable **redaction events** (Section 6.1) as a signal: they name the key, project, and deployment whose build log contained a secret
+4. Monitor for unusual patterns: bulk member additions, env var decryption events, integration installs
 
 **Time to Complete:** ~30 minutes
 
@@ -1886,11 +2093,12 @@ Enable enterprise audit logging with real-time SIEM streaming to track all admin
 #### Validation & Testing
 
 1. Audit log shows recent administrative events
-2. SIEM receiving streamed audit events in real-time
-3. Detection rules firing on test events
-4. CSV export produces valid compliance report
+2. The Audit Log Drain is delivering events to the SIEM in real time (legacy Custom SIEM Log Streaming has been retired)
+3. Drain payload signatures validate per Section 8.4
+4. Detection rules firing on test events, including a test `passport-access-granted` event if Passport is in use
+5. CSV export produces valid compliance report
 
-**Expected result:** All administrative actions logged, streamed, and alerted on
+**Expected result:** All administrative actions logged, delivered over a signature-verified Audit Log Drain, and alerted on
 
 #### Compliance Mappings
 
@@ -2059,6 +2267,7 @@ Maintain a defensive posture against Next.js framework CVEs: pin to a patched ve
 - The most impactful class (middleware bypass, RSC deserialization) abuses internal HTTP headers that should never arrive from the public internet
 - Self-hosted Next.js forks **do not** receive Vercel's automatic WAF mitigations — customers off-platform must implement the defenses themselves
 - Vercel's $1M React2Shell bounty surfaced 20 unique WAF bypasses, confirming that edge protection alone is insufficient — framework patching is mandatory
+- The middleware-bypass class **recurs**: CVE-2026-64642 (July 2026) bypasses all middleware auth checks on App Router projects using Turbopack with exactly one `config.i18n.locales` entry — the same outcome as CVE-2025-29927 through an unrelated mechanism, which is the empirical case for Section 10.2's in-handler authorization
 
 **Attack Prevented:** Authorization bypass via middleware, RCE via RSC deserialization, SSRF via Server Actions or `/_next/image`, cache poisoning, source code exposure.
 
@@ -2071,6 +2280,15 @@ Maintain a defensive posture against Next.js framework CVEs: pin to a patched ve
 | CVE-2025-55183 | RSC source exposure | Same as React2Shell | - | [Vercel bulletin](https://vercel.com/kb/bulletin/security-bulletin-cve-2025-55184-and-cve-2025-55183) |
 | CVE-2025-55184 | RSC DoS | Same as React2Shell | - | [Vercel bulletin](https://vercel.com/kb/bulletin/security-bulletin-cve-2025-55184-and-cve-2025-55183) |
 | CVE-2026-23869 | App Router RSC DoS | 15.5.15, 16.2.3 | - | [Vercel changelog](https://vercel.com/changelog/summary-of-cve-2026-23869) |
+| CVE-2026-64641 | App Router Server Actions CPU-exhaustion DoS (High) | 15.5.21, 16.2.11 | - | [Next.js July 2026 security release](https://nextjs.org/blog/july-2026-security-release) |
+| CVE-2026-64642 | Middleware/proxy bypass — App Router with Turbopack and exactly one `config.i18n.locales` entry; bypasses **all** middleware auth checks (High) | 15.5.21, 16.2.11 | - | [Next.js July 2026 security release](https://nextjs.org/blog/july-2026-security-release) |
+| CVE-2026-64645 | SSRF via `rewrites()` / `redirects()` destination hostname built from request-controlled input; on `redirects()` becomes Open Redirect (High) | 15.5.21, 16.2.11 | - | [Next.js July 2026 security release](https://nextjs.org/blog/july-2026-security-release) |
+| CVE-2026-64649 | SSRF in Server Actions on custom servers via attacker-controlled `Host` header (High) | 15.5.21, 16.2.11 | - | [Next.js July 2026 security release](https://nextjs.org/blog/july-2026-security-release) |
+| CVE-2026-64643 | Unauthenticated global disclosure of Server Action / `use cache` endpoint IDs — recon primitive (Medium) | 15.5.21, 16.2.11 | - | [Next.js July 2026 security release](https://nextjs.org/blog/july-2026-security-release) |
+| CVE-2026-64644 | `/_next/image` DoS via malicious remote SVG (Medium) — see Section 10.1 | 15.5.21, 16.2.11 | - | [Next.js July 2026 security release](https://nextjs.org/blog/july-2026-security-release) |
+| CVE-2026-64646 | Unbounded Server Action payload in the Edge runtime (Medium) | 15.5.21, 16.2.11 | - | [Next.js July 2026 security release](https://nextjs.org/blog/july-2026-security-release) |
+| CVE-2026-64647 | Server-side fetch cache confusion — response body of another request returned (Medium) | 15.5.21, 16.2.11 | - | [Next.js July 2026 security release](https://nextjs.org/blog/july-2026-security-release) |
+| CVE-2026-64648 | Server-side fetch cache confusion (companion to CVE-2026-64647, Medium) | 15.5.21, 16.2.11 | - | [Next.js July 2026 security release](https://nextjs.org/blog/july-2026-security-release) |
 | CVE-2025-49826 | 204 cache poisoning DoS | 15.1.8 | - | [GHSA](https://github.com/advisories/GHSA-67rr-84xm-4c7r) |
 | CVE-2024-46982 | Pages Router cache poisoning | 13.5.7, 14.2.10 | - | [GHSA](https://github.com/vercel/next.js/security/advisories/GHSA-gp8f-8m3g-qvj9) |
 | CVE-2024-34351 | Server Actions SSRF | 14.1.1 | - | [Assetnote](https://www.assetnote.io/resources/research/advisory-next-js-ssrf-cve-2024-34351) |
@@ -2084,16 +2302,19 @@ Maintain a defensive posture against Next.js framework CVEs: pin to a patched ve
 
 #### ClickOps Implementation
 
-**Step 1: Pin Next.js to a Known-Patched Version**
+**Step 1: Pin Next.js to a Supported LTS Channel**
 
-1. Edit `package.json` to pin `next` to an exact version that is at or above the highest fix in the CVE table above (at minimum 15.5.15 or 16.2.3 as of 2026-04)
-2. Commit the lockfile; configure Renovate/Dependabot to propose upgrades as they are released
+1. Next.js version policy is now **channelled**: pin to the **Active LTS** line (currently `16.2.x`) or the **Maintenance LTS** line (currently `15.5.x`) rather than to an arbitrary exact version chosen once and forgotten
+2. Minimum safe versions as of the July 2026 security release: **16.2.11** (Active LTS) or **15.5.21** (Maintenance LTS). Anything below these is vulnerable to the nine CVEs in the table above, including a middleware bypass in the same class as CVE-2025-29927
+3. Commit the lockfile; configure Renovate/Dependabot to propose upgrades within the pinned channel as they are released
 
-**Step 2: Subscribe to Advisories**
+**Step 2: Subscribe to the Preannounced Security Release Program**
 
-1. Subscribe the security team to `nextjs.org/blog` (security-tagged posts)
-2. Watch `github.com/vercel/next.js` **Security Advisories** tab
-3. Watch `vercel.com/changelog` (security tag)
+1. Since 2026-07-13, Next.js runs a **preannounced monthly security-release program**: roughly a month ahead of each release, `nextjs.org/blog` publishes the expected release date and the **highest anticipated severity**, so upgrade windows can be scheduled before the patch lands rather than scrambled after ([program announcement](https://nextjs.org/blog/next-security-release-program))
+2. Put the announced dates on the change calendar and pre-book the maintenance window — the whole point of preannouncement is that patch day is no longer a surprise
+3. Ad-hoc **out-of-band** patches still ship for urgent, in-the-wild cases; the monthly cadence does not replace an emergency path
+4. Subscribe the security team to `nextjs.org/blog` (security-tagged posts), watch the `github.com/vercel/next.js` **Security Advisories** tab, and watch `vercel.com/changelog` (security tag)
+5. Expect **advisory volume to rise**: Vercel now runs LLM-assisted vulnerability discovery against the framework (`vercel-labs/deepsec`) alongside an expanded HackerOne bug bounty. More advisories per year is a sign of the program working, not of the framework degrading — plan capacity accordingly
 
 **Step 3: Deploy Edge Header-Strip Rules (Defense in Depth)**
 
@@ -2101,11 +2322,12 @@ Maintain a defensive posture against Next.js framework CVEs: pin to a patched ve
 2. Add a **Log** Custom Rule for requests containing `x-nextjs-data` or `Next-Action` — these are exploit precursors that should not arrive from the public internet in normal operation
 3. Pair with Persistent Actions (Section 3.3) so a single probe triggers a time-boxed block
 
-**Step 4: Measure Mean-Time-to-Patch**
+**Step 4: Measure Mean-Time-to-Patch (Clock Starts at Preannouncement)**
 
-1. Track the number of days between any Next.js security advisory and that version being deployed to production
-2. Build time is part of MTTP — per Eduardo Bouças's analysis, teams with >10-minute builds stayed vulnerable to CVE-2025-29927 longer; optimize build pipelines as a security investment
-3. Target MTTP ≤ 72 hours for critical (CVSS ≥ 9.0)
+1. Under the monthly program the MTTP clock **starts at the pre-announcement**, not at CVE publication — by the time the advisory is public, a prepared team should already have a scheduled window and a tested upgrade branch
+2. Track two numbers: days from pre-announcement to a merged upgrade branch, and hours from release publication to production deploy
+3. Build time is part of MTTP — per Eduardo Bouças's analysis, teams with >10-minute builds stayed vulnerable to CVE-2025-29927 longer; optimize build pipelines as a security investment
+4. Target ≤ 72 hours from publication to production for critical (CVSS ≥ 9.0); out-of-band emergency patches keep the same target
 
 **Step 5: Defense-in-Depth on Middleware**
 
@@ -2117,7 +2339,7 @@ Maintain a defensive posture against Next.js framework CVEs: pin to a patched ve
 
 #### Validation & Testing
 
-1. `package.json` pins `next` to a version at or above every fix in the CVE table
+1. `package.json` pins `next` to a supported LTS channel at or above every fix in the CVE table (minimum 16.2.11 Active LTS or 15.5.21 Maintenance LTS)
 2. A request with `x-middleware-subrequest` header from the public internet is denied at the Vercel Firewall
 3. Requests with `x-nextjs-data` or `Next-Action` are logged and surface in Firewall observability
 4. Renovate/Dependabot has proposed the latest Next.js patch; its PR is merged within MTTP target
@@ -2127,6 +2349,7 @@ Maintain a defensive posture against Next.js framework CVEs: pin to a patched ve
 
 #### Monitoring & Maintenance
 
+- **On pre-announcement (monthly):** Read the announced date and anticipated severity on `nextjs.org/blog`; book the upgrade window and prepare the branch before the release lands
 - **On advisory:** Review every advisory on `nextjs.org/blog`; patch critical CVEs within 72 hours
 - **Weekly:** Review Firewall logs for `x-middleware-subrequest` / `x-nextjs-data` / `Next-Action` probes
 - **Monthly:** Measure MTTP metric; if trending up, invest in faster builds
@@ -2341,6 +2564,81 @@ Placing a reverse proxy (Cloudflare, Azure Front Door, AWS CloudFront) in front 
 
 ---
 
+### 10.4 Treat Container Registry Public Access as a Change-Controlled Action
+
+**Profile Level:** L1 (Crawl)
+
+**NIST 800-53:** AC-3, AC-21, CM-3, SA-12
+
+#### Description
+
+Since 2026-08-07, a Vercel Container Registry repository can be flipped from private to **public** ([changelog](https://vercel.com/changelog/vercel-container-registry-repositories-can-now-be-made-public)). Repositories are private by default, and making one public grants **read-only pull access to every Vercel account holder** — an expansion from the previous ceiling of up to 100 explicitly named teams to the entire platform user base. Push and delete remain protected. Because image layers are trivially extractable once pullable, publishing a repository is an irreversible disclosure of everything baked into those layers.
+
+#### Rationale
+
+**Why This Matters:**
+
+- The audience change is categorical, not incremental: "up to 100 named teams" and "anyone with a Vercel account" are different security postures, and the toggle that moves between them is a single dashboard confirmation
+- Container layers routinely embed build-time secrets, internal registry credentials, private package tokens, and proprietary source that survive in intermediate layers even when deleted in a later `RUN` step
+- Public access is a *sharing* feature, so it is easy to enable for a legitimate reason (a public sample image, an OSS artifact) and never re-review — exactly the drift pattern the Section 1.5 audit exists to catch
+
+**Attack Prevented:** Inadvertent disclosure of proprietary source and build artifacts, harvesting of build-time secrets and registry credentials from image layers, supply-chain reconnaissance against your internal build tooling.
+
+#### Prerequisites
+
+- Vercel Container Registry in use for the project
+- Project dashboard access, or the Vercel CLI authenticated to the team
+- A defined approval path for publishing artifacts externally
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Repository Visibility**
+
+1. Navigate to: **Project dashboard → Images**
+2. For each repository, open **Settings** and record whether **Public Access** is enabled
+3. Treat any repository whose public status nobody can explain as an incident until proven intentional
+
+**Step 2: Gate the Toggle Behind Change Control**
+
+1. Enabling public access requires typing the repository name to confirm — treat that confirmation as the *last* step, not the approval
+2. Require a documented approval (security review of the image contents plus a named business owner) before anyone reaches the toggle
+3. The CLI path is equivalent and equally consequential: `vercel vcr config <repository> --public true` — cover it in the same policy, and keep it out of unattended automation
+
+**Step 3: Verify the Image Before Publishing**
+
+1. Pull the exact tag and inspect every layer for secrets, internal registry credentials, private package tokens, and proprietary source
+2. Rebuild from a clean, secret-free Dockerfile rather than attempting to scrub an existing image — deleted files persist in earlier layers
+3. Confirm the base image and any vendored dependencies are ones you are licensed to redistribute
+
+**Step 4: Fold Into the Quarterly Audit**
+
+1. Add registry visibility to the Section 1.5 third-party/integration audit checklist
+2. Re-confirm each public repository still has a business owner and still needs to be public
+3. Revert to private the moment the justification lapses — and rotate anything that was ever embedded in a published layer
+
+**Time to Complete:** ~30 minutes (initial inventory) + quarterly review
+
+#### Validation & Testing
+
+1. Every Container Registry repository's visibility is recorded, with a named owner for each public one
+2. No repository was made public without a documented approval
+3. A layer inspection of each public image finds no secrets, credentials, or proprietary source
+4. Push and delete operations from an unauthorized account are rejected (only pull is public)
+5. Registry visibility appears on the quarterly Section 1.5 audit checklist
+
+**Expected result:** Repository visibility is an explicitly approved, periodically re-justified decision — never an incidental one.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC6.6, CC8.1 | Logical access controls, external threat protection, change management |
+| **NIST 800-53** | AC-3, AC-21, CM-3, SA-12 | Access enforcement, information sharing, configuration change control, supply chain protection |
+| **ISO 27001** | A.9.4.1, A.13.2.1, A.12.1.2 | Information access restriction, information transfer policies, change management |
+| **PCI DSS** | 6.4.1, 7.2, 3.1 | Separate dev/test from production, restrict access by job function, data retention and disposal |
+
+---
+
 ## Appendix A: Edition Compatibility
 
 | Control | Section | Hobby | Pro | Enterprise |
@@ -2354,13 +2652,18 @@ Placing a reverse proxy (Cloudflare, Azure Front Door, AWS CloudFront) in front 
 | Deployment Protection (Standard) | 2.1 | ✅ | ✅ | ✅ |
 | Password Protection | 2.1 | ❌ | Add-on ($150/mo) | ✅ |
 | Trusted IPs | 2.1 | ❌ | ❌ | ✅ |
+| Passport (IdP-backed deployment access) | 2.1 | ❌ | ❌ | ✅ (account-team pricing) |
+| Protected Source Maps | 2.5 | ✅ | ✅ | ✅ |
 | Git Fork Protection | 2.2 | ✅ | ✅ | ✅ |
 | Rolling Releases | 2.3 | ❌ | ✅ | ✅ |
-| WAF Custom Rules | 3.1 | 3 rules | 40 rules | 1,000 rules |
+| WAF Custom Rules | 3.1 | 3 rules | 40 rules | Up to 1,000 rules |
 | WAF Managed Rulesets | 3.1 | ❌ | ❌ | ✅ |
-| IP Blocking (project) | 3.2 | 10 IPs | 100 IPs | Custom |
-| IP Blocking (account) | 3.2 | ❌ | ❌ | ✅ |
+| JA3 (Legacy) rule parameter | 3.2 | ❌ | ❌ | ✅ |
+| IP Blocking (project) | 3.2 | Up to 3 | Up to 100 | Up to 1,000 |
+| IP Blocking (account) | 3.2 | ❌ | ❌ | Custom (max /16 IPv4, /48 IPv6) |
 | Rate Limiting | 3.2 | ❌ | ✅ | ✅ |
+| Vercel BotID — Basic | 3.5 | ✅ | ✅ | ✅ |
+| Vercel BotID — Deep Analysis | 3.5 | ❌ | $1 / 1,000 calls | Custom |
 | Secure Compute | 4.1 | ❌ | ❌ | ✅ ($6.5K/yr) |
 | VPC Peering | 4.1 | ❌ | ❌ | ✅ |
 | DDoS Mitigation | 4.2 | ✅ | ✅ | ✅ + dedicated |
@@ -2380,9 +2683,10 @@ Placing a reverse proxy (Cloudflare, Azure Front Door, AWS CloudFront) in front 
 | `/_next/image` remotePatterns Audit | 10.1 | ✅ | ✅ | ✅ |
 | Authorization Defense in Depth | 10.2 | ✅ | ✅ | ✅ |
 | Reverse-Proxy + Vercel Bot Protection (do not stack) | 10.3 | ✅ | ✅ | ✅ |
+| Container Registry Public Access (change-controlled) | 10.4 | Where used | Where used | Where used |
 | Drains | 8.1 | ❌ | ✅ | ✅ |
 | Audit Logs | 8.2 | ❌ | ❌ | ✅ (90 days) |
-| SIEM Streaming | 8.2 | ❌ | ❌ | ✅ |
+| Audit Log Drains (replaces Custom SIEM Log Streaming) | 8.2 | ❌ | ❌ | ✅ |
 
 ---
 
@@ -2395,7 +2699,11 @@ Placing a reverse proxy (Cloudflare, Azure Front Door, AWS CloudFront) in front 
 - [Shared Responsibility Model](https://vercel.com/docs/security/shared-responsibility)
 - [Production Checklist](https://vercel.com/docs/production-checklist)
 - [Deployment Protection](https://vercel.com/docs/security/deployment-protection)
-- [Vercel Firewall / WAF](https://vercel.com/docs/security/vercel-waf)
+- [Protected Source Maps](https://vercel.com/docs/deployment-protection/protected-source-maps)
+- [Passport](https://vercel.com/docs/passport)
+- [Vercel Firewall / WAF](https://vercel.com/docs/vercel-firewall/vercel-waf)
+- [Vercel BotID](https://vercel.com/docs/botid)
+- [Sensitive Environment Variables](https://vercel.com/docs/environment-variables/sensitive-environment-variables)
 - [DDoS Mitigation](https://vercel.com/docs/security/ddos-mitigation)
 - [Secure Compute](https://vercel.com/docs/security/secure-compute)
 - [Encryption](https://vercel.com/docs/encryption)
@@ -2427,8 +2735,19 @@ Placing a reverse proxy (Cloudflare, Azure Front Door, AWS CloudFront) in front 
 
 - **2026 — Vercel Platform Supply-Chain Incident (April 2026):** Lumma Stealer infection at Context.ai compromised Google Workspace OAuth tokens. Attacker hijacked a Vercel employee's Workspace account and enumerated customer **non-sensitive** environment variables. Sensitive-flagged variables were **not** affected. Customers with no direct relationship to Context.ai were impacted. See [Vercel KB Bulletin](https://vercel.com/kb/bulletin/vercel-april-2026-security-incident), [Trend Micro analysis](https://www.trendmicro.com/en_us/research/26/d/vercel-breach-oauth-supply-chain.html), [Appendix C](#appendix-c-april-2026-incident-response-playbook).
 
+**Next.js Security Release Program:**
+
+- [Next.js preannounced monthly security-release program (from 2026-07-13)](https://nextjs.org/blog/next-security-release-program) — Active LTS / Maintenance LTS channels, advance notice of date and anticipated severity, out-of-band path retained for urgent cases
+- [July 2026 Next.js security release](https://nextjs.org/blog/july-2026-security-release) — CVE-2026-64641 through CVE-2026-64649; fixed in 16.2.11 (Active LTS) and 15.5.21 (Maintenance LTS)
+
+**Platform Changelog (deprecations and new surfaces):**
+
+- [Audit Log Drains now support Datadog, Splunk, and Panther](https://vercel.com/changelog/audit-log-drains-now-support-datadog-splunk-and-panther) — replaces Custom SIEM Log Streaming as of 2026-08-07
+- [Vercel Container Registry repositories can now be made public](https://vercel.com/changelog/vercel-container-registry-repositories-can-now-be-made-public) — 2026-08-07
+
 **Security Incidents (Framework — Next.js, maintained by Vercel):**
 
+- **2026-07 — CVE-2026-64641 … CVE-2026-64649 (July 2026 security release):** Nine advisories including an App Router Server Actions CPU-exhaustion DoS, a middleware/proxy bypass on Turbopack with a single `config.i18n.locales` entry (same outcome class as CVE-2025-29927), two SSRF classes (`rewrites()`/`redirects()` destination construction and Server Actions `Host`-header handling on custom servers), Server Action endpoint-ID disclosure, `/_next/image` SVG DoS, unbounded Edge-runtime Server Action payloads, and server-side fetch cache confusion. Fix: 16.2.11 / 15.5.21. [Next.js advisory](https://nextjs.org/blog/july-2026-security-release).
 - **2026-04 — CVE-2026-23869 (DoS via unsafe RSC deserialization):** Affects Next.js 13.x–16.x App Router. Fix: 15.5.15 / 16.2.3. [Vercel changelog](https://vercel.com/changelog/summary-of-cve-2026-23869).
 - **2025-12 — CVE-2025-55182 / 66478 ("React2Shell", CVSS 10.0):** Critical unsafe deserialization in React Server Components enabling unauthenticated RCE. Active in-the-wild exploitation observed by Trend Micro. Fix: Next.js 15.5.7 / 16.0.7. $1M Vercel bounty surfaced 20 WAF bypasses, confirming framework patching is mandatory. [Praetorian advisory](https://www.praetorian.com/blog/critical-advisory-remote-code-execution-in-next-js-cve-2025-66478-with-working-exploit/), [Next.js Advisory](https://nextjs.org/blog/CVE-2025-66478), [Vercel $1M bounty blog](https://vercel.com/blog/our-million-dollar-hacker-challenge-for-react2shell).
 - **2025-12 — CVE-2025-55184 (RSC DoS):** Bundled with React2Shell. Fix: same.
@@ -2527,6 +2846,7 @@ This playbook is applicable to any Vercel customer whose projects existed prior 
 | 2025-12-14 | 0.1.0 | draft | Initial Vercel hardening guide | Claude Code (Opus 4.5) |
 | 2026-02-24 | 1.0.0 | draft | [SECURITY] Complete guide revamp: expanded from 4 to 8 sections covering WAF, network security, security headers, domain security; added 20 controls with ClickOps and code pack references; integrated Vercel Shared Responsibility Model, production checklist, Terraform provider v4.6, CLI docs, and API docs; added comprehensive compliance mappings; updated edition compatibility matrix; incorporated security researcher findings and CVE references | Claude Code (Opus 4.6) |
 | 2026-04-24 | 1.1.0 | draft | [SECURITY] Post-April-2026-incident integration: added Section 1.5 (Third-Party Integration Audit), 2.4 (Private Production Deployments / Advanced DP), 3.3 (Firewall Persistent Actions), 3.4 (AI Bots Managed Ruleset), 6.3 (Rotate Deploy Hooks), 6.4 (Block NEXT_PUBLIC_ Secret Leaks), 8.4 (Drain Signature Verification); added new top-level Section 9 (Framework CVE Management — Next.js) and Section 10 (Customer Misconfiguration Anti-Patterns) including middleware authz defense in depth, `/_next/image` remotePatterns audit, reverse-proxy + Bot Protection stacking guidance; added Appendix C April 2026 Incident Response Playbook. Updated Section 2.1 Deployment Protection with methods × scopes matrix, Routing Middleware coverage, full Protection Bypass for Automation details, and team-default settings. Updated Section 2.3 Rolling Releases with Skew Protection requirement and 0%-canary security caveat. Updated Section 3.1 WAF with JA3/JA4 fingerprinting, reverse-proxy incompatibility, vercel.json custom-rules limitations, and $1M bounty context. Updated Section 4.1 Secure Compute with Edge Runtime not-supported caveat, VPC peering limit, and active/passive failover. Updated Section 4.2 Attack Challenge Mode with internal-request per-account boundary and standalone-API caveat. Updated Section 6.1 Environment Variables: elevated Enforce Sensitive Environment Variables to L1 baseline; added April 2026 incident rationale; documented sensitive-not-supported-in-development gap. Updated Section 8.1 Drains: rebranded from Log Drains; documented four schema types; added IP Address Visibility toggle. 10 new pack files: `hth-vercel-1.05`, `2.04`, `3.03`, `3.04`, `6.03`, `6.04`, `8.04`, `9.01`, `10.01`, `10.02`. Added `private_production_deployments_enabled` and `production_only_trusted_ips_enabled` to `variables.tf`. | Claude Code (Opus 4.7) |
+| 2026-08-08 | 1.2.0 | draft | [SECURITY] Currency pass: added Section 2.5 (Protected Source Maps — default-on for new projects, opt-in for existing), 3.5 (Vercel BotID Basic/Deep Analysis), and 10.4 (Container Registry public repositories as a change-controlled action). Added Passport as the fourth Deployment Protection method in 2.1 with the bypass-secret ordering caveat, and its `passport-access-granted` detection event in 8.2. Rewrote 8.2 for Audit Log Drains — Custom SIEM Log Streaming deprecated 2026-08-07, destinations now S3/Splunk/Datadog/Panther/custom HTTPS, drain signature verification (8.4) now applies to audit logs. Updated 9.1 for the Next.js preannounced monthly security-release program and LTS channels (minimum 16.2.11 Active LTS / 15.5.21 Maintenance LTS, up from 15.5.15 / 16.2.3), reframed MTTP to start at pre-announcement, and added the nine July 2026 CVEs (CVE-2026-64641 through CVE-2026-64649) including the CVE-2026-64642 middleware bypass corroborating 10.2. Corrected 3.2 IP blocking limits (project Hobby 3 / Pro 100 / Enterprise 1,000; account-level Enterprise-only with /16 IPv4 and /48 IPv6 CIDR ceilings) and noted JA3 (Legacy) as Enterprise-only. Documented the 32-character build-log redaction floor for sensitive environment variables in 6.1. Updated Appendix A and the moved Vercel WAF docs URL in Appendix B. | Claude Code (Opus 4.8) |
 
 ## Contributing
 
