@@ -465,8 +465,6 @@ Configure secure SAML settings to prevent assertion manipulation and replay atta
 
 #### Code Implementation
 
-See the CLI pack below for SAML configuration examples.
-
 {% include pack-code.html vendor="ping-identity" section="2.1" %}
 
 ---

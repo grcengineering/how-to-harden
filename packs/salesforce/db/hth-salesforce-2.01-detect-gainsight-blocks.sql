@@ -3,10 +3,9 @@
 -- https://howtoharden.com/guides/salesforce/#211-ip-allowlisting-restricting-gainsight
 
 -- HTH Guide Excerpt: begin db-detect-gainsight-blocks
--- Query for blocked Gainsight login attempts
 SELECT Id, LoginTime, SourceIp, Status, Application
 FROM LoginHistory
 WHERE Application = 'Gainsight'
-  AND Status = 'Failed'
+  AND Status = 'Restricted IP'
   AND LoginTime = LAST_N_DAYS:7
 -- HTH Guide Excerpt: end db-detect-gainsight-blocks

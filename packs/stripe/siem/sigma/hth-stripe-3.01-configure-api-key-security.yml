@@ -1,5 +1,5 @@
 title: Stripe Account Configuration Changed
-id: stripe-account-3001-config-changed
+id: c7816d13-aa1f-4567-8dd9-5012677ab978
 status: test
 description: |
     Detects account.updated webhook events from Stripe indicating

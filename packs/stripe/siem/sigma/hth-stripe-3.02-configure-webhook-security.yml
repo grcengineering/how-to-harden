@@ -1,5 +1,5 @@
 title: Stripe Webhook Endpoint Deleted
-id: stripe-webhook-3002-endpoint-deleted
+id: 1f670bff-d81d-4a52-931d-5350c825fff7
 status: test
 description: |
     Detects when a Stripe webhook endpoint is deleted via the API.
