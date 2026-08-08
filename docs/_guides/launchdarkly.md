@@ -6,9 +6,9 @@ slug: "launchdarkly"
 tier: "4"
 category: "DevOps"
 description: "Feature flag security for SDK keys, environment access, and approval workflows"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 
@@ -65,12 +65,16 @@ Require SAML single sign-on with multi-factor authentication for all LaunchDarkl
 #### ClickOps Implementation
 
 **Step 1: Configure SAML SSO**
-1. Navigate to: **Account settings → Security → SAML**
-2. Configure SAML IdP
+1. Navigate to: **gear icon (left sidebar) → Organization settings → Security → SSO Management**
+2. Click **Configure SAML** and enter your IdP's SSO URL, X.509 certificate, and (if required) the request signing settings
 3. Enable: **Require SSO**
 
+**Set the default initial role to "No access."** LaunchDarkly recommends configuring the default initial role for SSO-provisioned members to the lowest privilege available so that a newly federated account cannot read or change flags before an admin grants scoped access. On Developer and Foundation plans the lowest available default is **Reader**; Enterprise plans can set **No access**. ([SSO documentation](https://launchdarkly.com/docs/home/account/sso))
+
+**One identity provider per account.** LaunchDarkly supports a single configured identity provider per account — you cannot federate a second IdP alongside the first, so plan IdP migrations as a cutover with an admin fallback path. ([SSO documentation](https://launchdarkly.com/docs/home/account/sso))
+
 **Step 2: Configure SCIM**
-1. Enable SCIM provisioning
+1. Enable SCIM provisioning (Enterprise — see Appendix A)
 2. Configure user/group sync
 3. Set deprovisioning behavior
 
@@ -108,9 +112,11 @@ Define custom roles and project- and environment-scoped permissions so each memb
 | No access | Blocked |
 
 **Step 2: Configure Project/Environment Access**
-1. Navigate to: **Account settings → Roles**
+1. Navigate to: **gear icon (left sidebar) → Organization settings → Roles**, then click **New role**
 2. Create environment-specific roles
 3. Apply least privilege
+
+Custom roles are an Enterprise capability — see Appendix A. ([Creating custom roles](https://launchdarkly.com/docs/home/account/role-create))
 
 ---
 
@@ -164,28 +170,30 @@ Protect LaunchDarkly SDK keys.
 **NIST 800-53:** IA-5
 
 #### Description
-Inventory LaunchDarkly access tokens, remove unused ones, and issue new tokens scoped to specific roles, projects, environments, and expiration dates.
+Inventory LaunchDarkly access tokens, remove unused ones, and issue new tokens scoped with the least-privilege role or inline policy the caller actually needs — choosing personal tokens for human-owned scripts and service tokens for automation that must survive offboarding.
 
 #### Rationale
 **Why This Matters:**
 - API tokens authenticate automated access to the full LaunchDarkly REST API and can modify flags without a human login or MFA prompt
 - Long-lived or unscoped tokens that leak give attackers persistent control over feature configuration
-- Scoping tokens to least-privilege custom roles and specific projects limits what a stolen token can do
-- Expiration dates and regular audits ensure forgotten tokens do not become standing backdoors
+- Scoping tokens to least-privilege base roles, custom roles, or inline policies limits what a stolen token can do
+- Service tokens are deliberately member-independent, so they keep working after the person who created them leaves — that durability is why they need a standing inventory and an owner of record
 
 **Attack Prevented:** Token theft, persistent API access, unauthorized flag manipulation, MFA bypass via automation
+
+**Personal tokens and service tokens are not interchangeable.** Personal tokens are bound to the member who created them: they can never exceed that member's own permissions, and LaunchDarkly automatically deactivates them when the member is removed from the account. Service tokens (plan-dependent — see Appendix A) are independent of any member, and their permissions are **fixed at creation and cannot be edited afterward** — to change a service token's access you must create a replacement and revoke the old one. Use service tokens for CI/CD and automation precisely because they survive offboarding, and compensate with an inventory that records each token's owner and purpose. ([Access tokens documentation](https://launchdarkly.com/docs/home/account/api))
 
 #### ClickOps Implementation
 
 **Step 1: Audit Access Tokens**
-1. Navigate to: **Account settings → Authorization → Access tokens**
-2. Review all tokens
+1. Navigate to: **gear icon (left sidebar) → Organization settings → Authorization**
+2. In the **Access tokens** section, review every token, its role, and its owner
 3. Remove unused tokens
 
-**Step 2: Create Scoped Tokens**
-1. Create tokens with custom roles
-2. Limit to specific projects/environments
-3. Set expiration dates
+**Step 2: Create Scoped Tokens and Rotate on a Cadence**
+1. In the **Access tokens** section, click **Create token**, give it a human-readable **Name**, and assign the least-privilege **Role** — Reader, Writer, Admin, Owner, a custom role, or an inline policy
+2. Select **This is a service token** only for automation that must outlive its creator; leave it unchecked for a personal token
+3. LaunchDarkly's token-creation flow does not offer an expiration date, so enforce lifetime yourself: set a written rotation cadence (for example, quarterly), record each token's issue date in your inventory, and reset or delete tokens on schedule rather than relying on a platform expiry ([Creating API access tokens](https://launchdarkly.com/docs/home/account/api-create))
 
 ---
 
@@ -286,7 +294,7 @@ Review the LaunchDarkly audit log regularly and export it to your SIEM to retain
 #### ClickOps Implementation
 
 **Step 1: Access Audit Log**
-1. Navigate to: **Account settings → Audit log**
+1. Navigate to: **Account settings → Audit log** *(LaunchDarkly renamed the account settings area to **Organization settings**, reached via the gear icon in the left sidebar; the audit log documentation page was not publicly resolvable during this pass, so verify the exact path in your own account)*
 2. Review changes
 3. Configure SIEM export
 
@@ -296,21 +304,30 @@ Review the LaunchDarkly audit log regularly and export it to your SIEM to retain
 
 ## Appendix A: Edition Compatibility
 
-| Control | Pro | Enterprise |
-|---------|-----|------------|
-| SAML SSO | ✅ | ✅ |
-| SCIM | ❌ | ✅ |
-| Custom Roles | ✅ | ✅ |
-| Approval Workflows | ❌ | ✅ |
+LaunchDarkly's public pricing page lists three plan tiers — **Developer**, **Foundation**, and **Enterprise**. The "Pro" tier this guide previously referenced no longer appears in LaunchDarkly's plan lineup.
+
+| Control | Developer | Foundation | Enterprise |
+|---------|-----------|------------|------------|
+| SAML SSO | ✅ | ✅ | ✅ |
+| SCIM provisioning | ❌ | ❌ | ✅ |
+| Custom Roles | ❌ | ❌ | ✅ |
+| Approval Workflows | ❌ | ❌ | ✅ |
+| Service tokens | ❌ | ❌ | ✅ |
+| Default initial role "No access" | ❌ (Reader) | ❌ (Reader) | ✅ |
+
+**Two LaunchDarkly sources disagree on tier naming — verify against your own contract.** The pricing page lists Developer / Foundation / Enterprise, while the SSO documentation attributes SCIM and team sync to a **"Guardian"** tier that does not appear in the published pricing lineup. Both are first-party LaunchDarkly sources, so this guide records the disagreement rather than resolving it: treat SCIM, custom roles, service tokens, and approvals as **top-tier-only** capabilities and confirm the exact plan name on your contract or with your account team before planning around them. ([Pricing](https://launchdarkly.com/pricing) · [SSO documentation](https://launchdarkly.com/docs/home/account/sso))
 
 ---
 
 ## Appendix B: References
 
 **Official LaunchDarkly Documentation:**
-- [LaunchDarkly Security](https://launchdarkly.com/security/)
 - [LaunchDarkly Documentation](https://launchdarkly.com/docs/home)
-- [Security Program Addendum](https://launchdarkly.com/policies/security-program-addendum/)
+- [Single sign-on (SSO)](https://launchdarkly.com/docs/home/account/sso)
+- [API access tokens](https://launchdarkly.com/docs/home/account/api)
+- [Creating API access tokens](https://launchdarkly.com/docs/home/account/api-create)
+- [Creating custom roles](https://launchdarkly.com/docs/home/account/role-create)
+- [Plans and pricing](https://launchdarkly.com/pricing)
 
 **API & Developer Resources:**
 - [LaunchDarkly REST API](https://apidocs.launchdarkly.com/)
@@ -328,6 +345,7 @@ Review the LaunchDarkly audit log regularly and export it to your SIEM to retain
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass: correct plan tiers to Developer/Foundation/Enterprise with a both-sources note on the "Guardian" naming conflict; update console paths to Organization settings (SSO, Roles, Authorization verified against current docs; audit-log path annotated as unverified); add SSO default-initial-role and single-IdP callouts; distinguish personal vs service tokens and replace the unsupported token-expiration step with a manual rotation cadence; replace Trust Center/security-program links with first-party configuration docs | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial LaunchDarkly hardening guide | Claude Code (Opus 4.5) |
 

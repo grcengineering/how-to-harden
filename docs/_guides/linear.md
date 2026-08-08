@@ -6,9 +6,9 @@ slug: "linear"
 tier: "3"
 category: "DevOps"
 description: "Issue tracking platform hardening for Linear including SAML SSO, workspace access, and team permissions"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -113,6 +113,10 @@ Require 2FA for all Linear users.
 
 **Attack Prevented:** Credential stuffing, password reuse attacks, phishing, account takeover
 
+**Verify this setting before relying on it.** The workspace-level **Require two-factor authentication** toggle described below could not be re-verified against Linear's current public documentation (checked 2026-08); the live security documentation covers personal account security rather than workspace-wide enforcement. Confirm the setting exists in your own workspace settings before treating it as an enforced control.
+
+**Prefer passkeys as the second factor.** Linear documents passkey support for account sign-in. Passkeys are bound to the origin they were registered against, so unlike TOTP codes they cannot be relayed to an attacker's proxy — make passkeys the named factor for admins and anyone with access to sensitive projects. ([Security and access](https://linear.app/docs/security-and-access))
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA Requirement**
@@ -120,7 +124,12 @@ Require 2FA for all Linear users.
 2. Enable **Require two-factor authentication**
 3. All members must configure 2FA
 
-**Step 2: Configure via IdP**
+**Step 2: Register Passkeys**
+1. Have each member add a passkey from their account security settings
+2. Prioritize admins and members with access to restricted projects
+3. Retain a documented recovery path before enforcing
+
+**Step 3: Configure via IdP**
 1. Enable MFA in identity provider
 2. Use phishing-resistant methods for admins
 3. All SSO users subject to IdP MFA
@@ -147,6 +156,8 @@ Restrict sign-up to approved email domains.
 - Without domain controls, a leaked invite link or open join setting can let unintended parties view engineering data
 
 **Attack Prevented:** Unauthorized workspace access, rogue account creation, data exposure to outsiders
+
+**Verify this setting before relying on it.** The **Allowed Domains** workspace setting described below could not be re-verified against Linear's current public documentation (checked 2026-08); the live security documentation covers personal account security rather than workspace domain restrictions. Confirm the setting exists in your own workspace settings before treating it as an enforced control.
 
 #### ClickOps Implementation
 
@@ -314,28 +325,36 @@ Control third-party integrations.
 | NIST 800-53 | SC-12 |
 
 #### Description
-Secure API token management.
+Review and prune everything that holds standing credentials to a Linear account — personal API keys, active sessions, and authorized OAuth applications — from the account **Security & access** page.
 
 #### Rationale
 **Why This Matters:**
-- Personal API tokens act as long-lived credentials that bypass interactive SSO and 2FA prompts
-- Tokens leaked in code, logs, or CI configs grant direct programmatic access to workspace data
-- Regular rotation and revocation of unused tokens limits the window an exposed token remains valid
-- Documenting token purposes makes it possible to spot and revoke tokens that no longer have an owner
+- Personal API keys act as long-lived credentials that bypass interactive SSO and 2FA prompts
+- Keys leaked in code, logs, or CI configs grant direct programmatic access to workspace data
+- Authorized OAuth applications hold delegated access that persists after the tool stops being used, so an unrevoked grant is a live path into the workspace if the third party is breached
+- Active sessions are recorded with location and date, which makes an unrecognized session the earliest visible sign of account takeover
+- Documenting key purposes makes it possible to spot and revoke credentials that no longer have an owner
 
-**Attack Prevented:** Credential leakage, token theft, unauthorized API access, persistent access via stale tokens
+**Attack Prevented:** Credential leakage, token theft, unauthorized API access, OAuth grant abuse, persistent access via stale tokens and sessions
 
 #### ClickOps Implementation
 
-**Step 1: Review API Tokens**
-1. Navigate to user settings
-2. Review personal API tokens
-3. Document token purposes
+**Step 1: Review Personal API Keys**
+1. Open the account **Security & access** page in Linear settings
+2. Review every personal API key and document its purpose and owner
+3. Revoke keys with no documented owner or purpose
 
-**Step 2: Secure Tokens**
-1. Store tokens securely
-2. Rotate tokens regularly
-3. Revoke unused tokens
+**Step 2: Revoke Stale Sessions**
+1. On the same page, review **active sessions** — each is listed with its location and date
+2. Revoke any session from an unrecognized location, an old device, or a departed contractor
+3. Treat an unexplained session as a suspected compromise: revoke it, then rotate the account's API keys
+
+**Step 3: Review Authorized OAuth Applications**
+1. Review the list of **authorized OAuth applications** on the same page
+2. Revoke every application the member no longer actively uses
+3. Re-review after any third-party breach disclosure affecting a connected vendor
+
+Source: [Security and access](https://linear.app/docs/security-and-access)
 
 ---
 
@@ -351,29 +370,84 @@ Secure API token management.
 | NIST 800-53 | AU-2 |
 
 #### Description
-Enable and monitor activity logs.
+Review Linear's workspace audit log and stream it to your SIEM, because Linear retains audit events for only 90 days — anything you need beyond that window has to be exported while it still exists.
 
 #### Rationale
 **Why This Matters:**
-- Activity logs provide the evidence needed to detect and investigate unauthorized access or configuration changes
+- The audit log is the workspace's record of who did what, and each entry carries the actor's IP address and country, which is what makes an anomalous login or a session from an unexpected jurisdiction visible
+- Linear retains audit log events for **90 days only**, so an intrusion discovered on a typical breach-detection timeline can easily predate the oldest available evidence — exporting to a SIEM is what preserves the trail, not a nice-to-have
 - Monitoring authentication, permission, and integration events surfaces account compromise and insider abuse early
-- Without log review, malicious actions go unnoticed until damage is done and incident response has no timeline to reconstruct
-- Retained audit records support SOC 2, GDPR, and HIPAA evidence requirements
+- Retained audit records support SOC 2, GDPR, and HIPAA evidence requirements, which generally demand retention well beyond 90 days
 
-**Attack Prevented:** Undetected intrusion, insider abuse, repudiation, delayed incident response
+**Attack Prevented:** Undetected intrusion, insider abuse, repudiation, delayed incident response, evidence loss through log expiry
+
+#### Prerequisites
+- Enterprise plan
+- Workspace **Owner** role — the audit log is restricted to workspace owners
 
 #### ClickOps Implementation
 
-**Step 1: Access Activity**
-1. Review workspace activity
-2. Monitor key events
-3. Document for compliance
+**Step 1: Access the Audit Log**
+1. Open the audit log from workspace settings as a workspace owner
+2. Review entries — actor, action, IP address, and country
+3. Confirm the 90-day retention window against your own evidence requirements
 
-**Step 2: Monitor Events**
-1. User authentication
-2. Permission changes
-3. Integration modifications
-4. Data exports
+**Step 2: Stream Logs to Your SIEM**
+1. In workspace settings, use **Stream logs** to configure a webhook endpoint
+2. Point the webhook at your SIEM's HTTP collector so events are captured continuously rather than exported by hand
+3. Verify events are arriving, then set retention in the SIEM to match your compliance obligation
+
+**Step 3: Query Programmatically**
+1. The audit log is queryable through Linear's GraphQL API for point-in-time investigation and periodic extraction
+2. Use it to reconcile SIEM coverage gaps before the 90-day window closes
+
+**Key Events to Monitor:**
+- Authentication events and sessions from unexpected countries
+- Permission and role changes
+- Integration and OAuth application changes
+- Membership additions and removals
+
+Source: [Audit log](https://linear.app/docs/audit-log)
+
+---
+
+### 4.2 Choose Data Residency at Workspace Creation
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.1 |
+| NIST 800-53 | SA-9 |
+
+#### Description
+Linear lets you choose whether a workspace's data is hosted in the **US** or the **EU** region, and that choice is made **only at workspace creation** — it cannot be changed afterward, so regulated teams must decide before the workspace exists.
+
+#### Rationale
+**Why This Matters:**
+- Data residency is irreversible in Linear: pick the wrong region and the only remedy is creating a new workspace and migrating the data, which is expensive and disruptive once issues, projects, and integrations have accumulated
+- Teams subject to GDPR, national data-localization rules, or customer contracts with residency clauses need the EU region selected up front to keep issue content, attachments, and comments inside the required jurisdiction
+- Issue trackers accumulate personal data incidentally — customer names in bug reports, screenshots, support transcripts — so residency obligations apply even when the workspace was never intended to hold regulated data
+- Documenting which region a workspace runs in gives auditors and vendor-risk reviewers a verifiable answer instead of an assumption
+
+**Attack Prevented:** Regulatory exposure from cross-border data transfer, residency-clause breach, unplanned data migration
+
+#### ClickOps Implementation
+
+**Step 1: Decide Region Before Creating the Workspace**
+1. Confirm your residency obligation (GDPR, customer contract, internal policy) before anyone provisions the workspace
+2. Select the **EU** region at creation if any obligation requires EU hosting; otherwise select **US**
+3. Record the chosen region in your vendor inventory — it cannot be changed later
+
+**Step 2: Verify Existing Workspaces**
+1. Determine which region each existing workspace was created in
+2. Where a workspace is in the wrong region, plan a migration to a new correctly-provisioned workspace rather than expecting a setting change
+3. Document the outcome for audit evidence
+
+#### Validation & Testing
+Confirm the workspace's region with Linear and check that it matches the region recorded in your data-processing inventory. Since the setting is fixed at creation, validation is a one-time attestation rather than a recurring config check.
+
+Source: [Security](https://linear.app/docs/security)
 
 ---
 
@@ -401,11 +475,13 @@ Enable and monitor activity logs.
 ## Appendix A: References
 
 **Official Linear Documentation:**
-- [Linear Trust Center](https://trust.linear.app/)
-- [Linear Security](https://linear.app/security)
 - [Linear Documentation](https://linear.app/docs)
-- [SSO Configuration](https://linear.app/docs/saml-sso)
+- [Security](https://linear.app/docs/security)
+- [Security and access](https://linear.app/docs/security-and-access)
+- [Audit log](https://linear.app/docs/audit-log)
 - [Team Management](https://linear.app/docs/teams)
+
+*SAML/SCIM configuration documentation was not publicly resolvable during this pass (2026-08) — the previously cited `linear.app/docs/saml-sso` returns 404 and no replacement slug could be located. See the Administration section of [linear.app/docs](https://linear.app/docs) for current SSO and provisioning guidance.*
 
 **API & Developer Resources:**
 - [Linear API Documentation](https://developers.linear.app/docs)
@@ -413,7 +489,7 @@ Enable and monitor activity logs.
 - [Linear SDKs](https://developers.linear.app/docs/sdk/getting-started)
 
 **Compliance Frameworks:**
-- SOC 2 Type II, GDPR, HIPAA (Enterprise plan with BAA) -- via [Linear Trust Center](https://trust.linear.app/)
+- SOC 2 Type II, GDPR, HIPAA (Enterprise plan with BAA) -- see [Linear Security documentation](https://linear.app/docs/security)
 
 **Security Incidents:**
 - No major public security breaches identified as of this writing.
@@ -424,6 +500,7 @@ Enable and monitor activity logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass, scope-limited: only three Linear documentation pages (security, security-and-access, audit-log) were publicly reachable this pass, so findings outside them soften rather than assert. Rewrote 4.1 audit log (Enterprise, workspace owners only, 90-day retention, GraphQL queryable, webhook streaming to SIEM, actor IP/country); added 4.2 data residency (US/EU, fixed at workspace creation); added passkeys to 1.2 and OAuth-grant/session review to 3.2; annotated 1.2 and 1.3 as unverifiable against current public docs; removed the 404 SAML SSO link and the Trust Center/security marketing links in favor of linear.app/docs/security | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, teams, and integrations | Claude Code (Opus 4.5) |
 
