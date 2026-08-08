@@ -954,3 +954,16 @@ zscaler:
     - label: "TLS/SSL Inspection Leading Practices"
       url: "https://help.zscaler.com/zscaler-deployments-operations/zia-ssl-inspection-leading-practices-guide"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/zscaler"
+
+ona:
+  product_docs: "https://ona.com/docs"
+  api_docs: "https://ona.com/docs/api-reference.md"
+  hardening_docs:
+    - label: "Guardrails Overview"
+      url: "https://ona.com/docs/ona/guardrails/overview.md"
+    - label: "Organization Policies"
+      url: "https://ona.com/docs/ona/organizations/policies/overview.md"
+    - label: "Executable Deny List (Veto)"
+      url: "https://ona.com/docs/ona/organizations/policies/executable-deny-list.md"
+    - label: "Best Practices"
+      url: "https://ona.com/docs/ona/best-practices.md"
