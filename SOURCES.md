@@ -1,70 +1,93 @@
 # Authoritative Sources for HTH Content
 
-The standard for what counts as a legitimate source when deriving How to Harden guide content, and how to use each tier. Every control, rationale claim, and hardening link in this repo traces to a source admitted under this taxonomy.
+The standard for what counts as a legitimate source when deriving How to Harden guide content, and how each tier may be used. Every control, rationale claim, and hardening link in this repo traces to a source admitted under this taxonomy.
 
 **The bright line:** a vendor's Trust Center, company "Security" marketing page, compliance-badge page, or "we take security seriously" whitepaper about the vendor's OWN infrastructure is **never** a hardening source. The test for any page: *does it give an administrator configuration steps, settings, or auditable requirements for hardening the product?* If it describes the vendor's certifications or internal practices instead, it fails.
 
+**Tier semantics:** each tier is marked by what it may do — **ORIGINATE** a control (be the reason a control exists and the source of its steps), **SET VALUES** (determine the recommended setting), or **CORROBORATE** (supply rationale, incidents, and attack context).
+
 ---
 
-## Tier 1 — First-Party Vendor Hardening Documentation
+## Tier 1 — First-Party Vendor Configuration Documentation
 
-**What qualifies:** the vendor's own security best-practices guides, hardening guides, admin configuration references, security-relevant release notes and changelogs, and official deployment/operations security guides.
+*May: ORIGINATE controls · authoritative on FACTS (whether a setting exists, its name, its default, its console path)*
 
-**Role:** the source of truth for control *existence and implementation*. Every ClickOps step, console path, setting name, and API capability in a guide comes from Tier 1. If Tier 1 doesn't document a setting, the control doesn't exist — no matter who else claims it does.
+**What qualifies:** the vendor's own admin guides, security-configuration docs, hardening guides, API/CLI references, and security-relevant release notes — on the official vendor docs domain.
 
-**Examples that qualify:** GitHub's "Security hardening for GitHub Actions", Vault's "Production Hardening", Snowflake's authentication-policies docs, Google Workspace Admin Help articles, Zscaler's "ZIA Policy Leading Practices Guide".
+**Role:** the mandatory source class. Every control must trace to at least one Tier 1 citation proving the setting exists as described; every ClickOps step and console path is transcribed from Tier 1.
 
-**Examples that do NOT qualify:** `trust.vendor.com`, `vendor.com/security` marketing pages, SOC 2 attestation pages, a security whitepaper describing the vendor's own datacenter controls.
+**Built-in conflict of interest:** vendor docs prove what EXISTS, but vendor-recommended values favor adoption and compatibility. On strictness questions, Tier 1 does not outrank Tier 2 (see Conflict Resolution).
 
-## Tier 2 — Authoritative Benchmark and Government Bodies
+**Qualifies:** GitHub's "Security hardening for GitHub Actions", Vault's "Production Hardening", Google Workspace Admin Help, Zscaler's "ZIA Policy Leading Practices Guide".
+**Never qualifies:** `trust.vendor.com`, `vendor.com/security` marketing pages, SOC 2 attestation pages, whitepapers about the vendor's own datacenters.
 
-**What qualifies (standing list):**
+## Tier 2 — Configuration-Prescriptive Benchmark Bodies
+
+*May: ORIGINATE controls · authoritative on VALUES (what to set)*
+
+**Standing list:**
 
 | Body | Use for |
 |------|---------|
-| CIS (Center for Internet Security) | Benchmarks — per-product numbered hardening baselines. Numbering shifts between major versions: verify IDs against the current release or map by control name with a version note |
-| DISA | STIGs — the strictest per-product baselines; use for L3 targets and compliance tables |
-| CISA | SCuBA baselines (ScubaGear for M365/Entra, ScubaGoggles for Google Workspace) with stable machine-checkable policy IDs; Binding Operational Directives; KEV catalog; advisories |
-| NIST | 800-53 control mappings, 800-63 (authentication), CSF, AI RMF |
-| NSA | Cybersecurity Information Sheets and joint guidance (often with CISA) |
-| ACSC (Australia) | Essential Eight and per-product hardening guidance |
-| BSI (Germany) | IT-Grundschutz modules |
-| CSA (Cloud Security Alliance) | CCM mappings, SaaS/cloud governance guidance |
-| OWASP | ASVS, Top 10s (incl. LLM Top 10), cheat sheets — for application-adjacent controls |
-| SANS | Whitepapers and posters where they carry concrete configuration guidance (skip the marketing-adjacent ones) |
+| CIS Benchmarks | Per-product numbered baselines. Numbering shifts between major versions — verify IDs against the current release or map by control name with a version note |
+| DISA STIGs | The strictest per-product baselines; L3 targets and compliance tables |
+| CISA | SCuBA baselines (ScubaGear for M365/Entra, ScubaGoggles for Google Workspace — stable machine-checkable policy IDs, preferred for compliance tables); Binding Operational Directives; KEV catalog |
+| NSA | Cybersecurity Information Sheets where product-specific and configuration-prescriptive |
+| ACSC (Australia) | Only where it publishes explicit control values (Essential Eight maturity settings); otherwise Tier 2b |
 
-**Role:** the source of truth for *baselines and compliance mappings*, and a legitimate source of controls the vendor under-documents. Prefer CISA SCuBA policy IDs in compliance tables where a baseline exists — they are stable; CIS IDs drift.
+**Role:** set the recommended values, seed compliance mappings, and legitimately originate controls the vendor under-documents.
 
-## Tier 3 — Expert Security Vendors (Product-Specific Research)
+## Tier 2b — Framework and Advisory Bodies
 
-**Admission criteria (all three):** (1) original research on the *specific product* being hardened, not generic thought leadership; (2) named findings that are reproducible or vendor-acknowledged; (3) a track record of responsible disclosure.
+*May: CORROBORATE and supply compliance mappings · may NOT originate a configuration step*
 
-**Standing list (extend via the criteria, not vibes):** Wiz, Datadog Security Labs, Mandiant/Google Threat Intelligence, Trail of Bits, Praetorian, Unit 42 (Palo Alto), Rapid7 Research, Legit Security, Obsidian Security, Push Security, AppOmni, StepSecurity, GitGuardian, Mitiga, Varonis Threat Labs, Harmonic Security, Pillar Security, PromptArmor, Cyata.
+**Standing list:** NIST (800-53, 800-63, CSF, AI RMF), CSA (CCM), ENISA, BSI IT-Grundschutz, SANS (where concretely technical), OWASP (authoritative for application-layer security — ASVS, LLM Top 10 — but out of lane for SaaS tenant-admin toggles).
 
-**Role:** the source of *attack classes, incidents, and rationale* — the "why this matters" of a control, and gap-discovery (a Tier 3 finding often reveals a missing control whose implementation you then ground in Tier 1). Tier 3 alone never supplies implementation steps.
+**Role:** control-family catalogs and abstractions by design; they justify and map controls but always need a Tier 1/2 source to instantiate an actual setting.
+
+## Tier 3 — Expert Security-Vendor Research
+
+*May: CORROBORATE always · ORIGINATE only where no Tier 2 baseline covers the surface, and only after Tier 1 cross-verification*
+
+**Admission criteria (all three):** (1) demonstrated ORIGINAL product-specific research — a novel misconfiguration, attack chain, or detection they built; not vendor size, not content marketing; (2) named authors; (3) technical reproducibility — claims reference actual admin-console settings or API endpoints.
+
+**Standing list (extend via the criteria, not vibes):** Wiz, Datadog Security Labs, Mandiant/Google Threat Intelligence, Trail of Bits, Praetorian, Unit 42, Rapid7 Research, Legit Security, Obsidian Security, Push Security, AppOmni, StepSecurity, GitGuardian, Mitiga, Varonis Threat Labs, Harmonic Security, Pillar Security, PromptArmor, Cyata.
+
+**Where Tier 3 leads:** for new attack surfaces with no CIS/STIG/SCuBA coverage yet (AI SaaS: Claude, ChatGPT Enterprise, Copilot-class products), Tier 3 is often the only source with real content — it may originate controls there, flagged **"no benchmark equivalent yet"**, and every step still cross-verified against the vendor's real admin UI/API (Tier 1) before shipping. A Tier 3 claim alone never ships unverified.
 
 ## Tier 4 — Established Independent Researchers
 
-**Admission criteria (any one):** CVE credit for the product; vendor-acknowledged disclosure; presented at a recognized conference (Black Hat, DEF CON, BSides, fwd:cloudsec, etc.); or repeatedly cited by Tier 2/3 sources. Example: dirkjanm.io (CVE-2025-55241 Entra research).
+*May: CORROBORATE and enrich · originate only with explicit Tier 1 verification*
 
-**Role:** same as Tier 3 (rationale, attack classes, gaps) with an extra corroboration preference: link the researcher's own writeup AND the vendor advisory/CVE record when both exist. A blog with no CVE, no acknowledgment, and no conference pedigree is not a source.
+**Admission criteria:** named researcher with verifiable identity and track record (CVE credits, vendor-acknowledged disclosures, recognized conference talks — Black Hat, DEF CON, BSides, fwd:cloudsec); technical specificity (exact settings, reproducible steps); published on an accountable venue. Example: dirkjanm.io (CVE-2025-55241 Entra research).
+
+**Never:** anonymous blogs, aggregator/SEO content, citation-of-a-citation — always resolve to the primary source.
 
 ---
 
 ## Verification Rules (all tiers)
 
-1. **Fetch or it didn't happen.** Every cited URL must be fetched successfully in the working session. Hosts that block fetchers (403s, JS-only shells) get verified in a real browser before citation. A URL that can't be verified is dropped — never cited "from memory". Beware SPAs that return HTTP 200 for nonexistent pages (LastPass-style): confirm the page renders real content, not a shell.
-2. **Currency check.** Prefer the canonical/current URL over one that 301-redirects (redirects rot). If a vendor migrated doc hosts (e.g., Google's support.google.com/a → knowledge.workspace.google.com), cite the new host.
-3. **Capability claims need Tier 1.** "The vendor now supports X" must be shown in vendor docs, not inferred from a Tier 3 post.
+1. **Fetch or it didn't happen.** Every cited URL must be fetched successfully in the working session. Hosts that block fetchers (403s, JS-only shells) get a real-browser check before citation. Unverifiable URL = not a source. Beware SPAs that return HTTP 200 for nonexistent pages (LastPass-style): confirm real content rendered, not a shell.
+2. **Currency.** Cite the canonical/current URL, not one that 301-redirects (redirects rot; vendors migrate doc hosts — e.g., Google's support.google.com/a → knowledge.workspace.google.com).
+3. **Capability claims need Tier 1.** "The vendor now supports X" must be shown in vendor docs, not inferred from a Tier 3 post; if a Tier 3 finding contradicts Tier 1, re-fetch Tier 1 — the docs may have changed.
+4. **Cite specifically.** Tier 2 citations carry benchmark name + version + recommendation ID; re-verify on each benchmark release.
 
 ## Conflict Resolution
 
-- **Tier 1 vs Tier 2 strictness conflicts** (e.g., Google recommends SPF `~all`; CISA SCuBA requires `-all`): document BOTH in the control — the vendor position as the noted default, the stricter benchmark position as the hardened target — with a callout naming the divergence and citing each. Never silently pick one.
-- **Tier 3/4 vs Tier 1 factual conflicts:** Tier 1's *current* docs win on what the product can do; Tier 3/4 win on exploitability and risk claims until the vendor addresses them. If a Tier 3 finding contradicts Tier 1 capability claims, re-fetch Tier 1 — the docs may have changed.
-- **Stale guide vs current source:** the current verified source always wins; correct the guide in place (see the update-hth-guide skill).
+**Do not average. Tier 1 wins on FACTS; Tier 2 wins on VALUES.**
+
+- **Strictness conflicts** (e.g., Google recommends SPF `~all`; CISA SCuBA requires `-all`): the strictest defensible position from a prescriptive source is the documented recommendation; the more permissive vendor position is retained as an explicitly labeled compatibility note with the risk delta explained — never suppressed, never silently averaged.
+- **Value precedence when tiers disagree:** Tier 2 (conflict-of-interest-free) > Tier 1 vendor recommendation > Tier 3 > Tier 4.
+- **Fact disputes** (does the setting exist, what is it called, what is the default): Tier 1's current docs always win.
+- **Stale guide vs current source:** the current verified source wins; correct the guide in place (update-hth-guide skill).
+
+## Maintenance
+
+Tiers 1-2/2b are standing allowlists that rarely change. Tiers 3-4 are standing lists plus per-citation review against the admission criteria; prune quarterly for dead links, acquisitions, and quality drift.
 
 ## Changelog
 
 | Date | Changes |
 |------|---------|
+| 2026-08-08 | Council-refined revision: Tier 2/2b split (prescriptive bodies vs framework catalogs), originate/values/corroborate semantics per tier, facts-vs-values conflict rule with strictest-defensible precedence, Tier 3 elevation for un-benchmarked surfaces with mandatory Tier 1 cross-verification, maintenance cadence. Two council seats (formal semantics, provenance rigor) were synthesized conservatively — revisit if those areas prove contentious. |
 | 2026-08-08 | Initial version — taxonomy formalized from the August 2026 full-repo audit (A–Z link audit, currency waves, trust-center purge). |
