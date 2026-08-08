@@ -643,7 +643,7 @@ netskope:
 netsuite:
   product_docs: "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/index.html"
   api_docs: "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_1559132836.html"
-  hardening_docs: "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_4607562099.html"
+  hardening_docs: "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_4299752196.html"
 
 new-relic:
   product_docs: "https://docs.newrelic.com/"
