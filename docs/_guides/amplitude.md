@@ -6,14 +6,16 @@ slug: "amplitude"
 tier: "2"
 category: "Data"
 description: "Product analytics platform hardening for Amplitude including SAML SSO, project access, and data governance"
-version: "0.1.1"
+version: "0.1.2"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
 
 Amplitude is a leading product analytics platform serving **thousands of companies** for behavioral analytics and product optimization. As a platform handling user behavior data and product metrics, Amplitude security configurations directly impact data privacy and analytics integrity.
+
+> **Verification note (2026-08):** Amplitude's documentation host blocks automated fetchers, so the console paths, role names, and plan gates in this guide could not be re-verified against Tier 1 documentation during the most recent currency pass. They reflect the last successful verification and warrant a manual, browser-based re-check before you rely on them.
 
 ### Intended Audience
 - Security engineers managing analytics platforms
@@ -414,15 +416,13 @@ Enable and monitor activity logs.
 ## Appendix A: References
 
 **Official Amplitude Documentation:**
-- [Trust Center](https://trust.amplitude.com/) (powered by Wolfia)
-- [Trust, Security and Privacy](https://amplitude.com/security-and-privacy)
 - [Amplitude Documentation](https://amplitude.com/docs)
 - [Security and Privacy FAQ](https://amplitude.com/docs/faq/security-and-privacy)
 - [Data Governance](https://amplitude.com/blog/tackle-data-governance)
 - [Data Access Controls](https://amplitude.com/blog/data-access-controls)
 
 **API & Developer Tools:**
-- [Analytics APIs](https://www.docs.developers.amplitude.com/analytics/apis/)
+- [Analytics APIs](https://amplitude.com/docs/analytics/apis)
 - [TypeScript SDK](https://github.com/amplitude/Amplitude-TypeScript)
 - [Python SDK](https://github.com/amplitude/Amplitude-Python)
 - [Go SDK](https://github.com/amplitude/analytics-go)
@@ -432,9 +432,7 @@ Enable and monitor activity logs.
 - [GitHub Organization](https://github.com/amplitude)
 
 **Compliance Frameworks:**
-- SOC 2 Type II — via [Trust Center](https://trust.amplitude.com/)
-- ISO 27001, ISO 27017, ISO 27018 — via [Trust Center](https://trust.amplitude.com/)
-- GDPR, CCPA, HIPAA compliance
+- SOC 2 Type II; ISO 27001, ISO 27017, ISO 27018; GDPR, CCPA, and HIPAA programs. Amplitude publishes attestation status through its compliance portal; request current reports directly from Amplitude rather than relying on this list.
 - Annual third-party penetration testing; private Bug Bounty program
 
 **Security Incidents:**
@@ -447,6 +445,7 @@ Enable and monitor activity logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.1.2 | draft | Currency pass — structural only. Amplitude's docs host blocked every automated fetch this pass (9 candidate Tier 1 paths returned empty), so no console path, role name, or plan gate could be re-verified; added an Overview verification note stating that scope. Repointed the rotted Analytics APIs link to its canonical `amplitude.com/docs` host and removed Trust Center / security-marketing references from Appendix A. Tier 2 (CIS, DISA STIG, CISA SCuBA) confirmed zero coverage for Amplitude; Tier 3/4 not surveyed this pass. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, access controls, and data governance | Claude Code (Opus 4.5) |
 
