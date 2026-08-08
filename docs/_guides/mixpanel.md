@@ -6,9 +6,9 @@ slug: "mixpanel"
 tier: "2"
 category: "Data"
 description: "Product analytics platform hardening for Mixpanel including SAML SSO, project access controls, and data governance"
-version: "0.1.1"
+version: "0.1.2"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -28,6 +28,8 @@ Mixpanel is a leading product analytics platform serving **thousands of companie
 
 ### Scope
 This guide covers Mixpanel security including SAML SSO, organization/project access, API security, and data governance.
+
+> **Verification note (2026-08-08):** Mixpanel's documentation hosts (`docs.mixpanel.com`, `developer.mixpanel.com`) were unreachable to automated tooling during this currency pass, so no vendor-side claim in this guide could be re-verified against Tier 1 sources. Control content reflects the last successful verification; settings names, plan gating, and console paths should be confirmed against the Mixpanel admin console before you rely on them.
 
 ---
 
@@ -66,7 +68,7 @@ Configure SAML SSO to centralize authentication for Mixpanel users.
 
 #### Prerequisites
 - Mixpanel organization admin access
-- Enterprise plan
+- A Mixpanel plan that includes SAML SSO — historically the Enterprise plan. **Plan gating was not re-verified in the 2026-08-08 pass** (vendor docs unreachable); confirm current plan requirements with Mixpanel before planning a rollout
 - SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
@@ -405,7 +407,6 @@ Enable and monitor activity logs.
 ## Appendix A: References
 
 **Official Mixpanel Documentation:**
-- [Mixpanel Security Overview](https://mixpanel.com/legal/security-overview/)
 - [Mixpanel Product Documentation](https://docs.mixpanel.com/)
 - [Access Security Configuration](https://docs.mixpanel.com/docs/access-security)
 - [SSO Configuration](https://docs.mixpanel.com/docs/orgs-and-projects/sso)
@@ -416,11 +417,10 @@ Enable and monitor activity logs.
 - [Mixpanel SDKs](https://docs.mixpanel.com/docs/tracking-methods/sdks/javascript)
 
 **Compliance Frameworks:**
-- SOC 2 Type II, ISO 27001, ISO 27701 — via [Mixpanel Security](https://mixpanel.com/legal/security-overview/)
-- Annual third-party security audit, penetration testing, and HackerOne bug bounty program
+- Mixpanel states it holds SOC 2 Type II, ISO 27001, and ISO 27701, and runs annual third-party security audits, penetration testing, and a HackerOne bug bounty program. These are vendor assertions, not hardening guidance — request current attestation reports directly from Mixpanel under NDA rather than relying on a marketing page.
 
 **Security Incidents:**
-- No major public security incidents identified for Mixpanel. Monitor [Mixpanel Security](https://mixpanel.com/legal/security-overview/) for current advisories.
+- No major public security incidents identified for Mixpanel as of the last verification. Vendor advisory sources were unreachable during the 2026-08-08 pass; track incidents through your own vendor-risk channel and Mixpanel support notifications.
 
 ---
 
@@ -428,6 +428,7 @@ Enable and monitor activity logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.1.2 | draft | Currency pass: removed vendor security-marketing page from all reference positions; annotated 1.1 plan gating as unverified. Mixpanel documentation hosts (docs.mixpanel.com, developer.mixpanel.com) were unreachable to automated tooling this pass, so no Tier 1 claim could be re-verified — no control content was changed on that basis. Tier 3/4 research not surveyed. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, access controls, and data governance | Claude Code (Opus 4.5) |
 
