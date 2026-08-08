@@ -6,9 +6,9 @@ slug: "segment"
 tier: "2"
 category: "Data"
 description: "Customer data platform hardening for Segment including SAML SSO, workspace access, and data governance"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -49,7 +49,7 @@ This guide covers Segment security including SAML SSO, workspace access, source/
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 6.3, 12.5 |
+| CIS Controls v8 | 6.3, 12.5 |
 | NIST 800-53 | IA-2, IA-8 |
 
 #### Description
@@ -65,28 +65,29 @@ Configure SAML SSO to centralize authentication for Segment users.
 **Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
 
 #### Prerequisites
-- Segment admin access
-- Business tier or higher
+- Workspace Owner role
+- Business tier (SSO is a Business-plan capability)
 - SAML 2.0 compatible IdP
 
 #### ClickOps Implementation
 
-**Step 1: Access SSO Settings**
-1. Navigate to: **Settings** → **Authentication**
-2. Select **Single Sign-On**
-
-**Step 2: Configure SAML**
-1. Enable SAML SSO
-2. Configure IdP settings:
-   - SSO URL
-   - Entity ID
-   - X.509 Certificate
+**Step 1: Create the IdP Connection**
+1. Navigate to: **Settings** → **Authentication** → **Connections**
+2. Select **Add new Connection** and supply the IdP metadata (SSO URL, Entity ID, X.509 certificate)
 3. Configure attribute mapping
 
-**Step 3: Test and Enforce**
-1. Test SSO authentication
-2. Enable SSO enforcement
-3. Configure admin fallback
+Segment supports **multiple IdP connections** in one workspace, so a migration between identity providers does not require an all-at-once cutover.
+
+**Step 2: Verify Your Domain**
+1. Navigate to: **Settings** → **Authentication** → **Domains**
+2. Add each email domain that should authenticate through the connection and publish the verification token to DNS
+
+> **Token expiry:** domain verification tokens expire **14 days after verification completes**. Removing the DNS record before that window closes can invalidate the domain, so leave the record in place until Segment confirms the domain is permanently verified ([Segment SSO documentation](https://www.twilio.com/docs/segment/segment-app/iam/sso)).
+
+**Step 3: Enforce SSO**
+1. Navigate to: **Settings** → **Authentication** → **Advanced Settings**
+2. Enable SSO enforcement so verified-domain users can no longer authenticate with email and password
+3. Retain a documented break-glass path before enforcing
 
 **Time to Complete:** ~1-2 hours
 
@@ -98,7 +99,7 @@ Configure SAML SSO to centralize authentication for Segment users.
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 6.5 |
+| CIS Controls v8 | 6.5 |
 | NIST 800-53 | IA-2(1) |
 
 #### Description
@@ -127,6 +128,59 @@ Require 2FA for all Segment users.
 
 ---
 
+### 1.3 Configure SCIM Provisioning and Deprovisioning
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls v8 | 5.3, 6.2 |
+| NIST 800-53 | AC-2, AC-2(4) |
+
+#### Description
+Connect your identity provider to Segment over SCIM so that user accounts and group membership are created, updated, and — critically — removed automatically when the IdP record changes.
+
+#### Rationale
+**Why This Matters:**
+- Just-in-time provisioning through SSO creates a Segment user on first login, but it has no mechanism to remove that user when the IdP account is disabled — the account survives the offboarding
+- A JIT-created user lands with read-only access by default, so JIT alone is not a permissions strategy either; group-driven SCIM assignment is what makes roles reproducible
+- Orphaned accounts in a customer data platform retain visibility into event streams containing PII long after the person has left
+- SCIM makes access reviews tractable because workspace membership is a projection of IdP group membership rather than a separately maintained list
+
+**Attack Prevented:** Orphaned-account access after offboarding, standing access by departed staff, privilege drift between IdP and workspace, undetected stale accounts
+
+#### Prerequisites
+- Workspace Owner role
+- Business tier
+- An IdP that supports SCIM provisioning
+
+#### ClickOps Implementation
+
+**Step 1: Understand What JIT Does Not Do**
+1. Confirm whether your workspace relies on just-in-time provisioning alone
+2. JIT provisions a user on first successful SSO login with read-only access by default — it does **not** deprovision when the IdP account is removed
+
+**Step 2: Enable SCIM**
+1. Navigate to: **Settings** → **Authentication**
+2. Configure the SCIM connection against your identity provider, following your IdP's Segment provisioning setup
+3. Map IdP groups to the Segment roles each group should hold
+
+**Step 3: Validate Deprovisioning**
+1. Disable a test user in the IdP
+2. Confirm the corresponding Segment account is removed or deactivated within the expected sync window
+
+#### Validation & Testing
+Run a quarterly reconciliation between IdP group membership and the Segment user list. Any Segment user without a matching active IdP record indicates SCIM is not covering that account.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| CIS Controls v8 | 5.3 (Disable dormant accounts), 6.2 (Establish an access revoking process) |
+| NIST 800-53 | AC-2, AC-2(4) |
+
+---
+
 ## 2. Access Controls
 
 ### 2.1 Configure Workspace Roles
@@ -135,7 +189,7 @@ Require 2FA for all Segment users.
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 5.4 |
+| CIS Controls v8 | 5.4 |
 | NIST 800-53 | AC-6 |
 
 #### Description
@@ -154,18 +208,25 @@ Implement least privilege using Segment roles.
 
 **Step 1: Review Roles**
 1. Navigate to: **Settings** → **Team**
-2. Review available roles:
-   - Workspace Owner
-   - Workspace Admin
-   - Workspace Member
-   - Source Admin
-   - Read-only
-3. Understand role capabilities
+2. Review the global roles Segment actually defines:
+
+| Role | Capability |
+|------|------------|
+| Workspace Owner | Full read and edit access to every resource in the workspace, including billing, authentication, and team management |
+| Workspace Member | Read and edit access to workspace resources without owner-level administrative control |
+| Source Admin | Administrative access scoped to sources |
+| Function Admin | Administrative access to Functions |
+| Function Read-only | Read access to Functions |
+
+3. On the **Business tier**, Segment additionally exposes specialist roles scoped to individual products, including Unify (Profiles) admin and read-only roles, Engage admin and read-only roles, Protocols (Tracking Plan) admin and read-only roles, Warehouse admin and read-only roles, Privacy Portal roles, and the PII Access role that governs whether a user can read fields classified as sensitive
+
+> **Correction:** earlier revisions of this guide listed a "Workspace Admin" role. No such role exists in Segment. **Workspace Owner** is the full-control role, and **Workspace Member** is the general edit role beneath it ([Segment roles and permissions](https://www.twilio.com/docs/segment/segment-app/iam/roles)).
 
 **Step 2: Assign Appropriate Roles**
-1. Apply least-privilege principle
-2. Use Source Admin for limited access
-3. Regular access reviews
+1. Apply least-privilege principle — grant Workspace Owner only to the small set of people who must manage authentication, billing, and team membership
+2. Use Source Admin and the Business-tier product-scoped roles instead of workspace-wide grants wherever the user's work is confined to one product
+3. Withhold the PII Access role by default so sensitive fields stay masked for users who do not need them
+4. Run regular access reviews
 
 ---
 
@@ -175,7 +236,7 @@ Implement least privilege using Segment roles.
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 5.4 |
+| CIS Controls v8 | 5.4 |
 | NIST 800-53 | AC-6 |
 
 #### Description
@@ -210,7 +271,7 @@ Control access to specific sources and destinations.
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 5.4 |
+| CIS Controls v8 | 5.4 |
 | NIST 800-53 | AC-6(1) |
 
 #### Description
@@ -247,7 +308,7 @@ Minimize and protect administrator accounts.
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 3.11 |
+| CIS Controls v8 | 3.11 |
 | NIST 800-53 | SC-12 |
 
 #### Description
@@ -287,7 +348,7 @@ Secure source write keys.
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 3.1 |
+| CIS Controls v8 | 3.1 |
 | NIST 800-53 | AC-3 |
 
 #### Description
@@ -309,10 +370,21 @@ Implement data governance controls.
 2. Define allowed events and properties
 3. Block non-compliant data
 
-**Step 2: Configure Privacy Controls**
-1. Enable PII detection
-2. Configure data masking
-3. Apply privacy rules
+**Step 2: Configure the Privacy Portal**
+
+The **Privacy Portal** is available on **all Segment plans**, not only Business, and is the surface where PII is detected, classified, and masked.
+
+1. Navigate to: **Privacy** → **Privacy Portal**
+2. Review the **default matchers**, which ship with more than 35 detections across exact-match and fuzzy-match modes, covering common identifiers such as email addresses, phone numbers, and payment data
+3. Add **custom matchers** where your schema uses non-standard field names — custom matchers are written as Golang regular expressions, with a limit of **100 custom matchers per workspace**
+4. Work the **Privacy Inbox**: newly detected fields land there for review, and **Add to Inventory** commits a classification
+5. Classify each field as **Red**, **Yellow**, or **Green**:
+   - **Red** — the most sensitive tier. Red fields are masked for any user who lacks the **PII Access** role, and are blocked outright when Standard Controls are enabled
+   - **Yellow** — sensitive but permitted to flow
+   - **Green** — non-sensitive
+6. Configure enforcement at: **Privacy** → **Settings**, where **Standard Controls** determine whether Red-classified data is blocked from flowing to destinations
+
+> **Access control is the enforcement mechanism:** masking of Red fields is driven by whether a user holds the PII Access role (see [2.1](#21-configure-workspace-roles)). Classifying data without withholding PII Access leaves the classification decorative ([Segment Privacy Portal](https://www.twilio.com/docs/segment/privacy/portal)).
 
 **Step 3: Configure Data Deletion**
 1. Enable user deletion workflows
@@ -327,7 +399,7 @@ Implement data governance controls.
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 3.11 |
+| CIS Controls v8 | 3.11 |
 | NIST 800-53 | SC-12 |
 
 #### Description
@@ -364,7 +436,7 @@ Secure destination connections and credentials.
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 8.2 |
+| CIS Controls v8 | 8.2 |
 | NIST 800-53 | AU-2 |
 
 #### Description
@@ -379,14 +451,28 @@ Enable and monitor audit logs.
 
 **Attack Prevented:** Undetected configuration tampering, repudiation, insider abuse, delayed breach detection
 
+#### Prerequisites
+- Workspace Owner role (required to view the Audit Trail)
+- Business plan — the Audit Trail is a Business-plan-only feature
+
 #### ClickOps Implementation
 
 **Step 1: Access Audit Trail**
-1. Navigate to: **Settings** → **Audit Trail**
-2. Review logged events
-3. Configure retention
+1. Navigate to: **Settings** → **Admin**
+2. Open the **Audit Trail** and review logged events
 
-**Step 2: Monitor Key Events**
+> **Retention is fixed:** the Segment Audit Trail retains **90 days** of events and the retention period is **not configurable**. Any requirement longer than 90 days must be met by forwarding events out of Segment — see Step 2 ([Segment Audit Trail](https://www.twilio.com/docs/segment/segment-app/iam/audit-trail)).
+
+**Step 2: Configure Audit Forwarding**
+
+Audit Forwarding is the retention control given the 90-day cap — it streams audit events to a Segment source you own, from which they can land in a warehouse or SIEM.
+
+1. Create a source to receive the events. An **HTTP API source** is the recommended target, and the destination must be an event-streams source
+2. Navigate to: **Settings** → **Workspace Settings** → **Audit Forwarding**
+3. Select the receiving source and toggle forwarding on
+4. For point-in-time evidence rather than continuous streaming, Segment also supports **CSV export** of audit events
+
+**Step 3: Monitor Key Events**
 1. User authentication
 2. Source/destination changes
 3. Permission modifications
@@ -400,7 +486,7 @@ Enable and monitor audit logs.
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 8.11 |
+| CIS Controls v8 | 8.11 |
 | NIST 800-53 | SI-4 |
 
 #### Description
@@ -456,17 +542,18 @@ Configure alerts for security events.
 
 **Official Segment Documentation:**
 - [Twilio Segment Documentation](https://www.twilio.com/docs/segment)
-- [Segment Security](https://segment.com/security/)
-- [SSO Configuration](https://segment.com/docs/segment-app/iam/sso/)
-- [Access Management](https://segment.com/docs/segment-app/iam/)
+- [Roles and Permissions](https://www.twilio.com/docs/segment/segment-app/iam/roles)
+- [Single Sign-On](https://www.twilio.com/docs/segment/segment-app/iam/sso)
+- [Audit Trail](https://www.twilio.com/docs/segment/segment-app/iam/audit-trail)
+- [Privacy Portal](https://www.twilio.com/docs/segment/privacy/portal)
+
+> Segment's documentation now lives under `twilio.com/docs/segment/*`. Citations formerly pointing at `segment.com/docs/*` have been migrated to the Twilio-hosted equivalents, which were fetch-verified; the behaviour of the old host's redirects was not confirmed, so the new host is cited directly.
 
 **API & Developer Resources:**
 - [Segment Public API](https://docs.segmentapis.com/)
 
 **Trust & Compliance:**
-- [Segment Trust Center](https://security.segment.com/)
-- [Twilio Trust Center](https://www.twilio.com/en-us/trust-center)
-- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018 -- via [Twilio Compliance Documents](https://www.twilio.com/en-us/trust-center/compliance-documents)
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018 -- via [Twilio Compliance Documents](https://www.twilio.com/en-us/trust-center/compliance-documents) and the [Segment Trust Center](https://security.segment.com/)
 
 **Security Incidents:**
 - No major public security breaches specific to Segment have been identified. Parent company Twilio experienced a phishing attack in August 2022 that exposed limited customer data, but Segment's infrastructure was not directly impacted.
@@ -477,6 +564,7 @@ Configure alerts for security events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass. **1.1:** SAML paths corrected to Settings > Authentication > Connections > Add new Connection, domain verification at > Domains (verification tokens expire 14 days after verification), and enforcement at > Advanced Settings; multiple IdP connections noted; Business-tier requirement confirmed. **New 1.3:** SCIM provisioning and deprovisioning — JIT provisions read-only on first login but does not deprovision, so SCIM is the separate documented capability that removes access. **2.1:** the non-existent "Workspace Admin" role removed; global roles corrected to Workspace Owner, Workspace Member, Source Admin, Function Admin, and Function Read-only, with the Business-tier product-scoped roles and the PII Access role enumerated. **3.2:** Privacy Portal rewritten — free on all plans, 35+ default exact and fuzzy matchers, custom Golang-regex matchers capped at 100 per workspace, red/yellow/green classification, Red masked without PII Access and blocked under Standard Controls, classification committed via Privacy Inbox > Add to Inventory. **4.1:** Audit Trail relocated to Settings > Admin, Workspace Owner and Business plan required, retention corrected to a fixed non-configurable 90 days, and Audit Forwarding added as the retention control (event-streams source, HTTP API source recommended, plus CSV export). **Framework tables:** CIS column relabelled "CIS Controls v8" — these are the Critical Security Controls, not a Segment product benchmark. **Appendix A:** segment.com/docs citations migrated to the fetch-verified twilio.com/docs/segment equivalents, and the segment.com/security marketing page removed. Not surveyed this pass: Tier 3/4 research, and the Segment Public API surface | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, access controls, and data governance | Claude Code (Opus 4.5) |
 
