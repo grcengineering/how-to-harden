@@ -6,9 +6,9 @@ slug: "fivetran"
 tier: "2"
 category: "Data"
 description: "Data integration platform hardening for Fivetran including SSO configuration, role-based access, and connector security"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -62,6 +62,8 @@ Configure SAML SSO to centralize authentication for Fivetran users.
 - Supports just-in-time provisioning
 - Simplifies user lifecycle management
 
+**Attack Prevented:** Credential theft, phishing, password reuse, unmanaged account sprawl
+
 #### Prerequisites
 - Fivetran account with Account Administrator role
 - SAML 2.0 compatible identity provider
@@ -71,7 +73,7 @@ Configure SAML SSO to centralize authentication for Fivetran users.
 
 **Step 1: Access SSO Configuration**
 1. Navigate to: **Account Settings** → **General**
-2. Locate **Authentication Settings** section
+2. Locate the **Authentication Settings** section
 3. Review current authentication configuration
 
 **Step 2: Configure Identity Provider**
@@ -81,10 +83,12 @@ Configure SAML SSO to centralize authentication for Fivetran users.
    - Google Workspace
    - PingOne
    - CyberArk Identity
-2. Configure attribute mappings
+2. Configure attribute mappings, observing Fivetran's two mandatory SAML requirements:
+   - The SAML **NameID** must be the user's email address — Fivetran matches users by email, and any other NameID format breaks sign-in
+   - The IdP must **sign SAML assertions using RSA-SHA256**; other signature algorithms are not accepted
 
 **Step 3: Configure Fivetran SSO**
-1. Navigate to: **Account Settings** → **SSO**
+1. Navigate to: **Account Settings** → **Single Sign-On**
 2. Enable SAML authentication
 3. Enter IdP metadata:
    - IdP SSO URL
@@ -130,18 +134,22 @@ Require all users to authenticate via SSO only.
 
 **Step 1: Configure Authentication Restriction**
 1. Navigate to: **Account Settings** → **General**
-2. Go to **Account Settings** tab
-3. Find **Authentication Settings** section
+2. Find the **Authentication Settings** section
+3. Review the configured login type. Fivetran offers three:
+   - **No restrictions** — email/password, Google OAuth, and SAML all permitted
+   - **Google OAuth** — Google sign-in permitted
+   - **SAML** — SAML sign-in only
 
 **Step 2: Set Required Authentication**
-1. Set **Required authentication type** to **SAML**
-2. This prevents password login
-3. All users must use SSO
+1. Set the required authentication type to **SAML**
+2. This closes both the local password login path **and** the Google OAuth login path — Google OAuth is a second non-SAML entry point that bypasses your IdP's conditional access, and leaving the account on **No restrictions** leaves it open
+3. All users must then sign in through the IdP
 
 **Step 3: Verify Enforcement**
 1. Test login with password (should fail)
-2. Verify SSO login works
-3. Document emergency access procedures
+2. Test login with Google OAuth (should fail)
+3. Verify SSO login works
+4. Document emergency access procedures
 
 #### Code Implementation
 
@@ -173,21 +181,21 @@ Enable automatic user provisioning on first login.
 #### ClickOps Implementation
 
 **Step 1: Enable JIT Provisioning**
-1. Navigate to: **Account Settings** → **SSO**
+1. Navigate to: **Account Settings** → **Single Sign-On**
 2. Enable **Enable SAML authentication**
 3. Enable **Enable user provisioning**
 
 **Step 2: Configure SAML Attributes**
 1. Configure IdP to send:
-   - Email address
+   - Email address (this must also be the SAML NameID — see 1.1)
    - First name
    - Last name
 2. New users created automatically on SAML sign-on
 
 **Step 3: Configure Default Permissions**
 1. Note: JIT users created with no permissions by default
-2. Enable SCIM for role provisioning
-3. Or manually assign roles after creation
+2. Assign the user's team membership and role in Fivetran after the account is created — Fivetran does not derive roles from IdP group membership, including when SCIM is enabled (see 2.3)
+3. Treat role assignment as a required post-provisioning step in your onboarding runbook, not something the IdP will do for you
 
 #### Code Implementation
 
@@ -273,16 +281,12 @@ Implement role-based permissions for Fivetran access.
 
 **Step 1: Review Account Roles**
 1. Navigate to: **Account Settings** → **Users**
-2. Review available roles:
-   - **Account Administrator:** Full account control
-   - **Account Analyst:** View-only access
-   - **Account Billing:** Billing management
-   - **Team Manager:** Team administration
+2. Review the account-level roles available in your tenant. As of this guide's last verification these were **Account Administrator** (full account control), **Account Analyst** (view-only), **Account Billing** (billing management), and **Team Manager** (team administration). Fivetran's public roles reference page is not currently resolvable, so confirm the exact role names and their scopes in your own account's Users page rather than relying on this list.
 
 **Step 2: Assign Appropriate Roles**
-1. Limit Account Administrator to 2-3 users
-2. Use Analyst for read-only needs
-3. Use custom roles when possible
+1. Limit the full-control account administrator role to 2-3 users
+2. Use the view-only analyst role for read-only needs
+3. Use custom roles where a built-in role is broader than the job requires — **custom roles require an Enterprise or Business Critical plan**; on Standard you are limited to the built-in roles, so compensate by keeping team scoping tight (see 2.2)
 
 **Step 3: Configure Destination/Connector Roles**
 1. Assign connector-level permissions
@@ -355,7 +359,7 @@ Configure SCIM for automated user and group provisioning.
 **Why This Matters:**
 - SCIM automates account creation, updates, and deprovisioning from the IdP so access mirrors employment status in near real time
 - Automatic deprovisioning removes departed users immediately, eliminating orphaned accounts with standing data access
-- Group-to-team mapping keeps role assignments consistent and removes manual permission drift
+- Once SCIM is enabled, users can only be created, updated, and removed from the IdP — that single authoritative path removes the drift that comes from parallel manual account management
 - Manual offboarding is slow and easily missed, leaving credentials that can be abused after a user leaves
 
 **Attack Prevented:** Orphaned-account access, offboarding gaps, privilege drift, manual provisioning errors
@@ -372,10 +376,11 @@ Configure SCIM for automated user and group provisioning.
 2. Enter Fivetran SCIM endpoint
 3. Enter API token
 
-**Step 3: Configure User/Group Sync**
-1. Map IdP groups to Fivetran teams
-2. Configure provisioning rules
-3. Test user synchronization
+**Step 3: Configure User Sync and Assign Roles in Fivetran**
+1. **Fivetran SCIM does not support mapping IdP groups to Fivetran teams or roles.** SCIM synchronizes user accounts only — team membership and role assignment remain Fivetran-side operations performed by an account administrator or team manager
+2. Once SCIM is enabled, **users must be managed exclusively in the IdP** — creating, editing, or deleting users directly in Fivetran is no longer the supported path, and changes made there will be out of step with the IdP
+3. Build role assignment into your onboarding runbook as an explicit Fivetran-side step, and include Fivetran role review in periodic access reviews since the IdP cannot enforce it
+4. Test user creation, update, and deactivation end to end before relying on SCIM for offboarding
 
 #### Code Implementation
 
@@ -402,6 +407,8 @@ Secure credentials used for data source connections.
 - Fivetran stores credentials for data sources
 - Compromised credentials expose source systems
 - Apply least privilege to connector accounts
+
+**Attack Prevented:** Source-system compromise via stolen connector credentials, privilege abuse, lateral movement into source databases
 
 #### ClickOps Implementation
 
@@ -451,10 +458,11 @@ Secure network access for Fivetran connections.
 
 #### ClickOps Implementation
 
-**Step 1: Configure IP Allowlisting**
-1. Get Fivetran IP addresses
-2. Allowlist only Fivetran IPs on source systems
-3. Block other external access
+**Step 1: Configure Allowlisting**
+1. Retrieve the Fivetran IP addresses for your account's cloud region from Fivetran's published IP list
+2. **Prefer domain/hostname allowlisting over IP allowlisting where your firewall supports it.** Fivetran states its IP addresses may change in the future without notice, so a hostname-based rule survives address changes that would otherwise break syncs or tempt an operator into loosening the rule
+3. Allowlist only Fivetran's addresses or hostnames on source systems and block other external access
+4. If you must allowlist by IP, subscribe to Fivetran's IP change communications and re-check the published list on a schedule
 
 **Step 2: Enable Private Networking**
 1. Use Fivetran PrivateLink if available
@@ -512,6 +520,111 @@ Secure data warehouse and destination configurations.
 
 ---
 
+### 3.4 Use an External Secret Manager for Connector Credentials
+
+**Profile Level:** L3 (Run)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.11, 5.2 |
+| NIST 800-53 | SC-12, SC-28, IA-5 |
+
+#### Description
+Store connector and destination credentials in your own secret manager instead of in Fivetran, so Fivetran retrieves secrets at runtime from a vault you control, rotate, and audit.
+
+#### Rationale
+**Why This Matters:**
+- Keeping the authoritative copy of every connector credential in your own vault means rotation, revocation, and access auditing happen on infrastructure you own rather than inside a SaaS console
+- Centralizing secrets removes the pattern where credentials are pasted into a vendor UI and then live there indefinitely with no rotation record
+- A vault-backed secret can be revoked in one place the moment a connector, employee, or integration is compromised, without touching every Fivetran connector individually
+
+**Attack Prevented:** Standing credential exposure in a third-party console, rotation gaps, delayed revocation after compromise
+
+#### Prerequisites
+- Business Critical plan
+- Account Administrator role
+- A supported external secret manager: Azure Key Vault, AWS Secrets Manager, Google Secret Manager, or HashiCorp Vault
+- **This feature is in private preview.** It is not self-serve — request access through your Fivetran account team, and confirm current availability and supported connectors before designing around it.
+
+#### ClickOps Implementation
+
+**Step 1: Confirm Availability**
+1. Confirm your account is on the Business Critical plan and that you hold the Account Administrator role
+2. Request private-preview access to External Secrets Managers through your Fivetran account team
+
+**Step 2: Prepare the Vault**
+1. Create the secrets your connectors need in Azure Key Vault, AWS Secrets Manager, Google Secret Manager, or HashiCorp Vault
+2. Grant Fivetran only the read access it needs to those specific secrets — never a broad vault-wide read grant
+3. Record the rotation schedule and owner for each secret in your vault
+
+**Step 3: Connect Fivetran to the Vault**
+1. Navigate to: **Account Settings** → **General** → **External Secrets Managers**
+2. Add your secret manager and supply the connection details for the chosen provider
+3. Reference the vault-held secrets from the connectors that should use them
+
+**Step 4: Retire In-Console Credentials**
+1. Once a connector is sourcing from the vault, remove or rotate the credential value that was previously stored in Fivetran
+2. Verify the connector still syncs after the change
+
+#### Validation & Testing
+- Rotate a secret in the vault and confirm the connector picks up the new value without a Fivetran-side edit
+- Revoke Fivetran's read access to a test secret and confirm the connector fails closed rather than falling back to a cached credential
+- Confirm your vault's audit log shows Fivetran's reads
+
+---
+
+### 3.5 Govern Hybrid Deployment Agents
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 1.1, 5.2, 12.6 |
+| NIST 800-53 | CM-8, IA-5, SC-7 |
+
+#### Description
+Inventory, credential-rotate, and retire the Hybrid Deployment agents that run pipelines inside your own environment, so no stale agent retains a valid token into your network.
+
+#### Rationale
+**Why This Matters:**
+- Hybrid Deployment runs the data processing inside your environment on an agent you host (via Docker, Podman, or Kubernetes), so the agent — and its authentication token — is a persistent inbound trust relationship you own and must manage
+- Only metadata and logs leave your environment for Fivetran's control plane, which means the agent itself is where your actual data is handled and is therefore the asset worth hardening
+- A forgotten agent left registered after a project ends keeps a valid token and a running workload in your infrastructure with nobody watching it
+
+**Attack Prevented:** Abuse of stale or orphaned agent tokens, unmanaged compute in the data path, undetected agent compromise
+
+#### Prerequisites
+- Hybrid Deployment enabled for the account
+- Account Administrator role
+- A container runtime you operate: Docker, Podman, or Kubernetes
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Agents**
+1. Navigate to: **Account Settings** → **Hybrid Deployment Agents**
+2. Record every registered agent, the environment it runs in, its owner, and the connectors bound to it
+3. Reconcile that list against the container workloads actually running in your environment — an agent present in one list and not the other is a finding
+
+**Step 2: Rotate Agent Tokens**
+1. Regenerate the authentication token for each agent on a defined schedule and immediately after any suspected compromise or operator departure
+2. Update the token in the agent's runtime configuration and confirm the agent reconnects
+3. Treat the token as a secret with the same handling as any other production credential
+
+**Step 3: Delete Stale Agents**
+1. Delete any agent that is no longer running, no longer owned, or no longer bound to an active connector
+2. Confirm the corresponding container workload is torn down in your environment, not merely deregistered
+
+**Step 4: Harden the Agent Host**
+1. Run the agent on a dedicated, patched host or namespace with least-privilege network egress
+2. Apply your standard container hardening and monitoring to the agent workload
+
+#### Validation & Testing
+- Confirm the registered-agent list in the dashboard matches your running workloads exactly
+- After a token regeneration, confirm the old token no longer authenticates
+- Confirm a deleted agent's workload stops processing and its connectors report the expected failure
+
+---
+
 ## 4. Monitoring & Compliance
 
 ### 4.1 Configure Activity Logging
@@ -545,10 +658,12 @@ Monitor user and connector activity.
    - Connector modifications
    - Sync activities
 
-**Step 2: Export Logs**
-1. Export logs for analysis
-2. Integrate with SIEM
-3. Set up regular exports
+**Step 2: Export Logs to an External Service**
+1. Configure an external logging service on the destination. Fivetran supports AWS CloudWatch, Azure Monitor, Datadog, Dynatrace, Google Cloud Logging, Grafana Loki, New Relic Log, and Splunk
+2. Note the one-per-destination constraint: **a destination can be connected to only one external logging service at a time**, so pick the system that is actually your investigation surface rather than the one that is easiest to wire up
+3. **Plan gate:** external logging and the Audit Trail require an Enterprise or Business Critical plan
+4. If you are on a plan without external logging, use the **Fivetran Platform Connector** instead — it is available on all plans at no additional cost and lands log and metadata tables in your destination, which you can then query or forward to your SIEM
+5. Set retention and alerting on the receiving system, not just on Fivetran's dashboard view
 
 **Step 3: Monitor Key Events**
 1. User provisioning/deprovisioning
@@ -631,13 +746,15 @@ Implement data governance controls for sensitive data.
 
 **Step 1: Configure Column Blocking**
 1. Navigate to connector settings
-2. Block sensitive columns from sync
-3. Prevent PII replication
+2. Block sensitive columns from sync so they are never written to the destination
+3. **Primary-key columns cannot be blocked or hashed** — Fivetran needs them to identify and update rows. If a primary key is itself sensitive (an email address, a national ID), the fix is upstream schema design or a different sync strategy, not column blocking
+4. Column blocking and hashing apply to all connectors **except Magic Folder**
+5. **Blocking a column does not reduce your MAR (monthly active rows).** Treat column blocking as a privacy and data-minimization control, not a cost control — budgeting on the assumption that blocked columns are free will be wrong
 
 **Step 2: Configure Hashing**
-1. Enable column hashing for sensitive data
-2. Hash PII columns
-3. Maintain referential integrity
+1. Enable column hashing for sensitive columns you still need to join or count on
+2. Hashing is **one-way** — the original value cannot be recovered from the destination, so hash only what you will never need to read back
+3. Fivetran salts hashes **per destination**, so a hashed value is joinable across tables within one destination but **not** across two different destinations. Design cross-destination joins accordingly rather than discovering the mismatch in production
 
 **Step 3: Document Data Flows**
 1. Inventory all connectors
@@ -670,6 +787,8 @@ Implement data governance controls for sensitive data.
 | AC-2 | SCIM provisioning | [2.3](#23-configure-scim-provisioning) |
 | AC-6 | Least privilege | [2.1](#21-configure-role-based-access-control) |
 | SC-12 | Credential security | [3.1](#31-secure-connector-credentials) |
+| IA-5 | External secret management | [3.4](#34-use-an-external-secret-manager-for-connector-credentials) |
+| CM-8 | Hybrid Deployment agent inventory | [3.5](#35-govern-hybrid-deployment-agents) |
 | AU-2 | Audit logging | [4.1](#41-configure-activity-logging) |
 
 ---
@@ -681,6 +800,10 @@ Implement data governance controls for sensitive data.
 | SAML SSO | ✅ | ✅ | ✅ |
 | Custom Session Timeout | ❌ | ✅ | ✅ |
 | SCIM Provisioning | ❌ | ✅ | ✅ |
+| Custom Roles | ❌ | ✅ | ✅ |
+| External Logging & Audit Trail | ❌ | ✅ | ✅ |
+| Fivetran Platform Connector | ✅ | ✅ | ✅ |
+| External Secrets Managers (private preview) | ❌ | ❌ | ✅ |
 | Private Networking | ❌ | Add-on | Add-on |
 | Advanced Security | ❌ | ❌ | ✅ |
 
@@ -689,22 +812,21 @@ Implement data governance controls for sensitive data.
 ## Appendix B: References
 
 **Official Fivetran Documentation:**
-- [Trust Center (SafeBase)](https://trust.fivetran.com/)
-- [Fivetran Security](https://www.fivetran.com/security)
 - [Fivetran Security Documentation](https://fivetran.com/docs/security)
 - [Getting Started](https://fivetran.com/docs/getting-started)
 - [Single Sign-On](https://fivetran.com/docs/using-fivetran/fivetran-dashboard/account-settings/sso)
 - [Account Settings](https://fivetran.com/docs/using-fivetran/fivetran-dashboard/account-settings)
+- [SCIM Provisioning](https://fivetran.com/docs/using-fivetran/fivetran-dashboard/account-settings/scim)
+- [External Secrets Managers](https://fivetran.com/docs/using-fivetran/fivetran-dashboard/account-settings/external-secret-managers)
+- [Hybrid Deployment Agents](https://fivetran.com/docs/using-fivetran/fivetran-dashboard/account-settings/hybrid-deployment-agents)
+- [Column Blocking and Hashing](https://fivetran.com/docs/using-fivetran/features/column-blocking-hashing)
+- [Logs and External Logging Services](https://fivetran.com/docs/logs)
+- [Fivetran IP Addresses](https://fivetran.com/docs/security-and-privacy/ips)
 - [SSO with Okta](https://fivetran.com/docs/using-fivetran/fivetran-dashboard/account-settings/sso/okta-saml-sso)
 - [SSO with Microsoft Entra ID](https://fivetran.com/docs/getting-started/account/azure-saml-sso)
 
 **API & Developer Documentation:**
 - [REST API Reference](https://fivetran.com/docs/rest-api/api-reference)
-- [Compliance Standards](https://fivetran.com/docs/trust/compliance)
-
-**Compliance Frameworks:**
-- SOC 1, SOC 2 Type II, ISO 27001, PCI DSS, HITRUST i1, CyberEssentials — via [Trust Center](https://trust.fivetran.com/)
-- [Fivetran Security Whitepaper](https://resources.fivetran.com/datasheets/fivetran-security-whitepaper)
 
 **Security Incidents:**
 - No major public security incidents identified affecting the Fivetran platform.
@@ -715,7 +837,7 @@ Implement data governance controls for sensitive data.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-08-08 | 0.2.0 | draft | Currency pass against Fivetran docs: corrected 2.3 (SCIM does NOT map IdP groups to teams/roles; IdP becomes the only user-management path), 1.1/1.3 (Single Sign-On page name, mandatory email NameID and RSA-SHA256 assertion signing), 1.2 (named Google OAuth as a third login path to close), 4.1 (real external logging destination list, one service per destination, Enterprise/Business Critical gate, all-plans Platform Connector alternative), 4.3 (primary keys cannot be blocked or hashed, one-way per-destination-salted hashing, blocking does not reduce MAR, Magic Folder exception), 3.2 (prefer hostname over IP allowlisting; IPs may change without notice), 2.1 (custom roles are Enterprise/Business Critical; role names softened pending a resolvable roles doc); added 3.4 External Secrets Managers (private preview) and 3.5 Hybrid Deployment agent governance; added missing Attack Prevented lines to 1.1 and 3.1; pruned Trust Center, /security marketing, compliance-badge, and whitepaper links from Appendix B and added the IP, logs, SCIM, secrets-manager, hybrid-agent, and column-blocking docs. Tier 2 survey found no CIS Benchmark, DISA STIG, or CISA SCuBA baseline for Fivetran; Tier 3/4 not surveyed this pass. | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, access controls, and connector security | Claude Code (Opus 4.5) |
 
 ---
