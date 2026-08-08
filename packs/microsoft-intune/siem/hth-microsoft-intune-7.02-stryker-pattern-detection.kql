@@ -1,13 +1,14 @@
-#!/usr/bin/env pwsh
-# HTH Microsoft Intune Control 7.2: Deploy Stryker-Pattern Detection Rules
-# Profile: L2 | NIST: SI-4(5)
-# https://howtoharden.com/guides/microsoft-intune/#72-deploy-stryker-pattern-detection-rules
-#
-# Prerequisites:
-#   Log Analytics workspace with Intune diagnostic logs
-#   Microsoft Sentinel connected to the workspace
+// =============================================================================
+// HTH Microsoft Intune Control 7.2: Deploy Stryker-Pattern Detection Rules
+// Profile: L2 | NIST: SI-4(5)
+// https://howtoharden.com/guides/microsoft-intune/#72-deploy-stryker-pattern-detection-rules
+//
+// Prerequisites:
+//   Log Analytics workspace with Intune diagnostic logs
+//   Microsoft Sentinel connected to the workspace
+// =============================================================================
 
-# HTH Guide Excerpt: begin kql
+// HTH Guide Excerpt: begin kql
 // === Detection 1: Mass Device Wipe (Primary Stryker TTP) ===
 // Alerts when >10 wipe actions occur within 1 hour from any admin
 // Deploy as Sentinel Scheduled Analytics Rule | Run: 15m | Lookup: 1h
