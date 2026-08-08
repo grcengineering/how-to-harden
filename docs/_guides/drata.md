@@ -6,9 +6,9 @@ slug: "drata"
 tier: "2"
 category: "Security"
 description: "Compliance automation platform hardening for Drata including access controls, integration security, and monitoring configuration"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -53,45 +53,50 @@ This guide covers Drata platform security including access controls, integration
 | NIST 800-53 | IA-2, IA-8 |
 
 #### Description
-Configure SAML SSO to centralize authentication and enforce organizational security policies.
+Enable the Drata SSO connection so every login — including administrators — is authenticated by your corporate identity provider rather than by Drata's built-in login.
 
 #### Rationale
 **Why This Matters:**
 - Centralizes Drata authentication in your corporate IdP so MFA, conditional access, and session policies apply to every login
-- Local password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- Drata's non-SSO login path is a passwordless email one-time code, which inherits none of your IdP's conditional access, device posture, or phishing-resistant factor requirements
 - Drata holds compliance evidence, audit data, and security control configurations — a single compromised login can expose or alter the integrity of the entire program
 
-**Attack Prevented:** Credential theft, phishing, password reuse, unauthorized access to compliance data
+**Attack Prevented:** Credential theft, phishing, mailbox-compromise-driven account takeover, unauthorized access to compliance data
+
+#### Prerequisites
+- An IdP integration (Okta, Microsoft Entra ID, Google Workspace, etc.) must be **connected first** — the SSO option stays disabled on the Connections page until an identity provider connection exists
+- Drata brokers SSO through WorkOS, so the SAML/OIDC application is configured against WorkOS rather than against a Drata-owned endpoint
 
 #### ClickOps Implementation
 
-**Step 1: Access SSO Settings**
-1. Navigate to: **Settings** → **Security** → **Single Sign-On**
-2. Click **Configure SSO**
+**Step 1: Connect the Identity Provider**
+1. Navigate to: **Connections**
+2. Connect your identity provider (Okta, Microsoft Entra ID, Google Workspace, etc.)
+3. Confirm the connection is healthy and personnel are syncing
 
-**Step 2: Configure SAML**
-1. Select identity provider type
-2. Configure SAML settings:
-   - IdP SSO URL
-   - IdP Certificate
-   - Entity ID
-3. Download Drata SP metadata for IdP configuration
+**Step 2: Add the SSO Connection**
+1. On the **Connections** page, select **Single Sign-On** (enabled only once an IdP connection exists)
+2. Follow the guided WorkOS setup for your IdP type, supplying the IdP metadata, certificate, and ACS/Entity values it requests
+3. Complete the setup in your IdP: create the application, map attributes, and assign the users and groups that should reach Drata
 
-**Step 3: Configure IdP**
-1. Create SAML application in IdP
-2. Configure attribute mappings
-3. Assign users/groups
-
-**Step 4: Enable SSO Enforcement**
-1. Test SSO authentication
-2. Enable **Require SSO** for all users
-3. Configure backup admin access
+**Step 3: Verify Enforcement Behavior**
+1. Once the SSO connection is enabled, **all** logins — administrators included — are routed through the IdP; there is no separate "require SSO" toggle to set
+2. Access is restricted to users synced from the IdP, so confirm every intended administrator is present in the synced set **before** enabling
+3. Test an administrator login through the IdP, then confirm the non-SSO email-code path no longer grants access
 
 **Time to Complete:** ~1 hour
 
+#### Validation & Testing
+- From a private browser session, attempt a login as an administrator: authentication must redirect to the IdP.
+- Attempt a login as a user who exists in Drata but is not synced from the IdP — access should be refused.
+
+> **Enforcement is all-or-nothing.** Because enabling the connection forces every login through the IdP and limits access to IdP-synced users, a mis-scoped IdP assignment locks administrators out. Validate the synced user set first, and keep a documented recovery path with Drata Support (see [1.5](#15-govern-drata-support-remote-access)).
+
+**Source:** [Single Sign-On Connection](https://help.drata.com/en/articles/5209416-single-sign-on-connection)
+
 ---
 
-### 1.2 Enforce Multi-Factor Authentication
+### 1.2 Enforce Multi-Factor Authentication at the Identity Provider
 
 **Profile Level:** L1 (Crawl)
 
@@ -101,27 +106,38 @@ Configure SAML SSO to centralize authentication and enforce organizational secur
 | NIST 800-53 | IA-2(1) |
 
 #### Description
-Require MFA for all users accessing Drata platform.
+Because Drata exposes no in-product MFA toggle, multi-factor authentication is enforced by enabling the SSO connection and applying an MFA policy in the identity provider that fronts it.
 
 #### Rationale
 **Why This Matters:**
-- MFA blocks account takeover even when a password is phished, leaked, or guessed
+- MFA blocks account takeover even when the first factor is phished, leaked, or intercepted
 - Drata accounts can read evidence from connected production systems and modify control and policy state, making them high-value targets
-- Enforcing MFA for every user, especially admins, closes the most common path to unauthorized access
+- Without SSO, Drata's login is a passwordless one-time code emailed by `auth.drata.com` — a single compromised mailbox is then sufficient to authenticate, with no second factor available to stop it
 
-**Attack Prevented:** Credential stuffing, password spraying, phishing-based account takeover
+**Attack Prevented:** Mailbox-compromise account takeover, credential phishing, adversary-in-the-middle code relay
 
 #### ClickOps Implementation
 
-**Step 1: Configure MFA Policy**
-1. Navigate to: **Settings** → **Security** → **Authentication**
-2. Enable **Require MFA for all users**
-3. Or enforce MFA through SSO/IdP (recommended)
+**Step 1: Understand the Available Surface**
+1. Drata provides **no local MFA setting** — there is nothing to enable under Settings for password or code-based logins
+2. Non-SSO sign-in is passwordless: the user submits an email address and `auth.drata.com` sends a one-time code
+3. Therefore MFA exists for Drata only when logins are brokered by an identity provider
 
-**Step 2: Verify Admin MFA**
-1. Ensure all admin accounts have MFA enabled
-2. Verify MFA enrollment status
-3. Follow up with non-compliant users
+**Step 2: Enforce MFA in the Identity Provider**
+1. Complete the SSO connection in [1.1](#11-configure-sso-authentication)
+2. In your IdP, scope an MFA / authentication policy to the Drata application
+3. Require phishing-resistant factors (FIDO2/WebAuthn or platform passkeys) for administrators
+
+**Step 3: Verify Coverage**
+1. Confirm every Drata user is inside the IdP group assigned to the Drata application
+2. Review the IdP's factor-enrollment report for that group and remediate unenrolled users
+3. Re-verify after each access review, since new personnel sync in from the IdP
+
+#### Validation & Testing
+- Sign in as a test administrator and confirm the IdP challenges for the required factor before Drata loads.
+- Confirm no login path reaches Drata without traversing the IdP.
+
+**Sources:** [Signing in to Drata (New Experience)](https://help.drata.com/en/articles/13801611-signing-in-to-drata-new-experience) · [Settings Page](https://help.drata.com/en/articles/13563975-settings-page)
 
 ---
 
@@ -135,33 +151,51 @@ Require MFA for all users accessing Drata platform.
 | NIST 800-53 | AC-6 |
 
 #### Description
-Configure role-based access to implement least privilege for Drata users.
+Assign Drata's function-scoped roles so each user holds only the permissions their compliance responsibilities require, and drive assignment from identity-provider groups so entitlements revoke automatically on offboarding.
 
 #### Rationale
 **Why This Matters:**
-- Drata contains sensitive compliance evidence
-- Limit who can modify controls and policies
-- Reduce blast radius of compromised accounts
+- Drata contains sensitive compliance evidence, control state, and risk records that a broadly-privileged account can read or rewrite wholesale
+- Drata roles are **additive** — a user can hold several at once — so entitlement creep is silent unless assignments are reviewed against a documented baseline
+- Mapping roles to IdP groups means a departure in the IdP revokes Drata access without a separate manual step, closing the orphaned-account window
+
+**Attack Prevented:** Privilege escalation, insider evidence tampering, orphaned-account persistence, excessive blast radius from a compromised account
+
+> **The role model changed.** Drata's New Experience role set replaced the earlier Owner / Admin / Compliance Manager / Viewer model. It is applied automatically to customers who joined Drata on or after **2026-02-24**; existing customers migrate on Drata's schedule. Verify which model your workspace is running before writing access-review procedures against it. — [Roles and Permissions Overview (New Experience)](https://help.drata.com/en/articles/13578465-roles-and-permissions-overview-new-experience)
 
 #### ClickOps Implementation
 
 **Step 1: Review Available Roles**
-1. Navigate to: **Settings** → **Team** → **Roles**
-2. Review available roles:
-   - **Owner:** Full administrative access
-   - **Admin:** Administrative functions
-   - **Compliance Manager:** Control and policy management
-   - **Viewer:** Read-only access
+1. Navigate to: **Settings** → **Role administration**
+2. Review the function-scoped roles, which include:
+   - **Admin** — broad administrative access to the workspace
+   - **Access Reviewer**, **Control Manager**, **DevOps Engineer**, **Information Security Lead**, **Knowledge Base**, **Personnel Compliance Manager**, **Policy Manager**, **Risk Manager**, **Risk Register Owner**, **Workspace Manager**
+   - **Trust Center Manager** and **Trust Center Reviewer** for the public trust page
+   - **Guest Administrator** and **Service User** for external and machine access
+   - Read-only and restricted-view variants of several of the above, for users who need visibility without change rights
+3. Note two structural rules: roles are **additive** (a user may hold several), and **Workspace Manager cannot be combined with any other role**
 
-**Step 2: Assign Appropriate Roles**
-1. Limit Owner/Admin to essential personnel
-2. Use Compliance Manager for GRC team
-3. Use Viewer for auditors and stakeholders
+**Step 2: Assign Least Privilege**
+1. Define the intended role set per job function and document it — with additive roles, "what should this person hold" must be written down to be auditable
+2. Grant **Admin** and **Information Security Lead** only to the small set of people who administer the program
+3. Use the read-only and restricted-view variants for auditors, stakeholders, and anyone who only consumes evidence
+4. Use **Service User** for machine access rather than assigning a human role to an integration identity
 
-**Step 3: Regular Access Reviews**
-1. Quarterly review of user access
-2. Remove departed employees promptly
-3. Document access decisions
+**Step 3: Automate Assignment and Revocation**
+1. Navigate to: **Settings** → **Role administration** → **IdP Group Mappings**
+2. Map identity-provider groups to Drata roles so SCIM provisioning assigns and revokes roles as group membership changes
+3. Treat the IdP group as the source of truth; avoid one-off manual grants that the mapping will not clean up
+
+**Step 4: Regular Access Reviews**
+1. Review role assignments quarterly, checking the full additive set per user rather than a single "role" field
+2. Confirm departures in the IdP have propagated to Drata role removal
+3. Document access decisions and exceptions
+
+#### Validation & Testing
+- Export the user list from **Settings** → **Role administration** and reconcile every additive role combination against the documented baseline.
+- Remove a test user from a mapped IdP group and confirm the corresponding Drata role is revoked.
+
+**Sources:** [Roles and Permissions Overview (New Experience)](https://help.drata.com/en/articles/13578465-roles-and-permissions-overview-new-experience) · [Map IdP Groups to Drata Roles](https://help.drata.com/en/articles/15235029-map-idp-groups-to-drata-roles)
 
 ---
 
@@ -204,6 +238,55 @@ Follow CIS Control recommendations for admin privilege management.
 
 ---
 
+### 1.5 Govern Drata Support Remote Access
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.2, 6.8 |
+| NIST 800-53 | AC-2(3), MA-4 |
+
+#### Description
+Grant Drata Support access to your workspace only for the duration of an open ticket, at the lowest sufficient level, and verify the grant is withdrawn afterward.
+
+#### Rationale
+**Why This Matters:**
+- An account-access grant lets Drata Support staff view — and, at the higher level, change — your compliance evidence, control state, and configuration
+- The **Allowed to make changes** level permits modification of the record auditors rely on, so an open-ended grant is standing third-party write access to your audit trail
+- Time-bounding the grant to a specific ticket makes any support-session activity attributable to a business justification you can produce during an audit
+
+**Attack Prevented:** Standing third-party access, supply-chain access abuse via the vendor's support channel, unattributed changes to compliance evidence
+
+#### Prerequisites
+- Only the **Admin**, **Information Security Lead**, and **Workspace Manager** roles can grant or revoke support access
+
+#### ClickOps Implementation
+
+**Step 1: Grant Only Against an Open Ticket**
+1. Navigate to: **Settings** → **Organization** → **Account access**
+2. Confirm a support ticket exists and record its reference alongside the grant
+3. Select the access level:
+   - **View only** — the default choice; sufficient for the majority of troubleshooting
+   - **Allowed to make changes** — only when Support must reconfigure something you cannot reach yourself
+
+**Step 2: Bound the Window**
+1. Set the shortest expiry that covers the support interaction
+2. Do not grant access speculatively or leave a standing grant between tickets
+
+**Step 3: Verify Revocation**
+1. After the ticket closes, return to **Settings** → **Organization** → **Account access**
+2. Confirm the setting reads **No access**
+3. Review the Events page ([4.1](#41-review-and-export-the-events-audit-trail)) for actions taken during the window
+
+#### Validation & Testing
+- Spot-check **Account access** on a schedule; any state other than **No access** without a matching open ticket is a finding.
+- Confirm support-session activity appears in Events with the expected actor and timeframe.
+
+**Source:** [Grant Remote Access to Drata Support](https://help.drata.com/en/articles/13604233-grant-remote-access-to-drata-support)
+
+---
+
 ## 2. Integration Security
 
 ### 2.1 Configure Integrations with Least Privilege
@@ -223,6 +306,8 @@ Configure Drata integrations with minimum necessary permissions.
 - Drata integrates with 200+ systems
 - Each integration receives API access to source systems
 - Excessive permissions increase risk
+
+**Attack Prevented:** Lateral movement into connected systems via a compromised integration, over-privileged service-account abuse
 
 #### ClickOps Implementation
 
@@ -319,6 +404,105 @@ Securely configure identity provider integrations for user sync and compliance m
 1. Ensure Drata can read MFA status
 2. Configure alerts for MFA compliance
 3. Review MFA coverage reports
+
+---
+
+### 2.4 Prefer Scoped OAuth Applications Over Long-Lived API Keys
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.11, 5.2 |
+| NIST 800-53 | IA-5, SC-12 |
+
+#### Description
+Authenticate programmatic access to the Drata API with short-lived, per-resource-scoped OAuth application tokens instead of long-lived API keys, using a separate application per environment.
+
+#### Rationale
+**Why This Matters:**
+- A long-lived API key is a bearer credential with no natural expiry — once leaked in a repository, log, or CI variable it remains usable until someone notices and rotates it
+- OAuth applications issue short-lived tokens with per-resource read/create/update/delete scopes, so a leaked token is both time-bounded and limited to the operations it was granted
+- A separate application per environment means a compromised non-production credential cannot read or alter production compliance evidence
+- Drata itself recommends OAuth applications over API keys for API access
+
+**Attack Prevented:** Leaked-credential replay, over-scoped programmatic access, cross-environment blast radius, stale-key abuse
+
+#### ClickOps Implementation
+
+**Step 1: Create the Application**
+1. Navigate to: **Settings** → **OAuth Applications**
+2. Create a distinct application per consumer **and** per environment (for example, one for production evidence sync, a separate one for a staging pipeline)
+
+**Step 2: Scope It Down**
+1. Grant only the per-resource scopes the consumer needs, choosing read over create, update, or delete wherever the workflow allows
+2. Set a custom expiration rather than accepting the longest available lifetime
+
+**Step 3: Handle the Secret Correctly**
+1. The client secret is displayed **once at creation** — capture it directly into your secret manager, never into a ticket, chat message, or source file
+2. Record the application's owner and purpose so an unexplained application can be identified during review
+
+**Step 4: Review and Retire**
+1. Review OAuth applications and any remaining API keys quarterly
+2. Delete applications whose consumer is decommissioned
+3. Migrate remaining long-lived API-key consumers onto scoped applications
+
+#### Validation & Testing
+- Attempt an out-of-scope API call with the issued token and confirm it is rejected.
+- Confirm no API key or client secret appears in source control, CI configuration, or logs.
+
+**Source:** [Set Up OAuth for the Drata API](https://help.drata.com/en/articles/13521519-set-up-oauth-for-the-drata-api)
+
+---
+
+### 2.5 Govern Drata MCP Server OAuth Scopes
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.3, 5.2 |
+| NIST 800-53 | AC-6, AC-6(1) |
+
+#### Description
+Restrict the scopes granted to AI clients connecting through Drata's remote MCP server, defaulting to read-only and always setting an expiration date.
+
+#### Rationale
+**Why This Matters:**
+- Drata's remote MCP server lets an AI client both **query and act on** compliance data — the available scopes include creating and updating Evidence, creating and updating Controls, and updating Personnel
+- Write and delete scopes on evidence and control objects are direct authority over the audit record, so an over-scoped or prompt-injected AI client can alter what auditors will rely on
+- Effective access is the **intersection** of the granted scope and the connecting user's Drata role, so scope discipline and role discipline ([1.3](#13-implement-role-based-access-control)) must both hold — neither alone is sufficient
+- A configuration without an expiration date is a standing grant to an AI client that may outlive the project that justified it
+
+**Attack Prevented:** AI-client compromise or prompt injection escalating into evidence tampering, over-scoped machine access, standing unreviewed automation grants
+
+#### Prerequisites
+- Drata operates the MCP server at regional endpoints (`mcp.drata.com`, `mcp-euc1`, `mcp-apse2`); connect clients only to the endpoint matching your data region
+
+#### ClickOps Implementation
+
+**Step 1: Create the Configuration**
+1. Navigate to: **Settings** → **MCP OAuth Configuration**
+2. Supply a name and a description that identifies the specific AI client and its business purpose
+
+**Step 2: Default to Read-Only**
+1. Grant read scopes only, unless a documented workflow genuinely requires the client to write
+2. Treat **create/update Evidence**, **create/update Controls**, and **update Personnel** as privileged — approve them individually, with a named owner, and never as a convenience default
+
+**Step 3: Always Set an Expiration**
+1. Set an expiration date on every configuration; do not leave it open-ended
+2. Re-approve rather than auto-extend when the date arrives
+
+**Step 4: Constrain the Connecting Identity**
+1. Connect the MCP client as a user whose Drata role is already least-privileged, since access is the intersection of scope and role
+2. Avoid connecting MCP clients as **Admin** or **Information Security Lead**
+
+#### Validation & Testing
+- Review **Settings** → **MCP OAuth Configuration** quarterly; every entry must have a named owner, an expiration date, and a justified scope set.
+- With a read-only configuration, attempt a write through the MCP client and confirm it is refused.
+- Confirm MCP-originated changes are attributable on the Events page ([4.1](#41-review-and-export-the-events-audit-trail)).
+
+**Source:** [Drata MCP Setup & Usage Guide](https://help.drata.com/en/articles/13379899-drata-mcp-setup-usage-guide)
 
 ---
 
@@ -443,7 +627,7 @@ Properly manage control exceptions and evidence gaps.
 
 ## 4. Monitoring & Auditing
 
-### 4.1 Configure Audit Logging
+### 4.1 Review and Export the Events Audit Trail
 
 **Profile Level:** L1 (Crawl)
 
@@ -453,37 +637,48 @@ Properly manage control exceptions and evidence gaps.
 | NIST 800-53 | AU-2 |
 
 #### Description
-Enable and monitor audit logs for security events.
+Use Drata's top-level Events page as the audit trail for workspace activity, and pull events into your own retention tier via the public API, since Drata provides no streaming SIEM connector.
 
 #### Rationale
 **Why This Matters:**
-- Audit logs capture who logged in, changed policies, modified controls, and altered integrations — the record needed for incident investigation
-- Exporting logs to a SIEM with defined retention preserves evidence beyond platform defaults and protects it from tampering
-- Without comprehensive logging, malicious or accidental changes go undetected and forensic reconstruction becomes impossible
+- Events records the actor — including Drata's own system processes — with a timestamp, category, originating connection, result, and the raw JSON payload behind each entry, which is what an investigation actually needs to reconstruct a change
+- Because system-process actors are logged alongside human ones, Events distinguishes an automated evidence refresh from a person editing control state — the difference between noise and a finding
+- Drata offers **no native streaming integration to a SIEM**, so retention beyond the platform and correlation with other telemetry only happen if you build the pull yourself
+- Without an owned copy of the trail, a disputed or malicious change to compliance evidence may be unattributable by the time it is noticed
 
-**Attack Prevented:** Undetected tampering, repudiation, post-incident evidence loss
+**Attack Prevented:** Undetected evidence tampering, repudiation of control or policy changes, post-incident evidence loss
 
 #### ClickOps Implementation
 
-**Step 1: Access Audit Logs**
-1. Navigate to: **Settings** → **Audit Log**
-2. Review logged events:
-   - User login/logout
-   - Policy changes
-   - Control modifications
-   - Integration changes
+**Step 1: Review Events**
+1. Navigate to: **Events** (top-level page, not nested under Settings)
+2. Filter by category, connection, actor, or result to scope an investigation
+3. Open an individual event to inspect the raw JSON evidence behind it
 
-**Step 2: Export Logs**
-1. Configure log export
-2. Integrate with SIEM if available
-3. Set retention policies
+**Step 2: Export Individual Events**
+1. From an open event, export it as **PDF** or **TXT** for an audit or incident file
+
+**Step 3: Bulk Export via the Public API**
+1. Create a **read-scoped** credential for the export job — prefer a scoped OAuth application ([2.4](#24-prefer-scoped-oauth-applications-over-long-lived-api-keys))
+2. Pull from the public API's event-data endpoint on a schedule into your log platform
+3. Respect the documented rate limit of **500 requests per minute per source IP** when designing the job's paging and retry behavior
+
+> **No native SIEM streaming.** Drata does not offer a push/streaming connector to a SIEM. Any real-time alerting on Drata events must be built on top of a scheduled API pull — plan the collection job and its failure alerting accordingly. — [Get Event Data From Drata](https://help.drata.com/en/articles/7213411-drata-public-api-get-event-data-from-drata)
 
 **Key Events to Monitor:**
-- Admin role changes
-- Policy modifications
-- Integration configuration changes
+- Role assignments and IdP group mapping changes
+- Policy modifications and approvals
+- Connection (integration) configuration changes
 - Control status changes
 - Exception approvals
+- Account access grants to Drata Support ([1.5](#15-govern-drata-support-remote-access))
+- OAuth application and MCP configuration creation or scope changes
+
+#### Validation & Testing
+- Make a benign configuration change and confirm it appears in Events with the expected actor, category, and result.
+- Confirm the API export job has run inside its expected window and that a gap in collection raises an alert.
+
+**Sources:** [Events Overview](https://help.drata.com/en/articles/13557370-events-overview) · [Drata Public API — Get Event Data From Drata](https://help.drata.com/en/articles/7213411-drata-public-api-get-event-data-from-drata)
 
 ---
 
@@ -571,40 +766,46 @@ Regularly monitor compliance dashboard for drift and issues.
 |-----------|---------------|---------------|
 | CC6.1 | SSO/MFA | [1.1](#11-configure-sso-authentication) |
 | CC6.2 | RBAC | [1.3](#13-implement-role-based-access-control) |
+| CC6.3 | Programmatic access scoping | [2.4](#24-prefer-scoped-oauth-applications-over-long-lived-api-keys) |
 | CC6.6 | Integration security | [2.1](#21-configure-integrations-with-least-privilege) |
-| CC7.2 | Audit logging | [4.1](#41-configure-audit-logging) |
+| CC7.2 | Audit trail | [4.1](#41-review-and-export-the-events-audit-trail) |
 | CC7.3 | Control monitoring | [3.2](#32-configure-control-monitoring) |
+| CC9.2 | Vendor support access | [1.5](#15-govern-drata-support-remote-access) |
 
 ### NIST 800-53 Rev 5 Mapping
 
 | Control | Drata Control | Guide Section |
 |---------|---------------|---------------|
 | IA-2 | SSO | [1.1](#11-configure-sso-authentication) |
-| IA-2(1) | MFA | [1.2](#12-enforce-multi-factor-authentication) |
-| AC-6 | Least privilege | [1.3](#13-implement-role-based-access-control) |
-| AU-2 | Audit logging | [4.1](#41-configure-audit-logging) |
+| IA-2(1) | MFA (enforced at the IdP) | [1.2](#12-enforce-multi-factor-authentication-at-the-identity-provider) |
+| AC-6 | Least privilege | [1.3](#13-implement-role-based-access-control), [2.5](#25-govern-drata-mcp-server-oauth-scopes) |
+| AU-2 | Audit trail | [4.1](#41-review-and-export-the-events-audit-trail) |
 | CA-7 | Continuous monitoring | [3.2](#32-configure-control-monitoring) |
+| IA-5 | Credential management | [2.4](#24-prefer-scoped-oauth-applications-over-long-lived-api-keys) |
+| MA-4 | Nonlocal maintenance access | [1.5](#15-govern-drata-support-remote-access) |
 
 ---
 
 ## Appendix A: References
 
 **Official Drata Documentation:**
-- [Trust Center (SafeBase)](https://trust.drata.com/)
-- [Drata Security](https://drata.com/security)
 - [Drata Help Center](https://help.drata.com/en/)
+- [Roles and Permissions Overview (New Experience)](https://help.drata.com/en/articles/13578465-roles-and-permissions-overview-new-experience)
+- [Map IdP Groups to Drata Roles](https://help.drata.com/en/articles/15235029-map-idp-groups-to-drata-roles)
+- [Single Sign-On Connection](https://help.drata.com/en/articles/5209416-single-sign-on-connection)
+- [Signing in to Drata (New Experience)](https://help.drata.com/en/articles/13801611-signing-in-to-drata-new-experience)
+- [Settings Page](https://help.drata.com/en/articles/13563975-settings-page)
+- [Grant Remote Access to Drata Support](https://help.drata.com/en/articles/13604233-grant-remote-access-to-drata-support)
+- [Events Overview](https://help.drata.com/en/articles/13557370-events-overview)
 - [System Access Control Policy Guidance](https://help.drata.com/en/articles/7211097-system-access-control-policy-guidance)
 - [Platform Overview](https://drata.com/platform)
 - [CIS v8.1 Framework Overview](https://help.drata.com/en/articles/11145651-cis-v8-1-framework-overview)
 
 **API & Developer Documentation:**
 - [Drata API Documentation](https://developers.drata.com/api-docs/)
-
-**Compliance Frameworks:**
-- SOC 3, ISO 27001:2022, ISO 27017, ISO 27018, ISO 42001:2023 — via [Trust Center](https://trust.drata.com/)
-- HIPAA, CCPA, GDPR compliant
-- CISA Secure-by-Design Pledge holder
-- AWS Qualified Software and AWS Security Software Competency Partner
+- [Set Up OAuth for the Drata API](https://help.drata.com/en/articles/13521519-set-up-oauth-for-the-drata-api)
+- [Drata Public API — Get Event Data From Drata](https://help.drata.com/en/articles/7213411-drata-public-api-get-event-data-from-drata)
+- [Drata MCP Setup & Usage Guide](https://help.drata.com/en/articles/13379899-drata-mcp-setup-usage-guide)
 
 **Security Incidents:**
 - No major public security incidents identified affecting the Drata platform.
@@ -615,7 +816,7 @@ Regularly monitor compliance dashboard for drift and issues.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-08-08 | 0.2.0 | draft | Currency pass: correct 1.1 (SSO is a WorkOS-brokered Connections-page connection requiring a prior IdP connection; enforcement is implicit), 1.2 (no local MFA toggle — non-SSO login is a passwordless email code, MFA lives at the IdP), 1.3 (New Experience additive role model replacing Owner/Admin/Compliance Manager/Viewer, plus IdP group mapping), and 4.1 (top-level Events page; export via per-event PDF/TXT or read-scoped public API — no native SIEM streaming). Add 1.5 support remote-access governance, 2.4 scoped OAuth applications, 2.5 MCP OAuth scope governance. Purge Trust Center and marketing security page from references. Tier 3/4 research sweep out of scope for this pass (search budget) | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with access controls, integrations, and monitoring | Claude Code (Opus 4.5) |
 
 ---

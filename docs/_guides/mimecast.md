@@ -6,9 +6,9 @@ slug: "mimecast"
 tier: "2"
 category: "Security"
 description: "Email security hardening for Mimecast including targeted threat protection, impersonation policies, and gateway configuration"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -61,6 +61,8 @@ Ensure MX records are properly configured to route all email through Mimecast.
 - Incorrect MX priorities can bypass Mimecast protection
 - Email must route through Mimecast before reaching mail server
 - Misconfiguration leaves organization exposed
+
+**Attack Prevented:** Gateway bypass, direct-to-mailbox delivery of unfiltered phishing and malware
 
 #### Validation
 
@@ -280,6 +282,8 @@ Enable scanning of internal email for compromised account detection.
 - Internal phishing can bypass perimeter controls
 - Lateral movement detection
 
+**Attack Prevented:** Internal phishing from a compromised mailbox, lateral malware spread, perimeter-only inspection gaps
+
 #### ClickOps Implementation
 
 **Step 1: Configure Internal Email Protect**
@@ -313,6 +317,8 @@ Configure impersonation protection to detect business email compromise attempts.
 - BEC attacks cause billions in losses annually
 - Impersonation of executives is primary attack vector
 - Requires multiple detection layers
+
+**Attack Prevented:** Business email compromise, display-name spoofing, reply-to redirection fraud
 
 #### ClickOps Implementation
 
@@ -431,35 +437,42 @@ Enable advanced BEC detection using AI-powered analysis.
 | NIST 800-53 | AC-6 |
 
 #### Description
-Implement least privilege for Mimecast administration.
+Implement least privilege for Mimecast administration by restricting who holds the Protected and Security permission classes, not merely by counting administrators.
 
 #### Rationale
 **Why This Matters:**
 - Mimecast admins can change security policies, release held mail, and access message content, so over-privileged accounts are a high-value target
-- Role-based access with least privilege limits the blast radius if any single admin account is compromised
-- Separating duties across security admin, report viewer, and help desk roles prevents accidental or malicious weakening of protections by support staff
-- Restricting full admin to essential personnel reduces the number of accounts that can disable protections organization-wide
+- **Protected** permissions gate the highest-impact capabilities — viewing and exporting email content, delegate mailbox access, and retention — so an account holding them can read the organization's mail, not just administer the gateway
+- **Security** permissions determine whether an admin can grant privileges to others (**Cannot Manage Roles** / **Manage Application Roles** / **Protected Roles**); an admin who can manage Protected roles can escalate themselves or anyone else
+- Restricting these two classes is what actually contains an account takeover — limiting the count of admins without limiting their permission classes leaves the same capability in fewer hands
 
-**Attack Prevented:** Privilege escalation, insider misuse, unauthorized policy changes, account-takeover blast radius
+**Attack Prevented:** Privilege escalation via role management, mass mail-content exfiltration, insider misuse, unauthorized policy changes
 
 #### ClickOps Implementation
 
-**Step 1: Review Admin Roles**
-1. Navigate to: **Administration** → **Account** → **Roles**
-2. Review built-in roles
-3. Create custom roles for specific functions
+**Step 1: Review the Default Admin Roles**
+1. Navigate to: **Account** | **Admin Roles**
+2. Review the default roles, which include **Super Administrator**, **Partner Administrator**, and **Full Administrator** among others
+3. Note that **Super Administrator** and **Full Administrator** are themselves protected roles: their membership can only be managed by Mimecast Support, so plan changes to them in advance
 
-**Step 2: Implement Role-Based Access**
-1. Create roles:
-   - **Security Admin:** Policy management
-   - **Report Viewer:** Read-only reporting
-   - **Help Desk:** User support only
-2. Assign minimum required permissions
+**Step 2: Constrain the Permission Classes**
+1. For each role, review the three permission classes:
+   - **Application** — which console functions the role can use
+   - **Protected** — viewing and exporting email content, delegate mailbox access, and retention
+   - **Security** — role-management rights: **Cannot Manage Roles**, **Manage Application Roles**, or **Protected Roles**
+2. Grant **Protected** permissions only to the small set of people with a documented need to access message content
+3. Set **Security** to **Cannot Manage Roles** for every role that does not exist specifically to administer entitlements
 
-**Step 3: Limit Full Admin Access**
-1. Restrict full admin to essential personnel
-2. Use separate accounts for admin work
-3. Regular access reviews
+**Step 3: Limit Membership and Review**
+1. Restrict Super Administrator and Full Administrator membership to essential personnel
+2. Use separate accounts for administrative work
+3. Review role membership and permission classes together on a regular cadence — a role's membership list alone does not tell you what it can do
+
+#### Validation & Testing
+- For each admin role, confirm the Protected and Security permission settings match the documented intent.
+- Confirm no role outside the entitlement-management set carries **Protected Roles** under Security.
+
+**Source:** [Account: Admin Roles](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000745394963)
 
 ---
 
@@ -473,7 +486,7 @@ Implement least privilege for Mimecast administration.
 | NIST 800-53 | IA-2(1) |
 
 #### Description
-Require MFA for all administrative access to Mimecast.
+Require 2-Step Authentication for administrative access by configuring an Authentication Profile and binding it to the relevant Application Setting.
 
 #### Rationale
 **Why This Matters:**
@@ -486,16 +499,33 @@ Require MFA for all administrative access to Mimecast.
 
 #### ClickOps Implementation
 
-**Step 1: Configure 2-Step Authentication**
-1. Navigate to: **Administration** → **Account** → **Authentication**
-2. Enable **2-Step Verification**
-3. Apply to all admin accounts
+**Step 1: Create an Authentication Profile**
+1. Navigate to the **Administration Console** → **Users & Groups** | **Applications** → **Authentication Profiles**
+2. Create or edit a profile and enable **2-Step Authentication**
 
-**Step 2: Configure Authentication Methods**
-1. Supported methods:
-   - Authenticator app (recommended)
-   - Email verification
-2. Enforce enrollment
+**Step 2: Choose the Second Factor**
+1. Select the method:
+   - **3rd party Authentication (TOTP) app** — Mimecast's recommended option
+   - **Email**
+   - **SMS**
+2. Prefer the TOTP app; email and SMS inherit the weaknesses of the mailbox and the mobile carrier respectively
+
+**Step 3: Bind the Profile to an Application Setting**
+1. A profile takes effect only when it is bound to an **Application Setting**, which is scoped to a group
+2. Bind the admin profile to the group containing your administrators
+3. Confirm the group membership is accurate — an admin outside the bound group is not covered
+
+**Step 4: Consider Adaptive Enforcement**
+1. 2-Step Authentication supports **location-based (adaptive) enforcement**, challenging for the second factor only when the user is outside trusted networks
+2. For administrators, prefer unconditional enforcement; use adaptive enforcement only where a documented trusted-network boundary genuinely holds
+
+> **SAML takes precedence.** If a single Authentication Profile sets both **Enforce SAML** and 2-Step Authentication, SAML wins and the 2SA setting will not apply as configured. Enforce the second factor in the identity provider when you use SAML, rather than assuming the profile's 2SA setting is active. — [Authentication Profiles](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000822265619)
+
+#### Validation & Testing
+- Sign in as a test administrator from an untrusted network and confirm the second factor is demanded.
+- Confirm the **Account_Administrators_Authentication_Profile** has 2-Step Authentication enabled ([4.5](#45-maintain-a-backup-administrator-account)) — it governs and overrides authentication for all admin accounts.
+
+**Sources:** [Authentication Profiles](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000822265619) · [Configuring 2-Step Authentication](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000822544147)
 
 ---
 
@@ -534,9 +564,105 @@ Implement proper user lifecycle management.
 
 ---
 
+### 4.4 Restrict Administration Console Access by IP Range
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.4, 12.5 |
+| NIST 800-53 | AC-3, AC-17 |
+
+#### Description
+Limit Administration Console sign-in to known corporate and VPN egress ranges, while understanding that this restriction no longer covers API access.
+
+#### Rationale
+**Why This Matters:**
+- An IP allowlist means a stolen admin credential is unusable from an arbitrary internet host, converting a pure credential attack into one that also requires network position
+- Combined with 2-Step Authentication ([4.2](#42-enforce-mfa-for-admin-accounts)), it forces an attacker to defeat two independent controls to reach the console
+- A misconfigured allowlist locks out the administrators who maintain the email security gateway, so incremental testing and a documented emergency-access procedure are part of the control, not optional extras
+
+**Attack Prevented:** Remote credential-replay against the admin console, opportunistic admin login from attacker infrastructure
+
+> **Changed default — IP restrictions no longer cover the API.** Effective **2025-09-16**, Mimecast Admin IP allow and block lists **no longer apply to public Mimecast API endpoints** (OAuth2). IP ranges are therefore **not** a compensating control over API access: an attacker holding valid API credentials reaches the API from any address regardless of your allowlist. Protect the API through credential hygiene and scope instead. — [Changes to Admin IP Allow and Block Lists](https://mimecastsupport.zendesk.com/hc/en-us/articles/44764533235347)
+
+#### ClickOps Implementation
+
+**Step 1: Document the Authorized Ranges**
+1. Inventory the corporate egress and VPN ranges administrators legitimately connect from
+2. Record the owner and business justification for each range before adding it
+
+**Step 2: Configure the Allowlist**
+1. Navigate to: **Account Settings** → **User Access and Permissions**
+2. Configure **Admin IP Ranges** in CIDR notation
+3. Review **Cloud Password Rules** on the same page while you are there, so console password policy and network restriction are set as a pair
+
+**Step 3: Roll Out Incrementally**
+1. Add and test one range at a time rather than committing a full list in a single change
+2. Verify administrator access after each addition before proceeding
+3. Ensure **at least two administrators remain reachable from different IP ranges**, so a single office or VPN outage cannot lock out the console
+
+**Step 4: Maintain an Emergency Path**
+1. Document an emergency-access procedure before enforcing the restriction
+2. Audit the allowlist periodically and remove ranges that no longer correspond to an active office, VPN, or provider
+
+#### Validation & Testing
+- Attempt an administrator login from an address outside the allowlist and confirm it is refused.
+- Confirm at least two administrators can each reach the console from distinct authorized ranges.
+- Confirm your API protections do not depend on the IP allowlist, per the callout above.
+
+**Source:** [Admin IP Ranges and Cloud Password Rules](https://mimecastsupport.zendesk.com/hc/en-us/articles/49581922337555)
+
+---
+
+### 4.5 Maintain a Backup Administrator Account
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.1, 6.2 |
+| NIST 800-53 | AC-2, CP-2 |
+
+#### Description
+Keep more than one account in the highest administrative roles so the tenant cannot be locked out, and verify that the profile governing all admin authentication enforces a second factor.
+
+#### Rationale
+**Why This Matters:**
+- If the sole administrator's account is lost, disabled, or offboarded, recovering administrative access **requires Mimecast approval** — an availability incident on the control plane of your email security at the worst possible moment
+- Mimecast's email gateway is inline with all mail flow, so a lockout is not merely inconvenient: policy changes, mail release, and incident response all stop until access is restored
+- The **Account_Administrators_Authentication_Profile** governs authentication for **all** administrator accounts and **overrides any other profile**, so a backup admin created without checking it can inherit weaker authentication than you intended
+
+**Attack Prevented:** Tenant lockout and loss of control-plane availability; a weakly-authenticated backup admin becoming the easiest path into the console
+
+#### ClickOps Implementation
+
+**Step 1: Add a Second Administrator**
+1. Navigate to: **Account** | **Admin Roles**
+2. Add a second trusted user to **Super Administrator** (primary choice) or **Full Administrator** (secondary choice)
+3. Remember these are protected roles managed with Mimecast Support involvement — plan the change rather than attempting it during an incident
+
+**Step 2: Verify the Governing Authentication Profile**
+1. Confirm **Account_Administrators_Authentication_Profile** has 2-Step Authentication enabled ([4.2](#42-enforce-mfa-for-admin-accounts))
+2. Because this profile overrides any other profile for admin accounts, checking a different profile is not sufficient evidence that admins are protected
+
+**Step 3: Operationalize It**
+1. Assign the backup account to a named individual with recorded ownership — never an unowned shared mailbox
+2. Ensure the backup admin is reachable from a different authorized IP range than the primary ([4.4](#44-restrict-administration-console-access-by-ip-range))
+3. Verify the backup account can actually sign in on a scheduled basis; an untested break-glass account is an assumption, not a control
+
+#### Validation & Testing
+- Confirm at least two accounts hold Super Administrator or Full Administrator, each owned by a named individual.
+- Perform a scheduled sign-in test with the backup account and record the result.
+- Confirm 2-Step Authentication is enabled on **Account_Administrators_Authentication_Profile**.
+
+**Source:** [Creating a Backup Administrator Account](https://mimecastsupport.zendesk.com/hc/en-us/articles/48467143796499)
+
+---
+
 ## 5. Monitoring & Compliance
 
-### 5.1 Configure Audit Logging
+### 5.1 Configure Audit Logging and Event Push
 
 **Profile Level:** L1 (Crawl)
 
@@ -546,30 +672,57 @@ Implement proper user lifecycle management.
 | NIST 800-53 | AU-2 |
 
 #### Description
-Enable and monitor audit logs for security events.
+Review audit events in the console and stream Mimecast telemetry to your SIEM using **Event Push**, the current delivery mechanism.
 
 #### Rationale
 **Why This Matters:**
 - Audit logs of admin actions, policy changes, and authentication events provide the record needed to detect and investigate misuse
-- Without log retention and SIEM export, malicious or mistaken policy changes can go unnoticed and unattributable
-- Real-time streaming to a SIEM enables alerting and correlation with other security telemetry
-- Comprehensive logging supports forensic reconstruction and meets compliance evidence requirements
+- Without export, malicious or mistaken policy changes can go unnoticed and unattributable beyond the console's own view
+- Event Push delivers threat, DLP, message release/rejection, and audit telemetry to your SIEM, enabling alerting and correlation with the rest of your security data
+- Mimecast's inline position means its events are frequently the earliest signal of a phishing or BEC campaign against the organization
 
 **Attack Prevented:** Undetected policy tampering, insider misuse, delayed breach detection, repudiation
 
 #### ClickOps Implementation
 
-**Step 1: Access Audit Logs**
+**Step 1: Review Audit Events in the Console**
 1. Navigate to: **Administration** → **Account** → **Audit Events**
 2. Review logged events:
    - Admin actions
    - Policy changes
    - Authentication events
 
-**Step 2: Configure SIEM Integration**
-1. Navigate to: **Administration** → **Services** → **SIEM Integration**
-2. Configure log export to SIEM
-3. Configure real-time streaming
+**Step 2: Configure Event Push**
+1. Configure **Event Push** as the delivery mechanism to your SIEM — it replaces any older SIEM-integration menu path and was enhanced on **2025-11-18**
+2. Choose a delivery format and destination:
+   - **HEC batch JSON** (Splunk HTTP Event Collector)
+   - **NDJSON**
+   - **Webhook**
+   - **AWS S3**
+3. Select the event types to push, which include **Audit**, **TTP protections**, **DLP**, **Message Release/Rejection**, **MTA**, **Threat**, and **Remediation**
+
+**Step 3: Secure the Channel**
+1. Authenticate the destination using **OAuth 2.0**, **static headers with secret masking**, or **IP-based** authorization
+2. Deliver over **HTTPS on port 443** with a publicly valid certificate on the receiving endpoint — self-signed certificates will not be accepted
+3. Configure the retry behavior and the error notification email so a silently failing push is surfaced rather than discovered during an investigation
+
+> **API 1.0 is end-of-life.** Creation of new API 1.0 applications was **removed in June 2025**, and existing 1.0 applications are slated for expiry. Migrate any integration still using API 1.0 keys — including log-collection scripts — to **API 2.0**. Also note that Admin IP allow/block lists no longer restrict public API endpoints ([4.4](#44-restrict-administration-console-access-by-ip-range)). — [API 1.0 End of Life](https://mimecastsupport.zendesk.com/hc/en-us/articles/39704312201235)
+
+**Key Events to Monitor:**
+- Policy modifications
+- Admin login events and 2-Step Authentication changes
+- Admin role and permission-class changes ([4.1](#41-configure-admin-access-controls))
+- Admin IP range changes ([4.4](#44-restrict-administration-console-access-by-ip-range))
+- URL/Attachment blocks
+- Impersonation detections
+- Message release and rejection events
+
+#### Validation & Testing
+- Make a benign policy change and confirm the corresponding audit event arrives in the SIEM within the expected delivery window.
+- Deliberately break and restore the destination endpoint to confirm the retry behavior and error email work as configured.
+- Confirm no integration is still authenticating with an API 1.0 key.
+
+**Sources:** [Event Push](https://mimecastsupport.zendesk.com/hc/en-us/articles/46464059376147) · [API 1.0 End of Life](https://mimecastsupport.zendesk.com/hc/en-us/articles/39704312201235)
 
 **Key Events to Monitor:**
 - Policy modifications
@@ -675,8 +828,10 @@ Actively monitor threat dashboard for emerging threats.
 | CC6.1 | Admin MFA | [4.2](#42-enforce-mfa-for-admin-accounts) |
 | CC6.6 | URL Protection | [2.1](#21-configure-url-protection) |
 | CC6.8 | Attachment Protection | [2.2](#22-configure-attachment-protection) |
+| CC6.7 | Admin network restriction | [4.4](#44-restrict-administration-console-access-by-ip-range) |
 | CC7.1 | Email Authentication | [1.2](#12-configure-email-authentication-spf-dkim-dmarc) |
-| CC7.2 | Audit logging | [5.1](#51-configure-audit-logging) |
+| CC7.2 | Audit logging and Event Push | [5.1](#51-configure-audit-logging-and-event-push) |
+| A1.2 | Administrative availability | [4.5](#45-maintain-a-backup-administrator-account) |
 
 ### NIST 800-53 Rev 5 Mapping
 
@@ -686,7 +841,9 @@ Actively monitor threat dashboard for emerging threats.
 | SC-8 | TLS/Encryption | [1.3](#13-configure-secure-communication) |
 | SI-3 | Threat Protection | [2.1](#21-configure-url-protection), [2.2](#22-configure-attachment-protection) |
 | AC-6 | Least privilege | [4.1](#41-configure-admin-access-controls) |
-| AU-2 | Audit logging | [5.1](#51-configure-audit-logging) |
+| AC-17 | Remote admin access restriction | [4.4](#44-restrict-administration-console-access-by-ip-range) |
+| AU-2 | Audit logging | [5.1](#51-configure-audit-logging-and-event-push) |
+| CP-2 | Contingency planning (admin lockout) | [4.5](#45-maintain-a-backup-administrator-account) |
 
 ---
 
@@ -705,18 +862,19 @@ Actively monitor threat dashboard for emerging threats.
 ## Appendix B: References
 
 **Official Mimecast Documentation:**
-- [Mimecast Trust Center](https://www.mimecast.com/company/mimecast-trust-center/)
-- [Mimecast Product Documentation](https://docs.mimecast.com/)
+- [Security Efficacy: Security Recommendations](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000390489235-Security-Efficacy-Security-Recommendations)
 - [Targeted Threat Protection Optimization](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000726395155-Targeted-Threat-Protection-Optimization)
-- [TTP Impersonation Protect Guide](https://community.mimecast.com/s/article/email-security-cloud-gateway-ttp-impersonation-protection-guides)
-- [Email Security Cloud Gateway Best Practices](https://community.mimecast.com/s/article/email-security-cloud-gateway-security-best-practice)
+- [TTP Impersonation Protection](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000781880723)
+- [Account: Admin Roles](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000745394963)
+- [Authentication Profiles](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000822265619)
+- [Configuring 2-Step Authentication](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000822544147)
+- [Admin IP Ranges and Cloud Password Rules](https://mimecastsupport.zendesk.com/hc/en-us/articles/49581922337555)
+- [Changes to Admin IP Allow and Block Lists (2025-09-16)](https://mimecastsupport.zendesk.com/hc/en-us/articles/44764533235347)
+- [Creating a Backup Administrator Account](https://mimecastsupport.zendesk.com/hc/en-us/articles/48467143796499)
+- [Event Push](https://mimecastsupport.zendesk.com/hc/en-us/articles/46464059376147)
 
 **API Documentation:**
-- [Mimecast Developer Portal](https://developer.services.mimecast.com/)
-
-**Compliance Frameworks:**
-- SOC 2 Type II, ISO/IEC 27001:2022, ISO/IEC 27701:2019, ISO 22301:2019, ISO/IEC 42001:2023, Cyber Essentials Plus — via [Mimecast Certification and Attestation](https://www.mimecast.com/company/mimecast-trust-center/certification-and-attestation/)
-- [Mimecast Trust Center (SafeBase)](https://trust.mimecast.com/)
+- [API 1.0 End of Life](https://mimecastsupport.zendesk.com/hc/en-us/articles/39704312201235)
 
 **Security Incidents:**
 - **SolarWinds Supply Chain Attack (January 2021):** Mimecast confirmed that a certificate used for Microsoft 365 Exchange Web Services authentication was compromised by the same nation-state actors (APT29) behind the SolarWinds attack. Approximately 10% of customers (~3,900) used the affected connection type, and fewer than 10 were specifically targeted. Attackers potentially exfiltrated encrypted service account credentials and accessed some source code. — [Mimecast Certificate Compromise (TechTarget)](https://www.techtarget.com/searchsecurity/news/252495395/Mimecast-certificate-compromised-by-SolarWinds-hackers)
@@ -727,7 +885,7 @@ Actively monitor threat dashboard for emerging threats.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-08-08 | 0.2.0 | draft | Currency pass: correct 4.1 (default Admin Roles at Account \| Admin Roles and the Application/Protected/Security permission classes, replacing invented custom-role names), 4.2 (2-Step Authentication via Authentication Profiles bound to an Application Setting; SAML precedence), and 5.1 (Event Push replaces the unverifiable SIEM Integration path; API 1.0 end-of-life callout). Add 4.4 Admin Console IP restrictions with the 2025-09-16 changed default that IP lists no longer apply to public API endpoints, and 4.5 backup administrator account. Fix Appendix B link rot (docs.mimecast.com dead, community.mimecast.com articles moved to Zendesk) and purge Trust Center pages. Add missing Attack Prevented lines to 1.1, 2.3, 3.1. Tier 3/4 research sweep out of scope for this pass (search budget) | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with gateway, TTP, and impersonation protection | Claude Code (Opus 4.5) |
 
 ---
