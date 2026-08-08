@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "AI/ML Platform"
 description: "Platform-wide security hardening for Anthropic — the Common Controls hub (SSO, organization roles, admin API keys, integration governance) shared by the Claude Enterprise, Claude Code, and Claude API & Console product guides."
-version: "1.0.0"
+version: "1.0.1"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -43,6 +43,19 @@ This hub covers platform-wide Anthropic controls: organization authentication (S
 3. [Compliance Quick Reference](#3-compliance-quick-reference)
 
 **Product guides:** [Claude Enterprise (claude.ai)](/guides/claude-enterprise/) · [Claude Code](/guides/claude-code/) · [Claude API & Console](/guides/anthropic-api/)
+
+---
+
+## Products in This Platform
+
+Anthropic is a multi-product platform. This guide is the **Common Controls hub** — the platform-wide controls that apply across every Anthropic product. Product-specific controls live in their own guides:
+
+| Product | Guide | Covers |
+|---------|-------|--------|
+| **Common Controls** (this guide) | — | Organization SSO & SCIM, least-privilege organization roles, admin API key protection, third-party integration governance |
+| **Claude Enterprise (claude.ai)** | [Claude Enterprise guide](/guides/claude-enterprise/) | Identity & provisioning, audit & compliance export, connectors & extensions, spend governance |
+| **Claude Code** | [Claude Code guide](/guides/claude-code/) | Managed settings & policy deployment, extensions & supply chain, execution isolation & sandboxing, threat defense, monitoring & incident response |
+| **Claude API & Console** | [Claude API & Console guide](/guides/anthropic-api/) | API key management, workspace security, data security & privacy, monitoring & usage controls |
 
 ---
 
@@ -662,6 +675,7 @@ Assess the security posture of applications and services that consume your Claud
 | 2026-03-27 | 0.5.0 | draft | Major expansion: Added 6 new controls (7.5-7.10) — Bash sandbox isolation, hook/plugin lockdown, prompt injection defense, CI/CD pipeline hardening, external sandbox tooling (nono, OpenShell), Cowork governance. Updated 7.1 with drop-in directory, plist/registry delivery, new managed settings. Added comprehensive references for security research (ToxicSkills, Rules File Backdoor, InversePrompt CVEs) and open-source tools. Updated all compliance mappings. | `Claude Code (Opus 4.6)` |
 | 2026-04-06 | 0.6.0 | draft | Added 7.11 Incident Response (kill-switch, forensic collection, AI agent IR scenarios, tabletop exercises). Major expansion of 7.10 Cowork: Chrome hardening (allowlist/blocklist, default gap warnings), global defensive instructions, dedicated workspace scoping, scheduled task governance, plugin install preferences, tenant restriction details (exact header format, proxy platforms, error codes), data training opt-out by tier, web search egress bypass warning, OTel prompt content toggle. Added NIST CSF 2.0 and NIST AI RMF compliance mappings. Added web search bypass warning to 7.5 sandbox. | `Claude Code (Opus 4.6)` |
 | 2026-05-06 | 0.7.0 | draft | Added 2.3 Eliminate Static API Keys via Workload Identity Federation: covers Anthropic's new WIF capability (RFC 7523 jwt-bearer flow against `POST /v1/oauth/token`), Console setup walkthrough for federation issuers / service accounts / federation rules, IdP coverage (AWS / GCP / Azure-Entra / GitHub Actions / Kubernetes / SPIFFE / Okta), credential precedence pitfalls (`ANTHROPIC_API_KEY` shadowing WIF), token lifetime/refresh semantics, JWKS rotation gotchas, and migration runbook. Code Packs: token-exchange script with static-key guardrail (api/), reference hardened GitHub Actions workflow (config/), config-as-code WIF profile (config/), Python SDK pattern (sdk/). Verified against platform.claude.com/docs/en/manage-claude/workload-identity-federation and wif-reference. | `Claude Opus 4.7 (1M)` |
+| 2026-08-08 | 1.0.1 | draft | Added "Products in This Platform" navigation section (product guide table mirroring the Google Workspace hub) so the Anthropic hub lists Claude Enterprise, Claude Code, and Claude API & Console with their coverage. No control changes. | `Claude Opus 5 (1M)` |
 
 ---
 

@@ -217,19 +217,28 @@ title: Home
         {% assign p_has_pack = false %}
         {% assign p_names = "" %}
         {% for g in pg.items %}{% if site.data.packs[g.slug] %}{% assign p_has_pack = true %}{% endif %}{% assign p_names = p_names | append: " " | append: g.slug %}{% endfor %}
-        {% comment %} Platform card category derives from the hub guide's own
-        category (previously hardcoded "productivity", which misfiled any
-        non-productivity platform under the wrong filter). {% endcomment %}
-        {% assign pcat = p0.category | downcase %}
-        {% if pcat contains "ai/ml" or pcat contains "ai platform" %}{% assign p_data_cat = "ai" %}
-        {% elsif pcat contains "identity" %}{% assign p_data_cat = "identity" %}
-        {% elsif pcat contains "security" %}{% assign p_data_cat = "security" %}
-        {% elsif pcat contains "devops" %}{% assign p_data_cat = "devops" %}
-        {% elsif pcat contains "data" %}{% assign p_data_cat = "data" %}
-        {% elsif pcat contains "hr" or pcat contains "finance" %}{% assign p_data_cat = "hr" %}
-        {% elsif pcat contains "marketing" %}{% assign p_data_cat = "marketing" %}
-        {% else %}{% assign p_data_cat = "productivity" %}{% endif %}
-        <div class="guide-card platform-card" data-category="{{ p_data_cat }}" data-name="{{ p_names }}" data-reviewed="ai-drafted" data-has-pack="{{ p_has_pack }}">
+        {% comment %} Platform card categories are the UNION of every member
+        guide's category (hub + products), slugified with the same chain the
+        standalone cards use. Deriving from the hub alone (or hardcoding
+        "productivity") dropped members out of their own category filter and
+        mislabelled the tag. data-category holds the space-joined union; the
+        filter JS token-matches it. {% endcomment %}
+        {% assign p_cat_list = "" %}
+        {% for g in pg.items %}
+          {% assign gcat = g.category | downcase %}
+          {% if gcat contains "identity" or gcat contains "iam" or gcat contains "iga" %}{% assign g_data_cat = "identity" %}
+          {% elsif gcat contains "security" or gcat contains "pam" or gcat contains "secrets" %}{% assign g_data_cat = "security" %}
+          {% elsif gcat contains "devops" or gcat contains "ci/cd" or gcat contains "iac" or gcat contains "container" or gcat contains "hosting" or gcat contains "developer" %}{% assign g_data_cat = "devops" %}
+          {% elsif gcat contains "data" or gcat contains "analytics" or gcat contains "observability" or gcat contains "storage" %}{% assign g_data_cat = "data" %}
+          {% elsif gcat contains "collaboration" or gcat contains "productivity" or gcat contains "itsm" or gcat contains "support" or gcat contains "communication" or gcat contains "business" or gcat contains "erp" or gcat contains "automation" %}{% assign g_data_cat = "productivity" %}
+          {% elsif gcat contains "hr" or gcat contains "payroll" or gcat contains "finance" %}{% assign g_data_cat = "hr" %}
+          {% elsif gcat contains "ai/ml" or gcat contains "ai platform" %}{% assign g_data_cat = "ai" %}
+          {% elsif gcat contains "marketing" or gcat contains "crm" or gcat contains "ai" %}{% assign g_data_cat = "marketing" %}
+          {% else %}{% assign g_data_cat = "security" %}{% endif %}
+          {% assign p_cat_list = p_cat_list | append: " " | append: g_data_cat %}
+        {% endfor %}
+        {% assign p_cats = p_cat_list | strip | split: " " | uniq | sort %}
+        <div class="guide-card platform-card" data-category="{{ p_cats | join: ' ' }}" data-name="{{ p_names }}" data-reviewed="ai-drafted" data-has-pack="{{ p_has_pack }}">
           <div class="guide-card-header platform-card-header">
             <h3>{{ p0.platform }}</h3>
             <span class="platform-count">{{ pg.items.size }} guides
@@ -238,7 +247,17 @@ title: Home
           </div>
           <p class="guide-card-description">Multi-product platform &mdash; {{ pg.items.size }} product guides. Click to expand.</p>
           <div class="guide-card-meta">
-            <span class="category-tag category-productivity">Productivity</span>
+            {% for pc in p_cats %}{% case pc %}
+              {% when "identity" %}{% assign pc_label = "Identity" %}
+              {% when "security" %}{% assign pc_label = "Security" %}
+              {% when "devops" %}{% assign pc_label = "DevOps" %}
+              {% when "data" %}{% assign pc_label = "Data" %}
+              {% when "productivity" %}{% assign pc_label = "Productivity" %}
+              {% when "hr" %}{% assign pc_label = "HR/Finance" %}
+              {% when "ai" %}{% assign pc_label = "AI" %}
+              {% when "marketing" %}{% assign pc_label = "Marketing" %}
+            {% endcase %}<span class="category-tag category-{{ pc }}">{{ pc_label }}</span>
+            {% endfor %}
             {% if p_has_pack %}<span class="pack-badge"><span class="pack-badge-text">&lt;/&gt; Code Pack</span></span>{% endif %}
           </div>
           <div class="platform-products">
@@ -393,7 +412,9 @@ document.addEventListener('DOMContentLoaded', function() {
       const desc = card.querySelector('.guide-card-description').textContent.toLowerCase();
 
       const matchesSearch = !searchTerm || name.includes(searchTerm) || title.includes(searchTerm) || desc.includes(searchTerm);
-      const matchesCategory = activeCategory === 'all' || category === activeCategory;
+      // data-category is a space-joined list (platform cards carry the union of
+      // their member guides' categories), so match on tokens, not the whole string.
+      const matchesCategory = activeCategory === 'all' || category.split(' ').indexOf(activeCategory) !== -1;
       const matchesReview = activeStatus === 'all' || reviewed === activeStatus;
       const matchesPack = activePack === 'all' || hasPack === 'true';
 
