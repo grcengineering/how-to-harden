@@ -34,9 +34,11 @@ More text
 
 - **No exceptions:** SQL, KQL, SPL, bash, Python, YAML, JSON, HCL — everything goes in packs.
 - **Pack pipeline:** `packs/{vendor}/{type}/` source files → `scripts/sync-packs-to-data.sh` → `docs/_data/packs/{vendor}.yml` → `{% include pack-code.html vendor="{vendor}" section="X.X" %}` in guides.
-- **Pack types (directories):** `terraform/`, `api/`, `cli/`, `sdk/`, `db/`, `config/`, `siem/sigma/`
+- **Pack types (directories):** `terraform/`, `api/`, `cli/`, `sdk/`, `db/`, `config/`, `siem/`, `siem/sigma/`
   - `cli/` is reserved for scripts that **invoke a vendor's first-party CLI binary** (e.g., `gh`, `vault`, `databricks`, `snow`). If the vendor has no first-party CLI, do NOT create a `cli/` pack — use `api/` (REST API), `terraform/`, or `config/` instead.
   - `config/` is for vendor-native configuration files and config-emitting scripts (e.g., `.jsonc` settings, shell scripts that write `.ini`/`.xml`/`.conf` snippets). Use this when the content configures the vendor's product but isn't directly executed via a CLI command.
+  - `db/` is for vendor-NATIVE query surfaces only (Snowflake/Databricks SQL, BigQuery log-export SQL, SOQL, DAX). `siem/` is for SIEM-resident detections (Splunk `.spl`, Sentinel `.kql`) — SIEM queries never go in `db/`.
+  - **Collision rule:** the sync keeps ONE file per (section, type), last-alphabetical wins silently (only `siem/sigma/` allows multiples). Full table + rules: [AGENTS.md §Pack types](AGENTS.md).
   - See `docs/research/cli-inventory.md` for the authoritative list of which vendors actually publish first-party CLIs.
 - **Verification:** Run `grep -cE '^ *```' docs/_guides/{vendor}.md` — must return **0** for every guide.
 - To add code to a guide: create a pack file in `packs/{vendor}/{type}/`, run the sync script, then use the include tag in the guide.
@@ -68,6 +70,25 @@ Never use bare ` ``` ` without a language.
 Right before `git commit`, set the guide's `last_updated` frontmatter value **and** the new changelog row's `Date` column to today's date (run `date +%F`). Never carry over the drafting date. Both fields must agree. Stale `last_updated` values mislead readers because Jekyll renders that field as "Last updated:" at the top of every guide page.
 
 See [AGENTS.md §5](AGENTS.md#5-revision-dates-reflect-the-publish-date-not-the-drafting-date) for the full rule.
+
+### 6. Cheat Sheets Are Parsed From Control Structure
+
+A control renders as a cheat-sheet row ONLY if its `### N.N` section carries `**Profile Level:**`, `#### Description` + paragraph, and `#### Rationale` with `**Why This Matters:**` bullets plus `**Attack Prevented:**`. Miss one and the control silently vanishes from the cheat sheet. Reference sections and `### N.N.N` walk-throughs must NOT carry `**Profile Level:**`. Full contract: [AGENTS.md §6](AGENTS.md).
+
+### 7. Hardening Links Are Literal Hardening Docs
+
+`hardening_docs` in `docs/_data/doc_links.yml` = actual hardening/config documentation or an authoritative benchmark, never a Trust Center or marketing security page; omit the key when no honest link exists. Multi-source entries use a list of `{label, url}` (renders an expandable button). Full standard: [AGENTS.md §7](AGENTS.md).
+
+## Authoring Skills
+
+This repo ships Claude Code skills that encode these workflows end-to-end — prefer them over ad-hoc work:
+
+| Skill | Use for |
+|-------|---------|
+| `create-hth-guide` | New vendor/product guides, platform breakouts, de-stubbing |
+| `update-hth-guide` | Currency updates, corrections, adding controls |
+| `create-code-pack` | Any pack authoring or pack wiring |
+| `verify-hth` | The pre-commit verification battery (run after every change) |
 
 ## File Locations
 
@@ -102,9 +123,13 @@ cp templates/vendor-guide-template.md docs/_guides/[vendor-name].md
 - [ ] Code blocks specify language (non-guide files only)
 - [ ] Both ClickOps and Code implementations provided
 - [ ] All code uses pack includes: `{% include pack-code.html vendor="X" section="Y.Z" %}`
-- [ ] Compliance mappings verified
-- [ ] Changelog updated
+- [ ] Compliance mappings verified (never invent IDs; CIS numbering shifts between majors — map by name with a version note when unverifiable; prefer CISA SCuBA policy IDs where a baseline exists)
+- [ ] Changelog updated; frontmatter `version` matches the new changelog row
 - [ ] `last_updated` frontmatter AND new changelog row's Date column both equal today's date (`date +%F`) — not the drafting date
+- [ ] `bash scripts/validate-guides.sh` ends ALL TESTS PASSED (Windows: run via Git Bash)
+- [ ] Every touched control still meets the cheat-parser contract (rule 6)
+- [ ] Every pack include's section key exists in its vendor's `docs/_data/packs/*.yml` (a missing key renders nothing, silently)
+- [ ] Literal `{{...}}` (Vault templates etc.) wrapped in `{% raw %}{% endraw %}`
 
 
 <!-- SECURITY_RULES_START -->

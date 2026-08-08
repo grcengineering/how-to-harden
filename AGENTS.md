@@ -56,7 +56,20 @@ These are the most common AI mistakes. The rules themselves are defined in [CONT
 3. Run `bash scripts/sync-packs-to-data.sh` to generate YAML data
 4. Use `{% include pack-code.html vendor="{vendor}" section="X.X" %}` in the guide
 
-**Pack types:** `terraform/` (.tf), `api/` (.sh), `cli/` (.sh, .yml), `sdk/` (.py, .js, .groovy), `db/` (.sql, .kql, .spl), `siem/sigma/` (.yml)
+**Pack types:**
+
+| Type | Content | Extensions |
+|------|---------|------------|
+| `terraform/` | Config-as-Code from a real provider | `.tf` |
+| `api/` | bash+curl against documented REST APIs | `.sh` |
+| `cli/` | First-party vendor CLI only (`gh`, `vault`, `databricks`…) — no first-party CLI means no cli/ pack | `.sh`, `.yml` |
+| `sdk/` | Official SDK scripts | `.py`, `.ps1`, `.js`, `.go`, `.groovy`, `.rb` |
+| `db/` | Vendor-NATIVE queries only: Snowflake/Databricks SQL, BigQuery log-export SQL, SOQL, DAX | `.sql`, `.kql`, `.dax` |
+| `siem/` | SIEM-resident detections (Splunk SPL, Sentinel KQL) — these run in the SIEM, never file them under db/ | `.spl`, `.kql` |
+| `siem/sigma/` | Sigma rules (the only type allowing multiple files per section) | `.yml` |
+| `config/` | Vendor-native config files and config-emitting scripts | `.jsonc`, `.yml`, `.sh` |
+
+**Collision rule:** the sync keeps ONE file per (section, type) — last alphabetically wins, silently. Except `siem/sigma/`, a second same-type file on the same section shadows the first. Check existing files for the section before numbering.
 
 **Verify:** `grep -cE '^ *```' docs/_guides/{vendor}.md` must return 0.
 
@@ -100,6 +113,24 @@ TODAY=$(date +%F)   # YYYY-MM-DD in your local timezone
 
 **Common failure mode (avoid):** drafting a guide on day N, leaving `last_updated: "N"`, then pushing on day N+8. The published guide claims to be 8 days older than it actually is. **Always re-stamp both fields immediately before commit.**
 
+### 6. The Cheat-Sheet Parser Contract
+
+Cheat sheets are built client-side from the rendered guide DOM. A control appears as a cheat row ONLY if its `### N.N` section carries ALL of: a leading `**Profile Level:** L1 (Crawl)` bold key, `#### Description` with a non-empty paragraph, and `#### Rationale` with `**Why This Matters:**` bullets plus an `**Attack Prevented:**` line. A control missing any of these silently vanishes from the cheat sheet.
+
+Reference sections ("Key Events to Monitor", "Integration Risk Assessment Matrix", compliance quick-reference subsections) and `### N.N.N` implementation walk-throughs must NOT carry `**Profile Level:**` — omitting it is what correctly excludes them.
+
+### 7. Hardening-Guide Links Must Be Literal Hardening Docs
+
+`hardening_docs` in `docs/_data/doc_links.yml` points at actual hardening/security-configuration documentation or an authoritative benchmark (CIS, CISA SCuBA) — NEVER a Trust Center, marketing security page, or compliance-badge page. If no honest link exists, omit the key: no button beats a dishonest one. Verify every URL by fetching it; hosts that block fetchers need a real-browser check. Multiple sources use the list form (renders an expandable button):
+
+```yaml
+hardening_docs:
+  - label: "Vendor Hardening Guide"
+    url: "https://..."
+  - label: "CIS Benchmark"
+    url: "https://..."
+```
+
 ---
 
 ## Task Procedures
@@ -139,6 +170,17 @@ Step-by-step procedures for common tasks. Follow the template and source files f
 5. Include both ClickOps and Code implementations
 6. Update the guide's changelog
 
+### Creating a Product Guide in a Multi-Product Platform
+
+Platforms whose products have distinct hardening surfaces (Google Workspace, Anthropic) split into a hub guide plus product guides:
+
+1. **Hub guide** keeps org-wide "Common Controls" (SSO, roles, integration governance) and sets frontmatter `platform`, `platform_slug`, and `product: "Common Controls"`.
+2. **Product guides** set the same `platform`/`platform_slug` with their own `product`, open with a one-line "This is a product guide within the [platform](/guides/{hub-slug}/)" pointer, and cross-reference the hub instead of duplicating platform-wide controls.
+3. The homepage groups all guides sharing a `platform_slug` into one expandable platform card automatically.
+4. Product-specific doc links go in `docs/_data/doc_links.yml` per product slug; pack includes may reference the platform's shared pack dir via the explicit `vendor=` parameter.
+
+Reference implementations: `google-workspace` + gmail/google-chat/google-drive; `anthropic-claude` + claude-enterprise/claude-code/anthropic-api.
+
 ### Adding Integration-Specific IP Allowlisting
 
 1. Add as a sub-section under Section 2 (Network Access Controls)
@@ -167,6 +209,10 @@ Reference these when justifying controls:
 | CircleCI breach | Jan 2023 | Developer secrets exposed; secret rotation required |
 | Snowflake breach | 2024 | 165+ orgs via credential stuffing; MFA would have prevented |
 | BeyondTrust breach | Dec 2024 | API key compromise led to Treasury access |
+| Storm-2372 device-code phishing | Feb 2025 | OAuth device code flow steals MFA-satisfying tokens; block via Conditional Access authentication-flows policy |
+| ELUSIVE COMET Zoom abuse | Apr 2025 | Fake "Zoom" prompts trick victims into granting remote control; lock the setting off account-wide |
+| UNC6040/ShinyHunters vishing | 2025 | Fake "Data Loader" connected app authorized by phone-socialed employees; API access control + connected-app allowlisting |
+| Cyata Vault zero-days | 2025 | Nine flaws incl. Vault's first public RCE via policy-normalization and audit-device abuse; patch + audit policy writes |
 
 **Usage format:**
 ```markdown
@@ -218,10 +264,15 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 | Only ClickOps OR only Code | Always provide BOTH implementation methods |
 | Skipped heading levels (## → ####) | Use sequential levels: ## → ### → #### |
 | Leaving template placeholders | Replace ALL `[bracketed placeholders]` |
-| Inventing compliance control IDs | Verify against official sources (linked in CONTRIBUTING.md) |
+| Inventing compliance control IDs | Verify against official sources (linked in CONTRIBUTING.md). CIS benchmark numbering shifts between major versions — when the exact ID can't be verified, map by control NAME with a version note. Prefer CISA SCuBA policy IDs (GWS.*, MS.*) where a baseline exists |
 | Missing changelog entry | Always update changelog when modifying a guide |
 | Stale `last_updated` / changelog date | Set both to the actual commit-day date right before `git commit` — never carry over the drafting date |
 | Generic incident references | Use specific incidents with dates from the table above |
+| Literal `{{...}}` eaten by Jekyll | Vault templates, Handlebars, etc. in prose or inline code must be wrapped in `{% raw %}...{% endraw %}` (lint Test 8 catches this) |
+| Control invisible on the cheat sheet | It's missing part of the parser contract (Rule 6): Profile Level + Description H4 + Rationale/Why bullets |
+| Same-section same-type pack files | The sync silently keeps only the last alphabetically (Collision rule, Rule 2) — check before numbering |
+| Automation for settings with no write API | Many admin surfaces are ClickOps-only (read-only Policy APIs). State that honestly; ship verification-style packs (assessment tools, read-only audits) or none |
+| Renumbering existing controls | Never — pack includes and inbound anchors depend on the numbers. New controls take the next free number at the end of their section |
 
 ---
 
@@ -239,12 +290,26 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 
 ---
 
+## Verification Before Every Commit
+
+Run the battery (Windows: through Git Bash — the scripts carry cygpath/UTF-8 shims for native Python):
+
+1. `bash scripts/validate-guides.sh` → must end `ALL TESTS PASSED`
+2. `grep -rcE '^ *```' docs/_guides/*.md | grep -v ':0'` → must print nothing (zero fences)
+3. If packs/includes changed: `bash scripts/sync-packs-to-data.sh` → every vendor `✓`, and every include's section key must exist in its vendor yml (a missing key renders nothing, silently)
+4. Cheat parity on touched guides: every `**Profile Level:**` section has `#### Description` + Rationale/Why (Rule 6)
+
+Claude Code users: the repo ships skills that encode these workflows end-to-end — `create-hth-guide`, `update-hth-guide`, `create-code-pack`, `verify-hth` (in `.claude/skills/`).
+
+---
+
 ## When in Doubt
 
 1. **For structure questions:** Check `templates/vendor-guide-template.md`
 2. **For formatting questions:** Check `CONTRIBUTING.md`
 3. **For scope questions:** Check `PHILOSOPHY.md`
-4. **For an example:** Read `docs/_guides/okta.md` (most complete guide)
+4. **For an example:** Read `docs/_guides/okta.md` (most complete guide) or `docs/_guides/gmail.md` (cleanest parser-contract example)
+5. **For multi-product platforms:** Read `docs/_guides/google-workspace.md` (hub) and `docs/_guides/gmail.md` (product guide)
 
 ---
 
@@ -252,6 +317,7 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 
 | Date | Changes |
 |------|---------|
+| 2026-08-08 | Post-audit refresh: full pack-type table (config/, siem/ split from db/, first-party-CLI rule) with the (section,type) collision rule; Rule 6 cheat-sheet parser contract; Rule 7 hardening-link standard with multi-source list form; multi-product platform procedure; verification battery section; incident table extended (Storm-2372, ELUSIVE COMET, UNC6040, Cyata Vault); new mistake rows (Liquid raw-escape, invisible cheat rows, pack collisions, no-write-API honesty, renumbering ban); pointer to the .claude/skills authoring skills. |
 | 2026-05-06 | Added Rule 5: revision dates must reflect the commit/push date, not the drafting date. Added matching Common Mistakes row. |
 | 2025-12-27 | Restructured to reference source files, removed duplications |
 | 2025-12-26 | Initial creation |
