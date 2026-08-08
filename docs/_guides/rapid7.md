@@ -6,7 +6,7 @@ slug: "rapid7"
 tier: "2"
 category: "Security"
 description: "Vulnerability management platform hardening for Rapid7 InsightVM and Command Platform including SSO, console security, and user management"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -61,6 +61,8 @@ Configure SAML SSO for centralized authentication to the Rapid7 Command Platform
 - Enforces organizational MFA policies
 - Simplifies user provisioning and deprovisioning
 - Required for enterprise security compliance
+
+**Attack Prevented:** Credential theft, phishing, password reuse, MFA bypass via local accounts, orphaned-account access after offboarding
 
 #### Prerequisites
 - Rapid7 Insight Platform subscription
@@ -423,6 +425,8 @@ Protect and limit administrator account access.
 - Compromised admin access exposes vulnerability data
 - Minimize admin accounts to reduce risk
 
+**Attack Prevented:** Administrator account takeover, privilege escalation, unauthorized configuration change, credential reuse between daily-driver and privileged accounts
+
 #### ClickOps Implementation
 
 **Step 1: Inventory Admin Accounts**
@@ -662,6 +666,7 @@ Integrate InsightVM with InsightIDR for security monitoring.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Add missing Attack Prevented lines to 1.1 and 3.2 so every cheat-sheet cell is populated | Claude Code (Opus 4.8) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass: new 2.4 console keystore and private-key protection; corrected 2.1 session timeout to the shipped 600s default with a documented vendor-conflict callout; added updates.rapid7.com and UDP 31400 to the 2.1 port list; added Scan Assistant as the credential-less scanning path in 4.1; documented the SAML rbacGroups attribute in 1.1; refreshed references to the documentation.rapid7.com hub and dropped trust-center links. Tier 3/4 research sweep out of scope this pass | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, console security, and user management | Claude Code (Opus 4.5) |

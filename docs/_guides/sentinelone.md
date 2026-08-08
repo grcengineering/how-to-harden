@@ -6,7 +6,7 @@ slug: "sentinelone"
 tier: "1"
 category: "Security"
 description: "Endpoint Detection and Response (EDR) hardening for SentinelOne Singularity platform"
-version: "0.1.2"
+version: "0.1.3"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -64,6 +64,8 @@ Secure SentinelOne Management Console with SSO, MFA, and role-based access contr
 - Console access controls all endpoint protection
 - Compromised admin can disable protection or exfiltrate data
 - Role-based access limits blast radius of compromise
+
+**Attack Prevented:** Console account takeover, attacker-initiated disabling of endpoint protection, fleet-wide exposure from a single compromised admin, insider abuse of over-broad roles
 
 #### ClickOps Implementation
 
@@ -154,6 +156,8 @@ Configure SentinelOne agents to "Protect" mode for automatic threat mitigation.
 - Protect mode automatically mitigates threats
 - Detect-only mode requires manual intervention
 - Automatic response reduces dwell time
+
+**Attack Prevented:** Malware execution, ransomware encryption during response delay, extended attacker dwell time on detect-only endpoints
 
 #### ClickOps Implementation
 
@@ -321,6 +325,8 @@ Manage exclusions to prevent false positives while maintaining security coverage
 - Attackers target exclusion paths
 - Each exclusion should be documented and justified
 
+**Attack Prevented:** Detection evasion via excluded paths, malware staged in excluded directories, coverage gaps introduced by over-broad wildcard and process exclusions
+
 #### ClickOps Implementation
 
 **Step 1: Review Existing Exclusions**
@@ -410,6 +416,8 @@ Enable Local Upgrade Authorization to control agent upgrades and prevent unautho
 - Prevents unauthorized agent downgrades
 - Increases accountability for changes
 - Protects against tampering via version manipulation
+
+**Attack Prevented:** Agent downgrade to a version with known weaknesses, local tampering with endpoint protection, unauthorized agent modification or removal
 
 #### ClickOps Implementation
 
@@ -684,10 +692,6 @@ Current packaging bundles **Advanced EPP Controls (Device and Firewall Control, 
 - [SentinelOne Platform Packages](https://www.sentinelone.com/platform-packages/) — current edition lineup and list pricing
 - `support.sentinelone.com` — customer portal hosting the policy configuration guides. Not linked here: the host fails TLS chain verification for external validation as of 2026-08, so it cannot be fetch-verified. Reach it from inside your console session instead.
 
-**Trust & Compliance:**
-- [SentinelOne Trust Center](https://trust.sentinelone.com/)
-- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018 -- via [SentinelOne Trust Center](https://trust.sentinelone.com/)
-
 **Security Incidents:**
 - **China-Linked Attack Attempt (2024-2025):** Chinese state-sponsored threat actors (APT41/PurpleHaze) attempted a supply chain attack against SentinelOne by targeting an IT services vendor working with the company. SentinelOne confirmed no compromise was detected on its software or hardware. The campaign was part of a broader operation targeting 70+ organizations globally between June 2024 and March 2025.
 
@@ -697,6 +701,7 @@ Current packaging bundles **Advanced EPP Controls (Device and Firewall Control, 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.1.3 | draft | Add missing Attack Prevented lines to 1.1, 2.1, 3.1, and 3.3 so every cheat-sheet cell is populated; remove Trust Center links from Appendix B | Claude Code (Opus 4.8) |
 | 2026-08-08 | 0.1.2 | draft | Corrections pass: Appendix A rebuilt around the five current Singularity editions with list pricing and the bundled Advanced EPP Controls line item; removed the generic 101 marketing page and the TLS-failing support portal link from Appendix B; deleted the orphan Example Rules heading in 3.2; added a source-availability note to the Overview. Tier 1 documentation was unreachable this pass, limiting changes to externally-verifiable items; Tier 3/4 research sweep out of scope | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with policy configuration and detection tuning | Claude Code (Opus 4.5) |
