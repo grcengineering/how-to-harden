@@ -6,9 +6,9 @@ slug: "snyk"
 tier: "5"
 category: "Security"
 description: "AppSec platform security for service accounts, SCM integrations, and Broker configs"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 
@@ -118,14 +118,15 @@ Assign Snyk group and organization members the least-privileged role required fo
 **NIST 800-53:** IA-5
 
 #### Description
-Manage Snyk service account tokens securely.
+Choose the right service-account credential type for every non-interactive Snyk integration, and manage those credentials on a defined lifecycle. Snyk offers three service-account authentication types with materially different security properties — API key, access token, and OAuth 2.0 — and the choice determines whether the credential ever expires.
 
 #### Rationale
 **Why This Matters:**
-- Service account tokens are non-interactive credentials that authenticate automation without MFA, so a leaked token grants direct API access
-- Scoping each token to a single pipeline with least-privilege roles and an expiration limits blast radius and forces rotation
-- Removing unused service accounts eliminates long-lived standing credentials that no one is monitoring
-- Snyk tokens can read vulnerability findings and drive SCM operations, so exposure reveals exploitable weaknesses and integration reach
+- Service account credentials are non-interactive and bypass MFA, so a leaked credential grants direct API access with the service account's full role
+- **API keys never expire.** Snyk documents the API key service account as a legacy type and explicitly states it is *not recommended* — an API key leaked into a CI log or repository is a permanent credential until someone notices and deletes the account
+- Access tokens cap out at a **one-year maximum expiry**, and Snyk documents no in-place rotation: when an access token expires you must create a **new service account** and re-plumb every consumer, so the rotation has to be planned rather than discovered at expiry
+- OAuth 2.0 service accounts issue short-lived tokens with automated refresh, which is why they are the recommended type for CI/CD and any long-running integration
+- Snyk credentials can read vulnerability findings and drive SCM operations, so exposure reveals exploitable weaknesses and integration reach
 
 **Attack Prevented:** Token theft, credential leakage in CI/CD, standing-credential abuse, unauthorized data export
 
@@ -133,15 +134,27 @@ Manage Snyk service account tokens securely.
 
 #### ClickOps Implementation
 
-**Step 1: Audit Service Accounts**
-1. Navigate to: **Settings → Service accounts**
-2. Review all service accounts
-3. Remove unused accounts
+**Step 1: Choose the Credential Type**
 
-**Step 2: Token Best Practices**
-1. Create tokens per CI/CD pipeline
-2. Set token expiration
-3. Use least privilege roles
+| Type | Expiry | Rotation | Snyk guidance |
+|------|--------|----------|---------------|
+| API key | Never expires | Manual only (delete + recreate) | Legacy — explicitly **not recommended** |
+| Access token | Configurable, **1 year maximum** | No in-place rotation — requires a **new service account** | Acceptable where OAuth is not supported; plan around the 1-year ceiling |
+| OAuth 2.0 | Short-lived access token | Automated refresh | **Recommended** — use for CI/CD and all new integrations |
+
+Default to OAuth 2.0. Never create API-key service accounts for new integrations, and treat any existing API-key service account as a standing credential to be migrated. See [Choose a service account type](https://docs.snyk.io/platform-administration/service-accounts/choose-a-service-account-type-to-use-with-snyk-apis).
+
+**Step 2: Audit Service Accounts**
+1. Navigate to: **Settings → Service accounts**
+2. Review all service accounts and record the credential type of each
+3. Remove unused accounts
+4. Flag every API-key service account for migration to OAuth 2.0
+
+**Step 3: Credential Lifecycle**
+1. Create one service account per CI/CD pipeline or integration — never share credentials across consumers
+2. Assign the least-privileged role the integration needs
+3. For access tokens, diary the expiry date and schedule the replacement service account **before** it lapses (there is no in-place renewal)
+4. Store credentials in a secrets manager; never commit them or echo them in pipeline logs
 
 ---
 
@@ -151,16 +164,19 @@ Manage Snyk service account tokens securely.
 **NIST 800-53:** CM-7
 
 #### Description
-Review and restrict Snyk's source-code-management integrations so each connection has only the repository access it needs, and route private-repo access through the Snyk Broker.
+Review and restrict Snyk's source-code-management integrations so each connection has only the repository access it needs, and route private-repo access through the Snyk Broker. Snyk ships the Broker in two deployment models — **Universal Broker** and **Classic Broker** — and new deployments should target Universal Broker.
 
 #### Rationale
 **Why This Matters:**
 - SCM integrations grant Snyk read access to source repositories, so an over-scoped or stale connection widens what a platform compromise can reach
-- The Snyk Broker keeps private repositories behind your perimeter and brokers only approved requests instead of exposing direct SCM credentials
-- accept.json filters constrain which endpoints and operations the Broker permits, enforcing least privilege at the integration layer
+- The Snyk Broker keeps private repositories behind your perimeter and brokers only approved requests instead of exposing direct SCM credentials — Snyk documents that with Broker, "credentials remain within your network and are never stored by or transmitted to Snyk"
+- Universal Broker consolidates many connection types (GitHub, GitLab, Artifactory, Jira, container registry) behind a single client or set of replicas, so there is one hardened egress path to govern instead of one Broker deployment per integration
+- Classic Broker uses per-integration deployments with `accept.json` request filters that constrain which endpoints and operations the Broker permits, enforcing least privilege at the integration layer
 - Limiting repository scope contains the impact if a token or integration is abused, preventing access to unrelated codebases
 
 **Attack Prevented:** Source code exposure, over-scoped integration abuse, supply chain reconnaissance, credential leakage
+
+> **Changed default (April 2026):** Snyk Broker now runs in **high-availability mode by default**. Deployments provisioned before this change may still be running single-instance; confirm your replica configuration rather than assuming the old default. Source: [Snyk What's New](https://docs.snyk.io/whats-new).
 
 #### ClickOps Implementation
 
@@ -169,10 +185,18 @@ Review and restrict Snyk's source-code-management integrations so each connectio
 2. Review SCM connections
 3. Limit repository access
 
-**Step 2: Broker Configuration (Enterprise)**
-1. Use Snyk Broker for private repos
-2. Configure accept.json filters
-3. Limit exposed endpoints
+**Step 2: Choose a Broker Deployment Model (Enterprise)**
+
+| Model | Shape | Use it for |
+|-------|-------|------------|
+| [Universal Broker](https://docs.snyk.io/platform-administration/snyk-broker/universal-broker) | One Broker client (or replica set) serving many connection types — GitHub, GitLab, Artifactory, Jira, container registry | **New deployments.** Fewer moving parts, one egress path, centrally managed connections |
+| [Classic Broker](https://docs.snyk.io/platform-administration/snyk-broker/classic-broker) | One Broker deployment per integration type, each with its own `accept.json` filter file | Existing estates already running per-integration Brokers |
+
+**Step 3: Harden the Broker Deployment**
+1. Deploy the Broker inside your network so SCM credentials never leave your perimeter
+2. Restrict the permitted request set — `accept.json` filters in Classic Broker, per-connection configuration in Universal Broker
+3. Limit exposed endpoints to the minimum the Snyk integration requires
+4. Verify high-availability replica count matches your availability requirement
 
 ---
 
@@ -243,23 +267,35 @@ Govern how vulnerabilities are ignored by requiring a documented reason, an expi
 **NIST 800-53:** AU-2, AU-3
 
 #### Description
-Enable and review Snyk audit logs and forward them to your SIEM to retain a record of user and administrative activity across the platform.
+Review Snyk audit logs and forward them to your SIEM to retain a record of user and administrative activity across the platform. Snyk's audit logs are an **Enterprise-plan** capability with a **90-day rolling retention** window, and they **exclude login and logout events** — both facts drive how the control must be implemented.
 
 #### Rationale
 **Why This Matters:**
 - Audit logs provide the authoritative record of who changed integrations, roles, ignore policies, and tokens
-- Forwarding to a SIEM enables correlation, alerting, and tamper-resistant retention beyond Snyk's native retention window
+- **Retention is a rolling 90 days.** Any investigation, compliance evidence, or retrospective beyond that window is impossible from Snyk alone, which makes SIEM forwarding mandatory rather than optional
+- **Login and logout events are excluded from the audit-log endpoints.** Authentication activity must be reconstructed from your identity provider's logs — treat the IdP as the system of record for Snyk sign-in, and correlate it with Snyk audit events in the SIEM
 - Without centralized logging, account compromise and configuration tampering can go undetected until damage is done
 - Reviewing activity supports incident response, forensics, and compliance evidence for access and change controls
 
 **Attack Prevented:** Undetected account compromise, configuration tampering, audit gaps, delayed incident response
+
+#### Prerequisites
+- **Enterprise plan** — audit logs are not available on Free, Team, or Business
 
 #### ClickOps Implementation
 
 **Step 1: Access Audit Logs**
 1. Navigate to: **Settings → Audit logs**
 2. Review user activities
-3. Export for SIEM
+
+**Step 2: Forward to SIEM Before the 90-Day Window Closes**
+1. Pull group- and org-level audit events via the [audit logs API](https://docs.snyk.io/platform-administration/user-management/user-management-with-the-api/retrieve-audit-logs-of-user-initiated-activity-by-api-for-an-org-or-group)
+2. Schedule collection at an interval well inside the 90-day retention window so no events age out uncollected
+3. Retain forwarded events in the SIEM per your own retention policy — Snyk will not hold them
+
+**Step 3: Fill the Authentication Gap from the IdP**
+1. Forward Snyk SSO sign-in and sign-out events from your identity provider (the Snyk audit endpoints do not carry them)
+2. Correlate IdP authentication events with Snyk audit events to reconstruct a complete session-to-action trail
 
 #### Detection Focus
 
@@ -279,18 +315,20 @@ Enable and review Snyk audit logs and forward them to your SIEM to retain a reco
 ## Appendix B: References
 
 **Official Snyk Documentation:**
-- [Trust Center](https://trust.snyk.io/)
-- [Secure by Design](https://snyk.io/security/)
 - [User Docs](https://docs.snyk.io)
-- [SSO Setup Guide](https://docs.snyk.io/implementation-and-setup/enterprise-setup/single-sign-on-sso-for-authentication-to-snyk/set-up-snyk-single-sign-on-sso)
-- [Service Accounts](https://docs.snyk.io/implementation-and-setup/enterprise-setup/service-accounts)
-- [Snyk Broker](https://docs.snyk.io/implementation-and-setup/enterprise-setup/snyk-broker)
+- [What's New (release notes)](https://docs.snyk.io/whats-new)
+- [SSO Setup Guide](https://docs.snyk.io/platform-administration/user-management/single-sign-on-sso-for-authentication-to-snyk/set-up-snyk-single-sign-on-sso)
+- [Service Accounts](https://docs.snyk.io/platform-administration/service-accounts/service-accounts)
+- [Choose a Service Account Type](https://docs.snyk.io/platform-administration/service-accounts/choose-a-service-account-type-to-use-with-snyk-apis)
+- [Snyk Broker](https://docs.snyk.io/platform-administration/snyk-broker/snyk-broker)
+- [Universal Broker](https://docs.snyk.io/platform-administration/snyk-broker/universal-broker)
+- [Classic Broker](https://docs.snyk.io/platform-administration/snyk-broker/classic-broker)
 - [Vulnerability Disclosure Program](https://snyk.io/vulnerability-disclosure/)
 
 **API Documentation:**
 - [API Overview](https://docs.snyk.io/snyk-api)
 - [Interactive REST API Docs](https://apidocs.snyk.io/)
-- [Audit Logs API](https://docs.snyk.io/snyk-api/reference/audit-logs)
+- [Retrieve Audit Logs by API](https://docs.snyk.io/platform-administration/user-management/user-management-with-the-api/retrieve-audit-logs-of-user-initiated-activity-by-api-for-an-org-or-group)
 - [Authentication for API](https://docs.snyk.io/snyk-api/authentication-for-api)
 
 **Compliance Frameworks:**
@@ -306,7 +344,7 @@ Enable and review Snyk audit logs and forward them to your SIEM to retain a reco
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-08-08 | 0.2.0 | draft | Currency pass (Tier 1 only): rewrote 2.1 for the three service-account credential types (API key never expires and is not recommended; access token 1-year max with no in-place rotation; OAuth 2.0 recommended); added Universal vs Classic Broker and the April 2026 Broker high-availability default to 2.2; documented Enterprise-only audit logs, 90-day rolling retention, and the login/logout exclusion in 4.1; repaired rotted docs.snyk.io links to the platform-administration tree and removed Trust Center / marketing pages from Appendix B. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Snyk hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing

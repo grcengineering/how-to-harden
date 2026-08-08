@@ -5,10 +5,10 @@ vendor: "Tenable"
 slug: "tenable"
 tier: "2"
 category: "Security"
-description: "Vulnerability management platform hardening for Tenable.io and Security Center including user access, scanning security, and agent configuration"
-version: "0.1.1"
+description: "Vulnerability management platform hardening for Tenable One Vulnerability Management and Security Center including user access, scanning security, and agent configuration"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -27,7 +27,7 @@ Tenable is a leading vulnerability management platform protecting **millions of 
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Tenable.io and Tenable Security Center security including administrator account protection, SAML SSO, credential management, and hardening assessment configuration.
+This guide covers **Tenable One Vulnerability Management** (formerly Tenable.io, and before that Tenable.io Vulnerability Management) and Tenable Security Center security including administrator account protection, SAML SSO, API key management, credential management, and hardening assessment configuration. Tenable's documentation and release notes now use the Tenable One Vulnerability Management name; this guide follows that naming throughout.
 
 ---
 
@@ -94,39 +94,57 @@ Administrator accounts have the highest level of access and pose significant sec
 | NIST 800-53 | AC-6(1) |
 
 #### Description
-Configure granular roles to implement least privilege access.
+Configure granular roles to implement least privilege access. Tenable's Access Control surface now spans user management, role assignment, groups, **API key management**, and resource-level permissions, and it includes a **VM Custom Role** that grants permissions per navigation area and per action rather than through a coarse built-in tier.
 
 #### Rationale
 **Why This Matters:**
 - Granular roles give each user only the Tenable permissions their job requires, shrinking the blast radius if any account is compromised
 - Default Administrator access for everyone lets ordinary analysts modify scan policies, delete findings, or create new accounts
 - Separating scan operators, read-only stakeholders, and administrators enforces separation of duties and produces clean audit trails
+- The built-in roles are coarse: **Standard User** and above can generate API keys (see [3.4](#34-manage-api-keys)), so role assignment is also an API-credential decision, not just a console-permission one
+- Legacy built-in roles were **automatically mapped into the VM Custom Role model**, which means an account's effective permissions may now be expressible more narrowly than the tier it was originally assigned — a re-review opportunity, not a no-op
 
-**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, unauthorized configuration changes
+#### Changes to the RBAC Model
+
+> **VM Custom Role (2026-06-10):** Tenable introduced a VM Custom Role offering granular permissions **per navigation area and per action**. Existing built-in role assignments were automatically mapped into the new model, so no access was lost — but the coarse tier each user carries is now almost certainly broader than what they actually need. Re-review assignments against the custom-role permission set. Source: [Vulnerability Management release notes](https://docs.tenable.com/release-notes/Content/vulnerability-management/2026.htm).
+
+> **New discrete privileges (2026-07-08):** Two permissions became independently assignable — **Exposure Management export** (No Access / Can Use) and **Linked Agents tab** permissions. Grant export deliberately: bulk export of exposure data is the highest-value action a compromised low-privilege account can take. Source: [Vulnerability Management release notes](https://docs.tenable.com/release-notes/Content/vulnerability-management/2026.htm).
+
+**Attack Prevented:** Privilege escalation, insider misuse, lateral movement, unauthorized configuration changes, bulk exposure-data exfiltration via over-granted export rights
 
 #### ClickOps Implementation
 
 **Step 1: Review Built-in Roles**
-1. Navigate to: **Settings** → **Accounts** → **Roles**
+1. Navigate to: **Settings** → **Access Control**
 2. Review available roles:
    - **Administrator:** Full access
+   - **Scan Manager:** Scan configuration and management
    - **Standard User:** Scanning and viewing
    - **Scan Operator:** Scanning only
-   - **Read Only:** View only
+   - **Basic:** Limited view access
 
-**Step 2: Create Custom Roles**
-1. Click **Create Role**
-2. Configure granular permissions:
-   - Asset access
-   - Scan management
-   - Report access
-   - User management
-3. Apply minimum necessary permissions
+**Step 2: Move Users to the VM Custom Role**
+1. Create a **VM Custom Role** for each distinct job function
+2. Grant permissions per navigation area and per action rather than adopting a built-in tier wholesale
+3. Set **Exposure Management export** to *No Access* unless the role has a documented need to export
+4. Set **Linked Agents tab** permissions only for the team that operates agents
+5. Migrate users off legacy built-in roles onto the narrower custom roles
 
-**Step 3: Assign Roles Appropriately**
-1. Limit Administrator to essential personnel
-2. Use Standard User for vulnerability teams
-3. Use Read Only for stakeholders
+**Step 3: Govern the Full Access Control Surface**
+
+| Access Control area | What to review |
+|---------------------|----------------|
+| User management | Active accounts, dormant accounts, joiner/mover/leaver hygiene |
+| Role assignment | Every user on the narrowest role that supports their work |
+| Groups | Group membership drives inherited access — review as an access grant |
+| API key management | Which roles can mint API keys, and which keys exist (see [3.4](#34-manage-api-keys)) |
+| Resource-level permissions | Per-object grants that can widen access beyond the assigned role |
+
+**Step 4: Assign Roles Appropriately**
+1. Limit Administrator to essential personnel (2-3 for redundancy)
+2. Use Scan Operator or a scoped custom role for scanning teams
+3. Use Basic or a view-only custom role for stakeholders
+4. Re-review assignments quarterly against the custom-role permission set
 
 ---
 
@@ -183,16 +201,32 @@ Monitor and audit administrator activities.
 | NIST 800-53 | IA-2, IA-8 |
 
 #### Description
-Configure SAML SSO for centralized identity management.
+Configure SAML SSO for centralized identity management. Tenable's SAML implementation carries two documented constraints that change how you deploy it: there is **no SP-initiated login flow**, and account usernames must match the SSO login exactly in full email format.
 
 #### Rationale
 **Why This Matters:**
-- SAML provides single sign-on capability
-- Improved security through IdP controls
-- Centralized identity management
-- Simplifies compliance auditing
+- SAML centralizes authentication in your IdP so MFA, conditional access, and session policy apply to every Tenable login
+- Disabling a user in the IdP immediately revokes their Tenable access, closing the orphaned-account gap
+- A vulnerability management console holds a complete map of the organization's weaknesses, so centralizing and hardening its login path is high-leverage
+- Centralized identity simplifies access reviews and compliance auditing
+
+**Attack Prevented:** Credential theft, phishing, password reuse, orphaned-account access
+
+#### Documented Constraints
+
+> **No SP-initiated login.** Tenable does not support service-provider-initiated SAML. Users must start authentication from the IdP — the application tile in the IdP portal, or the SP-metadata URL. Communicate this before rollout; users who bookmark the Tenable login page will not get an SSO flow.
+
+> **Usernames must match exactly.** Tenable account usernames must match the SSO login **exactly, in full email format**. A mismatch produces a failed login rather than an auto-provisioned account, so reconcile usernames before enabling SAML.
+
+> **Break-glass warning.** Tenable explicitly warns: **ensure at least one administrator user has access before updating SAML configurations.** A bad SAML change with no reachable local admin locks you out of the platform. Verify the account in [1.1](#11-protect-administrator-accounts) is usable before you touch SAML settings.
+
+Sources: [Add a SAML Configuration](https://docs.tenable.com/vulnerability-management/Content/Settings/SAML/AddSAMLConfiguration.htm) · [Single Sign-On best practices](https://docs.tenable.com/vulnerability-management/best-practices/security/Content/SingleSignOn.htm)
 
 #### ClickOps Implementation
+
+**Step 0: Verify Break-Glass Access**
+1. Confirm at least one administrator can sign in **before** changing any SAML setting
+2. Confirm that account's credentials are retrievable from your password vault
 
 **Step 1: Configure SAML in Tenable**
 1. Navigate to: **Settings** → **SAML**
@@ -207,17 +241,20 @@ Configure SAML SSO for centralized identity management.
 2. Configure attribute mappings:
    - NameID (email)
    - Groups (for role mapping)
-3. Download IdP metadata
+3. Reconcile usernames: every Tenable account username must match its SSO login **exactly, in full email format**
+4. Download IdP metadata
 
 **Step 3: Enable for Users**
 1. Enable SAML for each user
 2. Disable password login option
 3. Force SSO authentication
+4. Publish the IdP application tile (or SP-metadata URL) as the entry point — there is no SP-initiated flow, so a direct Tenable URL will not start SSO
 
 **Step 4: Test and Enforce**
-1. Test SSO authentication
+1. Test SSO authentication **starting from the IdP tile**, not from the Tenable login page
 2. Verify role mapping
-3. Enable enforcement
+3. Confirm break-glass administrator access still works
+4. Enable enforcement
 
 **Time to Complete:** ~1 hour
 
@@ -233,15 +270,18 @@ Configure SAML SSO for centralized identity management.
 | NIST 800-53 | IA-2(1) |
 
 #### Description
-Require MFA for all users, enforced through SSO or native settings.
+Require MFA for all users, enforced through SSO or native settings, and use **native passkeys** for administrator accounts. Tenable shipped passkey sign-in on **2026-03-31** under its CISA Secure by Design commitment, so phishing-resistant authentication no longer depends on routing through an IdP.
 
 #### Rationale
 **Why This Matters:**
 - MFA stops attackers who have already obtained a valid Tenable password from completing a login
 - A vulnerability management console holds a complete map of the organization's weaknesses, so a single phished password without MFA exposes that map
-- Phishing-resistant factors for administrators defend the highest-privilege accounts against credential replay and prompt-bombing
+- **Passkeys are phishing-resistant by construction** — the credential is bound to the origin, so a proxy phishing page cannot relay it and prompt-bombing has nothing to bomb. TOTP and push MFA are both defeatable by adversary-in-the-middle kits; passkeys are not
+- Native passkey support removes the previous constraint that phishing-resistant authentication was only reachable through IdP-enforced WebAuthn — organizations without an IdP-side FIDO2 deployment can now reach the same assurance level directly
 
-**Attack Prevented:** Credential stuffing, phishing, password reuse, account takeover
+**Attack Prevented:** Credential stuffing, phishing, adversary-in-the-middle credential relay, MFA prompt-bombing, account takeover
+
+> **New capability (2026-03-31):** Tenable added native **passkey** sign-in as part of its CISA Secure by Design commitment. Passkeys are the target authenticator for administrator accounts at L2 and above. Source: [Vulnerability Management release notes](https://docs.tenable.com/release-notes/Content/vulnerability-management/2026.htm).
 
 #### ClickOps Implementation
 
@@ -250,10 +290,16 @@ Require MFA for all users, enforced through SSO or native settings.
 2. Enable MFA requirement per user
 3. Configure supported methods
 
-**Step 2: Enforce via IdP (SSO)**
+**Step 2: Register Passkeys for Administrators (L2/L3)**
+1. Have every administrator register a **passkey** for their Tenable account
+2. Treat passkeys as the required factor for administrators, not an optional alternative to TOTP
+3. Register a second passkey (or a hardware security key) per administrator so a lost device does not become a lockout
+4. Extend passkey registration to all users at L3 (Run)
+
+**Step 3: Enforce via IdP (SSO)**
 1. Configure MFA in IdP
 2. Ensure all users subject to MFA
-3. Use phishing-resistant methods for admins
+3. Use phishing-resistant methods (FIDO2/WebAuthn) for admins where the IdP is the enforcement point
 
 ---
 
@@ -410,6 +456,61 @@ Configure appropriate scan settings for security and performance.
 
 ---
 
+### 3.4 Manage API Keys
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4, 6.3 |
+| NIST 800-53 | IA-5, AC-2, AC-6 |
+
+#### Description
+Tenable API keys are an access key / secret key pair that authenticates API requests independently of the interactive login. Inventory which users hold keys, restrict which roles can generate them, and treat every key as a standing credential — Tenable documents **no expiry mechanism** for API keys.
+
+#### Rationale
+**Why This Matters:**
+- **API keys have no documented expiry.** Unlike a session, a key remains valid until someone explicitly regenerates or removes it, so a key leaked into a script, a ticket, or a CI log is a permanent credential
+- **Key generation is not admin-only.** Users on the **Basic**, **Scan Operator**, **Standard**, **Scan Manager**, and **Administrator** roles can all generate API keys — meaning almost every account in the platform can mint a long-lived credential carrying its own permissions. Role assignment ([1.2](#12-implement-role-based-access-control)) is therefore also an API-credential decision
+- **Keys are displayed once.** Tenable shows the secret key only at generation time and does not display it again, so a "lost" key is invariably replaced rather than recovered — which makes the regeneration behaviour below operationally significant
+- **Regeneration replaces existing keys immediately.** Generating new keys for a user invalidates that user's previous keys the moment it happens. Any integration still using the old pair breaks instantly, so regeneration must be scheduled, not performed casually during triage
+- Tenable recommends **one key per application**, which is what makes revocation surgical: revoking a shared key takes down every consumer at once
+
+**Attack Prevented:** Standing-credential abuse, API access surviving offboarding, credential leakage in CI/CD and scripts, unattributable API activity from shared keys
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Existing Keys**
+1. Review which users hold API keys across the platform
+2. Map each key to a named application or integration and an accountable owner
+3. Remove or regenerate keys with no identified owner or consumer
+
+**Step 2: Restrict Who Can Generate Keys**
+1. Recognize that Basic, Scan Operator, Standard, Scan Manager, and Administrator roles can all generate keys
+2. Assign the narrowest role that supports each user's work (see [1.2](#12-implement-role-based-access-control)) — every role grant is implicitly an API-key grant
+3. Document an approval path for new integrations rather than allowing ad hoc key creation
+
+**Step 3: Generate Keys per Application**
+1. Navigate to: **Settings** → **My Account** → **API Keys**
+2. Generate **one key pair per application** — never share a pair across integrations
+3. Capture the secret key at generation time and store it in a secrets manager; it is not shown again
+4. Never commit keys to source control or echo them in pipeline logs
+
+**Step 4: Rotate and Revoke Deliberately**
+1. Because there is no expiry, set your own rotation cadence and diary it
+2. Before regenerating, identify every consumer of the current key — **regeneration invalidates the existing keys immediately**
+3. Schedule regeneration in a maintenance window and update all consumers in the same change
+4. Regenerate immediately on suspected exposure or when a key holder leaves
+
+#### Validation & Testing
+1. Confirm each active key maps to a documented application and owner
+2. Confirm a departed user's keys no longer authenticate against the API
+3. After a planned rotation, confirm the old key pair is rejected and every consumer is on the new pair
+
+Source: [Generate API Keys](https://docs.tenable.com/vulnerability-management/Content/Settings/my-account/GenerateAPIKey.htm)
+
+---
+
 ## 4. Hardening Assessments
 
 ### 4.1 Configure CIS Benchmark Audits
@@ -539,7 +640,8 @@ Use dashboards to monitor hardening compliance posture.
 | Control | Tenable Control | Guide Section |
 |---------|-----------------|---------------|
 | IA-2 | SSO | [2.1](#21-configure-saml-single-sign-on) |
-| IA-2(1) | MFA | [2.2](#22-enforce-multi-factor-authentication) |
+| IA-2(1) | MFA and passkeys | [2.2](#22-enforce-multi-factor-authentication) |
+| IA-5 | API key management | [3.4](#34-manage-api-keys) |
 | AC-6 | Least privilege | [1.2](#12-implement-role-based-access-control) |
 | RA-5 | Vulnerability scanning | [3.3](#33-configure-scan-security-settings) |
 | CM-6 | Configuration assessment | [4.1](#41-configure-cis-benchmark-audits) |
@@ -559,7 +661,10 @@ Use dashboards to monitor hardening compliance posture.
 
 **API & Developer Tools:**
 - [Tenable Developer Portal](https://developer.tenable.com/)
-- [Tenable.io API Documentation](https://developer.tenable.com/)
+- [Tenable One Vulnerability Management API Documentation](https://developer.tenable.com/)
+- [Generate API Keys](https://docs.tenable.com/vulnerability-management/Content/Settings/my-account/GenerateAPIKey.htm)
+- [Access Control](https://docs.tenable.com/vulnerability-management/Content/Settings/access-control/AccessControl.htm)
+- [Vulnerability Management Release Notes (2026)](https://docs.tenable.com/release-notes/Content/vulnerability-management/2026.htm)
 - [Security Center API Reference](https://docs.tenable.com/security-center/Content/API.htm)
 
 **Compliance Frameworks:**
@@ -575,7 +680,7 @@ Use dashboards to monitor hardening compliance posture.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-08-08 | 0.2.0 | draft | Currency pass (Tier 1 only): added 3.4 API key management (all roles from Basic upward can generate keys; regeneration replaces keys immediately; keys shown once; no expiry mechanism); rewrote 1.2 for the VM Custom Role and the 2026-07-08 Exposure Management export and Linked Agents privileges; added native passkey sign-in (2026-03-31) as the L2/L3 target for administrators in 2.2; documented the SAML no-SP-initiated-flow, exact-username-match, and break-glass constraints in 2.1; renamed Tenable.io to Tenable One Vulnerability Management throughout. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, authentication, and hardening assessments | Claude Code (Opus 4.5) |
 
 ---

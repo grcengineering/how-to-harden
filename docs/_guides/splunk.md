@@ -6,9 +6,9 @@ slug: "splunk"
 tier: "1"
 category: "Security"
 description: "SIEM platform hardening for Splunk Cloud including SAML SSO, role-based access control, and data security"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -65,23 +65,20 @@ Configure SAML SSO to centralize authentication for Splunk Cloud users.
 **Attack Prevented:** Credential theft, phishing, password reuse, MFA bypass, orphaned-account access
 
 #### Prerequisites
-- Administrator access with change_authentication capability
+- Administrator access with the `change_authentication` capability
 - SAML 2.0 compliant IdP with SHA-256 signatures
-- Contact Splunk Cloud Support to enable SAML
+
+> **Correction (2026-08):** Earlier revisions of this guide listed "Contact Splunk Cloud Support to enable SAML" as a hard prerequisite. Current Splunk Cloud Platform documentation describes SAML configuration as **self-service** from Splunk Web — the capability and a SAML 2.0 IdP are the only stated prerequisites. Open a Splunk Support case only if the **SAML** option is absent from your stack. Source: [Configure single sign-on with SAML](https://help.splunk.com/en/splunk-cloud-platform/administer/manage-users-and-security/10.5.2605/use-saml-as-an-authentication-scheme-for-single-sign-on/configure-single-sign-on-with-saml).
 
 #### ClickOps Implementation
 
-**Step 1: Request SAML Enablement**
-1. Contact Splunk Cloud Support
-2. Request SAML 2.0 enablement
-3. Once enabled, access SP metadata at: [yourSiteUrl]/saml/spmetadata
-
-**Step 2: Access SAML Configuration**
+**Step 1: Access SAML Configuration**
 1. Navigate to: **Settings** → **Authentication Methods**
-2. Under External, click **SAML**
+2. Under **External**, click **SAML**
 3. Click **Configure Splunk to use SAML**
+4. Your SP metadata is available at: [yourSiteUrl]/saml/spmetadata
 
-**Step 3: Configure SAML Settings**
+**Step 2: Configure SAML Settings**
 1. Enter IdP settings:
    - **Single Sign-on URL**
    - **IdP Certificate Chain** (in order: root → intermediate → leaf)
@@ -89,7 +86,7 @@ Configure SAML SSO to centralize authentication for Splunk Cloud users.
    - **Entity ID**
 2. Supported IdPs: PingIdentity, Okta, Microsoft Azure, ADFS, OneLogin
 
-**Step 4: Configure IdP**
+**Step 3: Configure IdP**
 1. IdP must provide: role, realName, mail attributes
 
 **Time to Complete:** ~2 hours
@@ -134,6 +131,66 @@ Maintain local admin access for emergency recovery.
 2. Store in password vault
 
 {% include pack-code.html vendor="splunk" section="1.2" %}
+
+---
+
+### 1.3 Govern Authentication Tokens
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4, 6.3 |
+| NIST 800-53 | IA-5, AC-2 |
+
+#### Description
+Splunk platform authentication tokens (JWTs) let users and automation call the REST API and run searches without an interactive login. Restrict who can create them, prefer short-lived token types, and never allow static tokens with no expiry.
+
+#### Rationale
+**Why This Matters:**
+- **Static tokens can be configured to never expire.** A non-expiring static token is a permanent API key in JWT clothing: it survives password resets, is not covered by your IdP's session policy, and completely bypasses the SAML SSO enforced in [1.1](#11-configure-saml-single-sign-on)
+- Splunk offers three token flavors with very different lifetimes — static tokens created in Splunk Web (admin-set expiry, including no expiry), **ephemeral tokens capped at 6 hours**, and **interactive tokens at 1 hour** (Splunk Cloud Platform only). Choosing the shortest viable lifetime is the whole control
+- Token creation and visibility are governed by discrete capabilities, so token issuance can be restricted to a small set of roles instead of every user who can log in
+- A leaked token carries the issuing user's roles, which on a SIEM means access to indexed authentication and audit data across the estate
+
+**Attack Prevented:** SSO and MFA bypass via long-lived API credentials, standing-credential abuse, undetected data exfiltration through the REST API, token sprawl
+
+#### ClickOps Implementation
+
+**Step 1: Choose the Right Token Type**
+
+| Token type | Lifetime | Use it for |
+|------------|----------|------------|
+| Static | Admin-defined expiry — **can be set to never expire** | Long-running integrations only, and always with a bounded expiry |
+| Ephemeral | **6 hours maximum** | Scripted and automation use where a short-lived credential can be re-minted |
+| Interactive | **1 hour** (Splunk Cloud Platform only) | Ad hoc human API access from a session |
+
+**Step 2: Restrict Who Can Issue Tokens**
+1. Navigate to: **Settings** → **Access Controls** → **Roles**
+2. Grant token capabilities deliberately:
+
+| Capability | Grants |
+|------------|--------|
+| `edit_tokens_settings` | Enable or disable token authentication platform-wide |
+| `edit_tokens_all` | Create, edit, and delete tokens for **any** user |
+| `edit_tokens_own` | Create, edit, and delete the user's own tokens |
+| `list_tokens_all` | View tokens belonging to any user |
+| `list_tokens_own` | View the user's own tokens |
+
+3. Hold `edit_tokens_settings` and `edit_tokens_all` to administrators only; grant `edit_tokens_own` narrowly to roles that genuinely need programmatic access
+4. Retain `list_tokens_all` for the security team so token inventory is auditable
+
+**Step 3: Set and Enforce Expiry**
+1. When creating a static token, always set an explicit expiration — never leave it non-expiring
+2. Prefer ephemeral or interactive tokens wherever the consumer can re-authenticate
+3. Delete tokens belonging to departed users and retired integrations
+
+#### Validation & Testing
+1. With `list_tokens_all`, enumerate all issued tokens and confirm none has an unbounded expiry
+2. Confirm the roles holding `edit_tokens_all` and `edit_tokens_settings` match your intended administrator list
+3. Attempt an API call with an expired token and confirm it is rejected
+
+Source: [Set up authentication with tokens](https://help.splunk.com/en/splunk-cloud-platform/administer/manage-users-and-security/10.5.2605/authenticate-into-the-splunk-platform-with-tokens/set-up-authentication-with-tokens)
 
 ---
 
@@ -288,6 +345,110 @@ Ensure data encryption in transit and at rest.
 
 ---
 
+### 3.3 Apply Field Filters to Sensitive Data
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.3, 3.11 |
+| NIST 800-53 | AC-3, SC-28 |
+
+#### Description
+Field filters redact PII, PHI, and other sensitive field values at search time — nulling, replacing, or hashing them in search results without altering the indexed data. Configure them from **Splunk Web** → **Administration** → **Users and Security** → **Manage field filters**.
+
+> **Preview feature.** Splunk labels field filters a **preview** capability, provided "as is" without warranties, support, or service-level agreement. Do not build a compliance control that depends solely on field filters, and treat L3 (Run) reliance as unsupported until the feature reaches general availability. Source: [Protect PII, PHI, and other sensitive data with field filters](https://help.splunk.com/en/splunk-cloud-platform/administer/manage-users-and-security/10.5.2605/use-field-filters-to-protect-sensitive-data/protect-pii-phi-and-other-sensitive-data-with-field-filters).
+
+#### Rationale
+**Why This Matters:**
+- Index-level restrictions ([2.2](#22-configure-index-access)) are all-or-nothing: an analyst who needs an index gets every field in it. Field filters let the same analyst search the data while sensitive values stay hidden
+- Redaction happens at **search time** and does not alter indexed data, so the raw values remain available for authorized investigation and are not destroyed by the control
+- Hashing (SHA-256 or SHA-512) preserves correlation — the same value hashes consistently, so analysts can still pivot and join on an identifier without ever seeing it
+- **Filters are bypassed by role.** Roles you explicitly authorize to see raw values are exempt, so the exemption list is the real control surface and must be reviewed like any other privileged grant
+
+**Attack Prevented:** Insider harvesting of PII/PHI from log data, over-broad analyst access to regulated fields, accidental disclosure of sensitive values in shared searches and dashboards
+
+#### Prerequisites
+- Administrator access to Splunk Web
+- Acceptance of the feature's preview status (see callout above)
+
+#### ClickOps Implementation
+
+**Step 1: Identify Sensitive Fields**
+1. Inventory the fields carrying PII, PHI, or regulated data across your indexes and sourcetypes
+2. Record for each field whether analysts need the value, a consistent pseudonym, or nothing at all
+
+**Step 2: Create Field Filters**
+1. In Splunk Web, navigate to: **Administration** → **Users and Security** → **Manage field filters**
+2. Create a filter for each sensitive field and choose the redaction action:
+
+| Action | Result | Use when |
+|--------|--------|----------|
+| Null | Field value removed from results | Analysts never need the value |
+| Replace | Value substituted with a fixed string | The field's presence matters but the value does not |
+| Hash (SHA-256 / SHA-512) | Value replaced with a consistent digest | Analysts must correlate on the value without reading it |
+
+**Step 3: Govern the Bypass List**
+1. Grant raw-value access only to roles with a documented need
+2. Review the exempted roles on the same cadence as your privileged-access review
+3. Confirm the exemption list does not silently include broad roles such as `power` or `user`
+
+#### Validation & Testing
+1. Run a search that returns the filtered field as a non-exempt user and confirm the value is nulled, replaced, or hashed as configured
+2. Repeat as an exempt role and confirm the raw value is returned — proving the bypass works as intended and only where intended
+3. Confirm the indexed data is unchanged by searching as an exempt role against historical events
+
+---
+
+### 3.4 Configure Private Connectivity
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 12.6, 13.4 |
+| NIST 800-53 | SC-7, SC-8 |
+
+#### Description
+Splunk Cloud Platform supports private connectivity — **AWS PrivateLink**, **Azure Private Link**, and **GCP Private Service Connect** — so data reaches your Splunk Cloud stack over the cloud provider's private network instead of the public internet. Private connectivity is requested and managed through the **Admin Config Service (ACS) API**.
+
+#### Rationale
+**Why This Matters:**
+- Data ingested into and searched from a SIEM is among the most sensitive traffic an organization moves; keeping it off the public internet removes an entire class of interception and exposure risk
+- Private endpoints complement the transport encryption in [3.2](#32-configure-encryption) — encryption protects the payload, private connectivity removes the public path altogether
+- Private connectivity narrows the network reachability of your Splunk Cloud stack, so an attacker holding valid credentials still needs a foothold inside your own cloud network to use them
+- **Documented limitation: cross-cloud private connectivity is not supported.** A Splunk Cloud stack in one cloud provider cannot be reached privately from a different provider, which is a hard architectural constraint to design around, not a configuration issue to troubleshoot
+
+**Attack Prevented:** Network eavesdropping on ingest and search traffic, internet-exposed stack reachability, credential reuse from outside your network perimeter
+
+#### Prerequisites
+- Splunk Cloud Platform stack that meets Splunk's private-connectivity eligibility requirements
+- ACS API access and the ability to raise a provisioning request with Splunk
+- Your workloads and the Splunk Cloud stack in the **same** cloud provider
+
+#### ClickOps Implementation
+
+**Step 1: Confirm Eligibility**
+1. Verify your stack qualifies for private connectivity using the ACS API eligibility check
+2. Confirm your ingest and search sources reside in the same cloud provider as the stack — cross-cloud is not supported
+
+**Step 2: Request Activation**
+1. Submit the private-connectivity activation request through the **Admin Config Service (ACS) API**
+2. Splunk provisions the private endpoints for your stack
+
+**Step 3: Point Traffic at the Private Endpoints**
+1. Update forwarders, HEC clients, and administrative access to use the private endpoint DNS names
+2. Restrict or remove any remaining public-path access once private connectivity is verified
+
+#### Validation & Testing
+1. Resolve the stack's endpoint from inside your VPC/VNet and confirm it returns the private address
+2. Confirm ingest and search succeed over the private path
+3. Confirm that traffic from outside the private network no longer reaches the stack on the paths you restricted
+
+Source: [Private connectivity](https://help.splunk.com/en/splunk-cloud-platform/administer/manage-users-and-security/10.5.2605/private-connectivity)
+
+---
+
 ## 4. Monitoring & Compliance
 
 ### 4.1 Configure Audit Logging
@@ -357,10 +518,13 @@ Monitor administrative and security events.
 - [Splunk Protects (Trust Center)](https://www.splunk.com/en_us/about-splunk/splunk-data-security-and-privacy.html)
 - [Splunk Trust Center (Conveyor)](https://customertrust.splunk.com/)
 - [Splunk Documentation](https://docs.splunk.com/)
-- [How to Secure and Harden Splunk](https://docs.splunk.com/Documentation/Splunk/latest/Security/Hardeningstandards)
+- [How to Secure and Harden Your Splunk Platform Instance](https://help.splunk.com/en/splunk-cloud-platform/administer/manage-users-and-security/10.5.2605/introduction-to-securing-the-splunk-platform/how-to-secure-and-harden-your-splunk-platform-instance)
+- [Configure Single Sign-On with SAML](https://help.splunk.com/en/splunk-cloud-platform/administer/manage-users-and-security/10.5.2605/use-saml-as-an-authentication-scheme-for-single-sign-on/configure-single-sign-on-with-saml)
+- [Set Up Authentication with Tokens](https://help.splunk.com/en/splunk-cloud-platform/administer/manage-users-and-security/10.5.2605/authenticate-into-the-splunk-platform-with-tokens/set-up-authentication-with-tokens)
+- [Protect PII, PHI, and Other Sensitive Data with Field Filters](https://help.splunk.com/en/splunk-cloud-platform/administer/manage-users-and-security/10.5.2605/use-field-filters-to-protect-sensitive-data/protect-pii-phi-and-other-sensitive-data-with-field-filters)
+- [Private Connectivity](https://help.splunk.com/en/splunk-cloud-platform/administer/manage-users-and-security/10.5.2605/private-connectivity)
 - [Best Practices for SAML SSO](https://help.splunk.com/en/splunk-enterprise/administer/manage-users-and-security/9.0/perform-advanced-configuration-of-saml-authentication-in-splunk-enterprise/best-practices-for-using-saml-as-an-authentication-scheme-for-single-sign-on)
 - [Securing the Splunk Cloud Platform](https://lantern.splunk.com/Manage_Performance_and_Health/Securing_the_Splunk_Cloud_Platform)
-- [Configure SSO with SAML](https://docs.splunk.com/Documentation/SplunkCloud/latest/Security/HowSAMLSSOworks)
 
 **API & Developer Tools:**
 - [REST API Reference](https://dev.splunk.com/enterprise/reference)
@@ -381,7 +545,7 @@ Monitor administrative and security events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-08-08 | 0.2.0 | draft | Currency pass (Tier 1 only): added 1.3 authentication-token governance (static/ephemeral/interactive lifetimes, token capabilities), 3.3 field filters for PII/PHI search-time redaction (flagged as a Splunk preview feature), and 3.4 private connectivity via the ACS API; corrected 1.1 to reflect self-service SAML configuration rather than a Splunk Support prerequisite; migrated rotted docs.splunk.com citations to the current help.splunk.com manuals. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and data security | Claude Code (Opus 4.5) |
 
 ---
