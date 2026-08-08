@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
-# HTH Microsoft Intune Control 2.2: Enforce Conditional Access for Admin Portals
-# Profile: L1 | NIST: AC-7, AC-11
-# https://howtoharden.com/guides/microsoft-intune/#22-enforce-conditional-access-for-admin-portals
+# HTH Microsoft Entra ID Control 2.03: Require Compliant Devices for Admins
+# Profile: L2 | NIST: AC-2(11), AC-6(1)
+# https://howtoharden.com/guides/microsoft-entra-id/#23-require-compliant-devices-for-admins
 #
 # Prerequisites:
 #   Install-Module Microsoft.Graph.Identity.SignIns -Scope CurrentUser
@@ -53,27 +53,6 @@ $compliancePolicy = @{
 New-MgIdentityConditionalAccessPolicy -BodyParameter $compliancePolicy
 Write-Host "Created CA policy: HTH-AdminPortal-ComplianceRequired" -ForegroundColor Green
 
-# --- Block legacy authentication for admin accounts ---
-Write-Host "`n=== Creating CA Policy: Block Legacy Auth for Admins ===" -ForegroundColor Cyan
-
-$blockLegacyPolicy = @{
-    DisplayName = "HTH-BlockLegacyAuth-Admins"
-    State       = "enabled"
-    Conditions  = @{
-        Users = @{
-            IncludeRoles = @($intuneAdminRoleId, $globalAdminRoleId, $securityAdminRoleId)
-        }
-        Applications = @{
-            IncludeApplications = @("All")
-        }
-        ClientAppTypes = @("exchangeActiveSync", "other")
-    }
-    GrantControls = @{
-        Operator        = "OR"
-        BuiltInControls = @("block")
-    }
-}
-
-New-MgIdentityConditionalAccessPolicy -BodyParameter $blockLegacyPolicy
-Write-Host "Created CA policy: HTH-BlockLegacyAuth-Admins" -ForegroundColor Green
+# Legacy authentication is blocked tenant-wide in control 2.1 -- no admin-scoped
+# duplicate policy is created here.
 # HTH Guide Excerpt: end powershell

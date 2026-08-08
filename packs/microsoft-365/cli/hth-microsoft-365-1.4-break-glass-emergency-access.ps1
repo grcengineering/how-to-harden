@@ -1,7 +1,7 @@
 # =============================================================================
-# HTH Microsoft Entra ID Control 1.02: Configure Emergency Access (Break-Glass) Accounts
+# HTH Microsoft 365 Control 1.4: Configure Break-Glass Emergency Access Accounts
 # Profile: L1 | NIST: AC-2
-# Source: https://howtoharden.com/guides/microsoft-entra-id/#12-configure-emergency-access-break-glass-accounts
+# Source: https://howtoharden.com/guides/microsoft-365/#14-configure-break-glass-emergency-access-accounts
 # =============================================================================
 
 # HTH Guide Excerpt: begin cli-emergency-access

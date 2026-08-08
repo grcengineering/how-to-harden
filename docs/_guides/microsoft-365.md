@@ -3,12 +3,15 @@ layout: guide
 title: "Microsoft 365 Hardening Guide"
 vendor: "Microsoft 365"
 slug: "microsoft-365"
+platform: "Microsoft"
+platform_slug: "microsoft-365"
+product: "Common Controls"
 tier: "1"
 category: "Productivity"
-description: "Comprehensive security hardening for Microsoft 365, Exchange Online, SharePoint, Teams, and OneDrive"
-version: "0.2.0"
+description: "Tenant-wide security hardening for Microsoft 365 — the Common Controls hub (MFA and legacy auth, PIM, break-glass, OAuth consent, data security, unified audit logging, Exchange Online and Teams) shared by the Microsoft Entra ID and Microsoft Intune product guides."
+version: "0.3.0"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -27,7 +30,9 @@ Microsoft 365 is the world's most widely deployed productivity suite, with over 
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Microsoft 365 tenant-level security configurations including Entra ID (Azure AD) authentication policies, Exchange Online protection, SharePoint/OneDrive data security, Teams governance, and integration security. Azure infrastructure hardening is covered in a separate guide.
+This guide is the **Common Controls hub** for the Microsoft platform. It covers the tenant-wide configurations that apply across every Microsoft 365 workload: the authentication and privileged-access requirements every service inherits, OAuth and application consent, SharePoint/OneDrive data security, Exchange Online mail flow, Teams external access, and the unified audit log. Product-specific hardening — the Entra ID identity control plane and the Intune endpoint-management admin plane — lives in the product guides listed below. Azure infrastructure hardening is covered in a separate guide.
+
+The division is by administrative surface, not by topic. This hub states **what must be true for the tenant**; a product guide covers the mechanics that exist only in that product's console and the automation that goes with them. Both layers are needed: a correct tenant policy still fails if the Entra authentication-method policy leaves SMS enabled, or if Intune's own admin roles hand a helpdesk account the ability to wipe 200,000 devices.
 
 ---
 
@@ -45,6 +50,22 @@ This guide covers Microsoft 365 tenant-level security configurations including E
 
 ---
 
+## Products in This Platform
+
+Microsoft is a multi-product platform. This guide is the **Common Controls hub** — the tenant-wide controls configured once and inherited by every Microsoft 365 workload. Product-specific controls live in their own guides:
+
+| Product | Guide | Covers |
+|---------|-------|--------|
+| **Common Controls** (this guide) | — | Tenant MFA requirement and legacy-auth block, PIM program, break-glass accounts, named locations, OAuth consent and app permissions, sensitivity labels and DLP, external sharing, unified audit logging and Defender alerting |
+| **Microsoft Entra ID** | [Microsoft Entra ID guide](/guides/microsoft-entra-id/) | Authentication methods and authentication strengths, Conditional Access policy authoring (compliant devices, sign-in risk, Microsoft-managed policies, device code flow), access reviews, restricted management administrative units, Azure AD Graph retirement, identity log export |
+| **Microsoft Intune** | [Microsoft Intune guide](/guides/microsoft-intune/) | Intune RBAC and scope tags, Intune-role PIM scoping, Multi-Admin Approval, remote-wipe restriction and rate alerting, token-replay hardening, Stryker-pattern detection |
+| **Exchange Online** | — | No product guide yet — mail flow, Direct Send, external forwarding, and SPF/DKIM/DMARC are covered in this hub (§8) |
+| **Microsoft Teams** | — | No product guide yet — external access and unmanaged-account federation are covered in this hub (§9) |
+
+> **Moved and merged controls:** tenant-wide controls that previously appeared in the product guides now live here and are not duplicated. Merged in from the former Microsoft Intune guide: the mandatory-MFA enforcement phases (§1.1) and the break-glass exemption warning (§1.4). Merged in from the former Microsoft Entra ID guide: the mandatory-MFA enforcement floor (§1.1), offline credential custody for emergency accounts (§1.4), and blocking user app registration (§3.1). Conditional Access **policy authoring** for admin portals and device code flow consolidated into the Entra ID guide (§2.3, §2.6) from the Intune guide, which now points there.
+
+---
+
 ## 1. Authentication & Access Controls
 
 ### 1.1 Enforce Phishing-Resistant MFA for All Users
@@ -59,6 +80,17 @@ This guide covers Microsoft 365 tenant-level security configurations including E
 
 #### Description
 Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business, or certificate-based authentication) for all users. Microsoft reports that over 99.9% of compromised accounts had MFA disabled.
+
+> **This is the tenant-wide requirement.** Enabling the individual authentication methods and authoring the "Phishing-Resistant MFA" authentication strength that this policy consumes happen in the Entra admin center — see [Microsoft Entra ID §1.1](/guides/microsoft-entra-id/#11-configure-authentication-methods-and-authentication-strengths). Scoping a stricter policy to Intune administrators is [Microsoft Intune §2.1](/guides/microsoft-intune/#21-require-phishing-resistant-mfa-for-all-intune-admins).
+
+> **Enforcement floor — Microsoft now system-enforces MFA independent of your policies.** This is a floor, not a substitute: mandatory MFA does not distinguish strong factors from weak ones, so the phishing-resistant requirement below still has to be enforced by your own Conditional Access policy. ([Plan for mandatory Microsoft Entra multifactor authentication](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-mandatory-multifactor-authentication))
+>
+> | Phase | Enforcement began | Scope |
+> |-------|-------------------|-------|
+> | Phase 1 | October 2024 (Microsoft 365 admin center from February 2025) | Any **Create, Read, Update, or Delete** operation in the **Microsoft Entra admin center**, **Microsoft Intune admin center**, and **Azure portal** |
+> | Phase 2 | October 1, 2025 | **Create, Update, Delete** via **Azure CLI**, **Azure PowerShell**, the Azure mobile app, **IaC tools**, **REST API (control plane)**, and Azure SDKs. Read operations are exempt |
+>
+> The postponement window has closed — Phase 1 could be deferred only to September 30, 2025 and Phase 2 only to **July 1, 2026**. Enforcement is scoped to the admin portals and Azure Resource Manager; Microsoft states that **Microsoft Graph APIs are generally not in scope**, which is why admin Conditional Access must target Graph explicitly ([Entra ID §2.3](/guides/microsoft-entra-id/#23-require-compliant-devices-for-admins)). Break-glass accounts are **included** in this enforcement — see [1.4](#14-configure-break-glass-emergency-access-accounts).
 
 #### Rationale
 **Why This Matters:**
@@ -100,15 +132,11 @@ Require phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business,
 4. Set **Enable policy** to **On**
 5. Click **Create**
 
-**Step 3: Configure Authentication Strength for Phishing Resistance**
-1. Navigate to: **Protection** → **Authentication methods** → **Authentication strengths**
-2. Click **+ New authentication strength**
-3. Name: "Phishing-Resistant MFA"
-4. Select only:
-   - FIDO2 security key
-   - Windows Hello for Business
-   - Certificate-based authentication
-5. Save and apply to Conditional Access policies for admins
+**Step 3: Require Phishing-Resistant Strength for Privileged Users**
+1. Create the "Phishing-Resistant MFA" authentication strength and enable the underlying methods first — [Microsoft Entra ID §1.1](/guides/microsoft-entra-id/#11-configure-authentication-methods-and-authentication-strengths) covers both
+2. Edit the Conditional Access policy from Step 2 (or create a second policy scoped to directory roles)
+3. Under **Grant**, select **Require authentication strength** → **Phishing-Resistant MFA**
+4. Apply to all admin roles at minimum; extend to all users once enrollment allows
 
 **Time to Complete:** ~45 minutes (policy) + user enrollment time
 
@@ -266,6 +294,8 @@ Source: [Deprecation of Exchange Web Services in Exchange Online](https://learn.
 #### Description
 Enable just-in-time privileged access using Microsoft Entra Privileged Identity Management (PIM) to eliminate standing admin privileges and enforce approval workflows.
 
+> **This is the tenant-wide PIM program.** Per-role activation settings and the Terraform/PowerShell implementation of eligible assignments are in [Microsoft Entra ID §3.1](/guides/microsoft-entra-id/#31-enable-just-in-time-access-for-admin-roles); the Intune-specific role set (Intune Administrator, Endpoint Security Manager) and its destructive-action risk profile are in [Microsoft Intune §3.1](/guides/microsoft-intune/#31-enable-privileged-identity-management-pim-for-intune-roles).
+
 #### Rationale
 **Why This Matters:**
 - Standing privileges create persistent attack surface
@@ -351,6 +381,8 @@ Create and secure emergency access accounts that are excluded from Conditional A
 - Long, complex passwords stored securely offline
 - Monitored for any usage
 
+> **Break-glass accounts are NOT exempt from tenant-level mandatory MFA.** Microsoft states enforcement "applies to all user accounts, regardless if they are a student account, break-glass account, an administrator account with activated or eligible roles, or any user exclusions that are enabled for them," and recommends these accounts be moved to **passkey (FIDO2)** or **certificate-based authentication**, both of which satisfy the requirement ([Plan for mandatory Microsoft Entra multifactor authentication](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-mandatory-multifactor-authentication)). A password-only break-glass account is now a locked-out break-glass account. Excluding these accounts from your own Conditional Access policies (Step 2 below) does not exempt them from Microsoft's platform enforcement — the two are separate mechanisms.
+
 #### Prerequisites
 - Global Administrator access
 - Secure offline storage for credentials (safe, vault)
@@ -373,11 +405,22 @@ Create and secure emergency access accounts that are excluded from Conditional A
 2. Under **Users** → **Exclude**, add both break-glass accounts
 3. Save all policies
 
-**Step 3: Configure Monitoring**
+**Step 3: Register a Phishing-Resistant Credential**
+1. Register a **passkey (FIDO2)** or **certificate-based authentication** credential on each account so it satisfies Microsoft's mandatory MFA enforcement
+2. Store the security key itself with the same custody controls as the password (Step 5)
+
+**Step 4: Configure Monitoring**
 1. Navigate to: **Microsoft Entra admin center** → **Monitoring** → **Diagnostic settings**
 2. Create alert rule for any sign-in from break-glass accounts
+3. Route the alert to a channel that is watched outside business hours — a break-glass sign-in is either a real emergency or a compromise, and both need a same-hour response
 
-**Time to Complete:** ~30 minutes
+**Step 5: Store Credentials Securely Offline**
+1. Print credentials on paper — no digital storage, no password manager that itself depends on the tenant
+2. Store in a physically secure location (safe, vault)
+3. Split credentials between multiple custodians where the organization's size allows, so no single person can use an emergency account alone
+4. Document the access procedure, including who authorizes use and who must be notified
+
+**Time to Complete:** ~45 minutes
 
 #### Code Implementation
 
@@ -480,7 +523,15 @@ Prevent users from granting OAuth consent to third-party applications. Require a
 4. Set notification email
 5. Click **Save**
 
-**Time to Complete:** ~15 minutes
+**Step 3: Block User App Registration**
+1. Navigate to: **Identity** → **Users** → **User settings**
+2. Set **Users can register applications** to **No**
+3. Grant the **Application Developer** role only to the specific users who legitimately need to register apps
+4. Click **Save**
+
+> By default every user can register application objects — a shadow-IT and consent-phishing surface distinct from the consent setting above. ([Delegate app registration](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/delegate-app-roles))
+
+**Time to Complete:** ~20 minutes
 
 #### Code Implementation
 
@@ -727,6 +778,8 @@ Source: [Restricted Content Discovery in SharePoint](https://learn.microsoft.com
 
 #### Description
 Enable and configure unified audit logging to capture user and admin activities across all Microsoft 365 services.
+
+> **Three log planes, three configurations.** The unified audit log below covers Microsoft 365 workload activity (Exchange, SharePoint, Teams, Purview). Identity events — sign-ins, Conditional Access results, service-principal activity — are exported separately from the Entra admin center ([Microsoft Entra ID §5.1](/guides/microsoft-entra-id/#51-export-entra-id-sign-in-and-audit-logs)), and Intune device and admin actions have their own audit surface ([Microsoft Intune §7.1](/guides/microsoft-intune/#71-enable-comprehensive-intune-audit-logging)). Configuring one does not populate the others; an incident that starts with a stolen token and ends with a mass device wipe crosses all three.
 
 #### Rationale
 **Why This Matters:**
@@ -1319,6 +1372,7 @@ Source: [CISA SCuBA M365 Secure Configuration Baselines and ScubaGear](https://g
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.3.0 | draft | Platform breakout: this guide becomes the Microsoft **Common Controls hub** — platform frontmatter, Products in This Platform table, moved-controls callout. Merged in tenant-wide content the product guides carried: mandatory-MFA enforcement phases and enforcement-floor framing (1.1), break-glass exemption from mandatory MFA plus phishing-resistant credential registration and offline credential custody (1.4), blocking user app registration (3.1). Added cross-plane pointers for MFA strength authoring (1.1), PIM (1.3), and the three separate audit-log planes (5.1) | Claude Code (Opus 4.8) |
 | 2026-08-03 | 0.2.0 | draft | Add Exchange Online mail flow section (Reject Direct Send, block automatic external forwarding, SPF/DKIM/DMARC enforcement), Teams external access hardening, and SharePoint Restricted Content Discovery; add CISA SCuBA baseline and ScubaGear mapping; correct CIS benchmark citation from v3.1 to v7.0.0; add EWS and SMTP AUTH retirement timelines to legacy authentication control | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with authentication, OAuth, data security, and monitoring controls | Claude Code (Opus 4.5) |

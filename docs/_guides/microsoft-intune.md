@@ -3,10 +3,13 @@ layout: guide
 title: "Microsoft Intune Hardening Guide"
 vendor: "Microsoft Intune"
 slug: "microsoft-intune"
+platform: "Microsoft"
+platform_slug: "microsoft-365"
+product: "Microsoft Intune"
 tier: "1"
 category: "IT Operations"
 description: "Endpoint management hardening for Microsoft Intune — defending against admin-plane abuse, credential theft, and destructive wipe attacks"
-version: "0.2.0"
+version: "0.3.0"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -16,6 +19,8 @@ last_updated: "2026-08-08"
 Microsoft Intune is a cloud-based endpoint management platform used by **hundreds of thousands of organizations** to manage Windows, macOS, iOS, Android, and Linux devices. As the central authority for device configuration, compliance enforcement, and remote actions, Intune wields enormous destructive potential if compromised. The **March 2026 Stryker breach** proved this decisively: Iranian threat actors (Handala / Void Manticore) used a single compromised admin account to issue native Intune remote-wipe commands across **200,000+ devices in 79 countries** — no malware required.
 
 This guide focuses on hardening the Intune administrative plane against the specific TTPs used in the Stryker attack and similar credential-based admin-abuse scenarios. Every control maps directly to a stage of the Stryker kill chain.
+
+This is a **product guide within the [Microsoft platform](/guides/microsoft-365/)**. Tenant-wide requirements — the MFA mandate, PIM as a program, break-glass accounts, and the unified audit log — live in the Microsoft 365 **Common Controls** hub, and Conditional Access **policy authoring** lives in the [Microsoft Entra ID guide](/guides/microsoft-entra-id/), because that is where the policies are written. Everything below is what only Intune can do to itself: its own RBAC model, its own approval gates, and the remote actions that make a compromised Intune admin account a fleet-destruction tool rather than a data-access problem.
 
 ### Intended Audience
 - Security engineers managing endpoint fleets
@@ -29,7 +34,9 @@ This guide focuses on hardening the Intune administrative plane against the spec
 - **L3 (Run):** Strictest controls for regulated industries (healthcare, finance, government)
 
 ### Scope
-This guide covers Microsoft Intune administrative security: RBAC, authentication hardening, Privileged Identity Management, Multi-Admin Approval, device wipe protection, token protection, and detection of admin-plane abuse. Device-level compliance policies and application management are covered where they relate to preventing destructive attacks. Entra ID and Microsoft 365 hardening are covered in their respective guides.
+This guide covers Microsoft Intune administrative security: Intune RBAC and scope tags, Intune-scoped authentication and PIM requirements, Multi Admin Approval, device wipe protection, admin session and token hardening, and detection of admin-plane abuse. Device-level compliance policies and application management are covered where they relate to preventing destructive attacks.
+
+**Moved controls:** the admin-portal Conditional Access policy (formerly §2.2) and the device code flow block (formerly §2.3) now live in the [Microsoft Entra ID guide](/guides/microsoft-entra-id/) as §2.3 and §2.6, enriched with the Intune-specific detail — the Microsoft Graph out-of-scope warning, the Device Registration Service exclusion, and the protocol-tracking side effect — rather than duplicated here. Conditional Access is authored once for the whole platform; splitting it per product is how tenants end up with four overlapping admin policies and no idea which one is enforcing.
 
 ### Threat Context: The Stryker Attack (March 2026)
 
@@ -249,17 +256,10 @@ Use Intune scope tags to partition administrative visibility so that no single a
 | CIS Controls | 6.3, 6.5 |
 | NIST 800-53 | IA-2(1), IA-2(6) |
 
-#### Description
-Require phishing-resistant multi-factor authentication (FIDO2 security keys, Windows Hello for Business, or certificate-based authentication) for every user with Intune administrative privileges. Disable weaker MFA methods (SMS, phone call, push notification) for privileged accounts.
+> **Tenant requirement:** the tenant-wide MFA mandate and Microsoft's mandatory-MFA enforcement phases — which already cover every Create, Read, Update, and Delete operation in the **Microsoft Intune admin center** — are [Microsoft 365 §1.1](/guides/microsoft-365/#11-enforce-phishing-resistant-mfa-for-all-users). Enabling FIDO2 and authoring the phishing-resistant authentication strength are [Microsoft Entra ID §1.1](/guides/microsoft-entra-id/#11-configure-authentication-methods-and-authentication-strengths). This control is the Intune-scoped application of both: which roles, which cloud apps, and which key restrictions.
 
-> **Changed default — tenant-level mandatory MFA now applies independent of Conditional Access.** Microsoft enforces MFA on Azure and admin-portal sign-ins at the platform level, outside any policy you configure ([Plan for mandatory Microsoft Entra multifactor authentication](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-mandatory-multifactor-authentication)):
->
-> | Phase | Enforcement began | Scope |
-> |-------|-------------------|-------|
-> | Phase 1 | October 2024 (Microsoft 365 admin center from February 2025) | Any **Create, Read, Update, or Delete** operation in the **Microsoft Intune admin center**, **Microsoft Entra admin center**, and **Azure portal** |
-> | Phase 2 | October 1, 2025 | **Create, Update, Delete** via **Azure CLI**, **Azure PowerShell**, the Azure mobile app, **IaC tools**, **REST API (control plane)**, and Azure SDKs. Read operations are exempt |
->
-> The postponement window has closed — Phase 1 could be deferred only to September 30, 2025 and Phase 2 only to **July 1, 2026**. This is a floor, not a ceiling: mandatory MFA does not distinguish strong from weak factors, so the phishing-resistant requirement below still has to be enforced by your own Conditional Access policy.
+#### Description
+Require phishing-resistant multi-factor authentication for every user holding an Intune administrative role, scoped to the Intune service and the Graph surface Intune automation runs through. Mandatory MFA covers the Intune admin center but does not distinguish a FIDO2 key from an SMS code — the policy below is what makes the difference for the roles that can wipe a fleet.
 
 #### Rationale
 **Why This Matters:**
@@ -281,13 +281,10 @@ Require phishing-resistant multi-factor authentication (FIDO2 security keys, Win
 
 #### ClickOps Implementation
 
-**Step 1: Enable FIDO2 as an Authentication Method**
-1. Navigate to: **Microsoft Entra admin center** → **Protection** → **Authentication methods** → **Policies**
-2. Click **FIDO2 security key** → **Enable** → Set target to **All users** or a security group containing all Intune admins
-3. Under **Configure**, enable:
-   - Enforce attestation: **Yes**
-   - Enforce key restrictions: **Yes** (restrict to approved key AAGUIDs)
-   - Allow self-service set up: **Yes**
+**Step 1: Restrict the Keys Your Intune Admins May Use**
+1. Enable Passkey (FIDO2) and author the phishing-resistant authentication strength first — [Microsoft Entra ID §1.1](/guides/microsoft-entra-id/#11-configure-authentication-methods-and-authentication-strengths)
+2. In **Protection** → **Authentication methods** → **Policies** → **Passkey (FIDO2)** → **Configure**, set **Enforce key restrictions** to **Yes** and list only the AAGUIDs of the keys you issued to Intune administrators
+3. Set **Enforce attestation** to **Yes** so a key that cannot prove its model is rejected
 
 **Step 2: Create Conditional Access Policy for Intune Admins**
 1. Navigate to: **Microsoft Entra admin center** → **Protection** → **Conditional Access** → **Create new policy**
@@ -299,13 +296,12 @@ Require phishing-resistant multi-factor authentication (FIDO2 security keys, Win
 5. **Session:** Sign-in frequency → **Every time**
 6. Enable policy: **On**
 
-**Step 3: Disable Weak MFA Methods for Admins**
+**Step 3: Exclude Intune Admins From Weak Methods**
 1. Navigate to: **Authentication methods** → **Policies**
-2. For each weaker method (SMS, Voice call, Microsoft Authenticator push):
-   - Set **Target** to exclude the Intune admin group
-3. Verify only FIDO2 and Windows Hello remain available for admin accounts
+2. For each weaker method (SMS, Voice call, Microsoft Authenticator push), set **Target** to exclude the Intune admin group
+3. Verify only passkeys and Windows Hello for Business remain available to those accounts — a weak method left registered is a weak method an attacker can select
 
-**Time to Complete:** ~45 minutes
+**Time to Complete:** ~30 minutes
 
 #### Code Implementation
 
@@ -352,151 +348,7 @@ Set the Conditional Access policy to **Report-only** mode to stop enforcement wh
 
 ---
 
-### 2.2 Enforce Conditional Access for Admin Portals
-
-**Profile Level:** L1 (Crawl)
-
-| Framework | Control |
-|-----------|---------|
-| CIS Controls | 6.4 |
-| NIST 800-53 | AC-7, AC-11 |
-
-#### Description
-Create dedicated Conditional Access policies that govern access to the Intune admin center and Microsoft Graph API. Require compliant devices, trusted locations, and risk-based controls for all administrative sessions.
-
-#### Rationale
-**Why This Matters:**
-- Conditional Access is the policy engine that determines whether a sign-in is permitted — without dedicated policies for admin portals, attackers with valid credentials face no additional barriers
-- Requiring a compliant, managed device for admin access means stolen credentials alone are insufficient
-- The Stryker attackers authenticated from an unmanaged device outside the corporate network — device compliance and location policies would have blocked the sign-in
-
-**Attack Prevented:** Credential abuse from unmanaged devices, access from adversary infrastructure
-
-> **Do not treat this policy as redundant with tenant-level mandatory MFA.** Microsoft's mandatory-MFA enforcement is scoped to the admin portals and to Azure Resource Manager (`https://management.azure.com/`); Microsoft states that **Microsoft Graph APIs are generally not in scope** ([mandatory MFA FAQ](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-mandatory-multifactor-authentication)). Since virtually all Intune automation and every scripted admin action runs through Graph, the **Microsoft Graph** target in the policy below is the only thing enforcing compliant-device and phishing-resistant MFA on that surface. Removing it opens an unauthenticated-by-strength path to the same destructive actions.
-
-#### Prerequisites
-- Microsoft Entra ID P1 or P2 license
-- Named locations configured for corporate networks
-- Device compliance policies configured in Intune
-
-#### ClickOps Implementation
-
-**Step 1: Create Admin Portal Conditional Access Policy**
-1. Navigate to: **Microsoft Entra admin center** → **Protection** → **Conditional Access** → **Create new policy**
-2. **Name:** `HTH-AdminPortal-ComplianceRequired`
-3. **Assignments:**
-   - Users: Include **Directory roles** → Intune Administrator, Global Administrator, Security Administrator, Helpdesk Administrator
-   - Cloud apps: **Microsoft Intune**, **Microsoft Admin Portals**, **Microsoft Graph**
-4. **Conditions:**
-   - Locations: Exclude → Named locations (corporate offices, VPN egress)
-5. **Grant:** Require **compliant device** AND **phishing-resistant MFA**
-6. **Session:** Sign-in frequency → **1 hour** (re-authenticate hourly)
-7. Enable policy: **On**
-
-**Step 2: Block Legacy Authentication**
-1. Create a second policy: `HTH-BlockLegacyAuth-Admins`
-2. **Assignments:** Same admin roles
-3. **Conditions:** Client apps → **Exchange ActiveSync clients**, **Other clients**
-4. **Grant:** **Block access**
-5. Enable policy: **On**
-
-**Time to Complete:** ~30 minutes
-
-#### Code Implementation
-
-{% include pack-code.html vendor="microsoft-intune" section="2.2" %}
-
-#### Validation & Testing
-**How to verify the control is working:**
-1. Attempt Intune admin sign-in from a non-compliant device — should be blocked
-2. Attempt sign-in from an untrusted location without compliant device — should be blocked
-3. Confirm admin sessions require re-authentication after 1 hour
-
-**Expected result:** Admin access requires both a compliant device and phishing-resistant MFA; sessions expire after 1 hour
-
-#### Compliance Mappings
-
-| Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **SOC 2** | CC6.1 | Logical and physical access controls |
-| **NIST 800-53** | AC-7 | Unsuccessful logon attempts |
-| **ISO 27001** | A.8.5 | Secure authentication |
-| **PCI DSS** | 8.2.7 | Accounts used by third parties monitored |
-
----
-
-### 2.3 Block Device Code Flow for Administrative Accounts
-
-**Profile Level:** L2 (Walk)
-
-| Framework | Control |
-|-----------|---------|
-| CIS Controls | 6.4 |
-| NIST 800-53 | IA-2(1), AC-17 |
-
-#### Description
-Use the Conditional Access **Authentication flows** condition to block the OAuth 2.0 device code flow for accounts holding Intune administrative roles. Device code flow lets a user complete authentication on a second device by entering a short code, which makes it trivially abusable in phishing: an attacker generates the code, socially engineers an administrator into entering it, and receives a fully authenticated token on infrastructure they control.
-
-#### Rationale
-**Why This Matters:**
-- Microsoft classifies device code flow as **"a high-risk authentication method that can be part of a phishing attack or used to access corporate resources on unmanaged devices"** and recommends blocking it wherever possible ([Authentication flows as a condition in Conditional Access policy](https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-authentication-flows))
-- Device code phishing defeats the usual "look at the URL" defense — the victim signs in on the genuine Microsoft sign-in page, so nothing about the flow looks wrong to them
-- It also sidesteps device-compliance expectations, because the token lands on whatever machine started the flow rather than the machine the admin is sitting at
-- Blocking it closes the residual gap left by 2.1 and 2.2: phishing-resistant MFA and a compliant-device requirement do not, on their own, stop an admin from completing a code the attacker initiated
-
-**Attack Prevented:** Device code phishing (T1566), token acquisition on unmanaged adversary infrastructure, MFA-satisfied session theft
-
-#### Prerequisites
-- Microsoft Entra ID P1 or P2 license
-- Sign-in log review to identify legitimate device code flow usage before enforcing (shared devices, conference-room hardware, headless enrollment)
-
-#### ClickOps Implementation
-
-**Step 1: Inventory Existing Device Code Flow Usage**
-1. Navigate to: **Microsoft Entra admin center** → **Monitoring & health** → **Sign-in logs**
-2. Add the **Authentication protocol** filter → select **Device code**
-3. Record which users, devices, and resources legitimately depend on the flow — conference-room and digital-signage devices are the common genuine cases
-
-**Step 2: Create the Blocking Policy in Report-Only Mode**
-1. Navigate to: **Microsoft Entra admin center** → **Protection** → **Conditional Access** → **Create new policy**
-2. **Name:** `HTH-BlockDeviceCodeFlow-Admins`
-3. **Assignments:**
-   - Users: Include **Directory roles** → Intune Administrator, Global Administrator, Security Administrator, Helpdesk Administrator
-   - Target resources: **All resources** (or scope to the specific resources your admins touch)
-4. **Conditions** → **Authentication flows** → set **Configure** to **Yes** → select **Device code flow**
-5. **Grant:** **Block access**
-6. Enable policy: **Report-only**, and leave it there long enough to cover a normal work cycle
-
-**Step 3: Exempt Device Registration Service If You Target All Resources**
-1. If the policy targets **All resources**, and your organization uses device code flow for device registration, exempt that service or enrollment will break
-2. Navigate to the policy → **Target resources** → **Exclude** → **Select excluded cloud apps** → **Device Registration Service**
-3. Via API, exclude client ID `01cb2876-7ebd-4aa4-9cc9-d28bd4d359a9`
-4. Confirm the dependency first by filtering sign-in logs on that resource ID with the **Device code** authentication protocol
-
-**Step 4: Enforce**
-1. After report-only shows no legitimate admin usage, set the policy to **On**
-
-> **Protocol tracking — the non-obvious side effect.** Once a session uses device code flow, Microsoft Entra marks it *protocol tracked*, and that state **persists through subsequent token refreshes**. A later sign-in in the same session that used a completely different authentication flow can still be blocked by this policy. Expect error `AADSTS530036` on refresh tokens invalidated this way, and expect that possible impact includes full device sign-out. Microsoft documents this as expected behavior with no remediation while the policy is `enabled` — which is exactly why Step 2 runs report-only first.
-
-**Time to Complete:** ~30 minutes (plus report-only observation period)
-
-#### Validation & Testing
-**How to verify the control is working:**
-1. From an admin account, initiate a device code sign-in (any client that offers "sign in from another device") — it should be blocked
-2. In **Sign-in logs**, open the blocked event → **Conditional Access** tab → confirm `HTH-BlockDeviceCodeFlow-Admins` is the policy that applied
-3. Confirm device enrollment still succeeds if you configured the Device Registration Service exclusion
-4. Check the **Original transfer method** property in **Activity details** on any unexpected block to confirm whether protocol tracking, rather than a live device code sign-in, caused it
-
-**Expected result:** Administrative accounts cannot complete a device code flow sign-in; legitimate device-registration flows continue to work
-
-#### Compliance Mappings
-
-| Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **SOC 2** | CC6.1 | Logical access security |
-| **NIST 800-53** | IA-2(1) | MFA to privileged accounts |
-| **ISO 27001** | A.8.5 | Secure authentication |
-| **PCI DSS** | 8.3.1 | Strong authentication for all access |
+> **Admin-plane Conditional Access moved.** The compliant-device policy for admin portals (formerly §2.2) and the device code flow block (formerly §2.3) are now authored once for the whole platform in the Microsoft Entra ID guide — [§2.3 Require Compliant Devices for Admins](/guides/microsoft-entra-id/#23-require-compliant-devices-for-admins) and [§2.6 Block Device Code Flow](/guides/microsoft-entra-id/#26-block-device-code-flow). Both carry the Intune-specific detail that used to live here: the **Microsoft Graph** target that mandatory MFA does not cover, the Device Registration Service exclusion, and the protocol-tracking side effect. Configure them there and the Intune admin plane inherits the result.
 
 ---
 
@@ -510,6 +362,8 @@ Use the Conditional Access **Authentication flows** condition to block the OAuth
 |-----------|---------|
 | CIS Controls | 6.8 |
 | NIST 800-53 | AC-2(1), AC-6(2) |
+
+> **Tenant requirement:** running PIM at all, and converting standing admin to eligible across the tenant, is [Microsoft 365 §1.3](/guides/microsoft-365/#13-implement-privileged-identity-management-pim); the per-role activation settings and their Terraform are [Microsoft Entra ID §3.1](/guides/microsoft-entra-id/#31-enable-just-in-time-access-for-admin-roles). This control is the Intune role set — the roles that can reach devices, and why their activation settings need to be stricter than the rest of the tenant's.
 
 #### Description
 Eliminate standing (permanent) Intune admin privileges by requiring just-in-time (JIT) activation through Microsoft Entra Privileged Identity Management. All Intune administrative roles should be **eligible** rather than **active**, requiring explicit activation with justification and approval.
@@ -597,7 +451,7 @@ Eliminate standing (permanent) Intune admin privileges by requiring just-in-time
 | **Rollback Difficulty** | Easy | Convert eligible assignments back to active |
 
 **Potential Issues:**
-- **Break-glass scenarios**: Maintain 1-2 emergency access accounts with permanent active assignment, protected by FIDO2 and monitored continuously. **Break-glass accounts are NOT exempt from tenant-level mandatory MFA.** Microsoft states enforcement "applies to all user accounts, regardless if they are a student account, break-glass account, an administrator account with activated or eligible roles, or any user exclusions that are enabled for them," and recommends these accounts be moved to **passkey (FIDO2)** or **certificate-based authentication**, both of which satisfy the requirement ([Plan for mandatory Microsoft Entra multifactor authentication](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-mandatory-multifactor-authentication)). A password-only break-glass account is now a locked-out break-glass account.
+- **Break-glass scenarios**: Maintain 1-2 emergency access accounts with permanent active assignment, protected by a passkey and monitored continuously — see [Microsoft 365 §1.4](/guides/microsoft-365/#14-configure-break-glass-emergency-access-accounts), which covers why a password-only break-glass account is now a locked-out break-glass account
 - **After-hours activation**: Define on-call approver rotation for off-hours requests
 
 **Rollback Procedure:**
@@ -657,7 +511,7 @@ Restrict Intune administrative access to designated Privileged Admin Workstation
    - Restrict outbound connections to Intune, Entra ID, and Microsoft Graph only
 
 **Step 3: Target Conditional Access to PAW Devices**
-1. Update the admin portal Conditional Access policy (Section 2.2)
+1. Update the admin-plane Conditional Access policy ([Microsoft Entra ID §2.3](/guides/microsoft-entra-id/#23-require-compliant-devices-for-admins))
 2. Add a **device filter**: Include only devices in the `PAW-Intune-Admins` group
 3. This ensures admin portal access is only possible from registered PAW devices
 
@@ -1071,7 +925,7 @@ Reduce the value of a stolen admin session token by layering Continuous Access E
 
 #### Prerequisites
 - Microsoft Entra ID P1 for Conditional Access; **P2** for sign-in risk and user risk conditions
-- Device compliance policies configured in Intune (Section 2.2)
+- Device compliance policies configured in Intune and enforced by the admin-plane Conditional Access policy ([Microsoft Entra ID §2.3](/guides/microsoft-entra-id/#23-require-compliant-devices-for-admins))
 - Named locations or Global Secure Access configured if you intend to use compliant network enforcement
 
 #### ClickOps Implementation
@@ -1082,7 +936,7 @@ Reduce the value of a stolen admin session token by layering Continuous Access E
 3. CAE lets Entra ID signal supported resource providers to revoke a session in near-real time when the user is disabled, the password changes, or risk is detected
 
 **Step 2: Require a Compliant Device for the Admin Plane**
-1. This is the load-bearing replay defense on this surface, and it is already configured in Section 2.2 — verify it is **On**, not report-only
+1. This is the load-bearing replay defense on this surface, and it is already configured in [Microsoft Entra ID §2.3](/guides/microsoft-entra-id/#23-require-compliant-devices-for-admins) — verify it is **On**, not report-only
 2. A stolen token replayed from attacker infrastructure fails the device-compliance grant because the attacker's machine is not enrolled and compliant
 3. Confirm **Microsoft Intune**, **Microsoft Admin Portals**, and **Microsoft Graph** are all in the policy's target resources
 
@@ -1111,7 +965,7 @@ Reduce the value of a stolen admin session token by layering Continuous Access E
 
 {% include pack-code.html vendor="microsoft-intune" section="6.1" %}
 
-The pack covers Step 1 (reporting tenant CAE state), Step 3 (creating the authentication context, its Conditional Access policy, and binding it to PIM role activation via the `AuthenticationContext_EndUser_Assignment` rule), and Step 4 (the `HTH-AdminRisk-Reauth` policy). Two things are deliberately absent. Step 2 is not duplicated — the compliant-device requirement is already automated by the Section 2.2 pack. Step 5, the optional L3 compliant-network condition, stays ClickOps-only because Global Secure Access network conditions have no stable documented Graph representation to script against. One caveat on Step 1: Microsoft Graph exposes `continuousAccessEvaluationPolicy` as read-only, so the pack reports whether CAE is on and warns if it is not — actually enabling it remains a portal action.
+The pack covers Step 1 (reporting tenant CAE state), Step 3 (creating the authentication context, its Conditional Access policy, and binding it to PIM role activation via the `AuthenticationContext_EndUser_Assignment` rule), and Step 4 (the `HTH-AdminRisk-Reauth` policy). Two things are deliberately absent. Step 2 is not duplicated — the compliant-device requirement is already automated by the [Microsoft Entra ID §2.3](/guides/microsoft-entra-id/#23-require-compliant-devices-for-admins) pack. Step 5, the optional L3 compliant-network condition, stays ClickOps-only because Global Secure Access network conditions have no stable documented Graph representation to script against. One caveat on Step 1: Microsoft Graph exposes `continuousAccessEvaluationPolicy` as read-only, so the pack reports whether CAE is on and warns if it is not — actually enabling it remains a portal action.
 
 #### Validation & Testing
 **How to verify the control is working:**
@@ -1237,6 +1091,8 @@ The published playbook is identity-centric. Append these, which only apply becau
 |-----------|---------|
 | CIS Controls | 8.2, 8.5 |
 | NIST 800-53 | AU-2, AU-3 |
+
+> **Tenant requirement:** the Microsoft 365 unified audit log is [Microsoft 365 §5.1](/guides/microsoft-365/#51-enable-unified-audit-logging) and identity log export is [Microsoft Entra ID §5.1](/guides/microsoft-entra-id/#51-export-entra-id-sign-in-and-audit-logs). Neither contains Intune device and remote-action telemetry — this control is the third plane, and the Stryker kill chain crosses all three.
 
 #### Description
 Export Intune audit and operational logs to a SIEM or Log Analytics workspace. Auditing itself is always on — **Microsoft states auditing "is enabled for all customers. It can't be disabled"** — so this control is about routing, retention beyond the native window, and making the record queryable at incident speed.
@@ -1367,7 +1223,7 @@ Alert when multiple RBAC role assignments are modified within a short time windo
 
 | Control ID | Intune Control | Guide Section |
 |-----------|------------------|---------------|
-| CC6.1 | RBAC least-privilege, phishing-resistant MFA, Conditional Access, device code flow block | 1.1, 2.1, 2.2, 2.3 |
+| CC6.1 | RBAC least-privilege, phishing-resistant MFA for Intune admins | 1.1, 2.1 |
 | CC6.3 | Scope tags, PIM role-based authorization | 1.2, 3.1 |
 | CC7.2 | Audit logging, mass wipe detection | 7.1, 7.2 |
 | CC7.3 | Token theft investigation, Stryker-pattern detections | 6.2, 7.2 |
@@ -1382,7 +1238,7 @@ Alert when multiple RBAC role assignments are modified within a short time windo
 | AC-6(1) | Least-privilege RBAC roles | 1.1 |
 | AU-2 | Comprehensive audit logging | 7.1 |
 | CM-3 | Change control over MAA exclusions | 4.2 |
-| IA-2(1) | Phishing-resistant MFA, device code flow block | 2.1, 2.3 |
+| IA-2(1) | Phishing-resistant MFA for Intune admins | 2.1 |
 | IA-2(6) | Separate device for authentication | 2.1 |
 | IA-11 | Reauthentication for sensitive admin operations | 6.1 |
 | IR-4 | Token theft investigation playbook | 6.2 |
@@ -1395,7 +1251,7 @@ Alert when multiple RBAC role assignments are modified within a short time windo
 | A.5.24 | Incident response for token theft | 6.2 |
 | A.8.2 | Privileged access via PIM | 3.1 |
 | A.8.3 | Wipe permission restriction, Multi Admin Approval, exclusion governance | 4.1, 4.2, 5.1 |
-| A.8.5 | Phishing-resistant MFA, device code flow block, session replay defense | 2.1, 2.3, 6.1 |
+| A.8.5 | Phishing-resistant MFA, session replay defense | 2.1, 6.1 |
 | A.8.15 | Audit logging to SIEM | 7.1 |
 | A.8.16 | Monitoring and detection rules | 7.2 |
 
@@ -1405,7 +1261,7 @@ Alert when multiple RBAC role assignments are modified within a short time windo
 |---------|------------------|---------------|
 | 7.1 | Least-privilege RBAC roles | 1.1 |
 | 7.2.1 | Role-based access through PIM | 3.1 |
-| 8.3.1 | Strong authentication for all administrative access | 2.3 |
+| 8.3.1 | Strong authentication for all administrative access | 2.1 |
 | 8.4.2 | Phishing-resistant MFA for admin access | 2.1 |
 | 10.2 | Audit logging implementation | 7.1 |
 
@@ -1418,8 +1274,6 @@ Alert when multiple RBAC role assignments are modified within a short time windo
 | 1.1 RBAC Roles | ✅ | ✅ | ✅ | - | - |
 | 1.2 Scope Tags | ✅ | ✅ | ✅ | - | - |
 | 2.1 Phishing-Resistant MFA | - | - | - | ✅ | ✅ |
-| 2.2 Conditional Access | - | - | - | ✅ | ✅ |
-| 2.3 Block Device Code Flow | - | - | - | ✅ | ✅ |
 | 3.1 PIM | - | - | - | - | ✅ |
 | 3.2 PAW Enforcement | ✅ | ✅ | ✅ | ✅ | ✅ |
 | 4.1 Multi Admin Approval | ✅ | ✅ | ✅ | - | - |
@@ -1435,7 +1289,7 @@ Alert when multiple RBAC role assignments are modified within a short time windo
 
 - **4.1 / 4.2 — Multi Admin Approval requires only Intune Plan 1.** It is not gated behind Intune Plan 2 or the Intune Suite; Plan 2 adds Remote Help and Advanced Endpoint Analytics, neither of which MAA depends on. The real licensing constraint is that participating administrators hold an Intune license, unless the irreversible **Allow access to unlicensed admins** setting is enabled.
 - **6.1** requires Entra ID P1 for the Conditional Access and authentication-context components, and P2 for the sign-in-risk condition in Step 4.
-- Conditional Access controls (2.1, 2.2, 2.3, 6.1) are licensed through Entra ID, not through any Intune plan.
+- Conditional Access controls (2.1, 6.1, and the admin-plane policies in the [Microsoft Entra ID guide](/guides/microsoft-entra-id/)) are licensed through Entra ID, not through any Intune plan.
 
 ---
 
@@ -1476,6 +1330,7 @@ Alert when multiple RBAC role assignments are modified within a short time windo
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.3.0 | draft | Platform breakout: reframed as a product guide under the Microsoft Common Controls hub (platform frontmatter, hub pointer, moved-controls note). Admin-plane Conditional Access consolidated into the Entra ID guide — former 2.2 (admin portals, with its PowerShell pack migrated to Entra 2.3) and former 2.3 (device code flow, merged into Entra 2.6) deleted here with pointers. 2.1 slimmed to the Intune-scoped MFA application (mandatory-MFA phase table moved to the hub), 3.1 slimmed to the Intune role set (break-glass guidance moved to the hub), 7.1 framed as the third audit plane. 15 controls → 13 | Claude Code (Opus 4.8) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass: MAA now enforces on Graph app-auth calls and requires only Intune Plan 1 (4.1 corrected); added 4.2 MAA exclusion governance and 2.3 device code flow block; replaced unimplementable Token Protection mechanism in 6.1 with documented admin-plane replay defenses; remapped 6.2 to Microsoft's Token Theft Playbook; corrected audit-log retention and diagnostics paths (5.2, 7.1); covered built-in wipe-capable roles (1.1, 5.1); refreshed legacy `/mem/intune/` links | `Claude Code (Opus 4.8)` |
 | 2026-03-19 | 0.1.0 | draft | Initial guide focused on Stryker/Handala TTP defense | `Claude Code (Opus 4.6)` |
 
