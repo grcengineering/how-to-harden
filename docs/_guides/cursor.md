@@ -6,9 +6,9 @@ slug: "cursor"
 tier: "1"
 category: "DevOps"
 description: "AI code editor security hardening for code privacy, MCP security, agent sandboxing, API key management, and workspace trust"
-version: "0.3.1"
+version: "0.4.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 
@@ -277,8 +277,7 @@ Enable SCIM 2.0 to automate user lifecycle management (provisioning, deprovision
 **Attack Prevented:** Orphaned accounts, excessive access, manual provisioning errors
 
 #### Prerequisites
-- Cursor Enterprise plan
-- SSO configured (Control 1.3)
+- **Cursor Enterprise plan with SSO enabled** — Cursor documents SCIM 2.0 provisioning as "available on Enterprise plans with SSO enabled." SSO (Control 1.3) is a hard dependency, not a recommendation
 - IdP with SCIM 2.0 support
 
 #### ClickOps Implementation
@@ -296,7 +295,7 @@ Enable SCIM 2.0 to automate user lifecycle management (provisioning, deprovision
    - **Create Users:** Enabled
    - **Update User Attributes:** Enabled
    - **Deactivate Users:** Enabled
-5. Map IdP groups to Cursor roles (Member, Admin)
+5. Map IdP groups to Cursor roles. Cursor teams have **three** roles: **Members**, **Admins**, and **Unpaid Admins** — the last exists so an administrator can manage the team without consuming a paid seat, which is the correct assignment for IT or security staff who administer Cursor but do not write code in it
 
 **Step 3: Test Provisioning**
 1. Assign a test user to the Cursor application in IdP
@@ -357,13 +356,31 @@ Configure Cursor's Privacy Mode to prevent code from being stored or used for tr
    - Cursor's servers run separate replicas where logging is disabled
 4. For Teams/Enterprise: Enable org-wide enforcement in admin dashboard to prevent individual override
 
-**Step 2: Configure Per-Workspace Privacy**
+**Step 2: Request US-only data residency (Enterprise, L2/L3)**
+
+Privacy Mode governs *retention*; data residency governs *location*. Where your obligations are jurisdictional rather than retention-based, Privacy Mode alone does not satisfy them.
+
+1. Cursor documents US-only data residency as "available to Enterprise customers and is enabled per team" — request it **through your account team**, not from the dashboard
+2. Plan the lead time: Cursor says to "plan for up to two weeks from the time the request comes in"
+3. Budget for the cost: it carries a **"10% uplift on Model pricing for eligible Models"**
+4. Understand the coverage before relying on it. Residency applies to inference, data processing, and storage across supported features including Cloud Agents, autocomplete, and semantic search — but **only a specific set of model families run in-region**. Cursor lists these as GPT (`gpt-*`), Claude 4.6 and above, Gemini 2.5 Flash, Composer, and Grok 4.5. A model outside that list will not run in-region, so pair residency with model restrictions (2.2) or developers can silently select their way out of it
+5. Expect added latency for users travelling outside the US, since requests still route to US-only infrastructure
+
+**Step 3: Gate restricted models that carry retention obligations**
+
+Some models are withheld from Privacy Mode and Enterprise users until an admin explicitly approves them, because the provider retains inputs and outputs. Cursor documents Claude Fable 5 as requiring such approval: Anthropic "stores its inputs and outputs to run automatic and human harm-prevention reviews," and states "this data is not used for training or product improvement." Approval applies organization-wide.
+
+1. Treat any such approval as a data-flow decision, not a model-availability decision — approving it changes what leaves your organization under Privacy Mode
+2. If you approve it, narrow the exposure: Cursor notes that "Enterprise admins can still limit which user groups can select the model," so scope it to the teams that need it rather than the whole organization
+3. Record the approval and its scope in your AI vendor register, since it is an exception to the zero-retention posture the rest of this control establishes
+
+**Step 4: Configure Per-Workspace Privacy**
 
 For granular control, add privacy settings to workspace configuration:
 
 {% include pack-code.html vendor="cursor" section="2.1" %}
 
-**Step 3: Verify Privacy Mode Active**
+**Step 5: Verify Privacy Mode Active**
 1. Check Cursor status bar for Privacy Mode indicator
 2. Run the verification commands from the Code Pack
 
@@ -410,44 +427,59 @@ For granular control, add privacy settings to workspace configuration:
 
 ---
 
-### 2.2 Configure AI Provider Restrictions
+### 2.2 Govern Model Selection with Cursor Router
 
 **Profile Level:** L2 (Walk)
-**NIST 800-53:** SC-7
+**NIST 800-53:** SC-7, SA-9
 
 #### Description
-Restrict which AI providers Cursor can use. Allow only approved providers with acceptable data processing agreements.
+Cursor Router (shipped 2026-07-22) automatically selects an underlying model for each request. It is the current surface through which an administrator governs which models a team may reach. Cursor documents that admins can "enable the router per team or group, restrict which optimization modes members can use, set the default mode, and allow or block underlying models," with "soft and hard enforcement options for standardizing on Auto." The three optimization modes are **Cost**, **Balance**, and **Intelligence**.
 
 #### Rationale
 **Why This Matters:**
-- Cursor routes requests to multiple providers: OpenAI, Anthropic, Google (Gemini), xAI, and Fireworks
-- Different providers have varying data retention, training, and compliance policies
-- Organizations may have specific vendor approval processes
+- **The router is on by default for Teams plans.** If your organization is on Teams and has not configured it, model selection is already being made automatically on your behalf — the default is not "no routing," it is "routing you did not configure"
+- The routed model is **hidden from the user by default** (Cursor notes the routed model "can be displayed or hidden (hidden by default)"), so a developer cannot tell you which provider processed a given request unless an admin turns the display on. That is a material gap for anyone who has to evidence data flows to an auditor
+- Different underlying models carry different retention, residency, and training postures — some are restricted models requiring explicit admin approval (see 2.1). Allow/block at the router is where those decisions become enforceable rather than advisory
+- Model choice is also a residency decision: US-only data residency covers only a documented subset of model families (2.1), so unrestricted model selection can route a request out of the region you paid to stay in
+- Soft enforcement standardises behaviour while leaving an escape hatch; hard enforcement removes it. Choose deliberately rather than inheriting the default
+
+**Attack Prevented:** Silent routing of proprietary code to an unvetted or non-approved model provider, circumvention of data-residency and zero-retention commitments through developer model selection, and loss of auditable data-flow evidence when the processing model is hidden by default
+
+#### Prerequisites
+- Cursor Teams or Enterprise. Cursor states the router "is on by default for Teams plans," and that Enterprise admins can enable it from the dashboard.
 
 #### ClickOps Implementation
 
-**Step 1: Review AI Provider Settings**
-1. Open Cursor → **Settings** → **Cursor Settings**
-2. Navigate to: **Models**
-3. Review enabled providers and models
+**Step 1: Establish the current state**
+1. Open the Cursor admin dashboard and check whether the router is enabled for each team or group
+2. On a Teams plan, assume it is on until you confirm otherwise
+3. Record which optimization modes are currently available to members and which is the default
 
-**Step 2: Restrict to Approved Providers**
-1. For Enterprise: Use admin dashboard to configure allowed models at the organization level
-2. For individual users: Disable BYOK (Bring Your Own Key) for unapproved providers
+**Step 2: Make the routed model visible**
+1. Turn on display of the routed model so developers and auditors can see which model served a request
+2. Leaving this hidden is defensible for a consumer product and indefensible for a regulated one — if you must evidence where code was processed, you need the model surfaced
 
-**Step 3: Verify Provider Restrictions**
-1. Attempt to use disabled provider in chat
-2. Should show error: "Model not available"
+**Step 3: Allow or block underlying models**
+1. Block models your vendor-review process has not approved
+2. Where US-only data residency is in force (2.1), block model families that Cursor does not run in-region, or residency is bypassable by model choice
+3. Keep restricted models that require explicit retention approval blocked until that approval is recorded
 
-#### Recommended Provider Security Posture
+**Step 4: Constrain modes and set enforcement**
+1. Restrict which optimization modes members may select — **Cost**, **Balance**, or **Intelligence**
+2. Set the default mode explicitly rather than accepting the product default
+3. Choose **soft** enforcement where you want a standard with an override, or **hard** enforcement where the standard must hold. Document which you chose and why
 
-| Provider | Data Retention | Training on Data | SOC 2 | Zero Retention Agreement | Recommendation |
-|----------|---------------|------------------|-------|--------------------------|----------------|
-| **OpenAI API** | 30 days (default) | No (API) | Yes | Yes (via Cursor Privacy Mode) | Approved with Privacy Mode |
-| **Anthropic** | Not used for training | No | Yes | Yes (via Cursor Privacy Mode) | Approved |
-| **Google Gemini** | Varies by tier | Enterprise: No | Yes | Via Vertex AI | Review DPA |
-| **Fireworks** | Temporary (inference) | No | Yes | Yes (via Cursor) | Approved with Privacy Mode |
-| **Local Models** | Local only | No | N/A | N/A | Highest security (L3) |
+**Step 5: Scope per team or group**
+1. Apply stricter model and mode restrictions to teams working on regulated or highest-sensitivity code
+2. Re-review after each Cursor changelog entry that touches routing — this is a fast-moving surface
+
+#### Validation & Testing
+1. As a non-admin member, confirm blocked models are unavailable
+2. Confirm the routed model is displayed in the UI after enabling display
+3. Where hard enforcement is set, confirm a member cannot switch away from the standardised mode
+4. Confirm restrictions apply to the correct teams or groups, not just at the organization root
+
+> **BYOK note:** Where developers can supply their own provider API keys, model restrictions configured in Cursor do not govern that traffic. Treat BYOK as a separate decision and disable it for teams under model governance. *(BYOK behaviour under Router was not re-verified against current vendor documentation in the 2026-08 pass.)*
 
 #### Compliance Mappings
 
@@ -455,7 +487,9 @@ Restrict which AI providers Cursor can use. Allow only approved providers with a
 |-----------|-----------|---------------------|
 | **SOC 2** | CC9.2 | Third-party vendor management |
 | **NIST 800-53** | SA-9 | External system services |
+| **NIST 800-53** | SC-7 | Boundary protection |
 | **OWASP LLM** | LLM03 | Supply chain vulnerabilities |
+| **NIST AI RMF** | GOVERN 1.7 | AI data governance policies |
 
 ---
 
@@ -528,6 +562,9 @@ Configure Cursor to use only local AI models (running on-premises or on develope
 - Zero code leaves the organization's network
 - Complete control over model and data processing
 - Meets strictest compliance requirements (defense, healthcare, financial)
+- Removes dependence on every upstream commitment — retention agreements, residency scope, and per-model approvals all become moot when inference never leaves your infrastructure
+
+**Attack Prevented:** Any exfiltration of source code, prompts, or embeddings to a third-party inference provider — including routes that bypass Privacy Mode or model restrictions, such as developer-supplied provider keys or a model family outside the data-residency scope
 
 **Use Cases:**
 - Government contractors with classified code
@@ -641,6 +678,9 @@ Establish a quarterly rotation schedule for all AI provider API keys used with C
 - Limits exposure window if keys compromised
 - Follows secret management best practices
 - Required by many compliance frameworks
+- A leaked provider key is billable as well as confidential — an unrotated key funds an attacker's inference until someone notices the invoice (see 3.3)
+
+**Attack Prevented:** Indefinite reuse of a leaked or exfiltrated provider API key, and persistent unauthorized inference access after a developer offboards or a workstation is compromised
 
 #### ClickOps Implementation
 
@@ -798,15 +838,24 @@ Enable MCP Tool Protection to require explicit user approval before any MCP tool
 - Without tool protection, a prompt injection payload in a repository file or chat message can trigger MCP tools automatically
 - MCP tools can read files, execute commands, and make network requests with the developer's full privileges
 - Tool Protection ensures human-in-the-loop for all MCP operations
+- Cursor's documented model has **two** approval points, not one: the MCP connection itself requires approval, and thereafter "each tool call still needs individual approval before running" — an approved server is not an approved set of tools
+- The MCP allowlist exists to pre-approve specific tools. Every entry on it is a permanent removal of the second approval point for that tool, so the allowlist is the thing to audit, not the connection list
+
+**Attack Prevented:** Prompt-injection-triggered MCP tool execution, silent invocation of file-read, shell, or network tools with developer privileges, and over-broad trust granted to a server on the basis of one connection approval
 
 #### ClickOps Implementation
 
-**Step 1: Enable MCP Tool Protection**
-1. Open Cursor → **Settings**
-2. Navigate to: **Features** → **MCP**
-3. Ensure **Require approval for tool calls** is enabled (this is now the default in Cursor 1.3+)
+**Step 1: Keep per-tool approval in force**
+1. Open Cursor → **Settings** → **Features** → **MCP**
+2. Confirm that tool calls require approval. Cursor documents that all MCP connections require initial approval and that each tool call then needs individual approval before running
+3. Do not treat connection approval as sufficient — the per-call prompt is the control
 
-**Step 2: Also Enable Dotfile Protection**
+**Step 2: Audit the MCP allowlist**
+1. Review every tool that has been pre-approved via the MCP allowlist
+2. Remove entries for tools that write files, execute commands, or make network requests — these are precisely the tools whose approval prompt matters
+3. Keep the allowlist to genuinely read-only, low-consequence tools, and re-review it on a schedule
+
+**Step 3: Also Enable Dotfile Protection**
 1. In same settings area, enable **Dotfile Protection**
 2. This prevents AI from modifying sensitive files: `.env`, `.ssh/config`, `.aws/credentials`, etc.
 
@@ -830,12 +879,18 @@ Enable MCP Tool Protection to require explicit user approval before any MCP tool
 **NIST 800-53:** CM-7, AC-6
 
 #### Description
-Disable Cursor's auto-run mode (sometimes called "YOLO mode") to require explicit human approval before the AI agent executes any terminal command. This is the single most impactful security control for Cursor.
+Keep terminal commands behind explicit human approval — do not widen Cursor's Run Modes to auto-run trusted commands (sometimes called "YOLO mode"). This is the single most impactful security control for Cursor.
+
+Cursor's current documented model is a set of approval tiers. Reading files and code search need no approval, and the agent may modify workspace files **except configuration files**. Approval is required for terminal commands, configuration-file changes, actions that expose sensitive data, and MCP connections and tool calls. **Run Modes** are the mechanism that relaxes the terminal-command tier, ranging from a simple allowlist through to an Auto-review classifier.
+
+> **The vendor does not claim Run Modes are a security boundary.** Cursor describes them as **"best-effort guardrails rather than a hard security boundary."** Treat any relaxation of the terminal approval tier as a productivity trade you are making knowingly, not as a control you can attest to.
 
 #### Rationale
 **Why This Matters:**
 - In auto-run mode, Cursor's agent executes terminal commands without any user approval
 - The command denylist uses a blocklist approach that has been repeatedly bypassed by researchers
+- The vendor's own framing of Run Modes as best-effort means an auditor cannot be told that an allowlisted-command configuration prevents arbitrary execution — only that it discourages it
+- The default posture is already the secure one for terminal commands: approval is required unless someone widens it. The work here is preventing drift, not enabling a feature
 - CVE-2026-22708 (NomShub): Shell builtins (`export`, `cd`, `eval`) bypass the command allowlist entirely because the parser only tracks external executables — enabling "deterministic, 100% reliable sandbox escape"
 - GHSA-82wg-qcm4-fp2w: Environment variable manipulation bypassed the terminal allowlist
 - Disabling auto-run prevents the majority of documented attack scenarios
@@ -890,44 +945,52 @@ Disable Cursor's auto-run mode (sometimes called "YOLO mode") to require explici
 
 ---
 
-### 5.2 Configure Agent Sandbox
+### 5.2 Constrain the Agent's Approval and Network Posture
 
 **Profile Level:** L2 (Walk)
-**NIST 800-53:** SC-39, CM-7
+**NIST 800-53:** SC-39, CM-7, SC-7
 
 #### Description
-Enable and configure Cursor's agent sandbox to restrict file system access, network connectivity, and process execution for AI agent sessions.
+Keep the agent inside the approval tiers and default network posture Cursor documents, and resist the pressure to widen them. The current vendor-documented model is an approval framework rather than a configurable OS-level sandbox: certain actions run freely, certain actions require approval, and Run Modes relax the terminal tier at the cost of the guarantee.
+
+> **Sources changed under this control (2026-08).** Earlier revisions of this guide described sandbox internals — Apple Seatbelt scope on macOS, Landlock plus seccomp on Linux, the Linux sandbox running inside WSL2 on Windows — along with a **Settings → Agent → Security → Sandbox Mode** path and three Cursor 2.5+ network modes driven by `sandbox.json`. Both sandbox documentation URLs now return 404, and the live agent-security documentation describes the approval framework below instead. Those specifics are recorded here as **previously documented; not present in current public docs (2026-08)** and are not asserted. Verify the sandbox settings available in your installed Cursor version directly before relying on them.
 
 #### Rationale
 **Why This Matters:**
-- The sandbox (GA on macOS since Cursor 2.0, all platforms since early 2026) provides filesystem isolation — writes are scoped to workspace only
-- However, local agents have full filesystem read access by default, including `~/.ssh/`, `~/.aws/`, `.env` files
-- macOS sandbox (Apple Seatbelt) permits writes anywhere in `~/` rather than restricting to workspace only
-- Linux uses Landlock (filesystem) + seccomp (syscall blocking)
-- Windows runs the Linux sandbox inside WSL2
+- The agent's *default* posture is the hardened one: Cursor documents that "agents cannot make arbitrary network requests with default settings," with access limited to GitHub, direct link retrieval, and web search providers. Most real-world weakening comes from someone relaxing this, not from the default
+- Approval tiers are asymmetric by design — reading and searching are free, but terminal commands, configuration-file changes, and actions exposing sensitive data are gated. Configuration files are specifically excluded from free-edit, which is what stops an agent quietly rewriting the settings that constrain it
+- Run Modes are the release valve on the terminal tier, and Cursor calls them "best-effort guardrails rather than a hard security boundary" — so the isolation story cannot rest on them
+- Local agents retain broad filesystem read access, including paths such as `~/.ssh/`, `~/.aws/`, and `.env` files, so read-side exposure is governed by `.cursorignore` (2.3) and secret hygiene (7.2), not by the agent's approval tiers
+- Researchers have demonstrated escapes via shell builtins (NomShub) and via macOS sandbox scope, so defence has to be layered across approval (5.1), hooks (11.3), and network allowlisting (9.2)
 
-**Known Limitation:** The sandbox is necessary but not sufficient. Researchers have demonstrated bypasses via shell builtins (NomShub) and the macOS Seatbelt scope. Use sandbox alongside disabled auto-run and network controls.
+**Attack Prevented:** Agent-initiated network egress to attacker-controlled endpoints, agent modification of the configuration files that define its own constraints, and privilege expansion through progressively widened Run Modes
 
 #### ClickOps Implementation
 
-**Step 1: Enable Sandbox**
-1. Open Cursor → **Settings**
-2. Navigate to: **Agent** → **Security**
-3. Enable: **Sandbox Mode**
+**Step 1: Confirm the default network posture is intact**
+1. Verify agents are not permitted arbitrary outbound network access — Cursor's documented default limits requests to GitHub, direct link retrieval, and web search providers
+2. If someone has widened this for a workflow, record who, why, and for which teams. Undocumented widening is the finding
+3. Layer the endpoint allowlist from 9.2 underneath, so network policy holds even if the in-product setting changes
 
-**Step 2: Configure Network Access (Cursor 2.5+)**
-1. In settings, navigate to: **Agent** → **Network Access**
-2. Choose restriction level:
-   - **Restrict to sandbox.json domains:** Most restrictive — only domains listed in project's `sandbox.json`
-   - **Restrict to allowlist + Cursor defaults:** Moderate — approved domains plus Cursor's required endpoints
-   - **Allow all:** Least restrictive (not recommended)
-3. For Enterprise: Enforce network allowlists/denylists from admin dashboard
+**Step 2: Preserve the configuration-file approval tier**
+1. Confirm the agent still requires approval to modify configuration files — this is the tier that protects `.cursor/` rules (6.1), hooks configuration (11.3), and `.cursorignore` (2.3) from agent self-modification
+2. Treat any change that lets the agent edit configuration files without approval as a critical regression
 
-**Step 3: For Enterprise — Enforce Sandbox Org-Wide**
-1. In admin dashboard, enable **Require Sandbox for all agent sessions**
-2. Configure organization-level network allowlists
+**Step 3: Keep Run Modes narrow**
+1. Prefer the strictest available mode; a broad allowlist and the Auto-review classifier both sit on the vendor's "best-effort" caveat
+2. Where a team needs a wider mode, scope it to that team rather than the organization, and pair it with blocking hooks (11.3), which are the enforceable layer
+
+**Step 4: Verify against your installed version**
+1. Open your installed Cursor build and record which agent security and sandbox settings actually exist in it
+2. Where a setting this guide previously described is absent, do not assume it is applied silently — capture the gap and compensate with 9.2 and 11.3
 
 **Time to Complete:** ~10 minutes
+
+#### Validation & Testing
+1. Ask an agent to fetch a URL outside the permitted set and confirm it cannot
+2. Ask an agent to modify a configuration file and confirm an approval prompt appears
+3. Confirm the Run Mode in effect for each team matches what you documented
+4. Confirm blocking hooks (11.3) deny a representative dangerous command, since that is the layer that does not carry a best-effort caveat
 
 #### Compliance Mappings
 
@@ -935,6 +998,7 @@ Enable and configure Cursor's agent sandbox to restrict file system access, netw
 |-----------|-----------|---------------------|
 | **NIST 800-53** | SC-39 | Process isolation |
 | **NIST 800-53** | CM-7 | Least functionality |
+| **NIST 800-53** | SC-7 | Boundary protection |
 | **OWASP Agentic** | ASI06 | Code execution controls |
 
 ---
@@ -1055,6 +1119,9 @@ Require mandatory code review for any changes to AI rules files (`.cursorrules`,
 - Rules file changes affect all future AI interactions for the entire team
 - Malicious changes can be subtle (single-line instruction additions, Unicode injection)
 - Without mandatory review, a compromised contributor can silently weaponize AI output
+- Project-scoped hooks (`.cursor/hooks.json`, see 11.3) live in the same directory and carry more authority than rules — a hook can block, allow, or rewrite tool inputs — so the same review gate must cover them
+
+**Attack Prevented:** Silent weaponization of team-wide AI behaviour through an unreviewed rules or hooks change, and prompt-injection payloads reaching main without a human ever reading the diff
 
 #### ClickOps Implementation
 
@@ -1063,6 +1130,7 @@ Require mandatory code review for any changes to AI rules files (`.cursorrules`,
    - `.cursorrules @security-team`
    - `.cursor/rules/ @security-team`
    - `.cursor/mcp.json @security-team`
+   - `.cursor/hooks.json @security-team`
    - `.vscode/tasks.json @security-team`
 2. Enable branch protection requiring CODEOWNERS approval
 
@@ -1112,10 +1180,14 @@ Enable VSCode/Cursor Workspace Trust to prevent automatic execution of untrusted
 
 **Step 1: Enable Workspace Trust**
 1. Open Cursor → **Settings**
-2. Search for: `security.workspace.trust`
+2. Search for: `security.workspace.trust.enabled` — this is the exact setting identifier
 3. Apply the following settings:
 
 {% include pack-code.html vendor="cursor" section="7.1" %}
+
+**Step 1a: Enforce it centrally rather than per developer (Enterprise)**
+
+A per-machine setting a developer can turn off is a recommendation, not a control. Cursor exposes workspace trust as an MDM policy key — **`WorkspaceTrustEnabled`**, corresponding to the client setting `security.workspace.trust.enabled`. Push it through MDM (see 11.2) so the setting cannot be reverted locally. Advanced identity controls including SCIM and MDM policies are documented as available on Enterprise.
 
 **Step 2: Configure Trusted Folders**
 1. Add trusted parent directories:
@@ -1236,9 +1308,14 @@ Review all installed VSCode extensions and remove unnecessary or untrusted ones.
    - Extensions side-loaded from `.vsix` files
 
 **Step 3: Use Extension Allowlist (Enterprise)**
-1. Configure `AllowedExtensions` MDM policy (JSON configuration specifying permitted publishers)
-2. Deploy via MDM (macOS) or Group Policy/Intune (Windows)
-3. Third-party plugin imports default to OFF on Enterprise (require explicit admin override)
+
+Cursor exposes extension allowlisting two ways, and the interaction matters:
+
+1. **Dashboard:** configure the allowlist under **Security & Identity** in the admin dashboard. This corresponds to the client setting **`extensions.allowed`**
+2. **MDM:** the policy key is **`AllowedExtensions`**, and it **overrides** the dashboard configuration. If you deploy both, MDM wins — do not assume the dashboard list is in force on MDM-managed machines
+3. **Version floor:** dashboard-configured extension restrictions require **Cursor client version 2.1 or later**. Cursor states that "users on older versions will not have extension restrictions applied," so pair the allowlist with a minimum-version requirement (10.1) or the control simply does not apply to part of your fleet
+4. Deploy via MDM (macOS) or Group Policy/Intune (Windows)
+5. Third-party plugin imports default to OFF on Enterprise (require explicit admin override)
 
 #### Recommended Extensions Security Posture
 
@@ -1275,6 +1352,9 @@ Disable telemetry data collection and crash reporting to prevent code snippets o
 - Telemetry may include code snippets, file paths, or project metadata
 - Crash reports can contain sensitive information
 - Reduces data exposure to third parties
+- Telemetry is a data flow that sits outside Privacy Mode's retention guarantees and outside your data-residency scope (2.1), so it has to be disabled explicitly rather than assumed covered
+
+**Attack Prevented:** Inadvertent disclosure of proprietary file paths, project structure, and code fragments through diagnostic channels that bypass the retention and residency controls applied to model traffic
 
 #### ClickOps Implementation
 
@@ -1310,17 +1390,25 @@ Use enterprise firewall or endpoint security to allowlist only required Cursor n
 
 #### Required Endpoints
 
+The following are the hosts Cursor documents for enterprise network configuration. A previous revision of this guide listed `*.cursor.com` and `marketplace.visualstudio.com`; neither appears in Cursor's documented endpoint list and both have been removed. `*.cursorvm.com` — the cloud-agent VM domain — was absent from the previous list and is required if Cloud Agents are in use.
+
 | Endpoint | Purpose | Required For |
 |----------|---------|-------------|
-| `*.cursor.com` | Core application services | All users |
-| `*.cursor.sh` | Authentication and SSO | All users |
-| `*.cursorapi.com` | API services and marketplace | All users |
+| `api2.cursor.sh`, `api3.cursor.sh`, `api4.cursor.sh`, `api5.cursor.sh` | Core API requests | All users |
+| `us-asia.gcpp.cursor.sh`, `us-eu.gcpp.cursor.sh`, `us-only.gcpp.cursor.sh` | Region-specific request routing | All users (varies by region/residency) |
+| `agent.api5.cursor.sh`, `agentn.api5.cursor.sh`, `agent.us.api5.cursor.sh`, `agentn.us.api5.cursor.sh`, `agent.global.api5.cursor.sh`, `agentn.global.api5.cursor.sh` | Agent network access layer | Agent features |
+| `repo42.cursor.sh` | Repository indexing / embeddings | Codebase indexing |
+| `authenticate.cursor.sh`, `authenticator.cursor.sh`, `authentication.cursor.sh`, `prod.authentication.cursor.sh` | Authentication and SSO | All users |
+| `adminportal42.cursor.sh` | Admin portal | Admins |
+| `marketplace.cursorapi.com` | Extension marketplace | Extension management |
 | `cursor-cdn.com` | CDN for static assets | All users |
 | `downloads.cursor.com` | Client downloads and updates | All users |
 | `anysphere-binaries.s3.us-east-1.amazonaws.com` | Binary updates | All users |
-| `marketplace.visualstudio.com` | Extension downloads (fallback) | Extension management |
+| `*.cursorvm.com`, `*.*.cursorvm.com` | Cloud Agent VMs | Cloud Agents (5.3) |
 
-**Block all other network traffic from Cursor.**
+**Recommended wildcards.** Where per-host allowlisting is impractical, Cursor documents these wildcards: `*.cursor.sh`, `*.cursor-cdn.com`, `*.cursorapi.com`, `*.cursorvm.com`, and `*.*.cursorvm.com`. Prefer the explicit host list at L3 — the wildcards trade precision for maintainability, and `*.cursor.sh` in particular admits every future subdomain without review.
+
+**Block all other network traffic from Cursor.** If Cloud Agents are disabled per 5.3, omit the `*.cursorvm.com` entries rather than allowing them "just in case" — an unused allowlist entry is an available egress path.
 
 #### Network Verification
 
@@ -1345,7 +1433,11 @@ Configure logging of Cursor AI usage for audit and compliance purposes. Ensure C
 - Compliance frameworks require logging of AI usage
 - Detect anomalous usage patterns (insider threats)
 - Attribution of AI-generated code
-- Version tracking prevents use of vulnerable Cursor releases
+- Version tracking prevents use of vulnerable Cursor releases — and several controls in this guide have hard version floors (extension allowlisting requires client 2.1+, see 8.1), so an unpatched fleet is also an unprotected one
+
+**Attack Prevented:** Undetected insider misuse or account compromise, unattributable AI-generated code entering the codebase, and silent non-application of version-gated controls across an unpatched fleet
+
+> **Verification note (2026-08):** Cursor's audit-log documentation URL returned 404 during this currency pass, so the event list, streaming destinations, and the "agent responses and generated code are not captured" claim below could **not** be re-verified against current vendor documentation. They are retained as previously documented. Confirm the actual event coverage and destination list in your Enterprise dashboard before relying on any of them for a control attestation — particularly the not-captured claim, which is a negative assertion and the costliest to be wrong about.
 
 #### ClickOps Implementation
 
@@ -1382,6 +1474,9 @@ Monitor developer workstations for indicators of Cursor-based attacks including 
 - The NomShub attack chain persisted via `~/.zshenv` overwrite
 - Prompt injection can spawn `curl` to exfiltrate data via agent terminal access
 - Unexpected `cursor-tunnel` processes may indicate remote access exploitation
+- Cursor's own audit logs do not capture agent execution on the endpoint, so workstation telemetry is the only place these indicators appear at all
+
+**Attack Prevented:** Persistence via shell startup file modification, data exfiltration through agent-spawned subprocesses, silent MCP configuration tampering, and remote access established through unexpected tunnel processes
 
 #### ClickOps Implementation
 
@@ -1418,6 +1513,9 @@ Use Cursor Teams or Enterprise edition to enforce organizational policies, manag
 - License management and usage tracking
 - Audit logging at organization level
 - Over half of Fortune 500 now use Cursor — enterprise governance is critical
+- Several controls in this guide have no self-serve equivalent: model governance via Cursor Router (2.2), extension allowlisting (8.1), Team and Enterprise hooks distribution (11.3), and SCIM (1.4) all require a team plan and, in most cases, Enterprise
+
+**Attack Prevented:** Policy divergence across individually-configured installations, and the shadow-IT case where developers adopt Cursor on personal accounts entirely outside organizational visibility and control
 
 #### ClickOps Implementation
 
@@ -1468,15 +1566,29 @@ Use MDM (Mobile Device Management) to deploy and enforce Cursor security setting
 - Without MDM enforcement, developers can disable Privacy Mode, enable auto-run, or install unapproved MCP servers locally
 - 78% of AI coding tool usage is shadow IT — MDM ensures governance even for unmanaged adoption
 - MDM-deployed settings survive Cursor updates and reinstalls
+- MDM is the layer that wins conflicts: the `AllowedExtensions` MDM key **overrides** the dashboard-configured extension allowlist, so where both exist the MDM value is what is actually enforced
+
+**Attack Prevented:** Local reversal of organizational security settings by a developer or by malware acting with the developer's privileges, and authentication with personal Cursor accounts on corporate devices to escape organizational policy entirely
+
+#### Prerequisites
+- Cursor documents advanced identity controls — "SCIM, MDM policies, and more" — as available on Enterprise. Confirm MDM policy entitlement for your specific plan with Cursor before designing around it.
 
 #### ClickOps Implementation
 
 **Step 1: Create MDM Configuration Profile**
-1. Create a configuration profile with these key policies:
-   - **Allowed Team IDs:** Comma-separated list restricting which team IDs can authenticate (prevents personal account usage on corporate devices)
-   - **Allowed Extensions:** JSON configuration controlling permitted extension publishers
-   - **Privacy Mode:** Force-enabled
-   - **Workspace Trust:** Force-enabled
+
+Use the exact policy keys Cursor documents. The client setting and the MDM key are different identifiers for the same control — searching Cursor settings for the client setting is how you verify the MDM key landed:
+
+| Control | Client setting | MDM policy key |
+|---------|---------------|----------------|
+| Restrict login to your team | `cursorAuth.allowedTeamId` | `AllowedTeamId` |
+| Extension allowlist | `extensions.allowed` | `AllowedExtensions` |
+| Workspace trust | `security.workspace.trust.enabled` | `WorkspaceTrustEnabled` |
+
+1. **`AllowedTeamId`** takes a comma-separated list of permitted team IDs. Cursor documents the enforcement behaviour explicitly: a user authenticating with a team ID outside the list is **forcefully logged out immediately**, an error is displayed, and further authentication attempts are prevented until a valid team ID is used. This is what stops a personal account being used on a corporate device
+2. **`AllowedExtensions`** controls permitted extensions and overrides the dashboard allowlist (8.1)
+3. **`WorkspaceTrustEnabled`** force-enables workspace trust (7.1), which Cursor ships disabled by default — this is the highest-value single key in the profile
+4. Add Privacy Mode (2.1) and telemetry (9.1) enforcement alongside them
 
 **Step 2: Deploy via MDM**
 - **macOS (Jamf/Kandji):** Deploy as `.mobileconfig` XML profile
@@ -1484,11 +1596,104 @@ Use MDM (Mobile Device Management) to deploy and enforce Cursor security setting
 - **Linux:** Deploy via configuration management (Ansible, Puppet, Chef)
 
 **Step 3: Distribute Compliance Hooks**
-1. Use Cursor Hooks to enforce compliance policies at runtime
-2. Hooks can intercept agent actions, block unapproved commands, and scrub secrets
-3. Deploy hook configurations through MDM alongside editor settings
+1. Use Cursor Hooks to enforce compliance policies at runtime — see 11.3 for the event model, precedence, and enterprise file paths
+2. Hooks can block unapproved commands and modify tool inputs, which is enforcement rather than advice
+3. Deploy the enterprise-scope `hooks.json` through MDM alongside editor settings, or distribute team hooks through the dashboard
 
 **Time to Complete:** ~2 hours (initial setup), ongoing maintenance for policy updates
+
+#### Validation & Testing
+1. On a managed machine, attempt to sign in with a personal Cursor account and confirm the forced logout and error
+2. Search Cursor settings for `security.workspace.trust.enabled` and confirm it reads as enabled and is not locally editable
+3. Attempt to install an extension outside the allowlist and confirm it is blocked
+4. Confirm the client version meets the 2.1+ floor required for extension restrictions (8.1)
+
+---
+
+### 11.3 Deploy Cursor Hooks as an Enforcement Layer
+
+**Profile Level:** L2 (Walk)
+**NIST 800-53:** AC-3, AU-2, SI-4, CM-7
+
+#### Description
+Cursor Hooks are scripts that observe, control, and extend the agent loop. They are spawned processes that exchange JSON over stdio before and after defined agent stages, and — critically — they can **block** an action or **modify** its input. Where Run Modes are described by the vendor as best-effort guardrails (5.1), hooks are the layer where an organization can impose a deterministic decision on what the agent is allowed to do.
+
+#### Rationale
+**Why This Matters:**
+- Hooks are the only Cursor-native mechanism that can deny a specific agent action programmatically: returning `"permission": "deny"` or exiting with code `2` blocks the action, while `"updated_input"` fields rewrite tool inputs before execution
+- They cover the exact chokepoints that every attack in Appendix B passes through — shell execution, MCP calls, file reads, file edits, and prompt submission — so a single hook can neutralize a class of attack rather than a single CVE
+- They are the enforceable answer to prompt injection: an injected instruction may convince the model, but it does not convince the hook process, which sees the concrete tool call rather than the persuasive text
+- Precedence is explicit and top-down — **Enterprise → Team → Project → User** — so an organizational hook cannot be overridden by a project or a developer, which is what makes them a control rather than a convention
+- **Fail-open is the default.** An exit code other than `0` or `2` allows the action. A hook that crashes therefore permits what it was written to block — hooks must be tested for their failure behaviour, not just their success path
+- Untested hooks add latency to every agent interaction, so scoping them to the events that matter is a usability requirement as well as a performance one
+
+**Attack Prevented:** Prompt-injection-driven shell execution and MCP tool invocation, exfiltration of secrets through agent-initiated commands, unreviewed edits to sensitive files, and per-developer divergence from organizational agent policy
+
+#### Prerequisites
+- Enterprise plan for dashboard-distributed team and enterprise-managed hooks
+- Ability to deploy files to developer endpoints for the enterprise-scope path, or MDM (11.2)
+- A tested hook script, including its behaviour when it errors
+
+#### ClickOps Implementation
+
+**Step 1: Choose the scope, and understand precedence**
+
+Precedence runs **Enterprise → Team → Project → User** (highest to lowest). Place organizational policy at Enterprise or Team so it cannot be overridden locally.
+
+| Scope | Location |
+|-------|----------|
+| Enterprise (macOS) | `/Library/Application Support/Cursor/hooks.json` |
+| Enterprise (Linux/WSL) | `/etc/cursor/hooks.json` |
+| Enterprise (Windows) | `C:\ProgramData\Cursor\hooks.json` |
+| Team | Configured in the Cursor web dashboard and distributed automatically |
+| Project | `<project-root>/.cursor/hooks.json` |
+| User | `~/.cursor/hooks.json` |
+
+**Step 2: Hook the events that carry risk**
+
+Cursor documents these events. Start with the security-relevant subset rather than instrumenting everything:
+
+| Class | Events | Security use |
+|-------|--------|--------------|
+| Shell | `beforeShellExecution`, `afterShellExecution` | Deny dangerous commands; this is the chokepoint Run Modes only guard on a best-effort basis |
+| MCP | `beforeMCPExecution`, `afterMCPExecution` | Enforce a real MCP tool policy independent of the approval prompt (4.2) |
+| Files | `beforeReadFile`, `afterFileEdit` | Block reads of credential paths; audit or reject edits to sensitive files |
+| Prompt | `beforeSubmitPrompt` | Scrub secrets from outbound prompts before they leave the machine |
+| Tools | `preToolUse`, `postToolUse`, `postToolUseFailure` | General-purpose policy and telemetry across all tool calls |
+| Session | `sessionStart`, `sessionEnd`, `stop`, `preCompact` | Session-scoped audit records |
+| Subagents | `subagentStart`, `subagentStop` | Apply the same policy to delegated agents, which otherwise inherit trust silently |
+| Agent output | `afterAgentResponse`, `afterAgentThought` | Response-side monitoring |
+| Tab | `beforeTabFileRead`, `afterTabFileEdit` | Extend file policy to inline completions, which are a separate data path from chat |
+| Lifecycle | `workspaceOpen` | Workspace-entry checks, complementing workspace trust (7.1) |
+
+**Step 3: Write hooks that fail closed**
+1. Return `"permission": "deny"` or exit `2` to block; any other non-zero exit allows the action by default
+2. Wrap hook logic so that an unexpected error still results in a deny for security-critical events, rather than relying on the default
+3. Keep hooks fast — they run in the agent loop, on every matching event
+
+**Step 4: Distribute and keep them in sync**
+1. On Enterprise, configure team and enterprise-managed hooks through the web dashboard; Cursor documents automatic synchronization to all team members **every thirty minutes**
+2. Budget for that sync interval in your incident response: a hook change pushed to block an active attack is not instantaneous across the fleet, so pair urgent changes with the MDM-deployed enterprise file
+3. Put `.cursor/hooks.json` under CODEOWNERS review (6.2) — a project hook is executable policy and deserves the same review as a rules file
+
+#### Validation & Testing
+1. Trigger a command your `beforeShellExecution` hook should block and confirm it is denied
+2. Deliberately make the hook exit with a code other than `0` or `2` and confirm you understand the resulting fail-open behaviour — then fix it if the event is security-critical
+3. Set a conflicting hook at Project scope and confirm the Enterprise or Team hook still wins
+4. Confirm a dashboard-distributed hook reaches a test machine, and record the observed sync delay
+5. Confirm hooks apply to subagent activity, not just the top-level agent
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **NIST 800-53** | AC-3 | Access enforcement |
+| **NIST 800-53** | CM-7 | Least functionality |
+| **NIST 800-53** | AU-2 | Event logging |
+| **NIST 800-53** | SI-4 | System monitoring |
+| **OWASP LLM** | LLM01 | Prompt injection |
+| **OWASP Agentic** | ASI02 | Tool misuse |
+| **OWASP Agentic** | ASI06 | Code execution controls |
 
 ---
 
@@ -1501,12 +1706,14 @@ Use MDM (Mobile Device Management) to deploy and enforce Cursor security setting
 | SSO/SAML (1.3) | ❌ | ❌ | ✅ | ✅ |
 | SCIM Provisioning (1.4) | ❌ | ❌ | ❌ | ✅ |
 | Privacy Mode (2.1) | ✅ (opt-in) | ✅ (opt-in) | ✅ (enforceable) | ✅ (enforceable) |
+| US-only data residency (2.1) | ❌ | ❌ | ❌ | ✅ (per team, via account team, 10% model uplift) |
+| Cursor Router model governance (2.2) | ❌ | ❌ | ✅ (on by default) | ✅ (admin-enabled) |
 | .cursorignore (2.3) | ✅ | ✅ | ✅ | ✅ |
 | Local Models (2.4) | ✅ | ✅ | ✅ | ✅ |
 | MCP Allowlisting (4.1) | Manual | Manual | Manual | ✅ Centralized |
 | MCP Tool Protection (4.2) | ✅ | ✅ | ✅ | ✅ |
 | Disable Auto-Run (5.1) | ✅ | ✅ | ✅ | ✅ (enforceable) |
-| Agent Sandbox (5.2) | ✅ | ✅ | ✅ | ✅ (enforceable) |
+| Agent Approval & Network Posture (5.2) | ✅ | ✅ | ✅ | ✅ (enforceable) |
 | Self-Hosted Agents (5.3) | ❌ | ❌ | ❌ | ✅ |
 | Rules File Audit (6.1) | ✅ | ✅ | ✅ | ✅ |
 | Workspace Trust (7.1) | ✅ | ✅ | ✅ | ✅ (enforceable) |
@@ -1516,6 +1723,8 @@ Use MDM (Mobile Device Management) to deploy and enforce Cursor security setting
 | Log Streaming (10.1) | ❌ | ❌ | ❌ | ✅ |
 | Organization Policies (11.1) | ❌ | ❌ | Partial | ✅ |
 | MDM Enforcement (11.2) | ❌ | ❌ | ❌ | ✅ |
+| Hooks — User/Project scope (11.3) | ✅ | ✅ | ✅ | ✅ |
+| Hooks — Team/Enterprise distribution (11.3) | ❌ | ❌ | ❌ | ✅ (dashboard, ~30 min sync) |
 | CMEK (11.1) | ❌ | ❌ | ❌ | ✅ |
 | AI Code Tracking API (11.1) | ❌ | ❌ | ❌ | ✅ (alpha) |
 
@@ -1590,18 +1799,21 @@ Use MDM (Mobile Device Management) to deploy and enforce Cursor security setting
 ## Appendix D: References
 
 **Official Cursor Documentation:**
-- [Cursor Trust Center](https://trust.cursor.com/)
-- [Cursor Security](https://cursor.com/security)
-- [Cursor Data Use & Privacy](https://cursor.com/data-use)
-- [Cursor Enterprise](https://cursor.com/enterprise)
+- [Cursor Agent Security](https://cursor.com/docs/agent/security)
+- [Cursor Hooks](https://cursor.com/docs/agent/hooks)
 - [Cursor Privacy and Data Governance Docs](https://cursor.com/docs/enterprise/privacy-and-data-governance)
 - [Cursor Identity and Access Management](https://cursor.com/docs/enterprise/identity-and-access-management)
 - [Cursor Network Configuration](https://cursor.com/docs/enterprise/network-configuration)
 - [Cursor Deployment Patterns](https://cursor.com/docs/enterprise/deployment-patterns)
 - [Cursor Ignore Files](https://cursor.com/docs/reference/ignore-file)
-- [Cursor Agent Sandboxing Blog](https://cursor.com/blog/agent-sandboxing)
-- [Cursor Self-Hosted Cloud Agents](https://cursor.com/blog/self-hosted-cloud-agents)
+- [Cursor Changelog](https://cursor.com/changelog)
+- [Cursor Data Use & Privacy](https://cursor.com/data-use)
 - [Cursor DPA](https://cursor.com/terms/dpa)
+
+> **Currency note (2026-08).** Cursor ships faster than a guide revision cycle. Two source URLs cited by earlier revisions of this guide now return 404 — the agent sandboxing documentation and the audit-logs documentation — and the claims that depended on them are annotated in 5.2 and 10.1 rather than asserted. Cursor's Trust Center and `/security` marketing page have been removed from this list under the repository's source standard: they describe certifications, not configuration. Cursor also carries a known Tier 3 exposure gap in this repository's source coverage; independent research beyond the incidents in Appendix B was not re-surveyed in this pass and warrants a dedicated search budget.
+
+**Third-Party Benchmarks:**
+- No CIS Benchmark, DISA STIG, or CISA SCuBA baseline exists for Cursor as of 2026-08. Compliance mappings in this guide are to NIST 800-53, SOC 2, ISO 27001, OWASP LLM/Agentic, NIST AI RMF, and MITRE ATLAS by name.
 
 **VSCode Security (Cursor inherits):**
 - [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust)
@@ -1647,6 +1859,7 @@ Use MDM (Mobile Device Management) to deploy and enforce Cursor security setting
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.4.0 | draft | Add 11.3 Cursor Hooks as an enforcement layer (event classes, Enterprise→Team→Project→User precedence, per-platform config paths, fail-open default, ~30 min dashboard sync). Rewrite 2.2 around Cursor Router model governance (on by default for Teams; routed model hidden by default; mode restrictions; soft/hard enforcement). Add US-only data residency and restricted-model retention approvals to 2.1. Replace the 9.2 endpoint table with Cursor's documented hosts, add `*.cursorvm.com` cloud-agent VMs, and remove `*.cursor.com` and `marketplace.visualstudio.com` (not in the vendor list). Correct exact identifiers in 1.4, 7.1, 8.1, 11.2 (`cursorAuth.allowedTeamId`/`AllowedTeamId`, `extensions.allowed`/`AllowedExtensions` with MDM override and 2.1+ version floor, `security.workspace.trust.enabled`/`WorkspaceTrustEnabled`, three roles, SCIM requires Enterprise with SSO). Reframe 4.2, 5.1, and 5.2 around the current approval-tier model and quote the vendor's "best-effort guardrails rather than a hard security boundary" caveat. Soften 5.2 sandbox internals and 10.1 audit-log specifics — both source URLs now 404, annotated rather than asserted. Add missing **Attack Prevented** to 2.2, 2.4, 4.2, 5.2, 6.2, 9.1, 10.1, 10.2, 11.1, 11.2, 11.3. Remove Trust Center and `/security` marketing references | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.3.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-04-15 | 0.3.0 | draft | [SECURITY] Major update: add MCP Server Security (sec 4), Agent & Sandbox Security (sec 5), Rules File Security (sec 6), SSO/SCIM (1.3-1.4), .cursorignore (2.3), extension supply chain (8.1), agent monitoring (10.2), MDM enforcement (11.2). Update Security Incidents appendix with 12+ new CVEs/vulns. Add OWASP Agentic/LLM, NIST AI RMF, MITRE ATLAS compliance mappings. Update edition compatibility for Teams/Enterprise tiers. Create 12 code pack files. | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.2.0 | draft | Migrate all inline code blocks to Code Packs (sections 2.1, 3.1, 3.2, 3.3, 4.2, 7.1) | Claude Code (Opus 4.6) |
