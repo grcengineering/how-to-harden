@@ -6,9 +6,9 @@ slug: "1password"
 tier: "2"
 category: "Security"
 description: "Enterprise password manager hardening for 1Password Business SSO, policies, and vault security"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -61,6 +61,8 @@ Configure SAML-based SSO to authenticate 1Password users through your corporate 
 - Enables MFA enforcement through IdP
 - Supports automatic provisioning/deprovisioning
 - Provides consistent access policies
+
+**Attack Prevented:** Credential theft and password reuse against local logins, phishing of standalone 1Password credentials, orphaned-account access after offboarding
 
 #### Prerequisites
 - 1Password Business plan
@@ -144,6 +146,50 @@ Configure SCIM for automatic user provisioning and deprovisioning synced with yo
 
 ---
 
+### 1.3 Set an Automatic Deletion Policy for Suspended Members
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.3 |
+| NIST 800-53 | AC-2(3) |
+
+#### Description
+1Password Business supports a team policy that automatically deletes suspended team members after a configurable retention window of 1 to 180 days, so suspension is not a permanent holding state.
+
+#### Rationale
+**Why This Matters:**
+- Suspension alone leaves the account object and its group and vault associations in place, so an offboarding that stalls at "suspended" leaves reinstatable access sitting in the tenant indefinitely
+- A bounded, automatic deletion window turns cleanup into a guaranteed background process instead of a manual task that depends on someone remembering it
+- Setting the window explicitly forces a deliberate decision about how long the organization keeps recoverable ex-employee accounts, which auditors ask about directly
+- Changes to this policy take effect within one hour, so the retention decision is enforced immediately rather than at the next review cycle
+
+**Attack Prevented:** Reinstatement of dormant ex-employee accounts, offboarding drift, accumulation of stale identities in the tenant
+
+#### Prerequisites
+- 1Password Business or Enterprise
+- Owner, Administrator, or membership in a group with the Manage Settings permission
+
+#### ClickOps Implementation
+
+**Step 1: Open Policies**
+1. Sign in to your account on **1Password.com**
+2. Select **Policies** in the sidebar, then **Manage**
+
+**Step 2: Set the Deletion Window**
+1. Locate the policy governing deletion of suspended team members
+2. Set the retention window (1–180 days) to match your offboarding and legal-hold requirements
+3. Save — the change executes within one hour
+
+**Step 3: Reconcile With Offboarding**
+1. Confirm SCIM deprovisioning (1.2) suspends rather than orphans departing users
+2. Verify that legal-hold cases are handled before the window elapses, since deletion is irreversible
+
+**Time to Complete:** ~10 minutes
+
+---
+
 ## 2. Admin & Team Policies
 
 ### 2.1 Configure Account Password Policy
@@ -169,8 +215,9 @@ Configure master password requirements for 1Password accounts.
 #### ClickOps Implementation
 
 **Step 1: Access Password Policy**
-1. Navigate to: **Admin Console** → **Security** → **Policies**
-2. Click **Account Password**
+1. Sign in to your account on **1Password.com**
+2. Select **Policies** in the sidebar, then **Manage**
+3. Open the account password policy
 
 **Step 2: Configure Requirements**
 1. Select policy strength:
@@ -198,29 +245,42 @@ Configure master password requirements for 1Password accounts.
 | NIST 800-53 | AC-17 |
 
 #### Description
-Configure IP-based access restrictions for 1Password access.
+Configure 1Password firewall rules to restrict where accounts can be accessed from, by country or continent, by IP address or CIDR range, and by anonymizing-network category.
 
 #### Rationale
 **Why This Matters:**
 - Restricts 1Password access to expected corporate networks and geographies, shrinking the attack surface exposed to the public internet
 - Blocks sign-in attempts from countries and IP ranges where the organization has no legitimate users, defeating large classes of automated attacks
+- The Anonymous IP rule type covers Tor exit nodes, public VPNs, public proxies, and cloud-provider ranges — the infrastructure most credential-stuffing and account-takeover traffic arrives from
 - Adds a network-layer control that helps contain stolen credentials even when an attacker holds a valid username and password
 - IP allowlisting at L3 ensures vault access only originates from trusted, managed egress points
 
-**Attack Prevented:** Credential stuffing from foreign IPs, unauthorized remote access, automated login attacks
+**Attack Prevented:** Credential stuffing from foreign IPs, unauthorized remote access via anonymizing infrastructure, automated login attacks
+
+#### Prerequisites
+- Owner, Administrator, or membership in a group with the Manage Settings permission
 
 #### ClickOps Implementation
 
 **Step 1: Access Firewall Settings**
-1. Navigate to: **Admin Console** → **Security** → **Firewall**
+1. Sign in to your account on **1Password.com**
+2. Select **Policies** in the sidebar, then **Firewall**
+3. Select **Manage policies**
 
-**Step 2: Configure Rules**
-1. Configure allowed/denied access:
-   - **Allow countries:** Specify allowed countries
-   - **Deny countries:** Block specific countries
-   - **Allow IPs:** Whitelist corporate IPs (L3)
-   - **Deny IPs:** Block known bad IPs
-2. Configure rule priority
+**Step 2: Set the Default Action**
+1. Choose the default action applied when no rule matches: **Allow**, **Report**, or **Deny**
+2. Use **Report** first to observe what a rule would have blocked before enforcing it
+
+**Step 3: Add Rules**
+1. Add rules of the types you need:
+   - **Country or continent:** allow or deny by geography
+   - **IP address or CIDR range:** allowlist corporate egress (L3), or deny known-bad ranges
+   - **Anonymous IP:** Tor, public VPNs, public proxies, and cloud-provider ranges
+2. Assign each rule an action: **Allow**, **Report**, or **Deny**
+3. Order the rules deliberately — they are evaluated in order and the **first match wins**; anything not matched falls through to the default action
+4. Add explicit allow exceptions above a broad deny for legitimate travellers, contractors, and automation egress points
+
+**Changed behavior / limitation:** **Firewall rules govern new access, not existing sessions — a device that is already signed in retains access to data stored locally even when a rule would now block it.** Firewall rules are therefore a perimeter control, not a session-revocation mechanism; deauthorize or suspend the account to cut off a device that is already signed in. ([Firewall rules](https://support.1password.com/firewall-rules/))
 
 ---
 
@@ -248,7 +308,8 @@ Configure policies for team member permissions and capabilities.
 #### ClickOps Implementation
 
 **Step 1: Access Team Policies**
-1. Navigate to: **Admin Console** → **Policies**
+1. Sign in to your account on **1Password.com**
+2. Select **Policies** in the sidebar, then **Manage**
 
 **Step 2: Configure Key Policies**
 
@@ -264,9 +325,15 @@ Configure policies for team member permissions and capabilities.
 - Enable/disable Travel Mode capability
 - Configure vault visibility during travel
 
-**Recovery:**
-- Configure account recovery options
-- Enable/disable recovery group
+**Step 3: Govern Account Recovery**
+
+Recovery is not a tenant-wide on/off switch — it is the **Recover Accounts** permission, held by Owners, Administrators, and any custom group you grant it to. Configure it deliberately:
+
+1. Review which groups hold **Recover Accounts** and grant it only to roles that are expected to perform recoveries
+2. Keep **at least two** people or groups able to recover accounts, so a single unavailable admin cannot strand users
+3. Scope who receives recovery notifications so recovery events land with people who will actually notice an illegitimate one
+4. Understand the flow before relying on it: the recoverer starts recovery, the user confirms via email, and the user then generates a **new Secret Key and account password** — the old credentials are invalidated
+5. For mass events (such as a suspected compromise), use the 1Password CLI, which is the documented path for bulk recovery
 
 **Time to Complete:** ~30 minutes
 
@@ -307,6 +374,95 @@ Configure role-based access for team administration.
 1. Limit Owner role to essential personnel
 2. Assign Admin role for IT administrators
 3. Use custom roles for specific needs (Enterprise)
+
+**Step 3: Consider the Two-Person Rule for the Owner Account**
+
+1Password documents a **Two-Person Rule** option in which the owner account's credentials are split so that no single person holds full control of the account — one person holds the account password and another holds the Secret Key, and both are required to sign in. Pair it with the minimum-two-owners guidance above:
+
+1. Keep at least two owners so no single departure or lockout strands the tenant
+2. For the highest-privilege owner account, split its credentials between two custodians and store each half separately (for example, in separate sealed break-glass envelopes or separate PAM records)
+3. Document the joint-recovery procedure and rehearse it, since the whole point is that neither custodian can act alone
+
+---
+
+### 2.5 Govern Agentic Autofill for AI Agents
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.8 |
+| NIST 800-53 | AC-3, AC-4 |
+
+#### Description
+1Password provides a tenant-level policy governing Secure Agentic Autofill — the capability that allows AI agents to have credentials filled on the user's behalf. Decide explicitly whether agents may receive credentials from your vaults, rather than inheriting whatever the default is.
+
+#### Rationale
+**Why This Matters:**
+- An AI agent that can trigger autofill is a new consumer of your credential store, and one that acts without a human watching each individual fill
+- Agents follow instructions from pages and content they process, so credential access granted to an agent can be redirected by prompt injection in a way a human user would notice and a policy engine would not
+- Making the decision at tenant level means the answer does not depend on each user's local configuration or on which client build they happen to run
+- The capability is new, so the safe default for regulated or high-sensitivity tenants is to disable it until the organization has evaluated the agent surface it exposes
+
+**Attack Prevented:** Credential disclosure to a compromised or manipulated AI agent, prompt-injection-driven credential use, unreviewed automated authentication
+
+#### Prerequisites
+- Owner, Administrator, or a group with the Manage Settings permission
+- **Early access:** Secure Agentic Autofill and its governing policy are early-access functionality — confirm current availability and behavior in your own tenant before relying on this control
+
+#### ClickOps Implementation
+
+**Step 1: Locate the Policy**
+1. Sign in to your account on **1Password.com**
+2. Select **Policies** in the sidebar, then **Manage**
+3. Locate the policy governing agentic autofill
+
+**Step 2: Decide and Enforce**
+1. Default to disabling agent autofill for regulated, executive, and infrastructure populations (L2/L3)
+2. If enabling it, scope which vaults agents may draw from using vault permissions (3.1) rather than relying on the policy alone
+3. Record the decision and its owner — early-access features change, and the decision needs re-review
+
+---
+
+### 2.6 Restrict Application Access and Enforce a Release Channel
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 2.5, 2.7 |
+| NIST 800-53 | CM-7, SI-2 |
+
+#### Description
+Use App Access Management to control which 1Password applications and integrations can reach a vault, and use release-channel enforcement to keep clients on the Production channel.
+
+#### Rationale
+**Why This Matters:**
+- **All applications are enabled by default**, so a vault is reachable from every 1Password client and integration until an administrator narrows it — the tightening is opt-in, not inherited
+- Limiting the applications that can open a vault reduces the number of distinct client surfaces that must be trusted and patched for that vault's contents
+- Beta and nightly builds carry code that has not completed the vendor's release validation; restricting to Production keeps the fleet on reviewed builds
+- **Restricting users to the Production release channel enforces automatic updates, and that enforcement overrides update settings configured separately through MDM** — so an MDM policy that defers or disables 1Password updates will not take effect for those users
+
+**Attack Prevented:** Exposure of vault contents through unmanaged clients and integrations, exploitation of unpatched or pre-release client builds, shadow integrations reaching sensitive vaults
+
+#### Prerequisites
+- 1Password Business or Enterprise
+- Owner, Administrator, or a group with the Manage Settings permission
+
+#### ClickOps Implementation
+
+**Step 1: Inventory What Can Reach Each Vault**
+1. Sign in to your account on **1Password.com**
+2. For each sensitive vault, review the applications currently permitted to access it — assume all are enabled until you verify otherwise
+
+**Step 2: Narrow Application Access**
+1. Disable applications and integrations that no one in scope actually uses for that vault
+2. Apply the tightest restrictions to infrastructure, executive, and secrets vaults first
+
+**Step 3: Enforce the Release Channel**
+1. Select **Policies** in the sidebar, then **Manage**
+2. Restrict users to the **Production** release channel
+3. Reconcile with MDM: remove or align any MDM-managed 1Password update deferral, since release-channel enforcement overrides it and the two will otherwise appear to conflict
 
 ---
 
@@ -381,8 +537,9 @@ Configure how items can be shared within and outside the organization.
 #### ClickOps Implementation
 
 **Step 1: Configure Sharing Settings**
-1. Navigate to: **Admin Console** → **Policies** → **Sharing**
-2. Configure:
+1. Sign in to your account on **1Password.com**
+2. Select **Policies** in the sidebar, then **Manage**, and open the sharing policies
+3. Configure:
    - **Allow item sharing:** Yes/No
    - **Allow sharing with guests:** Control external sharing
    - **Require approval:** For sensitive sharing
@@ -391,6 +548,92 @@ Configure how items can be shared within and outside the organization.
 1. Enable/disable share links
 2. Configure link expiration defaults
 3. Require view limits
+
+---
+
+### 3.3 Enable Local Scanning for Plaintext Developer Secrets
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.1, 3.14 |
+| NIST 800-53 | SI-4, SC-28 |
+
+#### Description
+1Password can scan a device's local disk for plaintext developer secrets — credentials sitting in config files, dotfiles, and environment files outside any vault — and surface what it finds in Business Watchtower.
+
+#### Rationale
+**Why This Matters:**
+- The secrets that leak in real incidents are usually the ones that were never in the password manager: API keys in `.env` files, cloud credentials in shell profiles, tokens pasted into local config
+- Endpoint compromise or a stolen laptop turns every plaintext secret on disk into an immediate credential, with no vault, no MFA, and no audit trail in the way
+- Surfacing findings centrally in Business Watchtower converts an invisible, per-developer problem into a tracked remediation queue owned by security
+- Finding the sprawl is the prerequisite to fixing it — each discovered secret is a candidate for migration into a vault or a service account (3.4)
+
+**Attack Prevented:** Credential harvesting from compromised or stolen developer endpoints, secret sprawl outside the zero-knowledge boundary, exposure of long-lived cloud and API credentials
+
+#### Prerequisites
+- 1Password Business
+- **Early access:** local secret scanning is early-access functionality — confirm availability, platform coverage, and current behavior in your own tenant before depending on it as a control
+
+#### ClickOps Implementation
+
+**Step 1: Enable the Capability**
+1. Sign in to your account on **1Password.com**
+2. Select **Policies** in the sidebar, then **Manage**
+3. Locate the policy governing local scanning for plaintext secrets and enable it for the developer population
+
+**Step 2: Set Expectations Before Turning It On**
+1. Tell developers what is scanned and what is reported, since disk scanning on personal-feeling devices is a trust question as much as a technical one
+2. Confirm what leaves the device — findings surface centrally, so define who may see them
+
+**Step 3: Work the Findings**
+1. Review discovered plaintext secrets in **Business Watchtower**
+2. For each finding, move the secret into a vault or replace it with a scoped service account (3.4), then rotate the exposed value
+3. Track remediation rather than treating the report as a one-time inventory
+
+---
+
+### 3.4 Scope and Inventory Service Accounts
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4, 6.8 |
+| NIST 800-53 | AC-6, AC-2 |
+
+#### Description
+Use 1Password Service Accounts for automation instead of sharing a human account or a broad CLI credential, and scope each one to only the vaults and actions its workload needs.
+
+#### Rationale
+**Why This Matters:**
+- Service accounts are scoped to specific vaults or Environments and carry per-action permissions, so an automation credential can be limited to reading exactly the items its pipeline needs
+- Reusing a human account for automation puts a credential with full human access into CI systems and scripts, where it is copied, logged, and rarely rotated
+- Admin usage reports make service-account activity reviewable, turning silent machine access into something an owner can actually audit
+- A tenant is limited to **100 service accounts**, which is a natural forcing function for keeping an inventory rather than creating one per script and forgetting them
+
+**Attack Prevented:** Over-privileged automation credentials, credential sharing between humans and pipelines, unaudited machine access, blast-radius expansion from a leaked CI secret
+
+#### Prerequisites
+- 1Password Business or Enterprise
+- Owner or Administrator to create and review service accounts
+
+#### ClickOps Implementation
+
+**Step 1: Replace Shared Human Credentials**
+1. Identify every automation, CI job, and script currently authenticating as a person or with a broadly scoped CLI credential
+2. Create a dedicated service account for each workload
+
+**Step 2: Scope Each Service Account**
+1. Grant access only to the specific vaults (or Environments) the workload requires
+2. Set per-action permissions — read-only wherever the workload does not need to write
+3. Never grant a service account access to a vault simply because it was convenient at setup time
+
+**Step 3: Inventory and Review**
+1. Review admin usage reports for service-account activity on a set cadence
+2. Retire accounts whose workloads no longer exist — the 100-account ceiling means dead entries consume real capacity
+3. Re-scope any account whose permissions have drifted beyond its current job
 
 ---
 
@@ -434,6 +677,16 @@ Enable audit logging for security monitoring and compliance.
    - Azure Sentinel
    - Generic webhook
 3. Select events to stream
+
+**Step 3: Cover All Three Event Classes**
+
+The Events API exposes three distinct classes — collect all three, because each answers a different question and any one alone leaves a blind spot:
+
+| Event class | What it contains | What it detects |
+|-------------|------------------|-----------------|
+| Account activity | Audit events for administrative and account changes | Policy tampering, group and permission changes, provisioning abuse |
+| Item usage | Items viewed, copied, or edited in shared vaults | Mass credential access, staging before exfiltration, insider misuse |
+| Sign-in attempts | Successful and failed sign-ins, including failure detail | Credential stuffing, password spraying, anomalous access patterns |
 
 ---
 
@@ -516,19 +769,21 @@ Monitor the security dashboard for insights and recommendations.
 ## Appendix B: References
 
 **Official 1Password Documentation:**
-- [Trust Center](https://trust.1password.io/) (powered by SafeBase)
 - [1Password Support](https://support.1password.com)
 - [Business Security Practices](https://support.1password.com/business-security-practices/)
 - [Team Policies](https://support.1password.com/team-policies/)
+- [Firewall Rules](https://support.1password.com/firewall-rules/)
+- [Recover Accounts](https://support.1password.com/recovery/)
 - [Admin Policies Guide](https://blog.1password.com/admin-policies-introduction-guide/)
 - [Security Audits & Assessments](https://support.1password.com/security-assessments/)
 - [Legal Center](https://1password.com/legal-center)
 
 **API & Developer Tools:**
-- [1Password Developer Portal](https://developer.1password.com/)
-- [1Password CLI](https://developer.1password.com/docs/cli/)
-- [1Password SDKs (Go, JavaScript, Python)](https://developer.1password.com/docs/sdks/)
-- [Events API](https://developer.1password.com/docs/events-api/)
+- [1Password Developer Portal](https://www.1password.dev/)
+- [1Password CLI](https://www.1password.dev/cli/)
+- [1Password SDKs](https://www.1password.dev/sdks/)
+- [Events API](https://www.1password.dev/events-api/)
+- [Service Accounts](https://www.1password.dev/service-accounts/)
 - [GitHub Organization](https://github.com/1Password)
 
 **Compliance Frameworks:**
@@ -546,6 +801,7 @@ Monitor the security dashboard for insights and recommendations.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass: corrected Policies console paths (2.1/2.3/3.2), rewrote 2.2 firewall rules (rule types, Allow/Report/Deny, first-match ordering, already-signed-in-device limitation), corrected 2.3 recovery model to the Recover Accounts permission, added Two-Person Rule to 2.4, named the three Events API classes in 4.1, added controls 1.3 (suspended-member auto-deletion), 2.5 (agentic autofill policy, early access), 2.6 (app access management + release channel), 3.3 (local plaintext-secret scanning, early access), 3.4 (service-account scoping); repointed developer docs to 1password.dev and removed the Trust Center reference. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, policies, and vault security | Claude Code (Opus 4.5) |
 
