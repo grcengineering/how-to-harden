@@ -34,6 +34,7 @@ airtable:
 amplitude:
   product_docs: "https://amplitude.com/docs"
   api_docs: "https://www.docs.developers.amplitude.com/analytics/apis/"
+  hardening_docs: "https://amplitude.com/docs/admin"
 
 anthropic-api:
   product_docs: "https://docs.anthropic.com/"
@@ -218,12 +219,12 @@ cyberark:
 databricks:
   product_docs: "https://docs.databricks.com/aws/en/"
   api_docs: "https://docs.databricks.com/api/workspace/introduction"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/databricks"
   hardening_docs:
     - label: "Security, Compliance & Privacy Best Practices"
       url: "https://docs.databricks.com/aws/en/lakehouse-architecture/security-compliance-and-privacy/best-practices"
-    - label: "Security Best Practices Hub"
-      url: "https://www.databricks.com/trust/security-features/best-practices"
-  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/databricks"
+    - label: "AWS Security Docs"
+      url: "https://docs.databricks.com/aws/en/security/"
 
 datadog:
   product_docs: "https://docs.datadoghq.com/"
@@ -579,11 +580,7 @@ mailchimp:
 marketo:
   product_docs: "https://experienceleague.adobe.com/en/docs/marketo/using/home"
   api_docs: "https://developer.adobe.com/marketo-apis/"
-  hardening_docs:
-    - label: "Configure Protocols (SPF/DKIM, Allowlisting)"
-      url: "https://experienceleague.adobe.com/en/docs/marketo/using/getting-started/initial-setup/configure-protocols-for-marketo"
-    - label: "Document Your Setup"
-      url: "https://experienceleague.adobe.com/en/docs/marketo/using/getting-started/implementing-a-new-marketo-engage-instance/document-your-setup"
+  hardening_docs: "https://experienceleague.adobe.com/en/docs/marketo/using/getting-started/initial-setup/configure-protocols-for-marketo"
 
 microsoft-365:
   product_docs: "https://learn.microsoft.com/en-us/microsoft-365/"
@@ -608,8 +605,9 @@ microsoft-entra-id:
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/microsoft-entra-id"
 
 mimecast:
-  product_docs: "https://docs.mimecast.com/"
+  product_docs: "https://mimecastsupport.zendesk.com/hc/en-us"
   api_docs: "https://developer.services.mimecast.com/"
+  hardening_docs: "https://mimecastsupport.zendesk.com/hc/en-us/articles/34000804127251-Authentication-Profiles-Configuring-Authentication-Profiles"
 
 miro:
   product_docs: "https://help.miro.com/hc/en-us"
@@ -624,6 +622,7 @@ mixpanel:
 monday:
   product_docs: "https://support.monday.com/hc/en-us"
   api_docs: "https://developer.monday.com/api-reference/"
+  hardening_docs: "https://support.monday.com/hc/en-us/articles/34336185460498-monday-com-secure-configuration-checklist"
 
 mongodb-atlas:
   product_docs: "https://www.mongodb.com/docs/atlas/"
@@ -667,6 +666,11 @@ onelogin:
   product_docs: "https://support.onelogin.com/"
   api_docs: "https://developers.onelogin.com/"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/onelogin"
+  hardening_docs:
+    - label: "Security Policies (MFA, lockout, session, IP)"
+      url: "https://onelogin.service-now.com/kb_view_customer.do?sysparm_article=KB0010420"
+    - label: "Authentication Factors"
+      url: "https://support.onelogin.com/kb/4266569"
 
 oracle-hcm:
   product_docs: "https://docs.oracle.com/en/cloud/saas/human-resources/"
@@ -730,6 +734,7 @@ power-bi:
 proofpoint:
   product_docs: "https://help.proofpoint.com/"
   api_docs: "https://help.proofpoint.com/Threat_Insight_Dashboard/API_Documentation"
+  hardening_docs: "https://proofpoint.my.site.com/community/s/article/How-to-enable-the-Antispoof-policy"
 
 qualys:
   product_docs: "https://www.qualys.com/documentation/"
@@ -745,7 +750,6 @@ rapid7:
 rippling:
   product_docs: "https://help.rippling.com/"
   api_docs: "https://developer.rippling.com/documentation/rest-api"
-  hardening_docs: "https://www.rippling.com/blog/seven-powerful-simple-steps-to-secure-your-rippling-tenant"
 
 sailpoint:
   product_docs: "https://documentation.sailpoint.com/"
@@ -759,8 +763,8 @@ sailpoint:
 salesforce:
   product_docs: "https://help.salesforce.com/"
   api_docs: "https://developer.salesforce.com/docs/apis"
-  hardening_docs: "https://security.salesforce.com/security-best-practices"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/salesforce"
+  hardening_docs: "https://help.salesforce.com/s/articleView?id=xcloud.security_secure_your_org.htm&type=5"
 
 sap-successfactors:
   product_docs: "https://help.sap.com/docs/SAP_SUCCESSFACTORS_PLATFORM"
@@ -771,18 +775,20 @@ sap-successfactors:
 segment:
   product_docs: "https://www.twilio.com/docs/segment"
   api_docs: "https://docs.segmentapis.com/"
-  hardening_docs: "https://segment.com/security/"
+  hardening_docs: "https://www.twilio.com/docs/segment/segment-app/iam"
 
 sendgrid:
   product_docs: "https://www.twilio.com/docs/sendgrid"
   api_docs: "https://www.twilio.com/docs/sendgrid/api-reference"
-  hardening_docs: "https://www.twilio.com/en-us/blog/company/7-best-practices-to-protect-your-twilo-sendgrid-account-and-sending-reputation"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/sendgrid"
+  hardening_docs:
+    - label: "Two-Factor Authentication"
+      url: "https://www.twilio.com/docs/sendgrid/ui/account-and-settings/two-factor-authentication"
+    - label: "Domain Authentication"
+      url: "https://www.twilio.com/docs/sendgrid/ui/account-and-settings/how-to-set-up-domain-authentication"
 
 sentinelone:
   product_docs: "https://community.sentinelone.com/s/"
-  api_docs: ""
-  hardening_docs: ""
 
 sentry:
   product_docs: "https://docs.sentry.io/"
@@ -889,8 +895,12 @@ terraform-cloud:
 twilio:
   product_docs: "https://www.twilio.com/docs"
   api_docs: "https://www.twilio.com/docs/usage/api"
-  hardening_docs: "https://www.twilio.com/docs/usage/security"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/twilio"
+  hardening_docs:
+    - label: "API Keys"
+      url: "https://www.twilio.com/docs/iam/api-keys"
+    - label: "Identity & Access Management"
+      url: "https://www.twilio.com/docs/iam"
 
 ukg:
   product_docs: "https://community.ukg.com/"
@@ -905,8 +915,12 @@ vanta:
 vercel:
   product_docs: "https://vercel.com/docs"
   api_docs: "https://vercel.com/docs/rest-api"
-  hardening_docs: "https://vercel.com/docs/security"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/vercel"
+  hardening_docs:
+    - label: "Vercel Firewall"
+      url: "https://vercel.com/docs/vercel-firewall"
+    - label: "WAF Custom Rules"
+      url: "https://vercel.com/docs/vercel-firewall/vercel-waf/custom-rules"
 
 webex:
   product_docs: "https://help.webex.com/"
@@ -930,6 +944,7 @@ workato:
 workday:
   product_docs: "https://doc.workday.com/"
   api_docs: "https://community.workday.com/api"
+  hardening_docs: "https://doc.workday.com/admin-guide/en-us/manage-workday/tenant-configuration/tenant-setup/dan1370796470031.html"
 
 zendesk:
   product_docs: "https://support.zendesk.com/hc/en-us"
