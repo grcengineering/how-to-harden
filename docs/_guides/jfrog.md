@@ -6,9 +6,9 @@ slug: "jfrog"
 tier: "2"
 category: "DevOps"
 description: "Artifact management security for repository permissions, Xray policies, and access tokens"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 
@@ -78,9 +78,10 @@ Require SAML SSO with MFA for all Artifactory access.
 
 **Step 3: Configure Access Tokens**
 1. Navigate to: **Administration → Identity and Access → Access Tokens**
-2. Configure token policies:
-   - **Expiration:** 90 days maximum
-   - **Scopes:** Minimum required
+2. Set expiry deliberately on every token issued — the default expiry is **3600 seconds (one hour)**, and an expiry of **0 creates a non-expirable token**, which should be treated as a finding wherever it appears
+3. Scope each token to the minimum repositories and actions required
+
+> **Correction — there is no "90-day maximum" token policy in Artifactory.** An earlier revision of this guide described a 90-day expiration policy surface; that does not exist as written. The real controls are: the default expiry is 3600 seconds (one hour); the ceiling is an administrator configuration parameter, `token.max-expiry`, set (from version 7.21.1) in `$JFROG_HOME/artifactory/var/etc/access/access.config.latest.yml` rather than in the UI; project admin tokens carry a hard maximum expiration of 24 hours (1440 minutes); and setting expiry to zero produces a token that never expires. Enforce a bounded lifetime by setting `token.max-expiry`, not by relying on a UI policy that isn't there. Source: [JFrog access tokens documentation](https://docs.jfrog.com/administration/docs/access-tokens).
 
 #### Code Implementation
 
@@ -101,6 +102,9 @@ Configure granular permissions for repository access.
 - Research found 70 cases of anonymous write permissions
 - Write access enables artifact poisoning
 - Dependency confusion attacks require upload capability
+- Granular permission targets confine each group to the repositories and actions it actually needs, so no single compromised account can deploy to every repository
+
+**Attack Prevented:** Artifact poisoning via anonymous or over-broad write access, dependency confusion uploads to internal repositories, cache poisoning that replaces legitimate artifacts, unauthorized artifact deletion
 
 **Attack Scenario:** Dependency confusion attack uploads malicious package to internal repository; cache poisoning replaces legitimate artifacts.
 
@@ -134,6 +138,8 @@ Configure granular permissions for repository access.
 1. Limit admin role to 2-3 users
 2. Create separate roles for different functions
 3. Audit admin access quarterly
+
+> **Automation surface:** [JFrog CLI](https://docs.jfrog.com/integrations/docs/jfrog-cli) is the vendor's first-party command-line tool for driving the platform, and is the natural place to codify permission management rather than clicking it per repository. The specific permission-target subcommands and JSON template format were **not fetch-verified during this revision**, so no commands are reproduced here — verify against the current JFrog CLI command reference before scripting against it. Building a verified Code Pack for this is tracked as follow-up work.
 
 #### Code Implementation
 
@@ -180,6 +186,45 @@ See the CLI pack below for scoped token creation commands.
 #### Code Implementation
 
 {% include pack-code.html vendor="jfrog" section="1.3" %}
+
+---
+
+### 1.4 Govern Token Types by Blast Radius
+
+**Profile Level:** L2 (Walk)
+**NIST 800-53:** AC-6, IA-5
+
+#### Description
+Inventory which JFrog access token types are in use and govern each according to what it can reach, because "an Artifactory token" spans several distinct credential classes with very different blast radii.
+
+#### Rationale
+**Why This Matters:**
+- JFrog issues admin tokens, user-scoped tokens, group-scoped tokens, project admin tokens (Artifactory 7.89 and later), pairing tokens, binding tokens, and identity tokens — treating them as one category means governing all of them at the weakest policy
+- An admin token grants admin-level permissions across the platform, while a project admin token is confined to project resources and capped at a 24-hour lifetime; the same rotation and storage rules should not apply to both
+- Group-scoped tokens are attractive for CI because they survive individual staff changes, which is exactly why they escape user-deprovisioning controls and need their own review cadence
+- Pairing tokens establish trust between microservices and binding tokens establish bi-directional trust between JFrog Platform Deployments — these are infrastructure trust anchors, not user credentials, and a leaked one compromises a trust relationship rather than an account
+- **Reference tokens (7.38.4 and later) change the secret-scanning story:** they are shortened 128-character aliases standing in for a token whose payload can run to 4,000 characters. Detection rules written against the long JWT-shaped token will not match a reference token, so a repository or log scanner tuned only to the full form will miss them entirely
+
+**Attack Prevented:** Over-privileged token issuance, undetected credential leakage past format-specific secret scanners, persistence via group-scoped tokens surviving user deprovisioning, compromise of inter-service trust anchors
+
+#### ClickOps Implementation
+
+**Step 1: Inventory by Type**
+1. Navigate to: **Administration → Identity and Access → Access Tokens**
+2. Classify every active token by type: admin, user, group, project admin, pairing, binding, identity
+3. Record the owner and purpose of each — an unattributable token is a revocation candidate
+
+**Step 2: Apply Differentiated Policy**
+1. Admin tokens: shortest practical lifetime, named owner, highest rotation frequency
+2. Group-scoped tokens: add an explicit periodic review, since user offboarding will not retire them
+3. Project admin tokens: confirm the 24-hour maximum expiry is understood by the teams issuing them
+4. Pairing and binding tokens: treat as infrastructure configuration, not user credentials, and change-control them accordingly
+
+**Step 3: Fix Secret Scanning for Reference Tokens**
+1. Confirm your secret-scanning rules match the 128-character reference token form, not only the full token payload
+2. Test the detection against a sample of each form before relying on it
+
+**Reference:** [JFrog access tokens documentation](https://docs.jfrog.com/administration/docs/access-tokens)
 
 ---
 
@@ -530,24 +575,29 @@ See the DB pack below for SIEM detection queries.
 
 ## Appendix B: References
 
+> **Doc host migration:** JFrog retired `jfrog.com/help/r/*` in favour of `docs.jfrog.com/{product}/docs/{slug}`. All links below were re-verified on the new host during this revision. Note that `docs.jfrog.com` returns HTTP 200 with the "Welcome to JFrog Docs" homepage for some nonexistent paths while returning a real 404 for others, so verification there requires a content check, not a status check.
+
 **Official JFrog Documentation:**
-- [JFrog Trust Center](https://jfrog.com/trust/)
-- [JFrog Help Center](https://jfrog.com/help/)
-- [Security Best Practices](https://jfrog.com/help/r/jfrog-artifactory-documentation/security-best-practices)
-- [Security Configuration](https://jfrog.com/help/r/jfrog-platform-administration-documentation/security-configuration)
-- [Access Control](https://jfrog.com/help/r/jfrog-artifactory-documentation/managing-permissions)
-- [Xray Documentation](https://jfrog.com/help/r/jfrog-xray-documentation)
-- [JFrog Security Advisories](https://jfrog.com/help/r/jfrog-release-information/jfrog-security-advisories)
+- [Getting Started with JFrog Artifactory](https://docs.jfrog.com/artifactory/docs/getting-started)
+- [Security Configuration](https://docs.jfrog.com/administration/docs/security-configuration)
+- [Permissions (access control)](https://docs.jfrog.com/administration/docs/permissions)
+- [Access Tokens](https://docs.jfrog.com/administration/docs/access-tokens)
+- [JFrog Xray](https://docs.jfrog.com/security/docs/xray)
+- [JFrog Security Advisories](https://docs.jfrog.com/releases/docs/jfrog-security-advisories)
+
+*The former "Security Best Practices" page (`jfrog.com/help/r/jfrog-artifactory-documentation/security-best-practices`) now 301-redirects to `docs.jfrog.com/artifactory/docs/security-best-practices`, which returns 404 — the page did not survive the migration and no equivalent was locatable on the new host during this revision. Its role as this guide's primary hardening citation is carried by the Security Configuration and Permissions pages above.*
 
 **API & Developer Resources:**
-- [JFrog REST APIs](https://jfrog.com/help/r/jfrog-rest-apis/jfrog-rest-apis)
-- [JFrog CLI](https://jfrog.com/help/r/jfrog-cli)
+- [JFrog API](https://docs.jfrog.com/integrations/docs/jfrog-api)
+- [JFrog CLI](https://docs.jfrog.com/integrations/docs/jfrog-cli)
 
 **Compliance Frameworks:**
-- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27701 -- via [JFrog Trust Center](https://jfrog.com/trust/certificate-program/)
+- JFrog publishes its SOC 2 / ISO attestation status through its Trust Center, which is a vendor assurance surface rather than a hardening source and is therefore not cited in this guide. Verify JFrog's current certification scope directly with the vendor or through your procurement process; this guide makes no claim about which certifications are currently held.
 
 **Security Incidents:**
+- **CVE-2025-14830 (Medium, published 2026-01-04):** DOM-based cross-site scripting in JFrog Artifactory, affecting versions 7.94.0 through 7.117.10. Listed on the [JFrog security advisories page](https://docs.jfrog.com/releases/docs/jfrog-security-advisories).
 - **CVE-2024-6915 (CVSS 9.3):** Cache poisoning vulnerability in JFrog Artifactory allowing attackers to corrupt cached artifacts in the software supply chain. Affects versions below 7.90.6 and corresponding LTS releases. Cloud environments were patched automatically; on-premise instances require manual upgrade.
+- **CVE-2024-4142 (Critical):** Improper input validation in the token creation flow enabling privilege escalation.
 
 ---
 
@@ -555,6 +605,7 @@ See the DB pack below for SIEM detection queries.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass: correct 1.1 Step 3 — the "90-day maximum" token expiration policy does not exist; the real controls are a 3600s default, the `token.max-expiry` admin config parameter, a 24-hour cap on project admin tokens, and expiry 0 meaning non-expirable. Add 1.4 (token taxonomy by blast radius, including reference tokens whose 128-character alias form defeats secret scanners tuned to the full payload). Migrate all Appendix B links from the retired `jfrog.com/help/r/*` host to `docs.jfrog.com`; the Security Best Practices page 301s to a 404 and was removed with an explicit annotation. Remove Trust Center links per the SOURCES.md bright line. Add CVE-2025-14830 and CVE-2024-4142 from the relocated advisories page (which WAS located this pass, at `docs.jfrog.com/releases/docs/jfrog-security-advisories`). Follow-up (E4 candidate): JFrog CLI permission-target commands and JSON templates were not fetch-verified — no Code Pack authored, and no commands asserted in 1.2. Tier 2 not surveyed this pass (the CIS index was not checked); Tier 3/4 not surveyed. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial JFrog Artifactory hardening guide | Claude Code (Opus 4.5) |
 

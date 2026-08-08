@@ -6,9 +6,9 @@ slug: "harness"
 tier: "2"
 category: "DevOps"
 description: "Software delivery platform hardening for Harness including SAML SSO, RBAC, secret management, and pipeline security"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -115,10 +115,14 @@ Require 2FA for all Harness users.
 
 #### ClickOps Implementation
 
+**Prerequisite:** an account admin must enable 2FA on their own Harness profile before they can enforce it account-wide — Harness prompts the admin to protect their own login first ([Harness two-factor authentication docs](https://developer.harness.io/docs/platform/authentication/two-factor-authentication/)).
+
 **Step 1: Enable 2FA Requirement**
 1. Navigate to: **Account Settings** → **Authentication**
-2. Enable **Two-Factor Authentication**
+2. Enable **Enforce Two Factor Authentication**
 3. Configure enforcement policy
+
+> **Interaction with per-user 2FA:** Harness sends a 2FA challenge if *one or both* of the account-level enforcement setting and the individual user's own 2FA setting are enabled. Disabling account-level enforcement therefore does not disable 2FA for users who enabled it on their own profile — audit both surfaces when reasoning about coverage. Source: [Harness two-factor authentication docs](https://developer.harness.io/docs/platform/authentication/two-factor-authentication/).
 
 **Step 2: Configure via IdP**
 1. Enable MFA in identity provider
@@ -310,7 +314,7 @@ Securely manage secrets for pipelines.
 #### Rationale
 **Why This Matters:**
 - Centralizing secrets in a dedicated manager (Vault, a cloud KMS, or the built-in store) keeps credentials out of pipeline YAML and source control
-- Referenced secrets are injected at runtime and masked in logs, avoiding plaintext exposure to anyone who can read the pipeline
+- Referenced secrets are injected at runtime and masked in most log output, avoiding plaintext exposure to anyone who can read the pipeline — but masking is not absolute (see the callout below)
 - External managers add rotation, versioning, and access auditing that hardcoded credentials lack
 - Pipelines hold deploy keys and cloud credentials, so leaking one can compromise production infrastructure
 
@@ -331,6 +335,8 @@ Securely manage secrets for pipelines.
 1. Migrate existing secrets
 2. Reference secrets in pipelines
 3. Never hardcode credentials
+
+> **Secret masking has a documented exception — Run step output variables.** Harness states plainly: "Secrets in Run step output variables are exposed in logs." Do not treat "secrets are masked in logs" as a blanket guarantee. Never promote a secret into a Run step output variable; pass it by secret reference at the point of use instead, and review existing pipelines for Run steps that emit credentials as outputs. Source: [Security hardening for Harness CI](https://developer.harness.io/docs/continuous-integration/secure-ci/security-hardening/).
 
 #### Code Implementation
 
@@ -377,6 +383,49 @@ Control access to secrets.
 
 ---
 
+### 3.3 Use OIDC for Cloud Connector Authentication
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.11, 6.5 |
+| NIST 800-53 | IA-5, SC-12 |
+
+#### Description
+Authenticate Harness cloud connectors to cloud providers with OIDC federation instead of long-lived static keys, and use the OIDC token-generation plugins for pipeline steps that have no native connector.
+
+#### Rationale
+**Why This Matters:**
+- Static cloud access keys stored as Harness secrets are bearer credentials that stay valid until someone remembers to rotate them, and they work from anywhere once leaked
+- OIDC federation issues a short-lived, workload-scoped token per execution, so there is no standing cloud credential in the platform to steal
+- Harness Cloud supports the OIDC connectivity mode for GCP connectors, letting the delegate-free build infrastructure authenticate without a service account key file
+- Steps with no native connector can still go secretless — the GCP OIDC plugin generates a GCP access token from an OIDC token, and the Azure OIDC plugin does the same for Azure services
+- A CI/CD platform holding permanent cloud keys is the highest-value single target in the supply chain; removing the keys removes the prize
+
+**Attack Prevented:** Long-lived cloud credential theft, key exfiltration from CI logs or state, credential reuse outside the pipeline context, standing cloud access after platform compromise
+
+#### ClickOps Implementation
+
+**Step 1: Configure the Cloud Connector for OIDC**
+1. Navigate to: **Account Settings** → **Connectors**
+2. Create or edit the cloud provider connector (GCP, AWS, or Azure)
+3. Select the **OIDC** connectivity mode rather than key/secret authentication
+4. On the cloud provider side, register Harness as an OIDC identity provider and scope the trust policy to the specific account, organization, and project
+
+**Step 2: Cover Steps Without a Native Connector**
+1. For steps that cannot consume a connector directly, add the vendor's OIDC token-generation plugin (GCP OIDC plugin or Azure OIDC plugin) to exchange the OIDC token for a short-lived cloud access token
+2. Confirm the generated token is consumed in-step and never written to an output variable (see 3.1)
+
+**Step 3: Retire the Static Keys**
+1. Inventory existing connectors still using static access keys
+2. Migrate each to OIDC, then delete the corresponding secret from the secret manager
+3. Revoke the retired keys at the cloud provider — deleting the Harness secret alone does not invalidate them
+
+**Reference:** [Security hardening for Harness CI](https://developer.harness.io/docs/continuous-integration/secure-ci/security-hardening/)
+
+---
+
 ## 4. Pipeline Security
 
 ### 4.1 Configure Pipeline Governance
@@ -411,6 +460,13 @@ Implement pipeline governance controls.
 1. Add manual approval stages
 2. Configure approval groups
 3. Require approvals for production
+
+**Step 3: Enforce the Gate in the SCM, Not Only in Harness**
+1. Harness is explicit that "failed CI pipelines don't inherently block PR merges" — Harness can send pipeline statuses to your PRs, but the merge block lives in your source control provider
+2. In the SCM, configure branch protection rules that require the Harness status check to pass before merge
+3. Add CODEOWNERS so security-relevant paths (pipeline definitions, connectors, policy files) require a designated reviewer
+4. Treat a green Harness pipeline as evidence, not as an enforced gate, until the SCM-side protections are in place
+5. Source: [Security hardening for Harness CI](https://developer.harness.io/docs/continuous-integration/secure-ci/security-hardening/)
 
 #### Code Implementation
 
@@ -458,6 +514,47 @@ Enable and monitor audit logs.
 
 ---
 
+### 4.3 Generate and Enforce SBOM and SLSA Provenance
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 2.1, 16.6 |
+| NIST 800-53 | SA-15, SI-7 |
+
+#### Description
+Use the Harness Supply Chain Security (SCS) module to generate, store, and enforce SBOM and SLSA Provenance for pipeline-produced artifacts, so downstream consumers can verify what was built and by whom.
+
+#### Rationale
+**Why This Matters:**
+- An SBOM makes the dependency set of every shipped artifact explicit, turning "are we exposed to this CVE?" from an investigation into a query
+- SLSA Provenance cryptographically ties an artifact to the pipeline, source commit, and build parameters that produced it, so a substituted or side-loaded binary fails verification
+- Enforcement is what makes provenance a control rather than metadata — generating an attestation nobody checks stops no attack
+- Without provenance, a compromised build step can publish a tampered artifact under a trusted name and nothing downstream can tell the difference
+- Harness CI can drive this through the SCS module, or via scripts in Run steps that generate SBOM and SLSA Provenance and upload the resulting artifacts
+
+**Attack Prevented:** Supply-chain artifact substitution, tampered build output, undetected malicious dependency introduction, unverifiable release provenance
+
+#### ClickOps Implementation
+
+**Step 1: Enable Supply Chain Security**
+1. Enable the **Supply Chain Security (SCS)** module for the account
+2. Add SBOM generation to the pipelines that build release artifacts
+3. Confirm generated SBOMs are stored and retained, not just emitted to the build log
+
+**Step 2: Generate SLSA Provenance**
+1. Add SLSA Provenance generation to release-producing pipelines
+2. Where a step has no SCS-native equivalent, generate SBOM and SLSA Provenance in a Run step script and upload the artifacts
+
+**Step 3: Enforce on Consumption**
+1. Add a verification step that fails the pipeline when provenance is missing or does not match the expected builder and source
+2. Pair enforcement with the OPA governance policies in 4.1 so the requirement cannot be bypassed by editing a single pipeline
+
+**Reference:** [Security hardening for Harness CI](https://developer.harness.io/docs/continuous-integration/secure-ci/security-hardening/)
+
+---
+
 ## 5. Compliance Quick Reference
 
 ### SOC 2 Trust Services Criteria Mapping
@@ -477,28 +574,29 @@ Enable and monitor audit logs.
 | IA-2(1) | 2FA | [1.2](#12-enforce-two-factor-authentication) |
 | AC-6 | RBAC | [2.1](#21-configure-role-based-access-control) |
 | SC-12 | Secret management | [3.1](#31-configure-secret-manager) |
+| IA-5 | OIDC cloud connectors | [3.3](#33-use-oidc-for-cloud-connector-authentication) |
 | AU-2 | Audit trail | [4.2](#42-configure-audit-trail) |
+| SA-15 | SBOM and SLSA provenance | [4.3](#43-generate-and-enforce-sbom-and-slsa-provenance) |
 
 ---
 
 ## Appendix A: References
 
 **Official Harness Documentation:**
-- [Trust Center](https://trust.harness.io/)
-- [Harness Security](https://www.harness.io/security)
 - [Developer Hub](https://developer.harness.io/docs/)
 - [Security Hardening for CI](https://developer.harness.io/docs/continuous-integration/secure-ci/security-hardening/)
 - [SAML SSO Configuration](https://developer.harness.io/docs/platform/authentication/single-sign-on-saml/)
-- [RBAC Documentation](https://developer.harness.io/docs/platform/role-based-access-control/)
+- [Two-Factor Authentication](https://developer.harness.io/docs/platform/authentication/two-factor-authentication/)
+- [Role-Based Access Control (RBAC) in Harness](https://developer.harness.io/docs/platform/role-based-access-control/rbac-in-harness)
 
 **API & Developer Tools:**
 - [Harness API Documentation](https://apidocs.harness.io/)
 
 **Compliance Frameworks:**
-- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018 -- via [Trust Center](https://trust.harness.io/)
+- Harness publishes its SOC 2 / ISO attestation status through its Trust Center, which is a vendor assurance surface rather than a hardening source and is therefore not cited in this guide. Verify Harness's current certification scope directly with the vendor under NDA or through your procurement process; this guide makes no claim about which certifications are currently held.
 
 **Security Incidents:**
-- No major public security incidents identified as of February 2026.
+- No major public security incidents identified as of this revision (2026-08-08). Absence of a published incident is not evidence of absence — this reflects what was locatable in public sources on the review date.
 
 ---
 
@@ -506,6 +604,7 @@ Enable and monitor audit logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass: add 3.3 (OIDC for cloud connectors) and 4.3 (SBOM/SLSA provenance via the SCS module); correct 1.2 to the actual "Enforce Two Factor Authentication" toggle with the admin-self-enrollment prerequisite and the one-or-both challenge rule; add a Tier 1 callout to 3.1 that secrets in Run step output variables ARE exposed in logs, contradicting the guide's prior blanket masking claim; add a branch-protection/CODEOWNERS step to 4.1 because failed CI pipelines do not inherently block PR merges; repair the 404'd RBAC link and remove Trust Center / vendor security marketing links per the SOURCES.md bright line. Tier 2 not surveyed this pass (the CIS index was not checked); Tier 3/4 not surveyed. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and secret management | Claude Code (Opus 4.5) |
 
