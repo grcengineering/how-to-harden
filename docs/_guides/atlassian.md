@@ -3,12 +3,15 @@ layout: guide
 title: "Atlassian Cloud Hardening Guide"
 vendor: "Atlassian Cloud"
 slug: "atlassian"
+platform: "Atlassian"
+platform_slug: "atlassian"
+product: "Common Controls"
 tier: "2"
 category: "Productivity"
-description: "Jira/Confluence security for organization policies, app controls, and data residency"
-version: "0.3.0"
+description: "Platform-wide security hardening for Atlassian Cloud — the Common Controls hub (organization authentication, Atlassian Guard, Marketplace app governance, data security policies, org audit logging) shared by the Jira Cloud and Bitbucket product guides."
+version: "0.4.0"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 
@@ -28,7 +31,9 @@ Atlassian serves **300,000+ customers** with the Atlassian Marketplace hosting *
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Atlassian Cloud and Data Center security configurations including authentication, Marketplace app governance, API security, and AppLinks hardening.
+This guide is the **Common Controls hub** for the Atlassian platform. It covers the organization-wide Atlassian Cloud (and, where noted, Data Center) configurations that apply across every Atlassian product: authentication and Atlassian Guard, Marketplace app governance, API and integration security, data residency and data security policies, and organization audit logging. Product-specific hardening lives in the product guides listed below.
+
+Confluence has no separate product guide yet, so Confluence-specific settings (space permissions, anonymous access) remain in this hub.
 
 ### A Note on Licensing: Atlassian Guard
 
@@ -53,6 +58,21 @@ Guard is licensed per unique billable user across the organization and is indepe
 
 ---
 
+## Products in This Platform
+
+Atlassian is a multi-product platform. This guide is the **Common Controls hub** — the organization-wide controls configured once at `admin.atlassian.com` and inherited by every Atlassian product. Product-specific controls live in their own guides:
+
+| Product | Guide | Covers |
+|---------|-------|--------|
+| **Common Controls** (this guide) | — | Organization authentication & Atlassian Guard, IP allowlisting, Marketplace app governance, API tokens & OAuth, data residency & data security policies, organization audit log and anomaly detection |
+| **Jira Cloud** | [Jira Cloud guide](/guides/jira-cloud/) | Permission schemes, work item security schemes, global permissions, public/anonymous space exposure, guest access, automation rule egress |
+| **Bitbucket** | [Bitbucket guide](/guides/bitbucket/) | Workspace membership & invitations, project permissions, workspace app access rules, forking, branch restrictions & merge checks, signed commits, Pipelines secrets and deployments |
+| **Confluence** | — | No product guide yet — Confluence space permissions and anonymous access are covered in this hub (§1.2) |
+
+> **Moved controls:** organization-level controls that previously appeared in the product guides now live here and are not duplicated. From the former Jira Cloud guide: SAML SSO (§1.1), authentication policies (§1.1), two-step verification (§1.1), SAML JIT/SCIM provisioning (§1.1), domain verification (§1.1), Atlassian Guard licensing (§1.1 and *A Note on Licensing* above), organization admin roles (§1.2), third-party app access (§2.1, §3.3), audit logging (§5.1), and security alerting (§5.2). From the former Bitbucket guide: two-step verification and SAML SSO (§1.1), IP allowlisting (§1.4), and organization audit logging (§5.1).
+
+---
+
 ## 1. Authentication & Access Controls
 
 ### 1.1 Enforce SSO with MFA
@@ -64,40 +84,72 @@ Guard is licensed per unique billable user across the organization and is indepe
 #### Description
 Require SAML SSO with MFA for all Atlassian Cloud access, eliminating local password authentication. SAML configuration and enforced authentication policies are Atlassian Guard Standard capabilities (formerly sold as Atlassian Access) and are not tied to the Jira or Confluence product edition. Source: [Atlassian Guard pricing](https://www.atlassian.com/software/access/pricing)
 
+#### Prerequisites
+- Atlassian organization with at least one verified domain
+- Atlassian Guard Standard subscription (SAML SSO and enforced authentication policies are Guard capabilities, not product-edition features)
+- Organization admin access
+- SAML 2.0 compatible identity provider
+
 #### Rationale
 **Why This Matters:**
-- Jira contains vulnerability tracking and security issues
-- Confluence stores technical documentation and architecture
-- Compromised access exposes sensitive project information
+- Centralizing Atlassian authentication in your corporate IdP means MFA, conditional access, and session policy are enforced on every login to every Atlassian product, instead of product by product
+- Configuring SSO alone does not force anyone to use it — without an authentication policy, a managed user can still sign in with a local Atlassian password and bypass every IdP control
+- Domain verification is the prerequisite that turns accounts on your domain into *managed* accounts; unclaimed accounts are shadow identities that sit outside your authentication policy and your offboarding process
+- Jira holds vulnerability tickets, roadmaps, and customer issues, and Confluence holds architecture documentation and credentials pasted into pages, so one compromised login exposes a great deal
+- SSO plus directory provisioning gives one place to revoke access instantly when someone leaves, eliminating standing access through local credentials
 
-**Attack Scenario:** Compromised Marketplace app accesses Jira vulnerability tracking and Confluence technical documentation.
+**Attack Prevented:** Credential stuffing, phishing, password reuse, SSO bypass via local passwords, shadow accounts on your own domain, offboarding gaps
 
 #### ClickOps Implementation (Atlassian Cloud)
 
-**Step 1: Configure SAML SSO**
+**Step 1: Verify Your Domains**
+1. Navigate to: **admin.atlassian.com → Directory → Domains**
+2. Add each domain your organization owns and complete DNS verification
+3. Claim the existing Atlassian accounts on those domains into organization management — until an account is claimed, no authentication policy applies to it
+4. Repeat for every domain and subdomain in use, including domains acquired through mergers, which are the ones most often missed
+
+**Step 2: Configure SAML SSO**
 1. Navigate to: **admin.atlassian.com → Security → SAML single sign-on**
 2. Click **Add SAML configuration**
 3. Configure:
-   - **Identity provider:** Your IdP (Okta, Azure AD, etc.)
+   - **Identity provider:** Your IdP (Okta, Entra ID, etc.)
    - **Entity ID:** From IdP
    - **SSO URL:** IdP login endpoint
 4. Upload IdP certificate
 
-**Step 2: Enforce SSO**
+**Step 3: Enforce SSO with an Authentication Policy**
 1. Navigate to: **Security → Authentication policies**
 2. Create policy:
    - **Name:** "SSO Required"
-   - **Members:** All users
+   - **Members:** All managed users from verified domains
    - **Settings:**
      - Require SSO: Enabled
      - Allow local passwords: Disabled
+3. Create a **separate break-glass policy** covering two or three dedicated organization-admin accounts that are exempt from SSO enforcement, so an IdP outage or misconfiguration cannot lock every administrator out. Protect those accounts with their own strong two-step verification and monitor every use of them in the audit log (§5.1)
 
-**Step 3: Configure Two-Step Verification**
+**Step 4: Configure Two-Step Verification**
 1. Navigate to: **Security → Two-step verification**
 2. Enable: **Require two-step verification for all users**
 3. Configure:
    - **Enforcement:** Required
    - **Grace period:** None (L2)
+4. Where the IdP is authoritative, enforce phishing-resistant factors (FIDO2 security keys or passkeys) there for administrators rather than relying on TOTP alone
+
+**Step 5: Automate Provisioning and Deprovisioning**
+1. Connect a directory and enable **SCIM user provisioning** so accounts, group membership, and — critically — *deactivation* flow from the IdP automatically
+2. Where SCIM is not available for a given IdP, enable **SAML Just-In-Time (JIT) provisioning** so accounts are created from authoritative IdP attributes on first SSO login rather than by hand
+3. Map IdP attributes and groups to Atlassian groups, then verify that the mapped groups are the same ones your product access grants and permission schemes rely on
+4. Test the full lifecycle end to end: create a test identity in the IdP, confirm it appears and receives the right product access, then disable it in the IdP and confirm Atlassian access is revoked
+
+> **JIT is not deprovisioning.** JIT provisioning only creates accounts at login; it never removes them. An organization relying on JIT alone accumulates active accounts for departed employees. Use SCIM where the IdP supports it, and where it does not, pair JIT with a scheduled manual deactivation review.
+
+#### Validation & Testing
+
+1. From a browser with no existing session, sign in as a managed user and confirm you are redirected to the IdP and cannot reach a local Atlassian password prompt
+2. Attempt a password reset for a managed user and confirm the flow is unavailable or has no effect on access
+3. Confirm every verified domain lists zero unclaimed accounts under **Directory → Managed accounts**
+4. Deactivate a test identity in the IdP and confirm the corresponding Atlassian account loses access without any admin action
+5. Confirm the break-glass policy contains only the intended accounts and that every sign-in using it appears in the organization audit log
 
 #### Compliance Mappings
 
@@ -108,22 +160,23 @@ Require SAML SSO with MFA for all Atlassian Cloud access, eliminating local pass
 
 ---
 
-### 1.2 Implement Granular Product Access
+### 1.2 Implement Granular Product Access and Limit Organization Admins
 
 **Profile Level:** L1 (Crawl)
-**NIST 800-53:** AC-3, AC-6
+**NIST 800-53:** AC-3, AC-6, AC-6(1)
 
 #### Description
-Configure product-level and project-level access controls.
+Configure who receives access to each Atlassian product at the organization level, and hold the organization administrator role to the smallest workable set of accounts. Product access is granted at **admin.atlassian.com → Products**; administrator roles are managed at **admin.atlassian.com → Directory → Administrators**. Within-product authorization (Jira permission schemes, Bitbucket workspace and project permissions) is configured in each product and is covered in the product guides.
 
 #### Rationale
 **Why This Matters:**
-- Default-open product and project access lets every licensed user read every Jira project and Confluence space, far beyond what their role requires
-- Granular permission schemes enforce least privilege so a compromised account or insider only reaches the projects and spaces explicitly granted
+- Default-open product access lets every licensed user reach every Jira space and Confluence space, far beyond what their role requires
+- Organization admins can change SSO configuration, authentication policies, product access grants, and billing across every Atlassian product, which makes the role the single highest-value target in the tenant — an attacker who phishes one org admin owns everything downstream
+- Product admins can perform most day-to-day administration without organization-wide authority, so most people currently holding org admin almost certainly do not need it
 - Disabling anonymous Confluence access prevents unauthenticated readers from harvesting internal documentation, architecture diagrams, and secrets pasted into pages
-- Limiting browse and comment permissions per project contains the blast radius when a single account is phished
+- Reviewing admin rosters on a cadence stops the privilege accumulation that follows reorganizations and offboarding gaps
 
-**Attack Prevented:** Lateral movement, privilege creep, insider data harvesting, anonymous information disclosure
+**Attack Prevented:** Lateral movement, privilege creep, organization-admin account takeover, excessive standing privilege, insider data harvesting, anonymous information disclosure
 
 #### ClickOps Implementation
 
@@ -132,13 +185,14 @@ Configure product-level and project-level access controls.
 2. For each product, configure:
    - **Default access:** Disabled (users must be granted access)
    - **User access:** Specific groups only
+3. Grant access through IdP-synced groups rather than to individuals, so access follows the joiner/mover/leaver process automatically
 
-**Step 2: Configure Jira Project Permissions**
-1. Navigate to: **Jira → Project settings → Permissions**
-2. Use permission schemes:
-   - **Secure Project Scheme:** Limited browse, restricted commenting
-   - **Internal Project Scheme:** Standard internal access
-   - **Public Project Scheme:** Read-only for wider team
+**Step 2: Limit Organization Administrators**
+1. Navigate to: **admin.atlassian.com → Directory → Administrators**
+2. Record every account holding the organization admin role and the business reason for each
+3. Reduce the roster to the minimum that still supports coverage — two or three accounts is typical, and those should be dedicated admin identities rather than the everyday accounts of the same people
+4. Move anyone whose work is confined to one product to a product admin role instead
+5. Re-review the roster on a fixed cadence and alert on organization admin role grants in the audit log (§5.1), since a self-granted admin role is a hallmark of an in-progress compromise
 
 **Step 3: Configure Confluence Space Permissions**
 1. Navigate to: **Confluence → Space settings → Permissions**
@@ -146,6 +200,8 @@ Configure product-level and project-level access controls.
    - **Anonymous access:** Disabled
    - **Group permissions:** Specific groups per space
    - **Default permissions:** View only for most users
+
+> **Within-product authorization lives in the product guides.** Jira permission schemes, work item security schemes, and global permissions are covered in the [Jira Cloud guide](/guides/jira-cloud/). Bitbucket workspace membership, project permissions, and branch restrictions are covered in the [Bitbucket guide](/guides/bitbucket/). Grant product access here first; scope it inside the product there.
 
 ---
 
@@ -634,8 +690,10 @@ Configure and monitor Atlassian audit logs.
    - Sumo Logic
    - Custom webhook
 
-#### Detection Queries
-
+**Step 3: Correlate with Product-Level Logs**
+1. The organization audit log records identity, policy, app, and product-access events across the whole tenant — it is the authoritative record for the controls in this hub
+2. Individual products keep their own narrower logs (the Bitbucket workspace audit log, the Jira automation audit log) that record activity the organization log does not. Forward those alongside the organization log rather than in place of it — see the [Bitbucket guide](/guides/bitbucket/) §5.1 and the [Jira Cloud guide](/guides/jira-cloud/) §3.1
+3. Confirm your SIEM retention exceeds each source's native retention, since product-level logs expire far sooner than an investigation timeline
 
 ---
 
@@ -714,8 +772,11 @@ Recent critical vulnerabilities require immediate attention.
 
 | Control ID | Atlassian Control | Guide Section |
 |-----------|------------------|---------------|
-| CC6.1 | SSO enforcement | 1.1 |
-| CC6.2 | Product/project permissions | 1.2 |
+| CC6.1 | SSO enforcement, domain verification, 2SV | 1.1 |
+| CC6.2 | Product access and organization admin roles | 1.2 |
+| CC6.3 | SCIM/JIT provisioning and deprovisioning | 1.1 |
+| CC6.6 | IP allowlisting | 1.4 |
+| CC6.7 | Data security policies | 4.3 |
 | CC7.2 | Audit logging | 5.1 |
 
 ### NIST 800-53 Mapping
@@ -723,6 +784,9 @@ Recent critical vulnerabilities require immediate attention.
 | Control | Atlassian Control | Guide Section |
 |---------|------------------|---------------|
 | IA-2(1) | SSO with MFA | 1.1 |
+| AC-2 | SCIM/JIT provisioning and deprovisioning | 1.1 |
+| AC-6(1) | Organization admin role limitation | 1.2 |
+| AC-17 | IP allowlisting | 1.4 |
 | CM-7 | App approval workflow | 2.1 |
 | AU-2 | Audit logging | 5.1 |
 
@@ -802,6 +866,7 @@ Source: [Atlassian Guard pricing](https://www.atlassian.com/software/access/pric
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.4.0 | draft | Convert to the Atlassian platform Common Controls hub: add `platform`/`platform_slug`/`product` frontmatter, add "Products in This Platform" section and moved-controls callout. Merge org-level controls in from the product guides — domain verification, SSO enforcement policy with break-glass, and SCIM/JIT provisioning into §1.1; organization admin role limitation into §1.2. Point Jira project permissions at the Jira Cloud guide and note product-level log correlation in §5.1; remove empty Detection Queries heading | Claude Code (Opus 5) |
 | 2026-08-03 | 0.3.0 | draft | Rename Atlassian Access to Atlassian Guard and split edition table into product vs Guard tiers; correct API token expiry to the 1-day-to-1-year platform ceiling with forced expiry of legacy tokens; add 1.4 IP allowlisting; add 4.3 data security policies; flag Connect framework end-of-support and prefer Forge | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.2.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Atlassian hardening guide | Claude Code (Opus 4.5) |

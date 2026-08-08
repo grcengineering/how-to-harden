@@ -3,17 +3,22 @@ layout: guide
 title: "Bitbucket Cloud Hardening Guide"
 vendor: "Bitbucket"
 slug: "bitbucket"
+platform: "Atlassian"
+platform_slug: "atlassian"
+product: "Bitbucket"
 tier: "2"
 category: "DevOps"
-description: "Code repository security hardening for Bitbucket Cloud including workspace security, branch permissions, and access controls"
-version: "0.1.2"
+description: "Code repository security hardening for Bitbucket Cloud — workspace membership and app access, project permissions, forking, branch restrictions and merge checks, signed commits, and Pipelines secrets and deployment controls."
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
 
 Bitbucket Cloud is Atlassian's Git-based code hosting and collaboration platform used by **millions of developers** for source code management, CI/CD pipelines, and team collaboration. As a critical repository for intellectual property and deployment pipelines, Bitbucket security configurations directly impact code integrity and software supply chain security.
+
+This is a **product guide within the [Atlassian platform](/guides/atlassian/)**. Organization-wide controls — SAML SSO and enforced authentication policies, two-step verification, SCIM provisioning, IP allowlisting, Marketplace app governance, API token policy, data security policies, and the organization audit log — live in the Atlassian **Common Controls** hub and are referenced here rather than duplicated. Everything below is Bitbucket-specific: what you configure inside a workspace, a project, a repository, or a pipeline.
 
 ### Intended Audience
 - Security engineers managing development platforms
@@ -44,135 +49,9 @@ This guide covers Bitbucket Cloud security configurations including workspace se
 
 ## 1. Authentication & Access Control
 
-### 1.1 Enforce Two-Step Verification
+> **Organization authentication is configured in the platform hub.** SAML SSO, enforced authentication policies, two-step verification, SCIM provisioning, and IP allowlisting are Atlassian organization controls that apply to Bitbucket along with every other Atlassian product — configure them once at `admin.atlassian.com` following the [Atlassian Common Controls guide](/guides/atlassian/) §1.1 and §1.4. The control below covers what remains genuinely Bitbucket-specific: workspace membership, groups, and invitation policy.
 
-**Profile Level:** L1 (Crawl)
-
-| Framework | Control |
-|-----------|---------|
-| CIS Controls | 6.5 |
-| NIST 800-53 | IA-2(1) |
-
-#### Description
-Require two-step verification (2SV) for all workspace members to protect against credential compromise.
-
-#### Rationale
-**Why This Matters:**
-- Prevents unauthorized access from stolen credentials
-- 2SV enforcement is a Bitbucket Premium feature
-- Security keys (FIDO U2F) provide phishing-resistant authentication
-
-#### Prerequisites
-- Bitbucket Premium or Atlassian Guard subscription
-
-#### ClickOps Implementation
-
-**Step 1: Configure Workspace 2SV Requirement**
-1. Navigate to: **Workspace Settings** → **Security** → **Two-step verification**
-2. Enable **Require two-step verification**
-3. Set grace period for compliance
-4. Review non-compliant members
-
-**Step 2: Configure Atlassian Guard (Organization-wide)**
-1. Navigate to: **admin.atlassian.com** → **Security** → **Authentication policies**
-2. Create authentication policy
-3. Enable **Enforce two-step verification**
-4. Apply to organization members
-
-**Step 3: Promote Security Keys**
-1. Encourage use of FIDO U2F security keys
-2. Document approved security key options
-3. Provide setup guides for members
-
-**Time to Complete:** ~30 minutes
-
----
-
-### 1.2 Configure SAML Single Sign-On
-
-**Profile Level:** L2 (Walk)
-
-| Framework | Control |
-|-----------|---------|
-| CIS Controls | 6.3, 12.5 |
-| NIST 800-53 | IA-2, IA-8 |
-
-#### Description
-Configure SAML SSO using Atlassian Access to centralize identity management.
-
-#### Rationale
-**Why This Matters:**
-- Centralizes Bitbucket authentication in your corporate IdP, so MFA, conditional access, and session policies apply on every login
-- Local Atlassian-account logins bypass IdP controls and remain valid after an employee leaves unless manually deprovisioned
-- Directory and SCIM provisioning deprovision departed users automatically, eliminating orphaned accounts with standing access to source code
-- A single compromised developer login can expose proprietary source, CI/CD secrets, and deployment pipelines
-
-**Attack Prevented:** Credential theft, phishing, orphaned-account access, session hijacking
-
-#### ClickOps Implementation
-
-**Step 1: Verify Domain**
-1. Navigate to: **admin.atlassian.com** → **Directory** → **Domains**
-2. Add your organization's domain
-3. Verify via DNS TXT record
-
-**Step 2: Configure SAML SSO**
-1. Navigate to: **Security** → **SAML single sign-on**
-2. Click **Add SAML configuration**
-3. Configure IdP settings:
-   - Identity provider Entity ID
-   - SSO URL
-   - Public certificate
-4. Download SP metadata for IdP configuration
-
-**Step 3: Enable SSO Enforcement**
-1. Create authentication policy
-2. Enable **Enforce single sign-on**
-3. Configure session timeout
-4. Apply policy to members
-
----
-
-### 1.3 Configure IP Allowlisting
-
-**Profile Level:** L2 (Walk)
-
-| Framework | Control |
-|-----------|---------|
-| CIS Controls | 13.5 |
-| NIST 800-53 | AC-17, SC-7 |
-
-#### Description
-Restrict Bitbucket access to approved IP addresses to prevent access from unauthorized locations.
-
-#### Rationale
-**Why This Matters:**
-- Prevents access even with stolen credentials
-- Limits exposure to corporate networks
-- Required for Premium/Atlassian Guard
-
-#### Prerequisites
-- Bitbucket Premium subscription
-
-#### ClickOps Implementation
-
-**Step 1: Configure IP Allowlist**
-1. Navigate to: **Workspace Settings** → **Security** → **IP allowlist**
-2. Click **Add IP address**
-3. Add corporate network IP ranges
-4. Add VPN egress IPs
-5. Add CI/CD server IPs
-
-**Step 2: Test Configuration**
-1. Verify access from allowed IPs
-2. Test blocked access from other IPs
-3. Document emergency procedures
-
-**Configuration Example:**
-
----
-
-### 1.4 Manage User Permissions and Access
+### 1.1 Manage User Permissions and Access
 
 **Profile Level:** L1 (Crawl)
 
@@ -280,7 +159,7 @@ Configure project-level permissions to manage access at scale across multiple re
 | NIST 800-53 | AC-20 |
 
 #### Description
-Control which third-party applications can access workspace data.
+Control which third-party applications can access workspace data. This is the workspace-scoped layer of app governance — organization-wide Marketplace app approval, the app block list, and OAuth scope review are configured in the [Atlassian Common Controls guide](/guides/atlassian/) §2.1 and §3.3. Configure both: the organization policy decides which apps may be installed at all, and the workspace app access rules decide which of those may reach this workspace's repositories.
 
 #### Rationale
 **Why This Matters:**
@@ -361,13 +240,16 @@ Prevent unauthorized code distribution by disabling forking for private reposito
 | NIST 800-53 | CM-3, SI-7 |
 
 #### Description
-Configure branch permissions to protect important branches from unauthorized changes.
+Configure branch restrictions to protect release and default branches from unauthorized or unreviewed changes.
 
 #### Rationale
 **Why This Matters:**
-- Prevents direct pushes to production branches
-- Enforces code review requirements
-- Protects against tampering
+- Without a branch restriction, anyone with write access can push straight to the default branch, so a single compromised developer credential puts code into the build with no review step in between
+- Blocking force pushes and deletions preserves history, which is what makes tampering detectable after the fact — an attacker who can rewrite history can hide the commit that introduced a backdoor
+- Merge checks that require passing builds and a minimum number of approvals turn review from a convention into an enforced gate that cannot be skipped under deadline pressure
+- Branch restrictions are the enforcement point that gives the rest of the pipeline its meaning: signed commits, secret scanning, and deployment permissions all assume code arrived through the protected path
+
+**Attack Prevented:** Direct push of unreviewed code to production branches, history rewriting to conceal malicious commits, branch deletion, review bypass
 
 #### ClickOps Implementation
 
@@ -590,39 +472,34 @@ Implement secret scanning to prevent credentials from being committed.
 | NIST 800-53 | AU-2 |
 
 #### Description
-Enable and monitor audit logs for security events and compliance.
+Enable and monitor the **Bitbucket workspace audit log** for repository and workspace events. This is the Bitbucket-specific log; the organization-wide Atlassian audit log and its SIEM streaming are configured in the [Atlassian Common Controls guide](/guides/atlassian/) §5.1. Forward both — the organization log records identity and app events, while the workspace log records the repository, branch-restriction, and permission changes that the organization log does not.
 
 #### Rationale
 **Why This Matters:**
-- Audit logs provide the forensic record needed to detect, investigate, and scope a security incident
-- Monitoring permission changes and repository activity surfaces unauthorized access while it is still actionable
-- SIEM integration enables real-time alerting instead of discovering breaches long after the fact
-- Without audit trails, attacker actions go undetected and incident response cannot reconstruct what happened
+- The workspace audit log is the only record of repository-level actions — repository creation and deletion, branch restriction changes, and workspace permission grants — and none of those appear in the organization audit log
+- An attacker who has obtained write access typically relaxes a branch restriction before pushing; that change is visible in the workspace log and nowhere else, which makes it one of the highest-value events to alert on
+- Monitoring permission changes and repository activity surfaces unauthorized access while it is still actionable rather than after the code has already left
+- Without audit trails, incident response cannot reconstruct what an attacker touched, and cannot establish which repositories need to be treated as compromised
 
-**Attack Prevented:** Undetected intrusion, insider abuse, privilege misuse, delayed incident response
+**Attack Prevented:** Undetected intrusion, silent relaxation of branch protections, insider abuse, privilege misuse, delayed incident response
 
 #### ClickOps Implementation
 
-**Step 1: Access Audit Log**
+**Step 1: Access the Workspace Audit Log**
 1. Navigate to: **Workspace Settings** → **Audit log**
 2. Review recent events
 
-**Step 2: Configure Atlassian Guard Audit Logs**
-1. Navigate to: **admin.atlassian.com** → **Security** → **Audit log**
-2. View organization-wide events
-3. Export logs for SIEM integration
+**Key Bitbucket Events to Monitor:**
+- Repository creation and deletion
+- Branch restriction and merge-check changes
+- Workspace and project permission changes
+- User group membership changes
+- App installations and access-rule changes
 
-**Key Events to Monitor:**
-- User login/logout events
-- Permission changes
-- Repository creation/deletion
-- Branch permission changes
-- App installations
-
-**Step 3: SIEM Integration**
-1. Use Atlassian Guard API for log export
-2. Configure automated log forwarding
-3. Set up security alerts
+**Step 2: Forward to Your SIEM Alongside the Organization Log**
+1. Configure organization audit log streaming per the [Atlassian Common Controls guide](/guides/atlassian/) §5.1 (SIEM webhook forwarding requires Atlassian Guard Premium)
+2. Collect the workspace audit log in addition, and confirm your SIEM retention exceeds Bitbucket's native retention window
+3. Alert specifically on branch restriction removal and on repository deletion — both are low-frequency, high-signal events
 
 ---
 
@@ -669,22 +546,28 @@ Conduct regular security reviews of workspace configuration and access.
 
 | Control ID | Bitbucket Control | Guide Section |
 |-----------|-------------------|---------------|
-| CC6.1 | Two-step verification | [1.1](#11-enforce-two-step-verification) |
-| CC6.1 | SSO | [1.2](#12-configure-saml-single-sign-on) |
-| CC6.6 | IP allowlisting | [1.3](#13-configure-ip-allowlisting) |
-| CC6.2 | Least privilege | [1.4](#14-manage-user-permissions-and-access) |
+| CC6.2 | Workspace membership least privilege | [1.1](#11-manage-user-permissions-and-access) |
+| CC6.3 | Project-level permissions | [2.1](#21-configure-project-level-permissions) |
+| CC6.7 | Forking restrictions | [2.3](#23-disable-repository-forking-for-private-repos) |
 | CC7.1 | Branch protection | [3.1](#31-configure-branch-permissions) |
-| CC7.2 | Audit logging | [5.1](#51-enable-audit-logging) |
+| CC8.1 | Pull request approvals | [3.2](#32-require-pull-request-approvals) |
+| CC7.2 | Workspace audit logging | [5.1](#51-enable-audit-logging) |
+
+**Organization-level criteria** (CC6.1 SSO and 2SV, CC6.6 IP allowlisting) map to the [Atlassian Common Controls guide](/guides/atlassian/) §1.1 and §1.4.
 
 ### NIST 800-53 Rev 5 Mapping
 
 | Control | Bitbucket Control | Guide Section |
 |---------|-------------------|---------------|
-| IA-2(1) | MFA | [1.1](#11-enforce-two-step-verification) |
-| IA-8 | SSO | [1.2](#12-configure-saml-single-sign-on) |
-| AC-6 | Least privilege | [1.4](#14-manage-user-permissions-and-access) |
+| AC-6 | Workspace membership least privilege | [1.1](#11-manage-user-permissions-and-access) |
+| AC-3 | Project-level permissions | [2.1](#21-configure-project-level-permissions) |
+| AC-20 | Third-party app access | [2.2](#22-manage-third-party-app-access) |
 | CM-3 | Branch protection | [3.1](#31-configure-branch-permissions) |
-| AU-2 | Audit logging | [5.1](#51-enable-audit-logging) |
+| SI-7 | Signed commits | [3.3](#33-enforce-signed-commits) |
+| SC-12 | Pipeline secret management | [4.1](#41-secure-pipeline-variables) |
+| AU-2 | Workspace audit logging | [5.1](#51-enable-audit-logging) |
+
+**Organization-level controls** (IA-2(1) MFA, IA-8 SSO, AC-17 remote access restriction) map to the [Atlassian Common Controls guide](/guides/atlassian/) §1.1 and §1.4.
 
 ---
 
@@ -692,12 +575,15 @@ Conduct regular security reviews of workspace configuration and access.
 
 | Feature | Free | Standard | Premium |
 |---------|------|----------|---------|
-| Two-step verification | Optional | Optional | Enforced |
-| IP allowlisting | ❌ | ❌ | ✅ |
-| Merge checks | Basic | ✅ | ✅ |
-| Deployment permissions | ❌ | ✅ | ✅ |
-| Audit log (workspace) | ❌ | ❌ | ✅ |
-| SAML SSO | ❌ | ❌ | Via Guard |
+| Workspace user groups and invitation policy (1.1) | ✅ | ✅ | ✅ |
+| Project-level permissions (2.1) | ✅ | ✅ | ✅ |
+| Workspace app access rules (2.2) | Basic | ✅ | ✅ |
+| Forking restrictions (2.3) | ✅ | ✅ | ✅ |
+| Merge checks (3.1, 3.2) | Basic | ✅ | ✅ |
+| Deployment permissions (4.2) | ❌ | ✅ | ✅ |
+| Audit log (workspace) (5.1) | ❌ | ❌ | ✅ |
+
+**Organization-level features** — SAML SSO, enforced two-step verification, and IP allowlisting — depend on the Atlassian Guard subscription and product plan rather than the Bitbucket plan alone. See the [Atlassian Common Controls guide](/guides/atlassian/) Appendix A for the Guard capability matrix.
 
 ---
 
@@ -738,6 +624,7 @@ Conduct regular security reviews of workspace configuration and access.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Restructure as a product guide under the Atlassian platform hub: add `platform`/`platform_slug`/`product` frontmatter and a hub pointer. Remove duplicated organization-level controls — former 1.1 two-step verification and 1.2 SAML SSO now live in Atlassian §1.1, former 1.3 IP allowlisting now lives in Atlassian §1.4. Renumber former 1.4 to 1.1; sections 2-5 unchanged. Scope 5.1 to the Bitbucket workspace audit log with a hub cross-reference, cross-reference org app governance from 2.2, and complete the 3.1 rationale with an Attack Prevented line | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.2 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with workspace security, branch protection, and pipeline security | Claude Code (Opus 4.5) |
 | 2026-02-19 | 0.1.1 | draft | Extract inline code blocks to Code Pack files (sections 4.2, 4.3) | Claude Code (Opus 4.6) |
