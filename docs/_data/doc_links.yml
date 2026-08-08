@@ -348,7 +348,7 @@ gitlab:
 
 gong:
   product_docs: "https://help.gong.io/"
-  api_docs: "https://gong.app.gong.io/settings/api/documentation"
+  api_docs: "https://help.gong.io/apidocs/"
   hardening_docs:
     - label: "Permission Profiles"
       url: "https://help.gong.io/docs/about-permission-profiles"

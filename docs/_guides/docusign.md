@@ -6,9 +6,9 @@ slug: "docusign"
 tier: "2"
 category: "Productivity"
 description: "eSignature platform hardening for DocuSign including SSO configuration, session security, and admin controls"
-version: "0.1.1"
+version: "0.1.2"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -28,6 +28,8 @@ DocuSign is the leading eSignature platform used by **over 1 million customers**
 
 ### Scope
 This guide covers DocuSign eSignature security configurations including admin tools, SSO, security settings, and compliance features.
+
+> **Verification note (2026-08):** DocuSign's support and developer documentation sites render as JavaScript single-page applications and were not externally verifiable to automated tooling during this pass. The console navigation paths and the plan-compatibility matrix below reflect the last state this guide was able to verify and warrant an authenticated, in-browser re-check against your own tenant before you rely on them. Treat any path that does not match your console as documentation drift, not as a missing feature.
 
 ---
 
@@ -61,6 +63,8 @@ Configure SAML SSO to centralize authentication and enforce organizational secur
 - Enables enforcement of MFA through IdP
 - Supports just-in-time provisioning
 - Critical for SOC 2 and ISO 27001 compliance
+
+**Attack Prevented:** Credential theft, phishing, password reuse, shadow accounts outside centralized identity governance
 
 #### Prerequisites
 - DocuSign Enterprise plan
@@ -527,23 +531,20 @@ Enable compliance-specific features for regulated industries.
 ## Appendix B: References
 
 **Official DocuSign Documentation:**
-- [Trust Center](https://www.docusign.com/trust)
 - [Support Center](https://support.docusign.com/s/?language=en_US)
 - [Security Settings Guide](https://support.docusign.com/guides/ndse-admin-guide-security-settings)
-- [Product Security](https://www.docusign.com/trust/security/product-security)
-- [Security for DocuSign eSignature](https://www.docusign.com/trust/security/esignature)
 - [Security Recommendations and Best Practices](https://support.docusign.com/s/document-item?bundleId=ieh1606952453299&topicId=swt1606952443828.html)
-- [DocuSign Trust and Security Overview (PDF)](https://assets.ctfassets.net/3fcisxc3a6xz/7bSlNiSrqO1ASXINKpYkze/4a8c7ebdcaa5674a35e448783e4b67a3/DocuSign_Trust_and_Security_Overview.pdf)
 
 **API & Developer Documentation:**
 - [eSignature REST API Reference](https://developers.docusign.com/docs/esign-rest-api/reference/)
 - [DocuSign Developer Center](https://developers.docusign.com/)
 
 **Compliance Frameworks:**
-- SOC 1 Type II, SOC 2 Type II, ISO 27001:2022, ISO 27017, ISO 27018 — via [Certifications](https://www.docusign.com/trust/compliance/certifications)
+- SOC 1 Type II, SOC 2 Type II, ISO 27001:2022, ISO 27017, ISO 27018
 - PCI DSS v4.0 compliant
 - Annual business continuity and disaster recovery testing per ISO 27001 controls
-- [Compliance Overview](https://www.docusign.com/trust/compliance)
+
+Attestation reports and certificate scopes are distributed by DocuSign under NDA; request them through your account team rather than relying on a public marketing summary.
 
 **Security Incidents:**
 - No major public security incidents identified affecting the DocuSign platform directly. DocuSign has been a frequent target of phishing campaigns impersonating the service, but these are social engineering attacks against end users rather than platform compromises.
@@ -554,6 +555,7 @@ Enable compliance-specific features for regulated industries.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.1.2 | draft | Structural pass only — Tier 1 sources unreachable (DocuSign support/developer docs render as SPAs and could not be fetched or verified this pass), so no content refresh was possible. Removed Trust Center and marketing security pages from References per the hardening-source standard, added the missing Attack Prevented line to 1.1, and added an Overview verification note flagging console paths and the plan matrix for authenticated re-check. Tier 2 (CIS/DISA/CISA) and Tier 3/4 expert sources not surveyed this pass. | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, security settings, and admin controls | Claude Code (Opus 4.5) |
 
