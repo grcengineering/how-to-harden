@@ -6,9 +6,9 @@ slug: "zscaler"
 tier: "1"
 category: "Security"
 description: "Security hardening for Zscaler ZIA, ZPA, and Client Connector deployment"
-version: "0.1.1"
+version: "0.1.2"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -59,10 +59,12 @@ Configure SAML-based SSO for Zscaler Admin Portal and Client Connector authentic
 
 #### Rationale
 **Why This Matters:**
-- Centralizes authentication management
-- Enables MFA enforcement through IdP
-- Provides consistent access policies
-- Eliminates standalone Zscaler passwords
+- Centralizes authentication management so every admin and user login is subject to one set of corporate controls
+- Enables MFA enforcement through the IdP, which is where conditional access and device signals already live
+- Provides consistent access policies across the ZIA portal, the ZPA portal, and Client Connector enrollment
+- Eliminates standalone Zscaler passwords, which survive offboarding and are invisible to IdP-based deprovisioning
+
+**Attack Prevented:** Credential stuffing and password reuse against local accounts, phishing-driven admin takeover, orphaned-account access after offboarding, MFA bypass through a standalone login path
 
 #### Prerequisites
 - Zscaler ZIA or ZPA subscription
@@ -110,9 +112,12 @@ Configure granular admin roles in Zscaler to limit access based on job responsib
 
 #### Rationale
 **Why This Matters:**
-- Super Admin has unrestricted access to all settings
-- Compromised admin accounts have significant impact
-- Role-based access supports audit requirements
+- Super Admin has unrestricted access to all settings, including the policies and SSL inspection scope that every other control in this guide depends on
+- Compromised admin accounts have significant impact — an attacker holding Super Admin can disable inspection or add bypass rules rather than having to evade the controls
+- Role-based access supports audit requirements and makes each configuration change attributable to a person with a defined function
+- Reserving Super Admin for emergencies keeps the standing privilege pool small, so routine work does not run at the blast radius of the whole tenant
+
+**Attack Prevented:** Admin account takeover, policy tampering and inspection disablement, privilege abuse by over-scoped operators, unattributable configuration changes
 
 #### ClickOps Implementation
 
@@ -159,10 +164,12 @@ Configure URL filtering policies to block access to malicious, risky, and policy
 
 #### Rationale
 **Why This Matters:**
-- URL filtering is foundational web security
-- Blocks access to known malicious sites
-- Prevents productivity loss and policy violations
-- Zscaler provides recommended policy templates
+- URL filtering is foundational web security and the cheapest place to stop an attack chain — before a payload is ever fetched
+- Blocks access to known malicious sites, including the phishing and malware-hosting categories that carry most initial access
+- Prevents productivity loss and policy violations, and denies the anonymizer and remote-access categories attackers use to route around controls
+- Zscaler provides recommended policy templates, so the hardened baseline does not have to be assembled category by category from scratch
+
+**Attack Prevented:** Phishing page delivery, malware and cryptomining site access, botnet command-and-control callbacks, inspection evasion via anonymizers and unapproved remote-access tools
 
 #### ClickOps Implementation
 
@@ -284,6 +291,8 @@ Configure Zscaler Cloud Firewall policies to control non-web traffic including p
 
 ## 3. ZPA Application Access
 
+> **Primary reference for this section:** Zscaler's [ZPA Leading Practices Guide](https://help.zscaler.com/zpa/zpa-leading-practices-guide) is the current first-party guidance for ZPA design and policy. URL sitemap-verified 2026-08 (`help.zscaler.com/sitemap.xml`, lastmod 2026-06-05); the help portal is client-rendered and its content is not retrievable by automated fetchers, so read it in a browser.
+
 ### 3.1 Configure Application Segments
 
 **Profile Level:** L1 (Crawl)
@@ -298,10 +307,12 @@ Define application segments in ZPA to control access to internal applications wi
 
 #### Rationale
 **Why This Matters:**
-- ZPA provides Zero Trust access (no network exposure)
-- Application segments define what's accessible
-- Granular access replaces broad VPN access
-- Reduces lateral movement risk
+- ZPA provides Zero Trust access with no network exposure — applications are never reachable at the network layer, so they cannot be scanned or attacked by an unauthorized client
+- Application segments define exactly what is accessible; a segment defined as a wide port range or subnet quietly recreates the flat network ZPA is meant to replace
+- Granular access replaces broad VPN access, so a single credential no longer implies reachability of everything behind the tunnel
+- Precise segment definitions reduce lateral movement risk by ensuring a compromised session reaches one application rather than an entire environment
+
+**Attack Prevented:** Internal application exposure and scanning, lateral movement from a compromised endpoint, over-broad access from wide port or subnet definitions, VPN-style flat-network reachability
 
 #### ClickOps Implementation
 
@@ -473,9 +484,12 @@ Deploy Zscaler root certificate to enable SSL inspection of encrypted traffic.
 
 #### Rationale
 **Why This Matters:**
-- Over 90% of web traffic is encrypted
-- Without SSL inspection, threats hide in HTTPS
-- Certificate must be trusted by endpoints
+- The overwhelming majority of web traffic is encrypted, so without decryption the proxy sees destinations but not content
+- Without SSL inspection, threats hide in HTTPS — malware delivery, command-and-control, and data exfiltration all ride the same encrypted channel as legitimate traffic
+- The certificate must be trusted by endpoints, and a partial rollout produces certificate errors that push users toward disabling protection or requesting bypasses
+- Deploying the root CA through MDM makes trust a managed, verifiable state rather than a per-user action
+
+**Attack Prevented:** Malware and payload delivery hidden in TLS, encrypted command-and-control, exfiltration over HTTPS, user-driven bypass caused by certificate errors
 
 #### ClickOps Implementation
 
@@ -534,6 +548,8 @@ Lock Client Connector configuration to prevent users from disabling or bypassing
 
 ## 5. SSL Inspection
 
+> **Primary reference for this section:** Zscaler's [ZIA SSL Inspection Leading Practices Guide](https://help.zscaler.com/zia/zia-ssl-inspection-leading-practices-guide) is the current first-party guidance for inspection scope, bypass handling, and rollout. URL sitemap-verified 2026-08 (`help.zscaler.com/sitemap.xml`, lastmod 2026-07-31); the help portal is client-rendered and its content is not retrievable by automated fetchers, so read it in a browser.
+
 ### 5.1 Enable SSL Inspection
 
 **Profile Level:** L1 (Crawl)
@@ -548,9 +564,12 @@ Enable SSL/TLS inspection to decrypt, inspect, and re-encrypt HTTPS traffic for 
 
 #### Rationale
 **Why This Matters:**
-- Encrypted traffic hides threats from inspection
-- SSL inspection enables full visibility
-- Required for effective DLP and malware detection
+- Encrypted traffic hides threats from inspection, so an uninspected TLS session is a control gap regardless of how well URL filtering and firewall rules are tuned
+- SSL inspection enables full visibility, which is what makes the sandbox, malware, and behavioral engines effective rather than nominal
+- It is required for effective DLP and malware detection — neither can act on content it cannot read
+- A carefully justified bypass list keeps the exception set small and reviewable instead of letting broad categories accumulate outside inspection
+
+**Attack Prevented:** Threat delivery inside encrypted sessions, encrypted command-and-control, data exfiltration over TLS, silent policy gaps created by unreviewed bypass exceptions
 
 #### Prerequisites
 - SSL certificate deployed to endpoints
@@ -725,26 +744,27 @@ Configure comprehensive logging and integrate with SIEM for security monitoring 
 
 ## Appendix B: References
 
+> **How these URLs were verified.** `help.zscaler.com` is a client-rendered application that returns HTTP 200 for paths that do not exist, so response status proves nothing about a link. Every `help.zscaler.com` URL below was confirmed against the server-rendered sitemap at `https://help.zscaler.com/sitemap.xml` in August 2026. Page *content* is not retrievable by automated fetchers — open these in a browser.
+
 **Official Zscaler Documentation:**
-- [Zscaler Compliance Center](https://compliance.zscaler.com/)
-- [Zscaler Compliance Overview](https://www.zscaler.com/compliance/overview)
-- [Zscaler Trust Security Advisories](https://trust.zscaler.com/security-advisories)
 - [ZIA Help Portal](https://help.zscaler.com/zia)
 - [ZPA Help Portal](https://help.zscaler.com/zpa)
 - [Client Connector Help](https://help.zscaler.com/zscaler-client-connector)
-- [ZIA Policy Best Practices Guide](https://help.zscaler.com/zscaler-deployments-operations/zia-policy-leading-practices-guide)
-- [ZIA Security Policy Best Practices](https://help.zscaler.com/zia/best-practices-security-policy)
+- [ZIA Policy Leading Practices Guide](https://help.zscaler.com/zscaler-deployments-operations/zia-policy-leading-practices-guide)
+- [ZIA SSL Inspection Leading Practices Guide](https://help.zscaler.com/zia/zia-ssl-inspection-leading-practices-guide) — sitemap-verified 2026-08 (lastmod 2026-07-31); maps to [§5 SSL Inspection](#5-ssl-inspection)
+- [ZPA Leading Practices Guide](https://help.zscaler.com/zpa/zpa-leading-practices-guide) — sitemap-verified 2026-08 (lastmod 2026-06-05); maps to [§3 ZPA Application Access](#3-zpa-application-access)
+- [Zscaler Trust Security Advisories](https://trust.zscaler.com/security-advisories) — JavaScript-rendered; not retrievable by automated fetchers
 
 **API Documentation:**
-- [ZIA API Getting Started](https://help.zscaler.com/zia/getting-started-zia-api)
+- [Getting Started with the ZIA API](https://help.zscaler.com/legacy-apis/getting-started-zia-api) — sitemap-verified 2026-08; the previous `/zia/getting-started-zia-api` path is no longer in the sitemap
 - [ZPA API Documentation](https://help.zscaler.com/zpa)
 
 **Deployment Guides:**
-- [Step-by-Step Configuration Guide for ZIA](https://help.zscaler.com/zia/step-step-configuration-guide-zia)
-- [Step-by-Step Configuration Guide for ZPA](https://help.zscaler.com/zpa/step-step-configuration-guide-zpa)
+- [Step-by-Step Configuration Guide for Private Access](https://help.zscaler.com/zpa/step-step-configuration-guide-private-access) — sitemap-verified 2026-08; the previous `/zpa/step-step-configuration-guide-zpa` path is no longer in the sitemap
+- A ZIA step-by-step configuration guide was previously linked here at `/zia/step-step-configuration-guide-zia`; that path is absent from the current sitemap and no replacement could be verified, so it has been removed rather than left as a plausible-looking dead link. The same applies to the former `/zia/best-practices-security-policy` link — use the ZIA Policy Leading Practices Guide above instead.
 
 **Compliance Frameworks:**
-- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, ISO 27701, FedRAMP (product-dependent) -- via [Zscaler Compliance Center](https://compliance.zscaler.com/)
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, ISO 27701, FedRAMP (product-dependent). Zscaler publishes these attestations through its compliance portal, which is not linked here: it is compliance marketing rather than hardening documentation, and the former `zscaler.com/compliance/overview` URL now redirects to `compliance.zscaler.com`, which returned HTTP 403 on verification.
 
 **Security Incidents:**
 - **August 2025 -- Salesloft Drift Supply-Chain Breach:** Threat actor UNC6395 exploited compromised Salesloft Drift OAuth tokens to access Zscaler's Salesforce instance, exfiltrating contact metadata (names, emails, job titles), product licensing configurations, and plain-text support case content. Part of a broader campaign affecting 700+ organizations. No Zscaler products, services, or infrastructure were compromised. Detected August 28, disclosed August 31, 2025. All affected OAuth tokens were revoked.
@@ -755,6 +775,7 @@ Configure comprehensive logging and integrate with SIEM for security monitoring 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.1.2 | draft | Link-rot and rationale pass. Appendix B: corrected the ZIA API path to `/legacy-apis/getting-started-zia-api` and the ZPA step-by-step guide to `/zpa/step-step-configuration-guide-private-access`; removed the ZIA step-by-step and ZIA security-policy best-practices links (both absent from the current sitemap, no verifiable replacement); removed the `zscaler.com/compliance/overview` link (301s to `compliance.zscaler.com`, which 403s, and is compliance marketing regardless); annotated the trust.zscaler.com advisories page as JavaScript-rendered. Added the two current Tier 1 leading-practices guides — ZIA SSL Inspection (§5) and ZPA (§3) — as references, with pointers from those sections. All `help.zscaler.com` URLs are sitemap-verified via `help.zscaler.com/sitemap.xml`, since the help host returns HTTP 200 for nonexistent paths and status codes prove nothing there; page content is not renderable to fetchers. Added **Attack Prevented** to 1.1, 1.2, 2.1, 3.1, 4.2, and 5.1. Several apparent doc-surface changes (unified cross-service admin RBAC, a ZIA-API-to-OneAPI migration) were noted but not applied pending content verification — the help host is fetcher-opaque. Tier 3/4 research out of scope for this pass. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with ZIA/ZPA hardening and Client Connector security | Claude Code (Opus 4.5) |
 

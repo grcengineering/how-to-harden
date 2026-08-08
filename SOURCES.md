@@ -25,7 +25,7 @@ The standard for what counts as a legitimate source when deriving How to Harden 
 | GitHub | docs.github.com | [Security hardening for GitHub Actions](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions) |
 | HashiCorp Vault | developer.hashicorp.com | [Production Hardening](https://developer.hashicorp.com/vault/docs/concepts/production-hardening) |
 | Google Workspace | knowledge.workspace.google.com | [Security checklist for medium/large businesses](https://knowledge.workspace.google.com/admin/security/security-checklist-for-medium-and-large-businesses-100-users) |
-| Zscaler | help.zscaler.com | [ZIA Policy Leading Practices Guide](https://help.zscaler.com/zscaler-deployments-operations/zia-policy-leading-practices-guide) |
+| Zscaler | help.zscaler.com | [ZIA Policy Leading Practices Guide](https://help.zscaler.com/zscaler-deployments-operations/zia-policy-leading-practices-guide) — note: `help.zscaler.com` is a client-rendered SPA returning HTTP 200 for nonexistent paths; verify URLs via [help.zscaler.com/sitemap.xml](https://help.zscaler.com/sitemap.xml), never via HTTP status |
 | Snowflake | docs.snowflake.com | [Authentication policies](https://docs.snowflake.com/en/user-guide/authentication-policies) |
 | Ona | ona.com | [Guardrails overview](https://ona.com/docs/ona/guardrails/overview.md) |
 
@@ -144,6 +144,7 @@ Tiers 1-2/2b are standing allowlists that rarely change. Tiers 3-4 are standing 
 
 | Date | Changes |
 |------|---------|
+| 2026-08-08 | Added a verification caveat to the Tier 1 Zscaler row: `help.zscaler.com` is a client-rendered SPA that returns HTTP 200 for nonexistent paths, so link verification there must go through `help.zscaler.com/sitemap.xml` rather than HTTP status. |
 | 2026-08-08 | Replaced all remaining italicized placeholder example URLs (Tier 2: DISA STIGs, NSA CSI, ACSC; Tier 3: Obsidian Security, Unit 42, Rapid7 Research, Praetorian, AppOmni, GitGuardian, Mitiga, Varonis Threat Labs) with real fetch-verified URLs. Relaxed Tier 3 admission criterion 2 to accept a named standing research team (not just an individual byline) per principal decision — Obsidian Security and Unit 42 both publish substantive, technically-reproducible, product-specific research under consistent team bylines. |
 | 2026-08-08 | Converted the Tier 1 (examples), Tier 2, Tier 2b, Tier 3, and Tier 4 source lists into tables carrying Source Name + Source Domain + Example Hardening Guide, so authoring agents search by domain and know what a real hardening guide from each source looks like (verified URLs where available this session; italic = describe-then-fetch-verify). Added **Pluto Security** (pluto.security) to the Tier 3 standing list with its verified Claude Tag hardening guide as the example. |
 | 2026-08-08 | Council-refined revision: Tier 2/2b split (prescriptive bodies vs framework catalogs), originate/values/corroborate semantics per tier, facts-vs-values conflict rule with strictest-defensible precedence, Tier 3 elevation for un-benchmarked surfaces with mandatory Tier 1 cross-verification, maintenance cadence. Two council seats (formal semantics, provenance rigor) were synthesized conservatively — revisit if those areas prove contentious. |

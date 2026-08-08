@@ -6,9 +6,9 @@ slug: "wiz"
 tier: "2"
 category: "Security"
 description: "Cloud security platform hardening for connector security and RBAC controls"
-version: "0.1.1"
+version: "0.1.2"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 
@@ -59,7 +59,7 @@ Require SAML SSO with MFA for all Wiz console access.
 - Compromised access exposes vulnerability data
 - Attack planning facilitated by exposed security posture
 
-**Attack Scenario:** Compromised OAuth token reveals infrastructure vulnerabilities and misconfigurations across customer's entire cloud estate.
+**Attack Prevented:** Console account takeover, credential-stuffing and phishing against local logins, session reuse after offboarding, reconnaissance of the customer's entire cloud attack surface via a compromised OAuth token
 
 #### ClickOps Implementation
 
@@ -145,9 +145,12 @@ Harden cloud connector IAM permissions to minimum required.
 
 #### Rationale
 **Why This Matters:**
-- Wiz connectors have read access to cloud resources
-- Over-privileged connectors expand attack surface
-- Compromised connector credentials enable reconnaissance
+- Wiz connectors have read access to cloud resources across every subscribed account, so connector scope is effectively a second copy of your cloud permissions model
+- Over-privileged connectors expand attack surface — a connector granted write or Contributor-equivalent rights turns a read-only posture tool into a change path into production
+- Compromised connector credentials enable reconnaissance of the full cloud estate, including the misconfigurations an attacker would otherwise have to discover
+- External IDs and dedicated identities keep the connector's trust relationship scoped to Wiz specifically rather than to anyone who learns the role ARN
+
+**Attack Prevented:** Confused-deputy assumption of the connector role, over-privileged connector abuse, cloud-wide reconnaissance from stolen connector credentials, unauthorized resource modification via an over-scoped connector
 
 #### AWS Connector Best Practices
 
@@ -376,12 +379,8 @@ Enable Wiz audit logging and forward authentication, configuration-change, and A
 
 ## Appendix A: References
 
-## Appendix B: References
-
 **Official Wiz Documentation:**
-- [Trust Center](https://www.wiz.io/trust-center)
-- [Trust Center (SafeBase)](https://trust.wiz.io/)
-- [Documentation Portal](https://docs.wiz.io/) (login required)
+- [Documentation Portal](https://docs.wiz.io/) — serves an automated-access challenge (HTTP 429 "Vercel Security Checkpoint") to fetchers and headless clients; open it in a real browser
 - [Resource Center](https://www.wiz.io/resources)
 - [Wiz Research](https://www.wiz.io/research)
 - [Cloud Threat Landscape — Incidents](https://threats.wiz.io/all-incidents)
@@ -392,7 +391,7 @@ Enable Wiz audit logging and forward authentication, configuration-change, and A
 - [Wiz GitHub Organization](https://github.com/wiz-sec)
 
 **Compliance Frameworks:**
-- SOC 2 Type II, SOC 3, ISO 27001, ISO 27017, ISO 27018, ISO 27701, HIPAA, PCI, FedRAMP Moderate — via [Trust Center](https://trust.wiz.io/)
+- SOC 2 Type II, SOC 3, ISO 27001, ISO 27017, ISO 27018, ISO 27701, HIPAA, PCI, FedRAMP Moderate — Wiz's attestations are published through its Trust Center, which is not linked here: Trust Centers are compliance-marketing surfaces rather than hardening documentation, and `trust.wiz.io` returned HTTP 403 on verification
 - [Wiz for Government (FedRAMP)](https://www.wiz.io/verticals/government)
 
 **Security Incidents:**
@@ -404,6 +403,7 @@ Enable Wiz audit logging and forward authentication, configuration-change, and A
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.1.2 | draft | Repo-internal corrections only. Wiz's Tier 1 documentation portal could not be reached this pass — `docs.wiz.io` serves an automated-access challenge (HTTP 429 Vercel Security Checkpoint) to fetchers and headless browsers — so **no currency deltas were verifiable and none were applied**; the control set is unchanged pending a browser-capable pass. Fixed 1.1's `**Attack Scenario:**` key to `**Attack Prevented:**` (the cheat-sheet parser matches only the latter, so the cell was rendering without it) and added **Attack Prevented** to 2.1. Removed the duplicate empty "Appendix A: References" heading and renumbered Appendix B to A. Appendix A: removed the dead `trust.wiz.io` link (HTTP 403) and the `wiz.io/trust-center` Trust Center link (compliance marketing, not hardening documentation), and corrected the docs.wiz.io annotation from "(login required)" to the actual bot-challenge behavior. Tier 3/4 research out of scope for this pass. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Wiz hardening guide | Claude Code (Opus 4.5) |
 
