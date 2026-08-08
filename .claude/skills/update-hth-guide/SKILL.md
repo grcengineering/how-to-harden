@@ -19,7 +19,7 @@ Hunt MATERIAL deltas per source tier (SOURCES.md):
 
 1. **Tier 1:** the vendor's security/admin docs and release notes/changelogs since `last_updated`. Verify each of the guide's falsifiable claims against current docs.
 2. **Tier 2:** current CIS Benchmark version (numbering shifts between majors — a guide citing v3.1 when v7.0.0 is current is a finding), DISA STIG updates, CISA SCuBA baselines and BODs, KEV entries for the product.
-3. **Tier 3/4:** standing-list vendors and admitted researchers, last ~12 months, product-specific only.
+3. **Tier 3/4:** standing-list vendors and admitted researchers, last ~12 months, product-specific only. Citing a source not yet on the standing list? Add it there with a real fetch-verified example URL (SOURCES.md Maintenance rule) — never a placeholder.
 4. **MATERIAL means:** new security control/setting shipped · changed default · deprecated mechanism the guide still recommends · new attack class with a documented mitigation · authoritative baseline unmapped · factual error in the guide. Blog rehashes and marketing are not material.
 5. **The fetch gate:** every finding needs a URL fetched successfully in-session (real-browser check for blocked hosts). Unverifiable finding = dropped, not softened. Record findings as: `TYPE | title | what the guide should say | verified-url | target section`.
 6. When fanning out research agents, hand them this phase verbatim including the gate and the record format.

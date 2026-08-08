@@ -40,10 +40,10 @@ The standard for what counts as a legitimate source when deriving How to Harden 
 | Source name | Source domain | Example hardening guide | Use for |
 |-------------|---------------|-------------------------|---------|
 | CIS Benchmarks | cisecurity.org | [CIS Microsoft 365 Foundations Benchmark](https://www.cisecurity.org/benchmark/microsoft_365) | Per-product numbered baselines. Numbering shifts between major versions — verify IDs against the current release or map by control name with a version note |
-| DISA STIGs | public.cyber.mil/stigs | *STIG Downloads library (e.g. "Microsoft Windows STIG", "Kubernetes STIG") at public.cyber.mil/stigs/downloads* | The strictest per-product baselines; L3 targets and compliance tables |
+| DISA STIGs | cyber.mil | [Kubernetes STIG V2R5 (direct download)](https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_Kubernetes_V2R5_STIG.zip) | The strictest per-product baselines; L3 targets and compliance tables — note: the `public.cyber.mil/stigs/downloads` index is a JS-only SPA returning an empty shell to fetchers, cite direct `dl.dod.cyber.mil` artifact URLs instead; do NOT use `dl.cyber.mil` (no `dod`) — that's an unrelated CAC-gated login portal; STIG version numbers (V2R5 etc.) churn, reverify the current revision before citing |
 | CISA SCuBA | github.com/cisagov | [ScubaGear (M365/Entra baselines)](https://github.com/cisagov/ScubaGear) · [ScubaGoggles (Google Workspace)](https://github.com/cisagov/ScubaGoggles) | Machine-checkable policy IDs (GWS._, MS._), preferred for compliance tables; also Binding Operational Directives and the KEV catalog |
-| NSA CSI | nsa.gov / media.defense.gov | *NSA Cybersecurity Information Sheets (e.g. cloud/Kubernetes hardening guidance), often joint with CISA* | Product-specific, configuration-prescriptive government guidance |
-| ACSC | cyber.gov.au | *Essential Eight Maturity Model and per-product hardening guides* | Only where it publishes explicit control values; otherwise Tier 2b |
+| NSA CSI | nsa.gov / media.defense.gov | [NSA/CISA Kubernetes Hardening Guidance v1.2](https://media.defense.gov/2022/Aug/29/2003066362/-1/-1/0/CTR_KUBERNETES_HARDENING_GUIDANCE_1.2_20220829.PDF) | Product-specific, configuration-prescriptive government guidance — `media.defense.gov` blocks fetchers/curl (403 even with a browser UA); verify via real-browser check per Verification Rule 1. This specific document is formally a Cybersecurity Technical Report (CTR), not literally labeled "CSI" |
+| ACSC | cyber.gov.au | [Essential Eight Maturity Model](https://www.cyber.gov.au/business-government/asds-cyber-security-frameworks/essential-eight/essential-eight-maturity-model) | Only where it publishes explicit control values; otherwise Tier 2b — `cyber.gov.au` hangs for automated fetchers, verify via real-browser check; the URL path has moved from the old `/resources-business-and-government/` structure |
 
 **Role:** set the recommended values, seed compliance mappings, and legitimately originate controls the vendor under-documents.
 
@@ -57,11 +57,11 @@ The standard for what counts as a legitimate source when deriving How to Harden 
 
 | Source name | Source domain | Example framework/guide | Use for |
 |-------------|---------------|-------------------------|---------|
-| NIST | csrc.nist.gov | *SP 800-53 Rev 5, SP 800-63, CSF 2.0, AI RMF* | Control-family mappings and rationale |
-| CSA | cloudsecurityalliance.org | *Cloud Controls Matrix (CCM), SaaS/AI governance guidance* | Cloud/SaaS control mapping |
-| ENISA | enisa.europa.eu | *EU threat-landscape and cloud-security guidance* | Rationale, EU context |
-| BSI | bsi.bund.de | *IT-Grundschutz modules* | Control catalog (DE) |
-| SANS | sans.org | *Technical whitepapers/posters where they carry concrete config steps* | Rationale; occasional concrete steps |
+| NIST | csrc.nist.gov | [SP 800-53 Rev 5 — Security and Privacy Controls for Information Systems and Organizations](https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final) | Control-family mappings and rationale |
+| CSA | cloudsecurityalliance.org | [Cloud Controls Matrix (CCM)](https://cloudsecurityalliance.org/research/cloud-controls-matrix) | Cloud/SaaS control mapping |
+| ENISA | enisa.europa.eu | [ENISA Threat Landscape 2025](https://www.enisa.europa.eu/publications/enisa-threat-landscape-2025) | Rationale, EU context |
+| BSI | bsi.bund.de | [IT-Grundschutz-Kompendium Bausteine (Edition 2023)](https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/IT-Grundschutz/IT-Grundschutz-Kompendium/IT-Grundschutz-Bausteine/Bausteine_Download_Edition_node.html) | Control catalog (DE); English tree 404s, use the DE path — module PDFs need `?__blob=publicationFile` appended |
+| SANS | sans.org | [Practical MFA for the Enterprise: Enforcing Strong Authentication for Non-Human Identities](https://www.sans.org/white-papers/practical-mfa-enterprise-enforcing-strong-authentication-non-human-identities-using-compensating-controls) | Rationale; occasional concrete steps (this one: empirical 21k-account Entra ID tenant study with a 3-phase remediation plan) |
 | OWASP | owasp.org | [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) · *ASVS* | Application-layer security (in lane); out of lane for SaaS tenant-admin toggles |
 
 **Role:** control-family catalogs and abstractions by design; they justify and map controls but always need a Tier 1/2 source to instantiate an actual setting. Italic examples are described, not session-verified URLs — fetch-verify before citing.
@@ -70,14 +70,14 @@ The standard for what counts as a legitimate source when deriving How to Harden 
 
 *May: CORROBORATE always · ORIGINATE only where no Tier 2 baseline covers the surface, and only after Tier 1 cross-verification*
 
-**Admission criteria (all three):** (1) demonstrated ORIGINAL product-specific research — a novel misconfiguration, attack chain, or detection they built; not vendor size, not content marketing; (2) named authors; (3) technical reproducibility — claims reference actual admin-console settings or API endpoints.
+**Admission criteria (all three):** (1) demonstrated ORIGINAL product-specific research — a novel misconfiguration, attack chain, or detection they built; not vendor size, not content marketing; (2) named authors — an individual byline, or a named standing research team the organization consistently credits (e.g. "Unit 42", not an anonymous/unattributed post); (3) technical reproducibility — claims reference actual admin-console settings or API endpoints.
 
 **Standing list (extend via the criteria, not vibes):**
 
 | Source name | Source domain | Example hardening guide / research |
 |-------------|---------------|-----------------------------------|
 | Wiz | wiz.io | [Wiz vulnerability database](https://www.wiz.io/vulnerability-database) · *cloud misconfiguration research at wiz.io/blog* |
-| Datadog Security Labs | securitylabs.datadoghq.com | *cloud/SaaS attack research and detection engineering* |
+| Datadog Security Labs | securitylabs.datadoghq.com | [Coordinated GitHub API enumeration and access token abuse](https://securitylabs.datadoghq.com/articles/coordinated-github-api-enumeration/) |
 | Mandiant / Google Threat Intelligence | cloud.google.com/blog/topics/threat-intelligence | [UNC6040 voice-phishing / Salesforce data-extortion](https://cloud.google.com/blog/topics/threat-intelligence/voice-phishing-data-extortion) |
 | Trail of Bits | blog.trailofbits.com | [Mitigating ELUSIVE COMET Zoom remote-control attacks](https://blog.trailofbits.com/2025/04/17/mitigating-elusive-comet-zoom-remote-control-attacks/) |
 | Legit Security | legitsecurity.com/blog | [Remote prompt injection in GitLab Duo](https://www.legitsecurity.com/blog/remote-prompt-injection-in-gitlab-duo) |
@@ -85,18 +85,18 @@ The standard for what counts as a legitimate source when deriving How to Harden 
 | PromptArmor | promptarmor.com | [Data exfiltration from Slack AI via indirect prompt injection](https://www.promptarmor.com/resources/data-exfiltration-from-slack-ai-via-indirect-prompt-injection) |
 | Cyata | cyata.ai | [Cracking the Vault — HashiCorp Vault zero-days](https://cyata.ai/blog/cracking-the-vault-how-we-found-zero-day-flaws-in-authentication-identity-and-authorization-in-hashicorp-vault/) |
 | Pluto Security | pluto.security | [Securing Claude Tag: A Practical Hardening Guide](https://pluto.security/blog/securing-claude-tag-a-practical-hardening-guide/) |
-| Harmonic Security | harmonic.security | *product-specific AI-tool hardening guides (e.g. Claude) at harmonic.security/blog* |
-| Pillar Security | pillar.security | *AI application/agent security research at pillar.security/blog* |
-| StepSecurity | stepsecurity.io | *GitHub Actions / CI-CD hardening research at stepsecurity.io/blog* |
-| Obsidian Security | obsidiansecurity.com | *SaaS identity/integration attack research* |
-| Push Security | pushsecurity.com | *identity-attack and SaaS security research* |
-| Unit 42 (Palo Alto) | unit42.paloaltonetworks.com | *threat research and mitigations* |
-| Rapid7 Research | rapid7.com/blog | *vulnerability and product-security research* |
-| Praetorian | praetorian.com/blog | *offensive-security research with concrete config guidance* |
-| AppOmni | appomni.com | *SaaS security posture research* |
-| GitGuardian | blog.gitguardian.com | *secrets/CI-CD security research* |
-| Mitiga | mitiga.io | *cloud/SaaS incident and detection research* |
-| Varonis Threat Labs | varonis.com/blog | *SaaS/data-exfiltration research* |
+| Harmonic Security | harmonic.security | [Securing Claude Cowork: A Security Practitioner's Guide](https://www.harmonic.security/resources/securing-claude-cowork-a-security-practitioners-guide) |
+| Pillar Security | pillar.security | [Agent-to-Agent Privilege Boundary Failures in CI/CD on Google's ADK Repository](https://www.pillar.security/blog/ill-just-call-you-agent-to-agent-privilege-boundary-failures-in-ci-cd-on-googles-adk-repository) |
+| StepSecurity | stepsecurity.io | [ChainDrop npm Worm: Bun-loaded CI/CD credential harvester with Ethereum dead-drop C2](https://www.stepsecurity.io/blog/chaindrop-npm-worm) |
+| Obsidian Security | obsidiansecurity.com | [Icarus/Klue: Salesforce Integration Supply Chain Attack](https://www.obsidiansecurity.com/blog/icarus-klue-salesforce-integration-supply-chain-attack) |
+| Push Security | pushsecurity.com | [Introducing the Browser & Identity Attacks Matrix](https://pushsecurity.com/blog/introducing-the-browser-and-identity-attacks-matrix) |
+| Unit 42 (Palo Alto) | unit42.paloaltonetworks.com | [ChainDrop: Inside a Self-Propagating npm Worm](https://unit42.paloaltonetworks.com/chaindrop-npm-worm-analysis/) |
+| Rapid7 Research | rapid7.com/blog | [CVE-2026-55040: Microsoft SharePoint JWT Token Authentication Bypass](https://www.rapid7.com/blog/post/ve-cve-2026-55040-microsoft-sharepoint-jwt-token-authentication-bypass-fixed/) |
+| Praetorian | praetorian.com/blog | [Knossos: Procedurally Generated Decoy Environments](https://www.praetorian.com/blog/knossos-decoy-environments/) |
+| AppOmni | appomni.com | [BodySnatcher (CVE-2025-12420): Agentic Hijacking Vulnerability in ServiceNow](https://appomni.com/ao-labs/bodysnatcher-agentic-ai-security-vulnerability-in-servicenow/) |
+| GitGuardian | blog.gitguardian.com | [Securing Agentic AI Workflows in n8n: From Leaked API Keys to Encryption Key Compromise](https://blog.gitguardian.com/n8n-security-encryption-key-compromise/) |
+| Mitiga | mitiga.io | [How a Poisoned Coding Test Turned an AI Agent Into an Attacker](https://www.mitiga.io/blog/poisoned-coding-test-ai-agent-attack) |
+| Varonis Threat Labs | varonis.com/blog | [RovoBlast: How One Click Triggered Atlassian's AI Assistant to Leak Data](https://www.varonis.com/blog/rovoblast) |
 
 Italic examples are described, not session-verified URLs — fetch-verify a current URL before citing.
 
@@ -136,10 +136,15 @@ Italic examples are described, not session-verified URLs — fetch-verify a curr
 
 Tiers 1-2/2b are standing allowlists that rarely change. Tiers 3-4 are standing lists plus per-citation review against the admission criteria; prune quarterly for dead links, acquisitions, and quality drift.
 
+**Every Example column entry must be a real, specific, fetch-verified, currently-live URL — never an italicized "described, not verified" placeholder.** The italic notation exists only as a mid-research scratch state while an authoring agent is actively fetch-verifying; it must never be the value in a committed version of this file. If you add or edit a standing-list row, fetch the URL yourself before writing it — a plausible-sounding link that hasn't actually been fetched this session is not a source (Verification Rule 1).
+
+**"Relevant" is broader than a literal "hardening guide."** A source doesn't need a page titled "Hardening Guide" to qualify — any documentation that teaches prevention, detection, deception, remediation, or recovery techniques for a specific product or platform is in scope: first-party admin/config docs, benchmark bodies' control catalogs, threat-intel writeups, incident postmortems, and detection-engineering research all count. Tier 2b's role is corroborate-only, so a control-family mapping or framework catalog page is a legitimate example there even without step-by-step remediation instructions — it still needs to be a real, specific, fetched URL, not a homepage or generic index.
+
 ## Changelog
 
 | Date | Changes |
 |------|---------|
+| 2026-08-08 | Replaced all remaining italicized placeholder example URLs (Tier 2: DISA STIGs, NSA CSI, ACSC; Tier 3: Obsidian Security, Unit 42, Rapid7 Research, Praetorian, AppOmni, GitGuardian, Mitiga, Varonis Threat Labs) with real fetch-verified URLs. Relaxed Tier 3 admission criterion 2 to accept a named standing research team (not just an individual byline) per principal decision — Obsidian Security and Unit 42 both publish substantive, technically-reproducible, product-specific research under consistent team bylines. |
 | 2026-08-08 | Converted the Tier 1 (examples), Tier 2, Tier 2b, Tier 3, and Tier 4 source lists into tables carrying Source Name + Source Domain + Example Hardening Guide, so authoring agents search by domain and know what a real hardening guide from each source looks like (verified URLs where available this session; italic = describe-then-fetch-verify). Added **Pluto Security** (pluto.security) to the Tier 3 standing list with its verified Claude Tag hardening guide as the example. |
 | 2026-08-08 | Council-refined revision: Tier 2/2b split (prescriptive bodies vs framework catalogs), originate/values/corroborate semantics per tier, facts-vs-values conflict rule with strictest-defensible precedence, Tier 3 elevation for un-benchmarked surfaces with mandatory Tier 1 cross-verification, maintenance cadence. Two council seats (formal semantics, provenance rigor) were synthesized conservatively — revisit if those areas prove contentious. |
 | 2026-08-08 | Initial version — taxonomy formalized from the August 2026 full-repo audit (A–Z link audit, currency waves, trust-center purge). |

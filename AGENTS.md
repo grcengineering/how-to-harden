@@ -287,6 +287,7 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 | Same-section same-type pack files | The sync silently keeps only the last alphabetically (Collision rule, Rule 2) — check before numbering |
 | Automation for settings with no write API | Many admin surfaces are ClickOps-only (read-only Policy APIs). State that honestly; ship verification-style packs (assessment tools, read-only audits) or none |
 | Renumbering existing controls | Never — pack includes and inbound anchors depend on the numbers. New controls take the next free number at the end of their section |
+| SOURCES.md example URL left as an unverified placeholder | Every row in every standing-list table needs a real, specific, fetch-verified, currently-live example URL — never ship an italicized "described, not verified" placeholder; that notation is a research-in-progress state only, not a final answer. "Relevant" is broader than literal "hardening guide" wording: product docs, threat-intel writeups, and detection-engineering posts all count if they teach prevention, detection, deception, remediation, or recovery for a specific platform |
 
 ---
 
