@@ -684,7 +684,7 @@ orca:
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/orca"
 
 outreach:
-  product_docs: "https://support.outreach.io/hc/en-us"
+  product_docs: "https://support.outreach.io/support/solutions"
   api_docs: "https://developers.outreach.io/api/"
   hardening_docs:
     - label: "Governance Profile Settings"
