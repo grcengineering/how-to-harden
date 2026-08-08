@@ -6,9 +6,9 @@ slug: "orca"
 tier: "2"
 category: "Security"
 description: "Cloud security platform hardening for Orca Security including SAML SSO, role-based access, and cloud account integration"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -27,7 +27,9 @@ Orca Security is a cloud security platform providing agentless workload protecti
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Orca platform security including SSO, RBAC, cloud account integration, and audit logging.
+This guide covers Orca platform security including SSO, RBAC, network restriction, cloud account integration, and audit logging.
+
+Orca's admin knowledge base is region-gated and not publicly citable, so controls here are grounded in Orca's publicly documented Terraform provider (the authoritative record of what the platform actually exposes) and console steps are described generically. Tier 3/4 sources are out of scope for this guide's control text.
 
 ---
 
@@ -248,6 +250,45 @@ Minimize and protect admin accounts.
 
 ---
 
+### 2.4 Restrict Console Access by Network and Automate Access Review
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.1, 12.5 |
+| NIST 800-53 | AC-3, AC-17, CA-7 |
+
+#### Description
+Restrict where the Orca console can be reached from using the platform's trusted IP range capability, and use the Orca Terraform provider's RBAC surface to codify and continuously review who holds what access.
+
+#### Rationale
+**Why This Matters:**
+- Orca holds a complete inventory of your cloud assets, vulnerabilities, and misconfigurations, so limiting console reachability to known corporate egress ranges removes the open-internet login surface entirely
+- Network restriction is a control that survives credential compromise: a valid stolen password or token is useless from an untrusted source address
+- Access reviews performed by hand drift; expressing groups, roles, and per-user access as Terraform makes every grant reviewable in version control and detectable when it changes
+- Reading the platform's own RBAC state programmatically turns "quarterly access review" from a screenshot exercise into a diffable, repeatable check
+
+**Attack Prevented:** Console access from attacker-controlled networks, credential replay from outside the corporate perimeter, undetected privilege creep, unreviewed standing access
+
+#### ClickOps Implementation
+
+**Step 1: Enable Trusted IP Range Restriction**
+1. In the Orca console settings, locate the trusted IP range configuration
+2. Enable the restriction and register the egress ranges your administrators and analysts use
+3. Verify a login attempt from outside those ranges is rejected before enforcing broadly
+
+**Step 2: Review Access**
+1. In the Orca console settings, review users, groups, and role assignments
+2. Remove standing access that no longer matches a current job function
+3. Repeat at least quarterly (see [2.1](#21-configure-role-based-access-control))
+
+#### Code Implementation
+
+Orca's Terraform provider is the verified automation path for both halves of this control. The `orcasecurity_dynamic_trusted_ip_range` resource manages the platform's trusted IP range enforcement (`enabled` plus `org_id`). For access review, the provider exposes the `orcasecurity_rbac_roles` and `orcasecurity_rbac_users` data sources for reading current state, and the `orcasecurity_group_access`, `orcasecurity_user_access`, `orcasecurity_custom_role`, and `orcasecurity_business_unit` resources for declaring it — see the [provider documentation](https://github.com/orcasecurity/terraform-provider-orcasecurity/tree/master/docs). Managing these in Terraform makes every access grant a reviewable, version-controlled change rather than a console action.
+
+---
+
 ## 3. Cloud Integration Security
 
 ### 3.1 Configure Cloud Account Security
@@ -351,8 +392,9 @@ Secure Orca API access.
 ## Appendix B: References
 
 **Official Orca Security Documentation:**
-- [Trust Center (SafeBase)](https://trustcenter.orca.security/)
-- [Knowledge Base](https://docs.orcasecurity.io/)
+- [Knowledge Base](https://docs.orcasecurity.io/) — region-gated: redirects to `region-selection.orcasecurity.io` and requires selecting a tenant region (and in practice an authenticated session) before any article renders. Not reachable as a public citation.
+- [Orca Terraform Provider documentation](https://github.com/orcasecurity/terraform-provider-orcasecurity/tree/master/docs) — the publicly readable authority for Orca's platform resources (RBAC, trusted IP ranges, automations, custom alerts)
+- [Orca Terraform Provider on the Terraform Registry](https://registry.terraform.io/providers/orcasecurity/orcasecurity/latest/docs)
 - [Resource Library](https://orca.security/resources/)
 - [API Security Datasheet](https://orca.security/resources/literature/api-security-datasheet/)
 
@@ -370,6 +412,7 @@ Secure Orca API access.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Add 2.4 network restriction and automated access review; annotate the region-gated Knowledge Base link and add the public Terraform provider docs; drop the Trust Center from Official Documentation; fix the Terraform pack provider constraint (`~> 0.5` was unsatisfiable — provider ships 0.0.x only) and rewrite the 3.2 automation onto the current `orcasecurity_automation_v2` schema | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and integration security | Claude Code (Opus 4.5) |
 

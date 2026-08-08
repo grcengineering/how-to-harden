@@ -32,19 +32,43 @@ resource "orcasecurity_custom_sonar_alert" "stale_api_keys" {
 }
 
 # Automation to email security team when stale API keys are found (L2+)
-resource "orcasecurity_automation" "api_key_alert" {
+resource "orcasecurity_automation_v2" "api_key_alert" {
   count = var.profile_level >= 2 && var.enable_api_automation && length(var.api_alert_emails) > 0 ? 1 : 0
 
   name        = "HTH - API Key Security Notifications"
   description = "Sends email notifications when stale or unused API keys are detected. Per HTH Orca Guide section 3.2."
-  enabled     = true
+  status      = "enabled"
 
-  query = {
-    filter = [
-      { field = "state.status", includes = ["open"] },
-      { field = "state.risk_level", includes = ["high", "critical"] },
-      { field = "category", includes = ["IAM misconfigurations"] }
-    ]
+  # Matches open alerts raised by the stale-API-key sonar alert defined above.
+  filter = {
+    sonar_query = jsonencode({
+      models = ["Alert"]
+      type   = "object_set"
+      with = {
+        type     = "operation"
+        operator = "and"
+        values = [
+          {
+            key      = "Status"
+            type     = "str"
+            operator = "in"
+            values   = ["open"]
+          },
+          {
+            key      = "AlertType"
+            type     = "str"
+            operator = "in"
+            values   = [var.api_alert_name]
+          },
+          {
+            key      = "OrcaScore"
+            type     = "float"
+            operator = "range"
+            values   = [var.api_alert_score, 10]
+          }
+        ]
+      }
+    })
   }
 
   email_template = {

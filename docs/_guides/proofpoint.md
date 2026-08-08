@@ -6,9 +6,9 @@ slug: "proofpoint"
 tier: "2"
 category: "Security"
 description: "Email security platform hardening for Proofpoint including SAML SSO, admin access controls, and threat protection policies"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -27,7 +27,9 @@ Proofpoint is a leading cybersecurity platform providing email security, threat 
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Proofpoint administration security including SAML SSO, admin access, threat protection policies, and audit logging.
+This guide covers Proofpoint administration security including SAML SSO, admin access, Threat Insight API credential hygiene, threat protection policies, and audit logging.
+
+Tier 3/4 sources are out of scope for this guide's control text; controls are drawn from Proofpoint's own documentation and advisories.
 
 ---
 
@@ -193,6 +195,44 @@ Minimize and protect admin accounts.
 
 ---
 
+### 2.3 Secure Threat Insight API Credentials
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.11, 5.2, 6.8 |
+| NIST 800-53 | AC-6, IA-5, SC-8 |
+
+#### Description
+Issue dedicated service credentials for the Threat Insight SIEM and Threats APIs, keep them separate from interactive admin logins, store them in a secrets manager, and rotate them on a defined schedule.
+
+#### Rationale
+**Why This Matters:**
+- The Threat Insight APIs return the organization's threat telemetry — blocked and permitted clicks, delivered and blocked messages, and campaign detail — so a leaked credential hands an attacker a live view of what your email defenses are catching and missing
+- These APIs authenticate with HTTP Basic Authorization over an SSL-required connection, meaning the credential is a long-lived reusable secret rather than a short-lived token; its storage and rotation are the only things limiting its lifetime
+- Using service credentials distinct from admin logins means revoking a leaked integration secret does not disrupt human administrators, and a compromised integration cannot pivot into console administration
+- The SIEM API is throttled to 1,800 requests per 24 hours while the Threats API currently carries no documented throttle, so a stolen Threats API credential can be harvested at scale before anyone notices the quota anomaly
+
+**Attack Prevented:** Threat telemetry exfiltration, reconnaissance of detection gaps, credential reuse between integrations and admin accounts, unlimited API harvesting with a leaked key
+
+#### ClickOps Implementation
+
+**Step 1: Create Dedicated Service Credentials**
+1. Create a service principal for each consumer of the Threat Insight APIs rather than reusing an administrator's credentials
+2. Record the purpose and owner of every credential issued
+
+**Step 2: Enforce Transport and Storage Requirements**
+1. Confirm every integration calls the API over SSL — the API requires it and will not accept plaintext
+2. Store the Basic Authorization credential in a secrets manager, never in source control, CI configuration, or SIEM connector notes
+
+**Step 3: Rotate and Monitor**
+1. Define a rotation interval and rotate on schedule, and immediately on any suspected exposure or when the integration's owner leaves
+2. Watch consumption against the SIEM API's documented throttle of 1,800 requests per 24 hours — an integration approaching or exceeding its normal call volume against endpoints such as `/v2/siem/clicks/blocked` or `/v2/siem/messages/delivered` is a credential-misuse signal
+3. Treat the [Threats API](https://help.proofpoint.com/Threat_Insight_Dashboard/API_Documentation/Threat_API) as unthrottled for planning purposes and rely on your own egress and usage monitoring there
+
+---
+
 ## 3. Threat Protection
 
 ### 3.1 Configure Email Protection Policies
@@ -227,6 +267,8 @@ Configure threat protection policies.
 1. Enable URL defense
 2. Enable attachment defense
 3. Configure impersonation protection
+
+> **Patch currency is part of this control.** URL and attachment defense are necessary but version-dependent — Proofpoint has published advisories for bypasses of exactly these mechanisms: [CVE-2025-0431](https://www.proofpoint.com/us/security/security-advisories) (Enterprise Protection Backslash URL Rewrite Bypass, 2025-03-19, CVSS 5.8) and [CVE-2024-10635](https://www.proofpoint.com/us/security/security-advisories) (Enterprise Protection S/MIME Opaque Signature Attachment Scanning Bypass, 2025-04-28, CVSS 6.1). Enabling the policy is not the same as being protected by it; track the [Proofpoint Security Advisories](https://www.proofpoint.com/us/security/security-advisories) feed and keep Enterprise Protection on a patched release.
 
 ---
 
@@ -329,7 +371,7 @@ Enable and monitor admin audit logs.
 - [Trust Center](https://www.proofpoint.com/us/legal/trust)
 - [Data Privacy and Security Information Sheets](https://www.proofpoint.com/us/legal/trust/data-privacy-and-security-information-sheets)
 - [Security Advisories](https://www.proofpoint.com/us/security/security-advisories)
-- [Help Center](https://help.proofpoint.com/)
+- [Threat Insight API Documentation index](https://help.proofpoint.com/Threat_Insight_Dashboard/API_Documentation) — the `help.proofpoint.com` root currently returns a MindTouch template error; deep links under this index resolve correctly
 
 **API Documentation:**
 - [Threat Insight API Documentation](https://help.proofpoint.com/Threat_Insight_Dashboard/API_Documentation)
@@ -340,9 +382,17 @@ Enable and monitor admin audit logs.
 - [Product Certifications (ISO 27001, SOC 2, FedRAMP)](https://www.proofpoint.com/us/legal/trust/product-certifications)
 - [CVE Details — Proofpoint](https://www.cvedetails.com/vulnerability-list/vendor_id-2500/Proofpoint.html)
 
-**Security Incidents:**
+**Security Incidents & Vulnerabilities:**
 - [EchoSpoofing: Email Routing Exploitation (Guardio Labs, 2024)](https://guard.io/labs/echospoofing-a-massive-phishing-campaign-exploiting-proofpoints-email-protection-to-dispatch)
 - [Proofpoint Email Routing Flaw (The Hacker News)](https://thehackernews.com/2024/07/proofpoint-email-routing-flaw-exploited.html)
+
+Recent vendor advisories, all published via [Proofpoint Security Advisories](https://www.proofpoint.com/us/security/security-advisories). The two Enterprise Protection entries bypass the URL and attachment defenses configured in [3.1](#31-configure-email-protection-policies), which is why patch currency is part of that control rather than a separate one.
+
+| CVE | Product | Title | Published | CVSS |
+|-----|---------|-------|-----------|------|
+| CVE-2025-0431 | Enterprise Protection | Backslash URL Rewrite Bypass | 2025-03-19 | 5.8 |
+| CVE-2024-10635 | Enterprise Protection | S/MIME Opaque Signature Attachment Scanning Bypass | 2025-04-28 | 6.1 |
+| CVE-2025-8558 | Insider Threat Management Server | Unauthenticated Agent Unregistration | 2025-11-03 | 5.2 |
 
 ---
 
@@ -350,6 +400,7 @@ Enable and monitor admin audit logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Add 2.3 Threat Insight API credential hygiene; add a patch-currency callout to 3.1 covering the URL/attachment defense bypass advisories; add CVE-2025-0431, CVE-2024-10635, and CVE-2025-8558 to Appendix B; replace the broken help.proofpoint.com root link with the working API documentation index | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and threat protection | Claude Code (Opus 4.5) |
 

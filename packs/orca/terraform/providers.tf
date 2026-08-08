@@ -11,7 +11,7 @@ terraform {
   required_providers {
     orcasecurity = {
       source  = "orcasecurity/orcasecurity"
-      version = "~> 0.5"
+      version = "~> 0.0.57"
     }
   }
 }

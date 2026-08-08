@@ -80,7 +80,7 @@ terraform apply
 
 - `orcasecurity_business_unit.scoped_environment` - Scoped visibility business unit
 - `orcasecurity_custom_sonar_alert.stale_api_keys` - Stale API key detection
-- `orcasecurity_automation.api_key_alert` - Email notifications for API findings
+- `orcasecurity_automation_v2.api_key_alert` - Email notifications for API findings
 
 ### L3 (Maximum Security) - Added at Profile Level 3
 

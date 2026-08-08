@@ -107,7 +107,7 @@ output "stale_api_keys_alert_id" {
 
 output "api_key_automation_id" {
   description = "ID of the API key alert automation (L2+ only, if enabled)"
-  value       = var.profile_level >= 2 && var.enable_api_automation && length(var.api_alert_emails) > 0 ? orcasecurity_automation.api_key_alert[0].id : null
+  value       = var.profile_level >= 2 && var.enable_api_automation && length(var.api_alert_emails) > 0 ? orcasecurity_automation_v2.api_key_alert[0].id : null
 }
 
 output "api_key_discovery_view_id" {

@@ -6,9 +6,9 @@ slug: "netskope"
 tier: "1"
 category: "Security"
 description: "Security hardening for Netskope CASB, SWG, and ZTNA deployment"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -27,7 +27,9 @@ Netskope is a leading Security Service Edge (SSE) platform providing CASB, Secur
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Netskope tenant hardening, CASB policies, DLP configuration, threat protection, and steering configuration.
+This guide covers Netskope tenant hardening, CASB policies, DLP configuration, threat protection, steering and Netskope Client configuration, and Private Access (NPA) publisher hardening.
+
+Tier 3/4 sources (independent research, community write-ups) are out of scope for this guide's control text; controls are drawn from Netskope's Tier 1 configuration documentation, with vulnerability context sourced from the NVD.
 
 ---
 
@@ -40,6 +42,7 @@ This guide covers Netskope tenant hardening, CASB policies, DLP configuration, t
 5. [Steering Configuration](#5-steering-configuration)
 6. [Monitoring & Detection](#6-monitoring--detection)
 7. [Compliance Quick Reference](#7-compliance-quick-reference)
+8. [Private Access & Publisher Hardening](#8-private-access--publisher-hardening)
 
 ---
 
@@ -113,15 +116,65 @@ Apply Netskope's recommended tenant hardening configurations.
 
 #### ClickOps Implementation
 
-**Step 1: Access Tenant Settings**
-1. Navigate to: **Settings** → **Tenant Settings**
-2. Review security settings
+**Step 1: Restrict Console Access by IP (L2)**
+1. Navigate to: **Settings** → **Administration** → **IP Allowlist**
+2. Click **Edit**
+3. Enter the IP addresses, ranges, or subnets permitted to reach the Admin Console, separated by commas, then click **+ADD**
+4. Change the status from **Disabled** to **Enabled**
+5. Click **Save**
 
-**Step 2: Configure Security Options**
-1. Enable **Session timeout** (15-30 minutes)
-2. Configure **Password policies** (if using local auth)
-3. Enable **Audit logging** for admin actions
-4. Configure **IP allowlisting** for admin access (L2)
+**Step 2: Configure Admin Session and Password Settings**
+1. Navigate to: **Settings** → **Administration** → **Admins**
+2. Click the **Settings** icon in the top right corner
+3. Select a value from the **Idle Timeout** dropdown (choose the shortest interval your admins can tolerate)
+4. Select a value from the **Password Expiration** dropdown (applies to local admin credentials)
+5. Click **Save**
+
+**Step 3: Review Admin Audit Logging**
+1. Review admin activity in the tenant's audit events and forward them to a SIEM (see [6.1](#61-configure-logging-and-alerts))
+
+> **Note:** There is no separate "Tenant Settings" page for these controls. IP allowlisting, idle timeout, and password expiration are all configured under **Settings** → **Administration**, per Netskope's [Secure Tenant Configuration and Hardening](https://docs.netskope.com/en/secure-tenant-configuration-and-hardening/) guide.
+
+---
+
+### 1.3 Harden Admin Login Controls
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.2, 6.5 |
+| NIST 800-53 | AC-7, AC-10, IA-2(1) |
+
+#### Description
+Limit failed admin login attempts, prevent concurrent admin sessions, and enable Netskope's native multi-factor authentication for admins who do not authenticate through SSO.
+
+#### Rationale
+**Why This Matters:**
+- Capping failed login attempts turns online password guessing against the Admin Console into a lockout event instead of an unlimited-attempt exercise
+- Disallowing concurrent logins by the same admin means a stolen session or credential cannot ride alongside the legitimate admin unnoticed
+- Netskope's native admin Multi-Factor Auth is **Disabled by default** and is set per admin — an admin created outside the SSO path can otherwise hold single-factor access to the full security policy set
+- Console admins can disable steering, weaken DLP, and clear policies, so login-layer hardening protects every other control in this guide
+
+**Attack Prevented:** Password spraying and brute force against admin accounts, session hijacking, single-factor admin takeover of the security console
+
+#### ClickOps Implementation
+
+**Step 1: Configure Login Attempt and Session Limits**
+1. Navigate to: **Settings** → **Administration** → **Admins**
+2. Click the **Settings** icon in the top right corner
+3. Enter a value for **Maximum failed login attempts**
+4. Enable **Disallow Concurrent Logins by the same Admin**
+5. Click **Save**
+
+**Step 2: Enable Native Admin MFA Where SSO Is Not Used**
+1. Navigate to: **Settings** → **Administration** → **Admins**
+2. Edit each admin who authenticates with local credentials
+3. Toggle the **Multi-Factor Auth** radio button from **Disabled** (the default) to **Enabled**
+4. Click **Save**
+
+**Step 3: Verify Coverage**
+1. Confirm every admin account either authenticates through SSO with IdP-enforced MFA (see [1.1](#11-secure-admin-console-access)) or carries native Multi-Factor Auth set to **Enabled**
 
 ---
 
@@ -527,6 +580,87 @@ Deploy Netskope Client to endpoints to enable inline inspection and steering.
 
 ---
 
+### 5.3 Enable Netskope Client Tamper Protection
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.1, 10.7 |
+| NIST 800-53 | CM-7, SI-7 |
+
+#### Description
+Protect the Netskope Client's configuration files and resources on the endpoint, prevent users from disabling the client, and require a password to uninstall it.
+
+#### Rationale
+**Why This Matters:**
+- The client is the enforcement point for every inline control in this guide; a user or malware that disables or uninstalls it removes CASB, DLP, and threat protection from that endpoint entirely
+- Protecting client configuration and resources stops local modification of the files that decide what traffic gets steered and inspected
+- Password-protecting uninstallation means removal requires a secret the endpoint user does not hold, so a compromised local session cannot simply uninstall its way out of inspection
+- Netskope's Client has been the recurring subject of local privilege and tamper-related CVEs (see [Appendix B](#appendix-b-references)) — tamper protection and prompt client upgrades are the paired mitigations for that class
+
+**Attack Prevented:** Local agent tampering and uninstallation, inspection bypass by end users or malware, exploitation of Client tamper-protection weaknesses (CVE-2025-15641, CVE-2025-15642 class)
+
+#### ClickOps Implementation
+
+**Step 1: Access Client Configuration**
+1. Navigate to: **Settings** → **Security Cloud Platform** → **Netskope Client** → **Client Configuration**
+2. Open the configuration applied to your managed endpoints
+
+**Step 2: Apply Tamper Protection Settings**
+1. Enable **Protect Client configuration and resources**
+2. Uncheck **Allow disabling of Clients**
+3. Enable **Password protect Client uninstallation** and set the uninstall password
+4. Click **Save**
+
+**Step 3: Consider Fail Close**
+1. Enabling **Fail Close** automatically enables password-protected uninstallation and disables the ability to disable the client, in addition to denying uninspected traffic when the client cannot reach the Netskope cloud (see [5.2](#52-deploy-netskope-client))
+
+**Step 4: Keep Clients Current**
+1. Confirm client auto-upgrade is enabled so endpoints pick up fixes for Client vulnerabilities without manual redeployment
+
+---
+
+### 5.4 Harden Netskope Client Enrollment
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3, 13.5 |
+| NIST 800-53 | IA-3, IA-5, SC-8 |
+
+#### Description
+Control how endpoints enroll into the tenant by choosing a hardened enrollment method — one-time token, IdP-based SAML forward proxy authentication, or an Authentication Token with Secure Enrollment.
+
+#### Rationale
+**Why This Matters:**
+- Enrollment is the moment an endpoint is granted a tenant identity; a weak enrollment path lets an unauthorized device join the tenant and receive steering configuration
+- One-time tokens are single-use by design, so an intercepted email invite cannot be replayed to enroll a second device
+- IdP-based enrollment through the SAML forward proxy ties device enrollment to the same identity and MFA controls that govern console and application access
+- Secure Enrollment with an Authentication Token (a shared secret carried as a JWT) is Netskope's recommendation for strict enforcement, and additionally encrypts the initial configuration file beyond the TLS transport
+
+**Attack Prevented:** Unauthorized device enrollment, replay of enrollment invitations, interception of initial client configuration, tenant-identity spoofing
+
+#### ClickOps Implementation
+
+**Step 1: Choose an Enrollment Method**
+1. Review the three supported methods and select the strictest one your deployment tooling supports:
+   - **One-time token** — the email invite carries a single-use token
+   - **IdP-based authentication** — enrollment authenticated through the SAML forward proxy
+   - **Authentication Token** — a shared secret issued as a JWT, used with Secure Enrollment
+
+**Step 2: Enable Secure Enrollment (recommended)**
+1. Navigate to: **Settings** → **Security Cloud Platform** → **Netskope Client** → **MDM Distribution** → **Secure Enrollment**
+2. Enable **Secure Enrollment** and generate the Authentication Token
+3. Distribute the token through your MDM alongside the installer — never by email or a shared document
+
+**Step 3: Validate**
+1. Attempt an enrollment without a valid token and confirm it is rejected
+2. Confirm enrolled devices appear in the tenant with the expected user identity
+
+---
+
 ## 6. Monitoring & Detection
 
 ### 6.1 Configure Logging and Alerts
@@ -615,6 +749,87 @@ Configure comprehensive logging and alerting for security monitoring.
 
 ---
 
+## 8. Private Access & Publisher Hardening
+
+> Netskope Private Access (NPA) is the ZTNA component of the platform. Its controls are numbered 8.x because sections 1–7 predate them; existing control numbers are never reused or renumbered.
+
+### 8.1 Enforce Periodic Re-authentication for Private App Segments
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3, 12.5 |
+| NIST 800-53 | AC-12, IA-11 |
+
+#### Description
+Require users to re-authenticate against the identity provider at a fixed interval before continuing to reach private applications through Netskope Private Access.
+
+#### Rationale
+**Why This Matters:**
+- Without a re-authentication interval, a private-app session established once can persist indefinitely, long after the user's device or IdP posture has changed
+- Forcing a fresh IdP authentication re-applies MFA, conditional access, and any risk signals the IdP has accumulated since the original login
+- Stolen device sessions and long-lived tokens lose value once the enforced interval expires, shrinking the window for an attacker riding a compromised endpoint
+- Private applications reached through ZTNA are typically internal systems with no additional perimeter behind them, so session freshness is the primary time-bound control
+
+**Attack Prevented:** Indefinite session persistence, stolen-session reuse against internal applications, stale authorization after a user's access should have been revoked
+
+#### ClickOps Implementation
+
+**Step 1: Open Client Configuration**
+1. Navigate to: **Settings** → **Security Cloud Platform** → **Netskope Client** → **Client Configuration**
+
+**Step 2: Enable Periodic Re-authentication**
+1. Enable **Periodic re-authentication for Private App Segments**
+2. Select the re-authentication interval
+3. Select the grace period
+4. Click **Save**
+
+**Step 3: Validate**
+1. Establish a private-app session, wait past the configured interval, and confirm the user is prompted to re-authenticate through the IdP
+
+---
+
+### 8.2 Harden Netskope Publishers
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.1, 13.4 |
+| NIST 800-53 | CM-7, SC-7, IA-5 |
+
+#### Description
+Harden the Publisher hosts that broker Private Access traffic into your network — key-based SSH authentication, a firewall limited to the required ports, and no third-party software.
+
+#### Rationale
+**Why This Matters:**
+- A Publisher sits inside your network and brokers external user sessions to internal applications, making it one of the highest-value pivot points in the deployment
+- Key-based SSH authentication removes password guessing and credential reuse as a path onto the Publisher host
+- Restricting inbound traffic to only the ports the Publisher actually needs eliminates every other listening service as an attack surface
+- Netskope states that installing third-party software on a Publisher is done at the customer's own risk — added packages expand the host's attack surface outside the supported, hardened baseline
+
+**Attack Prevented:** Publisher host compromise, SSH brute force and credential reuse, lateral movement from the ZTNA broker into internal networks, supply-chain risk from unvetted host software
+
+#### ClickOps Implementation
+
+**Step 1: Use Key-Based SSH Authentication**
+1. Configure key based authentication for SSH on each Publisher instead of password based authentication
+2. Disable password authentication once key access is confirmed working
+
+**Step 2: Restrict Network Access**
+1. Using the native Ubuntu 22.04 firewall or your network firewalls, restrict inbound access to the Publisher to only:
+   - **22** (SSH, from administrative ranges only)
+   - **53** (DNS)
+   - **443** (HTTPS)
+2. Deny all other inbound traffic
+
+**Step 3: Keep the Host Clean**
+1. Do not install third-party software on Publisher hosts — Netskope documents such installations as being at the customer's own risk
+2. Keep Publishers on a current, supported version
+
+---
+
 ## Appendix A: Feature Compatibility
 
 | Feature | SSE Starter | SSE Professional | SSE Enterprise |
@@ -642,8 +857,20 @@ Configure comprehensive logging and alerting for security monitoring.
 **Compliance Frameworks:**
 - SOC 2 Type II, ISO/IEC 27001:2022, ISO/IEC 27017, ISO/IEC 27018, CSA STAR Level II, PCI DSS v4.0.1, FedRAMP High, C5, Cyber Essentials — via [Netskope Compliance Center](https://compliance.netskope.com/)
 
-**Security Incidents:**
-- No major public security incidents identified for Netskope. Monitor [Netskope Security, Compliance and Assurance](https://www.netskope.com/company/security-compliance-and-assurance) for current advisories.
+**Security Incidents & Vulnerabilities:**
+
+The NVD catalogs 22 CVEs affecting Netskope products, 19 of them in the **Netskope Client** and 12 published in 2025–2026 — the Client is the recurring vulnerability surface, not the tenant. Treat client auto-upgrade as a security control, and pair it with the tamper protections in [5.3](#53-enable-netskope-client-tamper-protection).
+
+| CVE | Component | Summary | Published | CVSS |
+|-----|-----------|---------|-----------|------|
+| [CVE-2025-15641](https://nvd.nist.gov/vuln/detail/CVE-2025-15641) | Netskope Client | Admin IOCTL tamper-protection bypass | 2026-06-17 | 6.8 |
+| [CVE-2025-15642](https://nvd.nist.gov/vuln/detail/CVE-2025-15642) | Netskope Client | Weak DACLs on Client resources | 2026-06-17 | 6.8 |
+| [CVE-2026-2810](https://nvd.nist.gov/vuln/detail/CVE-2026-2810) | Endpoint DLP driver | Out-of-bounds read | 2026-04-29 | — |
+| [CVE-2026-2809](https://nvd.nist.gov/vuln/detail/CVE-2026-2809) | Netskope Client | See NVD entry | 2026 | — |
+| [CVE-2025-15584](https://nvd.nist.gov/vuln/detail/CVE-2025-15584) | Netskope Client | See NVD entry | 2025 | — |
+
+- Full list: [NVD keyword search — Netskope](https://nvd.nist.gov/vuln/search/results?query=Netskope)
+- Monitor [Netskope Security, Compliance and Assurance](https://www.netskope.com/company/security-compliance-and-assurance) for current advisories.
 
 ---
 
@@ -651,6 +878,7 @@ Configure comprehensive logging and alerting for security monitoring.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Correct 1.2 console paths to Settings > Administration (IP Allowlist, Admins > Settings); add 1.3 admin login hardening, 5.3 Client tamper protection, 5.4 hardened Client enrollment, and section 8 Private Access & Publisher hardening; replace the "no incidents" claim in Appendix B with the NVD Netskope Client CVE record | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with CASB, DLP, and threat protection | Claude Code (Opus 4.5) |
 
