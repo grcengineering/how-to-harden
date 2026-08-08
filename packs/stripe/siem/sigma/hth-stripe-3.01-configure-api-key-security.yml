@@ -4,13 +4,30 @@ status: test
 description: |
     Detects account.updated webhook events from Stripe indicating
     changes to account configuration. This may include security
-    settings, team changes, or API key modifications. Since Stripe
-    has no granular API key audit events, account.updated is the
-    closest signal for configuration changes.
+    settings, team changes, or API key modifications.
+    Stripe DOES retain administrative records — logins and bank
+    account changes appear in the Dashboard security history at
+    dashboard.stripe.com/security_history, and that history is
+    user-exportable. What Stripe does not provide is a streamable
+    or API-exportable administrative audit log, and there are no
+    granular api_key.* event types on the Events API. So for a
+    SIEM-resident detection, account.updated is the closest
+    machine-consumable signal for configuration change; the
+    security history remains a manual review surface (HTH Stripe
+    control 4.1).
+    Delivery pipeline: this rule is written against Stripe Events
+    delivered through a Workbench event destination to Amazon
+    EventBridge (or Azure Event Grid), then forwarded to the SIEM.
+    FIELD MAPPING NOTE: EventBridge wraps the Stripe event object
+    under a top-level "detail" field, so the selection and fields
+    below must be prefixed accordingly (type -> detail.type,
+    data.object.id -> detail.data.object.id, and so on) unless the
+    SIEM ingest pipeline unwraps "detail" before indexing.
     This corresponds to HTH Stripe control 3.1 (section 3.1, L1).
 references:
     - https://howtoharden.com/guides/stripe/
     - https://docs.stripe.com/api/events/types
+    - https://docs.stripe.com/security
 author: How to Harden
 date: 2026/02/16
 tags:
