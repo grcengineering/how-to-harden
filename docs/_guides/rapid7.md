@@ -6,9 +6,9 @@ slug: "rapid7"
 tier: "2"
 category: "Security"
 description: "Vulnerability management platform hardening for Rapid7 InsightVM and Command Platform including SSO, console security, and user management"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -86,6 +86,7 @@ Configure SAML SSO for centralized authentication to the Rapid7 Command Platform
    - **LastName:** User's last name
    - **Email:** User's email address
 3. Map these labels exactly as shown
+4. Optionally add the **rbacGroups** attribute, which carries Command Platform **User Group** names in the assertion. Populating it from IdP group membership makes the IdP the authority for platform RBAC: a user's groups — and therefore their permissions — are recalculated at every login, and removing them from an IdP group revokes the corresponding platform access without a separate console change. Pair this with the role design in [3.1](#31-implement-role-based-access-control) so the group names you emit map to genuinely least-privilege roles.
 
 **Step 4: Complete Configuration**
 1. Enter IdP SSO URL
@@ -218,12 +219,17 @@ Secure network access to the InsightVM Security Console.
 2. Use firewall rules to restrict:
    - Port 3780 (Web interface)
    - Port 40814 (Scan engine communication)
-3. Block public internet access
+3. Allow the outbound flows the console genuinely needs, and only those:
+   - Outbound TCP 443 to `updates.rapid7.com` (product and content updates — blocking it silently ages your vulnerability content)
+   - Outbound UDP 31400 (agent UUID correlation)
+4. Block public internet access
+5. If you deploy Scan Assistant on targets to avoid distributing scan credentials (see [4.1](#41-configure-vulnerability-scanning-security)), permit only engine-to-target traffic on the Scan Assistant listener and confirm the port your deployment uses in the console before opening it
 
 **Step 3: Configure Session Settings**
 1. Navigate to: **Administration** → **Security Console Configuration**
-2. Set session timeout (15-30 minutes recommended)
-3. Enable session lockout after failed attempts
+2. Review the session timeout. The shipped default is **600 seconds (10 minutes)** — keep it, or set a value no higher than 30 minutes. A shorter timeout is what limits the window in which an unattended or hijacked console session can be used against an interface that exposes the entire vulnerability inventory.
+3. **Vendor/hardening conflict — read before changing:** Rapid7's Security Console best-practices documentation recommends *increasing* the timeout (commonly to 1800 or 3600 seconds) so that long-running console operations do not expire mid-task. That is a usability and compatibility recommendation, not a security one: raising the timeout to one hour extends the exploitable window for session hijacking and walk-up access by six times over the default. Raise it only if a documented operational need exists, restrict the change to the accounts that need it, and compensate with strict network access (Step 2) and MFA (see [1.3](#13-enforce-multi-factor-authentication)). Source: [Security Console Best Practices](https://docs.rapid7.com/insightvm/security-console-best-practices/).
+4. Enable session lockout after failed attempts
 
 ---
 
@@ -304,6 +310,49 @@ Secure scan engine configurations and communications.
 1. Deploy engines in appropriate network segments
 2. Ensure engines can reach scan targets
 3. Use distributed engines for segmented networks
+
+---
+
+### 2.4 Protect the Console Keystore and Private Keys
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.11, 8.5 |
+| NIST 800-53 | SC-12, SC-28, SI-7 |
+
+#### Description
+Protect the Security Console's Java keystore and its encryption key on disk with file integrity monitoring and filesystem or full-disk encryption, and ensure the console certificate's Subject Alternative Name carries the console FQDN.
+
+#### Rationale
+**Why This Matters:**
+- The console keystore at `/opt/rapid7/nexpose/nsc/keystores/nsc.ks` holds the private key that authenticates the console to every browser and scan engine that trusts it; anyone who reads that file can impersonate the console or decrypt intercepted administrative traffic
+- The keystore's encryption key lives separately at `/opt/rapid7/nexpose/shared/conf/creds.kspw`, so an attacker with host-level file read on both paths has everything needed to unlock it — the separation only helps if both files are protected and monitored
+- File integrity monitoring on these paths converts a silent key theft or key replacement into an alertable event, since neither file changes during normal operation
+- Filesystem or full-disk encryption (LUKS, BitLocker, EFS) protects the same material at rest against offline access to a stolen disk, a snapshot, or a decommissioned VM image
+- A certificate whose Subject Alternative Name does not include the console FQDN forces administrators past a browser trust warning on every login, which trains exactly the behavior an attacker needs for a man-in-the-middle to go unnoticed
+
+**Attack Prevented:** Private key theft, console impersonation, man-in-the-middle on administrative sessions, offline extraction from disk images or snapshots, undetected key substitution
+
+#### ClickOps Implementation
+
+**Step 1: Restrict and monitor the key material**
+1. Confirm the keystore and its encryption key are present at the documented paths:
+   - Keystore: `/opt/rapid7/nexpose/nsc/keystores/nsc.ks`
+   - Keystore encryption key: `/opt/rapid7/nexpose/shared/conf/creds.kspw`
+2. Restrict filesystem permissions so only the Rapid7 service account and host administrators can read either file
+3. Add both paths to your file integrity monitoring tooling and alert on any read-permission change, modification, or replacement
+
+**Step 2: Encrypt the underlying storage**
+1. Enable filesystem or full-disk encryption on the console host — LUKS on Linux, BitLocker or EFS on Windows
+2. Confirm snapshots, backups, and cloned images of the console host inherit that encryption
+3. Wipe or securely destroy decommissioned console disks rather than reusing them
+
+**Step 3: Validate the console certificate**
+1. Ensure the certificate presented on port 3780 lists the console FQDN in its **Subject Alternative Name**, not only in the Common Name
+2. Confirm administrators reach the console by that FQDN so no trust warning is ever expected
+3. Re-verify the SAN after every certificate renewal or console hostname change
 
 ---
 
@@ -477,6 +526,12 @@ Secure vulnerability scanning configurations.
 2. Limit who can view/edit credentials
 3. Audit credential access
 
+**Step 4: Prefer Scan Assistant Over Distributed Credentials**
+1. Where supported, deploy **Scan Assistant** on scan targets instead of storing and distributing privileged scan credentials in the console. Scan Assistant authenticates the scan engine to the target using a digital certificate, so authenticated scanning happens without an administrative password ever being held by the console or replayed across the estate.
+2. This removes the single highest-value secret in the platform from circulation: a credential that is never stored cannot be stolen from the console, harvested by an insider, or rotated late.
+3. Where Scan Assistant is not an option, keep the least-privilege shared credentials above — but scope each credential to the smallest set of sites and assets that genuinely needs it.
+4. Allow the Scan Assistant listener only from your scan engines (see [2.1](#21-secure-console-access)) and confirm the port in your own console before opening firewall rules.
+
 ---
 
 ### 4.2 Configure Compliance Assessment
@@ -583,7 +638,9 @@ Integrate InsightVM with InsightIDR for security monitoring.
 ## Appendix A: References
 
 **Official Rapid7 Documentation:**
-- [Rapid7 Documentation](https://docs.rapid7.com/)
+- [Rapid7 Documentation Hub](https://documentation.rapid7.com/home/home.htm) — current documentation entry point
+- [Rapid7 Documentation (legacy docs.rapid7.com)](https://docs.rapid7.com/) — still live; the deep links below resolve here
+- [Exposure Command Documentation](https://documentation.rapid7.com/exposure-command/) — the platform InsightVM capabilities are being consolidated into
 - [Configure SSO access to InsightVM Security Console](https://docs.rapid7.com/insightvm/configuring-sso/)
 - [Configure SSO for Command Platform](https://docs.rapid7.com/insight/single-sign-on/)
 - [Configure Azure as SAML source](https://docs.rapid7.com/insightvm/azure-saml-config/)
@@ -593,10 +650,8 @@ Integrate InsightVM with InsightIDR for security monitoring.
 **API & Developer Resources:**
 - [Insight Platform API Overview](https://docs.rapid7.com/insight/api-overview/)
 
-**Trust & Compliance:**
-- [Rapid7 Trust Center](https://www.rapid7.com/trust/security/)
-- [Rapid7 Compliance](https://www.rapid7.com/trust/compliance/)
-- SOC 2 Type II, ISO 27001 -- via [Rapid7 Trust Center](https://www.rapid7.com/trust/compliance/)
+**Release Notes:**
+- InsightVM release notes on `docs.rapid7.com` are frozen as of 2025-05-23. Newer release notes are published in the Command Platform Help on the [documentation hub](https://documentation.rapid7.com/home/home.htm) — check there, not the legacy site, when verifying whether a setting or default has changed.
 
 **Security Incidents:**
 - **Codecov Supply Chain Breach (2021):** Attackers accessed a small subset of Rapid7 source code repositories via a compromised Codecov Bash Uploader. Some internal credentials and alert-related data for a subset of MDR customers were exposed. No direct breach of Rapid7 infrastructure in 2024-2025 has been publicly reported.
@@ -607,6 +662,7 @@ Integrate InsightVM with InsightIDR for security monitoring.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass: new 2.4 console keystore and private-key protection; corrected 2.1 session timeout to the shipped 600s default with a documented vendor-conflict callout; added updates.rapid7.com and UDP 31400 to the 2.1 port list; added Scan Assistant as the credential-less scanning path in 4.1; documented the SAML rbacGroups attribute in 1.1; refreshed references to the documentation.rapid7.com hub and dropped trust-center links. Tier 3/4 research sweep out of scope this pass | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, console security, and user management | Claude Code (Opus 4.5) |
 

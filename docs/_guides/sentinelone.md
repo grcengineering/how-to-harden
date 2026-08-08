@@ -6,9 +6,9 @@ slug: "sentinelone"
 tier: "1"
 category: "Security"
 description: "Endpoint Detection and Response (EDR) hardening for SentinelOne Singularity platform"
-version: "0.1.1"
+version: "0.1.2"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -28,6 +28,9 @@ SentinelOne is a leading AI-powered Endpoint Detection and Response (EDR) platfo
 
 ### Scope
 This guide covers SentinelOne Management Console hardening, policy configuration, detection tuning, and response procedures.
+
+### A Note on Sources
+SentinelOne's first-party administrator documentation is customer-gated: the community knowledge base renders empty to unauthenticated visitors, and the documentation host does not resolve publicly. That means the console paths, engine names, and policy values in this guide reflect the last authenticated review and could not be re-verified externally during the most recent currency pass. Confirm every path against your own console before acting on it, and treat any mismatch as a documentation gap here rather than a misconfiguration on your side.
 
 ---
 
@@ -388,8 +391,6 @@ Create custom detection rules for organization-specific threats and behaviors.
    - **Severity:** Critical, High, Medium, Low
    - **Action:** Alert, Kill, Quarantine
 
-**Example Rules:**
-
 ---
 
 ### 3.3 Enable Local Upgrade Authorization
@@ -650,25 +651,38 @@ Keep SentinelOne agents updated to ensure latest protection capabilities.
 
 ---
 
-## Appendix A: Feature Compatibility
+## Appendix A: Editions and Feature Compatibility
 
-| Feature | Control | Complete | Commercial |
-|---------|---------|----------|------------|
-| EPP/EDR | ✅ | ✅ | ✅ |
-| Ransomware Rollback | ✅ | ✅ | ✅ |
-| Firewall Control | ❌ | ✅ | ✅ |
-| Device Control | ❌ | ✅ | ✅ |
-| Ranger (Network Discovery) | ❌ | ❌ | ✅ |
-| Storyline Active Response | ❌ | ❌ | ✅ |
+SentinelOne currently packages **five** Singularity editions. Which controls in this guide you can implement depends on the edition you hold.
+
+| Edition | List Price | Position |
+|---------|-----------|----------|
+| Singularity Core | $69.99 per endpoint / year | Entry-tier EPP/EDR |
+| Singularity Control | Not listed on the public packages page | Core plus Advanced EPP Controls |
+| Singularity Complete | $179.99 per endpoint / year | Full EDR with extended telemetry |
+| Singularity Commercial | $229.99 per endpoint / year | Complete plus additional platform modules |
+| Singularity Enterprise | Custom quote | Top tier |
+
+Current packaging bundles **Advanced EPP Controls (Device and Firewall Control, Remote Shell)** as a single line item rather than listing Device Control and Firewall Control separately, so the feature matrix below reflects that grouping.
+
+| Feature | Core | Control | Complete | Commercial | Enterprise |
+|---------|------|---------|----------|------------|------------|
+| EPP/EDR | — | ✅ | ✅ | ✅ | — |
+| Ransomware Rollback | — | ✅ | ✅ | ✅ | — |
+| Advanced EPP Controls (Device and Firewall Control, Remote Shell) | — | ❌ | ✅ | ✅ | — |
+| Ranger (Network Discovery) | — | ❌ | ❌ | ✅ | — |
+| Storyline Active Response | — | ❌ | ❌ | ✅ | — |
+
+**—** = entitlement not stated on the public packages page for that edition. Confirm against your order form before assuming a control is available. Source: [SentinelOne Platform Packages](https://www.sentinelone.com/platform-packages/).
 
 ---
 
 ## Appendix B: References
 
 **Official SentinelOne Documentation:**
-- [SentinelOne Community / Knowledge Base](https://community.sentinelone.com/s/)
-- [Endpoint Security Best Practices](https://www.sentinelone.com/cybersecurity-101/endpoint-security/endpoint-security-best-practices/)
-- [Policy Configuration Guide](https://support.sentinelone.com) (requires login)
+- [SentinelOne Community / Knowledge Base](https://community.sentinelone.com/s/) — renders empty to unauthenticated visitors; requires a customer login
+- [SentinelOne Platform Packages](https://www.sentinelone.com/platform-packages/) — current edition lineup and list pricing
+- `support.sentinelone.com` — customer portal hosting the policy configuration guides. Not linked here: the host fails TLS chain verification for external validation as of 2026-08, so it cannot be fetch-verified. Reach it from inside your console session instead.
 
 **Trust & Compliance:**
 - [SentinelOne Trust Center](https://trust.sentinelone.com/)
@@ -683,6 +697,7 @@ Keep SentinelOne agents updated to ensure latest protection capabilities.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.1.2 | draft | Corrections pass: Appendix A rebuilt around the five current Singularity editions with list pricing and the bundled Advanced EPP Controls line item; removed the generic 101 marketing page and the TLS-failing support portal link from Appendix B; deleted the orphan Example Rules heading in 3.2; added a source-availability note to the Overview. Tier 1 documentation was unreachable this pass, limiting changes to externally-verifiable items; Tier 3/4 research sweep out of scope | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with policy configuration and detection tuning | Claude Code (Opus 4.5) |
 

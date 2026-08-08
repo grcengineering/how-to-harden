@@ -6,19 +6,19 @@ slug: "qualys"
 tier: "2"
 category: "Security"
 description: "Vulnerability management platform hardening for Qualys VMDR including user access, scanning configuration, and policy compliance"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
 
-Qualys is a leading cloud-based vulnerability management and compliance platform protecting **millions of assets** across enterprises worldwide. As a critical security tool with deep access to infrastructure, Qualys configurations directly impact vulnerability visibility and remediation effectiveness. Proper hardening ensures security data integrity and prevents unauthorized access to sensitive vulnerability information.
+Qualys operates the **Enterprise TruRisk Platform** (formerly branded the Qualys Cloud Platform), a cloud-based vulnerability management, detection, response, and compliance suite protecting **millions of assets** across enterprises worldwide. As a critical security tool with deep access to infrastructure, Qualys configurations directly impact vulnerability visibility and remediation effectiveness. Proper hardening ensures security data integrity and prevents unauthorized access to sensitive vulnerability information.
 
 ### Intended Audience
 - Security engineers managing vulnerability programs
 - IT administrators configuring Qualys
-- GRC professionals using Policy Compliance
+- GRC professionals using Policy Compliance and Policy Audit
 - SOC analysts managing vulnerability data
 
 ### How to Use This Guide
@@ -27,7 +27,7 @@ Qualys is a leading cloud-based vulnerability management and compliance platform
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Qualys platform security including user management, scanning configuration, policy compliance, and Security Configuration Assessment (SCA).
+This guide covers Enterprise TruRisk Platform security including user management, API authentication, activity logging, scanning configuration, compliance assessment (Policy Compliance and Policy Audit), and Security Configuration Assessment (SCA).
 
 ---
 
@@ -109,6 +109,8 @@ Require MFA for all users, especially administrators.
 - Admin accounts without MFA pose significant risk
 - Qualys admins have access to all vulnerability data
 - MFA should be enforced via SSO/IdP
+
+**Attack Prevented:** Credential theft, password reuse, phishing-driven account takeover, unauthorized access to vulnerability data
 
 #### ClickOps Implementation
 
@@ -214,6 +216,86 @@ Restrict Qualys access to approved IP addresses.
 
 ---
 
+### 1.5 Govern API External IDs for Programmatic Access
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4, 6.7 |
+| NIST 800-53 | IA-2, IA-5 |
+
+#### Description
+Assign and govern the per-user **API External ID**, the field that maps a Qualys user account to an external identity so the platform can accept OAuth/OIDC JWT-based API authentication for that user. Treat each External ID as a named, owned, revocable programmatic credential rather than a convenience setting.
+
+#### Rationale
+**Why This Matters:**
+- API access to Qualys carries the same authority as the console user it is bound to, so an unscoped or over-privileged API user exposes the entire vulnerability inventory programmatically
+- Mapping API identity to an external IdP subject moves API authentication behind the same lifecycle as human accounts, so a departed employee's or decommissioned integration's access dies with the IdP identity instead of living on as a static credential
+- The External ID is case-sensitive and accepts alphanumeric strings, email addresses, or custom identifiers, which makes near-miss values easy to introduce and hard to audit unless a naming convention is enforced
+- Recording an owner for every API-enabled account is what makes revocation possible during an incident; unattributed integration accounts are the ones that survive credential rotations
+
+**Attack Prevented:** Orphaned integration credentials, unattributed API access, privilege escalation through over-scoped API users, persistence via API identity after IdP deprovisioning
+
+#### ClickOps Implementation
+
+**Step 1: Set the External ID on the API user**
+1. Navigate to: **Users** → **New** → **Users** → **General Information**
+2. Populate the **API External ID** field with the external identity that will present the JWT
+3. Enter the value exactly — the field is case-sensitive, and alphanumeric strings, email addresses, and custom identifiers are all accepted
+
+**Step 2: Scope the account to least privilege**
+1. Assign the API user the narrowest role its integration actually requires (see [1.3](#13-implement-role-based-access-control)) — never the Manager role by default
+2. Create one API user per integration so a single revocation does not break unrelated automation
+3. Apply IP restrictions (see [1.4](#14-configure-ip-restrictions)) to API users whose callers have fixed egress addresses
+
+**Step 3: Record ownership and review**
+1. Document the named human owner, the consuming system, and the business justification for every account carrying an External ID
+2. Re-verify External ID values against the IdP during access reviews — a stale or mistyped mapping either breaks the integration or silently binds it to the wrong identity
+3. Clear the External ID and disable the account when the integration is retired
+
+---
+
+### 1.6 Monitor Activity and Change Logs
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 8.2, 8.5 |
+| NIST 800-53 | AU-2, AU-6, AU-11 |
+
+#### Description
+Review the Qualys Activity Log for authentication events and the QID change log for detection-content changes, and export both to your SIEM so platform abuse is detected rather than merely recorded.
+
+#### Rationale
+**Why This Matters:**
+- The Activity Log records each login attempt with its success or failure state, the failure reason, the source IP address, the user agent, and the timestamp — enough detail to distinguish a forgotten password from credential stuffing against the subscription
+- Source IP and user agent are what turn a failed-login count into an investigable event, since a spray from unfamiliar infrastructure looks nothing like a user fumbling MFA
+- The QID change log records both user-initiated and system-initiated changes along with the username responsible and retains two years of history, which is what lets an auditor prove that a detection was not quietly suppressed
+- Logs that live only in the console are reviewed only after an incident is already known; forwarding them to the SIEM is what makes alerting on anomalous logins possible in the first place
+
+**Attack Prevented:** Undetected credential stuffing, unauthorized configuration change, detection tampering, insider abuse of vulnerability data
+
+#### ClickOps Implementation
+
+**Step 1: Review authentication activity**
+1. Navigate to: **Administration** → **Activity Log**
+2. Filter for login events and review the success/failure state, failure reason, source IP address, user agent, and timestamp on each
+3. Investigate repeated failures against a single account, and any success from an IP range outside your allowlist (see [1.4](#14-configure-ip-restrictions))
+
+**Step 2: Review detection-content changes**
+1. Open the QID change log and review entries for both user-initiated and system-initiated changes
+2. Confirm each user-initiated change is attributable to a named administrator and matches an approved request
+3. Two years of change history are retained — use it to evidence detection continuity during audits
+
+**Step 3: Export and alert**
+1. Export or stream Activity Log data to your SIEM for retention beyond the console's window
+2. Alert on failed-login bursts, logins from unexpected source IPs or user agents, role changes, and API user creation
+3. Re-verify the export after any subscription or user-management change
+
+---
+
 ## 2. Scanning Configuration
 
 ### 2.1 Secure Scan Credentials
@@ -234,6 +316,8 @@ Securely manage credentials used for authenticated scanning.
 - Compromised credentials can expose infrastructure
 - Qualys encrypts credentials but proper management is critical
 
+**Attack Prevented:** Scan-credential theft, privilege escalation via over-permissioned scan accounts, lateral movement from a compromised scanner, long-lived static secrets
+
 #### ClickOps Implementation
 
 **Step 1: Create Dedicated Scan Accounts**
@@ -245,10 +329,14 @@ Securely manage credentials used for authenticated scanning.
 
 **Step 2: Configure Credential Vaults**
 1. Navigate to: **Scans** → **Authentication** → **Vault**
-2. Configure credential vault integration:
-   - CyberArk
+2. Configure a supported credential vault so Qualys retrieves secrets at scan time instead of storing them:
+   - CyberArk PIM Suite
+   - CyberArk AIM
+   - Thycotic Secret Server
    - HashiCorp Vault
-   - Thycotic
+   - Azure Key Vault
+   - Quest Vault
+   - One Identity Safeguard (NSX)
 3. Retrieve credentials dynamically
 
 **Step 3: Rotate Credentials**
@@ -297,6 +385,8 @@ Configure appropriate scan options for comprehensive coverage.
    - Performance settings
    - Authentication type
 2. Balance thoroughness with impact
+
+**Changed default — On-Host Script Execution (Platform 10.39.1, July 2026):** the option-profile checkbox **Allow the scanner to execute local scripts on target hosts** ships **disabled by default**. Enabling it requires BOTH the option-profile setting and a Windows NT authentication record, and it applies to vulnerability-management scans only (Policy Audit and PCI scans are unaffected). **Leave it disabled.** Enabling it grants the scanner remote script execution — effectively PowerShell — on every authenticated Windows target in scope, turning a scan credential compromise into fleet-wide code execution. If a specific assessment genuinely requires it, enable it on a dedicated option profile scoped to a named asset group, not on your standard profiles. Source: [VM/VMDR Platform 10.39.1 release notes](https://docs.qualys.com/en/vm/release-notes/qweb/release_10_39_1.htm).
 
 **Step 3: Schedule Scans**
 1. Configure scan schedules
@@ -352,6 +442,8 @@ Securely configure Qualys Cloud Agents.
 
 ## 3. Policy Compliance
 
+Compliance assessment on the Enterprise TruRisk Platform spans two apps: the long-standing **Policy Compliance** app and **Policy Audit**, which Qualys now ships alongside it. The controls below apply to whichever app your subscription entitles; console paths differ between them, so confirm the path in your own tenant before scripting against it. Policy Audit 1.13 added a **policy changelog** that records control-level additions, modifications, and deletions within a policy — review it alongside the platform Activity Log (see [1.6](#16-monitor-activity-and-change-logs)) so a weakened baseline is caught as a change event rather than as a suddenly improved compliance score. Source: [Policy Audit 1.13 release notes](https://docs.qualys.com/en/vm/release-notes/mergedProjects/qualys_pa/pa/release_1_13.htm).
+
 ### 3.1 Configure CIS Benchmark Assessments
 
 **Profile Level:** L2 (Walk)
@@ -362,18 +454,21 @@ Securely configure Qualys Cloud Agents.
 | NIST 800-53 | CM-6 |
 
 #### Description
-Configure Policy Compliance for CIS Benchmark assessments.
+Configure Policy Compliance or Policy Audit to assess systems against CIS Benchmark baselines on a schedule.
 
 #### Rationale
 **Why This Matters:**
-- Qualys covers more CIS benchmarks than competitors
-- System hardening reduces attack surface
-- Improves security posture from 51% to 80% average
+- CIS Benchmarks encode the hardening settings that attackers most reliably exploit when left at their defaults, so assessing against them turns a hardening intention into a measurable state
+- Automated, scheduled benchmark assessment catches drift between change windows, where manual review only ever produces a point-in-time snapshot
+- Benchmark results give remediation teams a prioritized, vendor-neutral list of concrete settings rather than an abstract instruction to "harden the fleet"
+- Documented exceptions keep deliberate deviations visible and reviewable instead of indistinguishable from unnoticed misconfiguration
+
+**Attack Prevented:** Exploitation of insecure defaults, configuration drift, undocumented hardening exceptions, compliance gaps
 
 #### ClickOps Implementation
 
 **Step 1: Enable Policy Compliance**
-1. Navigate to: **Policy Compliance** → **Policies**
+1. Navigate to: **Policy Compliance** → **Policies** (or the equivalent **Policy Audit** policy list)
 2. Review available CIS benchmarks
 3. Select appropriate benchmarks for your environment
 
@@ -626,7 +721,9 @@ Configure approval workflows for automated remediation.
 ## Appendix A: References
 
 **Official Qualys Documentation:**
-- [Qualys Documentation](https://www.qualys.com/documentation/)
+- [Qualys Documentation](https://www.qualys.com/documentation/) — Enterprise TruRisk Platform documentation index
+- [VM/VMDR Platform 10.39.1 Release Notes](https://docs.qualys.com/en/vm/release-notes/qweb/release_10_39_1.htm) — On-Host Script Execution default, API External ID, Activity Log detail
+- [Policy Audit 1.13 Release Notes](https://docs.qualys.com/en/vm/release-notes/mergedProjects/qualys_pa/pa/release_1_13.htm) — policy changelog
 - [Get Started with VM/VMDR](https://docs.qualys.com/en/vm/latest/welcome_to_vm.htm)
 - [Scanning Basics](https://docs.qualys.com/en/vm/latest/scans/scanning_basics.htm)
 - [VMDR Datasheet](https://www.qualys.com/docs/vmdr-datasheet.pdf)
@@ -636,9 +733,6 @@ Configure approval workflows for automated remediation.
 
 **API & Developer Resources:**
 - [Qualys API Documentation](https://www.qualys.com/documentation/)
-
-**Compliance & Certifications:**
-- SOC 2 Type II, ISO 27001, CSA STAR Level 2 -- via [Qualys Certifications](https://success.qualys.com/support/s/standards)
 
 **Security Incidents:**
 - **Accellion FTA Breach (2021):** Qualys confirmed data was accessed via a zero-day vulnerability in the Accellion FTA file transfer appliance used by Qualys. Production environments and customer data on the Qualys Cloud Platform were not affected.
@@ -650,6 +744,7 @@ Configure approval workflows for automated remediation.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass: Enterprise TruRisk Platform / Policy Audit naming; new 1.5 API External ID and 1.6 activity and change logging; On-Host Script Execution changed-default callout in 2.2; corrected credential-vault list in 2.1; removed unsourced claims and added Attack Prevented in 3.1, 1.2, 2.1; dropped compliance-badge reference. Tier 3/4 research sweep out of scope this pass | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with access controls, scanning, and policy compliance | Claude Code (Opus 4.5) |
 
