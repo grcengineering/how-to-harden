@@ -9,7 +9,7 @@ product: "Bitbucket"
 tier: "2"
 category: "DevOps"
 description: "Code repository security hardening for Bitbucket Cloud — workspace membership and app access, project permissions, forking, branch restrictions and merge checks, signed commits, and Pipelines secrets and deployment controls."
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -93,6 +93,8 @@ Implement least privilege access for workspace members and manage user lifecycle
    - Restrict who can send invitations
    - Allow invitations only to specific email domains
    - Require admin approval for new members
+
+*This navigation path was not re-verified against current Atlassian documentation in the latest currency pass — confirm the exact menu location in your workspace before scripting or auditing against it.*
 
 **Step 4: Regular Access Reviews**
 1. Quarterly review of all workspace members
@@ -184,6 +186,8 @@ Control which third-party applications can access workspace data. This is the wo
    - Restrict who can install apps
    - Require admin approval for new apps
    - Block specific apps if needed
+
+*This navigation path was not re-verified against current Atlassian documentation in the latest currency pass — confirm the exact menu location in your workspace before scripting or auditing against it.*
 
 **Step 3: Audit OAuth Authorizations**
 1. Review user OAuth authorizations
@@ -326,7 +330,11 @@ Require pull request reviews before code can be merged to protected branches.
 | NIST 800-53 | SI-7 |
 
 #### Description
-Require GPG or SSH signed commits to verify commit authenticity.
+Require GPG- or SSH-signed commits so Bitbucket rejects any push whose commits cannot be cryptographically attributed to a known key.
+
+#### Prerequisites
+- **Bitbucket Premium.** Signed commit enforcement is a Premium-only feature; Free and Standard workspaces cannot enable it.
+- Contributors must have a GPG or SSH signing key registered on their Bitbucket account before enforcement is switched on, or their pushes will start failing.
 
 #### Rationale
 **Why This Matters:**
@@ -339,15 +347,23 @@ Require GPG or SSH signed commits to verify commit authenticity.
 
 #### ClickOps Implementation
 
-**Step 1: Configure Signature Requirements**
-1. Navigate to: **Repository Settings** → **Branch restrictions**
-2. Add restriction for protected branches:
-   - Require signed commits (if available)
+**Step 1: Enable Signed Commits on the Repository**
+1. Navigate to: **Repository Settings** → **Repository details** → **Advanced**
+2. Enable **Signed commits**
 
-**Step 2: Document Signing Requirements**
-1. Provide GPG key setup guides
-2. Configure signing key requirements
-3. Document verification procedures
+This is a repository-level setting, not a branch restriction — it is not configured alongside the merge checks in [3.1](#31-configure-branch-permissions).
+
+**Step 2: Understand What Enforcement Actually Covers**
+- Enforcement happens at `git push`. Pushes containing unsigned commits are **rejected outright** rather than flagged after the fact.
+- **Historical commits are unaffected.** Turning this on does not invalidate or re-verify anything already in the repository, so there is no retroactive breakage to plan around.
+- **Pull requests created through the Bitbucket web UI are currently exempt** from the enforcement. That is a real gap: a contributor who edits and merges in the browser can still land unsigned commits on a repository with signing enforced. Treat the web-UI path as an exception to close by convention or review policy, not one the setting closes for you.
+
+**Step 3: Roll Out Signing Keys First**
+1. Have contributors register a **GPG** or **SSH** signing key on their Bitbucket account — both key types are supported.
+2. Publish setup instructions and confirm key coverage across active contributors before enabling enforcement, since the failure mode is a hard push rejection mid-work.
+3. Document how reviewers verify signature status on incoming changes.
+
+Source: [Require signed commits](https://support.atlassian.com/bitbucket-cloud/docs/require-signed-commits/)
 
 ---
 
@@ -580,6 +596,7 @@ Conduct regular security reviews of workspace configuration and access.
 | Workspace app access rules (2.2) | Basic | ✅ | ✅ |
 | Forking restrictions (2.3) | ✅ | ✅ | ✅ |
 | Merge checks (3.1, 3.2) | Basic | ✅ | ✅ |
+| Signed commit enforcement (3.3) | ❌ | ❌ | ✅ |
 | Deployment permissions (4.2) | ❌ | ✅ | ✅ |
 | Audit log (workspace) (5.1) | ❌ | ❌ | ✅ |
 
@@ -590,9 +607,9 @@ Conduct regular security reviews of workspace configuration and access.
 ## Appendix B: References
 
 **Official Atlassian Documentation:**
-- [Atlassian Trust Center](https://www.atlassian.com/trust) | [Customer Trust Center](https://customertrust.atlassian.com/) (powered by Conveyor)
 - [Bitbucket Cloud Support](https://support.atlassian.com/bitbucket-cloud/)
 - [Bitbucket Cloud Security](https://support.atlassian.com/bitbucket-cloud/docs/security/)
+- [Require Signed Commits](https://support.atlassian.com/bitbucket-cloud/docs/require-signed-commits/)
 - [Atlassian Guard Documentation](https://support.atlassian.com/security-and-access-policies/)
 - [Security Advisories](https://www.atlassian.com/trust/security/advisories)
 - [Bitbucket Server Security Advisories](https://confluence.atlassian.com/bitbucketserver/bitbucket-server-security-advisories-776640597.html)
@@ -605,9 +622,8 @@ Conduct regular security reviews of workspace configuration and access.
 - [GitHub Organization (Atlassian)](https://github.com/atlassian)
 
 **Compliance Frameworks:**
-- SOC 2 Type II, ISO/IEC 27001:2022 (as part of Atlassian Cloud platform) — via [Atlassian Compliance Resources](https://www.atlassian.com/trust/compliance/resources)
-- SOX, PCI DSS compliance
-- [Compliance FAQ](https://www.atlassian.com/trust/compliance/compliance-faq)
+- SOC 2 Type II and ISO/IEC 27001:2022 apply to Bitbucket Cloud as part of the Atlassian Cloud platform; request the current attestation reports through your Atlassian account team
+- SOX and PCI DSS compliance obligations are met through platform-level controls plus the workspace controls in this guide
 
 **Security Incidents:**
 - **May 2024 — Plaintext Secrets Leak in Pipeline Artifacts:** Mandiant discovered that Bitbucket Cloud pipeline artifacts could unintentionally expose plaintext authentication secrets (including AWS credentials) stored in "Secured Variables." Attackers exploited this to attempt AWS account compromise. ([Vorlon Report](https://vorlon.io/saas-security-blog/bitbucket-springs-a-secrets-leak))
@@ -624,10 +640,11 @@ Conduct regular security reviews of workspace configuration and access.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Currency pass. **3.3:** correct signed commits — it is a repository setting at **Repository Settings → Repository details → Advanced → Signed commits**, not a branch restriction, and it is **Premium-only**; enforcement rejects unsigned commits at `git push`, historical commits are unaffected, GPG and SSH signing keys are both supported, and pull requests created through the Bitbucket web UI are currently exempt from enforcement; drop the "(if available)" hedge. **Appendix A:** add the 3.3 plan row. **Appendix B:** remove the Atlassian Trust Center and Customer Trust Center rows and reroute the SOC 2 / ISO 27001 lines away from them; add the signed-commits doc. Annotated as unverified this pass: the 1.1 invitation-policy and 2.2 app-access-rules workspace navigation paths (candidate documentation URLs returned 404). Recorded for future passes: Bitbucket Cloud ships **no native secret scanning** — the security documentation lists only the Snyk integration — so 4.3's Code Pack approach is correct and should not be "fixed" to point at a native feature. Changelog row order corrected | Claude Code (Opus 5) |
 | 2026-08-08 | 0.2.0 | draft | Restructure as a product guide under the Atlassian platform hub: add `platform`/`platform_slug`/`product` frontmatter and a hub pointer. Remove duplicated organization-level controls — former 1.1 two-step verification and 1.2 SAML SSO now live in Atlassian §1.1, former 1.3 IP allowlisting now lives in Atlassian §1.4. Renumber former 1.4 to 1.1; sections 2-5 unchanged. Scope 5.1 to the Bitbucket workspace audit log with a hub cross-reference, cross-reference org app governance from 2.2, and complete the 3.1 rationale with an Attack Prevented line | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.2 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with workspace security, branch protection, and pipeline security | Claude Code (Opus 4.5) |
 | 2026-02-19 | 0.1.1 | draft | Extract inline code blocks to Code Pack files (sections 4.2, 4.3) | Claude Code (Opus 4.6) |
+| 2025-02-05 | 0.1.0 | draft | Initial guide with workspace security, branch protection, and pipeline security | Claude Code (Opus 4.5) |
 
 ---
 

@@ -6,9 +6,9 @@ slug: "azure-devops"
 tier: "2"
 category: "DevOps"
 description: "Microsoft DevOps security for pipelines, service connections, and artifact feeds"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 
@@ -61,17 +61,17 @@ Require Azure AD authentication with Conditional Access policies including MFA, 
 - Service connections store cloud provider credentials
 - Compromised access enables code injection and infrastructure access
 
-**Attack Scenario:** Compromised service connection credentials enable infrastructure modification; variable group exposure leaks secrets to unauthorized pipelines.
+**Attack Prevented:** Credential stuffing and password-only account takeover, MFA bypass through legacy authentication paths, access from unmanaged devices and untrusted networks
 
 #### ClickOps Implementation
 
-**Step 1: Configure Azure AD Connection**
-1. Navigate to: **Organization Settings → Azure Active Directory**
-2. Connect to Azure AD tenant
-3. Enable: **Only allow Azure AD users**
+**Step 1: Configure Microsoft Entra ID Connection**
+1. Navigate to: **Organization Settings → Microsoft Entra** (formerly Azure Active Directory)
+2. Connect to the Entra ID tenant
+3. Enable: **Only allow Microsoft Entra users**
 
-**Step 2: Create Conditional Access Policy (Azure AD)**
-1. Navigate to: **Azure Portal → Azure AD → Security → Conditional Access**
+**Step 2: Create Conditional Access Policy (Entra ID)**
+1. Navigate to: **Azure Portal → Microsoft Entra ID → Security → Conditional Access**
 2. Create policy for Azure DevOps:
    - **Users:** All users
    - **Cloud apps:** Azure DevOps
@@ -80,12 +80,21 @@ Require Azure AD authentication with Conditional Access policies including MFA, 
      - Device platforms: Require managed devices (L2)
    - **Grant:** Require MFA
 
-**Step 3: Disable Alternate Authentication**
+**Step 3: Bind Conditional Access to Non-Interactive Traffic**
 1. Navigate to: **Organization Settings → Policies**
-2. Disable:
-   - **Third-party application access via OAuth:** Disable or restrict
-   - **SSH authentication:** Restrict to managed keys
-   - **Allow public projects:** Disable
+2. Enable: **Enable IP Conditional Access policy validation on non-interactive flows**
+3. Without this policy, Entra ID Conditional Access IP restrictions are evaluated on interactive sign-in only. Non-interactive traffic — PATs, SSH, and other token-bearing access — is not bound by the IP conditions, which leaves the most attractive path to an attacker holding a stolen token unrestricted. ([Change application connection and security policies](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/change-application-access-policies))
+
+**Step 4: Restrict Legacy and Third-Party Authentication Paths**
+1. Navigate to: **Organization Settings → Policies**
+2. Review the application connection policies:
+   - **Third-party application access via OAuth:** keep disabled. **Changed default:** Microsoft now ships this policy **off by default for new organizations**, so the task here is confirming nobody turned it on rather than turning it off. Note the scope — it governs the legacy Azure DevOps OAuth app model only, and does **not** govern Entra ID OAuth applications, which are controlled in Entra ID. ([Change application connection and security policies](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/change-application-access-policies))
+   - **SSH authentication:** leave enabled only where Git-over-SSH is genuinely needed, and keep **Validate SSH key expiration** on — it is on by default. With it enabled, expired SSH keys become invalid immediately, and users are notified 7 days before expiry. There is no "restrict to managed keys" setting; key hygiene is enforced through expiration validation, not an allowlist.
+   - **Alternate credentials:** this mechanism no longer exists in Azure DevOps. If your runbook still carries a "disable alternate authentication" step, treat it as historical — verify nothing still authenticates that way, then delete the step rather than hunting for a toggle that was removed.
+
+**Step 5: Retire Public Projects**
+1. Microsoft has retired public projects: creating new ones is blocked, and existing public projects are scheduled to convert automatically to private in 2027. ([Azure DevOps security overview](https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-overview))
+2. Rather than toggling a policy, inventory any public projects that remain and convert them on your own schedule, so the change lands as a planned migration instead of an imposed one.
 
 #### Compliance Mappings
 
@@ -160,14 +169,32 @@ Restrict PAT creation and enforce expiration policies.
 
 #### ClickOps Implementation
 
-**Step 1: Configure Organization PAT Policy**
-1. Navigate to: **Organization Settings → Policies**
-2. Configure:
-   - **Restrict creation of full-scoped PATs:** Enable
-   - **Maximum PAT lifetime:** 90 days
-   - **Restrict global PATs:** Enable
+**Step 1: Configure the Tenant PAT Policies**
 
-**Step 2: Audit Existing PATs**
+The three policies that actually constrain PAT scope and lifetime are **tenant** policies, not organization policies, and they live in a different place than most guidance suggests. ([Manage PATs with policies](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-pats-with-policies-for-administrators))
+
+1. Navigate to: **Organization settings → Microsoft Entra**
+2. You need the **Azure DevOps Administrator** role in Entra ID to change these — organization owners without that role cannot set them.
+3. Configure, noting that **all three are off by default**:
+   - **Restrict full-scoped personal access token creation** — forces every new PAT to carry an explicit scope
+   - **Maximum personal access token lifespan** — set to 90 days or lower
+   - **Restrict global personal access token creation** — stops one token from reaching every organization the user can access
+4. Each policy carries its own Entra allowlist. Use it for the narrow set of identities that genuinely need an exception, and review the allowlists on the same cadence as the tokens themselves — an allowlist entry silently defeats the policy for that identity.
+
+**Step 2: Configure the Organization PAT Creation Policy**
+1. Navigate to: **Organization Settings → Policies**
+2. Enable: **Restrict personal access token (PAT) creation**
+3. This is a separate, organization-scoped control from the tenant policies above. Its subpolicies let you allow PAT creation for packaging scopes only, and maintain an allowlist of users who may still create tokens with any scope.
+
+**Step 3: Leave Leaked-Token Auto-Revocation On**
+
+**Do not disable this.** The tenant policy **Automatically revoke leaked personal access tokens** is **on by default**, and it revokes PATs that are committed to public GitHub repositories. It is one of the few controls that acts after the mistake has already been made, and turning it off buys nothing.
+
+**Step 4: Prefer Entra Tokens Over Service-Account PATs**
+
+Long-lived PATs issued to shared service accounts are the hardest PATs to rotate and the ones most likely to end up in a script. Replace them with 1-hour Microsoft Entra tokens, service principals, or managed identities wherever the consuming system supports it. ([Azure DevOps security overview](https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-overview))
+
+**Step 5: Audit Existing PATs**
 
 See the Code Pack below for a PowerShell script that lists all PATs via the Azure DevOps REST API.
 
@@ -192,6 +219,20 @@ Replace service connections with stored credentials with workload identity feder
 - Service connections store long-lived credentials
 - Static credentials don't expire without rotation
 - OIDC federation provides short-lived, automatically rotated tokens
+- A stored cloud credential in a service connection is a standing path from a compromised pipeline definition straight into the subscription it targets
+
+**Attack Prevented:** Cloud account takeover through leaked service connection secrets, credential reuse after exposure, long-lived standing access to subscriptions from CI
+
+#### Deprecation: The Azure DevOps Issuer Is Being Retired
+
+Workload identity federation itself is not going away — the **issuer** behind it is changing, and existing connections will break if left alone.
+
+- The Azure DevOps issuer (`https://vstoken.dev.azure.com`) was deprecated on **2026-07-01** and is scheduled for **retirement on 2027-07-01**.
+- New service connections are created against the Entra issuer (`https://login.microsoftonline.com/`) instead.
+- Azure DevOps flags affected connections. Convert one via **Project settings → Service connections → (flagged connection) → Update**. Where the automatic conversion does not apply, add a federated credential on the app registration manually using the Issuer and Subject values Azure DevOps displays for that connection.
+- Out of scope for the automatic path: multitenant app registrations, and the Azure Government, 21Vianet, and Azure Stack clouds — plan these conversions by hand.
+
+Sources: [WIF Azure DevOps issuer retirement](https://learn.microsoft.com/en-us/azure/devops/release-notes/roadmap/wif-azdo-issuer-retirement) · [Convert service connections](https://learn.microsoft.com/en-us/azure/devops/pipelines/release/convert-service-connections)
 
 #### ClickOps Implementation
 
@@ -203,12 +244,14 @@ Replace service connections with stored credentials with workload identity feder
    - **Subscription:** Target subscription
    - **Service connection name:** Descriptive name
    - **Grant access to all pipelines:** Disable
+5. Scope the connection to a **resource group** rather than the whole subscription wherever the pipeline's work allows it, and avoid classic service connections entirely — they carry broader standing access than the ARM equivalent and are the harder of the two to audit. ([Azure DevOps security overview](https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-overview))
 
 **Step 2: Migrate Existing Service Connections**
 1. Identify connections using stored credentials
 2. Create new OIDC-based connections
 3. Update pipeline references
 4. Delete old credential-based connections
+5. Separately, work the flagged-connection list from the issuer retirement above — a connection can already be OIDC-based and still be pointed at the retiring issuer
 
 **Step 3: Restrict Service Connection Access**
 1. Navigate to: **Service connection → Security**
@@ -457,19 +500,29 @@ Implement branch policies to enforce code review and prevent direct pushes.
    - `azure-pipelines.yml`: Require security team review
    - `terraform/`: Require platform team review
 
+**Step 3: Require Advanced Security Status Checks on Pull Requests**
+
+If you have GitHub Advanced Security for Azure DevOps enabled (see [4.2](#42-enable-secret-and-code-scanning-with-github-advanced-security)), its findings can gate merges rather than merely appearing in a tab.
+
+1. Navigate to: **Project settings → Repos → Policies → Status checks**
+2. Add a status check with **Genre** `AdvancedSecurity` and one of:
+   - `AdvancedSecurity/AllHighAndCritical` — blocks the merge while any high or critical alert exists on the branch
+   - `AdvancedSecurity/NewHighAndCritical` — blocks only on alerts the pull request introduces, which is the practical starting point for a repository with existing findings
+3. Start with `NewHighAndCritical` to stop the bleeding, then move to `AllHighAndCritical` once the backlog is worked down. ([Configure GitHub Advanced Security features](https://learn.microsoft.com/en-us/azure/devops/repos/security/configure-github-advanced-security-features))
+
 #### Code Implementation
 
 {% include pack-code.html vendor="azure-devops" section="4.1" %}
 
 ---
 
-### 4.2 Enable Credential Scanning
+### 4.2 Enable Secret and Code Scanning with GitHub Advanced Security
 
 **Profile Level:** L1 (Crawl)
 **NIST 800-53:** RA-5
 
 #### Description
-Enable Microsoft Security DevOps to detect secrets in repositories.
+Enable GitHub Advanced Security for Azure DevOps (GHAzDO) to detect secrets committed to repositories and block new ones at push time.
 
 #### Rationale
 **Why This Matters:**
@@ -480,7 +533,25 @@ Enable Microsoft Security DevOps to detect secrets in repositories.
 
 **Attack Prevented:** Secret leakage, hardcoded credential exposure, repository data theft, cloud account takeover
 
-#### Implementation
+#### Prerequisites
+- The scanning capability is licensed separately as **GitHub Advanced Security for Azure DevOps**. It is also sold unbundled as **GitHub Secret Protection for Azure DevOps** (secret scanning and push protection) and **GitHub Code Security for Azure DevOps** (code scanning and dependency scanning), so you can buy the secret-scanning half alone.
+- Project Administrator or organization-level permissions, depending on the scope you enable at.
+
+#### ClickOps Implementation
+
+**Step 1: Enable at the Right Scope**
+1. Navigate to: **Organization settings → Repositories**
+2. Use **Enable all** to turn Advanced Security on across the organization, or enable it per project or per repository if you are rolling out incrementally.
+3. Enabling **Secret Protection** automatically turns on both **push protection** and **repository secret scanning** for the scope you enabled — you do not configure those separately.
+
+**Step 2: Work the Alerts**
+1. Navigate to the repository's **Advanced Security** tab
+2. Triage secret alerts by revoking the exposed credential first and removing it from the code second — rotation is the control, deletion from the branch is cleanup.
+3. Gate merges on findings using the Advanced Security status checks described in [4.1](#41-configure-branch-policies).
+
+Source: [Configure GitHub Advanced Security features](https://learn.microsoft.com/en-us/azure/devops/repos/security/configure-github-advanced-security-features)
+
+#### Code Implementation
 
 {% include pack-code.html vendor="azure-devops" section="4.2" %}
 
@@ -584,9 +655,14 @@ Configure and monitor Azure DevOps audit logs.
    - Permission changes
    - Pipeline modifications
 
-**Step 2: Export to SIEM**
+**Step 2: Stream Audit Events to Your SIEM**
+1. Navigate to: **Organization Settings → Auditing → Streams**
+2. Create a stream pointed at your SIEM target. Streaming is the primary export path: it delivers events continuously, needs no code of your own, and it is what carries events past Azure DevOps's limited native retention window. ([Azure DevOps security overview](https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-overview))
+3. Confirm the stream is receiving events before you retire any polling job that currently covers this.
 
-See the Code Pack below for a PowerShell script that exports audit logs via the Azure DevOps REST API with pagination support.
+**Step 3: Fallback — Scheduled REST Export**
+
+Where no stream target exists for your SIEM, fall back to polling the audit log API on a schedule. See the Code Pack below for a PowerShell script that exports audit logs via the Azure DevOps REST API with pagination support.
 
 #### Detection Queries
 
@@ -634,10 +710,14 @@ See the DB Code Pack below for Azure Sentinel / Log Analytics KQL queries that d
 ## Appendix B: References
 
 **Official Microsoft Documentation:**
-- [Microsoft Service Trust Portal](https://servicetrust.microsoft.com/) (SOC reports, compliance documentation)
 - [Azure DevOps Documentation](https://learn.microsoft.com/en-us/azure/devops/)
-- [Security Best Practices](https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-best-practices)
+- [Azure DevOps Security Overview](https://learn.microsoft.com/en-us/azure/devops/organizations/security/security-overview) (canonical security guidance; the former `security-best-practices` URL now redirects here)
+- [Change Application Connection and Security Policies](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/change-application-access-policies)
+- [Manage PATs with Policies (Administrators)](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/manage-pats-with-policies-for-administrators)
 - [Workload Identity Federation](https://learn.microsoft.com/en-us/azure/devops/pipelines/library/connect-to-azure)
+- [WIF Azure DevOps Issuer Retirement](https://learn.microsoft.com/en-us/azure/devops/release-notes/roadmap/wif-azdo-issuer-retirement)
+- [Convert Service Connections to the Entra Issuer](https://learn.microsoft.com/en-us/azure/devops/pipelines/release/convert-service-connections)
+- [Configure GitHub Advanced Security Features](https://learn.microsoft.com/en-us/azure/devops/repos/security/configure-github-advanced-security-features)
 - [Audit Logging](https://learn.microsoft.com/en-us/azure/devops/organizations/audit/azure-devops-auditing)
 - [Azure Compliance Documentation](https://learn.microsoft.com/en-us/azure/compliance/)
 
@@ -648,7 +728,7 @@ See the DB Code Pack below for Azure Sentinel / Log Analytics KQL queries that d
 - [GitHub Organization (Microsoft)](https://github.com/microsoft)
 
 **Compliance Frameworks:**
-- SOC 2 Type II (Azure DevOps specific attestation report available separately) — via [Service Trust Portal](https://servicetrust.microsoft.com/)
+- SOC 2 Type II (an Azure DevOps-specific attestation report is available separately from Microsoft under NDA)
 - ISO/IEC 27001:2022 — via [Azure ISO 27001](https://learn.microsoft.com/en-us/azure/compliance/offerings/offering-iso-27001)
 - SOC 1 Type II, ISO 27017, ISO 27018, CSA STAR, FedRAMP (High and Moderate)
 - PCI DSS, HIPAA, HITRUST
@@ -664,10 +744,11 @@ See the DB Code Pack below for Azure Sentinel / Log Analytics KQL queries that d
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial Azure DevOps hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | draft | Currency pass. **1.1:** Entra rename; third-party OAuth is now off by default for new organizations and does not govern Entra ID OAuth apps; replace the non-existent "restrict to managed keys" SSH setting with **Validate SSH key expiration** (default on); reframe alternate credentials as removed rather than disableable; reframe public projects as retired (new creation blocked, existing convert to private in 2027); add the **Enable IP Conditional Access policy validation on non-interactive flows** policy; convert `Attack Scenario` to `Attack Prevented`. **1.3:** correct the three PAT policies to Microsoft Entra **tenant** policies (Organization settings → Microsoft Entra, Azure DevOps Administrator role, per-policy Entra allowlists, all default off), add the separate org-level PAT creation policy, add the default-on leaked-PAT auto-revocation as a do-not-disable callout, and add Entra-token/service-principal/managed-identity guidance for service accounts. **2.1:** add the workload identity federation issuer retirement (Azure DevOps issuer deprecated 2026-07-01, retired 2027-07-01) with the conversion path and out-of-scope clouds, add resource-group scoping and the avoid-classic-connections rule, add a missing `Attack Prevented` line. **4.1:** add Advanced Security pull-request status checks. **4.2:** retitle to GitHub Advanced Security for Azure DevOps (also sold as GitHub Secret Protection / Code Security) and add enablement and triage steps. **6.1:** native audit streaming becomes the primary SIEM path, REST export becomes the fallback. **Appendix B:** replace the redirecting `security-best-practices` link with the canonical security overview, add the newly cited docs, and remove the Service Trust Portal rows. Changelog order reconstructed and the duplicate 0.1.1 resolved (the 2026-06-29 row is renumbered 0.1.3). Not surveyed this pass: the sprint-by-sprint Azure DevOps release notes, and Tier 3/4 research. No CIS Azure DevOps Benchmark exists, so no benchmark mappings were added | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.3 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-02-19 | 0.1.2 | draft | Migrate all remaining inline code to Code Packs (1.2, 2.1, 3.1, 3.3, 4.2, 5.2, 6.1); zero inline blocks | Claude Code (Opus 4.6) |
 | 2026-02-19 | 0.1.1 | draft | Migrate inline PowerShell to CLI Code Packs (1.3, 2.2, 3.3, 6.1) | Claude Code (Opus 4.6) |
+| 2025-12-14 | 0.1.0 | draft | Initial Azure DevOps hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 
