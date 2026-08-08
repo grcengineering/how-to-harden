@@ -37,12 +37,13 @@ $workspaceId = $workspace.ResourceId
 # Note: Intune diagnostic settings are configured via the Intune admin center
 # or via the Azure Monitor REST API targeting the Microsoft Intune resource provider
 Write-Host "`n=== Intune Diagnostic Settings Configuration ===" -ForegroundColor Cyan
-Write-Host "Navigate to: Intune admin center > Tenant administration > Diagnostics settings" -ForegroundColor Yellow
+Write-Host "Navigate to: Intune admin center > Reports > Diagnostics settings" -ForegroundColor Yellow
 Write-Host "Create diagnostic setting: HTH-IntuneAuditExport" -ForegroundColor Yellow
 Write-Host "Select categories:" -ForegroundColor White
 Write-Host "  - AuditLogs (all administrative actions)" -ForegroundColor Green
 Write-Host "  - OperationalLogs (device actions, compliance changes)" -ForegroundColor Green
 Write-Host "  - DeviceComplianceOrg (compliance state changes)" -ForegroundColor Green
+Write-Host "  - IntuneDevices (device inventory and status)" -ForegroundColor Green
 Write-Host "Destination: Log Analytics workspace '$workspaceName'" -ForegroundColor White
 Write-Host "Workspace Resource ID: $workspaceId" -ForegroundColor White
 

@@ -1109,7 +1109,9 @@ Reduce the value of a stolen admin session token by layering Continuous Access E
 
 #### Code Implementation
 
-Conditional Access policies, authentication contexts, and CAE settings are all manageable through the Microsoft Graph `conditionalAccessPolicy` and `authenticationContextClassReference` resources. This guide ships no pack for this control: the previously published pack automated the Token Protection session control, which — per the correction above — has no effect on the Intune admin plane, and shipping automation for a setting that cannot enforce anything here would be worse than shipping none.
+{% include pack-code.html vendor="microsoft-intune" section="6.1" %}
+
+The pack covers Step 1 (reporting tenant CAE state), Step 3 (creating the authentication context, its Conditional Access policy, and binding it to PIM role activation via the `AuthenticationContext_EndUser_Assignment` rule), and Step 4 (the `HTH-AdminRisk-Reauth` policy). Two things are deliberately absent. Step 2 is not duplicated — the compliant-device requirement is already automated by the Section 2.2 pack. Step 5, the optional L3 compliant-network condition, stays ClickOps-only because Global Secure Access network conditions have no stable documented Graph representation to script against. One caveat on Step 1: Microsoft Graph exposes `continuousAccessEvaluationPolicy` as read-only, so the pack reports whether CAE is on and warns if it is not — actually enabling it remains a portal action.
 
 #### Validation & Testing
 **How to verify the control is working:**
