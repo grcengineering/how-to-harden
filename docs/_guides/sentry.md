@@ -6,7 +6,7 @@ slug: "sentry"
 tier: "2"
 category: "DevOps"
 description: "Application monitoring platform hardening for Sentry including SAML SSO, team access, data scrubbing, and integration security"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -262,6 +262,10 @@ Minimize and protect administrator accounts.
 2. Require 2FA/SSO for admins
 3. Monitor admin activity
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sentry" section="2.3" %}
+
 ---
 
 ### 2.4 Use Organization Auth Tokens for Automation
@@ -410,6 +414,10 @@ Secure Data Source Names (DSNs).
 1. Rotate compromised DSNs
 2. Update applications
 3. Disable old DSNs
+
+#### Code Implementation
+
+{% include pack-code.html vendor="sentry" section="3.2" %}
 
 ---
 
@@ -583,6 +591,7 @@ Enable and monitor audit logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Added api Code Packs for §2.3 (member-role inventory, owner-ceiling check, and stale-invite audit via the org members endpoint) and §3.2 (client-key rate-limit audit, rate-limit enforcement, and compromised-key deactivation via the project keys endpoints), verified against docs.sentry.io API references; no pack for §4.1 because the current Sentry API docs expose no audit-log endpoint | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass: rewrote 1.2 as an either/or after confirming Require 2FA is unavailable with SSO, with the correct Organization Settings path, Owner requirement, and the member-removal blast radius; added 2.4 organization auth tokens and 3.4 Relay; added Advanced Data Scrubbing (methods, data types, source selectors, and its precedence over Safe Fields) plus attachment and Session Replay privacy pointers to 3.1; documented SAML2 provider list, Google/GitHub SSO on Trial/Team, and the member-on-all-teams and two-week-session defaults in 1.1; corrected two retired documentation paths and removed the Trust Center and security marketing links | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, teams, and data scrubbing | Claude Code (Opus 4.5) |

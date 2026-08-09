@@ -6,7 +6,7 @@ slug: "1password"
 tier: "2"
 category: "Security"
 description: "Enterprise password manager hardening for 1Password Business SSO, policies, and vault security"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -383,6 +383,10 @@ Configure role-based access for team administration.
 2. For the highest-privilege owner account, split its credentials between two custodians and store each half separately (for example, in separate sealed break-glass envelopes or separate PAM records)
 3. Document the joint-recovery procedure and rehearse it, since the whole point is that neither custodian can act alone
 
+#### Code Implementation
+
+{% include pack-code.html vendor="1password" section="2.4" %}
+
 ---
 
 ### 2.5 Govern Agentic Autofill for AI Agents
@@ -511,6 +515,10 @@ Configure vault access permissions following least privilege principles.
 | Infrastructure | Server/API credentials | IT group |
 | Executive | Sensitive business | Executives only |
 
+#### Code Implementation
+
+{% include pack-code.html vendor="1password" section="3.1" %}
+
 ---
 
 ### 3.2 Configure Item Sharing Policies
@@ -635,6 +643,10 @@ Use 1Password Service Accounts for automation instead of sharing a human account
 2. Retire accounts whose workloads no longer exist — the 100-account ceiling means dead entries consume real capacity
 3. Re-scope any account whose permissions have drifted beyond its current job
 
+#### Code Implementation
+
+{% include pack-code.html vendor="1password" section="3.4" %}
+
 ---
 
 ## 4. Monitoring & Compliance
@@ -687,6 +699,10 @@ The Events API exposes three distinct classes — collect all three, because eac
 | Account activity | Audit events for administrative and account changes | Policy tampering, group and permission changes, provisioning abuse |
 | Item usage | Items viewed, copied, or edited in shared vaults | Mass credential access, staging before exfiltration, insider misuse |
 | Sign-in attempts | Successful and failed sign-ins, including failure detail | Credential stuffing, password spraying, anomalous access patterns |
+
+#### Code Implementation
+
+{% include pack-code.html vendor="1password" section="4.1" %}
 
 ---
 
@@ -801,6 +817,7 @@ Monitor the security dashboard for insights and recommendations.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Added cli Code Packs for §2.4 (privileged-group membership audit), §3.1 (vault permissions audit), §3.4 (scoped service-account creation) and an api Code Pack for §4.1 (Events API collection of auditevents, itemusages, and signinattempts), all verified against 1password.dev CLI and Events API references | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass: corrected Policies console paths (2.1/2.3/3.2), rewrote 2.2 firewall rules (rule types, Allow/Report/Deny, first-match ordering, already-signed-in-device limitation), corrected 2.3 recovery model to the Recover Accounts permission, added Two-Person Rule to 2.4, named the three Events API classes in 4.1, added controls 1.3 (suspended-member auto-deletion), 2.5 (agentic autofill policy, early access), 2.6 (app access management + release channel), 3.3 (local plaintext-secret scanning, early access), 3.4 (service-account scoping); repointed developer docs to 1password.dev and removed the Trust Center reference. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, policies, and vault security | Claude Code (Opus 4.5) |

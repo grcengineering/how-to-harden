@@ -6,7 +6,7 @@ slug: "snyk"
 tier: "5"
 category: "Security"
 description: "AppSec platform security for service accounts, SCM integrations, and Broker configs"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -156,6 +156,10 @@ Default to OAuth 2.0. Never create API-key service accounts for new integrations
 3. For access tokens, diary the expiry date and schedule the replacement service account **before** it lapses (there is no in-place renewal)
 4. Store credentials in a secrets manager; never commit them or echo them in pipeline logs
 
+#### Code Implementation
+
+{% include pack-code.html vendor="snyk" section="2.1" %}
+
 ---
 
 ### 2.2 SCM Integration Security
@@ -257,6 +261,10 @@ Govern how vulnerabilities are ignored by requiring a documented reason, an expi
 2. Set ignore expiration
 3. Audit ignored vulnerabilities
 
+#### Code Implementation
+
+{% include pack-code.html vendor="snyk" section="3.2" %}
+
 ---
 
 ## 4. Monitoring & Detection
@@ -296,6 +304,10 @@ Review Snyk audit logs and forward them to your SIEM to retain a record of user 
 **Step 3: Fill the Authentication Gap from the IdP**
 1. Forward Snyk SSO sign-in and sign-out events from your identity provider (the Snyk audit endpoints do not carry them)
 2. Correlate IdP authentication events with Snyk audit events to reconstruct a complete session-to-action trail
+
+#### Code Implementation
+
+{% include pack-code.html vendor="snyk" section="4.1" %}
 
 #### Detection Focus
 
@@ -344,6 +356,7 @@ Review Snyk audit logs and forward them to your SIEM to retain a record of user 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Added api Code Packs for §2.1 (service-account credential-type audit + legacy-key deletion via the REST service_accounts endpoints) and §4.1 (org/group audit-log export via audit_logs/search inside the 90-day window), plus a cli Code Pack for §3.2 (snyk ignore with mandatory reason and expiry, .snyk suppression audit), all verified against docs.snyk.io API and CLI references | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass (Tier 1 only): rewrote 2.1 for the three service-account credential types (API key never expires and is not recommended; access token 1-year max with no in-place rotation; OAuth 2.0 recommended); added Universal vs Classic Broker and the April 2026 Broker high-availability default to 2.2; documented Enterprise-only audit logs, 90-day rolling retention, and the login/logout exclusion in 4.1; repaired rotted docs.snyk.io links to the platform-administration tree and removed Trust Center / marketing pages from Appendix B. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Snyk hardening guide | Claude Code (Opus 4.5) |
 
