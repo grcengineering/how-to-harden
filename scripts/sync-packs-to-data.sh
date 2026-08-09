@@ -470,7 +470,7 @@ for vendor_dir in "${PACKS_DIR}"/*/; do
   vendor=$(basename "${vendor_dir}")
   # Only process vendors that have code files (not just control YAMLs)
   if ls "${vendor_dir}"/terraform/hth-*.tf 2>/dev/null | head -1 > /dev/null 2>&1 || \
-     ls "${vendor_dir}"/api/hth-*.sh 2>/dev/null | head -1 > /dev/null 2>&1 || \
+     ls "${vendor_dir}"/api/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/cli/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/sdk/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
      ls "${vendor_dir}"/db/hth-*.* 2>/dev/null | head -1 > /dev/null 2>&1 || \
