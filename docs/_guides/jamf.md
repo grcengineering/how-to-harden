@@ -6,9 +6,9 @@ slug: "jamf"
 tier: "2"
 category: "IT Operations"
 description: "MDM hardening for Jamf Pro macOS and iOS device management"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -61,6 +61,8 @@ Secure Jamf Pro console access with SSO, MFA, and role-based access controls.
 - Compromised admin can push malicious profiles/scripts
 - Role-based access limits blast radius
 
+**Attack Prevented:** Console account takeover, unauthorized profile and script deployment, privilege escalation via over-broad privilege sets
+
 #### ClickOps Implementation
 
 **Step 1: Configure SSO**
@@ -77,6 +79,7 @@ Secure Jamf Pro console access with SSO, MFA, and role-based access controls.
 2. Review existing accounts
 3. Remove unnecessary admin accounts
 4. Convert local accounts to SSO where possible
+5. Any account that exists only to serve an integration should be retired in favor of an API Role and API Client — see [1.2](#12-secure-api-access)
 
 **Step 3: Configure Privilege Sets**
 1. Navigate to: **Settings** → **User Accounts** → **Privilege Sets**
@@ -91,7 +94,7 @@ Secure Jamf Pro console access with SSO, MFA, and role-based access controls.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jamf" section="1.1" lang="terraform" %}
+{% include pack-code.html vendor="jamf" section="1.1" %}
 
 ---
 
@@ -105,43 +108,56 @@ Secure Jamf Pro console access with SSO, MFA, and role-based access controls.
 | NIST 800-53 | SC-12 |
 
 #### Description
-Secure Jamf Pro API access with dedicated accounts and token-based authentication.
+Authenticate Jamf Pro API integrations with API Roles and API Clients using the OAuth 2.0 client credentials flow, instead of standard Jamf Pro user accounts.
 
 #### Rationale
 **Why This Matters:**
-- The Jamf Pro API can read and modify every managed device, push profiles and scripts, and pull full inventory — an exposed API token is effectively full MDM admin
-- Dedicated, least-privilege API accounts keep a compromised integration from inheriting human-admin power and make revocation surgical
-- Bearer tokens with rotation and short expiry shrink the window a leaked credential stays useful, unlike long-lived basic-auth passwords
+- The Jamf Pro API can read and modify every managed device, push profiles and scripts, and pull full inventory — an exposed API credential is effectively full MDM admin
+- API Roles and Clients grant access exclusively to the Jamf Pro APIs, so a leaked integration credential cannot be replayed against the Jamf Pro user interface the way a user account's credentials can
+- Per-integration clients with narrowly scoped roles keep a compromised integration from inheriting human-admin power and make revocation surgical — disable one client without touching any other integration or human admin
+- Client secrets can be rotated and access tokens are short-lived, shrinking the window a leaked credential stays useful
 - API audit logging exposes credential abuse and automated reconnaissance that the console UI never surfaces
 
-**Attack Prevented:** API token theft, credential stuffing, over-privileged integration abuse, undetected programmatic tampering
+**Attack Prevented:** API credential theft, credential reuse against the admin console, over-privileged integration abuse, undetected programmatic tampering
+
+> **Superseded mechanism:** Authenticating integrations as Jamf Pro user accounts is superseded by API Roles and API Clients. Jamf's developer documentation states that "Client Credentials based authorization provides access exclusively to Jamf Pro APIs, helping secure the credentials of your Jamf Pro Administrators and access to the Jamf Pro user interface." Migrate any integration still authenticating as a user account. ([Jamf Pro client credentials](https://developer.jamf.com/jamf-pro/docs/client-credentials))
 
 #### ClickOps Implementation
 
-**Step 1: Create API Accounts**
-1. Navigate to: **Settings** → **User Accounts & Groups**
-2. Create dedicated API accounts (not personal admin accounts)
-3. Assign minimum required privilege set
+**Step 1: Create an API Role**
+1. Navigate to: **Settings** → **System Settings** → **API Roles and Clients**
+2. Create an API Role and select only the privileges that specific integration needs
+3. Create one role per integration rather than a shared "automation" role
 
-**Step 2: Configure API Token Authentication**
-1. Use bearer token authentication (not basic auth)
-2. Implement token rotation
-3. Monitor API usage
+**Step 2: Create an API Client**
+1. From the same **API Roles and Clients** area, create an API Client
+2. Assign the API Role created in Step 1
+3. Set the access token lifetime to the shortest value the integration tolerates
+4. Enable the client only when it is ready to be used
 
-**Step 3: Enable API Audit Logging**
+**Step 3: Generate and Store the Client Secret**
+1. Generate the client secret and copy it immediately — it is shown once
+2. Store it in a secrets manager, never in source control or a script
+3. Rotate the client secret on a defined schedule and whenever an operator with access to it departs
+
+**Step 4: Disable or Rotate on Change**
+1. Disable an API Client to immediately revoke an integration's access without deleting its configuration
+2. Rotating the secret invalidates the previous secret — coordinate the cutover with the integration owner
+
+**Step 5: Enable API Audit Logging**
 1. Navigate to: **Settings** → **Server** → **Logging**
 2. Enable API request logging
 3. Export to SIEM for monitoring
 
 **Best Practices:**
-- Use separate API accounts per integration
-- Store tokens in secure vault
-- Set token expiration policies
-- Audit API access regularly
+- One API Role and one API Client per integration
+- Store client secrets in a secrets manager
+- Keep token lifetimes short
+- Audit API Client usage and disable dormant clients
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jamf" section="1.2" lang="terraform" %}
+{% include pack-code.html vendor="jamf" section="1.2" %}
 
 ---
 
@@ -192,7 +208,7 @@ Configure device password policies through configuration profiles.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jamf" section="2.1" lang="terraform" %}
+{% include pack-code.html vendor="jamf" section="2.1" %}
 
 ---
 
@@ -213,6 +229,8 @@ Enforce FileVault full disk encryption on all managed macOS devices.
 - Protects data on lost/stolen devices
 - Required for most compliance frameworks
 - Jamf can escrow recovery keys
+
+**Attack Prevented:** Data recovery from lost or stolen devices, offline disk imaging, physical access to at-rest data
 
 #### ClickOps Implementation
 
@@ -237,7 +255,7 @@ Enforce FileVault full disk encryption on all managed macOS devices.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jamf" section="2.2" lang="terraform" %}
+{% include pack-code.html vendor="jamf" section="2.2" %}
 
 ---
 
@@ -281,7 +299,7 @@ Enable and configure macOS firewall on all managed devices.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jamf" section="2.3" lang="terraform" %}
+{% include pack-code.html vendor="jamf" section="2.3" %}
 
 ---
 
@@ -331,7 +349,7 @@ Configure automatic software updates and patch management.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jamf" section="2.4" lang="terraform" %}
+{% include pack-code.html vendor="jamf" section="2.4" %}
 
 ---
 
@@ -355,6 +373,8 @@ Deploy CIS macOS Benchmark security configurations using Jamf Compliance Editor.
 - Jamf Compliance Editor generates MDM-ready profiles
 - Supports both Level 1 and Level 2 hardening
 
+**Attack Prevented:** Insecure macOS defaults, configuration drift from an approved baseline, exploitation of unhardened OS services
+
 #### Prerequisites
 - Download Jamf Compliance Editor from GitHub
 - Review CIS macOS Benchmark requirements
@@ -363,7 +383,7 @@ Deploy CIS macOS Benchmark security configurations using Jamf Compliance Editor.
 #### Implementation
 
 **Step 1: Generate CIS Profiles**
-1. Download [Jamf Compliance Editor](https://github.com/jamf/Jamf-Compliance-Editor)
+1. Download [Jamf Compliance Editor](https://github.com/Jamf-Concepts/jamf-compliance-editor) (the project moved to the `Jamf-Concepts` organization; the former `jamf/Jamf-Compliance-Editor` repository now returns 404)
 2. Open application
 3. Select CIS Benchmark level:
    - **Level 1:** Baseline security
@@ -395,7 +415,7 @@ Deploy CIS macOS Benchmark security configurations using Jamf Compliance Editor.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jamf" section="3.1" lang="terraform" %}
+{% include pack-code.html vendor="jamf" section="3.1" %}
 
 ---
 
@@ -441,7 +461,7 @@ Monitor device compliance with CIS Benchmark configurations.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jamf" section="3.2" lang="terraform" %}
+{% include pack-code.html vendor="jamf" section="3.2" %}
 
 ---
 
@@ -482,7 +502,7 @@ Enable comprehensive audit logging for Jamf Pro activities.
 
 #### Code Implementation
 
-{% include pack-code.html vendor="jamf" section="4.1" lang="terraform" %}
+{% include pack-code.html vendor="jamf" section="4.1" %}
 
 ---
 
@@ -539,29 +559,29 @@ Enable comprehensive audit logging for Jamf Pro activities.
 
 ## Appendix B: References
 
-**Official Jamf Documentation:**
-- [Trust Center - Compliance](https://www.jamf.com/trust-center/compliance/)
-- [Security Portal](https://security.jamf.com/)
-- [Information Security](https://www.jamf.com/trust-center/information-security/)
+**Official Jamf Hardening Documentation:**
+- [Jamf Pro Security Recommendations](https://learn.jamf.com/r/en-US/technical-articles/Jamf_Pro_Security_Recommendations)
+- [Third-Party Audits](https://learn.jamf.com/r/en-US/jamf-pro-security-overview/Third-Party_Audits)
 - [Product Documentation](https://www.jamf.com/resources/product-documentation/)
 - [Jamf Pro Documentation](https://learn.jamf.com)
-- [Jamf Pro Security Recommendations](https://learn.jamf.com/en-US/bundle/technical-articles/page/Jamf_Pro_Security_Recommendations.html)
-- [Third-Party Audits](https://learn.jamf.com/en-US/bundle/jamf-pro-security-overview/page/Third-Party_Audits.html)
+
+> `learn.jamf.com` is a JavaScript-rendered documentation host: the two links above are the canonical `/r/` URLs that the older `/bundle/.../page/...html` forms redirect to, and they render content only to a browser. Automated fetchers will see an empty shell.
 
 **API & Developer Tools:**
 - [Jamf Developer Portal](https://developer.jamf.com/)
+- [Jamf Pro client credentials (API Roles and Clients)](https://developer.jamf.com/jamf-pro/docs/client-credentials)
 - [Jamf Pro API Reference](https://developer.jamf.com/jamf-pro/reference/classic-api)
 
-**Compliance Frameworks:**
-- SOC 2 Type II, ISO 27001, ISO 27701 -- via [Trust Center](https://www.jamf.com/trust-center/compliance/) and [Security Portal](https://security.jamf.com/)
-
 **Security Incidents:**
-- No major public security incidents affecting Jamf's hosted infrastructure identified as of February 2026. Product-level CVEs (e.g., broken access control in Jamf Pro Server before 10.46.1) have been patched through standard release cycles.
+- No major public security incidents affecting Jamf's hosted infrastructure identified as of February 2026. Product-level CVEs (e.g., broken access control in Jamf Pro Server before 10.46.1) have been patched through standard release cycles. Tier 3/4 research sources were not re-surveyed in this pass.
 
 **Community Resources:**
-- [Jamf Compliance Editor (GitHub)](https://github.com/jamf/Jamf-Compliance-Editor)
+- [Jamf Compliance Editor (GitHub)](https://github.com/Jamf-Concepts/jamf-compliance-editor)
 - [CIS macOS Benchmark](https://www.cisecurity.org/benchmark/apple_os)
 - [macOS Security Checklist for CIS](https://resources.jamf.com/documents/white-papers/macos-security-checklist-for-cis-benchmark.pdf)
+
+**Third-Party Baselines:**
+- The CIS macOS Benchmark backs section 3, but the current benchmark major version was not re-verified in this pass — CIS numbering shifts between majors, so treat the control numbers in 3.1 as name-matched rather than version-pinned. DISA STIG and CISA SCuBA coverage for Jamf Pro was not surveyed.
 
 ---
 
@@ -569,7 +589,7 @@ Enable comprehensive audit logging for Jamf Pro activities.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-08-08 | 0.2.0 | draft | Rewrite 1.2 around API Roles and API Clients (OAuth client credentials), superseding user-account API auth; fix Jamf Compliance Editor repo URL (moved to Jamf-Concepts); update learn.jamf.com links to canonical /r/ form (host renders only to browsers, so a browser pass is still needed to re-verify page content); add Attack Prevented to 1.1, 2.2, 3.1; remove non-standard lang= from pack includes; drop Trust Center references. DDM / Managed Software Updates coverage and current CIS macOS Benchmark numbering remain unverified and are deferred | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with server security, device policies, and CIS implementation | Claude Code (Opus 4.5) |
 
 ---

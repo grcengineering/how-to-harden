@@ -6,9 +6,9 @@ slug: "freshservice"
 tier: "5"
 category: "IT Operations"
 description: "ITSM security for API tokens, CMDB access, and change management controls"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 
@@ -64,15 +64,16 @@ Require SAML single sign-on and two-factor authentication for all Freshservice a
 
 #### ClickOps Implementation
 
+> **Console path correction:** Freshservice security settings — including SSO, password policy, session timeout, and IP restriction — live under **Admin → Account Settings → Service Desk Security**. On accounts with multiple workspaces the path is **Admin → Global Settings → Account Settings → Service Desk Security**. ([Freshservice password policy documentation](https://support.freshservice.com/support/solutions/articles/218835-setting-up-a-password-policy-in-freshservice), [multi-portal security settings](https://support.freshservice.com/support/solutions/articles/224085-security-settings-for-multi-portal-set-up))
+
 **Step 1: Configure SAML SSO**
-1. Navigate to: **Admin → Security → Single sign-on**
-2. Configure SAML IdP
-3. Enable: **Login with SSO only**
+1. Navigate to: **Admin → Account Settings → Service Desk Security** (multi-workspace: **Admin → Global Settings → Account Settings → Service Desk Security**)
+2. Configure your SAML IdP under the agent-facing login settings
+3. Restrict agent login to SSO so local passwords cannot be used as a bypass
 
 **Step 2: Enable 2FA**
-1. Navigate to: **Admin → Security**
-2. Enable: **Two-factor authentication**
-3. Require for all agents
+1. From the same **Service Desk Security** page, enable two-factor authentication for agent logins
+2. Require it for all agents, and confirm the corresponding policy in your IdP for SSO-authenticated sessions
 
 ---
 
@@ -112,6 +113,54 @@ Define least-privilege agent roles so each agent receives only the service-desk,
 
 ---
 
+### 1.3 Configure Service Desk Security Settings
+
+**Profile Level:** L1 (Crawl)
+**NIST 800-53:** AC-7, AC-11, AC-17, IA-5, SC-8
+
+#### Description
+Set the account-wide security controls on the Service Desk Security page — password policy, session timeout, IP restriction, and secure connection over SSL — so agent and requester access is governed centrally rather than left at defaults.
+
+#### Rationale
+**Why This Matters:**
+- Session timeout bounds how long an unattended or hijacked browser session stays usable, limiting the value of a stolen session cookie on a shared or lost device
+- A configured password policy (length, complexity, expiry, reuse) raises the cost of credential guessing for any account that still authenticates locally
+- IP restriction confines console access to trusted corporate ranges, so stolen credentials alone are not enough from an arbitrary network
+- Requiring a secure connection over SSL keeps portal and console traffic — including credentials and ticket contents — from traversing the network in the clear
+- These settings apply account-wide, so leaving them unset silently weakens every other identity control in this section
+
+**Attack Prevented:** Session hijacking, credential guessing and brute force, access from untrusted networks, credential interception in transit
+
+#### Prerequisites
+- Administrator access to Account Settings
+- On multi-workspace accounts, these are Global settings and are configured once for the account
+
+#### ClickOps Implementation
+
+**Step 1: Open Service Desk Security**
+1. Navigate to: **Admin → Account Settings → Service Desk Security**
+2. On accounts with multiple workspaces, navigate to: **Admin → Global Settings → Account Settings → Service Desk Security**
+
+**Step 2: Set the Global Security Controls**
+1. **Session Timeout (Global):** set the shortest interval your agents can tolerate operationally
+2. **IP Restriction (Global):** restrict agent and admin access to your corporate egress ranges; validate VPN and remote-worker ranges before enforcing
+3. **Password Policy (Global):** configure length, complexity, expiry, and reuse restrictions for any account that can still authenticate locally
+4. **Secure Connection using SSL:** enable so portal and console traffic is served over HTTPS
+
+**Step 3: Verify Scope**
+1. Confirm each setting applied to every workspace and portal in the account
+2. Re-check after adding a new workspace — a new portal should not silently inherit weaker settings
+
+#### Validation & Testing
+- Leave an agent session idle past the configured timeout and confirm re-authentication is required
+- Attempt a console login from an out-of-range IP and confirm it is refused
+- Attempt to set a password that violates the policy and confirm rejection
+- Load the portal over `http://` and confirm the request is served over HTTPS
+
+**Sources:** [Setting up a password policy in Freshservice](https://support.freshservice.com/support/solutions/articles/218835-setting-up-a-password-policy-in-freshservice) · [Security settings for multi-portal set up](https://support.freshservice.com/support/solutions/articles/224085-security-settings-for-multi-portal-set-up)
+
+---
+
 ## 2. API Security
 
 ### 2.1 Secure API Keys
@@ -144,6 +193,13 @@ Manage Freshservice API keys securely.
 1. Regenerate keys when agents leave
 2. Use dedicated integration accounts
 3. Monitor API usage
+
+**Step 3: Prefer Scoped OAuth 2.0 Over Personal API Keys**
+1. A personal API key carries the full permission set of the agent it belongs to — there is no way to narrow it
+2. The Freshservice API supports OAuth 2.0 with per-endpoint scopes (for example `freshservice.tickets.create`), so an integration can be granted only the operations it actually performs
+3. Register integrations to use scoped OAuth 2.0 where the integration supports it, and reserve personal API keys for cases where no OAuth path exists
+4. Note that legacy basic authentication against the API was deprecated in May 2023 — integrations still using it should be migrated
+5. Source: [Freshservice API reference](https://api.freshservice.com/)
 
 ---
 
@@ -266,33 +322,34 @@ Enable and regularly review Freshservice audit logs to track agent activity and 
 
 | Control | Starter | Growth | Pro | Enterprise |
 |---------|---------|--------|-----|------------|
-| SAML SSO | ❌ | ✅ | ✅ | ✅ |
-| Custom Roles | ❌ | ❌ | ✅ | ✅ |
-| Audit Logs | ❌ | ❌ | ✅ | ✅ |
-| IP Restrictions | ❌ | ❌ | ❌ | ✅ |
+| SAML SSO | ✅ | ✅ | ✅ | ✅ |
+| Custom Agent Roles | ✅ | ✅ | ✅ | ✅ |
+| Audit Logs | ❌ | ❌ | ❌ | ✅ |
+| IP Range Restrictions | ❌ | ❌ | ✅ | ✅ |
+
+Availability per the [Freshservice pricing page](https://www.freshworks.com/freshservice/pricing/). SAML SSO and custom agent roles are available on every plan including Starter; audit logs are Enterprise-only; IP range restrictions start at Pro.
 
 ---
 
 ## Appendix B: References
 
-**Official Freshservice/Freshworks Documentation:**
-- [Freshworks Trust Center (SafeBase)](https://trust.freshworks.com/)
-- [Freshworks Security](https://www.freshworks.com/security/)
-- [Freshworks Security Resources](https://www.freshworks.com/security/resources/)
+**Official Freshservice Hardening Documentation:**
+- [Setting up a password policy in Freshservice](https://support.freshservice.com/support/solutions/articles/218835-setting-up-a-password-policy-in-freshservice)
+- [Security settings for multi-portal set up](https://support.freshservice.com/support/solutions/articles/224085-security-settings-for-multi-portal-set-up)
 - [Freshservice Support Solutions](https://support.freshservice.com/support/solutions)
 
 **API & Developer Documentation:**
-- [Freshservice API Reference](https://api.freshservice.com/)
+- [Freshservice API Reference](https://api.freshservice.com/) — OAuth 2.0 scopes and authentication
 - [Freshworks Developer Portal](https://developers.freshworks.com/)
 
-**Compliance Frameworks:**
-- SOC 1 Type II, SOC 2 Type II, ISO 27001, ISO 27701 — via [Trust Center](https://trust.freshworks.com/)
-- Annual independent audits by external firms
-- Annual VAPT (Vulnerability Assessment and Penetration Testing)
-- GDPR compliant
+**Plan Availability:**
+- [Freshservice pricing and plan feature matrix](https://www.freshworks.com/freshservice/pricing/)
+
+**Third-Party Baselines:**
+- No CIS Benchmark, DISA STIG, or CISA SCuBA baseline for Freshservice was established in this pass — the Tier 2 indexes were not surveyed, so absence is not confirmed.
 
 **Security Incidents:**
-- No major public security incidents identified affecting the Freshservice platform directly.
+- No major public security incidents affecting the Freshservice platform directly were surfaced in this pass. Tier 3/4 research sources were not surveyed, so this is not a confirmed negative.
 
 ---
 
@@ -300,7 +357,7 @@ Enable and regularly review Freshservice audit logs to track agent activity and 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-08-08 | 0.2.0 | draft | Correct security-settings console path to Admin → Account Settings → Service Desk Security; add control 1.3 (session timeout, IP restriction, password policy, SSL); add scoped OAuth 2.0 guidance to 2.1; correct Appendix A plan availability against the pricing page; replace Trust Center references with verified support and API docs | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Freshservice hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing

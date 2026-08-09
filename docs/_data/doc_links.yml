@@ -463,7 +463,7 @@ intercom:
 jamf:
   product_docs: "https://www.jamf.com/resources/product-documentation/"
   api_docs: "https://developer.jamf.com/"
-  hardening_docs: "https://learn.jamf.com/en-US/bundle/technical-articles/page/Jamf_Pro_Security_Recommendations.html"
+  hardening_docs: "https://learn.jamf.com/r/en-US/technical-articles/Jamf_Pro_Security_Recommendations"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/jamf"
 
 jenkins:
@@ -698,7 +698,6 @@ pagerduty:
   product_docs: "https://support.pagerduty.com/"
   api_docs: "https://developer.pagerduty.com/api-reference"
   hardening_docs: "https://support.pagerduty.com/main/docs/security-hygiene-for-the-current-cyber-threat-landscape"
-  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/pagerduty"
 
 paylocity:
   product_docs: "https://www.paylocity.com/contact/client-support/"
