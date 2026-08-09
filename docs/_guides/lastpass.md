@@ -6,9 +6,9 @@ slug: "lastpass"
 tier: "2"
 category: "Identity"
 description: "Enterprise password manager hardening for LastPass Business including MFA policies, admin controls, and security dashboard"
-version: "0.1.1"
+version: "0.1.2"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -28,6 +28,8 @@ LastPass is a widely-deployed enterprise password manager protecting credentials
 
 ### Scope
 This guide covers LastPass Business admin policies, MFA configuration, security dashboard utilization, and integration security.
+
+> **Currency-review scope limitation (2026-08).** During this revision, LastPass's primary Tier 1 documentation host (`support.lastpass.com`) **could not be reached for verification** — automated fetching failed on a TLS certificate-chain error, and a real-browser render also timed out. The only LastPass-owned source verified in this pass was `blog.lastpass.com`. Console paths, policy names, and settings in this guide that derive from the support site therefore carry the currency of the previous revision and were **not** re-verified against current vendor documentation. Verify them manually against the admin console before relying on them, and treat any discrepancy as the guide being stale rather than the console being wrong.
 
 ---
 
@@ -60,6 +62,9 @@ Require MFA for all users accessing their LastPass vault.
 - Password vault contains all stored credentials
 - MFA prevents unauthorized access from stolen master passwords
 - CISA recommends FIDO2-based MFA as gold standard
+- The 2022 incidents demonstrated that encrypted vault data can leave the platform; a master password alone is a single point of failure for everything stored inside
+
+**Attack Prevented:** Account takeover from a stolen or cracked master password, credential stuffing, phishing of a password-only login, SIM-swap against weaker second factors
 
 #### ClickOps Implementation
 
@@ -243,7 +248,8 @@ Control how credentials can be shared within and outside the organization.
 
 **Step 1: Configure Sharing Policies**
 1. Navigate to: **Policies** → Search for **sharing**
-2. Configure:
+2. Enable the policy LastPass names **Prohibit Sharing Except for Shared Folders** — this forces every credential handoff through an administered shared folder, where membership is visible and revocable, instead of through ad-hoc user-to-user shares that leave no manageable record
+3. Configure the remaining sharing settings:
    - **Sharing with personal accounts:** Disable or restrict
    - **Sharing outside organization:** Disable (L2) or require approval
    - **Hide passwords:** Enable to prevent viewing shared passwords
@@ -278,6 +284,12 @@ Prevent users from linking personal LastPass accounts to business accounts.
 
 **Attack Prevented:** Data exfiltration to personal vaults, persistent access after offboarding, audit evasion
 
+> **Vendor conflict — LastPass recommends the opposite; this guide does not follow it.** LastPass's own admin-policy guidance recommends **allowing** users to link a personal account, on the adoption argument that a user who can keep personal credentials in the same client is less likely to store corporate secrets in an unmanaged browser or personal password manager. That is a real usability benefit and a real shadow-IT reduction, and it is why the vendor's default position is permissive.
+>
+> **This guide keeps the stricter position — prohibit linking — because of the risk delta:** a linked personal vault is a destination the organization cannot audit, cannot wipe, and cannot reach at offboarding. Credentials that cross that boundary leave the administered estate permanently, and the linkage survives on the user's personal devices after their corporate account is deprovisioned. The vendor's argument optimizes for adoption; this guide optimizes for containment.
+>
+> **If you follow the vendor's position instead,** treat it as an accepted risk with compensating controls: keep [2.2](#22-configure-sharing-restrictions) sharing restrictions tight so business records cannot be shared into the personal vault, monitor the activity log for linkage events, and document the acceptance. Source for the vendor position: [Three LastPass Admin Policies to Enable Today](https://blog.lastpass.com/posts/three-lastpass-admin-policies-to-enable-today).
+
 #### ClickOps Implementation
 
 **Step 1: Configure Linking Policy**
@@ -289,6 +301,7 @@ Prevent users from linking personal LastPass accounts to business accounts.
 1. Notify users of restriction
 2. Provide guidance for separate account management
 3. Document approved workflows
+4. Provide a sanctioned alternative for personal credential storage so the restriction does not simply push users to an unmanaged tool — this is the risk LastPass's permissive guidance is aimed at
 
 ---
 
@@ -636,20 +649,18 @@ Following the 2022 LastPass security incidents, consider:
 ## Appendix C: References
 
 **Official LastPass Documentation:**
-- [LastPass Trust Center](https://www.lastpass.com/trust-center)
-- [LastPass Support](https://support.lastpass.com/)
-- [Admin Best Practices](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/admin_best_practices.html)
 - [Three Admin Policies to Enable Today](https://blog.lastpass.com/posts/three-lastpass-admin-policies-to-enable-today)
 - [How to Enforce Strong Password Policies](https://blog.lastpass.com/posts/how-to-enforce-strong-password-policies)
 - [How to Set Up Multi-Factor Authentication](https://blog.lastpass.com/posts/how-to-set-up-multi-factor-authentication-to-protect-your-business)
-- [Enable MFA for Admins](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/Enable_Multifactor_Authentication_Admins.html)
+- [LastPass Support](https://support.lastpass.com/) *(host unverifiable to automated tooling as of 2026-08 — TLS/rendering issues; verify manually)*
+- [Admin Best Practices](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/admin_best_practices.html) *(host unverifiable to automated tooling as of 2026-08 — TLS/rendering issues; verify manually)*
+- [Enable MFA for Admins](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/Enable_Multifactor_Authentication_Admins.html) *(host unverifiable to automated tooling as of 2026-08 — TLS/rendering issues; verify manually)*
 
 **API & Developer Resources:**
-- [LastPass Enterprise API](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/api_enterprise.html)
-- [Unified Admin Controls for User Management](https://www.lastpass.com/features/user-management)
+- [LastPass Enterprise API](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/api_enterprise.html) *(host unverifiable to automated tooling as of 2026-08 — TLS/rendering issues; verify manually)*
 
 **Compliance Frameworks:**
-- SOC 2 Type II, SOC 3, ISO 27001, ISO 27701, BSI C5, FIDO2 Server Certified -- via [LastPass Trust Center](https://www.lastpass.com/trust-center) and [LastPass Compliance Center](https://compliance.lastpass.com/)
+- SOC 2 Type II, SOC 3, ISO 27001, ISO 27701, BSI C5, FIDO2 Server Certified
 
 **Security Incidents:**
 - **August 2022:** Threat actor compromised a developer's laptop, gaining access to LastPass's development environment and stealing source code and internal system secrets.
@@ -663,8 +674,11 @@ Following the 2022 LastPass security incidents, consider:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.1.2 | draft | Document the vendor conflict in 2.3 (LastPass recommends allowing personal account linking; this guide keeps the stricter prohibition, with the risk delta and a compatibility path); name the literal "Prohibit Sharing Except for Shared Folders" policy in 2.2; add missing Attack Prevented line to 1.1; record the Tier 1 source-unreachability scope limitation in the Overview; annotate support.lastpass.com references as manually-verifiable-only; drop Trust Center, Compliance Center, and marketing references | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with MFA, policies, and security dashboard | Claude Code (Opus 4.5) |
+
+**Source coverage note:** This revision is a **limited-scope** pass. LastPass's primary Tier 1 documentation host was unreachable to verification tooling (see the scope limitation in the Overview); only `blog.lastpass.com` was verified. **No Tier 2 benchmark coverage was confirmed** for LastPass (no CIS Benchmark, DISA STIG, or CISA SCuBA baseline located for this product). Tier 3/4 independent research was **not surveyed** for this revision.
 
 ---
 

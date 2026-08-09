@@ -6,9 +6,9 @@ slug: "onelogin"
 tier: "1"
 category: "Identity"
 description: "Identity provider hardening for OneLogin including MFA policies, user security, and SmartFactor Authentication"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -77,9 +77,10 @@ Configure password policies to enforce strong authentication requirements for On
    - **Password history:** Prevent reuse of last 10 passwords
    - **Password expiration:** 90 days (or disable for modern approach)
 2. Configure lockout settings:
-   - **Failed attempts:** 5 attempts
-   - **Lockout duration:** 30 minutes
-   - **Reset counter:** After 15 minutes
+   - **Maximum Invalid Login Attempts:** 5 (OneLogin accepts a value from 3 to 10, or **No limit**)
+   - **Lock effective period:** 30 minutes (OneLogin offers 15, 30, or 60 minutes, or **Until Unlocked**)
+
+> **Correction — a setting this guide previously described does not exist.** Earlier revisions instructed administrators to configure a **"Reset counter: after 15 minutes"** value. OneLogin's user policy has **no counter-reset interval**. Per OneLogin's user policies documentation, the invalid-attempt count resets on a **successful sign-in or a password reset** — not on a timer. The two real settings are **Maximum Invalid Login Attempts** and **Lock effective period**, both shown above. Source: [OneLogin User Policies (KB0010420)](https://onelogin.service-now.com/kb_view_customer.do?sysparm_article=KB0010420).
 
 **Step 3: Apply Policy**
 1. Assign policy to users or groups
@@ -159,10 +160,94 @@ Configure secure self-service password reset to reduce helpdesk burden while mai
    - **SMS verification:** If enabled
 2. Require MFA for password reset (recommended)
 
-**Step 3: Set Security Questions**
+**Step 3: Enable reCAPTCHA on Account Recovery**
+1. In the user policy, enable **reCAPTCHA** for the account recovery flow
+2. This blunts automated abuse of the recovery path — scripted enumeration and bulk reset attempts — which the MFA requirement alone does not stop, because the attacker never reaches the MFA step
+
+**Step 4: Set Security Questions**
 1. Navigate to: **Settings** → **Security Questions**
 2. Configure custom security questions
 3. Require unique answers
+
+---
+
+### 1.4 Enable Compromised Credential Checking
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.2 |
+| NIST 800-53 | IA-5(1) |
+
+#### Description
+Enable OneLogin's compromised credential checks so users cannot set or reset a password that already appears in known breach data.
+
+#### Rationale
+**Why This Matters:**
+- Password complexity rules do not stop a user choosing a password that is already circulating in credential dumps — complexity and compromise are independent properties
+- OneLogin's user policy exposes two distinct checks: **Enforce compromised credential check**, which evaluates the **username and password pair**, and **Enforce compromised password check**, which evaluates the **password alone**. The pair check catches the specific credential an attacker would replay against you; the password check catches broadly-known passwords regardless of account
+- Blocking the credential at the moment it is set or reset is the only enforcement point that prevents the exposure, rather than detecting it later
+- OneLogin fronts every downstream SaaS application, so one breached-and-reused password here cascades across the entire application portfolio
+
+**Attack Prevented:** Credential stuffing, breach-replay attacks, password reuse across personal and corporate accounts
+
+#### ClickOps Implementation
+
+**Step 1: Enable the Checks**
+1. Navigate to: **Security** → **Policies** → select the user policy
+2. Enable **Enforce compromised credential check** (username + password pair)
+3. Enable **Enforce compromised password check** (password only)
+
+**Step 2: Roll Out**
+1. Apply to all user policies, starting with policies covering administrators
+2. Prepare help-desk messaging: users will be refused at set/reset time and need to know why
+3. Confirm the policy is assigned to every user group, not just the default policy
+
+#### Validation & Testing
+1. Attempt to set a well-known breached password on a test account and confirm it is refused
+2. Confirm the refusal occurs at both initial set and reset
+
+---
+
+### 1.5 Harden Remaining User Policy Settings
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.8, 5.3 |
+| NIST 800-53 | AC-8, CM-7, AC-2 |
+
+#### Description
+Review and tighten the remaining user policy settings that are easy to leave at defaults — social sign-in, self-service app access, browser extension permissions, invitation-link lifetime, and the system use notification.
+
+#### Rationale
+**Why This Matters:**
+- **Social Sign-In** lets users authenticate to the corporate identity provider with a consumer account whose security posture — password, MFA, recovery — you do not control and cannot audit; unless there is a documented business case, it should be off
+- **Portal App Store access** lets users add applications to their portal themselves, which quietly moves application-access decisions out of the access-request process and into the hands of every user
+- **Browser Extension permissions** govern what the OneLogin extension may do on the endpoint; the extension handles credentials, so its permissions belong in the review rather than at whatever the default is
+- **Invitation link timeout** defaults to **24 hours**; an unused invitation is an unclaimed account-creation token, and a shorter window reduces the chance one is intercepted and redeemed by someone else
+- **System use notification** is the banner presented at sign-in; several regulated frameworks require it, and it is trivially configured and routinely forgotten
+
+**Attack Prevented:** Account takeover via a compromised consumer identity, unreviewed application access, over-permissioned browser extension, interception and redemption of stale invitation links
+
+#### ClickOps Implementation
+
+**Step 1: Review Sign-In and Access Settings**
+1. Navigate to: **Security** → **Policies** → select the user policy
+2. Disable **Social Sign-In** unless a documented business case exists
+3. Disable or restrict **Portal App Store** access so application additions flow through the access-request process
+4. Review **Browser Extension** permissions and grant only what the deployment requires
+
+**Step 2: Tighten Invitations and Notices**
+1. Reduce the **invitation link timeout** below the 24-hour default to the shortest period your onboarding process tolerates
+2. Configure the **System use notification** banner text to your organization's required wording
+
+#### Validation & Testing
+1. Confirm the social sign-in option no longer appears at the portal login
+2. Confirm an invitation link expires at the configured interval
+3. Confirm the system use notification renders at sign-in
 
 ---
 
@@ -184,7 +269,10 @@ Require multi-factor authentication for all users accessing OneLogin.
 **Why This Matters:**
 - Single-factor authentication is insufficient for identity providers
 - MFA prevents account takeover from credential theft
+- OneLogin is the authentication gateway to every integrated application, so an account takeover here is an account takeover everywhere
 - Required for compliance with most frameworks
+
+**Attack Prevented:** Credential theft, phishing, password-only account takeover, credential stuffing against the identity provider
 
 #### ClickOps Implementation
 
@@ -234,15 +322,19 @@ Enable SmartFactor Authentication for risk-based adaptive MFA.
 - High-risk logins require additional verification
 - Protects against brute force and phishing attacks
 
+**Attack Prevented:** Account takeover from anomalous locations and devices, credential stuffing, brute-force sign-in attempts, phishing follow-on access
+
+**Naming note:** OneLogin's product name for this capability is **SmartFactor Authentication**, but at the user-policy level the setting is labelled **Smart MFA** — the control that suppresses the MFA prompt when the evaluated risk score is at or below a configured level. Expect to see the policy-level label rather than the product name when configuring it, and read "suppress when risk ≤ level" carefully: the setting decides when MFA is **not** required.
+
 #### Prerequisites
 - OneLogin Expert plan or higher
 
 #### ClickOps Implementation
 
-**Step 1: Enable SmartFactor**
+**Step 1: Enable SmartFactor / Smart MFA**
 1. Navigate to: **Security** → **Policies** → Select policy
-2. Enable **SmartFactor Authentication**
-3. Configure risk thresholds
+2. Enable **Smart MFA** (SmartFactor Authentication)
+3. Configure the risk level at or below which the MFA prompt is suppressed — start conservative
 
 **Step 2: Configure Risk Signals**
 1. Configure risk assessment:
@@ -298,6 +390,50 @@ Require WebAuthn/FIDO2 hardware keys for administrator accounts.
 1. Create admin group if not exists
 2. Assign `Admin MFA Policy` to admin group
 3. Document hardware key distribution
+
+---
+
+### 2.4 Select the Right Login Flow
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3, 6.5 |
+| NIST 800-53 | IA-2, AC-7 |
+
+#### Description
+Choose the user policy's login flow deliberately. OneLogin documents three orderings of the authentication steps, and the order — not just which factors are enabled — determines what an attacker can attempt.
+
+#### Rationale
+**Why This Matters:**
+- In the **Standard** flow (identifier → password → MFA), password evaluation happens before MFA, so an attacker who knows a username can guess passwords freely and receives feedback on each attempt
+- In the **Brute-Force Defense** flow (identifier → MFA → password), the user must satisfy MFA before the password is evaluated at all — **password guessing never reaches credential evaluation**, which removes the oracle that makes spraying and stuffing productive
+- In the **Passwordless** flow (identifier → MFA), there is no password in the flow to guess, phish, or reuse
+- The choice is a policy-level decision with real usability consequences, so it belongs in a deliberate review rather than being inherited from the default
+
+**Attack Prevented:** Password spraying, credential stuffing, brute-force password guessing, phishing of a password that the flow never requests
+
+#### ClickOps Implementation
+
+**Step 1: Review the Current Flow**
+1. Navigate to: **Security** → **Policies** → select the user policy
+2. Identify which login flow the policy currently uses
+
+**Step 2: Select the Flow Per Population**
+
+| Flow | Order | When to use |
+|------|-------|-------------|
+| Standard | Identifier → Password → MFA | Default; familiar, but exposes password evaluation to unauthenticated attempts |
+| Brute-Force Defense | Identifier → MFA → Password | Populations under credential-stuffing or spraying pressure, and administrator policies |
+| Passwordless | Identifier → MFA | Populations fully enrolled in phishing-resistant factors |
+
+1. Apply **Brute-Force Defense** or **Passwordless** to administrator policies first
+2. Pilot with one group before broad rollout — the changed prompt order is visible to users
+
+#### Validation & Testing
+1. Sign in as a member of the policy and confirm the prompts appear in the expected order
+2. On a Brute-Force Defense policy, confirm an incorrect password is only evaluated after MFA succeeds
 
 ---
 
@@ -432,6 +568,44 @@ Implement additional protections for privileged administrator accounts.
 
 ---
 
+### 3.4 Automatically Suspend Inactive Users
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.3 |
+| NIST 800-53 | AC-2(3) |
+
+#### Description
+Configure OneLogin's user policy to automatically suspend accounts that have not been used for a defined period, so dormant accounts stop being valid entry points into every connected application.
+
+#### Rationale
+**Why This Matters:**
+- Dormant accounts are the accounts nobody notices: no user reports the anomalous login, and no manager flags the access during review
+- An identity-provider account grants access to every application assigned to it, so a forgotten account is a forgotten key to the whole portfolio
+- Automatic suspension closes the offboarding gaps that manual deprovisioning misses — contractors, transfers, service-desk test accounts, and accounts created for projects that ended
+- OneLogin's documented default inactivity period is **90 days**; treat that as the starting point and tighten it for privileged populations
+
+**Attack Prevented:** Dormant-account takeover, persistence through forgotten accounts, exploitation of incomplete offboarding
+
+#### ClickOps Implementation
+
+**Step 1: Enable Inactivity Suspension**
+1. Navigate to: **Security** → **Policies** → select the user policy
+2. Enable automatic suspension of inactive users
+3. Set the inactivity period — the documented default is 90 days; shorten it for administrator and contractor policies
+
+**Step 2: Handle the Exceptions Deliberately**
+1. Identify accounts that legitimately sign in rarely (break-glass, seasonal staff) and document them rather than exempting the whole policy
+2. Define the reactivation process so suspension does not become an outage
+
+#### Validation & Testing
+1. Review the user list for suspended accounts after the first policy interval and confirm the suspensions are expected
+2. Confirm a suspended account cannot authenticate to a downstream application
+
+---
+
 ## 4. Session & Network Security
 
 ### 4.1 Configure TLS Requirements
@@ -486,9 +660,9 @@ Configure account lockout and brute force protection.
 **Step 1: Configure Lockout Policy**
 1. Navigate to: **Security** → **Policies** → Select policy
 2. Configure lockout settings:
-   - **Max failed attempts:** 5
-   - **Lockout duration:** 30 minutes
-   - **Counter reset:** 15 minutes
+   - **Maximum Invalid Login Attempts:** 5 (valid range 3-10, or **No limit**)
+   - **Lock effective period:** 30 minutes (options: 15, 30, 60 minutes, or **Until Unlocked**)
+3. There is **no counter-reset interval** to configure — OneLogin resets the invalid-attempt count on a successful sign-in or a password reset. See the correction callout in [1.1](#11-configure-password-policy).
 
 **Step 2: Enable Detection**
 1. Enable login anomaly detection
@@ -655,7 +829,6 @@ Configure alerts for security-relevant events.
 ## Appendix B: References
 
 **Official OneLogin Documentation:**
-- [Compliance & Certifications](https://www.onelogin.com/compliance)
 - [Support Portal](https://support.onelogin.com/)
 - [OneLogin User Policies](https://onelogin.service-now.com/kb_view_customer.do?sysparm_article=KB0010420)
 - [Best Practices for Advanced Authentication](https://www.onelogin.com/blog/best-practices-when-deploying-advanced-authentication)
@@ -667,7 +840,7 @@ Configure alerts for security-relevant events.
 - [OneLogin Developer Portal](https://developers.onelogin.com/)
 
 **Compliance Frameworks:**
-- SOC 1 Type II, SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, HIPAA, GDPR, Privacy Shield — via [OneLogin Compliance](https://www.onelogin.com/compliance)
+- SOC 1 Type II, SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, HIPAA, GDPR
 
 **Security Incidents:**
 - **May 2017:** Threat actor used a stolen AWS key to access OneLogin's U.S. data center infrastructure for approximately seven hours, compromising database tables containing user data, app configurations, and encryption keys. OneLogin could not rule out the attacker's ability to decrypt customer data. — [Krebs on Security Report](https://krebsonsecurity.com/2017/06/onelogin-breach-exposed-ability-to-decrypt-data/)
@@ -678,8 +851,11 @@ Configure alerts for security-relevant events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Correct 1.1 and 4.2 — the "reset counter after 15 minutes" setting does not exist (real settings are Maximum Invalid Login Attempts and Lock effective period); add compromised credential checking (1.4), remaining user policy hardening (1.5), login flow selection incl. Brute-Force Defense (2.4), and automatic suspension of inactive users (3.4); note the policy-level "Smart MFA" label in 2.2; add reCAPTCHA on account recovery to 1.3; add missing Attack Prevented lines to 2.1 and 2.2; drop compliance marketing references | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with MFA, policies, and admin controls | Claude Code (Opus 4.5) |
+
+**Source coverage note:** This revision is built on OneLogin's Tier 1 user policies documentation (KB0010420, published 2025-11-17). **No Tier 2 benchmark coverage was confirmed** for OneLogin (no CIS Benchmark, DISA STIG, or CISA SCuBA baseline located for this product). Tier 3/4 independent research was **not surveyed** for this revision. No product end-of-life or rename transition is asserted here: One Identity's ownership of OneLogin is visible publicly, but no citable transition announcement was verified.
 
 ---
 

@@ -6,9 +6,9 @@ slug: "keeper"
 tier: "2"
 category: "Identity"
 description: "Enterprise password manager hardening for Keeper Security including role enforcement, MFA, and admin console security"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -44,32 +44,35 @@ This guide covers Keeper Enterprise admin console security, role-based enforceme
 
 ## 1. Admin Console Security
 
-### 1.1 Protect Keeper Administrator Accounts
+### 1.1 Protect Keeper Administrator Accounts (Ensure an Administrator Exists Outside of SSO)
 
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
 |-----------|---------|
 | CIS Controls | 5.4 |
-| NIST 800-53 | AC-6 |
+| NIST 800-53 | AC-6, CP-2 |
 
 #### Description
-Protect Keeper Administrator accounts as they have full control over the enterprise deployment.
+Protect Keeper Administrator accounts as they have full control over the enterprise deployment — and keep at least one Keeper Administrator who authenticates with a Master Password rather than through SSO, so a failure of the identity provider does not lock the organization out of its own tenant permanently.
 
 #### Rationale
 **Why This Matters:**
-- Keeper support cannot elevate users to admin or reset admin passwords by design
-- If all admins lose access, there's no recovery path
-- At least two users should have Keeper Administrator role
-- Break-glass accounts are essential
+- Keeper support cannot elevate users to admin or reset admin passwords by design — this is a property of the zero-knowledge architecture, not a support-policy gap that can be escalated
+- Keeper's own recommended security settings call for **ensuring an administrator exists outside of SSO**: if the organization federates every admin and then loses the IdP — outage, misconfiguration, tenant compromise, or vendor exit — there is no path back into the Keeper tenant, and the loss is permanent
+- At least two users should hold the Keeper Administrator role, with at least one of them able to sign in with a Master Password independent of the IdP
+- Break-glass accounts are essential, and their credentials must be recoverable without the IdP that they exist to work around
+
+**Attack Prevented:** Permanent tenant lockout from IdP loss or compromise; single-admin dependency; denial of administrative access following an identity-provider outage or takeover
 
 #### ClickOps Implementation
 
-**Step 1: Ensure Redundant Admins**
+**Step 1: Ensure Redundant Admins — Including One Outside SSO**
 1. Navigate to: **Admin Console** → **Admin** → **Roles**
 2. Verify **Keeper Administrator** role has 2+ members
-3. Ensure backup admin has different credentials
-4. Document break-glass account procedures
+3. Confirm at least one Keeper Administrator authenticates with a **Master Password** and is **not** in an SSO-enforced role
+4. Ensure backup admin has different credentials
+5. Document break-glass account procedures
 
 **Step 2: Protect Admin Accounts**
 1. Require MFA for all admin accounts
@@ -102,7 +105,9 @@ Restrict admin access to approved IP addresses to prevent unauthorized administr
 **Why This Matters:**
 - At minimum, users with admin privileges should be IP-restricted
 - Prevents malicious insider attacks
-- Protects against identity provider takeover vectors
+- Protects against identity provider takeover vectors — an attacker holding a valid federated session still has to originate from an approved network
+
+**Attack Prevented:** Admin account takeover from attacker infrastructure, malicious insider access from unapproved networks, exploitation of a compromised identity provider
 
 #### ClickOps Implementation
 
@@ -292,7 +297,7 @@ Control how records can be shared and exported from Keeper.
 
 ---
 
-### 2.4 Restrict Browser Extension Installation
+### 2.4 Restrict Browser Extensions and Disable Built-In Browser Password Managers
 
 **Profile Level:** L2 (Walk)
 
@@ -302,13 +307,17 @@ Control how records can be shared and exported from Keeper.
 | NIST 800-53 | CM-7 |
 
 #### Description
-Control which browser extensions users can install to prevent malicious extensions from accessing vault data.
+Control which browser extensions users can install to prevent malicious extensions from accessing vault data, and disable the browser's own built-in password manager so credentials do not accumulate in a second, uncontrolled store.
 
 #### Rationale
 **Why This Matters:**
 - Browser extensions with elevated permissions can access information in websites
 - Malicious extensions could capture vault data
 - Limit to Keeper and approved extensions only
+- Keeper's recommended security settings call for disabling the browser's native password manager: a browser-stored credential store sits outside Keeper's zero-knowledge encryption, outside role enforcement policies, and outside the audit trail — it is a second credential vault the security team does not administer
+- Built-in browser stores commonly sync to a personal browser profile, carrying corporate credentials to personal devices with no offboarding path
+
+**Attack Prevented:** Vault data capture by malicious extensions, credential theft from an unencrypted or weakly-protected browser credential store, credential sprawl to personal browser profiles that survive offboarding
 
 #### ClickOps Implementation
 
@@ -318,10 +327,103 @@ Control which browser extensions users can install to prevent malicious extensio
    - Block unapproved extensions
    - Remove unknown extensions
 
-**Step 2: Document Approved Extensions**
+**Step 2: Disable the Browser's Built-In Password Manager**
+1. Use browser management policy (MDM / group policy / browser enterprise policy) to disable password saving and autofill in Chrome, Edge, Firefox, and Safari
+2. Disable browser profile sync for passwords on managed devices
+3. Direct users to migrate any credentials already saved in the browser into Keeper, then clear the browser store
+
+**Step 3: Document Approved Extensions**
 1. Create whitelist of approved extensions
 2. Communicate policy to users
 3. Regular audit of installed extensions
+
+---
+
+### 2.5 Enable Account Transfer for Departed Employees
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.3, 6.2 |
+| NIST 800-53 | AC-2, CP-2 |
+
+#### Description
+Enable Keeper's **Account Transfer** enforcement policy and assign an eligible transfer role, so that when an employee leaves the organization their vault contents can be recovered by an authorized party instead of being lost with the account.
+
+#### Rationale
+**Why This Matters:**
+- Keeper's zero-knowledge model means an offboarded user's vault is not readable by administrators by default — without Account Transfer configured in advance, the credentials in that vault are gone when the account is deprovisioned
+- Shared infrastructure, service-account, and vendor credentials frequently live only in an individual's vault; losing them at offboarding causes outages and forces emergency rotations of secrets nobody has a copy of
+- Account Transfer must be enabled and an eligible role assigned **before** the departure — it cannot be retrofitted onto an account after the fact
+- A documented transfer path also removes the incentive for departing employees to export or copy credentials "just in case," which is exactly the exfiltration behavior sharing and export restrictions exist to stop
+
+**Attack Prevented:** Permanent loss of business credentials at offboarding, emergency uncontrolled secret rotation, pre-departure credential exfiltration driven by a missing recovery path
+
+#### ClickOps Implementation
+
+**Step 1: Enable Account Transfer**
+1. Navigate to: **Admin Console** → **Admin** → **Roles**
+2. Select the role covering the users whose vaults must be recoverable
+3. Click **Enforcement Policies** → **Transfer Account**
+4. Enable the account transfer policy for that role
+
+**Step 2: Assign the Eligible Transfer Role**
+1. Designate the role whose members are permitted to receive transferred vaults (typically a small security or IT role)
+2. Confirm the transfer relationship is in place for every role that holds business credentials
+3. Restrict membership of the receiving role tightly — its members can inherit vault contents
+
+**Step 3: Document the Offboarding Runbook**
+1. Add the transfer step to the standard offboarding checklist, executed before the account is deleted
+2. Record who received each transferred vault
+3. Rotate any high-value credentials recovered through transfer
+
+#### Validation & Testing
+1. Run a transfer against a test account and confirm the receiving admin can access the transferred records
+2. Confirm every role holding business credentials has the policy enabled
+
+---
+
+### 2.6 Restrict Client Platforms
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.8 |
+| NIST 800-53 | CM-7, AC-3 |
+
+#### Description
+Use Keeper's **Platform Restriction** enforcement policies to control which Keeper clients a role may use — Web Vault, browser extensions, mobile apps, desktop app, KeeperChat, and the Commander SDK/CLI — and disable the ones the role has no business need for.
+
+#### Rationale
+**Why This Matters:**
+- Every enabled client is an authenticated path into the vault; a role that only ever uses the browser extension does not need six other doors left open
+- **Commander SDK/CLI** deserves particular attention: it is the programmatic, scriptable interface to the vault, and it is the client best suited to bulk extraction. A standard user role has no reason to hold it, and leaving it enabled hands an attacker with a valid session the most efficient exfiltration tool Keeper ships
+- Disabling unused mobile and desktop clients keeps vault data off endpoint classes that fall outside MDM enrollment and EDR coverage
+- Platform restriction is enforced by role, so it can be tightened for standard users while remaining available to the small set of engineers and admins who genuinely need programmatic access
+
+**Attack Prevented:** Bulk credential extraction via programmatic clients, vault access from unmanaged device classes, expansion of the authenticated attack surface beyond what the role's job requires
+
+#### ClickOps Implementation
+
+**Step 1: Review Platforms Per Role**
+1. Navigate to: **Admin Console** → **Admin** → **Roles**
+2. Select the role → **Enforcement Policies** → **Platform Restriction**
+3. Review which clients are currently permitted
+
+**Step 2: Disable Unused Clients**
+1. Disable the clients the role does not need — commonly KeeperChat, desktop, or mobile for a browser-only population
+2. **Disable Commander SDK/CLI for all standard user roles**; enable it only for a narrow, named automation or admin role
+3. Keep the client set aligned with the devices the role is actually issued
+
+**Step 3: Communicate and Monitor**
+1. Notify affected users before enforcing, so a blocked client is a policy outcome and not a help-desk incident
+2. Review platform restrictions when roles change
+
+#### Validation & Testing
+1. Attempt to sign in with a disabled client as a member of the restricted role and confirm access is refused
+2. Confirm Commander SDK/CLI access is limited to the intended role only
 
 ---
 
@@ -375,30 +477,121 @@ Configure biometric authentication options for improved security and usability.
 | NIST 800-53 | IA-5 |
 
 #### Description
-Configure secure account recovery options.
+Configure account recovery deliberately — and in SSO organizations, disable it. Keeper's recommended security settings call for turning **Account Recovery (Recovery Phrase) off** for SSO-authenticated users, because the identity provider is already the recovery path and a second one only widens the attack surface.
+
+> **Correction — this reverses common guidance, including an earlier revision of this guide.** For organizations using SSO, Keeper recommends **disabling** account recovery rather than configuring it. Set **Role → Enforcement Policies → Account Settings → Recovery Phrase** to disabled for SSO-authenticated roles. Enabling recovery for federated users creates a bypass around the IdP that is not subject to the IdP's MFA, conditional access, or session policy — which is the entire reason the IdP was put in front of Keeper. Source: [Keeper Security Benchmarks and Recommended Settings](https://docs.keeper.io/en/enterprise-guide/recommended-security-settings).
 
 #### Rationale
 **Why This Matters:**
-- Account recovery is a deliberate bypass of normal authentication, so a weak recovery flow becomes the easiest path into a vault
-- Admin-assisted recovery with an approval workflow forces human verification rather than self-service an attacker could trigger
+- Account recovery is a deliberate bypass of normal authentication, so for a federated user it is a path into the vault that never touches the identity provider's controls
+- In an SSO organization the IdP already owns account recovery; a second recovery mechanism inside Keeper duplicates the function while subtracting the IdP's MFA and conditional-access enforcement
+- Where recovery must remain enabled (non-SSO roles, or the Master Password administrator required by [1.1](#11-protect-keeper-administrator-accounts-ensure-an-administrator-exists-outside-of-sso)), approval workflows and verification steps prevent help-desk social engineering
 - Logging every recovery event creates accountability and an audit trail for forensic review
-- Strong verification steps prevent social-engineering of the help desk into restoring access for an impostor
 
-**Attack Prevented:** Account-recovery abuse, help-desk social engineering, unauthorized vault access, self-service takeover
+**Attack Prevented:** Account-recovery abuse as an IdP bypass, help-desk social engineering, unauthorized vault access, self-service takeover
 
 #### ClickOps Implementation
 
-**Step 1: Configure Recovery Methods**
-1. Navigate to: **Role** → **Enforcement Policies** → **Account Recovery**
-2. Enable appropriate recovery methods:
-   - **Admin-assisted recovery:** Recommended for enterprise
-   - **Self-service recovery:** With appropriate verification
+**Step 1: Disable Recovery for SSO Roles**
+1. Navigate to: **Admin Console** → **Admin** → **Roles** → select an SSO-authenticated role
+2. Open **Enforcement Policies** → **Account Settings**
+3. Disable **Recovery Phrase** (account recovery) for that role
+4. Repeat for every role whose members authenticate through the identity provider
 
-**Step 2: Configure Recovery Approval**
-1. For admin-assisted recovery:
-   - Configure approval workflow
-   - Require verification steps
-   - Log all recovery events
+**Step 2: Harden Recovery Where It Must Remain**
+1. For non-SSO roles — including the Master Password administrator retained under [1.1](#11-protect-keeper-administrator-accounts-ensure-an-administrator-exists-outside-of-sso) — keep recovery configured but controlled
+2. Require verification steps and an approval workflow before recovery completes
+3. Log and review all recovery events
+
+#### Validation & Testing
+1. As a test SSO user, confirm the account-recovery option is not offered
+2. Confirm the non-SSO administrator's recovery path is documented, tested, and stored securely
+
+---
+
+### 3.3 Enable Biometric Login With a Passkey
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.5 |
+| NIST 800-53 | IA-2(1), IA-2(6) |
+
+#### Description
+Enable **Biometric Login with a Passkey** so users authenticate to the vault with a device-bound passkey and biometric instead of typing a master password and a one-time code.
+
+#### Rationale
+**Why This Matters:**
+- A passkey login replaces **both** factors — it is the authentication, not an additional step layered on a password, so there is no password left to phish and no code left to relay
+- Passkeys are phishing-resistant by construction: the credential is bound to Keeper's origin, so an adversary-in-the-middle proxy that defeats push and TOTP factors gets nothing usable
+- The passkey is held by the platform authenticator and unlocked by the device biometric, keeping the secret on hardware the user physically holds
+- Removing the typed master password from the daily login flow also removes it from keyloggers and shoulder-surfing
+
+**Attack Prevented:** Phishing, adversary-in-the-middle credential relay, MFA fatigue, keylogging of the master password, one-time-code interception
+
+#### Prerequisites
+- A device with a platform authenticator (Windows Hello, Touch ID, Face ID, Android biometrics)
+
+#### ClickOps Implementation
+
+**Step 1: Enable the Policy**
+1. Navigate to: **Admin Console** → **Admin** → **Roles** → select role
+2. Open **Enforcement Policies** and enable **Biometric Login** / passkey login for the role
+
+**Step 2: Roll Out to Users**
+1. Have users register a passkey from a device they control
+2. Confirm the master password is still known and recorded securely — the passkey is the login, not a replacement for knowing the underlying secret
+
+#### Validation & Testing
+1. Sign in with the passkey and confirm no master password or second factor is requested
+2. Confirm registration succeeds on the device classes your users actually carry
+
+> **Scope limitation — platform authenticators only.** Keeper's biometric passkey login uses the **device's built-in platform authenticator** and is **device-bound**. Roaming security keys (a portable FIDO2 hardware key moved between machines) are **not** supported for this login method. Plan enrollment per device: a user with a laptop and a phone registers on each, and a user who loses their only registered device falls back to the master password path — which is another reason [1.1](#11-protect-keeper-administrator-accounts-ensure-an-administrator-exists-outside-of-sso) and [3.2](#32-configure-account-recovery) matter.
+
+---
+
+### 3.4 Harden Session, Offline, and Clipboard Behavior
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.3, 3.3 |
+| NIST 800-53 | AC-11, AC-12, SC-28 |
+
+#### Description
+Use role enforcement policies to bound how long a vault session lives, whether a decrypted copy of the vault can exist offline, and how long secrets linger on the clipboard or in the deleted-records store.
+
+#### Rationale
+**Why This Matters:**
+- **Offline access** keeps a decrypted-capable copy of the vault on the endpoint, so a stolen or compromised laptop no longer needs network access or a live session to be useful to an attacker; restricting it removes that standing local copy
+- **Stay Logged In** turns a single successful authentication into an indefinite one; disabling it, together with a **Logout Timer**, ensures an unattended or stolen device does not hold an open vault
+- **Require Re-authentication** for sensitive actions means a hijacked session cannot silently perform the operations that matter most
+- **Clipboard expiration** matters because copied credentials are readable by any process on the machine and are captured by clipboard-history features; a short expiry bounds that exposure
+- **Retention of deleted records** determines how long a "deleted" secret is still recoverable — relevant both for accidental-deletion recovery and for ensuring rotated credentials actually leave the system
+
+**Attack Prevented:** Offline vault extraction from a stolen endpoint, session hijacking and unattended-device access, clipboard scraping by malware or clipboard-history tooling, recovery of secrets believed deleted
+
+#### ClickOps Implementation
+
+**Step 1: Restrict Offline Access**
+1. Navigate to: **Admin Console** → **Admin** → **Roles** → select role → **Enforcement Policies**
+2. Restrict offline access for roles that do not have a genuine disconnected-work requirement
+
+**Step 2: Bound the Session**
+1. Disable **Stay Logged In**
+2. Set a **Logout Timer** short enough that an unattended device does not stay unlocked
+3. Enable **Require Re-authentication** for sensitive actions
+
+**Step 3: Bound Data at Rest on the Endpoint and in the Vault**
+1. Set a short **Clipboard Expiration** so copied secrets clear automatically
+2. Set **Retention of Deleted Records** to a period that balances accidental-deletion recovery against leaving rotated secrets recoverable indefinitely
+
+#### Validation & Testing
+1. Confirm a session ends at the configured logout timer and that "stay logged in" is not offered
+2. Copy a record and confirm the clipboard clears within the configured window
+3. Confirm offline access is refused for restricted roles
 
 ---
 
@@ -600,8 +793,9 @@ Enable BreachWatch to detect compromised credentials.
 - BreachWatch continuously checks stored records against known breach data so exposed passwords are flagged before attackers use them
 - Prompt notification and forced rotation close the window between exposure and exploitation
 - Investigating the exposure source helps identify reuse patterns and at-risk accounts across the organization
+- BreachWatch findings only drive response if they leave the console: Keeper documents a named enforcement policy, **Send BreachWatch Events to Reporting Systems and External SIEM**, which routes these events into the same pipeline as the rest of your detections instead of leaving them on a dashboard nobody is paged for
 
-**Attack Prevented:** Credential stuffing, breach-replay attacks, account takeover from reused or exposed passwords
+**Attack Prevented:** Credential stuffing, breach-replay attacks, account takeover from reused or exposed passwords, undetected exposure sitting unread in a console
 
 #### ClickOps Implementation
 
@@ -610,7 +804,12 @@ Enable BreachWatch to detect compromised credentials.
 2. Enable for organization
 3. Configure alert settings
 
-**Step 2: Respond to Alerts**
+**Step 2: Route Events to Your SIEM**
+1. Navigate to: **Admin Console** → **Admin** → **Roles** → select role → **Enforcement Policies**
+2. Enable **Send BreachWatch Events to Reporting Systems and External SIEM**
+3. Confirm events arrive in the SIEM configured in [5.1](#51-configure-audit-logging) and build an alert on them
+
+**Step 3: Respond to Alerts**
 1. When credentials detected:
    - Notify affected users
    - Require password change
@@ -627,7 +826,7 @@ Enable BreachWatch to detect compromised credentials.
 |-----------|----------------|---------------|
 | CC6.1 | 2FA enforcement | [2.2](#22-enforce-two-factor-authentication) |
 | CC6.1 | Master password policy | [2.1](#21-configure-master-password-requirements) |
-| CC6.2 | Admin protection | [1.1](#11-protect-keeper-administrator-accounts) |
+| CC6.2 | Admin protection | [1.1](#11-protect-keeper-administrator-accounts-ensure-an-administrator-exists-outside-of-sso) |
 | CC6.6 | IP allowlisting | [1.2](#12-configure-ip-address-allowlisting-for-admins) |
 | CC7.2 | Audit logging | [5.1](#51-configure-audit-logging) |
 
@@ -637,7 +836,7 @@ Enable BreachWatch to detect compromised credentials.
 |---------|----------------|---------------|
 | IA-2(1) | MFA | [2.2](#22-enforce-two-factor-authentication) |
 | IA-5 | Password policy | [2.1](#21-configure-master-password-requirements) |
-| AC-6 | Least privilege | [1.1](#11-protect-keeper-administrator-accounts) |
+| AC-6 | Least privilege | [1.1](#11-protect-keeper-administrator-accounts-ensure-an-administrator-exists-outside-of-sso) |
 | AU-2 | Audit logging | [5.1](#51-configure-audit-logging) |
 | SI-4 | BreachWatch | [5.3](#53-breachwatch-integration) |
 
@@ -659,12 +858,10 @@ Enable BreachWatch to detect compromised credentials.
 ## Appendix B: References
 
 **Official Keeper Documentation:**
-- [Keeper Trust Center](https://trust.keeper.io/)
 - [Keeper Documentation](https://docs.keeper.io/en)
-- [Keeper Security Architecture](https://www.keepersecurity.com/security.html)
 - [Security Benchmarks and Recommended Settings](https://docs.keeper.io/en/enterprise-guide/recommended-security-settings)
 - [Enforcement Policies](https://docs.keeper.io/en/enterprise-guide/roles/enforcement-policies)
-- [Enterprise Password Management](https://www.keepersecurity.com/enterprise.html)
+- [Two-Factor Authentication](https://docs.keeper.io/en/enterprise-guide/two-factor-authentication)
 
 **API & Developer Resources:**
 - [Developer Tools](https://docs.keeper.io/en/enterprise-guide/developer-tools)
@@ -672,11 +869,10 @@ Enable BreachWatch to detect compromised credentials.
 - [Keeper Secrets Manager](https://docs.keeper.io/en/secrets-manager/overview)
 
 **SSO Integration:**
-- [Keeper SSO Connect Cloud](https://www.keepersecurity.com/keeper-sso-connect.html)
 - [Admin Console Configuration (SSO Connect)](https://docs.keeper.io/en/sso-connect-on-prem/installation-and-setup/admin-console-configuration)
 
 **Compliance Frameworks:**
-- SOC 2 Type II, SOC 3, ISO 27001, ISO 27017, ISO 27018, FedRAMP Authorized, GovRAMP Authorized, PCI DSS, HIPAA -- via [Keeper Trust Center](https://trust.keeper.io/)
+- SOC 2 Type II, SOC 3, ISO 27001, ISO 27017, ISO 27018, FedRAMP Authorized, GovRAMP Authorized, PCI DSS, HIPAA
 
 **Security Incidents:**
 - No major public security breaches identified. Keeper's zero-knowledge architecture means the company cannot access customer vault data.
@@ -687,8 +883,11 @@ Enable BreachWatch to detect compromised credentials.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Add Account Transfer (2.5), Platform Restriction incl. Commander SDK (2.6), passkey biometric login (3.3), and session/offline/clipboard hardening (3.4); correct 3.2 — Keeper recommends DISABLING account recovery for SSO orgs; sharpen 1.1 to "ensure an administrator exists outside of SSO"; name the BreachWatch SIEM enforcement policy in 5.3; add browser built-in password manager disabling to 2.4; add missing Attack Prevented lines; drop Trust Center and marketing-page references | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, enforcement policies, and SSO | Claude Code (Opus 4.5) |
+
+**Source coverage note:** This revision is built on Keeper's Tier 1 enterprise documentation (recommended security settings, enforcement policies, two-factor authentication). **No Tier 2 benchmark coverage was confirmed** for Keeper (no CIS Benchmark, DISA STIG, or CISA SCuBA baseline located for this product). Tier 3/4 independent research was **not surveyed** for this revision.
 
 ---
 
