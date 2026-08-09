@@ -6,7 +6,7 @@ slug: "tenable"
 tier: "2"
 category: "Security"
 description: "Vulnerability management platform hardening for Tenable One Vulnerability Management and Security Center including user access, scanning security, and agent configuration"
-version: "0.2.1"
+version: "0.2.2"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -60,6 +60,8 @@ Administrator accounts have the highest level of access and pose significant sec
 - Admins can create accounts, modify configs, delete data
 - Compromised admin credentials can expose entire security program
 - Destructive capabilities require additional protection
+
+**Attack Prevented:** Admin account takeover exposing the entire security program, destructive misuse of admin capabilities
 
 #### ClickOps Implementation
 
@@ -362,6 +364,8 @@ Securely manage credentials used for authenticated scanning.
 - Tenable encrypts credentials when stored
 - Best practices must align with risk appetite
 
+**Attack Prevented:** Theft and misuse of privileged scan credentials
+
 #### ClickOps Implementation
 
 **Step 1: Create Dedicated Scan Accounts**
@@ -403,6 +407,8 @@ Securely manage Nessus Agent linking keys.
 - Linking keys associate agents to your instance
 - Once linked, key regeneration doesn't affect existing agents
 - Protect keys during initial deployment
+
+**Attack Prevented:** Unauthorized agent linking to your instance via exposed linking keys
 
 #### ClickOps Implementation
 
@@ -542,6 +548,8 @@ Configure compliance auditing using CIS Benchmarks.
 - Hardening standards are key to cyber security
 - CIS benchmarks are well-documented standards
 - Tenable supports CIS audit files
+
+**Attack Prevented:** Exploitation of unhardened configurations drifting from CIS Benchmark standards
 
 #### ClickOps Implementation
 
@@ -692,6 +700,7 @@ Use dashboards to monitor hardening compliance posture.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.2 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1, §3.1, §3.2, §4.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.1 | draft | Added first Code Packs (Tenable Vulnerability Management REST API): 1.2 user-role audit (GET /users?withRoles=true — permissions tiers, api_permitted, two_factor flags), 1.3 audit-log export for SIEM (GET /audit-log/v1/events with date filters, offset paging, user-target change review), 3.4 API-capable account inventory plus gated key rotation (PUT /users/{user_id}/keys with explicit confirmation, secrets never echoed to logs). All endpoints verified against developer.tenable.com references. | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass (Tier 1 only): added 3.4 API key management (all roles from Basic upward can generate keys; regeneration replaces keys immediately; keys shown once; no expiry mechanism); rewrote 1.2 for the VM Custom Role and the 2026-07-08 Exposure Management export and Linked Agents privileges; added native passkey sign-in (2026-03-31) as the L2/L3 target for administrators in 2.2; documented the SAML no-SP-initiated-flow, exact-username-match, and break-glass constraints in 2.1; renamed Tenable.io to Tenable One Vulnerability Management throughout. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, authentication, and hardening assessments | Claude Code (Opus 4.5) |

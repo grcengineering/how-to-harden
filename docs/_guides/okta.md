@@ -6,9 +6,9 @@ slug: "okta"
 tier: "1"
 category: "Identity"
 description: "Identity Provider hardening for SSO, MFA policies, and API token security"
-version: "0.4.0"
+version: "0.4.1"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 
@@ -234,6 +234,8 @@ Configure Okta to bind session tokens to specific devices using device trust and
 - The October 2023 breach exploited stolen session cookies from HAR files
 - Device-bound tokens cannot be replayed from different devices
 - Okta FastPass provides passwordless + phishing-resistant authentication
+
+**Attack Prevented:** Session token theft and replay from attacker-controlled devices (HAR-file session hijacking)
 
 **Real-World Incidents:**
 - **October 2023:** Attackers exfiltrated HAR files containing session tokens from Okta support portal
@@ -1301,6 +1303,8 @@ Secure SCIM (System for Cross-domain Identity Management) connectors that provis
 - Compromised SCIM tokens enable backdoor account creation
 - Unlimited token validity creates persistent risk
 
+**Attack Prevented:** Backdoor account creation in downstream apps via stolen SCIM tokens
+
 **Attack Scenario:** Attacker steals SCIM token, creates backdoor accounts in connected SaaS apps
 
 #### ClickOps Implementation
@@ -1618,6 +1622,8 @@ Set session timeouts appropriate to risk level. Reduce maximum session lifetime 
 - Long sessions increase window for session hijacking
 - October 2023 breach exploited long-lived session cookies
 - Idle timeouts reduce exposure from abandoned sessions
+
+**Attack Prevented:** Session hijacking via long-lived or abandoned sessions, stolen session cookie replay
 
 #### Specification Requirements
 
@@ -2072,6 +2078,8 @@ Run Okta HealthInsight regularly to assess your tenant's security posture agains
 - Serves as a baseline security checklist aligned with Okta's own best practices
 - Posture score tracking over time demonstrates continuous improvement for auditors
 
+**Attack Prevented:** Exploitation of common tenant misconfigurations left undetected between reviews
+
 #### ClickOps Implementation
 
 **Step 1: Access HealthInsight**
@@ -2342,6 +2350,8 @@ Establish a process to monitor Okta security advisories and ensure all Okta clie
 - Okta Verify for iOS had a push bypass allowing responses regardless of user selection
 - Downstream dependencies (React/Next.js CVEs) affect Okta-integrated applications
 - Okta maintains an active bug bounty program (153 valid issues, $405K paid)
+
+**Attack Prevented:** Exploitation of known vulnerabilities in outdated Okta client software (DLL hijacking privilege escalation, XSS, push bypass)
 
 #### Implementation
 
@@ -2856,6 +2866,7 @@ Use this checklist to verify controls are implemented for your compliance requir
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.4.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.3, §3.2, §4.1, §5.6, §7.2 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.4.0 | draft | Guidance-currency refresh. Added 4 new controls: Device Assurance Policies including Okta Verify Advanced Posture Checks (1.12), Help Desk Visual Identity Verification (1.13), Cross App Access for AI agents and MCP servers (3.5), Identity Security Posture Management (5.7). Expanded SOC 2 and NIST 800-53 mappings and the compliance checklist to cover the new controls. | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.3.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-02-10 | 0.3.0 | draft | Comprehensive audit against Okta SIC, DISA STIG v1.1, NIST 800-63-4, Obsidian/Nudge/AppOmni research. Added 15 new controls: Default Auth Policy Backstop (1.9), Self-Service Recovery (1.10), End-User Notifications (1.11), Dynamic Zones (2.3), OAuth Allowlisting (3.3), NHI Governance (3.4), Admin Session Security (4.3), ITP (5.3), Behavior Detection (5.4), Cross-Tenant Impersonation (5.5), HealthInsight (5.6), HAR Sanitization (7.1), Security Advisory Monitoring (7.2), Access Reviews (7.3), Change Management (7.4), Incident Response (7.5). Expanded compliance mappings with NIST 800-63-4 AAL mapping. | Claude Code (Opus 4.6) |

@@ -6,9 +6,9 @@ slug: "snowflake"
 tier: "1"
 category: "Data"
 description: "Data warehouse security including network policies, MFA enforcement, and access controls"
-version: "0.4.0"
+version: "0.4.1"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 
@@ -473,6 +473,8 @@ Configure OAuth security integrations with minimum required scopes and short tok
 - Long-lived tokens create persistent risk
 - Stolen OAuth tokens enabled downstream access in 2024 breach
 
+**Attack Prevented:** Persistent downstream data access via stolen long-lived OAuth tokens (2024 breach pattern)
+
 #### ClickOps Implementation
 
 **Step 1: Audit Existing Security Integrations**
@@ -825,6 +827,7 @@ You do not have to map your account against it by hand. The **CIS Benchmarks sca
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.4.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §3.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.4.0 | draft | Replace 1.1 Snowsight MFA toggle with authentication policy enforcement; note mandatory MFA rollout Phase 3 and always-on leaked password protection; require TYPE = 'SERVICE' in 1.2; add 1.4 Programmatic Access Tokens, 1.5 Workload Identity Federation, 5.3 Trust Center scanner packages; reference CIS Snowflake Foundations Benchmark v2.0.0 | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.3.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-02-19 | 0.3.0 | draft | Migrate all remaining inline code to Code Packs (sections 1.1, 2.1, 2.2, 3.1, 4.3); zero inline code blocks remain | Claude Code (Opus 4.6) |

@@ -6,9 +6,9 @@ slug: "cloudflare"
 tier: "1"
 category: "Security"
 description: "Security hardening for Cloudflare Zero Trust, Access, Gateway, and WARP deployment"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -63,6 +63,8 @@ Integrate Cloudflare Zero Trust with your corporate identity provider to enable 
 - Enables MFA through your IdP
 - Provides consistent identity across all Zero Trust services
 - Enables user and group-based policies
+
+**Attack Prevented:** Account takeover via fragmented authentication, access without IdP-enforced MFA
 
 #### Prerequisites
 - Cloudflare Zero Trust account
@@ -160,6 +162,8 @@ Configure device enrollment policies to control which devices can enroll in WARP
 - Once enrolled, devices join your Zero Trust network
 - Uncontrolled enrollment creates security risk
 - Enrollment policies prevent unauthorized device access
+
+**Attack Prevented:** Unauthorized or rogue device enrollment into the Zero Trust network
 
 #### ClickOps Implementation
 
@@ -380,6 +384,8 @@ Create Access policies that protect applications with identity-based, context-aw
 - Granular controls enable Zero Trust access
 - Policies can require specific device posture
 - Replaces VPN with identity-aware access
+
+**Attack Prevented:** Unauthorized application access, lateral movement via broad VPN-style network access
 
 #### ClickOps Implementation
 
@@ -680,6 +686,8 @@ Configure Gateway DNS policies to block access to malicious and policy-violating
 - Prevents access to malware, phishing, and C2 domains
 - Works for all traffic, not just HTTP(S)
 - Cloudflare's threat intelligence provides real-time protection
+
+**Attack Prevented:** Malware delivery, phishing, and command-and-control callbacks at the DNS resolution layer
 
 #### ClickOps Implementation
 
@@ -1029,6 +1037,8 @@ Configure split tunnel settings to control which traffic passes through WARP and
 - Excessive split tunnel reduces security visibility
 - Document all exceptions with business justification
 
+**Attack Prevented:** Data exfiltration and threats hidden in traffic bypassing WARP inspection via excessive split-tunnel exceptions
+
 #### ClickOps Implementation
 
 **Step 1: Access Split Tunnel Settings**
@@ -1073,6 +1083,8 @@ Configure Cloudflare Tunnel (formerly Argo Tunnel) securely to expose internal a
 - Misconfigured tunnels can expose internal services
 - Access policies must protect tunnel endpoints
 - Tunnel credentials must be secured
+
+**Attack Prevented:** Internal service exposure via misconfigured tunnels, tunnel credential theft, unauthenticated access to tunnel endpoints
 
 #### ClickOps Implementation
 
@@ -1365,6 +1377,7 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1, §1.3, §2.1, §3.1, §4.3, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.2.0 | draft | Add API token/Global API Key retirement (1.5), account 2FA enforcement (1.6), Access for Infrastructure SSH (2.4), user risk score gating (2.5), Gateway DLP (3.5), TryCloudflare quick tunnel abuse detection (5.3); correct the Salesloft Drift incident entry to the August 2025 Salesforce compromise with Cloudflare's own disclosure | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with Access, Gateway, and WARP hardening | Claude Code (Opus 4.5) |

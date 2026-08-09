@@ -9,9 +9,9 @@ product: "Claude Code"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for Claude Code — managed settings via MDM, permission and tool restriction, MCP server governance, sandbox isolation, prompt-injection defense, CI/CD hardening, Cowork governance, and incident response."
-version: "1.0.0"
+version: "1.0.1"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -1081,6 +1081,8 @@ Establish incident response procedures specific to Claude Code and Cowork securi
 - OpenTelemetry logs in your SIEM are the primary centralized evidence source since Cowork is excluded from the Compliance API
 - Without documented IR procedures, response to AI agent incidents will be ad-hoc and slow
 
+**Attack Prevented:** Prolonged, uncontained AI agent incidents (prompt injection exfiltration, MCP server compromise, hijacked automation) due to ad-hoc response
+
 **Attack Scenarios Requiring IR:**
 - Prompt injection in a document triggers data exfiltration via MCP server or `curl` to attacker endpoint
 - Malicious MCP server installed by user exfiltrates credentials via tool calls
@@ -1185,6 +1187,7 @@ See the [Anthropic platform hub references](/guides/anthropic-claude/#appendix-b
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.0.1 | 2026-08-08 | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §5.3 (no content-facts changed) |
 | 1.0.0 | 2026-08-03 | Split out of the monolithic Anthropic Claude guide as part of the multi-product platform restructure; carries the 11 Claude Code controls (formerly section 7) renumbered into five thematic sections. |
 
 ## Contributing

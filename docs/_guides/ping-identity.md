@@ -6,9 +6,9 @@ slug: "ping-identity"
 tier: "1"
 category: "Identity"
 description: "Identity federation security for PingFederate, PingOne, and OAuth configurations"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 
@@ -62,6 +62,8 @@ Require FIDO2/WebAuthn authenticators for administrator and high-privilege user 
 - Federation trust means Ping Identity compromise affects all connected apps
 - TOTP/SMS MFA can be bypassed via real-time phishing
 - FIDO2 provides origin-bound authentication resistant to phishing
+
+**Attack Prevented:** Real-time phishing of admin credentials, federation-wide token forgery from IdP compromise
 
 **Attack Scenario:** Attacker phishes admin credentials, generates valid tokens for any connected application via federation trust exploitation.
 
@@ -434,6 +436,8 @@ Configure secure SAML settings to prevent assertion manipulation and replay atta
 - Weak signature algorithms enable forgery
 - Long assertion validity enables replay attacks
 
+**Attack Prevented:** SAML assertion forgery, manipulation, and replay across federation trust
+
 **Attack Scenario:** Federation trust exploitation enables attackers to generate valid tokens for any connected application.
 
 #### ClickOps Implementation (PingFederate)
@@ -667,6 +671,8 @@ Harden PingOne DaVinci orchestration flows to prevent abuse and unauthorized wor
 - DaVinci flows automate identity processes
 - Misconfigured flows enable privilege escalation
 - Compromised flows provide persistent backdoors
+
+**Attack Prevented:** Privilege escalation and persistent backdoors via misconfigured or compromised orchestration flows
 
 #### ClickOps Implementation
 
@@ -1037,6 +1043,7 @@ Both affect components customers deploy and patch themselves rather than vendor-
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1, §2.1, §4.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.2.0 | draft | Correct false "no major incidents" claim (CVE-2025-20059, CVE-2025-22854); add controls 1.4 PingOne Protect risk-based auth, 1.5 PingFederate admin API hardening, 1.6 Advanced Identity Cloud tenant hardening, 5.2 patch currency, 5.3 advisory monitoring; expand Overview product scope | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Ping Identity hardening guide | Claude Code (Opus 4.5) |

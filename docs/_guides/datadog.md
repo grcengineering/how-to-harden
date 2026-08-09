@@ -6,9 +6,9 @@ slug: "datadog"
 tier: "1"
 category: "Security"
 description: "Observability platform hardening for Datadog including SAML SSO, role-based access control, sensitive data redaction, cloud integration security, and organization security settings"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -63,6 +63,8 @@ Configure SAML SSO to centralize authentication for Datadog users.
 - Enables enforcement of organizational MFA policies
 - Simplifies user lifecycle management
 - Required for SAML strict mode
+
+**Attack Prevented:** Password-based account takeover, access by accounts outside centralized MFA and lifecycle management
 
 #### Prerequisites
 - Datadog Administrator access
@@ -851,6 +853,7 @@ Remote Configuration lets Datadog push configuration changes from the platform d
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.2.0 | draft | Add IP Allowlist (2.3), Data Protection section with Sensitive Data Scanner (5.1), Integration & Agent Security section with AWS role delegation (6.1), GCP service account impersonation (6.2), and Remote Configuration review (6.3); extend RBAC with Logs Restriction Queries and application keys with service accounts and authorization scopes | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and key security | Claude Code (Opus 4.5) |

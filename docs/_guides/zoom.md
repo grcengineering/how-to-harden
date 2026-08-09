@@ -6,7 +6,7 @@ slug: "zoom"
 tier: "2"
 category: "Productivity"
 description: "Video conferencing security for meeting policies, recording controls, and app marketplace"
-version: "0.2.1"
+version: "0.2.2"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -374,6 +374,8 @@ Control Zoom App Marketplace installations.
 - Compromised apps can access all user meetings
 - JWT-type apps were fully deprecated on **September 1, 2023** and no longer function, but their credentials frequently remain provisioned and unmanaged in the account
 
+**Attack Prevented:** Meeting data and recording exfiltration via malicious or abandoned Marketplace apps with standing OAuth access
+
 #### ClickOps Implementation
 
 **Step 1: Configure App Installation Policy**
@@ -681,6 +683,7 @@ Configure Zoom audit logging.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.2 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §3.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.1 | draft | Add first Code Packs via the Zoom REST API v2 with Server-to-Server OAuth (api/ type only — Zoom publishes no first-party CLI): 2.1 meeting-security posture verification (`GET /v2/accounts/me/settings` groups schedule_meeting/in_meeting/meeting_security plus `GET /v2/accounts/me/lock_settings` for account-level locks), 4.2 recording-security posture verification (settings `recording` group + locks). Both endpoints, scopes, and the S2S OAuth token flow fetch-verified this session against developers.zoom.us; packs are read-only verification by design since the accounts API documents no settings-update surface for these groups. Pack yml keys pending central sync | Claude Code (Fable 5) |
 | 2026-08-03 | 0.2.0 | draft | Correct OAuth token lifetimes (1h access, 90d rotating refresh, S2S has none); add JWT deprecation audit to 3.1; add 1.3 minimum client version, 2.4 remote control lock (ELUSIVE COMET), 4.3 Team Chat external permissions; add CVE-2026-53412 | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |

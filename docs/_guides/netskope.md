@@ -6,7 +6,7 @@ slug: "netskope"
 tier: "1"
 category: "Security"
 description: "Security hardening for Netskope CASB, SWG, and ZTNA deployment"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -65,6 +65,8 @@ Secure Netskope Admin Console with SSO, MFA, and role-based access controls.
 - Admin Console controls all security policies
 - Compromised admin can disable protection
 - Role-based access limits blast radius
+
+**Attack Prevented:** Admin console takeover disabling security policies organization-wide
 
 #### ClickOps Implementation
 
@@ -197,6 +199,8 @@ Enable comprehensive visibility into all cloud applications in use, including sh
 - Shadow IT creates uncontrolled data exposure
 - Visibility is prerequisite to security policy
 - Risk scoring helps prioritize remediation
+
+**Attack Prevented:** Uncontrolled data exposure through unsanctioned shadow IT applications
 
 #### ClickOps Implementation
 
@@ -334,6 +338,8 @@ Configure Data Loss Prevention profiles to detect and protect sensitive data acr
 - Prevents accidental data exposure
 - Enforces compliance requirements
 - Provides visibility into data flows
+
+**Attack Prevented:** Accidental exposure and leakage of sensitive data across cloud applications
 
 #### ClickOps Implementation
 
@@ -516,6 +522,8 @@ Configure Netskope Client steering to ensure traffic is properly routed through 
 - Steering determines what traffic is inspected
 - Misconfiguration can create inspection gaps
 - Certificate pinning apps require bypass
+
+**Attack Prevented:** Data exfiltration and threats passing through uninspected steering gaps
 
 #### ClickOps Implementation
 
@@ -878,6 +886,7 @@ The NVD catalogs 22 CVEs affecting Netskope products, 19 of them in the **Netsko
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1, §2.1, §3.1, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Correct 1.2 console paths to Settings > Administration (IP Allowlist, Admins > Settings); add 1.3 admin login hardening, 5.3 Client tamper protection, 5.4 hardened Client enrollment, and section 8 Private Access & Publisher hardening; replace the "no incidents" claim in Appendix B with the NVD Netskope Client CVE record | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with CASB, DLP, and threat protection | Claude Code (Opus 4.5) |

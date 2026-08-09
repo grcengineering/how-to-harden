@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "Productivity"
 description: "Platform-wide security hardening for Google Workspace — the Common Controls hub (authentication, OAuth, DLP engine, audit logging) shared by the Gmail, Google Drive, and Google Chat product guides."
-version: "0.4.0"
+version: "0.4.1"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -251,6 +251,8 @@ Implement context-aware access policies that evaluate device, location, and user
 - Allows enforcement of device compliance before access
 - Can block access from high-risk locations
 - Provides additional layer beyond authentication
+
+**Attack Prevented:** Stolen-credential access from non-compliant devices or high-risk locations
 
 #### Prerequisites
 - Google Workspace Enterprise Standard or Plus
@@ -729,6 +731,8 @@ Enable and configure audit logging across all Google Workspace services. Use the
 - Provides visibility into admin actions, file access, and sign-in events
 - Required for compliance with most security frameworks
 
+**Attack Prevented:** Undetected compromise — admin abuse, file access, and sign-in anomalies invisible without audit logs
+
 #### ClickOps Implementation
 
 **Step 1: Verify Audit Logging**
@@ -934,6 +938,7 @@ CISA publishes Secure Configuration Baselines for Google Workspace and ships [Sc
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.4.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.3, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.4.0 | draft | Currency pass. Rewrote §3.2 — Less Secure Apps was fully removed by Google on 2025-05-01 and the Admin Console page no longer exists, so the control is now "Retire Legacy App Access (Less Secure Apps & App Passwords)" covering residual app-password auditing and OAuth governance. Added §1.4 multi-party approvals for sensitive admin actions (2SV changes, account recovery, domain-wide delegation, Vault export creation) and §4.3 AI control center for Gemini and agent access governance (GA May 2026, Enterprise Standard/Plus). Migrated 9 `support.google.com/a` citations to `knowledge.workspace.google.com`. Labeled the CIS mapping as Foundations Benchmark v1.3.0 with a note that IDs shift between releases, and added a CISA SCuBA / ScubaGoggles baseline mapping table. | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.3.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-05-29 | 0.3.0 | draft | Restructured Google Workspace into a multi-product platform (GRC-496): split Google Chat into the [google-chat](/guides/google-chat/) guide and Google Drive into the [google-drive](/guides/google-drive/) guide; this guide is now the Common Controls hub (authentication, OAuth, DLP engine, admin audit logging). Added a Gmail product stub. Repointed cross-references and compliance tables to the product guides; reorganized code packs into packs/google-chat and packs/google-drive. | Jai (PAI) |

@@ -6,9 +6,9 @@ slug: "slack"
 tier: "1"
 category: "Productivity"
 description: "Enterprise security hardening for Slack workspaces, SSO, DLP, and data governance"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -198,6 +198,8 @@ Limit Primary Owner and Admin roles to essential personnel. Use granular roles l
 - Primary Owners have unrestricted access
 - Admins can modify security settings
 - Excessive admin privileges increase risk
+
+**Attack Prevented:** Admin privilege abuse, unauthorized security setting modification via excessive admin roles
 
 #### ClickOps Implementation
 
@@ -447,6 +449,8 @@ Control Slack Connect channels that enable collaboration with external organizat
 - Unauthorized connections can lead to data leakage
 - External parties may have different security postures
 
+**Attack Prevented:** Data leakage to unauthorized external organizations via unapproved Slack Connect channels
+
 #### ClickOps Implementation
 
 **Step 1: Configure Slack Connect Permissions**
@@ -559,6 +563,8 @@ Configure Slack's native DLP to detect and prevent sharing of sensitive informat
 - Sensitive PII can be accidentally posted
 - DLP provides automated protection
 
+**Attack Prevented:** Credential, API key, and PII exposure in messages and shared files
+
 **Limitations:**
 - Native DLP scans message text, text-based file types, and canvases -- but it does **not** scan non-text files (images, video, audio), files larger than 100 MB, or externally hosted files (for example, Google Drive or Box links posted into a channel)
 - Cannot redact portions of messages (only tombstone the entire message)
@@ -620,6 +626,8 @@ Configure message and file retention policies to balance compliance requirements
 - Regulatory compliance may require specific retention periods
 - Data minimization reduces breach impact
 - Legal holds prevent destruction of relevant evidence
+
+**Attack Prevented:** Breach impact amplification from retained historical data, destruction of evidence under legal hold
 
 #### Prerequisites
 - Slack Business+ or Enterprise Grid
@@ -856,6 +864,8 @@ Enable and export Slack audit logs for security monitoring, incident investigati
 - Essential for incident investigation
 - Required for most compliance frameworks
 
+**Attack Prevented:** Undetected compromise — admin actions, authentication events, and data access invisible without audit logs
+
 #### Prerequisites
 - Slack Enterprise Grid
 - SIEM or log management platform
@@ -1030,6 +1040,7 @@ As of **August 17, 2025**, Slack's plan lineup is **Free, Pro, Business+, and En
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.3, §3.2, §4.1, §4.2, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.2.0 | draft | Add Information Barriers (1.5), MCP/AI agent governance (3.3), Slack AI feature access (4.4), and AI channel restriction (4.5); correct DLP plan prerequisite and file-scanning scope; note non-Marketplace app rate limits; update plan matrix to post-Aug 2025 lineup | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, DLP, retention, and app controls | Claude Code (Opus 4.5) |

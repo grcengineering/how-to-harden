@@ -6,9 +6,9 @@ slug: "gitlab"
 tier: "2"
 category: "DevOps"
 description: "DevOps platform security for CI/CD pipelines, repository access, and runners"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-08"
 ---
 
 
@@ -61,6 +61,8 @@ Require SAML/OIDC SSO with MFA for all GitLab authentication, eliminating passwo
 - GitLab credentials provide access to source code and CI/CD pipelines
 - Compromised accounts can inject malicious code
 - SSO enables centralized access control and MFA enforcement
+
+**Attack Prevented:** Credential-based account takeover, malicious code injection into source and CI/CD pipelines
 
 **Attack Scenario:** Malicious .gitlab-ci.yml injects backdoor during build; stolen runner token enables unauthorized deployments.
 
@@ -948,6 +950,7 @@ Assume anything Duo reads from a repository may contain instructions written by 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.2.0 | draft | Add fine-grained job token permissions (2.4), pipeline execution policies (2.5), CI/CD catalog component trust (2.6), merge request approval policies (1.4), secret push protection (4.3), and new AI Assistant Governance section (7.1 Duo availability, 7.2 Duo prompt injection); correct 1.3 token expiry to mandatory-expiry model (365-day default, 400-day ceiling); renumber Compliance Quick Reference to 8 | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-02-19 | 0.1.2 | draft | Migrate all remaining inline code to Code Packs (2.1, 2.3, 3.1, 4.1, 4.2, 6.1); zero inline blocks | Claude Code (Opus 4.6) |
