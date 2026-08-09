@@ -1,39 +1,48 @@
-title: Terraform Cloud Workspace Auto-Apply Enabled
+title: HCP Terraform VCS OAuth Client Destroyed
 id: c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f
 status: test
 description: |
-    Detects when auto-apply is enabled on a Terraform Cloud workspace. Auto-apply
-    bypasses manual approval for infrastructure changes, allowing plans to apply
-    automatically without human review. This is dangerous for production workspaces
-    where changes should require explicit approval.
-    This corresponds to HTH Terraform Cloud control hth-terraform-cloud-2.01-configure-workspace-restrictions (section 2.1, L1).
+    Detects destruction of a VCS OAuth client in an HCP Terraform organization.
+    OAuth clients are the VCS integrations (GitHub, GitLab, Bitbucket) that
+    workspace runs and webhook triggers depend on. Removing one outside a
+    change window can indicate tampering with the VCS integration path that
+    control 2.1's branch-protection and PR-review gates rely on, or an
+    attacker preparing to re-point workspaces at a repository they control.
+    Field names follow the documented HCP Terraform audit trail payload:
+    nested resource.type / resource.action, with resource.action values from
+    the documented action list (create, update, destroy, ...). The audit
+    trail is pull-only (GET /organization/audit-trail, 14-day retention) --
+    ingest it on a schedule before applying this rule.
+    This corresponds to HTH HCP Terraform control
+    hth-terraform-cloud-2.01-configure-workspace-restrictions (section 2.1, L1).
 references:
     - https://howtoharden.com/guides/terraform-cloud/
     - https://developer.hashicorp.com/terraform/cloud-docs/api-docs/audit-trails
 author: How to Harden
-date: 2026/02/16
+date: 2026/08/08
 tags:
     - attack.defense_evasion
     - attack.t1562
 logsource:
-    product: terraform_cloud
+    product: hcp_terraform
     service: audit
 # HTH Guide Excerpt: begin detection
 detection:
     selection:
-        resource_type: 'workspace'
-        action: 'update'
-    filter_auto_apply:
-        new_values|contains: '"auto-apply":true'
-    condition: selection and filter_auto_apply
+        resource.type: 'oauth_client'
+        resource.action: 'destroy'
+    condition: selection
 fields:
-    - actor
-    - action
-    - resource_type
-    - resource_id
+    - id
     - timestamp
+    - auth.accessor_id
+    - auth.description
+    - auth.organization_id
+    - resource.id
+    - resource.type
+    - resource.action
 # HTH Guide Excerpt: end detection
 falsepositives:
-    - Enabling auto-apply on development or sandbox workspaces
-    - Temporary enablement during approved batch infrastructure rollouts
+    - Planned migration from one VCS provider or OAuth app to another
+    - Decommissioning of a repository/organization with an approved change record
 level: high

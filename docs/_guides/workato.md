@@ -6,9 +6,9 @@ slug: "workato"
 tier: "2"
 category: "IaC"
 description: "Comprehensive security hardening for Workato including SSO, RBAC, encryption key management, API security, secrets management, environment separation, and audit logging"
-version: "0.2.1"
+version: "0.3.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -27,7 +27,7 @@ Workato is a leading enterprise automation platform (iPaaS) enabling organizatio
 - **L3 (Run):** Strictest controls for regulated industries (healthcare, finance, government)
 
 ### Scope
-This guide covers Workato workspace security including SAML SSO, role-based access control, encryption key management, connection security, API platform security, secrets management, environment separation with recipe lifecycle management, and audit logging. It applies to Workato's cloud-hosted platform across all plan tiers, with plan-specific features noted.
+This guide covers Workato workspace security including SAML SSO, role-based access control, encryption key management, connection security, API platform security, secrets management, environment separation with recipe lifecycle management, audit logging, Agent Studio (Genie) security, and the MCP Control Plane. It applies to Workato's cloud-hosted platform across all editions, with edition-specific features noted.
 
 ---
 
@@ -41,7 +41,9 @@ This guide covers Workato workspace security including SAML SSO, role-based acce
 6. [Secrets Management](#6-secrets-management)
 7. [Environment & Deployment Security](#7-environment--deployment-security)
 8. [Monitoring & Compliance](#8-monitoring--compliance)
-9. [Compliance Quick Reference](#9-compliance-quick-reference)
+9. [Agent Studio (Genie) Security](#9-agent-studio-genie-security)
+10. [MCP Control Plane](#10-mcp-control-plane)
+11. [Compliance Quick Reference](#11-compliance-quick-reference)
 
 ---
 
@@ -674,6 +676,8 @@ Create custom environment roles with granular permissions tailored to your organ
 - Custom roles enable precise least-privilege access
 - Separate deployment permissions from development permissions
 
+**Attack Prevented:** Privilege creep from over-broad built-in roles, unauthorized production deployment, excessive standing access.
+
 #### ClickOps Implementation
 
 **Step 1: Plan Custom Roles**
@@ -916,6 +920,8 @@ Protect sensitive data visible in job history, recipe logs, and debug output by 
 - Any user with recipe access can view job history unless data masking is configured
 - Compliance frameworks (GDPR, HIPAA, PCI DSS) require masking sensitive data in logs
 
+**Attack Prevented:** Sensitive-data harvesting from job history, credential disclosure in debug logs, PII exposure to unauthorized collaborators.
+
 #### ClickOps Implementation
 
 **Step 1: Enable Data Masking for Recipes**
@@ -1014,6 +1020,8 @@ Secure sensitive values stored as Workato environment properties (account proper
 - Environment properties often store API keys, endpoints, and configuration values shared across recipes
 - Properties marked as sensitive are encrypted and hidden in the UI
 - Properties NOT marked sensitive are visible to all workspace collaborators
+
+**Attack Prevented:** Plaintext credential exposure to all collaborators, secret harvesting from shared configuration.
 
 #### ClickOps Implementation
 
@@ -1342,6 +1350,48 @@ Secure webhook-triggered recipes by implementing signature verification, IP allo
 
 ---
 
+### 4.6 Configure Private Connectivity (PrivateLink / Virtual Private Workato)
+
+**Profile Level:** L3 (Run)
+
+| Framework | Control |
+|-----------|---------|
+| SOC 2 | CC6.6 |
+| NIST 800-53 | SC-7, AC-4 |
+| ISO 27001 | A.13.1.1 |
+
+#### Description
+Beyond On-Prem Agents (4.3) and IP allowlisting (4.4), Workato documents **private connectivity via AWS PrivateLink and Azure Private Link**, and offers **Virtual Private Workato (VPW)** as a distinct deployment model with its own private documentation and configuration guidance. Use private connectivity to keep traffic between your network and Workato off the public internet for regulated workloads. Sources: [Private connectivity](https://docs.workato.com/en/security/data-protection/private-connectivity), [IP allowlists (VPW note)](https://docs.workato.com/en/security/ip-allowlists).
+
+#### Rationale
+**Why This Matters:**
+- PrivateLink/Private Link endpoints remove the public-internet path between your systems and Workato, shrinking the network attack surface to your private links
+- Private connectivity complements — not replaces — identity controls: stolen credentials still cannot reach the workspace from outside the private path when combined with IP restrictions
+- VPW's dedicated deployment model gives regulated industries an isolation boundary the shared multi-tenant plane cannot
+- Egress/ingress via private endpoints keeps integration traffic inside auditable cloud-network constructs
+
+**Attack Prevented:** Internet-path interception of integration traffic, workspace access from arbitrary networks, exposure of private integration endpoints.
+
+#### ClickOps Implementation
+
+**Step 1: Assess the requirement**
+1. Identify workloads whose compliance regime requires private network paths (healthcare, finance, government)
+2. Confirm your Workato agreement covers private connectivity or VPW — both are documented for enterprise deployments
+
+**Step 2: Configure private endpoints**
+1. Follow the [private connectivity documentation](https://docs.workato.com/en/security/data-protection/private-connectivity) to provision AWS PrivateLink or Azure Private Link endpoints between your VPC/VNet and Workato
+2. For VPW, work with your Workato account team against the VPW-specific configuration guidance
+
+**Step 3: Combine with network controls**
+1. Keep IP allowlisting (4.4) enabled so non-private paths remain blocked
+2. Route On-Prem Agent traffic through the private path where supported
+
+#### Validation & Testing
+1. Verify integration traffic traverses the private endpoint (VPC flow logs / NSG flow logs)
+2. Verify access attempts over the public path are rejected when private connectivity plus IP allowlisting are enforced
+
+---
+
 ## 5. API Security
 
 ### 5.1 Configure API Platform Security
@@ -1362,6 +1412,8 @@ Secure the Workato API Platform, which allows you to expose recipes as API endpo
 - The API Platform exposes internal automation as external endpoints — misconfiguration creates a direct attack surface
 - API endpoints may expose sensitive data or trigger critical business processes
 - Without proper access control, anyone who discovers the API URL can access it
+
+**Attack Prevented:** Unauthorized invocation of exposed automation endpoints, data exposure via unauthenticated APIs, endpoint abuse by discovered-URL attackers.
 
 #### Prerequisites
 - Workato plan that includes API Platform feature
@@ -1467,6 +1519,8 @@ Securely manage Workato Platform API keys (used to call Workato's own management
 - A leaked API key allows an attacker to exfiltrate all connection credentials, modify recipes, or deploy malicious automations
 - API keys are workspace-scoped and carry the permissions of the user who created them
 
+**Attack Prevented:** Workspace takeover via leaked API keys, connection-credential exfiltration, malicious recipe deployment through stolen tokens.
+
 #### ClickOps Implementation
 
 **Step 1: Minimize API Key Count**
@@ -1514,7 +1568,7 @@ Securely manage Workato Platform API keys (used to call Workato's own management
 | PCI DSS | 3.5 |
 
 #### Description
-Integrate Workato with an external secrets manager (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, or GCP Secret Manager) to store and retrieve connection credentials dynamically instead of storing them directly in Workato.
+Integrate Workato with an external secrets manager to store and retrieve connection credentials dynamically instead of storing them directly in Workato. Workato documents both **project-level and workspace-level** integrations for **AWS Secrets Manager, Azure Key Vault, CyberArk Conjur, Google Secret Manager, and HashiCorp Vault** (secrets engine), including **IAM role-based authentication for AWS**, an Azure Key Vault app-registration guide, a Google service-account setup guide, HashiCorp Vault policy guidance, and per-provider "using X in connections" pages. Source: [Secrets management](https://docs.workato.com/en/security/data-protection/secrets-management/secrets-management).
 
 #### Rationale
 **Why This Matters:**
@@ -1535,11 +1589,14 @@ Integrate Workato with an external secrets manager (HashiCorp Vault, AWS Secrets
 **Step 1: Configure Secrets Manager Connection**
 1. Navigate to: **Workspace admin** → **Settings** → **Secrets management**
 2. Select your secrets manager provider
-3. Configure connection details:
-   - **HashiCorp Vault:** Vault URL, authentication method, role
-   - **AWS Secrets Manager:** IAM role or access key, region
-   - **Azure Key Vault:** Tenant ID, client ID, vault URL
-4. Test the connection
+3. Choose the integration scope — **workspace-level** (shared) or **project-level** (isolates each team's secrets path)
+4. Configure connection details:
+   - **HashiCorp Vault:** Vault URL, authentication method, role (see Workato's Vault policy guidance)
+   - **AWS Secrets Manager:** prefer **IAM role-based authentication** over static access keys; set region
+   - **Azure Key Vault:** Tenant ID, client ID, vault URL (per the app-registration guide)
+   - **Google Secret Manager:** dedicated service account per the setup guide
+   - **CyberArk Conjur:** host identity and policy per the Conjur integration guide
+5. Test the connection
 
 **Step 2: Migrate Connection Credentials**
 1. Store existing connection credentials in your secrets manager
@@ -1618,6 +1675,8 @@ Configure separate Workato environments (DEV, TEST, PROD) to isolate recipe deve
 - Separation enables proper testing and change management
 - Required by PCI DSS, SOC 2, and most enterprise security policies
 
+**Attack Prevented:** Untested changes reaching production systems, developer access to production credentials, cross-environment data corruption.
+
 #### Prerequisites
 - Workato plan that supports multiple environments (Workspace plan or higher)
 - Environments provisioned by Workato (DEV, TEST, PROD)
@@ -1672,6 +1731,8 @@ Configure Workato's Recipe Lifecycle Management (RLCM) to enforce a formal deplo
 - Deployment packages create auditable, repeatable deployments
 - Approval workflows prevent unauthorized production changes
 - Essential for SOC 2 change management controls
+
+**Attack Prevented:** Unauthorized production changes, unauditable deployments, change-management bypass.
 
 #### ClickOps Implementation
 
@@ -1779,6 +1840,8 @@ Enable and actively monitor Workato's Activity Audit Log, which records signific
 - Essential for incident investigation and forensics
 - Workato records events automatically — but reviewing and acting on them is your responsibility
 
+**Attack Prevented:** Undetected account and admin abuse, unattributed workspace changes, delayed incident detection.
+
 #### ClickOps Implementation
 
 **Step 1: Access Audit Logs**
@@ -1847,17 +1910,23 @@ Configure real-time streaming of Workato audit logs to an external SIEM or log a
 - Long-term log retention is required for compliance (PCI DSS: 1 year, HIPAA: 6 years)
 - External log storage prevents log tampering by compromised admin accounts
 
+**Attack Prevented:** Log tampering by compromised admins, evidence destruction, retention-compliance failures, missed cross-system attack correlation.
+
 #### ClickOps Implementation
 
 **Step 1: Configure Log Streaming Destination**
 1. Navigate to: **Workspace admin** → **Settings** → **Activity audit log** → **Streaming**
-2. Select your destination:
-   - Amazon S3
-   - Sumo Logic
-   - Datadog
-   - Splunk
-   - Custom webhook endpoint
+2. Select your destination — Workato documents **Amazon S3, Azure Monitor, Azure Blob Storage, Google Cloud Storage**, and generic cloud logging services ([streaming destinations](https://docs.workato.com/en/features/activity-audit-log-streaming-destinations))
 3. Configure the connection credentials for your destination
+
+**Amazon S3 least-privilege requirements** (per the streaming-destinations doc):
+
+- The IAM policy needs exactly **`s3:ListAllMyBuckets`** (required even when the connection is restricted to a single bucket) and **`s3:PutObject`**
+- The bucket must **already exist**, the connection's region must **match the bucket's region**, and the IAM role ARN must be valid
+- The connection must be a **cloud** connection, not an on-prem connection
+- If the bucket is IP-restricted, allowlist Workato's data-center IPs
+
+Companion docs cover customizing the log format, retry behavior, and a sample payload.
 
 **Step 2: Verify Streaming**
 1. Perform a test action in Workato
@@ -1871,9 +1940,6 @@ Configure real-time streaming of Workato audit logs to an external SIEM or log a
    - Connection credential changes outside change windows
    - API key creation
    - SSO configuration changes
-
-#### Code Implementation
-
 
 #### Validation & Testing
 1. Verify events stream within expected latency (< 5 minutes)
@@ -1982,7 +2048,226 @@ Secure multi-workspace Automation HQ (AHQ) environments by enforcing SSO, consis
 
 ---
 
-## 9. Compliance Quick Reference
+## 9. Agent Studio (Genie) Security
+
+**Agent Studio** is Workato's LLM agent product: "genies" are AI agents built on the Workato platform that converse with end users, invoke tools, and act against connected systems. Workato documents a dedicated security model for it — a **two-plane access model** (collaborator access vs. end-user access), a **Guardrails** control plane (beta), and a named **governance triad** of enterprise concerns (identity, behavioral manipulation, PII exposure). Sources: [Agent Studio security](https://docs.workato.com/en/agentic/agent-studio/security), [Guardrails](https://docs.workato.com/en/agentic/agent-studio/guardrails/guardrails), [Genie governance](https://docs.workato.com/en/agentic/agent-studio/genie-governance/genie-governance).
+
+### 9.1 Enforce the Two-Plane Genie Access Model
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| SOC 2 | CC6.2, CC6.3 |
+| NIST 800-53 | AC-3, AC-6 |
+| ISO 27001 | A.9.2.3 |
+
+#### Description
+Workato's Agent Studio security model separates **collaborator access** (who builds and operates genies, governed by workspace collaborator roles) from **end-user access** (who can talk to a genie, governed by Workato user groups mapped to IdP groups — deliberately **not** aligned to project structure, with single-tier or multi-tier designs). Workato's own directive: assign collaborator roles at the **project level**, never Workspace Owner, for genie builders — **Project Admin** for builders, **Operator** for read-only recipe/job history, with **Workspace Owner** reserved for a small number of platform admins. Two discrete privileges are **not granted by default** and must be deliberately assigned: **Conversation History access** and **Test Mode access**. Source: [Agent Studio security](https://docs.workato.com/en/agentic/agent-studio/security).
+
+#### Rationale
+**Why This Matters:**
+- Genie builders with Workspace Owner rights can reach every connection and recipe in the workspace — project-level Project Admin scoping caps a compromised builder account to one project
+- Conversation History access exposes everything end users have told a genie, which routinely includes business-sensitive and personal data; leaving it not-granted-by-default is the vendor's intent — grant it only on documented need
+- Test Mode access lets a collaborator drive a genie against live tools; ungoverned, it is an execution path around end-user access controls
+- Mapping end-user access to IdP groups keeps who-can-talk-to-which-genie in your central directory rather than ad-hoc platform grants
+
+**Attack Prevented:** Workspace-wide blast radius from a compromised genie builder, conversation-data exposure via default-broad history access, unauthorized genie execution through ungoverned test access.
+
+#### ClickOps Implementation
+
+**Step 1: Scope collaborator roles at the project level**
+1. Create a dedicated project per genie initiative
+2. Assign genie builders **Project Admin** on that project only; assign monitoring staff **Operator** (read-only recipe/job history)
+3. Confirm no genie builder holds **Workspace Owner**
+
+**Step 2: Gate the two non-default privileges**
+1. Leave **Conversation History access** ungranted except for named reviewers with a documented need
+2. Leave **Test Mode access** ungranted except for the active build team, and revoke at go-live
+
+**Step 3: Map end-user access to IdP groups**
+1. Create Workato user groups per genie audience and map them to IdP groups
+2. Choose single-tier or multi-tier group design per the security doc — do not mirror project structure
+
+#### Validation & Testing
+1. Audit collaborator roles: zero genie builders with Workspace Owner; builders scoped to their project
+2. List holders of Conversation History and Test Mode access — each maps to a documented justification
+3. Confirm an end user outside the mapped IdP group cannot access the genie
+
+---
+
+### 9.2 Configure Genie Guardrails
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| SOC 2 | CC6.5 |
+| NIST 800-53 | SI-10, SI-19 |
+| ISO 27001 | A.8.11 |
+
+#### Description
+Agent Studio **Guardrails** (beta) is the prompt-injection and data-protection control plane for genies. **Content safety is always on and cannot be disabled**: Prompt Attack detection (prompt injection, jailbreak/role-play, prompt/system-instruction leakage — the run stops immediately on detection) and Harmful Content filtering (hate speech, insults, sexual content, violence, misconduct), each settable to low/medium/high sensitivity. **PII detection is off by default** — the hardening action is to enable it at all **three checkpoints**: user input, tool input and output, and genie output. Within PII detection, SSNs, credit card numbers, bank account numbers, passwords, and API keys are on by default; **email addresses, phone numbers, names, and addresses are off by default**. Guardrails also supports custom regex patterns, a profanity filter, a custom word/phrase list, and Denied Topics. Source: [Guardrails](https://docs.workato.com/en/agentic/agent-studio/guardrails/guardrails).
+
+#### Rationale
+**Why This Matters:**
+- The three PII checkpoints are independent and combinable — tool input/output inspection catches PII a genie pulls from connected systems, which input-only filtering misses entirely
+- The off-by-default PII identifiers (emails, phone numbers, names, addresses) are precisely the fields most workflows leak; leaving them off means the default posture does not match most organizations' data-handling policies
+- Prompt Attack detection stopping the run immediately is a deterministic backstop against injection attempts that model-layer defenses only mitigate probabilistically
+- Custom regex and Denied Topics let you encode organization-specific identifiers (employee IDs, internal project codenames) the built-in detectors cannot know
+
+**Attack Prevented:** Prompt injection and jailbreak attempts against genies, PII leakage through genie conversations and tool calls, exposure of organization-specific sensitive identifiers.
+
+#### ClickOps Implementation
+
+**Step 1: Review always-on content safety**
+1. Open the genie's Guardrails configuration
+2. Set Prompt Attack detection and Harmful Content filtering sensitivity (low/medium/high) per the genie's exposure — start at medium, raise to high for externally-reachable genies
+
+**Step 2: Enable PII detection at all three checkpoints**
+1. Turn on PII detection for **user input**, **tool input and output**, and **genie output**
+2. Enable the off-by-default identifiers (email addresses, phone numbers, names, addresses) unless the genie's business purpose requires them
+
+**Step 3: Add organization-specific rules**
+1. Add custom regex patterns for internal identifiers
+2. Configure Denied Topics and the custom word/phrase list for out-of-scope subjects
+
+#### Validation & Testing
+1. Submit a prompt-injection test string — the run stops immediately
+2. Pass synthetic PII through a tool response — verify the tool-output checkpoint masks it
+3. Ask about a denied topic — verify the genie redirects
+
+---
+
+### 9.3 Apply the Genie Governance Triad
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| SOC 2 | CC6.1 |
+| NIST 800-53 | IA-2, SI-10 |
+| ISO 27001 | A.9.4.1 |
+
+#### Description
+Workato documents three named enterprise concerns for genies, each with per-layer mitigations. **Identity:** identity asserted in conversation text is not trustworthy — a user can claim any name, role, or email and the LLM often accepts it; derive identity from the authenticated platform context instead. **Behavioral manipulation:** prompt injection embedded in documents the genie processes, social engineering via role-play, authority claims to unlock elevated access, and incremental scope expansion — addressed in the genie's job description via explicit security safeguards, an explicit permitted/prohibited action list, and redirect-rather-than-engage response templates. **PII data exposure:** three independent, combinable control layers (see 9.2). Source: [Genie governance](https://docs.workato.com/en/agentic/agent-studio/genie-governance/genie-governance).
+
+#### Rationale
+**Why This Matters:**
+- LLMs accept asserted identity by default — any genie that makes authorization decisions from conversation content can be impersonated with a single sentence
+- The documented manipulation patterns (embedded document injection, role-play, authority claims, incremental scope expansion) are exactly the techniques that defeated production agents across the industry in 2025–2026
+- Encoding permitted and prohibited actions explicitly in the job description turns vague "be safe" instructions into reviewable, testable policy
+- The triad framing gives GRC teams a per-concern audit structure: identity source, manipulation defenses, and PII layers can each be evidenced independently
+
+**Attack Prevented:** Identity spoofing via conversation text, prompt-injection-driven behavioral manipulation and scope creep, PII disclosure through manipulated genies.
+
+#### ClickOps Implementation
+
+**Step 1: Bind identity to the platform**
+1. Configure the genie so any user-specific action derives the user from the authenticated platform context (IdP-mapped user group membership), never from names/emails/roles stated in chat
+2. Review each tool for parameters that accept caller-asserted identity — remove or override them server-side
+
+**Step 2: Harden the job description**
+1. Add the explicit security safeguards section per the governance doc
+2. Enumerate permitted actions and prohibited actions explicitly
+3. Add redirect-rather-than-engage response templates for out-of-scope or manipulative requests
+
+**Step 3: Layer the PII controls**
+1. Combine Guardrails PII checkpoints (9.2), data masking (3.2), and connection least privilege (4.1/4.2) so no single layer is load-bearing
+
+#### Validation & Testing
+1. In a test conversation, claim to be an administrator and request an elevated action — the genie must refuse and derive identity from platform context
+2. Feed the genie a document containing embedded instructions — verify it does not follow them
+3. Attempt incremental scope expansion over several turns — verify the permitted-action list holds
+
+---
+
+## 10. MCP Control Plane
+
+Workato now brokers **Model Context Protocol (MCP)** access for Claude, ChatGPT, Cursor, and custom clients through an **MCP Control Plane**. The **Gateway** is the central enforcement point — every client connection passes through it, and **every tool invocation is authenticated, authorized, and rate-limited before reaching the runtime**. Surrounding surfaces include MCP registry management and access requests, verified user access configuration, remote and local MCP servers, MCP app development, and roughly **80 prebuilt MCP servers** (Slack, GitHub, Salesforce, Snowflake, Workday, Okta, Databricks, Stripe, and others). Source: [MCP Control Plane](https://docs.workato.com/en/mcp/mcp-control-plane).
+
+### 10.1 Harden MCP Gateway Authentication
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| SOC 2 | CC6.1 |
+| NIST 800-53 | IA-2, IA-5 |
+| ISO 27001 | A.9.4.2 |
+
+#### Description
+The MCP Gateway supports three authentication modes: **API token** (a single shared credential), **Workato Identity username + password**, and **SSO federated to Workato Identity**. Standardize production MCP access on **SSO federated to Workato Identity**, and treat the API-token mode — a single shared credential — as suitable for **dev/test/headless use only**. Source: [MCP Control Plane](https://docs.workato.com/en/mcp/mcp-control-plane).
+
+#### Rationale
+**Why This Matters:**
+- A single shared API token cannot be attributed to an individual, cannot inherit IdP MFA/conditional access, and turns every client holding it into the same principal — one leak exposes every tool behind the gateway
+- SSO federation puts MCP tool access behind the same IdP controls (MFA, device posture, offboarding) as the rest of your estate
+- The gateway is the sole enforcement point between AI clients and your automation runtime — weak authentication there undermines every downstream authorization and rate-limit decision
+- AI clients multiply quickly (per-developer IDEs, chat clients, agents); per-user identity is the only scalable way to audit who invoked which tool
+
+**Attack Prevented:** Shared-credential leakage granting broad MCP tool access, unattributable tool invocations, MFA/offboarding bypass by AI clients.
+
+#### ClickOps Implementation
+
+**Step 1: Federate the gateway**
+1. Configure SSO federation to Workato Identity for MCP client access per the MCP Control Plane documentation
+2. Require it for all production client connections (Claude, ChatGPT, Cursor, custom)
+
+**Step 2: Constrain API-token mode**
+1. Restrict API-token authentication to dev/test/headless scenarios with documented owners
+2. Register each issued token in your credential inventory with rotation dates; rotate on schedule and on personnel change
+
+#### Validation & Testing
+1. Connect a production client without SSO — verify the gateway rejects it
+2. Enumerate active API tokens — each maps to a documented dev/test/headless use case with an owner
+
+---
+
+### 10.2 Govern the MCP Registry and Tool Access
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| SOC 2 | CC6.3 |
+| NIST 800-53 | AC-3, AC-6, CM-7 |
+| ISO 27001 | A.9.4.1 |
+
+#### Description
+Govern which MCP servers and tools are reachable through the control plane: manage the **MCP registry**, require **access requests** for new server/tool grants, and configure **verified user access**. With roughly **80 prebuilt MCP servers** available (Slack, GitHub, Salesforce, Snowflake, Workday, Okta, Databricks, Stripe, and more) plus remote/local custom servers and MCP app development, ungoverned enablement hands AI clients a very wide action surface. Source: [MCP Control Plane](https://docs.workato.com/en/mcp/mcp-control-plane).
+
+#### Rationale
+**Why This Matters:**
+- Each registered MCP server is an action surface into a business system — the 80 prebuilt servers cover HR, finance, identity, and data platforms whose write actions can do real damage
+- An access-request workflow makes every new tool grant a reviewed decision with an owner, instead of a silent enablement
+- Verified user access ensures the person behind the AI client is entitled to the tool being invoked, closing the gap between client-level and user-level authorization
+- Gateway-level authorization and rate limiting per tool invocation contains a compromised or manipulated AI client to the tools it was explicitly granted
+
+**Attack Prevented:** Ungoverned AI-client access to business-critical systems, silent tool-surface expansion, abuse of high-privilege prebuilt servers by manipulated agents.
+
+#### ClickOps Implementation
+
+**Step 1: Baseline the registry**
+1. Inventory every MCP server currently registered; disable any without a documented owner and business case
+2. Default-deny new prebuilt servers — enable per-server on request
+
+**Step 2: Require access requests**
+1. Enable the access-request workflow for MCP server/tool grants
+2. Route approvals to the owning system's administrator, not only the Workato admin
+
+**Step 3: Configure verified user access and limits**
+1. Configure verified user access so tool invocations resolve to entitled individual users
+2. Apply per-client rate limits at the gateway consistent with Control 5.2
+
+#### Validation & Testing
+1. Request a new MCP server as a non-admin — verify it requires approval before becoming reachable
+2. Invoke a tool as a user without entitlement — verify the gateway denies it
+3. Review gateway logs — every invocation shows an authenticated, authorized principal
+
+---
+
+## 11. Compliance Quick Reference
 
 ### SOC 2 Trust Services Criteria Mapping
 
@@ -2051,89 +2336,69 @@ Secure multi-workspace Automation HQ (AHQ) environments by enforcing SSO, consis
 
 ---
 
-## Appendix A: Workato Plan Feature Availability
+## Appendix A: Workato Editions
 
-| Control | Community | Professional | Business | Business Plus | Enterprise |
-|---------|-----------|-------------|----------|---------------|------------|
-| SAML SSO | ❌ | ❌ | ✅ | ✅ | ✅ |
-| 2FA | ✅ | ✅ | ✅ | ✅ | ✅ |
-| SCIM | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Custom Roles | ❌ | ❌ | ✅ | ✅ | ✅ |
-| EKM (BYOK) | ❌ | ❌ | ❌ | ❌ | ✅ (add-on) |
-| On-Prem Agents | ❌ | ❌ | ✅ | ✅ | ✅ |
-| API Platform | ❌ | ❌ | ✅ | ✅ | ✅ |
-| Audit Log Streaming | ❌ | ❌ | ❌ | ✅ | ✅ |
-| RLCM | ❌ | ❌ | ✅ | ✅ | ✅ |
-| Environments | ❌ | ❌ | ✅ | ✅ | ✅ |
-| IP Allowlisting | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Secrets Manager | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Automation HQ | ❌ | ❌ | ❌ | ❌ | ✅ |
+The Community / Professional / Business / Business Plus / Enterprise tiers this guide previously tabulated **no longer exist**. Workato's current platform editions are **Standard, Business, Enterprise, and Workato One** under a **usage-based pricing model**; customers who joined **before February 2024** remain on a separate legacy model ([Workato pricing](https://docs.workato.com/en/pricing)). Workato's own docs additionally split audiences into "**Workato Enterprise customers**" vs. "**Self-service (Workato Free, Workato Pro, or Developer Sandbox)**" for some features — for example, [IP allowlisting](https://docs.workato.com/en/security/ip-allowlists) is documented for Enterprise customers.
 
-> **Note:** Plan names and feature availability may change. Verify current plan features on [Workato's pricing page](https://www.workato.com/pricing) or with your Workato account team.
+| Edition | Notes |
+|---------|-------|
+| Standard | Entry paid edition under the usage-based model |
+| Business | Mid-tier edition |
+| Enterprise | Documented audience for IP allowlisting and enterprise security features; EKM/BYOK is an Enterprise add-on |
+| Workato One | Top-tier edition |
+| Legacy (pre-Feb 2024) | Customers on the prior pricing model — feature entitlements differ |
+
+> **Per-feature availability must be confirmed against your contract.** Because entitlements under the usage-based model are not published as a per-feature matrix, verify each control's availability (SCIM, audit log streaming, secrets manager integration, environments/RLCM, Agent Studio, MCP Control Plane) on [Workato's pricing documentation](https://docs.workato.com/en/pricing) or with your Workato account team before planning a rollout.
 
 ---
 
 ## Appendix B: References
 
-**Official Workato Documentation:**
-- [Workato Security Overview](https://docs.workato.com/security.html)
-- [Recipe Security](https://docs.workato.com/recipes/recipe-security.html)
-- [API Management Security](https://docs.workato.com/api-mgmt/api-security.html)
-- [Platform CLI Reference](https://docs.workato.com/en/platform-cli/command-reference.html)
-- [Workato Developer API](https://docs.workato.com/en/workato-api.html)
-- [Security Compliance](https://docs.workato.com/security/security-compliance.html)
-- [Enable Single Sign-On](https://docs.workato.com/user-accounts-and-teams/single-sign-on.html)
-- [SAML Role Sync](https://docs.workato.com/user-accounts-and-teams/saml-role-sync.html)
-- [SAML Role Sync in Microsoft Entra ID](https://docs.workato.com/saml-role-sync-azure.html)
-- [SAML Role Sync in Okta](https://docs.workato.com/saml-role-sync-okta.html)
-- [On-Premises Agent](https://docs.workato.com/on-prem.html)
-- [Recipe Lifecycle Management](https://docs.workato.com/recipe-development-lifecycle.html)
-- [API Platform](https://docs.workato.com/api-management.html)
-- [Activity Audit Log](https://docs.workato.com/workspace-admin/activity-audit-log.html)
-- [Encryption Key Management](https://docs.workato.com/security/encryption-key-management.html)
-- [Secrets Management](https://docs.workato.com/security/data-protection/secrets-management/secrets-management.html)
-- [SCIM Provisioning](https://docs.workato.com/scim.html)
-- [Data Retention](https://docs.workato.com/security/data-protection/data-retention/)
-- [Environments Best Practices](https://docs.workato.com/features/environments/best-practices.html)
-- [mTLS for API Platform](https://docs.workato.com/en/api-mgmt/mtls.html)
-- [Community Connectors](https://docs.workato.com/developing-connectors/community/community.html)
-- [Troubleshoot Single Sign-On](https://docs.workato.com/en/user-accounts-and-teams/troubleshoot-sso.html)
+**Official Workato Documentation** (canonical `/en/<path>` form, no `.html` — every page also has an `.md` twin at `/en/<path>.md`):
+- [Workato Security Overview](https://docs.workato.com/en/security)
+- [Recipe Security](https://docs.workato.com/en/recipes/recipe-security)
+- [API Management Security](https://docs.workato.com/en/api-mgmt/api-security)
+- [Platform CLI](https://docs.workato.com/en/platform-cli)
+- [Workato Developer API](https://docs.workato.com/en/workato-api)
+- [Security Compliance](https://docs.workato.com/en/security/security-compliance)
+- [Enable Single Sign-On](https://docs.workato.com/en/user-accounts-and-teams/single-sign-on)
+- [SAML Role Sync](https://docs.workato.com/en/user-accounts-and-teams/saml-role-sync)
+- [SAML Role Sync in Microsoft Entra ID](https://docs.workato.com/en/saml-role-sync-azure)
+- [SAML Role Sync in Okta](https://docs.workato.com/en/saml-role-sync-okta)
+- [On-Premises Agent](https://docs.workato.com/en/on-prem)
+- [Recipe Lifecycle Management](https://docs.workato.com/en/recipe-development-lifecycle)
+- [API Platform](https://docs.workato.com/en/api-management)
+- [Activity Audit Log](https://docs.workato.com/en/features/activity-audit-log-view) — see also [reference](https://docs.workato.com/en/features/activity-audit-log-reference), [FAQs](https://docs.workato.com/en/features/activity-audit-log-faqs), [streaming](https://docs.workato.com/en/features/activity-audit-log-streaming), and [streaming destinations](https://docs.workato.com/en/features/activity-audit-log-streaming-destinations)
+- [Enterprise Key Management](https://docs.workato.com/en/security/data-protection/encryption-key-management/enterprise-key-management)
+- [Secrets Management](https://docs.workato.com/en/security/data-protection/secrets-management/secrets-management)
+- [IP Allowlists](https://docs.workato.com/en/security/ip-allowlists)
+- [Private Connectivity (PrivateLink)](https://docs.workato.com/en/security/data-protection/private-connectivity)
+- [SCIM Provisioning](https://docs.workato.com/en/scim)
+- [Data Retention](https://docs.workato.com/en/security/data-protection/data-retention)
+- [Environments Best Practices](https://docs.workato.com/en/features/environments/best-practices)
+- [mTLS for API Platform](https://docs.workato.com/en/api-mgmt/mtls)
+- [Community Connectors](https://docs.workato.com/en/developing-connectors/community/community)
+- [Troubleshoot Single Sign-On](https://docs.workato.com/en/user-accounts-and-teams/troubleshoot-sso)
+- [Pricing and Editions](https://docs.workato.com/en/pricing)
 
-**Workato Security & Compliance:**
-- [Workato Security Page](https://www.workato.com/security)
-- [Automation Governance and Data Security](https://www.workato.com/platform/security)
-- [PCI DSS v4.0.1 Level 1 Certification (Feb 2025)](https://www.businesswire.com/news/home/20250225502055/en/Workato-Strengthens-Commitment-to-Elevating-Enterprise-Security-with-Payment-Card-Industry-Certifications-and-Compliance)
+**Agent Studio & MCP:**
+- [Agent Studio Security](https://docs.workato.com/en/agentic/agent-studio/security)
+- [Agent Studio Guardrails](https://docs.workato.com/en/agentic/agent-studio/guardrails/guardrails)
+- [Genie Governance](https://docs.workato.com/en/agentic/agent-studio/genie-governance/genie-governance)
+- [MCP Control Plane](https://docs.workato.com/en/mcp/mcp-control-plane)
+
+**Compliance Attestations** (verify current certificates with your Workato account team):
 - SOC 1 Type II, SOC 2 Type II (including Privacy Trust Principle), SOC 3
 - ISO/IEC 27001:2022, ISO/IEC 27701:2019
 - HIPAA (BAA available)
-- NIST 800-171A Rev 2
-- IRAP (Australian ISM PROTECTED level)
-- CSA Star Level 1
-- GDPR
-- [HackerOne Bug Bounty Program](https://www.workato.com/security) (linked from security page)
+- PCI DSS v4.0.1
+- NIST 800-171A Rev 2, IRAP (Australian ISM PROTECTED level), CSA Star Level 1, GDPR
+- Responsible disclosure: vulnerability@workato.com (Workato operates a HackerOne bug bounty program)
 
 **API & Developer Documentation:**
-- [OEM API Reference](https://docs.workato.com/oem/oem-api.html)
-- [Workato API Reference](https://docs.workato.com/en/workato-api.html)
-- [Platform CLI Installation](https://docs.workato.com/en/platform-cli.html)
-- [Connector SDK](https://docs.workato.com/developing-connectors/sdk.html)
-
-**Workato Governance & Best Practices:**
-- [Best Practices for Advanced Security & Governance (Part I)](https://www.workato.com/product-hub/best-practices-for-advanced-security-and-governance-i/)
-- [Best Practices for Workspace Governance (Part II)](https://www.workato.com/product-hub/best-practices-for-workspace-governance-and-security-ii/)
-- [Automation Governance Guide](https://www.workato.com/the-connector/automation-governance-guide/)
-- [Scaling with Confidence: Advanced Governance (White Paper)](https://cxociety.com/wp-content/uploads/2025/06/Scaling-with-Confidence-Advanced-Governance-Security-with-Workato.pdf)
-
-**Third-Party Security Assessments:**
-- [Nudge Security — Workato Security Profile](https://security-profiles.nudgesecurity.com/app/workato-com)
-- [UpGuard — Workato Security Rating](https://www.upguard.com/security-report/workato)
-- [Valence Security — SaaS Integration Governance](https://www.valencesecurity.com/use-cases/saas-integration-governance)
-- [Adaptive Shield — Workato SaaS Security](https://www.adaptive-shield.com/integrations/workato)
-- [Obsidian Security — Workato Monitoring](https://www.obsidiansecurity.com/integrations/)
-
-**Analyst Reports:**
-- [Gartner Magic Quadrant 2025 — Leader for 7th consecutive year](https://www.workato.com/the-connector/gartner-magic-quadrant-2025/)
-- [Forrester Wave Q3 2025 — Leader](https://www.workato.com/the-connector/2025-forrester-wave-for-ipaas/)
+- [OEM API Reference](https://docs.workato.com/en/oem/oem-api)
+- [Workato API Reference](https://docs.workato.com/en/workato-api)
+- [Connector SDK](https://docs.workato.com/en/developing-connectors/sdk)
 
 **Security Incidents:**
 - No major public security incidents identified as of early 2026. Workato maintains a bug bounty program through HackerOne. Responsible disclosure: vulnerability@workato.com.
@@ -2144,7 +2409,7 @@ Secure multi-workspace Automation HQ (AHQ) environments by enforcing SSO, consis
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-06-29 | 0.2.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-08-08 | 0.3.0 | draft | Currency pass: new Section 9 Agent Studio (Genie) Security (two-plane access model, Guardrails incl. off-by-default PII checkpoints, governance triad) and Section 10 MCP Control Plane (gateway authentication, registry/access governance); new control 4.6 private connectivity (PrivateLink/Azure Private Link, VPW); expanded 6.1 secrets-manager breadth (project/workspace scope, CyberArk Conjur, Google Secret Manager, AWS IAM-role auth); 8.2 documented streaming destinations and exact S3 IAM least-privilege requirements; rebuilt Appendix A on current Standard/Business/Enterprise/Workato One editions with legacy-model note; fixed nine cheat-parser misses (2.4, 3.2, 3.4, 5.1, 5.3, 7.1, 7.2, 8.1, 8.2); fixed three 404 references, normalized Appendix B to canonical /en/ paths, and purged marketing/analyst/third-party-assessment reference blocks | Claude Code (Fable 5) |
 | 2026-02-10 | 0.2.0 | draft | [SECURITY] Comprehensive expansion: 14 → 34 controls across 8 sections. Added Data Protection & Encryption (EKM/BYOK, data masking, retention), API Security (platform security, rate limiting, API key management), Secrets Management (external vault integration), Environment & Deployment Security (RLCM, CI/CD). Added Code implementations (Workato API, AWS CLI, Terraform, GitHub Actions). Added compliance mappings (SOC 2, NIST 800-53, ISO 27001, PCI DSS v4.0). Added plan feature availability matrix. | Claude Code (Opus 4.6) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and connection security | Claude Code (Opus 4.5) |
 

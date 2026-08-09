@@ -28,7 +28,8 @@ variable "tfc_email" {
 # Organization-level settings with audit trail URL
 # Audit logs are available at:
 #   https://app.terraform.io/api/v2/organization/audit-trail
-# Enterprise customers can configure streaming to external SIEM.
+# The audit trail is pull-only (14-day retention; Standard/Premium editions).
+# There is no streaming or log-drain option -- schedule a pull job to your SIEM.
 resource "tfe_organization" "main" {
   name  = var.tfc_organization
   email = var.tfc_email

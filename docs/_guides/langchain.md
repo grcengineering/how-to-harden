@@ -6,9 +6,9 @@ slug: "langchain"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for the LangChain library, LangSmith observability platform, and LangGraph deployment platform — covering SSO/RBAC, SDK CVE patching, prompt injection defense (OWASP LLM Top 10), tracing redaction, audit logs, and self-hosted deployment"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -19,7 +19,7 @@ LangChain is the open-source agent engineering platform spanning three product s
 - **LangSmith** — the SaaS (and self-hostable) observability, tracing, evaluation, and prompt management platform that LangChain apps emit telemetry to.
 - **LangGraph / LangSmith Deployment** — the agent orchestration framework and managed deployment platform (renamed from "LangGraph Platform" to "LangSmith Deployment" in October 2025).
 
-Hardening these three together matters because they share a trust boundary: a misconfigured LangSmith workspace can leak prompts, traces, and PII captured from production agents; an unpatched LangSmith SDK can expose the host process to SSRF (CVE-2026-25528) or account takeover (CVE-2026-25750); and a LangChain agent with broad tools and `allow_dangerous_code=True` can be turned into RCE/SSRF via prompt injection (OWASP LLM01:2025).
+Hardening these three together matters because they share a trust boundary: a misconfigured LangSmith workspace can leak prompts, traces, and PII captured from production agents; an unpatched LangSmith SDK can expose the host process to SSRF (CVE-2026-25528); an unpatched LangSmith **Helm chart** can leak bearer tokens via LangSmith Studio URL-parameter injection (CVE-2026-25750); and a LangChain agent with broad tools and `allow_dangerous_code=True` can be turned into RCE/SSRF via prompt injection (OWASP LLM01:2025).
 
 ### Intended Audience
 - Application security engineers reviewing LLM-powered features
@@ -67,6 +67,8 @@ Out of scope: model-provider-specific hardening (covered in vendor-specific guid
 
 #### Description
 Configure SAML 2.0 SSO between LangSmith and your corporate identity provider (Okta, Entra ID, Google Workspace). LangSmith supports just-in-time provisioning when SSO is enabled, automatically attaching authenticated users to the organization and pre-selected workspaces.
+
+> **Access-model update:** LangSmith roles can now be **auto-assigned by the IdP** via **SCIM groups** or **SSO Groups Sync** — plan your IdP group structure before enforcing SSO so role assignment is governed from day one. Organization-level roles are **Organization Admin / Operator / User / Viewer**, distinct from workspace RBAC. **Self-hosted** deployments additionally support SSO via **OAuth 2.0 / OIDC**, not only SAML. Sources: [Administration overview](https://docs.langchain.com/langsmith/administration-overview), [RBAC](https://docs.langchain.com/langsmith/rbac).
 
 #### Rationale
 **Why This Matters:**
@@ -194,6 +196,8 @@ LangSmith offers two API key types: **Personal Access Tokens (PATs)** that inher
 #### Description
 LangSmith supports custom RBAC roles (Enterprise plan, GA in 2024) layered with Attribute-Based Access Control (ABAC) tags (GA March 2026). Define an `Auditor` role for SOC reviewers (read-only), a `PromptEngineer` role for application teams (no admin), and use ABAC tags to restrict which projects, datasets, and prompts each role can access.
 
+> **Model change:** LangSmith's resource hierarchy now includes an **Applications** tier — tag-based groupings within a workspace, and the resource that ABAC access policies actually target. Note also that **workspaces were formerly called "tenants"** (the old name persists in some APIs), and organization roles (Organization Admin / Operator / User / Viewer) are a separate layer from workspace RBAC. Sources: [Administration overview](https://docs.langchain.com/langsmith/administration-overview), [RBAC](https://docs.langchain.com/langsmith/rbac).
+
 #### Rationale
 **Why This Matters:**
 - Default workspace roles are coarse; production prompts and customer traces should be access-controlled at a finer grain
@@ -253,6 +257,10 @@ For regulated workloads (HIPAA, FedRAMP, EU data residency, on-prem requirements
 - The official Helm chart's defaults are NOT production-hardened — CORS is permissive and ingress is unrestricted out of the box
 
 **Attack Prevented:** Cross-tenant data exposure, residency violations, SSRF/CSRF against the LangSmith UI from malicious origins
+
+> **Self-hosted hardening surfaces have expanded.** The current self-hosted docs cover a set of security surfaces this control's Helm values do not yet enumerate: LangSmith Engine security (`engine-security`), sandbox access permissions, the LLM auth proxy and LLM gateway (trace-based access control and direct model access), fleet access & oversight, data purging for compliance, encryption at rest, FIPS-compliant images, self-hosted SSO via OAuth 2.0/OIDC, custom TLS certificates, and egress controls for billing/operational telemetry. Review each against your deployment — index at [docs.langchain.com](https://docs.langchain.com/llms.txt).
+>
+> **IaC update:** LangChain now publishes **production-ready first-party Terraform modules** for AWS, Azure, and GCP at [github.com/langchain-ai/terraform](https://github.com/langchain-ai/terraform), provisioning network, cluster, database, cache, object storage, secrets, and DNS and installing the LangSmith Helm chart. Source: [Self-host with Terraform](https://docs.langchain.com/langsmith/self-host-terraform).
 
 #### Prerequisites
 - LangSmith Enterprise plan with the Self-Hosted add-on (license key required)
@@ -363,19 +371,33 @@ The LangChain ecosystem ships as a dozen related PyPI packages (`langchain`, `la
 | NIST 800-53 | SI-2, SA-22 |
 
 #### Description
-Two LangSmith SDK CVEs disclosed in 2026 require immediate patching:
+Track and patch the CVE stream across the whole LangChain family — the `langsmith` SDK, `langchain`/`langchain-core`, and LangGraph (see [3.6](#36-patch-langgraph-and-harden-checkpoint-stores)). Key `langsmith` SDK advisories ([GitHub advisories](https://github.com/langchain-ai/langsmith-sdk/security/advisories)):
 
-- **CVE-2026-25528** — Server-Side Request Forgery via tracing-header injection. Attackers can supply crafted headers to inject arbitrary URLs into the SDK's replica configuration, exfiltrating trace data. Fixed in **Python `langsmith>=0.6.3`** and **JS `@langchain/langsmith>=0.4.6`**.
-- **CVE-2026-25750** — Account Takeover via Allowed Origins. Without an allowed-origins policy, attackers can pivot the SDK to a malicious base URL. Fixed in the same release line.
+- **CVE-2026-25528** — Server-Side Request Forgery via tracing-header injection. Attackers can supply crafted headers to inject arbitrary URLs into the SDK's replica configuration, exfiltrating trace data. Per GHSA-v34v-rq6j-cj6p, both patched ranges are **`langsmith` release lines** (the same package name on PyPI and npm): `>=0.4.10,<0.6.3` fixed in **0.6.3** and `>=0.3.41,<0.4.6` fixed in **0.4.6**. (An earlier revision of this guide named a JS package `@langchain/langsmith` — **that package does not exist**; the JS package is `langsmith`.)
+- **CVE-2026-40190** — prototype pollution via an incomplete `__proto__` guard (`langsmith` ≤0.5.17, fixed in 0.5.18).
+- **CVE-2026-45134** (high) — public prompt pull deserializes untrusted manifests without a trust-boundary warning. Fixed in `langsmith` 0.8.0/0.6.0, `langchain-classic` 1.0.7, `langchain` 0.3.30.
+- **CVE-2026-59152** — arbitrary server-side file read in `TracingMiddleware` (`langsmith` <0.8.18).
+- **CVE-2026-41182** — streaming token events bypass output redaction; see the callout in [5.1](#51-redact-sensitive-data-from-langsmith-traces).
 
-Add a CVE-version check to your CI to fail any build that ships a vulnerable SDK.
+> **Correction — CVE-2026-25750 is a Helm chart vulnerability, not an SDK flaw.** Per [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-25750), it is URL-parameter injection in **LangSmith Studio** shipped by the **LangChain Helm chart** (`langchain-ai/helm` < **0.12.71**): an authenticated user who clicks a crafted link transmits their **bearer token, user ID, and workspace ID** to an attacker-controlled server. It affects **LangSmith Cloud AND self-hosted**. Remediation is upgrading the Helm chart to **≥0.12.71** (see [2.1](#21-self-host-langsmith-for-sensitive-data)), not an SDK bump.
+
+The `langchain`/`langchain-core` family carries its own advisory stream — nine advisories as of this revision ([GitHub advisories](https://github.com/langchain-ai/langchain/security/advisories)). Highest impact:
+
+- **CVE-2025-68664** (critical) — serialization injection enabling secret extraction via `dumps`/`loads`
+- **CVE-2026-44843** (high) — unsafe deserialization through overly broad `load()` allowlists
+- **CVE-2026-34070** (high) — path traversal in legacy `load_prompt` in `langchain-core`
+- **CVE-2026-55443** — path traversal + sandbox escape in the file-search middleware and loaders (see the callout in [3.4](#34-sandbox-untrusted-code-execution))
+- Plus CVE-2026-40087, CVE-2026-41481, CVE-2026-41488, CVE-2026-26013, and CVE-2025-65106 — review each against the components you actually import
+
+Add a CVE-version check to your CI to fail any build that ships a vulnerable SDK, and subscribe to the advisory feeds (Control 6.3).
 
 #### Rationale
 **Why This Matters:**
-- Both CVEs allow exfiltration of prompts, traces, and tool-call data — which often contains secrets and PII
+- These CVEs allow exfiltration of prompts, traces, and tool-call data — which often contains secrets and PII — and several (deserialization, path traversal) reach code execution or server-side file read
 - The vulnerable SDK ships transitively with `langchain` itself; pinning the top-level package alone is not sufficient
+- The family's serialization/deserialization advisories (CVE-2025-68664, CVE-2026-44843, CVE-2026-45134) share one theme: LangChain loads attacker-influenced manifests and payloads — patch levels are the only boundary
 
-**Attack Prevented:** Trace-data exfiltration (CVE-2026-25528), account takeover (CVE-2026-25750)
+**Attack Prevented:** Trace-data exfiltration (CVE-2026-25528), bearer-token exfiltration via Studio links (CVE-2026-25750, Helm), secret extraction and RCE via deserialization (CVE-2025-68664, CVE-2026-44843), server-side file read (CVE-2026-59152, CVE-2026-34070)
 
 #### Code Implementation
 
@@ -427,10 +449,16 @@ LangChain components that execute model-generated Python or shell — `PythonREP
 #### Description
 For agents that must run model-generated code, use `langchain-sandbox` (Pyodide+Deno) for low-trust scenarios or provider sandboxes (Modal, Daytona, Runloop) for production. Configure the sandbox to deny network egress, disable filesystem access, set hard timeouts, and enforce CPU/memory limits.
 
+> **Isolation caveat:** **CVE-2026-55443** — path traversal plus sandbox escape in the LangChain file-search middleware and loaders — undercuts any isolation claim that depends on unpatched framework components. Patch per [3.2](#32-patch-langsmith-sdk-cves) before relying on sandbox boundaries. Source: [langchain advisories](https://github.com/langchain-ai/langchain/security/advisories).
+
 #### Rationale
-- Pyodide-in-WebAssembly and provider-managed VMs are true isolation boundaries
-- Network-egress denial prevents data exfiltration from the sandbox
-- Timeouts prevent prompt-injected denial-of-service against your billing
+**Why This Matters:**
+- Pyodide-in-WebAssembly and provider-managed VMs are true isolation boundaries, unlike Python-level restrictions that are bypassable from inside the interpreter
+- Network-egress denial prevents data exfiltration from the sandbox even when the code itself is attacker-authored
+- Timeouts and CPU/memory limits prevent prompt-injected denial-of-service against your billing and your cluster
+- Sandbox boundaries only hold if the framework code that feeds them is patched — a traversal or escape bug in a loader bypasses the sandbox entirely
+
+**Attack Prevented:** Host compromise from model-generated code, data exfiltration from the execution environment, resource-exhaustion denial-of-service.
 
 See the code in [3.3](#33-disable-allow_dangerous_code-unless-explicitly-required) — the same pack covers both controls.
 
@@ -458,6 +486,55 @@ Wrap every LLM output that flows into business logic in a `PydanticOutputParser`
 #### Code Implementation
 
 {% include pack-code.html vendor="langchain" section="3.5" %}
+
+---
+
+### 3.6 Patch LangGraph and Harden Checkpoint Stores
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 7.4 |
+| NIST 800-53 | SI-2, SC-28 |
+
+#### Description
+LangGraph's checkpoint stores **are agent memory** — they persist and later deserialize agent state, so deserialization flaws there execute inside your agent runtime. Eight LangGraph advisories exist as of this revision ([GitHub advisories](https://github.com/langchain-ai/langgraph/security/advisories)), and unsafe deserialization of checkpoint data is the family's highest-severity theme:
+
+- **CVE-2025-64439** (high) — RCE in `JsonPlusSerializer` "json" mode
+- **CVE-2026-27794** — `BaseCache` deserialization RCE (ZDI-CAN-28385; `langgraph-checkpoint` <4.0.0)
+- **CVE-2026-28277** — unsafe msgpack deserialization (`langgraph` ≤1.0.9)
+- **CVE-2025-67644** and **CVE-2025-64104** — SQL injection in the SQLite checkpointer/store
+- **CVE-2026-71433** — namespace prefix matching crossing segment boundaries in the Postgres and SQLite stores
+- Plus CVE-2026-48775 and CVE-2026-48776
+
+Pin and patch the `langgraph*` package family with the same rigor as Control 3.1, and treat checkpoint/store contents as untrusted input.
+
+#### Rationale
+**Why This Matters:**
+- Checkpoint stores persist serialized agent state and deserialize it on resume — an attacker who can write to the store (or influence what gets checkpointed) turns deserialization bugs into code execution in the agent process
+- SQL injection in the SQLite checkpointer/store means attacker-influenced state values can escape the persistence layer entirely
+- Namespace-boundary bugs (CVE-2026-71433) can leak one agent's memory into another's queries, breaking tenant and agent isolation assumptions
+- LangGraph versions ship transitively with LangSmith Deployment usage; a top-level `langchain` pin does not cover them
+
+**Attack Prevented:** RCE via checkpoint deserialization, SQL injection through the persistence layer, cross-namespace agent-memory disclosure.
+
+#### ClickOps Implementation
+
+**Step 1: Inventory**
+1. List every deployed version of `langgraph`, `langgraph-checkpoint`, and the Postgres/SQLite checkpointer packages (`pip freeze | grep langgraph`)
+
+**Step 2: Patch and Pin**
+1. Upgrade past every fixed version above (`langgraph-checkpoint` ≥4.0.0, `langgraph` >1.0.9, current checkpointer releases), then hash-pin per Control 7.1
+2. Add the `langgraph*` family to the CI CVE gate from Control 3.2
+
+**Step 3: Constrain the store**
+1. Restrict database credentials for checkpoint stores to the checkpoint schema only (least privilege per Control 4.1)
+2. Never point multiple trust domains at one checkpoint namespace
+
+#### Validation & Testing
+1. CI fails when a `langgraph*` package below a fixed version is introduced
+2. The checkpoint database role cannot read tables outside the checkpoint schema
 
 ---
 
@@ -591,6 +668,8 @@ This is a design pattern, not a single code snippet — review your prompts in c
 #### Description
 By default, LangSmith captures full input and output of every LLM and tool call. In production, this trace data flows to LangSmith Cloud (or your self-hosted instance) and includes anything the user or model said — emails, SSNs, credit card numbers, API keys leaked by injection. Configure the `langsmith` SDK's `process_inputs` and `process_outputs` hooks to redact PII patterns before traces leave the process.
 
+> **Redaction-bypass CVE:** **CVE-2026-41182** — streaming token events bypass output redaction in the `langsmith` SDK, directly defeating this control on streamed responses. Fixed in **0.5.19** (for ≤0.5.18) and **0.7.31** (for ≤0.7.30). Verify your SDK version before trusting redaction hooks on streaming traffic. Source: [langsmith-sdk advisories](https://github.com/langchain-ai/langsmith-sdk/security/advisories).
+
 #### Rationale
 **Why This Matters:**
 - Trace data is high-value to attackers (full prompts + outputs + tool calls)
@@ -662,18 +741,24 @@ Apply the [RBAC + ABAC controls in 1.3](#13-enforce-rbac-and-abac-for-project--d
 | NIST 800-53 | AU-2, AU-3, AU-12 |
 
 #### Description
-LangSmith audit logs are GA in self-hosted v0.12.33+ and Enterprise Cloud. Approximately 70+ administrative operations are logged — API key creation/deletion, role changes, SSO config edits, workspace operations, member changes. Output is **OCSF 1.7.0** (Open Cybersecurity Schema Framework), directly ingestable by Splunk, Datadog, and most SIEMs.
+LangSmith audit logs are GA on **Helm chart 0.12.33+** for self-hosted (note: that is the **Helm chart** version, not a LangSmith app version) and on Enterprise Cloud. Administrative operations are logged — API key creation/deletion, role changes, SSO config edits, workspace operations, member changes; see the [tracked-operations reference](https://docs.langchain.com/langsmith/audit-logs) for the authoritative list. Output is **OCSF v1.7.0 API Activity (Class UID 6003)**, directly ingestable by Splunk, Datadog, and most SIEMs. Retention is **400 days**.
+
+> **Mandatory enablement step (self-hosted):** installing Helm chart ≥0.12.33 is necessary but **not sufficient** — audit logging stays off until you either run the documented `UPDATE organizations SET config = ...can_use_audit_logs...` statement against the LangSmith Postgres database for your organization ID, or set `DEFAULT_ORG_FEATURE_CAN_USE_AUDIT_LOGS: "true"` in the chart's `commonEnv` (see the Code Implementation pack below). Source: [Audit logs](https://docs.langchain.com/langsmith/audit-logs).
+
+Consuming the logs via API requires an **Enterprise plan** and the **Organization Admin or Organization Operator** role (`organization:manage` permission): `GET /api/v1/audit-logs` on `api.smith.langchain.com` with `X-API-Key` and `X-Organization-Id` headers, filterable by `start_time`, `end_time`, and `operations`.
 
 #### Rationale
 **Why This Matters:**
 - Required for SOC 2 CC8.1, ISO 27001 A.5.28, and most regulator audits
 - Detects and attributes credential-misuse, role-change abuse, and SSO tampering
 - OCSF format avoids custom parsers and maps cleanly to MITRE ATT&CK
+- The 400-day platform retention covers most audit periods, but only if the feature is actually enabled — the self-hosted default is off
 
 **Attack Prevented:** Undetected credential abuse, unattributed admin actions, missed SSO tampering
 
 #### Prerequisites
-- Self-hosted LangSmith v0.12.33+ OR LangSmith Enterprise Cloud
+- Self-hosted LangSmith on Helm chart 0.12.33+ (with the enablement step above) OR LangSmith Enterprise Cloud
+- Enterprise plan + Organization Admin/Operator role for API access
 - Log shipper (Fluent Bit, Vector, Datadog Agent) deployed alongside LangSmith
 - SIEM destination with an `langsmith:audit:ocsf` sourcetype configured
 
@@ -701,7 +786,7 @@ LangSmith audit logs are GA in self-hosted v0.12.33+ and Enterprise Cloud. Appro
 | NIST 800-53 | AU-6, SI-4 |
 
 #### Description
-Pull audit logs from the LangSmith REST API on a schedule and forward to your SIEM. Tag high-risk events (`create_api_key`, `update_role_assignment`, `update_sso_config`, `delete_workspace`) for elevated alerting.
+Pull audit logs from the LangSmith REST API on a schedule and forward to your SIEM. The endpoint is `GET /api/v1/audit-logs` on `api.smith.langchain.com`, authenticated with `X-API-Key` + `X-Organization-Id` headers and filterable by `start_time`/`end_time`/`operations`; events are OCSF v1.7.0 API Activity (Class UID 6003) and retained for 400 days platform-side ([Audit logs](https://docs.langchain.com/langsmith/audit-logs)). Tag high-risk events (`create_api_key`, `update_role_assignment`, `update_sso_config`, `delete_workspace`) for elevated alerting.
 
 #### Rationale
 **Why This Matters:**
@@ -799,7 +884,9 @@ Use these for reproducible local dev, CI bootstrap, and deployment — never wra
 
 #### Note on Terraform
 
-A `bogware/langsmith` Terraform provider exists on the Terraform Registry, but it is **community-maintained and not officially endorsed by langchain-ai**. For Infrastructure-as-Code provisioning of self-hosted LangSmith, use the official Helm charts (see [2.1](#21-self-host-langsmith-for-sensitive-data)). Treat the third-party Terraform provider with the same scrutiny as any other community dependency.
+> **Correction (2026-08):** LangChain now publishes **production-ready first-party Terraform modules** for AWS, Azure, and GCP at [github.com/langchain-ai/terraform](https://github.com/langchain-ai/terraform) — they provision network, cluster, database, cache, object storage, secrets, and DNS, and install the LangSmith Helm chart ([Self-host with Terraform](https://docs.langchain.com/langsmith/self-host-terraform)). Prefer these first-party modules for IaC provisioning of self-hosted LangSmith.
+
+A `bogware/langsmith` Terraform provider also exists on the Terraform Registry, but it is **community-maintained and not officially endorsed by langchain-ai**. Treat it with the same scrutiny as any other community dependency.
 
 ---
 
@@ -817,6 +904,7 @@ A `bogware/langsmith` Terraform provider exists on the Terraform Registry, but i
 | 3.3 No Dangerous Code | L1 | CC7.2 | SI-10, SC-39 | A.8.28 | 6.2.4 | LLM02 | MEASURE-2.7 |
 | 3.4 Sandbox | L2 | CC7.2 | SC-39 | A.8.28 | — | LLM02 | MEASURE-2.7 |
 | 3.5 Pydantic Validation | L1 | CC7.2 | SI-10 | A.8.28 | 6.2.4 | LLM05 | MEASURE-2.7 |
+| 3.6 LangGraph Checkpoints | L1 | CC7.1 | SI-2, SC-28 | A.8.8 | 6.3.3 | LLM03 | MAP-3.4 |
 | 4.1 Tool Least Priv | L1 | CC6.3 | AC-6(1), CM-7 | A.5.15 | 7.1 | LLM06 | MANAGE-2.3 |
 | 4.2 Prompt Injection | L1 | CC7.2 | SI-10 | A.8.28 | — | **LLM01** | MEASURE-2.7 |
 | 4.3 Excessive Agency | L2 | CC6.3 | AC-6 | A.5.15 | — | LLM06 | GOVERN-3.2 |
@@ -836,7 +924,7 @@ A `bogware/langsmith` Terraform provider exists on the Terraform Registry, but i
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 0.1.1 | 2026-06-29 | Add cheat-sheet Description and Rationale for all controls |
+| 0.2.0 | 2026-08-08 | Currency pass: corrected CVE-2026-25750 attribution (LangSmith Helm chart <0.12.71 Studio URL-param injection, not an SDK flaw) and the nonexistent `@langchain/langsmith` npm package (real package: `langsmith`); added missing langsmith SDK, langchain-core, and LangGraph CVE batches; new control 3.6 (LangGraph checkpoint-store hardening); CVE-2026-41182 redaction-bypass callout in 5.1; 6.1 self-hosted audit-log enablement step, 400-day retention, endpoint/role specifics, OCSF Class 6003; corrected 7.2's Terraform note (first-party modules at langchain-ai/terraform); 1.1/1.3 access-model updates (Applications tier, org roles, SCIM/SSO Groups Sync, OIDC self-hosted SSO); fixed 3.4 cheat-parser miss; flagged unresolvable Swagger reference |
 | 0.1.0 | 2026-04-27 | Initial draft. Verified all Code Packs against live vendor docs (langchain-cli, langgraph-cli, langsmith-cli are first-party from langchain-ai org; LangSmith REST API at api.smith.langchain.com is documented; Helm charts are official; bogware/langsmith Terraform provider is third-party and explicitly excluded). Includes CVE-2026-25528 and CVE-2026-25750 patching guidance. |
 
 ---
@@ -844,14 +932,20 @@ A `bogware/langsmith` Terraform provider exists on the Terraform Registry, but i
 ## References
 
 - [LangSmith documentation](https://docs.langchain.com/langsmith/home)
-- [LangSmith REST API (Swagger)](https://api.smith.langchain.com/docs)
+- LangSmith REST API (Swagger) — the previously cited `api.smith.langchain.com/docs` URL **failed to resolve** as of 2026-08; use the [LangSmith documentation](https://docs.langchain.com/langsmith/home) API reference instead
 - [LangChain security policy](https://docs.langchain.com/oss/python/security-policy)
 - [LangSmith RBAC](https://docs.langchain.com/langsmith/rbac)
+- [LangSmith administration overview](https://docs.langchain.com/langsmith/administration-overview)
+- [LangSmith audit logs](https://docs.langchain.com/langsmith/audit-logs)
 - [Self-host LangSmith on Kubernetes](https://docs.langchain.com/langsmith/kubernetes)
+- [Self-host LangSmith with Terraform (first-party modules)](https://docs.langchain.com/langsmith/self-host-terraform)
 - [Official LangChain Helm charts](https://github.com/langchain-ai/helm)
+- [First-party Terraform modules](https://github.com/langchain-ai/terraform)
 - [langchain-cli on PyPI](https://pypi.org/project/langchain-cli/)
 - [langsmith-cli on GitHub](https://github.com/langchain-ai/langsmith-cli)
-- [CVE-2026-25528 advisory](https://github.com/langchain-ai/langsmith-sdk/security/advisories/GHSA-v34v-rq6j-cj6p)
+- [langsmith-sdk security advisories](https://github.com/langchain-ai/langsmith-sdk/security/advisories) (incl. [GHSA-v34v-rq6j-cj6p / CVE-2026-25528](https://github.com/langchain-ai/langsmith-sdk/security/advisories/GHSA-v34v-rq6j-cj6p))
+- [langchain security advisories](https://github.com/langchain-ai/langchain/security/advisories)
+- [langgraph security advisories](https://github.com/langchain-ai/langgraph/security/advisories)
 - [Enabling Audit Logs in Self-Hosted LangSmith](https://kb.langchain.com/articles/5478528798-enabling-audit-logs-in-self-hosted-langsmith)
 - [OWASP Top 10 for LLM Applications 2025](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 - [LangChain Sandbox](https://github.com/langchain-ai/langchain-sandbox)

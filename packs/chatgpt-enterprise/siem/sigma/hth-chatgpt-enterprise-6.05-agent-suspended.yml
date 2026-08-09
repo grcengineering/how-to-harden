@@ -1,6 +1,6 @@
 title: ChatGPT Workspace Agent Suspended
 id: chatgpt-enterprise-6005-agent-suspended
-status: test
+status: experimental
 description: |
     Detects suspension of a workspace agent by an admin. Suspensions
     are a strong signal of either an incident response action or a
@@ -9,14 +9,21 @@ description: |
     Console and the Compliance API. Use this rule to fan out a
     notification to the GRC/Security oncall and to open a tracking
     ticket capturing the reason for suspension.
+    This rule is written in a SCHEMA-AGNOSTIC form: no public Tier 1
+    document enumerates Compliance Logs Platform event types beyond
+    AUTH_LOG, so the event_type value below is a placeholder that MUST
+    be mapped to your tenant's schema before deployment (see the
+    inline note under logsource).
     This corresponds to HTH ChatGPT Enterprise control 6.5
     (section 6.5, L1).
 references:
-    - https://howtoharden.com/guides/chatgpt-enterprise/#65-incident-response-suspend-and-investigate
+    - https://howtoharden.com/guides/chatgpt-enterprise/#65-operationalize-agent-suspension-for-incident-response
+    - https://developers.openai.com/cookbook/examples/chatgpt/compliance_api/logs_platform
+    - https://learn.chatgpt.com/docs/enterprise/compliance-api.md
     - https://help.openai.com/en/articles/12289294-global-admin-console
-    - https://help.openai.com/en/articles/9261474-compliance-apis-for-enterprise-customers
+    - https://help.openai.com/en/articles/9261474-compliance-api-for-chatgpt-enterprise-edu-and-chatgpt-for-teachers
 author: How to Harden
-date: 2026/05/13
+date: 2026/08/08
 tags:
     - attack.defense_evasion
     - attack.t1562
@@ -24,25 +31,22 @@ logsource:
     product: openai
     service: chatgpt-compliance
 # HTH Guide Excerpt: begin detection
-# Per OpenAI's Workspace Agents Security Overview (April 29, 2026), agent
-# lifecycle events are part of the exportable Compliance Logs Platform
-# stream. Suspension/unpublish/delete are emitted as lifecycle transitions.
+# SCHEMA WARNING: per-event Compliance Logs Platform schemas are
+# login-gated at the tenant Admin API reference
+# (chatgpt.com/admin/api-reference) and MUST be confirmed there before
+# deployment. The only publicly documented event_type value is AUTH_LOG
+# (SCREAMING_SNAKE_CASE). Replace the placeholder selection below with
+# the agent lifecycle (suspend/unpublish/delete) event type your
+# tenant actually emits.
 detection:
     selection:
-        event_type: 'agent.lifecycle'
-        action:
-            - 'suspended'
-            - 'unpublished'
-            - 'deleted'
+        # PLACEHOLDER — map to your tenant's agent-lifecycle event
+        # type from the authenticated Admin API reference:
+        event_type: 'CONFIRM_IN_TENANT_ADMIN_API_REFERENCE'
     condition: selection
 fields:
-    - event_id
+    - id
     - timestamp
-    - actor_email
-    - agent_id
-    - agent_name
-    - action
-    - reason
 # HTH Guide Excerpt: end detection
 falsepositives:
     - Planned lifecycle cleanup (owner departed, agent expired)

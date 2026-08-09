@@ -1,10 +1,26 @@
-# HTH LangChain Control 6.1: Enable Audit Logs (Self-Hosted v0.12.33+)
+# HTH LangChain Control 6.1: Enable Audit Logs (Self-Hosted, Helm chart 0.12.33+)
 # Profile: L1 | NIST: AU-2, AU-3, AU-12
 # https://howtoharden.com/guides/langchain/#61-enable-audit-logs
 #
-# Audit logs are GA in self-hosted LangSmith v0.12.33 and Enterprise cloud.
-# Output is OCSF 1.7.0 — pipe directly to Splunk / Datadog / SIEM of choice.
-# Reference: https://kb.langchain.com/articles/5478528798-enabling-audit-logs
+# Audit logs are GA on Helm CHART 0.12.33+ (chart version, not an app
+# version) and on Enterprise cloud. Output is OCSF v1.7.0 API Activity
+# (Class UID 6003) — pipe directly to Splunk / Datadog / SIEM of choice.
+# References:
+#   https://docs.langchain.com/langsmith/audit-logs
+#   https://kb.langchain.com/articles/5478528798-enabling-audit-logs
+
+# HTH Guide Excerpt: begin config-audit-logs-enable
+# MANDATORY enablement (self-hosted): the chart version alone does NOT
+# turn audit logs on. Set the org feature flag in commonEnv (all orgs):
+commonEnv:
+  - name: DEFAULT_ORG_FEATURE_CAN_USE_AUDIT_LOGS
+    value: "true"
+# Alternative (single org): run the documented SQL against LangSmith
+# Postgres instead of the env flag (from docs.langchain.com/langsmith/audit-logs):
+#   UPDATE organizations
+#   SET config = config || '{"can_use_audit_logs": true}'
+#   WHERE id = '<organization_id>' AND NOT is_personal;
+# HTH Guide Excerpt: end config-audit-logs-enable
 
 # HTH Guide Excerpt: begin config-audit-logs-helm
 # Append to your helm values to enable audit logging
