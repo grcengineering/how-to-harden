@@ -6,9 +6,9 @@ slug: "coupa"
 tier: "2"
 category: "HR/Finance"
 description: "Procurement and spend management platform hardening for Coupa including SAML SSO, role-based access control, and data security"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -27,7 +27,9 @@ Coupa is a leading business spend management platform serving **thousands of ent
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Coupa security including SAML SSO, role-based access control, approval workflows, and data protection.
+This guide covers Coupa security including SAML SSO, role-based access control, approval workflows, integration/API security, and data protection.
+
+> **Documentation access note (verified 2026-08-08):** Coupa's buyer-tenant product documentation on `compass.coupa.com` sits behind a customer login (Okta SSO). Only the supplier-facing subtree and the Core API book are publicly readable. Console paths in sections 1–3 below reflect the last verification against Coupa product documentation and should be re-confirmed inside your own tenant, since Coupa can rename Setup menu groupings between releases without a public changelog.
 
 ---
 
@@ -37,7 +39,8 @@ This guide covers Coupa security including SAML SSO, role-based access control, 
 2. [Access Controls](#2-access-controls)
 3. [Approval Workflows](#3-approval-workflows)
 4. [Monitoring & Compliance](#4-monitoring--compliance)
-5. [Compliance Quick Reference](#5-compliance-quick-reference)
+5. [Integration & API Security](#5-integration--api-security)
+6. [Compliance Quick Reference](#6-compliance-quick-reference)
 
 ---
 
@@ -127,6 +130,16 @@ Require MFA for all Coupa users.
 1. Enable native MFA for direct login
 2. Configure supported methods
 3. Require for admin accounts
+
+**Step 3: Confirm Supplier Portal MFA (supplier-side)**
+
+Coupa enforces multi-factor authentication on all Coupa Supplier Portal logins, and additionally re-challenges for MFA whenever a supplier changes payment details (legal entity, remit-to address, or bank information). Supplier passwords are constrained to 8–40 characters.
+
+1. Suppliers manage this under **Account Settings** → **Security & Multi Factor Authentication**
+2. When onboarding a supplier, confirm the supplier contact has MFA enrolled before any remit-to or bank detail is accepted
+3. Treat an MFA-less supplier contact as an unverified payment channel — see [3.2](#32-configure-supplier-management-controls)
+
+Source: [Coupa MFA FAQ & Security Best Practices](https://compass.coupa.com/en-us/products/product-documentation/supplier-resources/for-suppliers/core-supplier-onboarding/announcements-and-general-info/mfa-faq-and-security-best-practices) (supplier-scoped)
 
 ---
 
@@ -293,10 +306,12 @@ Configure approval workflows for spend controls.
 
 #### Rationale
 **Why This Matters:**
-- Approval chains enforce segregation of duties
-- Prevents unauthorized spend
-- Required for SOX compliance
-- Supports financial controls
+- Threshold-based approval chains enforce segregation of duties, so the person who raises a requisition is never the person who releases the money for it
+- Without enforced chains, a single compromised requestor account can create and self-approve purchase orders, converting account takeover directly into cash loss
+- Multi-level approval above defined spend thresholds forces an attacker to compromise several independent accounts to move material amounts
+- Documented approval matrices and an enabled audit trail give SOX and SOC 2 auditors the recurring evidence that financial controls actually operated
+
+**Attack Prevented:** Self-approval fraud, unauthorized spend, segregation-of-duties bypass, single-account financial compromise
 
 #### ClickOps Implementation
 
@@ -349,6 +364,16 @@ Control supplier creation and management.
 1. Limit who can modify supplier data
 2. Audit supplier changes
 3. Require approval for bank info changes
+
+**Step 3: Rely on Supplier Portal MFA for Payment-Detail Changes**
+
+Coupa requires multi-factor authentication for every Coupa Supplier Portal login and re-challenges specifically when a supplier changes payment details — legal entity, remit-to address, or bank information. This is the platform-side control that backs your internal approval workflow for bank-detail changes.
+
+1. Verify the supplier contact has MFA enabled under **Account Settings** → **Security & Multi Factor Authentication**
+2. Do not accept remit-to or bank changes submitted outside the portal (email, PDF, phone) — those bypass the MFA challenge entirely and are the standard business-email-compromise path
+3. Keep the internal approval gate in Step 2 in place regardless: supplier-side MFA proves who submitted the change, not that the change is legitimate
+
+Source: [Coupa MFA FAQ & Security Best Practices](https://compass.coupa.com/en-us/products/product-documentation/supplier-resources/for-suppliers/core-supplier-onboarding/announcements-and-general-info/mfa-faq-and-security-best-practices) (supplier-scoped)
 
 ---
 
@@ -425,7 +450,70 @@ Configure compliance and audit reports.
 
 ---
 
-## 5. Compliance Quick Reference
+## 5. Integration & API Security
+
+### 5.1 Govern OpenID Connect and OAuth API Clients
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4, 6.8 |
+| NIST 800-53 | AC-6, IA-5, IA-9 |
+
+#### Description
+Inventory every OpenID Connect client and OAuth integration registered against your Coupa instance, scope each one to the minimum object permissions its integration actually needs, and rotate client credentials on a fixed schedule and on staff departure.
+
+#### Rationale
+**Why This Matters:**
+- Coupa's integration surface authenticates machine clients through OAuth 2.0 / OpenID Connect, so a registered client is a standing, non-interactive credential that never sees your IdP's MFA or conditional access
+- Provisioning and ERP connectors (OAuth-based Okta provisioning, NetSuite OAuth) hold broad object permissions across users, suppliers, and invoices — an over-scoped client is a bulk read/write channel into spend and supplier bank data
+- Client secrets do not expire on their own; without a rotation schedule, a secret shared with a departed integrator or pasted into a ticket stays valid indefinitely
+- An unmaintained client inventory is how integrations outlive the projects that created them, leaving forgotten credentials with production access
+
+**Attack Prevented:** OAuth client compromise, over-scoped machine access, credential-leak persistence, orphaned-integration abuse
+
+#### Prerequisites
+- Coupa admin access to the integration/API configuration area
+- An owner of record for each integration
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Registered Clients**
+1. In Coupa Setup, open the integration area that lists **OpenID Connect Clients** (Coupa documents both an OpenID Connect Clients list and a "Set Up an OpenID Connect Client" flow)
+2. Record, for every client: name, owning team, business purpose, granted scopes/permissions, and creation date
+3. Flag any client with no identifiable owner for disablement
+
+**Step 2: Minimize Scope**
+1. For each client, compare granted permissions against the objects the integration actually reads or writes
+2. Remove write permissions from read-only integrations (reporting, analytics, data warehouse extracts)
+3. Never grant a connector supplier or bank-detail write permission unless supplier onboarding is genuinely its job
+
+**Step 3: Rotate and Retire**
+1. Set a rotation interval for client secrets (90 days is a common baseline; rotate immediately on integrator departure or suspected exposure)
+2. Delete clients for decommissioned integrations rather than leaving them disabled
+3. Re-run the inventory quarterly alongside the access reviews in [4.2](#42-configure-compliance-reports)
+
+> **Console paths are stated generically here on purpose.** Coupa's buyer-tenant product documentation is customer-gated (Okta login) as of 2026-08, so the exact Setup menu labels could not be transcribed from a publicly verifiable page. The client surfaces named above are documented in Coupa's Core API book; confirm the precise navigation inside your tenant.
+
+#### Validation & Testing
+1. Export the client inventory and confirm every entry has a named owner and a documented purpose
+2. Attempt a call the client should NOT be able to make (e.g., a supplier write from a reporting client) and confirm it is rejected
+3. Confirm the date of last secret rotation for each client is inside your rotation interval
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| SOC 2 | CC6.1, CC6.3 |
+| NIST 800-53 Rev 5 | AC-6, IA-5, IA-9 |
+| CIS Controls v8 | 5.4, 6.8 |
+
+Source: [The Coupa Core API](https://compass.coupa.com/en-us/products/product-documentation/integration-technical-documentation/the-coupa-core-api) (legacy documentation, per Coupa's own banner)
+
+---
+
+## 6. Compliance Quick Reference
 
 ### SOC 2 Trust Services Criteria Mapping
 
@@ -434,6 +522,7 @@ Configure compliance and audit reports.
 | CC6.1 | SSO/MFA | [1.1](#11-configure-saml-single-sign-on) |
 | CC6.2 | RBAC | [2.1](#21-configure-role-based-access-control) |
 | CC6.3 | Approval workflows | [3.1](#31-configure-approval-chains) |
+| CC6.3 | OIDC/OAuth client governance | [5.1](#51-govern-openid-connect-and-oauth-api-clients) |
 | CC7.2 | Audit logging | [4.1](#41-configure-audit-logging) |
 
 ### NIST 800-53 Rev 5 Mapping
@@ -444,6 +533,7 @@ Configure compliance and audit reports.
 | IA-2(1) | MFA | [1.2](#12-enforce-multi-factor-authentication) |
 | AC-5 | Separation of duties | [3.1](#31-configure-approval-chains) |
 | AC-6 | RBAC | [2.1](#21-configure-role-based-access-control) |
+| IA-5, IA-9 | OIDC/OAuth client governance | [5.1](#51-govern-openid-connect-and-oauth-api-clients) |
 | AU-2 | Audit logging | [4.1](#41-configure-audit-logging) |
 
 ---
@@ -451,16 +541,14 @@ Configure compliance and audit reports.
 ## Appendix A: References
 
 **Official Coupa Documentation:**
-- [Coupa Trust Center](https://compass.coupa.com/en-us/trust)
-- [Coupa Compliance & Security](https://www.coupa.com/compliance-security/)
-- [Coupa Product Documentation](https://compass.coupa.com/en-us/products/product-documentation)
-- [MFA FAQ & Security Best Practices](https://compass.coupa.com/en-us/products/product-documentation/supplier-resources/for-suppliers/core-supplier-onboarding/announcements-and-general-info/mfa-faq-and-security-best-practices)
+- [Coupa Product Documentation](https://compass.coupa.com/en-us/products/product-documentation) — buyer-tenant subtree requires a customer login (Okta) as of 2026-08
+- [MFA FAQ & Security Best Practices](https://compass.coupa.com/en-us/products/product-documentation/supplier-resources/for-suppliers/core-supplier-onboarding/announcements-and-general-info/mfa-faq-and-security-best-practices) — supplier-scoped, publicly readable
 
 **API Documentation:**
-- [Coupa Core API](https://compass.coupa.com/en-us/products/product-documentation/integration-technical-documentation/the-coupa-core-api)
+- [Coupa Core API](https://compass.coupa.com/en-us/products/product-documentation/integration-technical-documentation/the-coupa-core-api) (legacy documentation, per Coupa's own banner — the page carries Coupa's deprecation notice; no public successor URL was verifiable at the time of this revision)
 
 **Compliance Frameworks:**
-- SOC 1 Type II, SOC 2 Type II (Security, Availability, Confidentiality), ISO 27001:2022, ISO 27701:2019, PCI DSS, HIPAA — via [Coupa Compliance & Security](https://www.coupa.com/compliance-security/)
+- Coupa's SOC, ISO, PCI DSS, and HIPAA attestations are distributed to customers under NDA rather than published as configuration documentation. Request the current report set through your Coupa account team or the customer portal; no vendor compliance-marketing page is cited here, per this repo's [source standard](https://github.com/grcengineering/how-to-harden/blob/main/SOURCES.md).
 
 **Security Incidents:**
 - **2017 — W-2 phishing attack exposed employee data.** A social engineering attack impersonating Coupa's CEO tricked HR into releasing employee W-2 forms containing names, SSNs, wages, and tax details. Only 2016 employee data was affected; no customer data was compromised. Coupa reported the incident to the FBI and IRS. ([BankInfoSecurity](https://www.bankinfosecurity.com/silicon-valley-firm-coupa-hit-by-w-2-fraudsters-a-9788))
@@ -471,6 +559,7 @@ Configure compliance and audit reports.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass: added section 5 (Integration & API Security) with control 5.1 on OIDC/OAuth client governance; added Supplier Portal MFA guidance to 1.2 and 3.2 (MFA enforced on all supplier logins and re-challenged on legal-entity/remit-to/bank changes); completed 3.1 rationale with **Attack Prevented:**; annotated the Core API citation as legacy per Coupa's own deprecation banner; noted that buyer-tenant product documentation is customer-gated (Okta) so sections 1–3 console paths reflect last verification; removed Trust Center and compliance-marketing citations and re-sourced compliance honestly. Tier 2 status: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline surfaced for Coupa — not an exhaustive sweep. Tier 3/4 product-specific research not surveyed this pass. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and approval workflows | Claude Code (Opus 4.5) |
 

@@ -5,16 +5,18 @@ vendor: "Oracle HCM Cloud"
 slug: "oracle-hcm"
 tier: "3"
 category: "HR/Finance"
-description: "Enterprise HR security for security profiles, HDL controls, and IDCS integration"
-version: "0.1.1"
+description: "Enterprise HR security for security profiles, HDL controls, and OCI IAM identity domain integration"
+version: "0.1.2"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 
 ## Overview
 
-Oracle HCM Cloud is a global enterprise HR platform with REST APIs, SOAP web services, and HCM Data Loader (HDL) for bulk operations. Integration with Oracle Identity Cloud Service (IDCS) and third-party IDPs creates complex authentication flows. Global payroll data, compensation records, and performance management across multinationals make it a high-value target.
+Oracle HCM Cloud is a global enterprise HR platform with REST APIs, SOAP web services, and HCM Data Loader (HDL) for bulk operations. Integration with OCI IAM identity domains (formerly Oracle Identity Cloud Service / IDCS) and third-party IdPs creates complex authentication flows. Global payroll data, compensation records, and performance management across multinationals make it a high-value target.
+
+> **Naming and currency note (verified 2026-08-08):** Oracle's current IAM documentation presents **identity domains** in OCI IAM as the identity service, with transition language from the standalone IDCS product. The legacy IDCS documentation set still renders without an end-of-life banner, so this guide names both and asserts no retirement date. Separately, Oracle's Fusion Applications documentation host (`docs.oracle.com/en/cloud/saas/human-resources/**`) returns HTTP 200 with an identical generic landing shell for both real and nonexistent paths, which makes automated link verification unreliable there — release-pinned links below are annotated accordingly and should be confirmed in a browser.
 
 ### Intended Audience
 - Security engineers managing HCM systems
@@ -51,23 +53,27 @@ This guide covers Oracle HCM Cloud security configurations including authenticat
 **NIST 800-53:** IA-2(1)
 
 #### Description
-Require SSO via Oracle IDCS or federated IdP with MFA enforcement.
+Require SSO through an OCI IAM identity domain (formerly Oracle Identity Cloud Service / IDCS) or a federated third-party IdP, and enforce MFA on every sign-in path into HCM.
 
 #### Rationale
 **Why This Matters:**
-- HCM contains sensitive PII and payroll data
-- Global workforce data exposure impacts multiple jurisdictions
-- Compensation data is high-value for social engineering
+- HCM holds the organization's most sensitive personnel data — national identifiers, salaries, bank details, and performance records — so a password-only login is a direct path to mass PII loss
+- Federating authentication to a single identity domain means every HCM login inherits enterprise password policy, conditional access, and centralized deprovisioning, instead of HCM keeping its own parallel credential store
+- Global workforce data spans multiple jurisdictions, so a single account takeover creates simultaneous breach-notification obligations under several privacy regimes at once
+- Compensation and org-structure data is exactly what a social engineer needs to build convincing payroll-diversion and executive-impersonation pretexts, which makes MFA on HCM disproportionately valuable
+- Local HCM accounts that bypass the identity domain remain standing targets for credential stuffing long after the federated path is hardened
+
+**Attack Prevented:** Credential theft, phishing, credential stuffing, account takeover, bypass of enterprise conditional access
 
 #### ClickOps Implementation
 
-**Step 1: Configure IDCS Federation**
+**Step 1: Configure Identity Domain Federation**
 1. Navigate to: **Setup and Maintenance → Security Console**
 2. Configure Identity Provider
 3. Enable: **Enforce SSO**
 
 **Step 2: Enable MFA**
-1. Navigate to: **IDCS → Security → MFA**
+1. In the OCI IAM identity domain (formerly IDCS), navigate to: **Security → MFA**
 2. Configure:
    - MFA factors (TOTP, Push, FIDO2)
    - Enrollment policies
@@ -180,7 +186,7 @@ Harden REST API integrations for HCM data.
 #### Implementation
 
 **Step 1: Configure OAuth Clients**
-1. Navigate to: **IDCS → Applications → Add Application**
+1. In the OCI IAM identity domain (formerly IDCS), navigate to: **Applications → Add Application**
 2. Create confidential application
 3. Configure:
    - Allowed grant types (authorization_code preferred)
@@ -188,8 +194,9 @@ Harden REST API integrations for HCM data.
    - Redirect URIs (exact match)
 
 **Step 2: Scope Restrictions**
-
-{% include pack-code.html vendor="oracle-hcm" section="2.1" %}
+1. Grant each client only the scopes its integration actually calls
+2. Remove write scopes from read-only integrations
+3. Re-review client scopes on every integration change
 
 #### Code Implementation
 
@@ -368,7 +375,7 @@ Continuously monitor REST API, SOAP, and HDL integration activity for anomalous 
 
 | Control | HCM Cloud | Fusion Cloud HCM |
 |---------|-----------|------------------|
-| IDCS SSO | ✅ | ✅ |
+| OCI IAM identity domain SSO (formerly IDCS) | ✅ | ✅ |
 | Security Profiles | ✅ | ✅ |
 | Audit Policies | ✅ | ✅ |
 | Custom Roles | ✅ | ✅ |
@@ -378,16 +385,20 @@ Continuously monitor REST API, SOAP, and HDL integration activity for anomalous 
 ## Appendix B: References
 
 **Official Oracle Documentation:**
-- [Oracle Cloud Compliance](https://www.oracle.com/corporate/cloud-compliance/)
-- [Oracle Corporate Security Practices](https://www.oracle.com/corporate/security-practices/corporate/governance/)
 - [Oracle HCM Cloud Documentation](https://docs.oracle.com/en/cloud/saas/human-resources/)
-- [Best Practices for HCM Data Roles and Security Profiles](https://docs.oracle.com/en/cloud/saas/human-resources/24d/ochus/best-practices-for-hcm-data-roles-and-security-profiles.html)
+- [Oracle Fusion Cloud HCM Release Readiness](https://docs.oracle.com/en/cloud/saas/readiness/hcm.html) — currency anchor for the current HCM release
+- [Best Practices for HCM Data Roles and Security Profiles](https://docs.oracle.com/en/cloud/saas/human-resources/24d/ochus/best-practices-for-hcm-data-roles-and-security-profiles.html) (release-pinned; current release is 26C per Oracle's readiness page — re-verify URLs via browser before updating)
+- [OCI IAM identity domains overview](https://docs.oracle.com/en-us/iaas/Content/Identity/domains/overview.htm)
+- [Oracle Identity Cloud Service documentation (legacy IDCS)](https://docs.oracle.com/en/cloud/paas/identity-cloud/index.html) — still rendering, with no end-of-life banner as of 2026-08
 
 **API Documentation:**
-- [HCM REST API Reference](https://docs.oracle.com/en/cloud/saas/human-resources/24d/farws/index.html)
+- [HCM REST API Reference](https://docs.oracle.com/en/cloud/saas/human-resources/24d/farws/index.html) (release-pinned; current release is 26C per Oracle's readiness page — re-verify URLs via browser before updating)
+
+**Benchmarks:**
+- **CIS Oracle Cloud SaaS Applications Benchmark v1.0.0** exists in the CIS benchmark index ([CIS Oracle Cloud benchmarks](https://www.cisecurity.org/benchmark/oracle_cloud)). Its scope with respect to Fusion Cloud HCM is unconfirmed — the PDF is registration-gated — so no recommendation IDs are mapped in this guide. Verify the benchmark's stated scope against the PDF before mapping IDs.
 
 **Compliance Frameworks:**
-- SOC 1 Type II, SOC 2 Type II, SOC 3, ISO 27001, FedRAMP High (U.S. Government Regions), PCI DSS, HIPAA, CSA STAR — via [Oracle Cloud Compliance](https://www.oracle.com/corporate/cloud-compliance/)
+- Oracle's SOC, ISO 27001, FedRAMP, PCI DSS, HIPAA, and CSA STAR attestations are published as corporate compliance material rather than configuration documentation, and the reports themselves are distributed to customers on request. Obtain the current report set through your Oracle account team; no vendor compliance-marketing page is cited here, per this repo's [source standard](https://github.com/grcengineering/how-to-harden/blob/main/SOURCES.md).
 
 **Security Incidents:**
 - **March 2025:** Threat actor "rose87168" exploited CVE-2021-35587 (unpatched Java vulnerability in Oracle Fusion Middleware) on legacy Oracle Cloud Classic (Gen 1) servers, exfiltrating approximately 6 million SSO/LDAP records including encrypted passwords and key files affecting over 140,000 tenants. Oracle initially denied the breach but later privately confirmed it to affected customers. Multiple class-action lawsuits followed. — [CloudSEK Report](https://www.cloudsek.com/blog/the-biggest-supply-chain-hack-of-2025-6m-records-for-sale-exfiltrated-from-oracle-cloud-affecting-over-140k-tenants)
@@ -398,6 +409,7 @@ Continuously monitor REST API, SOAP, and HDL integration activity for anomalous 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.1.2 | draft | Currency pass (corrections and notes; no control changes). Renamed IDCS to "OCI IAM identity domains (formerly Oracle Identity Cloud Service / IDCS)" throughout, asserting no IDCS retirement date since the legacy documentation set still renders without an end-of-life banner. Annotated the 24D release-pinned citations — the current release is 26C per Oracle's readiness page — and added that readiness page as the currency anchor; the Fusion HCM documentation host returns HTTP 200 with a generic landing shell for both real and nonexistent paths, so release-specific URLs must be re-verified in a browser rather than rewritten blind. Completed 1.1's rationale with **Attack Prevented:**. Removed a duplicate pack include in 2.1 (kept the one under Code Implementation) and replaced it with the intended scope-restriction steps. Removed Oracle compliance-marketing and corporate security-practices citations and re-sourced compliance honestly. Noted that CIS Oracle Cloud SaaS Applications Benchmark v1.0.0 exists but its Fusion HCM scope is unconfirmed (registration-gated PDF), so no recommendation IDs are mapped. Open items for a browser-capable pass: (a) the `hardening_docs` URL in `docs/_data/doc_links.yml` could not be verified either way through the landing-shell trap and needs a browser check; (b) release 26C ships agentic applications and partner AI agents via Oracle Marketplace — a supply-chain surface this guide does not yet cover. Tier 3/4 product-specific research not surveyed this pass. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Oracle HCM Cloud hardening guide | Claude Code (Opus 4.5) |
 
