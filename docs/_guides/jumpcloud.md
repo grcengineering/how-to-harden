@@ -6,9 +6,9 @@ slug: "jumpcloud"
 tier: "2"
 category: "Identity"
 description: "Cloud directory and identity management hardening for JumpCloud SSO, MFA, and device management"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -60,17 +60,22 @@ Secure JumpCloud Admin Portal access with MFA and role-based access controls. Ad
 **Why This Matters:**
 - Admin Portal controls all identity and access settings
 - Compromised admin can disable security controls
-- MFA for admins is critical but often overlooked
+- Admin MFA is a capability you must configure, not a guaranteed default — JumpCloud's own best-practices guidance lists securing Admin Portal access with MFA as a recommendation, which means an unconfigured tenant is an unprotected one
+
+**Attack Prevented:** Admin Portal account takeover, credential stuffing against directory administrators, disabling of security controls by a compromised admin
 
 #### ClickOps Implementation
 
 **Step 1: Enable Admin MFA**
 1. Navigate to: **JumpCloud Admin Portal** → **Security** → **MFA for Admins**
 2. Enable **Require MFA for Admin Portal**
-3. Configure allowed MFA methods:
-   - **TOTP Authenticator:** Recommended
-   - **WebAuthn:** Highly recommended
-   - **JumpCloud Go:** Recommended
+3. Configure allowed MFA methods. JumpCloud documents five admin-available options:
+   - **JumpCloud Go:** Recommended — device authenticator with biometrics; requires Google Chrome and the JumpCloud Go browser extension
+   - **WebAuthn:** Highly recommended — security keys (YubiKey, Titan) or platform authenticators (Touch ID, Windows Hello)
+   - **JumpCloud Protect (Push MFA):** Push approval via the JumpCloud Protect mobile app. JumpCloud blocks more than one notification per resource within a sixty-second window by default (except for RADIUS and LDAP), which is its documented anti-push-bombing measure — do not raise that limit in MFA Configurations without a specific reason.
+   - **Verification Code (TOTP):** Authenticator-app codes; usable for the Admin Portal, User Portal, RADIUS, LDAP, and macOS/Linux/Windows systems
+   - **Duo Security MFA:** Push, phone callback, or mobile passcode via Duo; available for the User Portal, SSO applications, and User Portal password resets
+4. Prefer the phishing-resistant options (JumpCloud Go, WebAuthn) for administrators, and treat push and TOTP as secondary. Where a text-message factor is offered anywhere in your tenant, disable it — SMS is the weakest factor available and offers no phishing resistance.
 
 **Step 2: Configure Admin Roles**
 1. Navigate to: **Settings** → **Admin Roles**
@@ -133,6 +138,119 @@ Implement tiered administration following the principle of least privilege.
 
 ---
 
+### 1.3 Govern Admin API Keys
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.2, 6.2 |
+| NIST 800-53 | IA-5, AC-2(3) |
+
+#### Description
+Set an expiration on every JumpCloud admin API key and re-create keys on a defined cadence. A JumpCloud API key is bound to an individual administrator account and is configured at **Admin Portal → your account initials (top-right) → My API Key**, where the **Expiration Date** menu offers 30, 60, or 90 days, a Custom value from one hour to 365 days, or No Expiration.
+
+#### Rationale
+**Why This Matters:**
+- JumpCloud states the API key "gives unfiltered access to your JumpCloud instance through API calls" — it carries the admin's full authority with no scoping, so a leaked key is equivalent to a leaked admin session that never ends
+- Keys are personal rather than service-bound, which means an administrator's departure leaves live credentials behind unless the key is explicitly invalidated — and a key with no expiration will never invalidate itself
+- This is not hypothetical for this vendor: in the July 2023 incident, JumpCloud's own response included invalidating all admin API keys, which only works as a containment measure if the organization then notices and rotates deliberately
+
+**Attack Prevented:** Unscoped API access from a leaked key, indefinite persistence via a never-expiring credential, offboarding gaps leaving live admin keys, undetected key reuse after a vendor-side incident
+
+#### ClickOps Implementation
+
+> **Changed default — pre-2024 admin accounts have no key expiration.** JumpCloud documents that **admin accounts created before July 15, 2024 have no expiration date on their API keys**. This is silent: the key works indefinitely and nothing in normal operation surfaces it. Audit every administrator who predates that date and set an expiration explicitly — the setting can be changed at any time. Note also that keys generated *after* that change default to a 90-day expiration, so newer accounts are not the risk here; older ones are.
+
+**Step 1: Audit Existing Keys**
+1. Enumerate all administrator accounts and identify those created before **July 15, 2024**
+2. For each, have the account holder open **Admin Portal → account initials → My API Key** and check the displayed expiration date
+3. Treat any key showing **No Expiration** as a finding
+
+**Step 2: Set Expirations**
+1. In **My API Key**, open the **Expiration Date** menu and select **30 days**, **60 days**, **90 days**, or a **Custom** value (one hour to 365 days). The selection saves automatically.
+2. Choose the shortest interval the consuming integration can tolerate. Custom values down to one hour exist precisely for short-lived automation.
+3. Note the operational consequence before you shorten it: JumpCloud emails a daily warning starting **seven days** before expiry, and once a key expires you must generate a new one **and update every integration using it**.
+
+**Step 3: Establish a Rotation Cadence**
+1. JumpCloud's API best-practices guidance recommends **re-creating API keys on an annual basis** at minimum, on a rolling schedule
+2. Rotation is destructive by design — **once a key is rotated the older key is invalidated**, and code still using it will fail. Inventory the integrations consuming each key before rotating.
+3. Rotate immediately, without waiting for the schedule, on any suspicion of sharing or compromise
+4. Include API key invalidation in the administrator offboarding checklist, since the key belongs to the person, not to a service
+
+#### Validation & Testing
+1. For each administrator, confirm **My API Key** shows a concrete expiration date and not "No Expiration"
+2. After a rotation, confirm the previous key returns an authentication failure against the API
+3. Confirm every integration inventory entry names which administrator's key it consumes — an integration whose key owner is unknown cannot be rotated safely
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|------------|---------------------|
+| **SOC 2** | CC6.1 | Credential lifecycle management for privileged access |
+| **NIST 800-53** | IA-5 | Authenticator management |
+| **NIST 800-53** | AC-2(3) | Disable accounts and credentials after defined period |
+| **CIS Controls** | 5.2 | Use unique passwords / credentials |
+
+---
+
+### 1.4 Maintain Organization and Role Hygiene
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.3, 5.4 |
+| NIST 800-53 | AC-2, IA-5(1) |
+
+#### Description
+Delete unused organizations from the Multi-Tenant Portal, assign the Billing Only role to finance staff rather than a general admin role, and enforce JumpCloud's documented password baseline across users and administrators.
+
+#### Rationale
+**Why This Matters:**
+- JumpCloud names unused organizations as "an avoidable risk," specifically because they accumulate forgotten or expired passwords and potentially compromised API keys while nobody is watching them — an abandoned tenant is an unmonitored tenant with live credentials
+- Finance and accounting staff need billing data, not directory control; the Billing Only role exists so that a routine business function does not require handing out an administrative account that can alter identity configuration
+- A documented password baseline (length, character classes, rotation) gives a concrete, auditable target instead of leaving each administrator to decide what "strong" means
+
+**Attack Prevented:** Compromise via an abandoned, unmonitored organization; over-privileged finance accounts; credential-guessing against weak directory passwords; stale-credential persistence
+
+#### ClickOps Implementation
+
+**Step 1: Delete Unused Organizations**
+1. Review the organizations in your **Multi-Tenant Portal (MTP)** and identify any that are no longer in use
+2. Note the ordering requirement: **all users and devices must be deleted from the organization first** — an Org Delete Request cannot be submitted against a populated organization
+3. Submit the Org Delete Request once the organization is empty
+
+**Step 2: Assign the Billing Only Role**
+1. Identify administrators who exist solely to handle invoices and payment
+2. Assign them the **Billing Only** role so their permissions are limited to billing-specific tasks and information
+
+**Step 3: Enforce the Password Baseline**
+
+JumpCloud's documented recommendation for both users and administrators:
+
+1. **Minimum length: 12 characters**
+2. **Character classes:** at least one uppercase letter, one lowercase letter, one number, and one special character
+3. **Rotation: every 90 days**
+4. Store credentials in JumpCloud Password Manager rather than in personal or ad-hoc stores
+
+#### Validation & Testing
+1. List all organizations in the MTP and confirm each has a current owner and an active purpose
+2. Review the administrator list and confirm no finance-only user holds a role broader than Billing Only
+3. Attempt to set a non-compliant password and confirm the policy rejects it
+4. Confirm password expiration is actually applied, not merely configured, by checking a sample account's expiry date
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|------------|---------------------|
+| **SOC 2** | CC6.2 | Registration and authorization of new users |
+| **SOC 2** | CC6.3 | Removal of access when no longer required |
+| **NIST 800-53** | AC-2 | Account management |
+| **NIST 800-53** | IA-5(1) | Password-based authenticator requirements |
+
+---
+
 ## 2. Multi-Factor Authentication
 
 ### 2.1 Enforce Organization-Wide MFA
@@ -149,9 +267,11 @@ Require MFA for all user authentication to protected resources including the Use
 
 #### Rationale
 **Why This Matters:**
-- MFA blocks 99.9% of automated attacks
-- JumpCloud supports multiple MFA methods
-- Organization-wide enforcement prevents gaps
+- Passwords are, in JumpCloud's own framing, a common entry point for attackers precisely because they so often fall short of the baseline — a second factor is what stops a guessed, reused, or phished password from being sufficient on its own
+- JumpCloud supports several factor types (JumpCloud Go, JumpCloud Protect push, TOTP, WebAuthn, Duo), so there is a workable option for nearly every user population and no defensible reason to leave a group uncovered
+- Enforcement scoped to some groups but not others leaves the unprotected group as the obvious target; organization-wide enforcement is what removes the choice of entry point from the attacker
+
+**Attack Prevented:** Credential stuffing, password spray, reuse of breached credentials, single-factor account takeover on uncovered user groups
 
 #### ClickOps Implementation
 
@@ -237,35 +357,59 @@ Configure conditional access policies to enforce context-aware security controls
 
 #### Rationale
 **Why This Matters:**
-- Context-aware access enables Zero Trust
-- Block access from risky locations or devices
-- Dynamically adjust MFA requirements
+- Context-aware access enables Zero Trust by making the authentication requirement a function of the request's circumstances rather than a single global setting
+- Conditions let you deny outright — not merely challenge — access from countries, networks, or device states your organization never legitimately operates from
+- Because conditional policies fall back to the Default Access Policy when no condition matches, the default is the control that actually governs unanticipated requests and must be set deliberately
+
+**Attack Prevented:** Access from unmanaged or unencrypted endpoints, logins from countries the organization does not operate in, off-network credential use, unrestricted access when no specific policy matches
+
+#### Prerequisites
+- **Platform Prime.** Adding a condition to an access policy is a premium feature; per JumpCloud, "Adding a Condition is a Premium feature and is part of our Platform Prime plan." An access policy without conditions can be created on lower tiers, but it is not a *conditional* access policy.
 
 #### ClickOps Implementation
 
-**Step 1: Create Conditional Access Policy**
-1. Navigate to: **Security** → **Conditional Access**
-2. Click **Create New Policy**
-3. Configure policy conditions:
-   - **Location:** Define trusted/untrusted locations
-   - **Device Trust:** Require managed devices
-   - **User Groups:** Apply to specific groups
+**Step 1: Create the Access Policy**
+1. Log in to the **JumpCloud Admin Portal** (check your region-specific login URL if your data is stored outside the US)
+2. Navigate to: **Security** → **Conditional Access Policies**
+3. From the list view, click **(+)** and select the **Resource** — User Portal, SSO Applications, JumpCloud LDAP, or Admin Portal
+4. Complete **General Info** (name, description; new policies are enabled by default)
 
-**Step 2: Define Policy Actions**
-1. Configure actions based on conditions:
-   - **Allow access:** From trusted locations
-   - **Require MFA:** From unknown locations
-   - **Block access:** From blocked countries
-2. Set policy priority
+**Step 2: Scope the Policy (Assignments)**
+1. Choose whether the policy applies to specific applications or all of them
+2. Choose whether it applies to all users or specific user groups
+3. Use **Excluded User Groups** for exceptions — note that a user in both an included and an excluded group is **excluded**, so exclusions win and should be audited
+
+**Step 3: Add Conditions**
+
+Choose whether **all** conditions must match (`and` — more restrictive) or **any** (`or` — more permissive). **At most one condition of each type may be added per policy.** Available conditions:
+
+| Condition | Operators | Notes |
+|-----------|-----------|-------|
+| **Device Management** | Is / Is Not (value fixed to *JumpCloud Managed*) | Desktop devices prove management via **Device Trust Certificates** or **JumpCloud Go**; mobile devices use **Mobile Device Trust**. Where both are enabled on desktop, **JumpCloud Go takes priority for web application logins**. Keep certificates enabled as a fallback for users who cannot use JumpCloud Go, and for federated logins to desktop applications and VPN clients. |
+| **Disk Encryption** | Is / Is Not (value fixed to *Enabled on Device*) | Qualifies as BitLocker enabled (Windows), FileVault policy applied (macOS), or root disk encrypted (Linux). Status is re-checked at most every two hours. Cannot be combined with an Unmanaged device condition — encryption state is undetectable on an unmanaged device. |
+| **IP Address** | Is On List / Is Not On List | Evaluated against selected IP lists. |
+| **Location** | Is In Country / Is Not In Country | The **Unknown Location** option covers IP addresses that map to no country — decide explicitly how to treat it rather than leaving it unhandled. |
+| **Operating System** | Is / Is Not | Desktop (macOS, Windows, Linux) and mobile (iOS/iPadOS, Android). OS information is not guaranteed reliable from non-managed devices. |
+| **Managed Chrome Browser** | Enrollment domain is / is not | Requires Chrome. Windows and macOS only; see JumpCloud's Chrome Enterprise Device Trust prerequisites. |
+| **Managed Chrome Profile** | Enrollment domain is / is not | Requires access through a managed Chrome profile. Windows and macOS only. |
+
+**Step 4: Define the Action**
+
+There are three outcomes, not a gradient:
+
+1. **Allow without MFA** — set Access to *Allowed* and Authentication to *Password*
+2. **Allow with MFA** — set Access to *Allowed* and Authentication to *Password + MFA*
+3. **Deny** — set Access to *Denied*
+
+> **Deny requires its own policy.** A policy that allows access when a condition is met does **not** deny access when it isn't — unmatched requests fall through to the Default Access Policy. JumpCloud's own example is disk encryption: to block unencrypted devices you must create a policy that explicitly denies them. Write the deny case as a separate policy rather than assuming the allow case implies it.
+
+> **Enrollment periods are not honored.** When a conditional access policy requiring MFA is enabled, users without MFA configured are forced to enroll at their next login to that resource, regardless of any enrollment grace period. Sequence the rollout accordingly.
 
 {% include pack-code.html vendor="jumpcloud" section="3.1" %}
 
 **Time to Complete:** ~45 minutes
 
 ---
-
-
-{% include pack-code.html vendor="jumpcloud" section="3.1" %}
 
 ### 3.2 Configure Device Trust
 
@@ -290,18 +434,20 @@ Configure device trust to verify endpoint compliance before granting access to p
 
 #### ClickOps Implementation
 
-**Step 1: Enable Device Trust**
-1. Navigate to: **Security** → **Conditional Access**
-2. Create policy with device conditions
-3. Configure:
-   - **Require JumpCloud Agent:** Verify device is managed
-   - **Require encryption:** Verify disk encryption
-   - **Require updated OS:** Verify minimum OS version
+**Step 1: Choose How Devices Prove Management**
+1. **Desktop:** enable **Device Trust Certificates**, **JumpCloud Go**, or both. Where both are enabled, JumpCloud Go takes priority for web application logins when the user authenticates with it; keep certificates enabled as a fallback for users who cannot use JumpCloud Go and for federated logins to desktop applications and VPN clients.
+2. **Mobile:** enable **Mobile Device Trust**.
 
-**Step 2: Create Device Trust Policy**
-1. Integrate with conditional access
-2. Block access from non-compliant devices
-3. Or require additional authentication
+**Step 2: Enable Device Trust via Conditional Access**
+1. Navigate to: **Security** → **Conditional Access Policies**
+2. Create a policy with the **Device Management** condition (operator *Is*, value *JumpCloud Managed*)
+3. Add the **Disk Encryption** condition (operator *Is*, value *Enabled on Device*) where you need encryption assurance. Note this cannot be combined with an unmanaged-device condition, and that encryption status is re-checked at intervals of at most two hours — so it reflects recent state, not live state.
+4. Constrain platform with the **Operating System** condition where a device class should not reach the resource at all
+
+**Step 3: Create the Deny Policy**
+1. Create a **separate** policy that sets Access to **Denied** for non-compliant devices — an allow-on-compliance policy does not deny non-compliant devices, it simply doesn't match them, and they fall through to the Default Access Policy
+2. Alternatively set Authentication to **Password + MFA** where you want step-up rather than a block
+3. Confirm the **Default Access Policy** is itself set to a safe outcome, since it governs every request no conditional policy matches
 
 ---
 
@@ -495,35 +641,44 @@ Enable JumpCloud Directory Insights for comprehensive audit logging and security
 
 ## Appendix A: Plan Compatibility
 
-| Feature | Free | Core | Platform | Platform Plus |
-|---------|------|------|----------|---------------|
-| User MFA | ✅ (10 users) | ✅ | ✅ | ✅ |
-| Admin MFA | ✅ | ✅ | ✅ | ✅ |
-| Conditional Access | ❌ | ❌ | ✅ | ✅ |
-| System Policies | Limited | ✅ | ✅ | ✅ |
-| Directory Insights | ❌ | ❌ | ✅ | ✅ |
-| JumpCloud Go | ❌ | ❌ | ✅ | ✅ |
+JumpCloud's current packaging is three à la carte packages (**Device Management**, **SSO**, **Device Identity Management**) plus three bundles (**Platform Essentials**, **Platform**, **Platform Prime**). The older "Core" and "Platform Plus" names no longer appear in JumpCloud's packaging. Platform Essentials carries a documented **300-user maximum**.
+
+| Feature | Device Management | SSO | Device Identity Mgmt | Platform Essentials | Platform | Platform Prime |
+|---------|-------------------|-----|----------------------|---------------------|----------|----------------|
+| Multi-Factor Authentication | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Single Sign-On | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| MDM / Device Management | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Directory Insights | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Passwordless (JumpCloud Go) | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Password Management | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Conditional Access / Zero Trust | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+
+> **Conditional access has two tiers of meaning.** The packaging table above shows Conditional Access / Zero Trust on Platform and Platform Prime, but the feature documentation is more specific: **adding a condition to an access policy is a premium feature and part of Platform Prime.** Verify against your own entitlement before designing policies around conditions.
+>
+> JumpCloud offers a **30-day free trial** rather than a permanent free tier at the user counts this guide previously listed; treat any "free for N users" claim as unverified against current packaging.
 
 ---
 
 ## Appendix B: References
 
 **Official JumpCloud Documentation:**
-- [JumpCloud Security Practices](https://jumpcloud.com/security)
 - [JumpCloud Support](https://jumpcloud.com/support)
 - [Best Practices: Secure Your Organization](https://jumpcloud.com/support/best-practices-secure-your-organization)
 - [MFA for Admins](https://jumpcloud.com/support/mfa-for-admins)
-- [Conditional Access](https://jumpcloud.com/support/configure-a-conditional-access-policy)
+- [Configure a Conditional Access Policy](https://jumpcloud.com/support/configure-a-conditional-access-policy)
+- [JumpCloud APIs](https://jumpcloud.com/support/jumpcloud-apis)
+- [Best Practices: JumpCloud API](https://jumpcloud.com/support/best-practices-jumpcloud-api)
+- [JumpCloud Pricing and Packaging](https://jumpcloud.com/pricing)
 
 **API & Developer Resources:**
 - [JumpCloud API Documentation](https://docs.jumpcloud.com/)
 - [JumpCloud PowerShell Module](https://github.com/TheJumpCloud/support/wiki)
 
 **Compliance Frameworks:**
-- SOC 2 Type II, ISO 27001 -- via [JumpCloud Security](https://jumpcloud.com/security)
+- Framework mappings for the controls in this guide are in [§6 Compliance Quick Reference](#6-compliance-quick-reference). For attestation evidence, request current reports through your JumpCloud account team and validate them against your own control set — the vendor's `/security` marketing page is not configuration documentation and is out of scope for this project's source standard.
 
 **Security Incidents:**
-- **July 2023:** JumpCloud disclosed a security incident involving a nation-state threat actor who compromised JumpCloud's internal systems, targeting a small set of customers. JumpCloud invalidated all admin API keys and notified affected customers. The incident was attributed to a North Korean state-sponsored group.
+- **July 2023:** JumpCloud disclosed a security incident involving a nation-state threat actor who compromised JumpCloud's internal systems, targeting a small set of customers. JumpCloud invalidated all admin API keys and notified affected customers. The incident was attributed to a North Korean state-sponsored group. See [1.3](#13-govern-admin-api-keys) — mass key invalidation is only an effective containment measure if customers then rotate deliberately and set expirations, which is why never-expiring keys on pre-2024 admin accounts matter.
 
 ---
 
@@ -531,6 +686,7 @@ Enable JumpCloud Directory Insights for comprehensive audit logging and security
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Add 1.3 admin API key governance (keys are personal and unscoped; expiration options 30/60/90d, custom 1h-365d, or none; changed-default callout for the no-expiration keys on admin accounts predating 2024-07-15; annual re-creation cadence) and 1.4 organization/role/password hygiene; correct 1.1 to the five documented admin MFA methods and drop the implication that admin MFA is a guaranteed default; replace the unsourced "MFA blocks 99.9%" statistic in 2.1 with vendor-sourced rationale; correct the 3.1/3.2 console path to Security → Conditional Access Policies, record the Platform Prime requirement for conditions, and expand the full condition set, AND/OR logic, one-condition-per-type limit, three actions, and the deny-needs-its-own-policy behavior; remove the duplicate 3.1 pack include; rebuild the plan table on current packaging (Platform Essentials 300-user cap, Platform, Platform Prime, plus à la carte packages); add missing Attack Prevented to 1.1, 2.1, and 3.1; re-source the compliance references off the vendor security marketing page | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, MFA, and conditional access | Claude Code (Opus 4.5) |
 

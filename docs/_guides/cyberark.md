@@ -1,24 +1,26 @@
 ---
 layout: guide
-title: "CyberArk Hardening Guide"
-vendor: "CyberArk"
+title: "Idira (formerly CyberArk) Hardening Guide"
+vendor: "Idira (formerly CyberArk)"
 slug: "cyberark"
 tier: "1"
 category: "Identity"
 description: "Privileged access management hardening for vaults, PSM, and credential rotation"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 
 ## Overview
 
-CyberArk is a Privileged Access Management (PAM) platform that protects credentials for **half of Fortune 500 companies** across 10,000+ organizations. As the central vault for privileged credentials, API tokens, session recordings, and SSH keys, CyberArk compromise enables immediate access to the most sensitive enterprise systems. Secrets management integrations with HashiCorp Vault, AWS Secrets Manager, and Azure Key Vault extend the attack surface beyond the vault itself.
+> **Product naming:** The platform documented here is now branded **Idira**, a Palo Alto Networks identity security platform. Its documentation portal at [docs.cyberark.com](https://docs.cyberark.com/portal/latest/en/docs.htm) presents the product as the "Idira Identity Security Platform," and `cyberark.com` marketing URLs now resolve to [paloaltonetworks.com/idira](https://www.paloaltonetworks.com/idira). Product names in the current docs are **Privilege Cloud**, **Identity**, **Secrets Hub**, **Endpoint Privilege Manager**, and **PAM - Self-Hosted**. This guide retains the `cyberark` URL slug so existing links keep working; console paths and product names below follow the current Idira documentation, with the older CyberArk names noted where the console still shows them.
+
+Idira (formerly CyberArk) is a Privileged Access Management (PAM) platform used across many of the world's largest enterprises. As the central vault for privileged credentials, API tokens, session recordings, and SSH keys, a compromise of this platform enables immediate access to the most sensitive enterprise systems. Secrets management integrations with HashiCorp Vault, AWS Secrets Manager, and Azure Key Vault — brokered through Secrets Hub — extend the attack surface beyond the vault itself.
 
 ### Intended Audience
 - Security engineers managing PAM infrastructure
-- IT administrators configuring CyberArk
+- IT administrators configuring Idira (formerly CyberArk)
 - GRC professionals assessing privileged access compliance
 - Third-party risk managers evaluating secrets management
 
@@ -28,7 +30,7 @@ CyberArk is a Privileged Access Management (PAM) platform that protects credenti
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers CyberArk-specific security configurations including vault hardening, API security, session management, secrets rotation, and integration security with external secrets managers.
+This guide covers Idira/CyberArk-specific security configurations including vault hardening, API security, session management, secrets rotation, and integration security with external secrets managers.
 
 ---
 
@@ -53,17 +55,17 @@ This guide covers CyberArk-specific security configurations including vault hard
 **NIST 800-53:** IA-2(1), IA-2(6)
 
 #### Description
-Require MFA for all CyberArk console access, including PVWA (Password Vault Web Access), PSM (Privileged Session Manager), and API authentication.
+Require MFA for all console access, including PVWA (Password Vault Web Access), PSM (Privileged Session Manager), and API authentication. The vendor's own Security Fundamentals guidance names multi-factor authentication for all users *and* product administrators as a minimal requirement, and prescribes compensating controls where MFA cannot be applied.
 
 #### Rationale
 **Why This Matters:**
-- CyberArk stores the most sensitive credentials in the enterprise
-- Single-factor compromise = access to all privileged accounts
-- MFA is mandatory for compliance (PCI DSS, SOX, HIPAA)
+- The platform stores the most sensitive credentials in the enterprise, so a single-factor compromise reaches every privileged account at once
+- The vendor states MFA mitigates key loggers and plaintext-password harvesting tools — the exact techniques used to pivot into a vault
+- Where MFA is genuinely impossible for an access path, the documented fallback is to manage that user as a Privilege Cloud user and force the connection through PSM, never to leave the path unprotected
 
 **Attack Prevented:** Credential theft, phishing, password spray
 
-**Attack Scenario:** Attacker phishes CyberArk admin credentials, gains access to entire credential vault, extracts domain admin passwords.
+**Attack Scenario:** Attacker phishes a vault admin's credentials, gains access to the entire credential vault, extracts domain admin passwords.
 
 #### ClickOps Implementation
 
@@ -81,12 +83,18 @@ Require MFA for all CyberArk console access, including PVWA (Password Vault Web 
    - Enable: **Require MFA for connection**
    - Configure MFA prompt timing
 
-**Step 3: Configure for Privilege Cloud**
-1. Navigate to: **Identity Administration → Authentication**
-2. Configure:
-   - **MFA enforcement:** Required
-   - **Factors:** TOTP, Push, FIDO2
-   - **Remember device:** Disabled (L2/L3)
+**Step 3: Configure Strong Authentication for the Identity Tenant**
+
+> **Documentation moved.** Idira documentation is now organized into **spaces** (Setup, Manage, Detect and Respond, Access, Audit and Reports) rather than per-service doc sets. Authentication configuration for Identity now lives in the **Setup** space under [Enforce strong authentication](https://docs.cyberark.com/setup/latest/en/content/setup-space/authentication/enforce-strong-authentication.htm). The previous Identity and Identity Administration doc sets remain readable but, per the vendor, [reflect the structure and content as of April 2026 and are no longer updated](https://docs.cyberark.com/find-identity-docs/latest/en/content/getstarted/identity-new-doc-location.htm) — do not treat them as current when validating a setting.
+
+Working from the Setup space's authentication guidance, configure the tenant to:
+
+1. **Require MFA for all users**, using authentication-strength policies rather than per-user exceptions
+2. **Prefer passwordless factors** — the current documentation calls out FIDO2/passkeys and modern SSO as supported methods
+3. **Scope exceptions narrowly.** The documented model is automated enforcement plus explicit exceptions for low-risk users or applications; every exception should be justified and reviewed, and none should cover an administrative role
+4. **Disable "remember device"** for administrative access at L2/L3
+
+Because the space reorganization is recent, confirm the exact console breadcrumb in your own tenant against the Setup space page before writing it into a runbook.
 
 #### Validation & Testing
 1. Attempt PVWA login with password only - should fail
@@ -192,30 +200,40 @@ Implement emergency access procedures for critical scenarios when normal authent
 **NIST 800-53:** SC-8, SC-28
 
 #### Description
-Configure secure vault server settings including encryption, communication security, and component hardening.
+Configure secure vault server settings including encryption, communication security, and component hardening — and, on Privilege Cloud connectors, verify that the vendor's automated hardening actually applied rather than re-hardening those hosts by hand.
 
 #### Rationale
 **Why This Matters:**
 - The vault server is the cryptographic root of trust; weak encryption or legacy TLS exposes every stored secret in transit and at rest
 - AES-256 at rest and TLS 1.2/1.3 only prevent protocol downgrade and offline decryption of captured vault data
-- Removing unnecessary OS services and tightening the firewall shrinks the attack surface of the single most valuable host in the environment
+- Connector hardening ships as an automated procedure, so the realistic failure mode is not "nobody hardened the box" but "somebody undid the hardening" — drift detection matters more than manual configuration here
 
-**Attack Prevented:** Protocol downgrade, man-in-the-middle interception, data-at-rest theft, host compromise via exposed services
+**Attack Prevented:** Protocol downgrade, man-in-the-middle interception, data-at-rest theft, host compromise via exposed services, silent regression of applied hardening
 
 #### ClickOps Implementation
+
+> **Connector hardening is automated — verify it, don't recreate it.** On Privilege Cloud, [the hardening procedure is applied as part of the Connector's deployment step](https://docs.cyberark.com/privilege-cloud-standard/latest/en/content/privilege%20cloud/privcloud-hardening-overview.htm) and has been reviewed by the vendor's R&D and security teams. In an Active Directory domain it is applied from a prepared **Group Policy Object (GPO)** file; out of domain, from an **INF** file. Both run through the **PSM_CPM hardening file**, which executes both the PSM and CPM hardening steps — **PSM settings override CPM settings wherever both refer to the same parameter.** Applied automatically: Windows AppLocker, TLS protocol hardening, IIS lockdown (application pools deleted, registry shares disabled, unnecessary MIME types removed, WebDAV disabled), EventLog size and retention, advanced audit and Remote Desktop Services policy, registry/file-system auditing and permissions, service disabling, and creation of the local Windows user that runs the CPM service. Ad-hoc manual hardening on these hosts risks breaking a supported configuration; the administrator's job is to confirm the automated baseline is intact and detect drift.
 
 **Step 1: Verify Encryption Settings**
 1. Check DBParm.ini and verify AES256 encryption is configured with appropriate key age settings.
 
-**Step 2: Configure Secure Communication**
-1. Enable TLS 1.2/1.3 only
-2. Disable legacy protocols
-3. Configure certificate validation
+**Step 2: Confirm Secure Protocols Are In Force**
 
-**Step 3: Harden Operating System**
-- Remove unnecessary services
-- Configure Windows Firewall
-- Enable audit logging
+The vendor requires TLS for specific channels — treat these as non-negotiable rather than as tuning options:
+
+1. **HTTPS** for the Privilege Cloud Portal and for REST APIs
+2. **TLS is required for RDP, SMTP, and Syslog** — RDP/TLS for connections to the PSM, and TLS for syslog message forwarding
+3. **SSH instead of telnet** for password management
+4. Disable legacy protocols and configure certificate validation
+
+**Step 3: Verify Connector Host Baseline (Do Not Re-Harden By Hand)**
+1. Confirm the deployment-time GPO/INF hardening applied and has not been reverted by later policy
+2. Treat any custom change to out-of-the-box configuration files as your own responsibility — the vendor states such changes may affect security and are outside its control
+3. Where you must change AppLocker behaviour, do it through the supported `Applocker.xml` rule file rather than by disabling the control
+
+**Step 4: Constrain Session Lifetime**
+
+Session expiration should be as short as usability allows, and the vendor's documented ceiling is that **sessions must not exceed 12 hours**.
 
 #### Code Implementation
 
@@ -251,6 +269,62 @@ Use `PAReplicate.exe` to verify replication status and test DR failover in non-p
 
 ---
 
+### 2.3 Treat Connector Servers as Tier 0 Assets
+
+**Profile Level:** L1 (Crawl)
+**CIS Controls:** 4.1, 4.8, 13.4
+**NIST 800-53:** AC-3, SC-7, CM-7
+
+#### Description
+Administer the PSM, CPM, PSM for SSH, and Credential Provider / Central Credential Provider hosts at the same security level as domain controllers. The vendor states plainly that these component servers are Tier 0, and the controls that follow — no third-party software, application allowlisting, restricted domain accounts, firewall and IPsec on inbound administrative traffic — are its stated minimal requirements, not hardening extras.
+
+#### Rationale
+**Why This Matters:**
+- A connector host brokers live privileged sessions and holds the credentials needed to rotate accounts, so compromising one is equivalent to compromising the credentials it serves — the vendor puts these servers at the same tier as domain controllers
+- Installing non-Idira applications on a component server actively prevents the server from being hardened, turning a convenience install into a permanent weakening of the platform's most sensitive host
+- Domain accounts used to reach connector servers become a bridge if they can also reach domain controllers, member servers, or workstations; severing that reachability is what stops a connector compromise from becoming a domain compromise
+
+**Attack Prevented:** Tier-0 pivot from a connector host, credential-theft techniques including pass-the-hash, lateral movement via shared administrative accounts, unauthorized software execution on session-broker hosts
+
+#### ClickOps Implementation
+
+**Step 1: Classify and Isolate the Component Servers**
+1. Record the PSM, CPM, PSM for SSH, and Credential Provider / Central Credential Provider hosts as Tier 0 assets in your asset inventory
+2. Apply Microsoft's guidance for mitigating credential theft and securing Active Directory to these hosts as you would to a domain controller
+
+**Step 2: Restrict What Runs on Them**
+1. **Do not install non-Idira applications** on component servers
+2. Deploy **application allowlisting** and limit execution to authorized applications
+3. Apply Microsoft security updates on a regular, tracked cadence
+
+**Step 3: Restrict Who Reaches Them**
+1. Limit the set of accounts that can access component servers, and keep the number of domain credentials able to reach them as small as possible
+2. Ensure that any domain accounts used to access these servers **cannot** access domain controllers, other member servers, or workstations
+3. Use **network-based firewalls and IPsec** to restrict, encrypt, and authenticate inbound administrative traffic
+4. Use the **PSM and the local administrator account** to access component servers, rather than interactive domain logons
+
+**Step 4: Constrain Administrator Privilege**
+1. Eliminate unnecessary administrative accounts on the platform and reduce the privileges of those that remain
+2. Restrict personal accounts to business-as-usual permissions justified by role — per the vendor, platform administrators have no justification to access all credentials
+3. Route administrative access to the platform itself through PSM so it is isolated and monitored
+
+#### Validation & Testing
+1. From a connector server's service account, attempt an authenticated connection to a domain controller — it should fail
+2. Attempt to launch an unapproved binary on a connector host — allowlisting should block it
+3. Review installed programs on each component server; anything outside the platform's own components is a finding
+4. Confirm inbound administrative traffic to the connectors is filtered and authenticated at the network layer
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|------------|---------------------|
+| **SOC 2** | CC6.6 | Logical access boundaries for sensitive infrastructure |
+| **NIST 800-53** | SC-7 | Boundary protection |
+| **NIST 800-53** | CM-7 | Least functionality on high-value hosts |
+| **CIS Controls** | 4.8 | Uninstall or disable unnecessary services on enterprise assets |
+
+---
+
 ## 3. API & Integration Security
 
 ### 3.1 Secure API Authentication
@@ -259,13 +333,15 @@ Use `PAReplicate.exe` to verify replication status and test DR failover in non-p
 **NIST 800-53:** IA-5, SC-8
 
 #### Description
-Secure CyberArk API access using certificate-based authentication, API key rotation, and IP restrictions.
+Secure Idira (formerly CyberArk) API access using certificate-based authentication, API key rotation, and IP restrictions.
 
 #### Rationale
 **Why This Matters:**
 - API tokens provide programmatic access to credential vault
 - Stolen API tokens enable mass credential extraction
 - Long-lived tokens create persistent risk
+
+**Attack Prevented:** API token theft, mass credential extraction via automation, replay of long-lived tokens, unauthorized programmatic vault access
 
 **Attack Scenario:** Stolen API token accessing credential vault enables extraction of all privileged passwords and SSH keys.
 
@@ -335,8 +411,8 @@ Securely configure integrations with HashiCorp Vault, AWS Secrets Manager, and A
 
 #### Rationale
 **Why This Matters:**
-- Cross-platform secret integrations extend trust boundaries; a misconfigured connector can leak CyberArk-managed secrets into a less-protected store
-- Mutual authentication and scoped trust between CyberArk and external managers prevent an attacker from impersonating either side of the link
+- Cross-platform secret integrations extend trust boundaries; a misconfigured connector can leak vault-managed secrets into a less-protected store
+- Mutual authentication and scoped trust between the vault and external managers prevent an attacker from impersonating either side of the link
 - Centralizing rotation and audit across managers avoids stale, unmanaged copies of credentials drifting outside the vault's controls
 
 **Attack Prevented:** Secret sprawl, connector impersonation, credential leakage across trust boundaries, unrotated shadow copies
@@ -489,7 +565,7 @@ Query for rotation failures via SIEM or direct database reporting to identify ac
 **NIST 800-53:** AU-2, AU-3
 
 #### Description
-Configure CyberArk audit logging and forward to SIEM for security monitoring.
+Configure platform audit logging and forward to SIEM for security monitoring.
 
 #### Rationale
 **Why This Matters:**
@@ -511,51 +587,97 @@ Configure CyberArk audit logging and forward to SIEM for security monitoring.
 
 ---
 
+### 6.2 Use Identity Insights to Close MFA and Configuration Gaps
+
+**Profile Level:** L2 (Walk)
+**CIS Controls:** 6.5, 8.11
+**NIST 800-53:** CA-7, IA-2(1), RA-5
+
+#### Description
+Use Identity Insights, in the Detect and Respond space, to monitor multi-factor authentication coverage and triage identity risk from consolidated alerts. Each alert card carries severity, finding counts, age and type, and the date findings were last checked, along with remediation guidance and a recheck after you apply a fix — turning MFA coverage from a periodic manual audit into a tracked, re-verified state.
+
+#### Rationale
+**Why This Matters:**
+- MFA enforcement drifts silently: new users, new applications, and exception policies erode coverage without generating any single obvious event, and Identity Insights measures the coverage rather than the intent
+- Consolidating identity findings into severity-ranked alerts with finding counts and age gives a defensible triage order instead of an undifferentiated list of misconfigurations
+- The recheck step after remediation is what distinguishes a closed finding from an assumed one — without it, a fix that failed to apply looks identical to a fix that worked
+
+**Attack Prevented:** Exploitation of un-enrolled or MFA-exempt identities, slow remediation of known identity misconfigurations, silent drift in authentication coverage, unverified remediation
+
+#### ClickOps Implementation
+
+**Step 1: Open Identity Insights**
+1. In the Idira documentation's space structure, Identity Insights lives under **Detect and Respond**; open **Identity Insights** from that area of the console
+2. Review the alert list — each entry summarizes severity, finding counts, age and type, and when findings were last checked
+
+**Step 2: Review MFA Coverage**
+1. Work the MFA coverage findings first — they measure whether the enforcement configured in [1.1](#11-enforce-multi-factor-authentication-for-all-access) is actually reaching every identity
+2. Treat any administrative identity appearing in an MFA coverage finding as an L1 exception requiring same-day remediation
+
+**Step 3: Remediate and Recheck**
+1. Open an alert card to see its remediation guidance, and apply the change it describes
+2. Run the **recheck** so the finding's state reflects the applied fix rather than your assumption about it
+3. Track alert age as its own metric — an old finding that is still open is a standing exposure, not a backlog item
+
+#### Validation & Testing
+1. Deliberately create a low-risk test identity outside MFA enforcement and confirm it surfaces as an MFA coverage finding
+2. Remediate that finding, run the recheck, and confirm the alert closes
+3. Confirm no open alert of high severity exceeds your organization's remediation SLA
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|------------|---------------------|
+| **SOC 2** | CC7.1 | Detection of configuration changes and vulnerabilities |
+| **NIST 800-53** | CA-7 | Continuous monitoring |
+| **NIST 800-53** | IA-2(1) | MFA for privileged accounts (coverage assurance) |
+| **NIST 800-53** | RA-5 | Vulnerability monitoring and remediation tracking |
+
+---
+
 ## 7. Compliance Quick Reference
 
 ### SOC 2 Mapping
 
-| Control ID | CyberArk Control | Guide Section |
+| Control ID | Idira Control | Guide Section |
 |-----------|------------------|---------------|
 | CC6.1 | MFA enforcement | 1.1 |
 | CC6.2 | Safe permissions | 1.2 |
+| CC6.6 | Tier 0 connector isolation | 2.3 |
+| CC7.1 | Identity Insights monitoring | 6.2 |
 | CC7.2 | Audit logging | 6.1 |
 
 ### NIST 800-53 Mapping
 
-| Control | CyberArk Control | Guide Section |
+| Control | Idira Control | Guide Section |
 |---------|------------------|---------------|
 | IA-2(6) | MFA for privileged | 1.1 |
 | AC-6 | Least privilege safes | 1.2 |
+| SC-7 | Connector boundary protection | 2.3 |
 | IA-5(1) | Password rotation | 5.1 |
 | AU-14 | Session recording | 4.1 |
+| CA-7 | Continuous identity monitoring | 6.2 |
 
 ---
 
 ## Appendix A: References
 
-**Official CyberArk Documentation:**
-- [Trust Center](https://www.cyberark.com/trust/)
-- [Trust Center (SafeBase Portal)](https://trust.cyberark.com/)
-- [Product Security and Vulnerability Disclosure](https://www.cyberark.com/product-security/)
-- [CyberArk Labs Security Advisories](https://labs.cyberark.com/cyberark-labs-security-advisories/)
-- [Documentation Portal (All Products)](https://docs.cyberark.com)
+**Official Idira (formerly CyberArk) Documentation:**
+- [Idira Documentation Portal (All Products)](https://docs.cyberark.com/portal/latest/en/docs.htm)
 - [Privilege Cloud Security Fundamentals](https://docs.cyberark.com/privilege-cloud-standard/latest/en/content/security/security%20fundamentals-introduction.htm)
 - [Privilege Cloud Connector Hardening](https://docs.cyberark.com/privilege-cloud-standard/latest/en/content/privilege%20cloud/privcloud-hardening-overview.htm)
 - [Technical Best Practices](https://docs.cyberark.com/privilege-cloud-standard/latest/en/content/getstarted/best-pactices.htm)
+- [Setup Space — Enforce Strong Authentication](https://docs.cyberark.com/setup/latest/en/content/setup-space/authentication/enforce-strong-authentication.htm)
+- [Manage Identity Insights](https://docs.cyberark.com/detect-and-respond/latest/en/Content/identity/security-insights/manage-security-insights.htm)
+- [Where Identity Documentation Moved (Spaces Migration)](https://docs.cyberark.com/find-identity-docs/latest/en/content/getstarted/identity-new-doc-location.htm)
 
-**API Documentation:**
-- [CyberArk API Documentation Portal](https://api-docs.cyberark.com/)
-- [REST API Overview](https://www.cyberark.com/rest-api/)
+**Product Naming:**
+- [Idira — Palo Alto Networks](https://www.paloaltonetworks.com/idira) — where `cyberark.com` marketing URLs now resolve
 
-**Compliance Frameworks:**
-- [CyberArk Compliance (SOC 2, ISO 27001, FedRAMP)](https://www.cyberark.com/trust/compliance/)
-- [Corporate Security White Paper](https://www.cyberark.com/resources/white-papers/cyberark-corporate-security-white-paper-standards-and-practices)
-- [Blueprint for Identity Security Success](https://www.cyberark.com/resources/white-papers/cyberark-blueprint-for-identity-security-success-whitepaper)
+**Security Research:**
+- [Unit 42](https://unit42.paloaltonetworks.com/) — the former CyberArk Labs advisory URL (`labs.cyberark.com`) now redirects here
 
-**Security Vulnerabilities:**
-- [CVE Details — CyberArk](https://www.cvedetails.com/vulnerability-list/vendor_id-18857/Cyberark.html)
-- [Addressing Recent Vulnerabilities (Blog)](https://www.cyberark.com/resources/product-insights-blog/addressing-recent-vulnerabilities-and-our-commitment-to-security)
+> **Removed in this revision (link rot / source standard).** Six previously cited links no longer resolve to usable hardening content and have been dropped rather than silently redirected: `cyberark.com/trust/`, `cyberark.com/product-security/`, `cyberark.com/trust/compliance/`, and `cyberark.com/rest-api/` all now land on the Idira marketing page (and were Trust Center / marketing pages excluded by this project's source standard regardless); `trust.cyberark.com` is a SafeBase trust portal, not configuration documentation; `api-docs.cyberark.com` redirect-loops into a SwaggerHub login; and the CVE Details vendor listing returns HTTP 403 to any automated check. Two vendor white-paper links and a vendor blog post were removed for the same reason — two now resolve to the Idira marketing page and none are configuration documentation. For compliance evidence, use your own tenant's audit reports and the framework mappings above rather than a vendor assurance page.
 
 ---
 
@@ -563,6 +685,7 @@ Configure CyberArk audit logging and forward to SIEM for security monitoring.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Rename to Idira (formerly CyberArk) throughout per the current Palo Alto Networks documentation portal — URL slug deliberately unchanged to preserve inbound links; reframe 2.1 connector hardening as automated-at-deployment (GPO in-domain / INF out-of-domain via the PSM_CPM file) with the vendor's required-TLS channels; add 2.3 Tier 0 connector isolation and 6.2 Identity Insights; update 1.1 Step 3 for the Identity docs "spaces" migration (previous doc sets frozen as of April 2026); add missing Attack Prevented to 3.1; remove six rotted or bright-line Appendix A links | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial CyberArk hardening guide | Claude Code (Opus 4.5) |
 
