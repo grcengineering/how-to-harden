@@ -6,7 +6,7 @@ slug: "rapid7"
 tier: "2"
 category: "Security"
 description: "Vulnerability management platform hardening for Rapid7 InsightVM and Command Platform including SSO, console security, and user management"
-version: "0.2.1"
+version: "0.2.2"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -405,6 +405,10 @@ Configure granular roles for least privilege access.
 2. Use custom roles for specific functions
 3. Document role assignments
 
+#### Code Implementation
+
+{% include pack-code.html vendor="rapid7" section="3.1" %}
+
 ---
 
 ### 3.2 Manage Administrator Accounts
@@ -443,6 +447,10 @@ Protect and limit administrator account access.
 1. Use strong, unique passwords (20+ characters)
 2. Store in password vault
 3. Enable MFA for all admins
+
+#### Code Implementation
+
+{% include pack-code.html vendor="rapid7" section="3.2" %}
 
 ---
 
@@ -666,6 +674,7 @@ Integrate InsightVM with InsightIDR for security monitoring.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.2 | draft | First Code Packs: `hth-rapid7-3.01` (role/privilege audit via GET /api/3/roles and /api/3/users) and `hth-rapid7-3.02` (Global Administrator inventory, admin-count ceiling, and console 2FA status via GET /api/3/users/{id}/2FA), both read-only scripts verified against the InsightVM Security Console API v3 OpenAPI spec; wired 3.1 and 3.2 pack includes | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.1 | draft | Add missing Attack Prevented lines to 1.1 and 3.2 so every cheat-sheet cell is populated | Claude Code (Opus 4.8) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass: new 2.4 console keystore and private-key protection; corrected 2.1 session timeout to the shipped 600s default with a documented vendor-conflict callout; added updates.rapid7.com and UDP 31400 to the 2.1 port list; added Scan Assistant as the credential-less scanning path in 4.1; documented the SAML rbacGroups attribute in 1.1; refreshed references to the documentation.rapid7.com hub and dropped trust-center links. Tier 3/4 research sweep out of scope this pass | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |

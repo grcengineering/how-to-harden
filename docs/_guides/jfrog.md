@@ -6,7 +6,7 @@ slug: "jfrog"
 tier: "2"
 category: "DevOps"
 description: "Artifact management security for repository permissions, Xray policies, and access tokens"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -139,7 +139,7 @@ Configure granular permissions for repository access.
 2. Create separate roles for different functions
 3. Audit admin access quarterly
 
-> **Automation surface:** [JFrog CLI](https://docs.jfrog.com/integrations/docs/jfrog-cli) is the vendor's first-party command-line tool for driving the platform, and is the natural place to codify permission management rather than clicking it per repository. The specific permission-target subcommands and JSON template format were **not fetch-verified during this revision**, so no commands are reproduced here — verify against the current JFrog CLI command reference before scripting against it. Building a verified Code Pack for this is tracked as follow-up work.
+> **Automation surface:** [JFrog CLI](https://docs.jfrog.com/integrations/docs/jfrog-cli) is the vendor's first-party command-line tool for driving the platform, and is the natural place to codify permission management rather than clicking it per repository. The specific permission-target subcommands and JSON template format were **not fetch-verified during this revision**, so no commands are reproduced here — verify against the current JFrog CLI command reference before scripting against it. The Code Pack below instead uses the fetch-verified [Access REST API v2 permissions endpoints](https://docs.jfrog.com/administration/reference/createPermission) (Artifactory 7.72.0+).
 
 #### Code Implementation
 
@@ -605,6 +605,7 @@ See the DB pack below for SIEM detection queries.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Close the 1.2 E4 follow-up: new `hth-jfrog-1.02` api pack (Access REST API v2 — POST /access/api/v2/permissions least-privilege create using the documented READ/ANNOTATE action strings, plus a read-only audit of anonymous and over-broad grants via GET /access/api/v2/permissions and /permissions/{name}); JFrog CLI permission-target subcommands remain unverified and are still not asserted | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass: correct 1.1 Step 3 — the "90-day maximum" token expiration policy does not exist; the real controls are a 3600s default, the `token.max-expiry` admin config parameter, a 24-hour cap on project admin tokens, and expiry 0 meaning non-expirable. Add 1.4 (token taxonomy by blast radius, including reference tokens whose 128-character alias form defeats secret scanners tuned to the full payload). Migrate all Appendix B links from the retired `jfrog.com/help/r/*` host to `docs.jfrog.com`; the Security Best Practices page 301s to a 404 and was removed with an explicit annotation. Remove Trust Center links per the SOURCES.md bright line. Add CVE-2025-14830 and CVE-2024-4142 from the relocated advisories page (which WAS located this pass, at `docs.jfrog.com/releases/docs/jfrog-security-advisories`). Follow-up (E4 candidate): JFrog CLI permission-target commands and JSON templates were not fetch-verified — no Code Pack authored, and no commands asserted in 1.2. Tier 2 not surveyed this pass (the CIS index was not checked); Tier 3/4 not surveyed. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial JFrog Artifactory hardening guide | Claude Code (Opus 4.5) |
