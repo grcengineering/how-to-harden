@@ -6,7 +6,7 @@ slug: "twilio"
 tier: "2"
 category: "Marketing"
 description: "Cloud communications platform hardening for Twilio including SSO configuration, account security, and API key management"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -339,6 +339,10 @@ Authenticate integrations with scoped Twilio API Keys rather than the Account SI
 2. Store in secure vault
 3. Use environment variables
 
+#### Code Implementation
+
+{% include pack-code.html vendor="twilio" section="3.1" %}
+
 ---
 
 ### 3.2 Configure Webhook Security
@@ -375,6 +379,10 @@ Secure webhook callbacks.
 2. **Never pin Twilio's certificates.** Twilio rotates its certificates without prior notice, so a pinned client breaks without warning at rotation time. Validate against the trust store instead
 3. Implement IP allowlisting where you can enumerate the sources. Be aware that Twilio's outbound webhook addresses are not a small static set you can safely guess at — the supported way to get a stable, allowlistable egress address is the **Static Proxy for Webhooks**, which is gated to the **Security and Enterprise Editions**. On other editions, treat signature validation, not IP allowlisting, as your primary authenticity control
 4. Monitor for anomalies in webhook delivery and failures
+
+#### Code Implementation
+
+{% include pack-code.html vendor="twilio" section="3.2" %}
 
 ---
 
@@ -537,6 +545,10 @@ Restrict which countries and number ranges your Twilio account is permitted to d
 
 **Automation note:** Twilio documents this control through the Voice `DialingPermissions` Country and Settings API resources. This guide does not assert a Console path for it — configure and audit it through the documented API, and verify the current Console surface against Twilio's documentation before writing a runbook that depends on one.
 
+#### Code Implementation
+
+{% include pack-code.html vendor="twilio" section="4.1" %}
+
 ---
 
 ## 5. Monitoring & Audit
@@ -685,6 +697,7 @@ Where your Twilio Edition provides it, use Bulk Export Automation to move messag
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Add first Code Packs: 3.1 API key lifecycle via first-party Twilio CLI (`twilio api:iam:v1:keys` list/create restricted with policy/update/remove, verified against the Keys v1 resource reference), 3.2 webhook signature validation via the Node.js helper library (`validateRequest` + `validateRequestWithBody` with bodySHA256, verified against the webhook security docs), 4.1 voice geographic permissions audit and subaccount inheritance enforcement via the Voice v1 REST API (DialingPermissions Countries high-risk filters + Settings `DialingPermissionsInheritance`, verified against both resource references). All commands/endpoints fetch-verified this session; pack yml keys pending central sync | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency and scope pass against Twilio IAM/Voice/Usage docs. The guide was materially under-scoped for a CPaaS — it covered Console identity and API keys but not the organization tier, toll fraud, or audit retention, which are the surfaces that actually carry loss for a communications platform. Corrections: SSO is available on all Twilio Editions (not Enterprise-only), configured at Admin Center > Users, enforced by verified email domain, with no JIT provisioning and SCIM for lifecycle (1.1); least privilege means Restricted API keys, not Standard, at Settings > Account settings > API keys & auth tokens (3.1); the legacy fixed role list is replaced by RBAC at Account settings > User management > User access with org-to-subaccount scope cascade (2.1). Added: Twilio Organizations governance (2.4), Public Key Client Validation (3.3), OAuth Apps (3.4), stored-media authentication (3.5), Fraud & Abuse Controls section with voice dialing geographic permissions and IRSF high-risk ranges (4.1), Monitoring & Audit section with Advanced Audit Insights 30-to-400-day retention and Bulk Export Automation (5.1, 5.2). Expanded 3.2 with certificate non-pinning, SSL certificate validation, JSON bodySHA256 signature validation, and the Static Proxy edition gate. Replaced the dead /docs/iam/sso link, removed five trust-center and marketing references, and renumbered Compliance Quick Reference to section 6 to make room; no control was renumbered. Tier 2 (CIS/DISA/CISA SCuBA) confirmed zero applicable baselines for Twilio; Tier 3/4 sourcing blocked, so the three Appendix A incident entries carry over unverified | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and API security | Claude Code (Opus 4.5) |
 

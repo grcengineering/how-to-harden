@@ -6,7 +6,7 @@ slug: "sendgrid"
 tier: "2"
 category: "Marketing"
 description: "Email delivery platform hardening for Twilio SendGrid including API key management, two-factor authentication, and SSO configuration"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -229,6 +229,10 @@ Restrict account access to approved IP addresses.
 3. **Warning:** any integration whose egress addresses are not on the list stops working the moment enforcement is on — application servers, serverless functions with rotating egress, marketing tools, and CI/CD jobs all send from their own IPs, not yours. Inventory and add every sending system's egress range before enabling
 4. Test from an approved location, and confirm a known integration still sends successfully
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="1.4" %}
+
 ---
 
 ## 2. API Security
@@ -366,6 +370,10 @@ Grant minimum necessary API permissions.
 2. Replace full access keys with restricted
 3. Document key purposes
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="2.3" %}
+
 ---
 
 ### 2.4 Configure API Key Alerts
@@ -496,6 +504,10 @@ Configure granular permissions for teammates.
 1. Review teammate access monthly
 2. Remove unused permissions
 3. Update as roles change
+
+#### Code Implementation
+
+{% include pack-code.html vendor="sendgrid" section="3.2" %}
 
 ---
 
@@ -792,6 +804,7 @@ Detect and respond to account compromise.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Add first Code Packs via the SendGrid v3 REST API (api/ type — SendGrid has no standalone first-party CLI): 1.4 IP Access Management allowlist audit and enforcement (`GET`/`POST /v3/access_settings/whitelist`), 2.3 least-privilege API key audit, scoped-key creation, and retirement (`/v3/api_keys` list/fetch-scopes/create-with-scopes/delete), 3.2 teammate permissions audit flagging Administrator grants (`GET /v3/teammates`). All endpoints fetch-verified this session against the Twilio SendGrid API reference; pack yml keys pending central sync | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass against Twilio SendGrid docs: corrected API key types to Full/Custom/Billing Access with per-scope No/Read/Full levels (2.1), corrected the teammate model to Administrator plus four SSO personas with billing mutually exclusive (3.2), removed the retired Authy branding and the unsourced backup-codes step from 2FA (1.1), documented that IP Access Management also governs the API and SMTP relay (1.4), added DMARC policy control (3.4), repaired two redirecting reference links and removed Trust Center and marketing-blog sources. Tier 2 (CIS/DISA/CISA SCuBA) confirmed zero applicable baselines for SendGrid; Tier 3/4 incident sourcing blocked, so the Appendix B incident note carries over unverified | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with 2FA, API key security, and SSO configuration | Claude Code (Opus 4.5) |
 
