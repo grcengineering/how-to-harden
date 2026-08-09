@@ -6,15 +6,17 @@ slug: "marketo"
 tier: "3"
 category: "Marketing"
 description: "Marketing automation security for API users, LaunchPoint services, and lead database"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 
 ## Overview
 
-Adobe Marketo Engage is a B2B marketing automation platform managing lead databases, email campaigns, and CRM integrations. REST and SOAP APIs with LaunchPoint partner integrations access prospect PII and behavioral data. Compromised API credentials enable lead database exfiltration and campaign manipulation for phishing distribution.
+Adobe Marketo Engage is a B2B marketing automation platform managing lead databases, email campaigns, and CRM integrations. The REST API, together with LaunchPoint partner integrations, accesses prospect PII and behavioral data. Compromised API credentials enable lead database exfiltration and campaign manipulation for phishing distribution.
+
+> **Deprecated — the SOAP API is gone.** Adobe states that **support for the Marketo SOAP API has ended**, effective **2026-07-31**. Earlier revisions of this guide treated SOAP as a live integration surface alongside REST; it is not. Treat any remaining SOAP integration or SOAP credential in your instance as a decommissioning item rather than something to harden. Source: [Marketo Engage release notes](https://experienceleague.adobe.com/en/docs/marketo/using/release-notes/current).
 
 ### Intended Audience
 - Security engineers managing marketing platforms
@@ -31,6 +33,8 @@ Adobe Marketo Engage is a B2B marketing automation platform managing lead databa
 
 ### Scope
 This guide covers Adobe Marketo security configurations including authentication, access controls, and integration security.
+
+> **Verification scope note (2026-08):** this revision was verified against Adobe Experience League and the Adobe Developer API documentation. Experience League serves a JavaScript landing shell for many paths, so article existence cannot be inferred from HTTP status — only pages whose rendered content was confirmed are cited. Of the Marketo admin paths in this guide, only **Admin → Users & Roles** was re-verified this pass. The **Admin → Single Sign-On**, **Admin → LaunchPoint**, **Admin → Field Management**, **Admin → Workspaces & Partitions**, and **Admin → Email → SPF/DKIM** paths reflect the last successful verification and were left unchanged rather than re-asserted; confirm the exact menu labels in your own instance.
 
 ---
 
@@ -51,13 +55,16 @@ This guide covers Adobe Marketo security configurations including authentication
 **NIST 800-53:** IA-2(1)
 
 #### Description
-Require SAML SSO with MFA for Marketo access.
+Require SAML single sign-on with multi-factor authentication for all Marketo Engage access, so every login is brokered by your corporate identity provider rather than by a local Marketo password.
 
 #### Rationale
 **Why This Matters:**
-- Lead databases contain prospect PII
-- Email templates can be weaponized for phishing
-- CRM sync exposes customer relationships
+- The Marketo lead database holds prospect PII and behavioural history at scale — a single compromised login exposes the whole record set, and there is no per-record barrier once an attacker is inside
+- Marketo can send authenticated email as your organization, so a stolen login is a phishing platform with your brand's sender reputation already attached
+- CRM synchronization means a Marketo compromise reaches beyond marketing: the integration exposes customer relationships and pipeline data held in the connected CRM
+- Centralizing authentication in the IdP is what makes conditional access, phishing-resistant factors, and single-point deprovisioning possible; local Marketo logins bypass all three
+
+**Attack Prevented:** Credential theft, phishing, password reuse, account takeover, orphaned-account access after departure
 
 #### ClickOps Implementation
 
@@ -68,10 +75,10 @@ Require SAML SSO with MFA for Marketo access.
    - Attribute mapping
    - JIT provisioning
 
-**Step 2: Enable Universal ID**
-1. Navigate to: **Admin → Adobe Identity**
-2. Migrate to Adobe Identity
-3. Enable MFA via Adobe Admin Console
+**Step 2: Enforce MFA at the identity provider**
+1. Enforce multi-factor authentication for the Marketo application in your identity provider or the Adobe Admin Console, depending on which identity model your instance uses
+2. **Path not re-verified (2026-08):** an earlier revision of this guide instructed administrators to navigate to *Admin → Adobe Identity* and "enable Universal ID." That path could not be re-verified, and the instruction appears to conflate Marketo's **Universal ID** feature (which links one user's logins across multiple Marketo subscriptions) with the separate **Adobe IMS identity migration**. Adobe identity integration naming and placement may differ in your instance — confirm the current menu before following it
+3. Whichever identity model applies, the MFA decision belongs to the identity provider fronting Marketo, not to a Marketo-local toggle
 
 ---
 
@@ -180,7 +187,11 @@ Harden REST API integrations.
    - API Only User: Select dedicated user
 3. Document Client ID and Secret securely
 
-#### API Best Practices
+**Step 3: Confirm no SOAP credentials remain provisioned**
+1. Support for the Marketo SOAP API ended **2026-07-31** (see the Overview callout). Any SOAP integration still configured is, at best, broken automation and, at worst, an unmonitored credential nobody owns
+2. Review LaunchPoint services and API-only users for entries created for SOAP integrations and decommission them — remove the service, then disable or delete the associated API-only user
+3. Removing a dead integration's credential is the cheapest possible reduction in standing API access; do not leave it in place "in case it still works"
+4. Source: [Marketo Engage release notes](https://experienceleague.adobe.com/en/docs/marketo/using/release-notes/current)
 
 ---
 
@@ -212,6 +223,44 @@ Secure Marketo webhook calls to external endpoints by enforcing HTTPS, validatin
 1. Send minimum required fields
 2. Avoid sending sensitive PII
 3. Use tokens for sensitive data retrieval
+
+---
+
+### 2.3 Migrate API Authentication to the Authorization Header
+
+**Profile Level:** L1 (Crawl)
+**NIST 800-53:** IA-5, SC-8
+
+#### Description
+Move every Marketo REST integration off `access_token` query-parameter authentication and onto the HTTP `Authorization` header before Adobe's hard cutoff, so access tokens stop being written into URLs.
+
+#### Rationale
+**Why This Matters:**
+- **This is a dated cutoff, not a recommendation.** Adobe has deprecated passing the Marketo REST access token as a query parameter, effective **2026-08-31**, and the deadline applies to **existing integrations as well as new ones**. Integrations that have not migrated stop authenticating
+- A token in the query string is a token in the URL, and URLs are recorded everywhere a header is not: web server access logs, reverse proxy and load balancer logs, corporate egress proxies, browser history, and — if the URL is ever followed from a page — the HTTP `Referer` header sent to a third party
+- Those logs are typically retained longer, replicated more widely, and protected less carefully than credential stores, so a query-parameter token has a far larger and longer-lived exposure surface than the same token carried in a header
+- Tokens leaked this way leak silently: nothing about the integration fails, so there is no operational signal that the credential is sitting in a log aggregator with a broad readership
+
+**Attack Prevented:** Access-token disclosure through access, proxy, and referrer logs; credential harvesting from log aggregation platforms; silent long-lived token exposure; integration outage at the deprecation deadline
+
+#### ClickOps Implementation
+
+**Step 1: Inventory how each integration authenticates**
+1. List every REST integration against your Marketo instance — internal automation, LaunchPoint custom services, and vendor-built connectors alike
+2. For each, determine whether it appends `access_token` to the request URL or sends an `Authorization` header
+3. Vendor-built connectors are the ones most likely to be missed; ask the vendor for written confirmation rather than assuming
+
+**Step 2: Migrate to header-based authentication**
+1. Obtain the access token from the Identity endpoint as normal, then send it in the HTTP `Authorization` header on each API call instead of appending it to the URL
+2. Sources: [Adobe Marketo APIs](https://developer.adobe.com/marketo-apis/) · [Identity API](https://developer.adobe.com/marketo-apis/api/identity)
+
+**Step 3: Treat the deadline as a change-freeze milestone**
+1. Complete migration ahead of **2026-08-31**; after that date unmigrated integrations fail, and an outage in marketing automation tends to be resolved under time pressure with whatever credential is nearest to hand
+2. Rotate any token that was previously carried in query strings — assume it is present in logs you do not control
+
+**Step 4: Purge the residue**
+1. Search your own access, proxy, and application logs for `access_token=` and purge or restrict the matching entries
+2. Add `access_token=` in a URL to your secret-scanning and log-hygiene rules so the pattern cannot quietly return
 
 ---
 
@@ -279,6 +328,12 @@ Configure SPF, DKIM, and DMARC for Marketo sending domains and govern email temp
 2. Require approval for production templates
 3. Lock approved templates
 
+**Step 3: Use archiving to shut down dormant sending**
+1. Marketo's **Disable Campaigns on Archive** behaviour automatically disables and deschedules Smart Campaigns when their containing folder is archived
+2. Archive the folder trees for retired programs and campaigns rather than leaving them dormant-but-live. A dormant Smart Campaign is a pre-built mass-send mechanism sitting in the instance; archiving removes the ability for a compromised or careless account to trigger it
+3. Make archiving part of campaign end-of-life so the standing send capability shrinks as programs retire, instead of accumulating
+4. Source: [Marketo Engage release notes](https://experienceleague.adobe.com/en/docs/marketo/using/release-notes/current)
+
 ---
 
 ## 4. Monitoring & Detection
@@ -302,25 +357,45 @@ Enable the Marketo Audit Trail and configure alerts to capture login history, as
 
 #### ClickOps Implementation
 
-**Step 1: Enable Audit Trail**
+**Step 1: Grant the Audit Trail permissions — the control fails silently without them**
+1. Audit Trail access is permission-gated. A user without the permission does not see a restricted view; they see no Audit Trail at all, so a control assumed to be "enabled" can be invisible to the very people meant to read it
+2. Navigate to: **Admin → Users & Roles → Roles → Edit Role → Access Admin**
+3. Check **Access Audit Trail** and **Access Login History**
+4. Assign that role to the users responsible for security review, then confirm each of them can actually open the trail
+5. Source: [Enable Audit Trail](https://experienceleague.adobe.com/en/docs/marketo/using/product-docs/administration/audit-trail/enable-audit-trail)
+
+**Step 2: Review the trail**
 1. Navigate to: **Admin → Audit Trail**
 2. Review:
    - Login history
    - Asset changes
    - Admin activities
 
-**Step 2: Configure Alerts**
+**Step 3: Schedule an export — in-console retention is shorter than you think**
+1. Marketo retains audit data for **6 months**, but only the most recent **30 days** are viewable in the console
+2. Thirty days is shorter than the dwell time of a typical intrusion, so an incident discovered on a normal timeline may have its origin already outside the visible window. **A scheduled export to your own log store is therefore mandatory, not optional** — build it before you need it, because it cannot be created retroactively
+3. Export on a cadence comfortably shorter than 30 days and retain according to your own incident-response requirements
+4. Source: [Audit Trail overview](https://experienceleague.adobe.com/en/docs/marketo/using/product-docs/administration/audit-trail/audit-trail-overview)
+
+**Step 4: Configure Alerts**
 1. Set up admin notifications
 2. Monitor failed logins
 3. Track API usage
 
 #### Detection Focus
 
+- **Know the visible window.** Only 30 days are queryable in-console against 6 months of retention — any detection process that assumes deeper history in the UI will quietly return incomplete results. Detections that must look further back have to run against your exported copy
+- **Know what the trail does not cover.** Audit Trail excludes **Web Personalization**, **Predictive Content**, and **Sales Insight** activity. Those surfaces need separate monitoring; do not treat Audit Trail coverage as instance-wide
+- **Three activity streams to review every pass:** admin activity (role grants, LaunchPoint service creation, SSO changes), asset activity (campaign, email, and template changes), and login history (failed logins and unfamiliar access patterns)
+- **Highest-value events:** creation of a LaunchPoint service or API-only user, role changes granting Access Admin, changes to email authentication settings, and Smart Campaign activation on previously dormant programs per [3.2](#32-email-security)
+- **Verify the permission, not just the setting.** Because access is role-gated, an empty Audit Trail view during review means "you lack the permission" at least as often as it means "nothing happened" — confirm which before concluding the instance is quiet
+
 ---
 
 ### 4.2 Integration Monitoring
 
 **Profile Level:** L2 (Walk)
+**NIST 800-53:** AU-6, SI-4
 
 #### Description
 Monitor Marketo LaunchPoint integrations and API activity for anomalous behavior that signals a compromised service or credential.
@@ -333,8 +408,6 @@ Monitor Marketo LaunchPoint integrations and API activity for anomalous behavior
 - Correlating integration behavior against established baselines surfaces credential abuse that single-event logging would miss
 
 **Attack Prevented:** Compromised integration abuse, stealthy API data exfiltration, rogue service persistence, credential misuse
-
-#### Detection Queries
 
 ---
 
@@ -352,19 +425,20 @@ Monitor Marketo LaunchPoint integrations and API activity for anomalous behavior
 ## Appendix B: References
 
 **Official Adobe Marketo Documentation:**
-- [Adobe Trust Center](https://www.adobe.com/trust.html)
+- [Marketo Engage release notes](https://experienceleague.adobe.com/en/docs/marketo/using/release-notes/current) — SOAP API end of support, REST query-parameter deprecation, Disable Campaigns on Archive
+- [Audit Trail overview](https://experienceleague.adobe.com/en/docs/marketo/using/product-docs/administration/audit-trail/audit-trail-overview) — retention, visible window, exclusions
+- [Enable Audit Trail](https://experienceleague.adobe.com/en/docs/marketo/using/product-docs/administration/audit-trail/enable-audit-trail) — the role permissions that gate access
 - [Marketo Engage Product Documentation](https://experienceleague.adobe.com/en/docs/marketo/using/home)
-- [Marketo Engage Security Overview (PDF)](https://www.adobe.com/content/dam/cc/en/trust-center/ungated/whitepapers/experience-cloud/adobe_marketo_data_protection_overview.pdf)
 
 **API Documentation:**
-- [Marketo REST API Reference](https://developer.adobe.com/marketo-apis/)
+- [Adobe Marketo APIs](https://developer.adobe.com/marketo-apis/)
+- [Marketo Identity API](https://developer.adobe.com/marketo-apis/api/identity) — access token acquisition
 
 **Compliance Frameworks:**
-- SOC 2 Type II, ISO 27001, HIPAA readiness — via [Adobe Trust Center Compliance](https://www.adobe.com/trust/compliance.html)
-- [Adobe Compliance List by Product](https://www.adobe.com/trust/compliance/compliance-list.html)
+- Adobe publishes attestation and certification reports for Marketo Engage through Adobe. Compliance-marketing and trust pages are deliberately not cited here; request the reports directly and assess them yourself.
 
 **Security Incidents:**
-- No major public security incidents specific to Adobe Marketo Engage identified. Adobe experienced a large-scale data breach in 2013 affecting Adobe Creative Cloud accounts (not Marketo). Organizations should monitor the [Adobe Trust Center](https://www.adobe.com/trust.html) for current advisories.
+- No major public security incidents specific to Adobe Marketo Engage identified. Adobe experienced a large-scale data breach in 2013 affecting Adobe Creative Cloud accounts (not Marketo). Track current advisories through Adobe's product security advisory feed and the [Marketo Engage release notes](https://experienceleague.adobe.com/en/docs/marketo/using/release-notes/current).
 
 ---
 
@@ -372,6 +446,7 @@ Monitor Marketo LaunchPoint integrations and API activity for anomalous behavior
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass against Adobe Experience League and developer.adobe.com. **Support for the Marketo SOAP API ended 2026-07-31** — dropped SOAP as a live surface in the Overview and added a residual decommissioning step to 2.1. Added 2.3: REST `access_token` query-parameter authentication is deprecated for new *and existing* integrations effective **2026-08-31**, with migration to the `Authorization` header and the log/proxy/referrer leakage rationale. Expanded 4.1 with the role permissions that gate Audit Trail access (Admin → Users & Roles → Roles → Edit Role → Access Admin → Access Audit Trail / Access Login History — without them the control fails silently) and the retention reality (6 months retained, 30 days viewable in-console, scheduled export mandatory, Web Personalization / Predictive Content / Sales Insight excluded); populated Detection Focus. Added a Disable Campaigns on Archive step to 3.2. Fixed 1.1 for the cheat-sheet parser contract (added **Attack Prevented:** and upgraded the bare Why-This-Matters fragments) and added the missing **NIST 800-53:** line to 4.2; removed the empty Detection Queries and API Best Practices headings. Softened 1.1 Step 2 (the Adobe Identity / Universal ID path could not be re-verified and appears to conflate Universal ID with the Adobe IMS migration) and added a Scope-level verification note — only Admin → Users & Roles was re-verified this pass. Removed Adobe Trust Center, the trust-center whitepaper PDF, and both trust/compliance pages from Appendix B; corrected the 404ing developer sub-path to the /marketo-apis/ root plus the Identity API. Tier 2: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline covers Marketo Engage. Tier 3/4 not surveyed this pass. | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Adobe Marketo hardening guide | Claude Code (Opus 4.5) |
 
