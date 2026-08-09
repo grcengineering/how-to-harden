@@ -6,9 +6,9 @@ slug: "paylocity"
 tier: "2"
 category: "HR/Finance"
 description: "HCM platform hardening for Paylocity including SAML SSO configuration, MFA enforcement, and role-based access controls"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -27,7 +27,18 @@ Paylocity is a leading cloud-based human capital management (HCM) and payroll pl
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Paylocity security including SAML SSO, MFA, role-based access control, and session security.
+This guide covers Paylocity security including SAML SSO, MFA, role-based access control, session security, and API integration credential governance.
+
+### Documentation Availability — Read This First
+
+**Paylocity publishes no public administrator documentation.** Administrator help is available only in-product to authenticated administrators, and the customer help host does not resolve publicly. The single publicly reachable first-party technical source is the [Paylocity Developer Portal](https://developer.paylocity.com/), which documents API integration only.
+
+Practical consequences for this guide:
+
+- The console navigation paths and the Paylocity-Support-mediated SSO enablement process described below reflect the state at last verification and **cannot be re-verified against any public source**. Confirm them against in-product help before relying on them in a change plan.
+- No Tier 2 baseline covers Paylocity — there is no CIS Benchmark, DISA STIG, or CISA SCuBA baseline for the platform, so the compliance mappings here are framework mappings written by this guide, not vendor- or benchmark-published control IDs.
+- Only [§2.4](#24-govern-api-integration-credentials) rests on a currently fetchable first-party source.
+- The guide stays at `draft` maturity for these reasons.
 
 ---
 
@@ -71,6 +82,8 @@ Configure SAML SSO to centralize authentication for Paylocity users.
 
 #### ClickOps Implementation
 
+**Sourcing note:** Paylocity publishes no public admin documentation, so the console path and support-mediated enablement process below reflect the state at last verification and cannot be externally re-verified. Confirm against in-product help before executing.
+
 **Step 1: Request SSO Enablement**
 1. Contact Paylocity Support at service@paylocity.com
 2. Request SAML 2.0 enablement for your account
@@ -108,14 +121,16 @@ Configure SAML SSO to centralize authentication for Paylocity users.
 | NIST 800-53 | IA-2(1) |
 
 #### Description
-Require MFA for all Paylocity users.
+Require multi-factor authentication for every Paylocity user, enforced at the identity provider for SSO logins and natively on any account that can still authenticate directly.
 
 #### Rationale
 **Why This Matters:**
-- MFA adds critical layer beyond passwords
-- Guards against credential theft
-- Required for accessing sensitive employee PII
-- Supports biometric and one-time codes
+- A password alone is the single most reliable way into an HCM tenant; MFA breaks the credential-stuffing and password-reuse paths that dominate payroll account takeover
+- Payroll and HR administrators can change direct-deposit destinations and read the entire workforce's SSNs and compensation, so a second factor on those accounts is the difference between a leaked password and a fraud incident
+- Phishing-resistant factors such as FIDO2/WebAuthn security keys and platform passkeys defeat real-time proxy phishing and push-fatigue attacks that one-time codes and push approvals do not
+- Enforcing MFA at the IdP covers every SSO login uniformly, but any surviving direct-login path is the bypass — it needs its own second factor or the control is only partially applied
+
+**Attack Prevented:** Credential stuffing, password reuse, phishing, push-fatigue MFA bypass, payroll administrator account takeover
 
 #### ClickOps Implementation
 
@@ -181,16 +196,20 @@ Configure session timeout and security controls.
 | NIST 800-53 | AC-6 |
 
 #### Description
-Implement least privilege using Paylocity's RBAC model.
+Implement least privilege using Paylocity's security-role model, assigning each user the narrowest predefined or custom role that covers their job function rather than a broad HR or payroll administrator role.
 
 #### Rationale
 **Why This Matters:**
-- RBAC enforces organizational policies
-- Employees only perform permitted actions
-- Critical for protecting employee PII
-- Supports multiple role types
+- Paylocity's predefined administrator roles carry far more authority than most job functions need, so assigning them by default grants standing access to SSNs, compensation, and banking details across the whole workforce
+- Least-privilege role assignment contains the blast radius of any single compromised account to the records that role legitimately touches, instead of the entire employee population
+- Separating HR, payroll, and manager duties enforces segregation of duties, so no single account can both change a bank account and approve the pay run that sends money to it
+- Custom roles with a documented purpose prevent privilege creep as employees change teams and accumulate permissions that nobody revisits
+
+**Attack Prevented:** Privilege escalation, payroll fraud through excess standing access, insider PII harvesting, segregation-of-duties failure
 
 #### ClickOps Implementation
+
+**Sourcing note:** the navigation paths below reflect the state at last verification and cannot be externally re-verified — Paylocity publishes no public admin documentation.
 
 **Step 1: Review Security Roles**
 1. Navigate to: **User Access** → **Security Roles**
@@ -285,6 +304,59 @@ Configure appropriate manager access for self-service functions.
 1. Enable manager approval workflows
 2. Configure time-off approvals
 3. Set up expense approvals
+
+---
+
+### 2.4 Govern API Integration Credentials
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.10 |
+| NIST 800-53 | IA-5, SC-8, SC-12 |
+
+#### Description
+Treat Paylocity API client credentials as privileged secrets: obtain them only through Paylocity's approval process, exchange them for short-lived bearer tokens over TLS 1.2 or higher, store them in a secrets manager instead of source control or email, and rotate every client secret ahead of its mandatory 365-day expiration.
+
+#### Rationale
+**Why This Matters:**
+- Paylocity API clients authenticate with the OAuth 2.0 client-credentials grant against Paylocity's identity provider token endpoint, so a leaked client ID and secret pair is a complete, non-interactive path into payroll and employee data with no MFA prompt in the way
+- Access tokens issued from that exchange are short-lived — roughly one hour — which limits token replay, but the underlying client secret stays valid for a full year, so the secret, not the token, is the credential that actually needs protecting and rotating
+- Paylocity requires client secrets to be rotated at least every 365 days and emails the registered contact 10 days and 5 days before expiry; organizations that treat those notices as the rotation trigger keep every secret at maximum age and discover the problem as an integration outage
+- Paylocity's own guidance warns against storing credentials in source control such as GitHub or sending them by email — the two most common leak paths for machine credentials that never expire on their own
+- Requiring TLS 1.2 or higher on every call protects the credential exchange itself from downgrade and interception
+
+**Attack Prevented:** Leaked machine credentials, non-interactive payroll data exfiltration, bearer-token replay, credential interception over weak TLS
+
+#### Prerequisites
+- API access is not self-service: it must be requested from Paylocity and approved, and the customer whose data will be accessed must also sign off before credentials are issued
+- A secrets manager or equivalent secure store for the client ID and secret
+
+#### ClickOps Implementation
+
+**Step 1: Request and Scope API Access**
+1. Request API access through Paylocity and obtain the required customer authorization before credentials are issued
+2. Record which Paylocity APIs the integration genuinely needs, and request no more than that
+3. Receive the client ID and client secret through the approved channel — never accept or forward them over email
+
+**Step 2: Store and Transmit Credentials Safely**
+1. Store the client ID and secret in a secrets manager; add explicit ignore rules so they cannot be committed to source control
+2. Configure the integration to obtain access tokens from Paylocity's documented identity provider token endpoint using the `client_credentials` grant
+3. Enforce TLS 1.2 or higher on every call to the Paylocity API — Paylocity requires it, and anything weaker should fail closed on your side too
+4. Cache each bearer token for its ~1-hour lifetime rather than minting one per request, and keep tokens out of application logs
+
+**Step 3: Rotate Ahead of Expiry**
+1. Set an internal rotation interval shorter than 365 days and drive rotation from your own calendar, not from Paylocity's 10-day and 5-day expiry emails
+2. Generate the replacement secret through the developer portal's create-new-client-secret endpoint
+3. Deploy the new secret, verify the integration authenticates, then retire the previous one
+4. Rotate immediately and out of cycle whenever a secret may have been exposed
+
+#### Validation & Testing
+- Confirm a token request negotiated below TLS 1.2 fails rather than falling back
+- Confirm the age of every live client secret is under your internal rotation interval, not merely under 365 days
+- Search source repositories and mail/ticket history for the client ID to confirm the secret was never committed or mailed
+- Confirm bearer tokens do not appear in application, proxy, or CI logs
 
 ---
 
@@ -459,19 +531,14 @@ Configure controls for regulatory compliance.
 ## Appendix A: References
 
 **Official Paylocity Documentation:**
-- [Trust Center](https://trust.paylocity.com/)
-- [Protecting Our Clients](https://www.paylocity.com/company/protecting-our-clients/)
-- [Client Support](https://www.paylocity.com/contact/client-support/)
-- [Identity and Access Management Guide](https://www.paylocity.com/resources/learn/articles/identity-access-management/)
-- [SSO Integration](https://www.paylocity.com/resources/glossary/sso/)
-- [Trust Center Controls](https://trust.paylocity.com/controls)
+- [Paylocity Developer Portal](https://developer.paylocity.com/) — the only publicly reachable first-party technical documentation for Paylocity
+- [API Authentication](https://developer.paylocity.com/integrations/reference/authentication) — OAuth 2.0 client-credentials flow, TLS 1.2 requirement, bearer-token lifetime, and the 365-day client-secret rotation requirement
+- Administrator help is in-product only. Paylocity publishes no public admin or configuration documentation, and the customer help host does not resolve — every console path in this guide is therefore stated as last-verified, not as a re-verifiable citation.
 - Contact: service@paylocity.com for SSO enablement
 
-**API Documentation:**
-- [Paylocity Developer Portal](https://developer.paylocity.com/)
-
 **Compliance Frameworks:**
-- SOC 1 Type II, SOC 2 Type II, ISO 27001:2022 — via [Trust Center](https://trust.paylocity.com/)
+- Paylocity's attestation status (SOC reports, ISO certificates) is published only through its Trust Center, which is a compliance-attestation surface rather than hardening documentation and is deliberately not cited here as a control source. Request current attestations directly from Paylocity under NDA.
+- No Tier 2 baseline covers Paylocity: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline exists for the platform.
 
 **Security Incidents:**
 - **November 2018:** A misconfiguration incident temporarily exposed personal information (names, SSNs, addresses) of employees from one client to the administrator of another Paylocity client. No evidence of external attacker involvement. No major breaches of Paylocity infrastructure have been publicly reported since.
@@ -482,6 +549,7 @@ Configure controls for regulatory compliance.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass. Added 2.4 (API integration credential governance) from the Paylocity Developer Portal — OAuth 2.0 client-credentials grant, mandatory TLS 1.2, ~1-hour bearer tokens, and the required 365-day client-secret rotation. Repaired the cheat-parser contract on 1.2 and 2.1 (missing `Attack Prevented`, placeholder rationale bullets). Purged Trust Center, "Protecting Our Clients", contact-page, and marketing learning-center links from Appendix A; the developer portal is now the only cited first-party source. Documented in the Overview and in the affected controls that Paylocity publishes no public administrator documentation (help host does not resolve; admin help is in-product only), so all console paths and the SSO-enablement process reflect last verification and are not externally re-verifiable. Tier 2 bodies surveyed with zero coverage confirmed: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline exists for Paylocity. Tier 3/4 product-specific research not surveyed this pass. Maturity held at draft because of the documentation gap. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and data protection | Claude Code (Opus 4.5) |
 
