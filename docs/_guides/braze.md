@@ -6,9 +6,9 @@ slug: "braze"
 tier: "2"
 category: "Marketing"
 description: "Customer engagement platform hardening for Braze including SAML SSO, permission sets, and API security"
-version: "0.1.1"
+version: "0.1.2"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -28,6 +28,8 @@ Braze is a leading customer engagement platform serving **thousands of brands** 
 
 ### Scope
 This guide covers Braze security including SAML SSO, permission sets, API key management, and data protection.
+
+> **Source-verification note (2026-08):** `braze.com` — including `braze.com/docs` — refused TCP connections from the automated tooling used for this currency pass. The refusal was at the network layer, not an authentication or bot-detection wall, so no Tier 1 Braze documentation could be re-fetched and re-verified in this pass. Control content and cited URLs therefore reflect the guide's **last successful verification**, not a 2026-08 confirmation. Treat plan-tier availability, console paths, and setting names below as needing confirmation against the live Braze documentation before you rely on them.
 
 ---
 
@@ -454,7 +456,6 @@ Configure data retention policies.
 ## Appendix A: References
 
 **Official Braze Documentation:**
-- [Braze Trust & Security](https://www.braze.com/product/trust)
 - [Braze User Guide](https://www.braze.com/docs/user_guide/introduction)
 - [Security Settings](https://www.braze.com/docs/user_guide/administrative/app_settings/company_settings/security_settings)
 - [Security Qualifications](https://www.braze.com/docs/developer_guide/disclosures/security_qualifications)
@@ -478,6 +479,7 @@ Configure data retention policies.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.1.2 | draft | Currency pass — **scope limited: braze.com refused all connections from this network path, so no Tier 1 doc could be re-verified**. Structural changes only: removed the Trust & Security marketing link from Appendix A (hardening-source standard), added a source-verification note to the Overview. No control content was changed, because no control claim could be confirmed or refuted this pass. Tier 2 survey found no CIS Benchmark, DISA STIG, or CISA SCuBA baseline for Braze; Tier 3/4 research not surveyed this pass | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, permissions, and API security | Claude Code (Opus 4.5) |
 
