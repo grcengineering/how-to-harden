@@ -6,7 +6,7 @@ slug: "box"
 tier: "3"
 category: "Data"
 description: "Enterprise content security for sharing policies, app controls, and classification"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -100,6 +100,10 @@ Assign Box administrative and content permissions using least-privilege roles (C
 | Group Admin | Manage specific groups |
 | Content Manager | Manage content, no users |
 | User | Standard access |
+
+#### Code Implementation
+
+{% include pack-code.html vendor="box" section="1.2" %}
 
 ---
 
@@ -282,6 +286,10 @@ Scope Box service accounts to specific folders, rotate their credentials on a re
 3. Rotate credentials quarterly
 4. Monitor service account activity
 
+#### Code Implementation
+
+{% include pack-code.html vendor="box" section="3.2" %}
+
 ---
 
 ## 4. Monitoring & Detection
@@ -326,6 +334,10 @@ Shield access policies are built from documented security control types. Each on
 **Step 3: Enable threat detection**
 1. Enable Shield's anomaly detection for unusual download volume, suspicious locations, and suspicious sessions, and route its alerts to the team that will actually triage them
 
+#### Code Implementation
+
+{% include pack-code.html vendor="box" section="4.1" %}
+
 ---
 
 ## Appendix A: Edition Compatibility
@@ -366,6 +378,7 @@ Shield access policies are built from documented security control types. Each on
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Added first Code Packs (Box CLI): 1.2 user role audit, 3.2 service-account (app user) inventory with enterprise-event activity review, 4.1 Shield alert retrieval from the admin_logs event stream. All commands verified against the Box CLI command reference (box/boxcli docs) and the Box Events/Users API references. | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass against Box Support and Box Developer documentation. Corrected 3.1 — Box splits app management across two surfaces (third-party integrations under Admin Console → Integrations; JWT/CCG custom apps under Admin Console → Platform → Platform Apps) — and added a scope re-authorization step, since Box does not apply scope changes to an already-authorized app. Added 1.3 Device Trust (including its documented admin and FTP/SFTP exemptions) and 1.4 web session duration (14-day default, web app only). Expanded 4.1 with Box Shield's seven documented security control types and the Monitor-vs-Enforce mode choice, and added its missing NIST mapping. Removed an empty Detection Queries heading and Trust Center references. Tier 2 (CIS, DISA STIG, CISA SCuBA) confirmed zero coverage for Box; Tier 3/4 not surveyed this pass. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Box hardening guide | Claude Code (Opus 4.5) |

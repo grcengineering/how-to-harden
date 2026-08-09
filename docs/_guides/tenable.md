@@ -6,7 +6,7 @@ slug: "tenable"
 tier: "2"
 category: "Security"
 description: "Vulnerability management platform hardening for Tenable One Vulnerability Management and Security Center including user access, scanning security, and agent configuration"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -146,6 +146,10 @@ Configure granular roles to implement least privilege access. Tenable's Access C
 3. Use Basic or a view-only custom role for stakeholders
 4. Re-review assignments quarterly against the custom-role permission set
 
+#### Code Implementation
+
+{% include pack-code.html vendor="tenable" section="1.2" %}
+
 ---
 
 ### 1.3 Monitor Administrator Activity
@@ -186,6 +190,10 @@ Monitor and audit administrator activities.
 1. Weekly review of admin activity
 2. Investigate anomalies
 3. Document findings
+
+#### Code Implementation
+
+{% include pack-code.html vendor="tenable" section="1.3" %}
 
 ---
 
@@ -502,6 +510,10 @@ Tenable API keys are an access key / secret key pair that authenticates API requ
 3. Schedule regeneration in a maintenance window and update all consumers in the same change
 4. Regenerate immediately on suspected exposure or when a key holder leaves
 
+#### Code Implementation
+
+{% include pack-code.html vendor="tenable" section="3.4" %}
+
 #### Validation & Testing
 1. Confirm each active key maps to a documented application and owner
 2. Confirm a departed user's keys no longer authenticate against the API
@@ -680,6 +692,7 @@ Use dashboards to monitor hardening compliance posture.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Added first Code Packs (Tenable Vulnerability Management REST API): 1.2 user-role audit (GET /users?withRoles=true — permissions tiers, api_permitted, two_factor flags), 1.3 audit-log export for SIEM (GET /audit-log/v1/events with date filters, offset paging, user-target change review), 3.4 API-capable account inventory plus gated key rotation (PUT /users/{user_id}/keys with explicit confirmation, secrets never echoed to logs). All endpoints verified against developer.tenable.com references. | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass (Tier 1 only): added 3.4 API key management (all roles from Basic upward can generate keys; regeneration replaces keys immediately; keys shown once; no expiry mechanism); rewrote 1.2 for the VM Custom Role and the 2026-07-08 Exposure Management export and Linked Agents privileges; added native passkey sign-in (2026-03-31) as the L2/L3 target for administrators in 2.2; documented the SAML no-SP-initiated-flow, exact-username-match, and break-glass constraints in 2.1; renamed Tenable.io to Tenable One Vulnerability Management throughout. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, authentication, and hardening assessments | Claude Code (Opus 4.5) |
 

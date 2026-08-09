@@ -6,7 +6,7 @@ slug: "tableau"
 tier: "4"
 category: "Data"
 description: "BI platform security for site roles, data source credentials, and embed controls"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -123,6 +123,10 @@ Assign least-privilege site roles and project-level permissions so each user rec
 1. Navigate to: **Explore → Projects**
 2. Configure project-level permissions
 3. Use permission templates
+
+#### Code Implementation
+
+{% include pack-code.html vendor="tableau" section="1.2" %}
 
 ---
 
@@ -280,6 +284,10 @@ Lock project-level permissions, remove broad "All Users" grants, and encrypt ext
 2. Limit extract downloads
 3. Encrypt extracts at rest
 
+#### Code Implementation
+
+{% include pack-code.html vendor="tableau" section="3.1" %}
+
 ---
 
 ### 3.2 Embedding Security
@@ -310,6 +318,10 @@ Restrict embedding to allowed domains via Connected Apps and constrain trusted-a
 1. Configure trusted hosts
 2. Limit ticket lifespan
 3. Monitor trusted authentication usage
+
+#### Code Implementation
+
+{% include pack-code.html vendor="tableau" section="3.2" %}
 
 ---
 
@@ -395,6 +407,10 @@ Collect the Tableau Cloud Activity Log — tenant events from Tableau Cloud Mana
 
 > **Access requirement:** the **Cloud Administrator** role is required to work with the Activity Log ([Activity Log overview](https://help.tableau.com/current/online/en-us/activity_log_overview.htm)).
 
+#### Code Implementation
+
+{% include pack-code.html vendor="tableau" section="4.2" %}
+
 #### Validation & Testing
 Generate a known event — a failed login, then a permission change — and confirm both appear in the collected Activity Log within the expected latency. Confirm events older than 14 days are still retrievable if you are licensed for extended retention.
 
@@ -445,6 +461,7 @@ Generate a known event — a failed login, then a permission change — and conf
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Added first Code Packs (Tableau REST API + Tableau Cloud Manager API, Python stdlib): 1.2 site-role audit (Get Users on Site), 3.1 project-permission audit (Query Projects contentPermissions + Query Project Permissions + Query Groups, flagging ManagedByOwner projects and "All Users" grants), 3.2 direct-trust Connected Apps audit (unrestrictedEmbedding / empty domainSafelist), 4.2 Activity Log export via the TCM Platform Data endpoints (pat/login, tenants/{tenantId}/activitylog list + download-URL exchange). All endpoints verified against the Tableau REST API and Cloud Manager API references. | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass. **1.1:** retitled and reframed — MFA has been contractually required for all Tableau Cloud users since 2022-02-01 regardless of authentication type, so the control is now choosing a phishing-resistant factor and migrating off local TableauID accounts rather than "enabling MFA"; the five documented authentication types added (Tableau with MFA as the built-in default, Google, OpenID Connect, Salesforce, SAML). **1.2:** Cloud Administrator added to the role table as the tenant tier above Site Administrator Creator. **New 1.3:** Tableau Cloud Manager tenant layer — Cloud Administrator inventory and tenant-event monitoring; citations anchored on the Activity Log documentation because no dedicated TCM reference page could be located. **2.1:** Attack Scenario prose tightened (placement already conformed to the repo convention). **2.2:** the empty "Implement User Filters" step replaced with the four documented row-level security options (manual user filter, dynamic security-field filter, virtual-connection data policy as Tableau's recommended default, database RLS) plus the two-table extract guidance. **4.1:** the bare Detection Focus heading populated with Activity Log-derived detection guidance. **New 4.2:** Activity Log collection — tenant vs site events, 14-day standard retention against 365 days via the REST API with Advanced Management/Tableau Enterprise/Tableau+, S3 delivery for site events, 1-day vs sub-15-minute latency, Cloud Administrator required. **Appendix B:** the Server hardening checklist annotated as Tableau Server (Windows) only and not Cloud-applicable as written; Cloud security overview, authentication, Activity Log, and RLS-options anchors added; Salesforce compliance links confined to the compliance-frameworks line. Attempted and NOT applied: a Tableau Cloud "security checklist for publishing data" page — two candidate URLs returned HTTP 404 and the page could not be located, so it is not cited. Not surveyed this pass: Tier 3/4 research, and Tableau Server-specific hardening | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial Tableau hardening guide | Claude Code (Opus 4.5) |
