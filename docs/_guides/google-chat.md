@@ -9,7 +9,7 @@ product: "Google Chat"
 tier: "1"
 category: "Productivity"
 description: "Security hardening for Google Chat — app & webhook controls, external chat & spaces, file sharing, history, retention & auto-deletion, DLP for Chat, space access defaults, and audit logging, content protection & moderation."
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -735,6 +735,7 @@ Create a custom admin role carrying the **Moderate Chat content report** privile
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.2.1 | 2026-08-08 | Rewrote §3.1 BigQuery detection pack against the documented Workspace activity schema — completed coverage of the control's event table by adding `message_posted` volume (with distinct source-IP count) and bulk `add_room_member` detections alongside the existing `attachment_upload` and `room_created` queries; all columns verified against Google's BigQuery export example-queries documentation. |
 | 0.2.0 | 2026-08-08 | Currency pass against Google Workspace admin docs and CISA SCuBA: corrected 3.1 content-reporting edition prerequisites and documented its history-off/external-DM/external-space blind spots; corrected 2.1's console path and label to the single External chat settings page covering spaces *and* group DMs, and dropped the unverifiable CIS Google Workspace citation; added 2.4 auto-deletion retention, 2.5 DLP for Chat, 2.6 restricted space access default, 3.2 Chat content protection coverage limits, and 3.3 scoped Chat moderator role. Rebuilt the BigQuery detection pack against the real Workspace activity-export schema (`activity` table, flat `email` column, `TIMESTAMP_MICROS(time_usec)` window). |
 | 0.1.0 | 2026-05-29 | Initial Google Chat product guide — split from the Google Workspace guide (controls 1.1 app allowlisting, 2.1 external chat, 2.2 file sharing, 2.3 history & retention, 3.1 audit & content reporting). Part of the multi-product platform restructure. |
 
