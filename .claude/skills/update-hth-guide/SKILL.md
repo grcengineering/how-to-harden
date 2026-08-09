@@ -30,7 +30,7 @@ Hunt MATERIAL deltas per source tier (SOURCES.md):
 1. **Corrections first.** A guide instructing a removed setting or asserting a stale fact gets corrected IN PLACE, keeping its number. (Real examples this repo shipped: a control for Google's Less Secure Apps toggle after Google deleted the feature; "Dependabot has no cooldown" after it became a default; Zoom token lifetimes off by two orders of magnitude; "Atlassian Access" a full product-rename behind.)
 2. **Changed defaults** become a bolded callout INSIDE the affected control with the source link — not loose prose.
 3. **New controls** go at the END of the best-fit `## N.` section with the next free `### N.M`. NEVER renumber existing controls — pack includes and inbound anchors depend on them. A genuinely new theme may add a new `## N.` section before the compliance/reference sections.
-4. Every new control follows the full anatomy in `create-hth-guide` Phase 4 (the cheat-parser contract) — otherwise it silently misses the cheat sheet.
+4. Every new control follows the full anatomy in `create-hth-guide` Phase 4 (the cheat-parser contract) — a control with `**Profile Level:**` but a missing rationale piece renders a cheat row with a silent blank cell; one without `**Profile Level:**` misses the sheet entirely.
 5. **No pack includes for new controls** unless a verified pack exists (create via create-code-pack). Most SaaS admin settings are ClickOps-only — state the automation surface honestly.
 6. If a pack automated a now-removed setting, delete the pack file and re-run `bash scripts/sync-packs-to-data.sh` — automation for a nonexistent setting is fabrication.
 7. Update References/Appendix links that rotted (redirect-chasing per SOURCES.md verification rules).

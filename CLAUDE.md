@@ -73,7 +73,7 @@ See [AGENTS.md §5](AGENTS.md#5-revision-dates-reflect-the-publish-date-not-the-
 
 ### 6. Cheat Sheets Are Parsed From Control Structure
 
-A control renders as a cheat-sheet row ONLY if its `### N.N` section carries `**Profile Level:**`, `#### Description` + paragraph, and `#### Rationale` with `**Why This Matters:**` bullets plus `**Attack Prevented:**`. Miss one and the control silently vanishes from the cheat sheet. Reference sections and `### N.N.N` walk-throughs must NOT carry `**Profile Level:**`. Full contract: [AGENTS.md §6](AGENTS.md).
+A control renders as a cheat-sheet row when its `### N.N` section carries `**Profile Level:**` — that key alone creates the row. Every other contract piece (`#### Description` + paragraph, `#### Rationale` with `**Why This Matters:**` bullets plus `**Attack Prevented:**`) fills a cell; miss one and the row renders with a silent blank gap, which violates the fully-populated-cells quality bar. Omit `**Profile Level:**` and the control is excluded entirely — so reference sections and `### N.N.N` walk-throughs must NOT carry it. Full contract: [AGENTS.md §6](AGENTS.md).
 
 ### 7. Hardening Links Are Literal Hardening Docs
 

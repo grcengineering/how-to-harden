@@ -34,7 +34,7 @@ A step-by-step process any agent or human can follow to produce `docs/_guides/{s
 
 ## Phase 4 — Author each control
 
-Write every control with this exact anatomy (it is the cheat-sheet parser contract — miss a piece and the control silently vanishes from the cheat sheet):
+Write every control with this exact anatomy (it is the cheat-sheet parser contract — `**Profile Level:**` alone creates the cheat row; each other piece fills a cell, and a missing piece renders as a silent blank gap in the row):
 
 1. `### N.N Title` (H3, numbered)
 2. `**Profile Level:** L1 (Crawl)` — leading bold key

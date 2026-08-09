@@ -129,7 +129,7 @@ TODAY=$(date +%F)   # YYYY-MM-DD in your local timezone
 
 ### 6. The Cheat-Sheet Parser Contract
 
-Cheat sheets are built client-side from the rendered guide DOM. A control appears as a cheat row ONLY if its `### N.N` section carries ALL of: a leading `**Profile Level:** L1 (Crawl)` bold key, `#### Description` with a non-empty paragraph, and `#### Rationale` with `**Why This Matters:**` bullets plus an `**Attack Prevented:**` line. A control missing any of these silently vanishes from the cheat sheet.
+Cheat sheets are built client-side from the rendered guide DOM. A control appears as a cheat row when its `### N.N` section carries a leading `**Profile Level:** L1 (Crawl)` bold key — that key alone creates the row (`docs/_includes/cheat-sheet.html` pushes any control with a parsed level). The remaining contract pieces fill the row's cells: `#### Description` with a non-empty paragraph, and `#### Rationale` with `**Why This Matters:**` bullets plus an `**Attack Prevented:**` line. A control missing one of those still renders — as a row with a silent blank gap where that cell's content should be, which violates the fully-populated-cells quality bar and is exactly as much a defect as a missing row, just harder to spot in a quick scan.
 
 Reference sections ("Key Events to Monitor", "Integration Risk Assessment Matrix", compliance quick-reference subsections) and `### N.N.N` implementation walk-throughs must NOT carry `**Profile Level:**` — omitting it is what correctly excludes them.
 

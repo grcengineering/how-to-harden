@@ -43,7 +43,7 @@ EOF
 ```
 
 **Pass:** prints `PARITY CLEAN` for every touched guide.
-**On fail:** each listed control is missing part of the parser contract and will silently vanish from the cheat sheet — fix per create-hth-guide Phase 4.
+**On fail:** each listed control is missing part of the parser contract — a missing `**Profile Level:**` drops the row entirely; a missing Description/Rationale piece renders the row with a silent blank cell. Both violate the quality bar; fix per create-hth-guide Phase 4.
 
 ## Check 4 — Pack wiring integrity (when packs or includes changed)
 
