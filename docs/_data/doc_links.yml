@@ -103,8 +103,6 @@ aws-iam-identity-center:
       url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/security.html"
     - label: "IAM Best Practices"
       url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html"
-    - label: "CIS AWS Foundations Benchmark"
-      url: "https://www.cisecurity.org/benchmark/amazon_web_services"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/aws-iam-identity-center"
 
 azure-devops:
@@ -122,7 +120,7 @@ bamboohr:
   api_docs: "https://documentation.bamboohr.com/docs/getting-started"
 
 beyondtrust:
-  product_docs: "https://www.beyondtrust.com/docs"
+  product_docs: "https://docs.beyondtrust.com/"
   api_docs: "https://docs.beyondtrust.com/pra/reference/api-guide"
   hardening_docs: "https://docs.beyondtrust.com/bips/docs/u-series-best-practices"
 
@@ -192,8 +190,12 @@ concur:
 
 coupa:
   product_docs: "https://compass.coupa.com/en-us/products/product-documentation"
+  # api_docs: legacy documentation, per Coupa's own deprecation banner on the page.
+  # No public successor URL was verifiable as of 2026-08 (buyer-tenant docs are Okta-gated).
   api_docs: "https://compass.coupa.com/en-us/products/product-documentation/integration-technical-documentation/the-coupa-core-api"
-  hardening_docs: "https://compass.coupa.com/en-us/products/product-documentation/supplier-resources/for-suppliers/core-supplier-onboarding/announcements-and-general-info/mfa-faq-and-security-best-practices"
+  hardening_docs:
+    - label: "Supplier Portal MFA & Security Best Practices (supplier-scoped)"
+      url: "https://compass.coupa.com/en-us/products/product-documentation/supplier-resources/for-suppliers/core-supplier-onboarding/announcements-and-general-info/mfa-faq-and-security-best-practices"
 
 crowdstrike:
   product_docs: "https://falcon.crowdstrike.com/documentation/"

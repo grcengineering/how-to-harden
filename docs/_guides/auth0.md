@@ -6,9 +6,9 @@ slug: "auth0"
 tier: "2"
 category: "Identity"
 description: "Identity platform hardening for Auth0 tenant security, MFA, and attack protection"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -63,6 +63,8 @@ Brute force protection blocks IP addresses that repeatedly fail to authenticate 
 - Notifies affected users of suspicious activity
 - Default threshold of 10 may be too high for sensitive applications
 
+**Attack Prevented:** Brute force password guessing, targeted credential stuffing against a single account, automated login abuse
+
 #### Prerequisites
 - Auth0 Dashboard access with admin privileges
 - Secondary admin account (for recovery)
@@ -82,10 +84,21 @@ Brute force protection blocks IP addresses that repeatedly fail to authenticate 
    - **Block suspicious IP:** Enabled
    - **Send email notification:** Enabled
 
-**Step 3: Configure Shields**
-1. Enable available shields:
-   - **Shield 1:** Block traffic after threshold
-   - **Shield 2:** Block traffic from known bad IPs
+**Step 3: Review the Shields**
+
+Auth0 documents three shields on Brute-force Protection — review each rather than looking for generic "Shield 1 / Shield 2" toggles:
+
+| Shield | Effect | Default |
+|--------|--------|---------|
+| **Block brute-force logins** | Blocks the offending IP from logging in to the targeted account after the threshold is reached | Enabled |
+| **Account lockout** | Blocks the targeted account itself from further login attempts regardless of source IP | Disabled |
+| **Send notification to affected user** | Emails the account owner that suspicious login activity was detected | Enabled with the IP block |
+
+1. Confirm **Block brute-force logins** is enabled
+2. Enable **Account lockout** only where account-level denial of service is an acceptable trade-off — an attacker who knows a username can deliberately lock it
+3. Keep user notification enabled so account owners can act on the signal
+
+Source: [Auth0 — Brute-Force Protection](https://auth0.com/docs/secure/attack-protection/brute-force-protection)
 
 **Time to Complete:** ~15 minutes
 
@@ -118,14 +131,17 @@ Suspicious IP throttling monitors and limits requests from IP addresses exhibiti
 - Rate limits suspicious IPs before they can cause damage
 - Complements brute force protection
 
+**Attack Prevented:** Distributed credential stuffing, IP-rotating password spraying, high-volume signup and login abuse
+
 #### ClickOps Implementation
 
 **Step 1: Enable Suspicious IP Throttling**
 1. Navigate to: **Security** → **Attack Protection** → **Suspicious IP Throttling**
 2. Enable **Suspicious IP Throttling**
-3. Configure thresholds:
-   - **Max attempts per IP:** 100 (default) or lower
-   - **Throttle rate:** Configure based on expected traffic
+3. Review the shields your tenant exposes (block the suspicious IP, and notify tenant administrators) and enable both
+4. Tune the rate/threshold values to your expected traffic rather than assuming a fixed number — Auth0 does not publish a universal numeric default for this feature, and the 100-entry figure visible in the console is the capacity of the IP **allowlist**, not an attempt threshold
+
+Source: [Auth0 — Suspicious IP Throttling](https://auth0.com/docs/secure/attack-protection/suspicious-ip-throttling)
 
 **Time to Complete:** ~10 minutes
 
@@ -152,15 +168,28 @@ Breached Password Detection checks user passwords against known breached credent
 - Blocks accounts using known compromised passwords
 - Minimal friction for legitimate users
 
+**Attack Prevented:** Credential stuffing with breached passwords, password reuse across services, account takeover using previously leaked credentials
+
 #### ClickOps Implementation
 
 **Step 1: Enable Breached Password Detection**
 1. Navigate to: **Security** → **Attack Protection** → **Breached Password Detection**
 2. Enable the feature
-3. Configure response:
-   - **At Sign-up:** Block registration with breached passwords
-   - **At Login:** Notify user or block access
-4. Configure notifications
+3. Configure the enforcement points — Auth0 applies detection at **three** stages, not two:
+   - **At Sign-up:** block registration with a breached password
+   - **At Login:** notify the user, or block access
+   - **At Password Reset:** block a reset that sets a known-breached password (this third stage is frequently missed and leaves a reset flow as the gap)
+4. Configure notifications to the affected user and to tenant administrators
+
+**Step 2: Consider Credential Guard (Enterprise add-on)**
+
+Standard breached-password detection relies on publicly available breach corpora, which Auth0 describes as typically surfacing 7-13 months after a compromise. The **Credential Guard** add-on — an Enterprise-plan option — sources credentials from the dark web and private channels, reducing typical detection latency to roughly **12-36 hours** with coverage across 200+ countries.
+
+1. Confirm Enterprise-plan eligibility with your Auth0 account team
+2. Enable Credential Guard on the tenant
+3. Route the resulting log events to your SIEM (see [5.1](#51-enable-logging-and-monitoring)) — the relevant event codes are `pwd_leak` (breached password used at login), `signup_pwd_leak` (at sign-up), and `reset_pwd_leak` (at password reset)
+
+Source: [Auth0 — Breached Password Detection](https://auth0.com/docs/secure/attack-protection/breached-password-detection)
 
 **Time to Complete:** ~15 minutes
 
@@ -201,11 +230,23 @@ Configure CAPTCHA and bot detection to prevent automated attacks against authent
    - Password reset
 
 **Step 2: Configure CAPTCHA Provider**
-1. Select CAPTCHA provider:
-   - reCAPTCHA (Google)
-   - Arkose Labs (enterprise)
-2. Configure provider settings
+
+Auth0's provider list has expanded well beyond reCAPTCHA and Arkose. Current options fall into two groups:
+
+| Provider | Type | Notes |
+|----------|------|-------|
+| **Auth Challenge** | Auth0-provided | Proof-of-work style challenge; no third-party account required |
+| **Simple CAPTCHA** | Auth0-provided | Basic challenge; no third-party account required |
+| **reCAPTCHA Enterprise** | Third-party (Google) | Requires a Google Cloud reCAPTCHA Enterprise key |
+| **hCaptcha** | Third-party | Requires an hCaptcha site key |
+| **Friendly Captcha** | Third-party | Requires a Friendly Captcha key |
+| **Arkose** | Third-party | Enterprise bot-mitigation service |
+
+1. Select a provider — the Auth0-provided options (**Auth Challenge**, **Simple CAPTCHA**) avoid an external dependency; the third-party options provide stronger adaptive scoring
+2. Configure provider credentials and settings
 3. Set challenge frequency
+
+Sources: [Auth0 — Bot Detection](https://auth0.com/docs/secure/attack-protection/bot-detection) · [Auth0 — Configure CAPTCHA](https://auth0.com/docs/secure/attack-protection/bot-detection/configure-captcha)
 
 ---
 
@@ -277,25 +318,41 @@ Require MFA for user authentication. Configure phishing-resistant options like W
 - TOTP-based MFA is more secure than SMS
 - WebAuthn provides phishing resistance
 
+**Attack Prevented:** Credential theft and phishing, credential stuffing, password-only account takeover, SIM-swap-assisted takeover (when phishing-resistant factors are used)
+
 #### ClickOps Implementation
 
 **Step 1: Enable MFA Factors**
-1. Navigate to: **Security** → **Multi-factor Authentication**
+1. Navigate to: **Security** → **Multi-factor Auth**
 2. Enable desired factors:
+   - **WebAuthn with Security Keys:** Highly recommended (phishing-resistant)
+   - **WebAuthn with Device Biometrics:** Recommended (phishing-resistant)
    - **One-time Password (OTP):** Recommended
-   - **WebAuthn with Security Keys:** Highly recommended
-   - **WebAuthn with Device Biometrics:** Recommended
+   - **Push via Auth0 Guardian:** Recommended where a mobile app is acceptable
+   - **Duo Security:** Available where Duo is already the enterprise MFA standard
+   - **Email:** Weak — use only as a fallback
    - **SMS:** Discouraged (SIM swapping risk)
    - **Voice:** Discouraged
+
+**Independent vs dependent factors.** Auth0 classifies factors by whether they can stand alone as a first factor. Independent factors (for example WebAuthn with security keys, OTP, push, Duo) can be used without a prior password step; dependent factors (for example WebAuthn with device biometrics, which is bound to a device already associated with the user) require another factor first. This matters when designing passwordless or step-up flows — enrolling users only in dependent factors leaves no viable standalone path.
+
+Source: [Auth0 — Enable Multi-Factor Authentication](https://auth0.com/docs/secure/multi-factor-authentication/enable-mfa)
 
 **Step 2: Configure MFA Policy**
 1. Set **Always** for applications requiring MFA
 2. Or use **Adaptive MFA** for risk-based enforcement
 3. Configure MFA trigger points
 
-**Step 3: Require MFA for Dashboard Access**
-1. Navigate to: **Settings** → **Tenant Settings**
-2. Enable **Require MFA for all Dashboard users**
+**Step 3: Enforce MFA on Dashboard (Tenant Member) Access**
+
+> **Correction (2026-08-08):** Earlier revisions of this guide instructed enabling a **Require MFA for all Dashboard users** toggle under **Settings → Tenant Settings**. **No such tenant-wide toggle exists.** Auth0 Dashboard MFA is enrolled **per tenant member** by the member themselves; the Tenant Members screen only *displays* each member's enrollment status. Treat Dashboard MFA as an enrollment-and-audit control, not a switch.
+
+1. Each tenant member enrolls their own Dashboard MFA from their Auth0 profile / account settings (**Dashboard** → profile menu → account security), adding or changing their MFA factor
+2. Navigate to: **Settings** → **Tenant Members** and review the MFA column to confirm every member shows as enrolled
+3. Treat any member without MFA enrolled as a finding — remove their access or require enrollment before restoring it
+4. Re-run this audit on a schedule; new members are not auto-enrolled
+
+Sources: [Auth0 — Tenant Settings](https://auth0.com/docs/get-started/tenant-settings) · [Auth0 — Add, Change, or Remove MFA for Dashboard Access](https://auth0.com/docs/get-started/manage-dashboard-access/add-change-remove-mfa)
 
 **Time to Complete:** ~30 minutes
 
@@ -356,7 +413,7 @@ Limit Dashboard admin access to essential personnel and require MFA for all admi
 **Why This Matters:**
 - The Auth0 Dashboard controls authentication for every connected application, making admin accounts the highest-value target in the tenant
 - Least-privilege roles ensure a compromised member account cannot rewrite security policies or exfiltrate user data
-- Requiring MFA for all Dashboard users blocks takeover of admin accounts via phished or stuffed credentials
+- MFA on every Dashboard member blocks takeover of admin accounts via phished or stuffed credentials
 - Removing unnecessary admins shrinks the attack surface and eliminates standing access left behind by departed staff
 
 **Attack Prevented:** Admin account takeover, privilege escalation, tenant-wide misconfiguration, insider misuse
@@ -375,10 +432,15 @@ Limit Dashboard admin access to essential personnel and require MFA for all admi
    - **Viewer:** Read-only access
 2. Assign minimum required roles
 
-**Step 3: Require Admin MFA**
-1. Navigate to: **Settings** → **Tenant Settings**
-2. Enable **Require MFA for all Dashboard users**
-3. Admins must enroll in MFA on next login
+**Step 3: Audit Admin MFA Enrollment**
+
+> **Correction (2026-08-08):** There is no **Require MFA for all Dashboard users** tenant setting. Dashboard MFA is enrolled per tenant member; **Settings → Tenant Members** reports enrollment status but does not enforce it. See [2.2 Step 3](#22-enable-multi-factor-authentication) for the enrollment-and-audit procedure.
+
+1. Navigate to: **Settings** → **Tenant Members** and read the MFA enrollment status for every member
+2. Require each admin to enroll MFA from their own Auth0 account settings
+3. Remove or suspend Dashboard access for any admin who remains unenrolled
+
+Sources: [Auth0 — Tenant Settings](https://auth0.com/docs/get-started/tenant-settings) · [Auth0 — Add, Change, or Remove MFA for Dashboard Access](https://auth0.com/docs/get-started/manage-dashboard-access/add-change-remove-mfa)
 
 ---
 
@@ -402,6 +464,8 @@ Use separate tenants for production and non-production environments to isolate s
 - Prevents test configurations from affecting production
 - Isolates development credentials from production
 - Enables different security policies per environment
+
+**Attack Prevented:** Non-production credential reuse against production, test-configuration drift into production, blast-radius expansion from a compromised lower environment
 
 #### Implementation
 1. Create separate tenants for each environment:
@@ -520,12 +584,32 @@ Configure Auth0 applications with security best practices.
    - **Refresh Token:** Based on session requirements
 2. Configure rotation for refresh tokens
 
+**Step 3: Configure Refresh Token Rotation Deliberately**
+
+Rotation is only as strong as the values around it. Auth0 documents these:
+
+| Setting | Documented value | Hardening note |
+|---------|------------------|----------------|
+| Absolute refresh-token lifetime (default) | 30 days | Shorten for high-value applications |
+| Absolute refresh-token lifetime (maximum) | 1 year | Avoid — a year-long refresh token defeats the purpose of rotation |
+| Rotation leeway | Disabled by default | Leave at 0 unless a specific client race condition demands it; any leeway widens the replay window |
+| Reuse detection | Revokes the **entire token family** and the underlying grant | This is the security property worth having — a replayed token kills every descendant token, not just the replayed one |
+
+1. Enable **Refresh Token Rotation** on the application
+2. Set the absolute lifetime well below the 30-day default where the application's session model allows
+3. Leave rotation leeway disabled unless you have a documented client-side reason
+4. Instrument alerting on reuse-detection revocations — a family revocation is a strong signal of token theft, not routine noise
+
+Source: [Auth0 — Configure Refresh Token Rotation](https://auth0.com/docs/secure/tokens/refresh-tokens/configure-refresh-token-rotation)
+
+> **Changed default — third-party applications.** Auth0 deprecated its **Enhanced security for third-party applications** setting on **2026-04-23**, with end of life on **2026-10-23**. After that change, Auth0 **automatically applies the strict controls to newly created third-party applications** — mandatory PKCE and explicit API authorization — rather than leaving them behind an opt-in toggle. Existing third-party applications should be reviewed and migrated to the strict behavior before the EOL date so the transition is not a surprise. Source: [Auth0 — Deprecations and Migrations](https://auth0.com/docs/troubleshoot/product-lifecycle/deprecations-and-migrations)
+
 ---
 
 
 {% include pack-code.html vendor="auth0" section="4.2" %}
 
-### 4.3 Secure Rules and Actions
+### 4.3 Secure Actions (and Migrate off Rules and Hooks)
 
 **Profile Level:** L2 (Walk)
 
@@ -535,11 +619,13 @@ Configure Auth0 applications with security best practices.
 | NIST 800-53 | SA-15 |
 
 #### Description
-Secure Auth0 Rules and Actions to prevent injection and ensure proper error handling.
+Secure Auth0 Actions to prevent injection and ensure proper error handling, and migrate any remaining Rules or Hooks to Actions before they stop executing.
+
+> **DEPRECATION — Rules and Hooks stop executing 2026-11-18.** Auth0 made Rules and Hooks **read-only on 2024-11-18**: they can be viewed but not created or edited. Auth0 has stated they **stop executing entirely on 2026-11-18** — roughly three months from this revision. Any authentication logic still implemented as a Rule or Hook (including MFA enforcement, claim enrichment, and access denial) will silently stop running at that point; a Rule that currently blocks a login will simply stop blocking it. **Migrate every remaining Rule and Hook to Actions now**, and verify by confirming the tenant lists no active Rules or Hooks. Sources: [Auth0 — Rules](https://auth0.com/docs/customize/rules) · [Auth0 — Deprecations and Migrations](https://auth0.com/docs/troubleshoot/product-lifecycle/deprecations-and-migrations)
 
 #### Rationale
 **Why This Matters:**
-- Rules and Actions run privileged custom code inside the authentication pipeline, so a flaw there compromises every login
+- Actions run privileged custom code inside the authentication pipeline, so a flaw there compromises every login
 - Conditionally bypassing MFA on weak signals like device fingerprint or geolocation hands attackers a reliable evasion path
 - Validating all inputs prevents injection and logic abuse through attacker-controlled profile and request data
 - Graceful error handling avoids leaking secrets, tokens, or internal details that aid further attacks
@@ -552,9 +638,10 @@ Secure Auth0 Rules and Actions to prevent injection and ensure proper error hand
    - Device fingerprinting
    - Geographic location alone
 2. **Use allowRememberBrowser or context.authentication** for contextual bypass
-3. **Validate all inputs** in Rules and Actions
+3. **Validate all inputs** in Actions
 4. **Handle errors gracefully** without exposing details
 5. **Log security events** appropriately
+6. **Confirm no live Rules or Hooks remain** — anything not yet migrated to Actions stops executing on 2026-11-18 (see the deprecation callout above)
 
 ---
 
@@ -651,6 +738,7 @@ Configure Auth0 logging and integrate with SIEM for security monitoring.
 | Brute Force Protection | ✅ | ✅ | ✅ | ✅ |
 | Suspicious IP Throttling | ❌ | ✅ | ✅ | ✅ |
 | Breached Password Detection | ❌ | ❌ | ✅ | ✅ |
+| Credential Guard (dark-web credential detection add-on) | ❌ | ❌ | ❌ | ✅ |
 | Adaptive MFA | ❌ | ❌ | ✅ | ✅ |
 | Log Streaming | ❌ | ❌ | ✅ | ✅ |
 | Custom Domains | ❌ | ❌ | ✅ | ✅ |
@@ -665,9 +753,20 @@ Configure Auth0 logging and integrate with SIEM for security monitoring.
 - [Brute Force Protection](https://auth0.com/docs/secure/attack-protection/brute-force-protection)
 - [MFA Documentation](https://auth0.com/docs/secure/multi-factor-authentication)
 
+- [Breached Password Detection](https://auth0.com/docs/secure/attack-protection/breached-password-detection)
+- [Bot Detection](https://auth0.com/docs/secure/attack-protection/bot-detection)
+- [Configure Refresh Token Rotation](https://auth0.com/docs/secure/tokens/refresh-tokens/configure-refresh-token-rotation)
+- [Tenant Settings](https://auth0.com/docs/get-started/tenant-settings)
+- [Add, Change, or Remove MFA for Dashboard Access](https://auth0.com/docs/get-started/manage-dashboard-access/add-change-remove-mfa)
+
 **Security Best Practices:**
-- [Rules Security Best Practices](https://auth0.com/docs/customize/rules/rules-best-practices/rules-security-best-practices)
+- [Auth0 Security Guidance](https://auth0.com/docs/secure/security-guidance)
+- [Action Coding Guidelines](https://auth0.com/docs/customize/actions/action-coding-guidelines) — the security reference for Actions. *Link-rot note: the former `customize/rules/rules-best-practices/rules-security-best-practices` URL now serves Actions content, so cite the Actions page directly.*
 - [Attack Protection Playbook](https://auth0.com/docs/secure/attack-protection/playbooks/brute-force-protection-playbook)
+
+**Product Lifecycle:**
+- [Deprecations and Migrations](https://auth0.com/docs/troubleshoot/product-lifecycle/deprecations-and-migrations) — tracks the Rules/Hooks end of execution (2026-11-18) and the third-party-application enhanced-security EOL (2026-10-23)
+- [Rules (deprecated)](https://auth0.com/docs/customize/rules)
 
 ---
 
@@ -675,6 +774,7 @@ Configure Auth0 logging and integrate with SIEM for security monitoring.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass. Corrections: removed the nonexistent "Require MFA for all Dashboard users" tenant toggle from 2.2 and 3.1 (Dashboard MFA is per-member enrollment; Tenant Members only reports status); replaced the invented "Shield 1/Shield 2" list in 1.1 with the documented shields (block brute-force logins enabled by default, account lockout disabled by default, user notification); dropped the unverifiable "Max attempts per IP: 100 (default)" from 1.2 (100 is the allowlist capacity). Deprecations: bolded Rules/Hooks end-of-execution callout (read-only since 2024-11-18, stop executing 2026-11-18) and retitled 4.3 to Actions; changed-default callout in 4.2 for third-party-application enhanced security (deprecated 2026-04-23, EOL 2026-10-23, strict controls auto-applied to new third-party apps). Additions: breached-password detection at password reset plus the Credential Guard add-on and its log events (1.3, Appendix A); expanded CAPTCHA provider list (1.4); refresh-token rotation values and token-family reuse revocation (4.2); independent-vs-dependent MFA factor distinction plus Guardian push and Duo (2.2). Fixed the rotted Rules security-best-practices reference (now serves Actions content). Added missing **Attack Prevented:** lines to 1.1, 1.2, 1.3, 2.2, and 3.2 so they render in the cheat sheet. Tier 2 currency check returned no configuration-prescriptive Auth0 baseline (no CIS Benchmark, DISA STIG, or CISA SCuBA coverage found). Tier 3/4 not surveyed this pass. | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with attack protection, MFA, and tenant security | Claude Code (Opus 4.5) |
 

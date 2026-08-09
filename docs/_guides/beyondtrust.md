@@ -6,15 +6,21 @@ slug: "beyondtrust"
 tier: "1"
 category: "Identity"
 description: "Remote access security for PRA, session monitoring, and credential injection"
-version: "0.1.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-06-29"
+last_updated: "2026-08-08"
 ---
 
 
 ## Overview
 
-BeyondTrust is a Privileged Access Management (PAM) platform serving **20,000+ customers including 75% of Fortune 500**. The **December 2024 breach via Chinese APT** compromised the **U.S. Treasury Department** through a stolen Remote Support API key. Zero-day vulnerabilities (CVE-2024-12356, CVSS 9.8; CVE-2024-12686, CVSS 6.6) exposed how PAM solutions become supply chain vectors when API keys are compromised. 17 Remote Support SaaS customers were affected; attackers accessed Treasury workstations and unclassified documents.
+BeyondTrust is a Privileged Access Management (PAM) platform serving **20,000+ customers including 75% of Fortune 500**. The **December 2024 breach via a Chinese state-linked APT** compromised the **U.S. Treasury Department** through a stolen Remote Support API key. Zero-day vulnerabilities (CVE-2024-12356, CVSS 9.8; CVE-2024-12686, CVSS 6.6) exposed how PAM solutions become supply chain vectors when API keys are compromised. 17 Remote Support SaaS customers were affected; attackers accessed Treasury workstations and unclassified documents.
+
+### The Pathfinder Platform Changes the Blast Radius
+
+BeyondTrust's SaaS products now sit behind the **Pathfinder platform**, which BeyondTrust describes as "a single pane of glass view into all of your BeyondTrust SaaS products," where "all applications share the same user login for easy single sign-on" and a shared navigation menu supports cross-product navigation.
+
+This is a hardening-relevant fact, not a marketing one: a compromised Pathfinder login is no longer scoped to one product. Where an organization runs several BeyondTrust SaaS products, the identity controls in [1.1](#11-enforce-multi-factor-authentication-for-all-access) and [1.2](#12-implement-role-based-access-control) should be assessed against the **platform** login, and role separation should be verified to hold across products rather than only within one. Source: [Welcome to the Pathfinder platform](https://docs.beyondtrust.com/bt-docs/docs/welcome-to-the-pathfinder-platform)
 
 ### Intended Audience
 - Security engineers managing PAM infrastructure
@@ -48,23 +54,27 @@ This guide covers BeyondTrust-specific security configurations with emphasis on 
 
 ### 1.1 Enforce Multi-Factor Authentication for All Access
 
-**Profile Level:** L1 (Crawl) - CRITICAL
-**CIS Controls:** 6.3, 6.5
-**NIST 800-53:** IA-2(1), IA-2(6)
+**Profile Level:** L1 (Crawl) — CRITICAL
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.3, 6.5 |
+| NIST 800-53 | IA-2(1), IA-2(6) |
 
 #### Description
-Require MFA for all BeyondTrust console access, remote support sessions, and API authentication where possible.
+Require MFA for all BeyondTrust console access, remote support sessions, and API authentication where possible. Where products are consumed through the shared **Pathfinder** login, enforce MFA at that platform login — it fronts every BeyondTrust SaaS product the organization uses.
 
 #### Rationale
 **Why This Matters:**
 - BeyondTrust provides remote access to sensitive systems
 - Compromised console = access to all managed endpoints
+- The shared Pathfinder login means one compromised platform credential can reach every BeyondTrust SaaS product in use
 - December 2024 breach bypassed authentication via stolen API key
 
 **Attack Prevented:** Credential theft, session hijacking
 
 **Real-World Incidents:**
-- **December 2024 BeyondTrust Breach:** Chinese APT (Salt Typhoon suspected) used stolen Remote Support API key to access U.S. Treasury Department workstations and unclassified documents
+- **December 2024 BeyondTrust Breach:** A Chinese state-linked APT — reported attribution **Silk Typhoon (also tracked as APT27)** — used a stolen Remote Support API key to access U.S. Treasury Department workstations and unclassified documents
 
 #### Prerequisites
 - BeyondTrust console admin access
@@ -114,7 +124,10 @@ Require MFA for all BeyondTrust console access, remote support sessions, and API
 ### 1.2 Implement Role-Based Access Control
 
 **Profile Level:** L1 (Crawl)
-**NIST 800-53:** AC-3, AC-6
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-3, AC-6 |
 
 #### Description
 Configure granular roles separating administrative functions. Avoid using built-in Administrator account for daily operations.
@@ -163,8 +176,11 @@ Configure granular roles separating administrative functions. Avoid using built-
 
 ### 1.3 Configure IP-Based Access Restrictions
 
-**Profile Level:** L1 (Crawl) - CRITICAL (Post-Breach Lesson)
-**NIST 800-53:** AC-3(7), SC-7
+**Profile Level:** L1 (Crawl) — CRITICAL (Post-Breach Lesson)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-3(7), SC-7 |
 
 #### Description
 Restrict console and API access to known IP ranges. This control would have limited the December 2024 breach impact.
@@ -174,6 +190,8 @@ Restrict console and API access to known IP ranges. This control would have limi
 - December 2024: Attackers used stolen API key from unknown IPs
 - IP restrictions prevent credential use from attacker infrastructure
 - Defense-in-depth for token theft scenarios
+
+**Attack Prevented:** Stolen-credential reuse from attacker infrastructure, unauthorized API access from unknown networks, console access from untrusted locations
 
 #### ClickOps Implementation
 
@@ -200,8 +218,11 @@ Restrict console and API access to known IP ranges. This control would have limi
 
 ### 2.1 API Key Management and Rotation
 
-**Profile Level:** L1 (Crawl) - CRITICAL
-**NIST 800-53:** IA-5, SC-12
+**Profile Level:** L1 (Crawl) — CRITICAL
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | IA-5, SC-12 |
 
 #### Description
 Implement strict API key management including regular rotation, IP binding, and monitoring. The December 2024 breach was enabled by a single unrotated API key.
@@ -212,7 +233,7 @@ Implement strict API key management including regular rotation, IP binding, and 
 - December 2024 breach used single compromised key
 - Long-lived keys create extended exposure window
 
-**Attack Scenario:** Attacker obtains API key from compromised integration, accesses all managed endpoints, exfiltrates data from Treasury workstations.
+**Attack Prevented:** Long-lived API key abuse, stolen-integration-credential access to all managed endpoints, bulk data exfiltration via a valid key (the December 2024 pattern)
 
 #### ClickOps Implementation
 
@@ -257,7 +278,10 @@ Implement strict API key management including regular rotation, IP binding, and 
 ### 2.2 Implement API Rate Limiting
 
 **Profile Level:** L2 (Walk)
-**NIST 800-53:** SC-5
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | SC-5 |
 
 #### Description
 Configure rate limiting for API endpoints to detect and prevent abuse.
@@ -284,7 +308,10 @@ Configure rate limiting for API endpoints to detect and prevent abuse.
 ### 2.3 Monitor API Usage Anomalies
 
 **Profile Level:** L1 (Crawl)
-**NIST 800-53:** AU-6, SI-4
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AU-6, SI-4 |
 
 #### Description
 Implement monitoring for unusual API activity patterns that may indicate compromise.
@@ -299,6 +326,18 @@ Implement monitoring for unusual API activity patterns that may indicate comprom
 
 #### Detection Use Cases
 
+Baseline each integration's normal behavior first, then alert on deviation. The December 2024 pattern — a valid key used from new infrastructure — is only visible as a behavioral change, so these use cases are the detection surface:
+
+| Use case | Signal | Why it matters |
+|----------|--------|----------------|
+| **New source IP for an existing key** | API call from an IP never previously seen for that credential | The primary indicator available when the key itself is valid |
+| **Off-hours API activity** | Calls outside the integration's normal operating window | Automated integrations have predictable schedules; humans using a stolen key do not |
+| **New endpoint access for a key** | A credential begins calling API endpoints it has never used | Indicates exploration rather than the integration's fixed function |
+| **Request-volume spike** | Sustained call rate materially above the key's baseline | Bulk enumeration or exfiltration in progress |
+| **Credential lifecycle events** | API key created, modified, or permissions expanded | Attacker persistence — a foothold being made durable |
+| **Repeated authorization failures** | A key generating 401/403 responses at volume | Probing for permissions the credential does not hold |
+
+Route these to the SIEM (see [5.2](#52-forward-logs-to-siem)) and alert per the thresholds in [5.1](#51-configure-security-alerting).
 
 ---
 
@@ -307,7 +346,10 @@ Implement monitoring for unusual API activity patterns that may indicate comprom
 ### 3.1 Segment Remote Access Infrastructure
 
 **Profile Level:** L2 (Walk)
-**NIST 800-53:** SC-7
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | SC-7 |
 
 #### Description
 Deploy BeyondTrust in a segmented network zone with strict ingress/egress controls.
@@ -324,6 +366,16 @@ Deploy BeyondTrust in a segmented network zone with strict ingress/egress contro
 
 **Network Architecture:**
 
+Place the appliance in a dedicated DMZ segment that neither the general corporate network nor the target estate can reach directly:
+
+| Zone | Contents | Reaches |
+|------|----------|---------|
+| **Internet edge** | WAF / reverse proxy terminating inbound HTTPS | The BeyondTrust segment only, on 443 |
+| **BeyondTrust segment (DMZ)** | Appliance / session broker | Defined target hosts on defined ports; identity provider; SIEM collector |
+| **Management segment** | Administrative console access | The BeyondTrust segment, from named admin sources only |
+| **Target estate** | Systems reached through brokered sessions | Nothing back toward the BeyondTrust segment (no return paths) |
+
+The BeyondTrust segment must have **no general east-west reachability** into the corporate network and no unrestricted outbound internet egress — those are the two paths that turn an appliance compromise into estate-wide movement.
 
 **Firewall Rules:**
 - Inbound: HTTPS (443) from WAF only
@@ -335,7 +387,10 @@ Deploy BeyondTrust in a segmented network zone with strict ingress/egress contro
 ### 3.2 Configure Jump Server Integration
 
 **Profile Level:** L2 (Walk)
-**NIST 800-53:** AC-17
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-17 |
 
 #### Description
 Configure BeyondTrust to work with existing jump server architecture for defense in depth.
@@ -355,7 +410,10 @@ Configure BeyondTrust to work with existing jump server architecture for defense
 ### 4.1 Enable Comprehensive Session Recording
 
 **Profile Level:** L1 (Crawl)
-**NIST 800-53:** AU-14
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AU-14 |
 
 #### Description
 Record all privileged sessions for forensic analysis and compliance.
@@ -388,7 +446,10 @@ Record all privileged sessions for forensic analysis and compliance.
 ### 4.2 Implement Session Approval Workflows
 
 **Profile Level:** L2 (Walk)
-**NIST 800-53:** AC-2(6)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-2(6) |
 
 #### Description
 Require approval for access to sensitive systems.
@@ -417,7 +478,10 @@ Require approval for access to sensitive systems.
 ### 5.1 Configure Security Alerting
 
 **Profile Level:** L1 (Crawl)
-**NIST 800-53:** SI-4
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | SI-4 |
 
 #### Description
 Configure alerts for security-relevant events based on lessons from December 2024 breach.
@@ -455,7 +519,10 @@ Configure alerts for security-relevant events based on lessons from December 202
 ### 5.2 Forward Logs to SIEM
 
 **Profile Level:** L1 (Crawl)
-**NIST 800-53:** AU-6
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AU-6 |
 
 #### Description
 Export all audit logs to SIEM for correlation and long-term retention.
@@ -516,10 +583,33 @@ Establish a process to track, prioritize, and rapidly patch BeyondTrust security
 
 #### Recent Critical CVEs
 
-| CVE | CVSS | Description | Remediation |
-|-----|------|-------------|-------------|
-| CVE-2024-12356 | 9.8 | Command injection in RS | Patch immediately |
-| CVE-2024-12686 | 6.6 | Authentication bypass | Patch immediately |
+CVSS values below are the **CNA-assigned** scores from the CVE records. Where NVD has published a differing score, the CNA value is used — the vendor CNA is the authoritative assigner for its own products.
+
+| CVE | CVSS | Published | Affected | Description | Remediation |
+|-----|------|-----------|----------|-------------|-------------|
+| CVE-2026-40139 | 9.2 (v4.0) | 2026-07-06 | Remote Support / PRA ≤ 25.3.2 | Pre-authentication authentication bypass | Upgrade beyond 25.3.2 immediately |
+| CVE-2026-40138 | 9.2 (v4.0) | 2026-07-06 | Remote Support / PRA ≤ 25.3.2 | Critical flaw in the same disclosure cluster | Upgrade beyond 25.3.2 immediately |
+| CVE-2026-40141 | 8.5 (v4.0) | 2026-07-06 | Remote Support / PRA ≤ 25.3.2 | High-severity flaw in the same cluster (NVD's score differs from the CNA's; the CNA value is shown) | Upgrade beyond 25.3.2 immediately |
+| CVE-2026-1731 | 9.9 | 2026-02-06 | Remote Support ≤ 25.3.1; PRA ≤ 24.3.4 | Pre-authentication remote code execution | Patch immediately |
+| CVE-2025-5309 | 8.6 | 2025-06-16 | Remote Support / PRA | Server-side template injection in the chat feature leading to remote code execution | Patch immediately |
+| CVE-2024-12356 | 9.8 | 2024-12 | Remote Support / PRA | Command injection in RS — exploited in the Treasury breach | Patch immediately |
+| CVE-2024-12686 | 6.6 | 2025-01 | Remote Support / PRA | Authentication bypass — also exploited | Patch immediately |
+
+**Fixed version for the July 2026 cluster:** releases **later than 25.3.2** address CVE-2026-40139, CVE-2026-40138, and CVE-2026-40141. If you are on 25.3.2 or earlier, treat this as an emergency-patch condition — all three are pre-authentication-reachable on an internet-facing appliance.
+
+CVE records verified against the CVE Program's authoritative API (`cveawg.mitre.org/api/cve/{ID}`).
+
+#### Patch SLAs
+
+BeyondTrust publishes the following remediation timelines for its U-Series appliances. Use them as the floor for your own SLA, not the ceiling:
+
+| Vulnerability class | Vendor-stated SLA |
+|---------------------|-------------------|
+| Critical OS/database vulnerability, unmitigated | 7 days from patch release |
+| Critical OS/database vulnerability, mitigated by appliance hardening | 90 days from patch release |
+| Critical BeyondTrust product vulnerability | 30 days from identification |
+
+**Appliance hardening baseline (Tier 1 claim, Tier 2 framing).** BeyondTrust states the U-Series appliance is hardened to the **CIS Benchmark for Windows Server 2022, Level 2 Member Server** profile, and reports a **99% DISA STIG v1.2.3** assessment score (218 findings passed, four Category II findings open, covering deny-all policies, host-based intrusion detection, and file-integrity-monitoring baselines). These are the vendor's own compliance assertions about its appliance image, not an independent CIS or DISA certification — treat them as useful evidence for a control narrative and as a reason to request the current assessment artifact during vendor review, rather than as a substitute for your own verification. Source: [U-Series Appliance best practices](https://docs.beyondtrust.com/bips/docs/u-series-best-practices)
 
 {% include pack-code.html vendor="beyondtrust" section="6.2" %}
 
@@ -558,25 +648,27 @@ Following the December 2024 incident:
 
 ## Appendix A: References
 
+> **Doc-host migration.** BeyondTrust's documentation moved from `www.beyondtrust.com/docs/*` to `docs.beyondtrust.com`. The old paths are cited nowhere below; `www.beyondtrust.com` additionally returns HTTP 403 to automated fetchers, so `docs.beyondtrust.com` is the verifiable surface.
+
 **Official BeyondTrust Documentation:**
-- [Trust Center — Corporate Security](https://www.beyondtrust.com/trust-center/security)
-- [Industry Certifications](https://www.beyondtrust.com/trust-center/industry-certifications)
-- [Cloud Security Policies](https://www.beyondtrust.com/trust-center/cloud-security)
-- [BeyondTrust Documentation](https://www.beyondtrust.com/docs)
-- [Appliance Hardening Guide](https://www.beyondtrust.com/docs/beyondinsight-password-safe/appliance/hardening/index.htm)
+- [BeyondTrust Documentation](https://docs.beyondtrust.com/)
+- [U-Series Appliance Best Practices](https://docs.beyondtrust.com/bips/docs/u-series-best-practices) — the appliance hardening reference: patch SLAs, OS hardening, encryption, and the CIS/STIG baseline claims
+- [Welcome to the Pathfinder Platform](https://docs.beyondtrust.com/bt-docs/docs/welcome-to-the-pathfinder-platform) — shared SSO and cross-product navigation across BeyondTrust SaaS products
 
 **API & Developer Tools:**
-- [PRA API Guide](https://docs.beyondtrust.com/pra/reference/api-guide)
-- [Remote Support API Documentation](https://www.beyondtrust.com/docs/remote-support/how-to/integrations/api/index.htm)
-- [BeyondInsight API](https://www.beyondtrust.com/docs/beyondinsight-password-safe/api/index.htm)
+- [Privileged Remote Access API Guide](https://docs.beyondtrust.com/pra/reference/api-guide)
+- [Remote Support API Guide](https://docs.beyondtrust.com/rs/reference/api-guide)
+- [Password Safe / BeyondInsight Public API](https://docs.beyondtrust.com/bips/reference/)
+
+**Vulnerability References:**
+- CVE records verified via the CVE Program API (`https://cveawg.mitre.org/api/cve/{CVE-ID}`) — see [6.2](#62-vulnerability-management)
 
 **Compliance Frameworks:**
-- SOC 2 Type II (annual audits of corporate practices, product portfolio, and cloud environments) — via [Industry Certifications](https://www.beyondtrust.com/trust-center/industry-certifications)
-- ISO/IEC 27001:2022, ISO/IEC 27701 (PIMS) — via [ISO Certification Announcement](https://www.beyondtrust.com/press/iso-270012022-certification)
-- PCI DSS, HIPAA, CISA BOD 22-01 compliance support
+
+BeyondTrust publishes SOC 2 Type II, ISO/IEC 27001:2022, and ISO/IEC 27701 attestations. Those certifications are asserted on the vendor's trust-center and press pages, which are not hardening documentation and are therefore not cited here — request the current attestation reports directly from BeyondTrust under NDA as part of vendor review, and use the [U-Series Appliance Best Practices](https://docs.beyondtrust.com/bips/docs/u-series-best-practices) page for the configuration-level baseline claims that are actually assessable.
 
 **Security Incidents:**
-- **December 2024 — U.S. Treasury Department Breach (CVE-2024-12356, CVSS 9.8):** Chinese APT group Silk Typhoon (APT27) compromised a BeyondTrust Remote Support SaaS API key, gaining access to Treasury Department workstations and unclassified documents. BeyondTrust detected the compromise on December 5, immediately revoked the API key, and notified affected customers. 17 Remote Support SaaS customers were impacted. CVE-2024-12686 (CVSS 6.6, authentication bypass) was also exploited. ([The Hacker News Report](https://thehackernews.com/2024/12/chinese-apt-exploits-beyondtrust-api.html)) ([CyberArk Analysis](https://www.cyberark.com/resources/blog/the-us-treasury-attack-key-events-and-security-implications))
+- **December 2024 — U.S. Treasury Department Breach (CVE-2024-12356, CVSS 9.8):** A Chinese state-linked APT — reported attribution **Silk Typhoon (also tracked as APT27)** — compromised a BeyondTrust Remote Support SaaS API key, gaining access to Treasury Department workstations and unclassified documents. BeyondTrust detected the compromise on December 5, immediately revoked the API key, and notified affected customers. 17 Remote Support SaaS customers were impacted. CVE-2024-12686 (CVSS 6.6, authentication bypass) was also exploited. ([The Hacker News Report](https://thehackernews.com/2024/12/chinese-apt-exploits-beyondtrust-api.html)) ([CyberArk Analysis](https://www.cyberark.com/resources/blog/the-us-treasury-attack-key-events-and-security-implications))
 
 ---
 
@@ -584,6 +676,7 @@ Following the December 2024 incident:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | draft | Currency pass. Added five verified CVEs to 6.2 — CVE-2026-40139 (pre-auth authentication bypass, ≤25.3.2, CVSS 9.2 v4.0, 2026-07-06), CVE-2026-40138 (9.2), CVE-2026-40141 (8.5; CNA score used where NVD differs), CVE-2026-1731 (pre-auth RCE, RS ≤25.3.1 / PRA ≤24.3.4, 9.9, 2026-02-06), CVE-2025-5309 (chat SSTI to RCE, 8.6, 2025-06-16) — with the fixed-version line for the July 2026 cluster, all verified against the CVE Program API. Added the vendor patch SLAs (7 days unmitigated critical OS, 90 days if mitigated by hardening, 30 days for BeyondTrust vulnerabilities) and the U-Series CIS Windows Server 2022 L2 / DISA STIG v1.2.3 baseline claims as a labeled vendor-assertion note rather than an independent certification. Corrected the internal APT-attribution contradiction (Overview said "Salt Typhoon suspected" while Appendix A said Silk Typhoon/APT27) — both now read as reported attribution to Silk Typhoon (APT27). Added the Pathfinder platform to the Overview and 1.1: shared SSO and cross-product navigation across BeyondTrust SaaS products changes console-compromise blast radius. Removed the three beyondtrust.com trust-center links and the press-release ISO citation from Appendix A per the repo source standard, and repointed the rotted `www.beyondtrust.com/docs/*` links to `docs.beyondtrust.com` (documentation root, U-Series best practices, Remote Support API guide, Password Safe/BeyondInsight public API) — each fetch-verified. Populated the previously empty "Detection Use Cases" block in 2.3 and the bare "Network Architecture:" label in 3.1. Parser repairs: added **Attack Prevented:** to 1.3 and renamed 2.1's **Attack Scenario:** to **Attack Prevented:** so both render in the cheat sheet. Normalized the inline **CIS Controls:** / **NIST 800-53:** lines across all controls to the Framework/Control table style. **Open question:** whether any of these BeyondTrust CVEs appear in the CISA KEV catalog is unresolved — the KEV surface was not reachable this pass and no claim is made either way; this needs a real-browser check on a later pass. Tier 3/4 not surveyed this pass. | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial guide with Treasury breach lessons | Claude Code (Opus 4.5) |
 
