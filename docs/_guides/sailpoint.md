@@ -6,7 +6,7 @@ slug: "sailpoint"
 tier: "3"
 category: "Identity"
 description: "Identity Security Cloud hardening for tenant access, API clients and PATs, sessions, network restrictions, and audit reporting"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -402,6 +402,10 @@ Manage the tenant's API clients and personal access tokens (PATs) centrally — 
 1. The client secret / token value is shown **once** — capture it directly into your secrets manager at creation
 2. If it is lost, rotate rather than working around it
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sailpoint" section="2.2" %}
+
 #### Validation & Testing
 1. Review the org-wide token list and confirm every token has an expiration, a named owner, and a documented purpose
 2. Confirm recent `last used` values — tokens with no recent use are rotation or revocation candidates
@@ -492,6 +496,10 @@ Run and review Identity Security Cloud's built-in audit reports, and understand 
 2. For anything older, raise an **Audit History Request** with SailPoint — documented as reaching back up to **five years**
 3. If your retention obligation exceeds the self-service window, export on a schedule rather than discovering the limit during an investigation
 
+#### Code Implementation
+
+{% include pack-code.html vendor="sailpoint" section="4.1" %}
+
 #### Validation & Testing
 1. Run each default report and confirm it returns data for the expected period
 2. Perform a known admin action and confirm it appears in the corresponding report
@@ -537,6 +545,7 @@ Consult [SailPoint Security Advisories](https://www.sailpoint.com/security-advis
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Add Code Packs: 2.2 (v3 Personal Access Tokens API — inventory, never-expiring/stale-token detection via documented lastUsed filters, revocation) and 4.1 (SailPoint CLI `sail search` against the events index — provisioning events, slpt support sign-ins, 90-day provisioning template) — verified against the SailPoint CLI docs and the official v3 OpenAPI specification | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Add Grant Tenant Access control (SailPoint Support auto-granted 6 months at tenant creation — changed default); expand thin guide with API client/PAT governance, session lengths, network and geographic restrictions, and lockout management; correct 1.2 to documented user levels and sub-admin scoping; rebuild 4.1 on the six documented audit reports and retention limits; sharpen 1.1 with native TOTP strong authentication; rename to Identity Security Cloud (formerly IdentityNow) with current console paths; add 2026 CVEs; drop Trust Center links | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | draft | Initial SailPoint hardening guide | Claude Code (Opus 4.5) |

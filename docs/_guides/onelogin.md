@@ -6,7 +6,7 @@ slug: "onelogin"
 tier: "1"
 category: "Identity"
 description: "Identity provider hardening for OneLogin including MFA policies, user security, and SmartFactor Authentication"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -566,6 +566,10 @@ Implement additional protections for privileged administrator accounts.
 2. Require approval for privilege changes
 3. Regular access reviews
 
+#### Code Implementation
+
+{% include pack-code.html vendor="onelogin" section="3.3" %}
+
 ---
 
 ### 3.4 Automatically Suspend Inactive Users
@@ -599,6 +603,10 @@ Configure OneLogin's user policy to automatically suspend accounts that have not
 **Step 2: Handle the Exceptions Deliberately**
 1. Identify accounts that legitimately sign in rarely (break-glass, seasonal staff) and document them rather than exempting the whole policy
 2. Define the reactivation process so suspension does not become an outage
+
+#### Code Implementation
+
+{% include pack-code.html vendor="onelogin" section="3.4" %}
 
 #### Validation & Testing
 1. Review the user list for suspended accounts after the first policy interval and confirm the suspensions are expected
@@ -750,6 +758,10 @@ Enable and monitor audit logs for security events.
 - Password resets
 - User provisioning/deprovisioning
 
+#### Code Implementation
+
+{% include pack-code.html vendor="onelogin" section="5.1" %}
+
 ---
 
 ### 5.2 Configure Security Alerts
@@ -851,6 +863,7 @@ Configure alerts for security-relevant events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Add REST API Code Packs: 3.3 (Roles v2 admin inventory + privileged-user resolution), 3.4 (Users v2 last_login_until dormant-account and never-logged-in detection), 5.1 (Events v1 SIEM export with cursor pagination) — endpoints, params, and auth header formats verified against developers.onelogin.com | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Correct 1.1 and 4.2 — the "reset counter after 15 minutes" setting does not exist (real settings are Maximum Invalid Login Attempts and Lock effective period); add compromised credential checking (1.4), remaining user policy hardening (1.5), login flow selection incl. Brute-Force Defense (2.4), and automatic suspension of inactive users (3.4); note the policy-level "Smart MFA" label in 2.2; add reCAPTCHA on account recovery to 1.3; add missing Attack Prevented lines to 2.1 and 2.2; drop compliance marketing references | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with MFA, policies, and admin controls | Claude Code (Opus 4.5) |

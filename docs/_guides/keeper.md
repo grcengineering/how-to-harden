@@ -6,7 +6,7 @@ slug: "keeper"
 tier: "2"
 category: "Identity"
 description: "Enterprise password manager hardening for Keeper Security including role enforcement, MFA, and admin console security"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -257,6 +257,10 @@ Require 2FA for all users accessing their Keeper vault.
    - Identity provider side
    - Keeper side (additional layer)
 
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="2.2" %}
+
 ---
 
 ### 2.3 Configure Sharing and Export Restrictions
@@ -377,6 +381,10 @@ Enable Keeper's **Account Transfer** enforcement policy and assign an eligible t
 1. Add the transfer step to the standard offboarding checklist, executed before the account is deleted
 2. Record who received each transferred vault
 3. Rotate any high-value credentials recovered through transfer
+
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="2.5" %}
 
 #### Validation & Testing
 1. Run a transfer against a test account and confirm the receiving admin can access the transferred records
@@ -730,6 +738,10 @@ Enable and review audit logs for security events.
 - Admin privilege changes
 - Policy modifications
 
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="5.1" %}
+
 ---
 
 ### 5.2 Monitor Security Audit
@@ -772,6 +784,10 @@ Use Security Audit to monitor organization password health.
 1. Notify users with weak passwords
 2. Set improvement targets
 3. Track progress over time
+
+#### Code Implementation
+
+{% include pack-code.html vendor="keeper" section="5.2" %}
 
 ---
 
@@ -883,6 +899,7 @@ Enable BreachWatch to detect compromised credentials.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Add Keeper Commander CLI Code Packs: 2.2 (REQUIRE_TWO_FACTOR role enforcement), 2.5 (transfer-user offboarding + action-report bulk transfer), 5.1 (audit-log SIEM export + audit-report review), 5.2 (security-audit-report + user-report) — all commands verified against Commander enterprise-management and reporting command references | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Add Account Transfer (2.5), Platform Restriction incl. Commander SDK (2.6), passkey biometric login (3.3), and session/offline/clipboard hardening (3.4); correct 3.2 — Keeper recommends DISABLING account recovery for SSO orgs; sharpen 1.1 to "ensure an administrator exists outside of SSO"; name the BreachWatch SIEM enforcement policy in 5.3; add browser built-in password manager disabling to 2.4; add missing Attack Prevented lines; drop Trust Center and marketing-page references | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, enforcement policies, and SSO | Claude Code (Opus 4.5) |
