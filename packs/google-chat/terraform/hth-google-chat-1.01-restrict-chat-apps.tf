@@ -1,5 +1,5 @@
 # =============================================================================
-# HTH Google Chat Control 3.3: Restrict & Allowlist Google Chat Apps
+# HTH Google Chat Control 1.1: Restrict & Allowlist Google Chat Apps
 # Profile Level: L1 (Baseline)
 # Frameworks: CIS 2.5, NIST AC-3/CM-7
 # Source: https://howtoharden.com/guides/google-chat/#33-restrict--allowlist-google-chat-apps

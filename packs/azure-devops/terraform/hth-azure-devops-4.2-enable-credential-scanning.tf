@@ -1,8 +1,8 @@
 # =============================================================================
-# HTH Azure DevOps Control 4.2: Enable Credential Scanning
+# HTH Azure DevOps Control 4.2: Enable Secret and Code Scanning with GitHub Advanced Security
 # Profile Level: L1 (Baseline)
 # Frameworks: NIST RA-5
-# Source: https://howtoharden.com/guides/azure-devops/#42-enable-credential-scanning
+# Source: https://howtoharden.com/guides/azure-devops/#42-enable-secret-and-code-scanning-with-github-advanced-security
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform
@@ -12,8 +12,9 @@
 # or credentials. The azuredevops_repository_policy_check_credentials
 # resource prevents accidental secret commits at the Git layer.
 #
-# Microsoft Security DevOps pipeline scanning (MicrosoftSecurityDevOps@1)
-# is configured via YAML pipelines, not Terraform.
+# GitHub Advanced Security for Azure DevOps (GHAzDO) secret/code scanning
+# is enabled per-org/project/repo in the console (see guide 4.2); its
+# enablement has no Terraform resource in the azuredevops provider.
 # ---------------------------------------------------------------------------
 
 # Block pushes that contain credentials or secrets

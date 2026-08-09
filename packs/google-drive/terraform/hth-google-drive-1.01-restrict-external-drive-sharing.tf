@@ -1,5 +1,5 @@
 # =============================================================================
-# HTH Google Drive Control 4.1: Configure External Drive Sharing Restrictions
+# HTH Google Drive Control 1.1: Configure External Drive Sharing Restrictions
 # Profile Level: L1 (Baseline)
 # Frameworks: CIS 3.3, NIST AC-3/AC-22, CIS Google Workspace 3.1
 # Source: https://howtoharden.com/guides/google-drive/#41-configure-external-drive-sharing-restrictions
