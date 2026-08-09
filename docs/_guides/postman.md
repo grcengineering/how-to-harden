@@ -6,7 +6,7 @@ slug: "postman"
 tier: "2"
 category: "DevOps"
 description: "API platform security hardening for Postman Enterprise including SSO, team policies, and API key management"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -350,6 +350,10 @@ Restrict the creation of public workspaces to prevent accidental data exposure.
 2. Verify no sensitive data is exposed
 3. Convert to private if necessary
 
+#### Code Implementation
+
+{% include pack-code.html vendor="postman" section="2.4" %}
+
 ---
 
 ## 3. API Key & Secret Management
@@ -539,6 +543,10 @@ Use Postman's secret scanning to detect exposed credentials — Cloud Secret Det
 2. Add custom detection patterns for credential formats unique to your organization
 3. Pull findings programmatically through the findings API to feed your existing secret-response workflow
 
+#### Code Implementation
+
+{% include pack-code.html vendor="postman" section="3.4" %}
+
 ---
 
 ### 3.5 Enable BYOK Encryption
@@ -636,6 +644,10 @@ Regularly review audit logs for security events and compliance.
 - Public workspace creation
 - Admin role changes
 - SSO configuration changes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="postman" section="4.1" %}
 
 ---
 
@@ -796,6 +808,7 @@ Implement data governance policies for collections and workspaces.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Add first Code Packs (api): 2.4 public-workspace audit (GET /workspaces?type=public), 3.4 unresolved Secret Scanner findings export (POST /detected-secrets-queries, Enterprise + Advanced Security Administration), 4.1 audit-log JSONL export for SIEM (GET /audit/logs) — all endpoints verified against the Postman API OpenAPI reference; wire Code Implementation includes into 2.4, 3.4, and 4.1 | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass: added 3.5 BYOK encryption (Enterprise + Advanced Security Administration, AWS KMS, with an honest coverage boundary); added the org-level auto-revoke-exposed-keys, key-generation restriction, and org-wide expiry policy to 3.1 and corrected 3.2 to the Organization → Postman Keys dashboard; rewrote 3.4 to distinguish Cloud Secret Detection from Local Secret Protection by workspace type and plan; softened the unconfirmed 30/60/180-day expiry menu and annotated 4.2 Allowed Domains as absent from current team-security docs; repaired the cheat-parser contract for 1.1, 1.2, 3.1, and 3.3 and replaced their marketing-register rationale bullets with threat statements; replaced Trust Center links with verified first-party configuration docs | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, team security, and API key management | Claude Code (Opus 4.5) |

@@ -6,7 +6,7 @@ slug: "duo"
 tier: "2"
 category: "Identity"
 description: "Multi-factor authentication hardening for Cisco Duo, admin policies, and bypass protection"
-version: "0.2.0"
+version: "0.2.1"
 maturity: "draft"
 last_updated: "2026-08-08"
 ---
@@ -109,6 +109,10 @@ Duo documents ten assignable admin roles. Assign the minimum required role per a
 > **Note — administrators provisioned via Cisco Security Cloud Control.** New administrators whose accounts were created through Cisco Security Cloud Control (SCC) **after May 11, 2026** have limited access to features and pages in the Admin Panel, and sign in through SCC rather than directly. Factor this into any access review: an SCC-provisioned admin's effective permissions may not match what the role name implies.
 
 **Time to Complete:** ~30 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="duo" section="1.1" %}
 
 ---
 
@@ -291,6 +295,10 @@ Review and minimize bypass access that allows users to skip MFA. Bypass status s
 2. Verify business justification
 3. Consider per-user bypass instead
 
+#### Code Implementation
+
+{% include pack-code.html vendor="duo" section="2.2" %}
+
 ---
 
 ### 2.3 Require Phishing-Resistant MFA
@@ -417,6 +425,10 @@ Identify and manage inactive Duo accounts to prevent account takeover and unauth
 **Step 3: Automate Cleanup**
 1. Use Duo Admin API for automated reporting
 2. Create process for regular review (monthly)
+
+#### Code Implementation
+
+{% include pack-code.html vendor="duo" section="3.1" %}
 
 ---
 
@@ -706,6 +718,10 @@ Cisco Identity Intelligence (CII) replaces Duo Trust Monitor, which was removed 
 
 > **Identity mapping prerequisite.** If you are not using Active Directory Sync or Microsoft Entra ID Sync, Duo users need an email address in the username or email field for CII to correlate them with identities in other integrated platforms — and that address must match the one used in those platforms. Without it, cross-vendor correlation silently produces incomplete results rather than an error. Data ingestion begins automatically after provisioning and can take several days to fully synchronize.
 
+#### Code Implementation
+
+{% include pack-code.html vendor="duo" section="6.1" %}
+
 ---
 
 ### 6.2 Key Events to Monitor
@@ -862,6 +878,7 @@ Trusted Endpoints is included from Essentials upward — the "Duo Beyond" plan n
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.1 | draft | Add first Code Packs (sdk, official duo_client Python SDK against the Admin API): 1.1 administrator role audit with Owner-count check (GET /admin/v1/admins), 2.2 bypass-status user audit and 3.1 never-enrolled/stale-account report (GET /admin/v1/users), 6.1 v2 authentication-log JSONL export for SIEM (GET /admin/v2/logs/authentication with next_offset pagination); wire Code Implementation includes into 1.1, 2.2, 3.1, and 6.1 | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | draft | Record Trust Monitor's removal from the Admin Panel (2026-07-27; API EOS 2027-01-31) and repoint 4.2 and 6.1 to Cisco Identity Intelligence with its provisioning path; correct 1.1 — admin MFA is mandatory, not a toggle — and replace the six-role list with the documented ten roles plus the Owner-only API-application constraint and the post-2026-05-11 SCC provisioning caveat; add 1.3 admin session/idle limits; add a changed-default callout in 2.1 for Risk-Based Remembered Devices (on by default on Advantage/Premier, 30-day suppression, 7-day passwordless cap); correct 4.1 for the 2024-10-07 certificate-verification EOL, the retired "Duo Beyond" plan name, and the fifteen current integrations; rewrite 6.3 as the sourced Duo Passport control; add missing Attack Prevented to 1.1, 1.2, 2.2, 2.3, 3.1, and 4.2; rebuild the plan table and purge trust-portal/compliance-marketing references | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, policies, and monitoring | Claude Code (Opus 4.5) |
