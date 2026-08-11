@@ -1,0 +1,35 @@
+// Control: 1.5 Prefer OAuth Over Static Keys for MCP Access
+// Profile Level: L2 (Hardened)
+// Frameworks: NIST 800-53 IA-2, CIS Controls v8 6, SOC 2 CC6.1
+// Guide: https://howtoharden.com/guides/kernel/
+// Interface: Kernel MCP server — https://www.kernel.sh/docs/reference/mcp-server/authentication
+
+// HTH Guide Excerpt: begin mcp-oauth-config
+// RECOMMENDED — OAuth 2.1: omit auth headers entirely. The MCP client
+// launches a browser-based authorization prompt on first connection;
+// the grant is user-bound and revocable, and no secret lives in this file.
+{
+  "mcpServers": {
+    "kernel": {
+      "url": "https://mcp.onkernel.com/mcp"
+    }
+  }
+}
+// HTH Guide Excerpt: end mcp-oauth-config
+
+// HTH Guide Excerpt: begin mcp-api-key-config
+// HEADLESS ONLY — static API key. The server treats non-JWT bearer tokens
+// as API keys. If you must use this mode: issue a project-scoped, expiring
+// key (Controls 1.1-1.2), inject it from the environment at render time,
+// and keep this file out of version control.
+{
+  "mcpServers": {
+    "kernel": {
+      "url": "https://mcp.onkernel.com/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_KERNEL_API_KEY"
+      }
+    }
+  }
+}
+// HTH Guide Excerpt: end mcp-api-key-config
