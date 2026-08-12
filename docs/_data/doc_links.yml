@@ -509,6 +509,18 @@ keeper:
   hardening_docs: "https://docs.keeper.io/en/enterprise-guide/recommended-security-settings"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/keeper"
 
+kernel:
+  product_docs: "https://www.kernel.sh/docs"
+  api_docs: "https://www.kernel.sh/docs/api-reference/api-keys/list-api-keys"
+  hardening_docs:
+    - label: "API Keys"
+      url: "https://www.kernel.sh/docs/info/api-keys"
+    - label: "Custom Chrome Policies"
+      url: "https://www.kernel.sh/docs/browsers/chrome-policies"
+    - label: "Audit Logs"
+      url: "https://www.kernel.sh/docs/info/audit-logs"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/kernel"
+
 langchain:
   product_docs: "https://docs.langchain.com/"
   api_docs: "https://api.smith.langchain.com/docs"
