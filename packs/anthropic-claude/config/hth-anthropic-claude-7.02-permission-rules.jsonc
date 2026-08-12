@@ -113,7 +113,7 @@
 // HTH Guide Excerpt: end permission-enforcement
 
 // HTH Guide Excerpt: begin sandbox-config
-// OS-level bash sandbox configuration (L3 — Maximum Security)
+// OS-level bash sandbox configuration (L3 — Run)
 // Reference: code.claude.com/docs/en/sandboxing
 // Sandboxing provides filesystem and network isolation for Bash commands.
 // Platform support:

@@ -1,5 +1,5 @@
 # Control: 4.1 Enforce Chrome Enterprise Policies on Browsers and Pools
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST 800-53 CM-7/CM-6, CIS Controls v8 4, SOC 2 CC6.8
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Terraform provider kernel/kernel, kernel_browser_pool.chrome_policy —

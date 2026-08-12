@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control: 1.4 Audit and Remove Unused API Keys
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST 800-53 AC-2, CIS Controls v8 5, SOC 2 CC6.2
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Kernel REST API — GET/DELETE /org/api_keys (OpenAPI: api.onkernel.com/spec.json)

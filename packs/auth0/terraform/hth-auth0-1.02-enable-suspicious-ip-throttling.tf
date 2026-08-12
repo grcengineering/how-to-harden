@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Auth0 Control 1.2: Enable Suspicious IP Throttling
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SI-4 | CIS 4.10
 # Source: https://howtoharden.com/guides/auth0/#12-enable-suspicious-ip-throttling
 # =============================================================================

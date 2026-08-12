@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Orca Control 2.1: Configure Role-Based Access Control
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 5.4, NIST AC-6
 # Source: https://howtoharden.com/guides/orca/#21-configure-role-based-access-control
 #

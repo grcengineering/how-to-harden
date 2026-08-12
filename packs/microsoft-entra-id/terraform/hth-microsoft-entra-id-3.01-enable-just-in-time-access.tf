@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft Entra ID Control 3.1: Enable Just-In-Time Access for Admin Roles
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 5.4/6.8, NIST AC-2(7)/AC-6(1), CIS Azure 1.1.4
 # Source: https://howtoharden.com/guides/microsoft-entra-id/#31-enable-just-in-time-access-for-admin-roles
 # =============================================================================

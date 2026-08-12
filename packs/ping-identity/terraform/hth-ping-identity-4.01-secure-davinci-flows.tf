@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 4.1: Secure DaVinci Flows
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-3, CM-3
 # Source: https://howtoharden.com/guides/ping-identity/#41-secure-davinci-flows
 # =============================================================================

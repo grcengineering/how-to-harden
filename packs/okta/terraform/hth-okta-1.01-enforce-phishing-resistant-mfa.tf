@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Okta Control 1.1: Phishing-Resistant MFA (FIDO2/WebAuthn)
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 6.3/6.5, NIST IA-2(1)/IA-2(6), DISA STIG V-273190/191/193/194
 # Source: https://howtoharden.com/guides/okta/#11-enforce-phishing-resistant-mfa
 # =============================================================================

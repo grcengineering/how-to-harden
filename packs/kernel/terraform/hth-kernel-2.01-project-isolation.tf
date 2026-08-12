@@ -1,5 +1,5 @@
 # Control: 2.1 Isolate Environments with Projects
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST 800-53 SC-7/AC-4, CIS Controls v8 12, SOC 2 CC6.1
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Terraform provider kernel/kernel —

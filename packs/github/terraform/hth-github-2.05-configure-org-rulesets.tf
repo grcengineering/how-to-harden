@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 2.05: Configure Organization Rulesets
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST CM-3
 # Source: https://howtoharden.com/guides/github/#23-configure-repository-rulesets
 # =============================================================================

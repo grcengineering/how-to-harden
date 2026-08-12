@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Harness Control 4.2: Configure Audit Trail
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 8.2, NIST AU-2
 # Source: https://howtoharden.com/guides/harness/#42-configure-audit-trail
 # =============================================================================

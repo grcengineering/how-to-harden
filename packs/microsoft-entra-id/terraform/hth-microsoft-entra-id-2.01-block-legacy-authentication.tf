@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft Entra ID Control 2.1: Block Legacy Authentication
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 4.2, NIST IA-2/AC-17, CIS Azure 1.1.2
 # Source: https://howtoharden.com/guides/microsoft-entra-id/#21-block-legacy-authentication
 # =============================================================================

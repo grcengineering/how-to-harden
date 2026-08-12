@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 2.3: Configure Rolling Releases
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST CM-3(2)
 # Source: https://howtoharden.com/guides/vercel/#23-configure-rolling-releases
 # =============================================================================

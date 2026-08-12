@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 2.3: Certificate Lifecycle Management
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-12
 # Source: https://howtoharden.com/guides/ping-identity/#23-certificate-lifecycle-management
 # =============================================================================

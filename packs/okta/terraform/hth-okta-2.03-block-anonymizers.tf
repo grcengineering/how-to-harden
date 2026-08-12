@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Okta Control 2.3: Dynamic Network Zones and Anonymizer Blocking
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-3, SC-7
 # Source: https://howtoharden.com/guides/okta/#23-configure-dynamic-network-zones
 # =============================================================================

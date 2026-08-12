@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft 365 Control 1.2: Block Legacy Authentication Protocols
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Source: https://howtoharden.com/guides/microsoft-365/#12-block-legacy-authentication-protocols
 # =============================================================================
 

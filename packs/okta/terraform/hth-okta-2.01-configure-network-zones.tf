@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Okta Control 2.1: Network Zones
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 6.7, NIST AC-3, SC-7
 # Source: https://howtoharden.com/guides/okta/#21-configure-ip-zones-and-network-policies
 # =============================================================================

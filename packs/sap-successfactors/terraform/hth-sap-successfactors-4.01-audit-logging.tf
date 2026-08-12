@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH SAP SuccessFactors Control 4.1: Audit Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-3
 # Source: https://howtoharden.com/guides/sap-successfactors/#41-audit-logging
 # =============================================================================

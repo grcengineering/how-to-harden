@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control: 1.3 Rotate API Keys with Bounded Grace Periods
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST 800-53 IA-5, CIS Controls v8 5, SOC 2 CC6.1
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Kernel CLI (first-party) — https://www.kernel.sh/docs/reference/cli/api-keys

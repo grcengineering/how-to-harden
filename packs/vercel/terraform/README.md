@@ -33,9 +33,9 @@ terraform apply
 
 | Level | Name | Description |
 |-------|------|-------------|
-| L1 | Baseline | SAML SSO, team roles, fork protection, env var security, log drains, attack challenge mode |
-| L2 | Hardened | Access Groups, WAF with OWASP rulesets, IP blocking, rate limiting, sensitive env policy, deployment retention |
-| L3 | Maximum Security | Secure Compute, trusted IPs, automation bypass disabled, strictest deployment controls |
+| L1 | Crawl | SAML SSO, team roles, fork protection, env var security, log drains, attack challenge mode |
+| L2 | Walk | Access Groups, WAF with OWASP rulesets, IP blocking, rate limiting, sensitive env policy, deployment retention |
+| L3 | Run | Secure Compute, trusted IPs, automation bypass disabled, strictest deployment controls |
 
 ```bash
 # Apply L1 (default)

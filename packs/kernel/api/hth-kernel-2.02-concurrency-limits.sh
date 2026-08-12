@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control: 2.2 Cap Browser Concurrency at Org and Project Level
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST 800-53 SC-6, CIS Controls v8 4, SOC 2 CC6.1/A1.1
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Kernel REST API — /org/limits, /org/projects/{id}/limits

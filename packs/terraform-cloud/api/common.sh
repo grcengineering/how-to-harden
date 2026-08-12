@@ -5,7 +5,7 @@
 # Required environment variables:
 #   TFC_TOKEN         -- Terraform Cloud API token (user, team, or organization)
 #   TFC_ORG           -- Your Terraform Cloud organization name
-#   HTH_PROFILE_LEVEL -- 1 (Baseline), 2 (Hardened), 3 (Maximum Security) [default: 1]
+#   HTH_PROFILE_LEVEL -- 1 (Crawl), 2 (Walk), 3 (Run) [default: 1]
 #
 # https://howtoharden.com/guides/terraform-cloud/
 

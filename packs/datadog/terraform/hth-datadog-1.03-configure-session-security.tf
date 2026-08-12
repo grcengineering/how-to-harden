@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Datadog Control 1.3: Configure Session Security
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 6.2, NIST AC-12
 # Source: https://howtoharden.com/guides/datadog/#13-configure-session-security
 # =============================================================================
@@ -30,7 +30,7 @@ resource "datadog_security_monitoring_rule" "session_idle_timeout_violation" {
     - Investigate if the session was legitimately active
 
     **HTH Control:** 1.3 Configure Session Security
-    **Profile Level:** L1 (Baseline)
+    **Profile Level:** L1 (Crawl)
 
     ${length(var.audit_alert_recipients) > 0 ? join(" ", var.audit_alert_recipients) : ""}
   EOT

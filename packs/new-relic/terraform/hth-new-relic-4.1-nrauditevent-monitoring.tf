@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH New Relic Control 4.1: NrAuditEvent Monitoring
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-3
 # Source: https://howtoharden.com/guides/new-relic/#41-nrauditevent
 # =============================================================================

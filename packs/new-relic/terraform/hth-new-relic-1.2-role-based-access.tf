@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH New Relic Control 1.2: Role-Based Access
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, AC-6
 # Source: https://howtoharden.com/guides/new-relic/#12-role-based-access
 # =============================================================================

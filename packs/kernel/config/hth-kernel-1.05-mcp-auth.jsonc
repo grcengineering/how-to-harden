@@ -1,5 +1,5 @@
 // Control: 1.5 Prefer OAuth Over Static Keys for MCP Access
-// Profile Level: L2 (Hardened)
+// Profile Level: L2 (Walk)
 // Frameworks: NIST 800-53 IA-2, CIS Controls v8 6, SOC 2 CC6.1
 // Guide: https://howtoharden.com/guides/kernel/
 // Interface: Kernel MCP server — https://www.kernel.sh/docs/reference/mcp-server/authentication

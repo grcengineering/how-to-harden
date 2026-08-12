@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Fivetran Control 3.3: Configure Destination Security
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.11, NIST SC-8
 # Source: https://howtoharden.com/guides/fivetran/#33-configure-destination-security
 # =============================================================================

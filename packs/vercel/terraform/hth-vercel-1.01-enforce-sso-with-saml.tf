@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 1.1: Enforce SSO with SAML
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-2(1), IA-8
 # Source: https://howtoharden.com/guides/vercel/#11-enforce-sso-with-saml
 # =============================================================================

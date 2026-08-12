@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 3.2: Implement Token Revocation
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-2(6)
 # Source: https://howtoharden.com/guides/ping-identity/#32-implement-token-revocation
 # =============================================================================

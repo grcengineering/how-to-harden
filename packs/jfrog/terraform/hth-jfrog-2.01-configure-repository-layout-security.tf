@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH JFrog Control 2.1: Configure Repository Layout Security
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST CM-7
 # Source: https://howtoharden.com/guides/jfrog/#21-configure-repository-layout-security
 # =============================================================================

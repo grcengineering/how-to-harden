@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 5.2: Use Runtime Parameters for Secrets
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SC-28
 # Source: https://howtoharden.com/guides/azure-devops/#52-use-runtime-parameters-for-secrets
 # =============================================================================

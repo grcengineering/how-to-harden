@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Databricks Control 3.1: Cluster Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST CM-7, SOC 2 CC6.1
 # Source: https://howtoharden.com/guides/databricks/#31-configure-cluster-policies
 # =============================================================================

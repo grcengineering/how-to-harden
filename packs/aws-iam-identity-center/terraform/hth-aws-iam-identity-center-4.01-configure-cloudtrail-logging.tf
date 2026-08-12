@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH AWS IAM Identity Center Control 4.1: Configure CloudTrail Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, SOC 2 CC7.2, ISO 27001 A.12.4.1
 # Source: https://howtoharden.com/guides/aws-iam-identity-center/#41-configure-cloudtrail-logging
 # =============================================================================

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control: 5.1 Review Organization Audit Logs on a Cadence
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST 800-53 AU-2/AU-6, CIS Controls v8 8, SOC 2 CC7.2
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Kernel CLI (first-party) — https://www.kernel.sh/docs/reference/cli/audit-logs

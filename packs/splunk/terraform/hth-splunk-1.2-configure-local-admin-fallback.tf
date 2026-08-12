@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Splunk Control 1.2: Configure Local Admin Fallback
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 5.4, NIST AC-6
 # Source: https://howtoharden.com/guides/splunk/#12-configure-local-admin-fallback
 # =============================================================================

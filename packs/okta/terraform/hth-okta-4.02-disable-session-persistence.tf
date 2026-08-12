@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Okta Control 4.2: Disable Session Persistence
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SC-23, DISA STIG V-273206
 # Source: https://howtoharden.com/guides/okta/#42-disable-session-persistence
 # =============================================================================

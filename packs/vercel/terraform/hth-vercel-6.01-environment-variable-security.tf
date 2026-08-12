@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 6.1: Environment Variable Security
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-28, SC-12
 # Source: https://howtoharden.com/guides/vercel/#61-environment-variable-security
 # =============================================================================

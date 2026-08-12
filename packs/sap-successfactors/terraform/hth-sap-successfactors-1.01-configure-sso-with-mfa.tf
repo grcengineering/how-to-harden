@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH SAP SuccessFactors Control 1.1: Configure SSO with MFA
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-2(1)
 # Source: https://howtoharden.com/guides/sap-successfactors/#11-configure-sso-with-mfa
 # =============================================================================

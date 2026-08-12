@@ -7,7 +7,7 @@
 // Reference: code.claude.com/docs/en/settings, code.claude.com/docs/en/channels
 
 // HTH Guide Excerpt: begin cowork-hardened
-// L2 Hardened Cowork governance configuration.
+// L2 Walk Cowork governance configuration.
 // Disables channels by default, enforces org login,
 // restricts session retention, and controls auto-mode.
   {
@@ -49,7 +49,7 @@
 // HTH Guide Excerpt: end cowork-automode
 
 // HTH Guide Excerpt: begin cowork-maximum
-// L3 Maximum Security Cowork configuration.
+// L3 Run Cowork configuration.
 // Zero session retention, channels disabled, auto-mode disabled,
 // org-locked login, and full managed-only lockdown.
   {

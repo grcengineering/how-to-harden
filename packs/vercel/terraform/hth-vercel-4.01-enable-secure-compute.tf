@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 4.1: Enable Secure Compute
-# Profile Level: L3 (Maximum Security)
+# Profile Level: L3 (Run)
 # Frameworks: NIST SC-7, SC-8
 # Source: https://howtoharden.com/guides/vercel/#41-enable-secure-compute
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Okta Control 4.1: Session Timeouts
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-12, SC-23, DISA STIG V-273206
 # Source: https://howtoharden.com/guides/okta/#41-configure-session-timeouts
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Oracle HCM Control 2.1: Secure REST API Access
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5
 # Source: https://howtoharden.com/guides/oracle-hcm/#21-secure-rest-api-access
 # =============================================================================

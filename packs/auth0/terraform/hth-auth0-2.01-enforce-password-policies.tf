@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Auth0 Control 2.1: Enforce Strong Password Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5 | CIS 5.2
 # Source: https://howtoharden.com/guides/auth0/#21-enforce-strong-password-policies
 # =============================================================================

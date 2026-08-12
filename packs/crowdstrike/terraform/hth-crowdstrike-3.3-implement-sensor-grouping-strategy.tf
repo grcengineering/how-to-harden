@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH CrowdStrike Control 3.3: Implement Sensor Grouping Strategy
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST CM-2
 # Source: https://howtoharden.com/guides/crowdstrike/#33-implement-sensor-grouping-strategy
 # =============================================================================

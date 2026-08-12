@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 3.1: Configure DNS Filtering
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-7, SI-3 | CIS 9.2
 # Source: https://howtoharden.com/guides/cloudflare/#31-configure-dns-filtering
 # =============================================================================

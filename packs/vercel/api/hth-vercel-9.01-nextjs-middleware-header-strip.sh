@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 9.1: Strip Next.js Internal Headers at Edge
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SI-4, SI-10, SC-7
 # Source: https://howtoharden.com/guides/vercel/#91-strip-nextjs-internal-headers
 # Rationale: CVE-2025-29927 allowed attackers to bypass middleware-based

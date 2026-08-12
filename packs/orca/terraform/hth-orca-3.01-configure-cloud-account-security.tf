@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Orca Control 3.1: Configure Cloud Account Security
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.11, NIST SC-12
 # Source: https://howtoharden.com/guides/orca/#31-configure-cloud-account-security
 #

@@ -5,7 +5,7 @@
 # Required environment variables:
 #   GITHUB_TOKEN      -- Personal access token or GitHub App token
 #   GITHUB_ORG        -- Your GitHub organization name
-#   HTH_PROFILE_LEVEL -- 1 (Baseline), 2 (Hardened), 3 (Maximum Security) [default: 1]
+#   HTH_PROFILE_LEVEL -- 1 (Crawl), 2 (Walk), 3 (Run) [default: 1]
 #
 # https://howtoharden.com/guides/github/
 

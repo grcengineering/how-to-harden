@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 1.3: Harden Device Enrollment
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-2 | CIS 1.4, 5.3
 # Source: https://howtoharden.com/guides/cloudflare/#13-harden-device-enrollment
 # =============================================================================

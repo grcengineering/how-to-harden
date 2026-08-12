@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH JFrog Control 2.3: Prevent Dependency Confusion
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SI-7
 # Source: https://howtoharden.com/guides/jfrog/#23-prevent-dependency-confusion
 # =============================================================================

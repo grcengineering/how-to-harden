@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Jamf Pro Control 2.3: Configure Firewall
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 4.4, NIST SC-7
 # Source: https://howtoharden.com/guides/jamf/#23-configure-firewall
 # =============================================================================

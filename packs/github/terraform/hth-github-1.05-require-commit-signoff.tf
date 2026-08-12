@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 1.05: Require Web Commit Sign-Off
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AU-10, CM-5
 # Source: https://howtoharden.com/guides/github/#15-require-commit-sign-off
 # =============================================================================

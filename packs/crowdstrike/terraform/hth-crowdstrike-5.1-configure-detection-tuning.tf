@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH CrowdStrike Control 5.1: Configure Detection Tuning
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SI-4
 # Source: https://howtoharden.com/guides/crowdstrike/#51-configure-detection-tuning
 # =============================================================================

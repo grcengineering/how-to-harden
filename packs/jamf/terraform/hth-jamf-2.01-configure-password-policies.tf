@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Jamf Pro Control 2.1: Configure Password Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 5.2, NIST IA-5
 # Source: https://howtoharden.com/guides/jamf/#21-configure-password-policies
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 1.04: Disable Private Repository Forking
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-4, AC-6
 # Source: https://howtoharden.com/guides/github/#14-disable-private-repository-forking
 # =============================================================================

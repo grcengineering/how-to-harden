@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 7.2: Harden TLS and Certificate Configuration
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-8, SC-13
 # Source: https://howtoharden.com/guides/vercel/#72-harden-tls-and-certificate-configuration
 # =============================================================================

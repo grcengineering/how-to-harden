@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Databricks Control 2.3: Audit Logging for Data Access
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-3, SOC 2 CC7.2
 # Source: https://howtoharden.com/guides/databricks/#23-audit-logging-for-data-access
 # =============================================================================

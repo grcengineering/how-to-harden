@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH AWS IAM Identity Center Control 1.3: Configure Attribute-Based Access Control
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-3, SOC 2 CC6.1, ISO 27001 A.9.4.1
 # Source: https://howtoharden.com/guides/aws-iam-identity-center/#13-configure-attribute-based-access-control
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Buildkite Control 3.1: Configure Agent Tokens
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.11 | NIST SC-12
 # Source: https://howtoharden.com/guides/buildkite/#31-configure-agent-tokens
 # =============================================================================

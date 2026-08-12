@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 10.2: Verify Authorization Defense in Depth
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, SI-10
 # Source: https://howtoharden.com/guides/vercel/#102-middleware-authz-defense-in-depth
 # Rationale: CVE-2025-29927 proved that middleware is not a security boundary.

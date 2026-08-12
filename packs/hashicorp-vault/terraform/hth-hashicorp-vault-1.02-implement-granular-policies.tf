@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH HashiCorp Vault Control 1.2: Implement Granular Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, AC-6 | SOC 2 CC6.1, CC6.3 | ISO 27001 A.9.4.1
 # Source: https://howtoharden.com/guides/hashicorp-vault/#12-implement-granular-policies
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 2.04: Enable Secret Scanning Validity Checks
-# Profile Level: L3 (Maximum Security)
+# Profile Level: L3 (Run)
 # Frameworks: NIST IA-5, SI-4
 # Source: https://howtoharden.com/guides/github/#24-secret-scanning-validity-checks
 # =============================================================================

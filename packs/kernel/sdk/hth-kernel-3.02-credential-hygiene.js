@@ -1,5 +1,5 @@
 // Control: 3.2 Harden Stored Credentials for Managed Auth
-// Profile Level: L2 (Hardened)
+// Profile Level: L2 (Walk)
 // Frameworks: NIST 800-53 IA-5/SC-28, CIS Controls v8 3, SOC 2 CC6.1
 // Guide: https://howtoharden.com/guides/kernel/
 // Interface: Kernel SDK / REST API — /credentials

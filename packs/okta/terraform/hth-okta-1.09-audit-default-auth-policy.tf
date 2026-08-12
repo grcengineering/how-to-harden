@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Okta Control 1.9: Audit Default Authentication Policy
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, IA-2
 # Source: https://howtoharden.com/guides/okta/#19-audit-default-authentication-policy
 # =============================================================================

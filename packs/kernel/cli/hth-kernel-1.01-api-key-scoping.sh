@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control: 1.1 Scope API Keys to Projects
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST 800-53 AC-6/AC-3, CIS Controls v8 6, SOC 2 CC6.3
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Kernel CLI (first-party) — https://www.kernel.sh/docs/reference/cli/api-keys

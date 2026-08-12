@@ -8,7 +8,7 @@
 // Reference: code.claude.com/docs/en/hooks, code.claude.com/docs/en/plugin-marketplaces
 
 // HTH Guide Excerpt: begin hooks-plugins-hardened
-// L2 Hardened hook and plugin lockdown.
+// L2 Walk hook and plugin lockdown.
 // Only managed hooks execute; plugin installs restricted to
 // approved marketplaces; HTTP hooks limited to internal URLs.
   {
@@ -37,7 +37,7 @@
 // HTH Guide Excerpt: end hooks-plugins-hardened
 
 // HTH Guide Excerpt: begin hooks-plugins-maximum
-// L3 Maximum Security — no plugins, no hooks, no HTTP hook URLs.
+// L3 Run — no plugins, no hooks, no HTTP hook URLs.
 // Complete lockdown of extensibility surface.
   {
     "allowManagedHooksOnly": true,

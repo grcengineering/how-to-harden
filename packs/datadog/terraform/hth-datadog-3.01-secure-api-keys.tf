@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Datadog Control 3.1: Secure API Keys
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.11, NIST SC-12
 # Source: https://howtoharden.com/guides/datadog/#31-secure-api-keys
 # =============================================================================
@@ -33,7 +33,7 @@ resource "datadog_security_monitoring_rule" "api_key_lifecycle" {
     - Ensure unused keys are revoked
 
     **HTH Control:** 3.1 Secure API Keys
-    **Profile Level:** L1 (Baseline)
+    **Profile Level:** L1 (Crawl)
 
     ${length(var.audit_alert_recipients) > 0 ? join(" ", var.audit_alert_recipients) : ""}
   EOT

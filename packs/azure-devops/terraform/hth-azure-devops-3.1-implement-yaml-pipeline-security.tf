@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 3.1: Implement YAML Pipeline Security
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST CM-7
 # Source: https://howtoharden.com/guides/azure-devops/#31-implement-yaml-pipeline-security
 # =============================================================================

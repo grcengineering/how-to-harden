@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 1.5: Audit Third-Party Integrations and OAuth Grants
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-6, SA-12, CM-8
 # Source: https://howtoharden.com/guides/vercel/#15-audit-third-party-integrations
 # Driver: Vercel April 2026 incident - compromised Context.ai OAuth token

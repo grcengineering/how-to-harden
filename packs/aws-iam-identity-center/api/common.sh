@@ -9,7 +9,7 @@
 #   AWS_PROFILE           -- Named AWS CLI profile to use
 #   AWS_SSO_INSTANCE_ARN  -- SSO instance ARN (auto-detected if not set)
 #   AWS_IDENTITY_STORE_ID -- Identity Store ID (auto-detected if not set)
-#   HTH_PROFILE_LEVEL     -- 1 (Baseline), 2 (Hardened), 3 (Maximum Security) [default: 1]
+#   HTH_PROFILE_LEVEL     -- 1 (Crawl), 2 (Walk), 3 (Run) [default: 1]
 #
 # https://howtoharden.com/guides/aws-iam-identity-center/
 

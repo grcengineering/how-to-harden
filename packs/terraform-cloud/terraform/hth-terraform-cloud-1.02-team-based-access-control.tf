@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Terraform Cloud Control 1.02: Team-Based Access Control
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, AC-6
 # Source: https://howtoharden.com/guides/terraform-cloud/#12-team-based-access-control
 # =============================================================================

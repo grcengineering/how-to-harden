@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Terraform Cloud Control 4.02: Vault Integration
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Source: https://howtoharden.com/guides/terraform-cloud/#42-vault-integration
 # =============================================================================
 

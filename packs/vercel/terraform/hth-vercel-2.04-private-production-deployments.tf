@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 2.4: Private Production Deployments (Advanced DP)
-# Profile Level: L2 (Hardened) — requires Pro $150/mo Advanced DP add-on or Enterprise
+# Profile Level: L2 (Walk) — requires Pro $150/mo Advanced DP add-on or Enterprise
 # Frameworks: NIST AC-3, SC-7
 # Source: https://howtoharden.com/guides/vercel/#24-private-production-deployments
 # Reference: https://vercel.com/docs/deployment-protection

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Databricks Control 2.1: Unity Catalog Data Governance
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, SOC 2 CC6.2
 # Source: https://howtoharden.com/guides/databricks/#21-implement-data-governance
 # =============================================================================

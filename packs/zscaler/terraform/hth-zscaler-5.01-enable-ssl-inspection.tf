@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Zscaler Control 5.1: Enable SSL Inspection
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-8, SI-3 | CIS 3.10, 13.3
 # Source: https://howtoharden.com/guides/zscaler/#51-enable-ssl-inspection
 # =============================================================================

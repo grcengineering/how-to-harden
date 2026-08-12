@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Oracle HCM Control 3.2: Data Retention and Purge
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SI-12
 # Source: https://howtoharden.com/guides/oracle-hcm/#32-data-retention-and-purge
 # =============================================================================

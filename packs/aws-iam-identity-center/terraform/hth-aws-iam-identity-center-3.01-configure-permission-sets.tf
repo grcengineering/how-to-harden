@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH AWS IAM Identity Center Control 3.1: Configure Permission Sets
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-6, SOC 2 CC6.3, ISO 27001 A.9.2.3
 # Source: https://howtoharden.com/guides/aws-iam-identity-center/#31-configure-permission-sets
 # =============================================================================

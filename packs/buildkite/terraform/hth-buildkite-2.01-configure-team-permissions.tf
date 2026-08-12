@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Buildkite Control 2.1: Configure Team Permissions
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 5.4 | NIST AC-6
 # Source: https://howtoharden.com/guides/buildkite/#21-configure-team-permissions
 # =============================================================================

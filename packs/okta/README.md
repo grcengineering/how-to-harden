@@ -29,7 +29,7 @@ cd packs/okta/api
 
 export OKTA_DOMAIN="yourorg.okta.com"
 export OKTA_API_TOKEN="your-ssws-token"
-export HTH_PROFILE_LEVEL=1  # 1=Baseline, 2=Hardened, 3=Maximum
+export HTH_PROFILE_LEVEL=1  # 1=Crawl, 2=Walk, 3=Run
 
 # Audit first — read-only, changes nothing
 bash hth-okta-validate.sh
@@ -52,8 +52,8 @@ cp terraform.tfvars.example terraform.tfvars
 
 terraform init
 terraform plan -var="profile_level=1"   # Preview L1 changes
-terraform apply -var="profile_level=1"  # Apply L1 (Baseline)
-terraform apply -var="profile_level=2"  # Apply L1 + L2 (Hardened)
+terraform apply -var="profile_level=1"  # Apply L1 (Crawl)
+terraform apply -var="profile_level=2"  # Apply L1 + L2 (Walk)
 terraform apply -var="profile_level=3"  # Apply all controls
 ```
 

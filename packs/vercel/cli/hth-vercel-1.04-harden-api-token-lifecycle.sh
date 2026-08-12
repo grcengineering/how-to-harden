@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 1.4: Harden API Token Lifecycle
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5, IA-4
 # Source: https://howtoharden.com/guides/vercel/#14-harden-api-token-lifecycle
 # =============================================================================

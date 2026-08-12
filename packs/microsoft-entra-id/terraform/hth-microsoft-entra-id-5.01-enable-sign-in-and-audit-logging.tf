@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft Entra ID Control 5.1: Enable Sign-In and Audit Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 8.2, NIST AU-2/AU-3/AU-6
 # Source: https://howtoharden.com/guides/microsoft-entra-id/#51-enable-sign-in-and-audit-logging
 # =============================================================================

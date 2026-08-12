@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Terraform Cloud Control 2.02: Sentinel Policy Enforcement
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST CM-7
 # Source: https://howtoharden.com/guides/terraform-cloud/#22-sentinel-policy-enforcement
 # =============================================================================

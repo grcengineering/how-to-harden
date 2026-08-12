@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Databricks Control 5.1: Security Monitoring
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SI-4, SOC 2 CC7.2, CC7.3
 # Source: https://howtoharden.com/guides/databricks/#51-security-monitoring
 # =============================================================================

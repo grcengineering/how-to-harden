@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 2.1: Create Secure Application Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, AC-6 | CIS 6.4
 # Source: https://howtoharden.com/guides/cloudflare/#21-create-secure-application-policies
 # =============================================================================

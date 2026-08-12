@@ -67,6 +67,7 @@ Manual three-liner — verify each:
 1. Frontmatter `last_updated` == newest changelog row date == `date +%F` (the commit date, not the drafting date)
 2. Frontmatter `version` == newest changelog row version
 3. No existing control renumbered; new controls take the next free `### N.M` at the end of their section
+4. Profile levels use the canonical Crawl/Walk/Run/Fly names — `grep -cE '\((Baseline|Hardened|Maximum Security)\)' docs/_guides/{slug}.md` must return 0
 
 ## Check 6 — Post-deploy spot check (after push only)
 

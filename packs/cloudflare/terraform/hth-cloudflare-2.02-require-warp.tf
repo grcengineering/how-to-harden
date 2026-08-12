@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 2.2: Require WARP for Application Access
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-2(11) | CIS 4.1, 6.4
 # Source: https://howtoharden.com/guides/cloudflare/#22-require-warp-for-application-access
 # =============================================================================

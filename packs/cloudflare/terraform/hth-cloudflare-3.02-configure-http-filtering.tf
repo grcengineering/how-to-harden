@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 3.2: Configure HTTP Filtering
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-7, SI-4 | CIS 9.2, 13.3
 # Source: https://howtoharden.com/guides/cloudflare/#32-configure-http-filtering
 # =============================================================================

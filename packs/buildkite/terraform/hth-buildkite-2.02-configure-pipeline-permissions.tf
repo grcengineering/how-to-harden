@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Buildkite Control 2.2: Configure Pipeline Permissions
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 5.4 | NIST AC-6
 # Source: https://howtoharden.com/guides/buildkite/#22-configure-pipeline-permissions
 # =============================================================================

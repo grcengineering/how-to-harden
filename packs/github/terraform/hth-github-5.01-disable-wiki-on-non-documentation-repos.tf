@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 5.01: Disable Wiki on Non-Documentation Repos
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST CM-7
 # Source: https://howtoharden.com/guides/github/#51-disable-unused-wikis
 # =============================================================================

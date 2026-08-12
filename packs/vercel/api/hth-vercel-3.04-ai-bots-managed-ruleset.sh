@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 3.4: Configure AI Bots Managed Ruleset
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SC-7, SI-4
 # Source: https://howtoharden.com/guides/vercel/#34-configure-ai-bots-managed-ruleset
 # Reference: https://vercel.com/docs/vercel-waf/managed-rulesets#configure-ai-bots-managed-ruleset

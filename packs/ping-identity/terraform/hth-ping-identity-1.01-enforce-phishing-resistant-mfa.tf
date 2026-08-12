@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 1.1: Phishing-Resistant MFA (FIDO2/WebAuthn)
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 6.3/6.5, NIST IA-2(1)/IA-2(6), PCI DSS 8.3.1
 # Source: https://howtoharden.com/guides/ping-identity/#11-enforce-phishing-resistant-mfa
 # =============================================================================

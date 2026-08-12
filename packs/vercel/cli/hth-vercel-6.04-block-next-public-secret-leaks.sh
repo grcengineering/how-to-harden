@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 6.4: Block NEXT_PUBLIC_ Secret Leaks
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-28, SA-15, SA-11
 # Source: https://howtoharden.com/guides/vercel/#64-block-next-public-secret-leaks
 # Rationale: Any env var prefixed NEXT_PUBLIC_ is inlined into the client

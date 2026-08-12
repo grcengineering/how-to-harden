@@ -76,7 +76,7 @@ jamfpro_client_secret = "your-client-secret"
 
 ## Resources Created
 
-### L1 (Baseline)
+### L1 (Crawl)
 
 - 3 API roles (Help Desk, Deployment, Security)
 - 2 service accounts (Help Desk, Deployment)
@@ -86,7 +86,7 @@ jamfpro_client_secret = "your-client-secret"
 - 3 smart computer groups (FileVault, firewall, OS compliance)
 - 3 webhooks (admin login, policy change, enrollment) -- if SIEM URL configured
 
-### L2 (Hardened) -- adds to L1
+### L2 (Walk) -- adds to L1
 
 - 1 hardened API integration with shorter token lifetime
 - 1 software update deferral profile
@@ -95,7 +95,7 @@ jamfpro_client_secret = "your-client-secret"
 - 3 CIS compliance smart groups
 - 3 additional SIEM webhooks (check-in, push, mobile enrollment)
 
-### L3 (Maximum Security) -- adds to L1+L2
+### L3 (Run) -- adds to L1+L2
 
 - Firewall blocks all incoming connections
 - Signed app auto-allow disabled

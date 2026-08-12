@@ -32,9 +32,9 @@ terraform apply
 
 | Level | Name | Description |
 |-------|------|-------------|
-| L1 | Baseline | Essential controls for all organizations |
-| L2 | Hardened | Adds artifact signing, immutable repos, strict CVE blocking |
-| L3 | Maximum Security | Strictest controls for regulated industries |
+| L1 | Crawl | Essential controls for all organizations |
+| L2 | Walk | Adds artifact signing, immutable repos, strict CVE blocking |
+| L3 | Run | Strictest controls for regulated industries |
 
 Profile levels are cumulative. L2 includes all L1 controls. L3 includes all L1 and L2 controls.
 

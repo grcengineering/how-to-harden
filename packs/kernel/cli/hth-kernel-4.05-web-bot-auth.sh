@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control: 4.5 Cryptographically Sign Agent Traffic (Web Bot Auth)
-# Profile Level: L3 (Maximum Security)
+# Profile Level: L3 (Run)
 # Frameworks: NIST 800-53 IA-9, CIS Controls v8 13, SOC 2 CC6.1
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Kernel CLI (first-party) — https://www.kernel.sh/docs/browsers/bot-detection/web-bot-auth

@@ -28,7 +28,7 @@ cd packs/snowflake/api
 export SNOWFLAKE_ACCOUNT="xy12345.us-east-1"
 export SNOWFLAKE_USER="your_admin_user"
 export SNOWFLAKE_PRIVATE_KEY="/path/to/rsa_key.p8"  # or SNOWFLAKE_PASSWORD
-export HTH_PROFILE_LEVEL=1  # 1=Baseline, 2=Hardened, 3=Maximum
+export HTH_PROFILE_LEVEL=1  # 1=Crawl, 2=Walk, 3=Run
 
 # Apply individual controls
 bash hth-snowflake-1.01-enforce-mfa.sh
@@ -48,8 +48,8 @@ cd packs/snowflake/terraform
 
 terraform init
 terraform plan -var="profile_level=1" -var="snowflake_account=xy12345.us-east-1" -var="snowflake_user=admin"
-terraform apply -var="profile_level=1"   # Apply L1 (Baseline)
-terraform apply -var="profile_level=2"   # Apply L1 + L2 (Hardened)
+terraform apply -var="profile_level=1"   # Apply L1 (Crawl)
+terraform apply -var="profile_level=2"   # Apply L1 + L2 (Walk)
 ```
 
 ### 3. Sigma Rules (SIEM Detection)

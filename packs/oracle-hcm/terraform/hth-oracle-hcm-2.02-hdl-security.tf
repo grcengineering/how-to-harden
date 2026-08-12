@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Oracle HCM Control 2.2: HCM Data Loader (HDL) Security
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SC-8
 # Source: https://howtoharden.com/guides/oracle-hcm/#22-hcm-data-loader-hdl-security
 # =============================================================================

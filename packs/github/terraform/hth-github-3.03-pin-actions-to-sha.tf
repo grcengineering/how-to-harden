@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 3.03: Pin Actions to Full-Length SHA
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SA-12, SI-7
 # Source: https://howtoharden.com/guides/github/#33-pin-actions-to-sha
 # =============================================================================

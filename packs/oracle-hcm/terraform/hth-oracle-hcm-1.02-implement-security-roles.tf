@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Oracle HCM Control 1.2: Implement Security Roles
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, AC-6
 # Source: https://howtoharden.com/guides/oracle-hcm/#12-implement-security-roles
 # =============================================================================

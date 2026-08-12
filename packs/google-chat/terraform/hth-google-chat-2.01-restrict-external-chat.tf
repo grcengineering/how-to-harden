@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Google Chat Control 2.1: Restrict External Google Chat & Spaces
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.3, NIST AC-3
 # SCuBA: GWS.CHAT.4.1v1 (external chat restricted to allowlisted domains)
 # Source: https://howtoharden.com/guides/google-chat/#43-restrict-external-google-chat--spaces

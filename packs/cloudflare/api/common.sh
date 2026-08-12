@@ -5,7 +5,7 @@
 # Required environment variables:
 #   CF_API_TOKEN      -- Cloudflare API token with Zero Trust permissions
 #   CF_ACCOUNT_ID     -- Your Cloudflare account ID
-#   HTH_PROFILE_LEVEL -- 1 (Baseline), 2 (Hardened), 3 (Maximum Security) [default: 1]
+#   HTH_PROFILE_LEVEL -- 1 (Crawl), 2 (Walk), 3 (Run) [default: 1]
 #
 # https://howtoharden.com/guides/cloudflare/
 

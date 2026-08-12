@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft 365 Control 5.1: Enable Unified Audit Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Source: https://howtoharden.com/guides/microsoft-365/#51-enable-unified-audit-logging
 # =============================================================================
 

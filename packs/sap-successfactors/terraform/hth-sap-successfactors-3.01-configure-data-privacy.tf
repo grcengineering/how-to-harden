@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH SAP SuccessFactors Control 3.1: Configure Data Privacy
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-28
 # Source: https://howtoharden.com/guides/sap-successfactors/#31-configure-data-privacy
 # =============================================================================

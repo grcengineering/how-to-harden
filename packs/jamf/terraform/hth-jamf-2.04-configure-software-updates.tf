@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Jamf Pro Control 2.4: Configure Software Updates
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 7.3, NIST SI-2
 # Source: https://howtoharden.com/guides/jamf/#24-configure-software-updates
 # =============================================================================

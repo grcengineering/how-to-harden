@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Okta Control 1.11: Enable End-User Security Notifications
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SI-4, IR-6
 # Source: https://howtoharden.com/guides/okta/#111-enable-end-user-security-notifications
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Orca Control 1.1: Configure SAML Single Sign-On
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 6.3/12.5, NIST IA-2/IA-8
 # Source: https://howtoharden.com/guides/orca/#11-configure-saml-single-sign-on
 #

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 1.3: Enforce Least-Privilege RBAC
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, AC-6
 # Source: https://howtoharden.com/guides/vercel/#13-enforce-least-privilege-rbac
 # =============================================================================

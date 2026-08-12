@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft Entra ID Control 2.2: Require MFA for All Users
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 6.3, NIST IA-2(1), CIS Azure 1.1.3
 # Source: https://howtoharden.com/guides/microsoft-entra-id/#22-require-mfa-for-all-users
 # =============================================================================

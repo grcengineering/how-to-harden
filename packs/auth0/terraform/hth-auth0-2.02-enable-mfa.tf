@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Auth0 Control 2.2: Enable Multi-Factor Authentication
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-2(1) | CIS 6.5
 # Source: https://howtoharden.com/guides/auth0/#22-enable-multi-factor-authentication
 # =============================================================================

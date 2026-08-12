@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH JFrog Control 3.2: Immutable Artifacts
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SI-7
 # Source: https://howtoharden.com/guides/jfrog/#32-immutable-artifacts
 # =============================================================================

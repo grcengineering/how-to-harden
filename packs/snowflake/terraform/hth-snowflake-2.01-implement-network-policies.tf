@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Snowflake Control 2.1: Implement Network Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-7
 # Source: https://howtoharden.com/guides/snowflake/#21-implement-network-policies
 # =============================================================================

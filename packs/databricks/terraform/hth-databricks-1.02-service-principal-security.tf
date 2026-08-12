@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Databricks Control 1.2: Service Principal Security
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5, SOC 2 CC6.1
 # Source: https://howtoharden.com/guides/databricks/#12-implement-service-principal-security
 # =============================================================================

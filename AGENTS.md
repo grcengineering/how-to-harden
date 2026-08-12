@@ -249,9 +249,12 @@ When mapping controls, use this order (defined in template):
 
 | Level | Name | Use For |
 |-------|------|---------|
-| L1 | Baseline | All organizations |
-| L2 | Hardened | Security-sensitive environments |
-| L3 | Maximum Security | Regulated industries (healthcare, finance, government) |
+| L1 | Crawl | All organizations |
+| L2 | Walk | Security-sensitive environments |
+| L3 | Run | Regulated industries (healthcare, finance, government) |
+| L4 | Fly | Maximum-assurance environments (rare; most guides use only L1–L3) |
+
+The canonical label written in guides is `L1 (Crawl)` / `L2 (Walk)` / `L3 (Run)` / `L4 (Fly)`. The retired `Baseline` / `Hardened` / `Maximum Security` names must not appear in new or updated controls.
 
 ### Valid Categories
 

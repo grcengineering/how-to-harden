@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft Entra ID Control 2.4: Block High-Risk Sign-Ins
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 6.4, NIST SI-4
 # Source: https://howtoharden.com/guides/microsoft-entra-id/#24-block-high-risk-sign-ins
 # =============================================================================

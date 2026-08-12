@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH HashiCorp Vault Control 4.1: Enable Comprehensive Audit Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-3, AU-6, AU-12 | SOC 2 CC7.2 | ISO 27001 A.12.4.1
 # Source: https://howtoharden.com/guides/hashicorp-vault/#41-enable-comprehensive-audit-logging
 # =============================================================================

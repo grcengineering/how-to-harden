@@ -16,7 +16,7 @@
 //      Use numeric prefixes: 10-telemetry.json, 20-security.json
 
 // HTH Guide Excerpt: begin managed-settings-baseline
-// Anthropic official example: settings-lax.json (L1 Baseline)
+// Anthropic official example: settings-lax.json (L1 Crawl)
 // Source: github.com/anthropics/claude-code/blob/main/examples/settings/settings-lax.json
 // Prevents --dangerously-skip-permissions and blocks plugin marketplaces.
   {
@@ -28,7 +28,7 @@
 // HTH Guide Excerpt: end managed-settings-baseline
 
 // HTH Guide Excerpt: begin managed-settings-hardened
-// Anthropic official example: settings-strict.json (L2 Hardened)
+// Anthropic official example: settings-strict.json (L2 Walk)
 // Source: github.com/anthropics/claude-code/blob/main/examples/settings/settings-strict.json
 // Blocks bypass, enforces managed-only permissions and hooks,
 // denies web access, requires Bash approval, locks sandbox settings.

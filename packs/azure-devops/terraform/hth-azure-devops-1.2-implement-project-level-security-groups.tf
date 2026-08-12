@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 1.2: Implement Project-Level Security Groups
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, AC-6
 # Source: https://howtoharden.com/guides/azure-devops/#12-implement-project-level-security-groups
 # =============================================================================

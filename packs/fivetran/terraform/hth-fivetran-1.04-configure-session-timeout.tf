@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Fivetran Control 1.4: Configure Session Timeout
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 6.2, NIST AC-12
 # Source: https://howtoharden.com/guides/fivetran/#14-configure-session-timeout
 # =============================================================================
@@ -10,9 +10,9 @@
 # Shorter timeouts reduce risk of session hijacking
 #
 # Recommended values by profile level:
-#   L1 (Baseline):          60 minutes (1 hour)
-#   L2 (Hardened):          30 minutes
-#   L3 (Maximum Security):  15 minutes
+#   L1 (Crawl):          60 minutes (1 hour)
+#   L2 (Walk):          30 minutes
+#   L3 (Run):  15 minutes
 resource "null_resource" "configure_session_timeout" {
   triggers = {
     profile_level   = var.profile_level

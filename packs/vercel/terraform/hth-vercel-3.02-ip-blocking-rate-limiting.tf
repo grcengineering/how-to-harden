@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 3.2: Configure IP Blocking and Rate Limiting
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-5, SI-4
 # Source: https://howtoharden.com/guides/vercel/#32-configure-ip-blocking-and-rate-limiting
 # =============================================================================

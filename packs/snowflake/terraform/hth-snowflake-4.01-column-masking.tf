@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Snowflake Control 4.1: Implement Column-Level Security with Masking Policies
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-3, SC-28
 # Source: https://howtoharden.com/guides/snowflake/#41-implement-column-level-security-with-masking-policies
 # =============================================================================

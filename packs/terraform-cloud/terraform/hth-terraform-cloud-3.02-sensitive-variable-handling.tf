@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Terraform Cloud Control 3.02: Sensitive Variable Handling
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-28
 # Source: https://howtoharden.com/guides/terraform-cloud/#32-sensitive-variable-handling
 # =============================================================================

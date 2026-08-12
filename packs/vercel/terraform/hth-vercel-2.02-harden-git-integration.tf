@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 2.2: Harden Git Integration
-# Profile Level: L1 (Baseline) + L2 enhancements
+# Profile Level: L1 (Crawl) + L2 enhancements
 # Frameworks: NIST CM-7, SA-10
 # Source: https://howtoharden.com/guides/vercel/#22-harden-git-integration
 # =============================================================================

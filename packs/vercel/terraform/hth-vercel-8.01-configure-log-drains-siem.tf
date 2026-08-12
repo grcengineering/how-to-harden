@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 8.1: Configure Log Drains for SIEM
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-6
 # Source: https://howtoharden.com/guides/vercel/#81-configure-log-drains-for-siem
 # =============================================================================

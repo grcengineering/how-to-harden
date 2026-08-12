@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 10.1: Audit /_next/image remotePatterns Allowlist
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-7, SI-10
 # Source: https://howtoharden.com/guides/vercel/#101-audit-next-image-remotepatterns
 # Rationale: The /_next/image endpoint performs server-side fetch() against

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Zscaler Control 2.1: Configure URL Filtering Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-7, SI-3 | CIS 9.2
 # Source: https://howtoharden.com/guides/zscaler/#21-configure-url-filtering-policies
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Google Workspace Control 1.1: Enforce Multi-Factor Authentication
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 6.3/6.5, NIST IA-2(1)/IA-2(6), CIS Google Workspace 1.1
 # Source: https://howtoharden.com/guides/google-workspace/#11-enforce-multi-factor-authentication-for-all-users
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 3.2: Configure Pipeline Permissions and Approvals
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3
 # Source: https://howtoharden.com/guides/azure-devops/#32-configure-pipeline-permissions-and-approvals
 # =============================================================================

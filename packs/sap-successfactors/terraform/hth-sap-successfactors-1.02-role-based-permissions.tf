@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH SAP SuccessFactors Control 1.2: Role-Based Permissions (RBP)
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, AC-6
 # Source: https://howtoharden.com/guides/sap-successfactors/#12-role-based-permissions-rbp
 # =============================================================================

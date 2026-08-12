@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH CyberArk Control 6.1: Enable Comprehensive Audit Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-3
 # Source: https://howtoharden.com/guides/cyberark/#61-enable-comprehensive-audit-logging
 # =============================================================================

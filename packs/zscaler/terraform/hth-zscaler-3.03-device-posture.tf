@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Zscaler Control 3.3: Enable Device Posture Checks
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-2(11) | CIS 4.1
 # Source: https://howtoharden.com/guides/zscaler/#33-enable-device-posture-checks
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 5.1: Secure Variable Groups
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-28
 # Source: https://howtoharden.com/guides/azure-devops/#51-secure-variable-groups
 # =============================================================================

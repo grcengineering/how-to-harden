@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Wiz Control 1.2: Implement Role-Based Access Control
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, AC-6
 # Source: https://howtoharden.com/guides/wiz/#12-implement-role-based-access-control
 # =============================================================================

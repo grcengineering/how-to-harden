@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Databricks Control 3.2: Network Isolation
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SC-7, SOC 2 CC6.6
 # Source: https://howtoharden.com/guides/databricks/#32-network-isolation
 # =============================================================================

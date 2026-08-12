@@ -1,5 +1,5 @@
 // Control: 3.4 Treat Browser Profiles as Credential Material
-// Profile Level: L1 (Baseline)
+// Profile Level: L1 (Crawl)
 // Frameworks: NIST 800-53 SC-28/AC-6, CIS Controls v8 3, SOC 2 CC6.1
 // Guide: https://howtoharden.com/guides/kernel/
 // Interface: Kernel SDK — https://www.kernel.sh/docs/auth/profiles

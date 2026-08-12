@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft Entra ID Control 4.2: Review and Restrict Application Permissions
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 2.6, NIST AC-6
 # Source: https://howtoharden.com/guides/microsoft-entra-id/#42-review-and-restrict-application-permissions
 # =============================================================================

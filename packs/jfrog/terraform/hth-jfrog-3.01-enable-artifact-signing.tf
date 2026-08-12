@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH JFrog Control 3.1: Enable Artifact Signing
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SI-7
 # Source: https://howtoharden.com/guides/jfrog/#31-enable-artifact-signing
 # =============================================================================

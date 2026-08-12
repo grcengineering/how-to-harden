@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Google Workspace Control 4.2: Enable Data Loss Prevention (DLP)
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 3.1/3.2, NIST SC-8/SC-28
 # Source: https://howtoharden.com/guides/google-workspace/#42-enable-data-loss-prevention-dlp
 # =============================================================================

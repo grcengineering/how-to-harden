@@ -1,5 +1,5 @@
 // Control: 5.3 Capture Session Telemetry and Replays for High-Risk Automations
-// Profile Level: L2 (Hardened)
+// Profile Level: L2 (Walk)
 // Frameworks: NIST 800-53 SI-4/AU-14, CIS Controls v8 8, SOC 2 CC7.2
 // Guide: https://howtoharden.com/guides/kernel/
 // Interface: Kernel SDK — https://www.kernel.sh/docs/browsers/telemetry/overview

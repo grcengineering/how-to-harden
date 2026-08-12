@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH CrowdStrike Control 4.2: Configure Rollback Procedures
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST CM-3
 # Source: https://howtoharden.com/guides/crowdstrike/#42-configure-rollback-procedures
 # =============================================================================

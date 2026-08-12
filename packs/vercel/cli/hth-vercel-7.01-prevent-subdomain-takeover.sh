@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 7.1: Prevent Subdomain Takeover
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST CM-8, SC-20
 # Source: https://howtoharden.com/guides/vercel/#71-prevent-subdomain-takeover
 # =============================================================================

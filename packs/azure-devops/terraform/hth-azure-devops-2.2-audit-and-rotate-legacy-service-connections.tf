@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 2.2: Audit and Rotate Legacy Service Connections
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5(1)
 # Source: https://howtoharden.com/guides/azure-devops/#22-audit-and-rotate-legacy-service-connections
 # =============================================================================

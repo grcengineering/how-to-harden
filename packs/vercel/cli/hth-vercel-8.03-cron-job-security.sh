@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 8.3: Cron Job Security
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, SI-10
 # Source: https://howtoharden.com/guides/vercel/#83-cron-job-security
 # =============================================================================

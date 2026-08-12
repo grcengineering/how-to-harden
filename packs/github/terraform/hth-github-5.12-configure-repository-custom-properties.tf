@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 5.10: Configure Repository Custom Properties
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST RA-2, SC-16, CM-8
 # Source: https://howtoharden.com/guides/github/#56-configure-repository-custom-properties-for-security-classification
 # =============================================================================
