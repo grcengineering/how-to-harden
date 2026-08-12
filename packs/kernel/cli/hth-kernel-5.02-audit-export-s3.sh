@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control: 5.2 Stream Audit Logs Continuously to S3
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST 800-53 AU-9/AU-4, CIS Controls v8 8, SOC 2 CC7.2
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Kernel CLI (first-party) — https://www.kernel.sh/docs/reference/cli/audit-logs

@@ -21,7 +21,7 @@ A step-by-step process any agent or human can follow to produce `docs/_guides/{s
 1. List candidate controls from the Tier 1 docs: every security-relevant admin setting with its exact console path.
 2. Add controls demanded by Tier 2 baselines (each SCuBA policy / CIS recommendation that maps to a real setting).
 3. Add controls motivated by Tier 3/4 findings — but ONLY where Tier 1 documents an implementable setting for the mitigation.
-4. For each control record: name · console path · profile level (L1 Crawl = everyone, L2 Walk = security-sensitive, L3 Run = regulated) · automation surface (Terraform/API/CLI resource IF documented, else "ClickOps only" — never invent endpoints; many admin surfaces have read-only APIs) · source URL(s).
+4. For each control record: name · console path · profile level (L1 Crawl = everyone, L2 Walk = security-sensitive, L3 Run = regulated, L4 Fly = maximum-assurance, rare) · automation surface (Terraform/API/CLI resource IF documented, else "ClickOps only" — never invent endpoints; many admin surfaces have read-only APIs) · source URL(s).
 5. Group into numbered `## N.` sections by theme (identity → protection → data/compliance → access → monitoring is the common arc; mirror `docs/_guides/gmail.md`).
 6. **Checkpoint:** 8–20 controls, each with a verified source and an honest automation note. Fewer than 5 → consider whether the product belongs in a platform hub instead.
 
@@ -37,7 +37,7 @@ A step-by-step process any agent or human can follow to produce `docs/_guides/{s
 Write every control with this exact anatomy (it is the cheat-sheet parser contract — `**Profile Level:**` alone creates the cheat row; each other piece fills a cell, and a missing piece renders as a silent blank gap in the row):
 
 1. `### N.N Title` (H3, numbered)
-2. `**Profile Level:** L1 (Crawl)` — leading bold key
+2. `**Profile Level:** L1 (Crawl)` — leading bold key. The ONLY valid labels are `L1 (Crawl)` / `L2 (Walk)` / `L3 (Run)` / `L4 (Fly)` — never the retired `Baseline`/`Hardened`/`Maximum Security` names (AGENTS.md §Profile Levels)
 3. Framework mini-table (CIS Controls / NIST 800-53 / SCuBA rows as applicable)
 4. `#### Description` — one concrete paragraph
 5. `#### Rationale` — `**Why This Matters:**` with 2-3 bullets, then `**Attack Prevented:**` one line; add `**Real-World Incidents:**` bullets where Tier 3/4 sources support them
@@ -58,6 +58,7 @@ Sections that are NOT controls (reference tables, `### N.N.N` implementation wal
 
 ## Gotchas
 
+- Profile-level names are Crawl/Walk/Run/Fly. If any copied scaffold text still shows `L1 (Baseline)`-style labels, replace them — the guide corpus and cheat sheets use the Crawl/Walk/Run/Fly names exclusively (this drift shipped once, in the first kernel guide draft).
 - Jekyll eats literal `{{...}}` (Vault templates, Handlebars) — wrap in `{% raw %}...{% endraw %}`.
 - Tables without a blank line before AND after do not render.
 - Google-style doc hosts migrate (support.google.com/a → knowledge.workspace.google.com); cite the post-redirect canonical URL.

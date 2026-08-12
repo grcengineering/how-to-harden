@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control: 4.3 Route Egress Through Managed, Inspectable Proxies
-# Profile Level: L3 (Maximum Security)
+# Profile Level: L3 (Run)
 # Frameworks: NIST 800-53 SC-7/AC-4, CIS Controls v8 13, SOC 2 CC6.6
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Kernel REST API — POST /proxies, POST /proxies/{id}/check

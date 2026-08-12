@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control: 4.2 Vet, Pin, and Checksum Browser Extensions
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST 800-53 CM-11, CIS Controls v8 2, SOC 2 CC8.1
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Kernel CLI (first-party) + REST API —

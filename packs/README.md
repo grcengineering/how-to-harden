@@ -160,7 +160,7 @@ Multi-rule controls use letter suffixes: `-b`, `-c`, `-d`, `-e`.
 ```bash
 export OKTA_DOMAIN="yourorg.okta.com"
 export OKTA_API_TOKEN="your-api-token"
-export HTH_PROFILE_LEVEL=1  # 1=Baseline, 2=Hardened, 3=Maximum
+export HTH_PROFILE_LEVEL=1  # 1=Crawl, 2=Walk, 3=Run
 
 # Audit your tenant (read-only)
 bash packs/okta/api/hth-okta-validate.sh
@@ -181,7 +181,7 @@ cp terraform.tfvars.example terraform.tfvars
 
 terraform init
 terraform plan -var="profile_level=1"   # Preview L1 changes
-terraform apply -var="profile_level=1"  # Apply L1 (Baseline)
+terraform apply -var="profile_level=1"  # Apply L1 (Crawl)
 ```
 
 ### Sigma Rules
@@ -200,9 +200,9 @@ Controls are tagged with profile levels that are cumulative:
 
 | Level | Name | Description |
 |-------|------|-------------|
-| L1 | Baseline | Essential controls for all organizations |
-| L2 | Hardened | Enhanced controls for security-sensitive environments |
-| L3 | Maximum Security | Strictest controls for regulated industries |
+| L1 | Crawl | Essential controls for all organizations |
+| L2 | Walk | Enhanced controls for security-sensitive environments |
+| L3 | Run | Strictest controls for regulated industries |
 
 L2 includes all L1 controls. L3 includes all L1 + L2 controls. Set the level once via environment variable or Terraform variable and every script respects it.
 
@@ -214,7 +214,7 @@ Controls follow the JSON Schema defined in [`schema/control.schema.json`](schema
 |-------|---------|
 | `id` | Unique identifier (e.g., `okta-1.1`) |
 | `title` | Human-readable control name |
-| `profile_level` | Minimum level: `1` (Baseline), `2` (Hardened), `3` (Maximum Security) |
+| `profile_level` | Minimum level: `1` (Crawl), `2` (Walk), `3` (Run) |
 | `severity` | Impact rating: `critical`, `high`, `medium`, `low` |
 | `audit` | jq-based API checks returning `true`/`false` |
 | `remediate` | API calls and Terraform resources to fix non-compliant state |

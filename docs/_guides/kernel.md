@@ -32,9 +32,9 @@ This guide hardens the Kernel platform surface itself: key scoping, project isol
 
 ### How to Use This Guide
 
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries (healthcare, finance, government)
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries (healthcare, finance, government)
 
 ### Scope
 
@@ -60,7 +60,7 @@ Covers tenant-level hardening of the Kernel platform: organization, projects, AP
 
 ### 1.1 Scope API Keys to Projects
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AC-6, AC-3
 **CIS Controls v8:** 6 (Access Control Management)
 
@@ -110,7 +110,7 @@ Kernel's documentation implements key management through the API, CLI, and SDKs;
 
 ### 1.2 Set Expiration on Every API Key
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 **CIS Controls v8:** 5 (Account Management)
 
@@ -159,7 +159,7 @@ No dashboard console path for key creation is documented. Use the Code implement
 
 ### 1.3 Rotate API Keys with Bounded Grace Periods
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5
 **CIS Controls v8:** 5 (Account Management)
 
@@ -208,7 +208,7 @@ No dashboard console path for key rotation is documented. Use the Code implement
 
 ### 1.4 Audit and Remove Unused API Keys
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AC-2
 **CIS Controls v8:** 5 (Account Management)
 
@@ -258,7 +258,7 @@ No dashboard console path for key inventory is documented. Use the Code implemen
 
 ### 1.5 Prefer OAuth Over Static Keys for MCP Access
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-2
 **CIS Controls v8:** 6 (Access Control Management)
 
@@ -319,7 +319,7 @@ Kernel's hosted MCP server (`mcp.onkernel.com`) gives MCP-capable clients (Claud
 
 ### 2.1 Isolate Environments with Projects
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-7, AC-4
 **CIS Controls v8:** 12 (Network Infrastructure Management)
 
@@ -379,7 +379,7 @@ Projects are Kernel's isolation boundary: each project holds its own browsers, p
 
 ### 2.2 Cap Browser Concurrency at Org and Project Level
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SC-6
 **CIS Controls v8:** 4 (Secure Configuration of Enterprise Assets and Software)
 
@@ -431,7 +431,7 @@ No dashboard console path for limits is documented. Use the Code implementation 
 
 ### 3.1 Inject App Secrets at Deploy Time, Never in Code
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** IA-5, SA-3
 **CIS Controls v8:** 16 (Application Software Security)
 
@@ -481,7 +481,7 @@ No dashboard console path for app secrets is documented. Use the Code implementa
 
 ### 3.2 Harden Stored Credentials for Managed Auth
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-5, SC-28
 **CIS Controls v8:** 3 (Data Protection)
 
@@ -539,7 +539,7 @@ Kernel Managed Auth can store login credentials so agents re-authenticate automa
 
 ### 3.3 Back Managed Auth with 1Password Vaults
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** IA-5
 **CIS Controls v8:** 3 (Data Protection)
 
@@ -603,7 +603,7 @@ Instead of storing raw credentials in Kernel, connect a 1Password service accoun
 
 ### 3.4 Treat Browser Profiles as Credential Material
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** SC-28, AC-6
 **CIS Controls v8:** 3 (Data Protection)
 
@@ -656,7 +656,7 @@ No dashboard console path for profile governance is documented. Use the Code imp
 
 ### 4.1 Enforce Chrome Enterprise Policies on Browsers and Pools
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-7, CM-6
 **CIS Controls v8:** 4 (Secure Configuration of Enterprise Assets and Software)
 
@@ -709,7 +709,7 @@ No dashboard console path for Chrome policies is documented. Use the Code implem
 
 ### 4.2 Vet, Pin, and Checksum Browser Extensions
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** CM-11, SA-12
 **CIS Controls v8:** 2 (Inventory and Control of Software Assets)
 
@@ -759,7 +759,7 @@ No dashboard console path for extension management is documented. Use the Code i
 
 ### 4.3 Route Egress Through Managed, Inspectable Proxies
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 **NIST 800-53:** SC-7, AC-4
 **CIS Controls v8:** 13 (Network Monitoring and Defense)
 
@@ -812,7 +812,7 @@ No dashboard console path for proxy configuration is documented. Use the Code im
 
 ### 4.4 Enable Zero Data Retention for Sensitive Workloads
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 **NIST 800-53:** SI-12
 **CIS Controls v8:** 3 (Data Protection)
 
@@ -869,7 +869,7 @@ Kernel's Zero Data Retention (ZDR) suppresses post-session persistence of three 
 
 ### 4.5 Cryptographically Sign Agent Traffic (Web Bot Auth)
 
-**Profile Level:** L3 (Maximum Security)
+**Profile Level:** L3 (Run)
 **NIST 800-53:** IA-9
 **CIS Controls v8:** 13 (Network Monitoring and Defense)
 
@@ -923,7 +923,7 @@ No dashboard console path is documented. Use the Code implementation below.
 
 ### 5.1 Review Organization Audit Logs on a Cadence
 
-**Profile Level:** L1 (Baseline)
+**Profile Level:** L1 (Crawl)
 **NIST 800-53:** AU-2, AU-6
 **CIS Controls v8:** 8 (Audit Log Management)
 
@@ -978,7 +978,7 @@ Kernel records every authenticated API request across the organization: who call
 
 ### 5.2 Stream Audit Logs Continuously to S3
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** AU-9, AU-4
 **CIS Controls v8:** 8 (Audit Log Management)
 
@@ -1029,7 +1029,7 @@ No dashboard console path for export destinations is documented. Use the Code im
 
 ### 5.3 Capture Session Telemetry and Replays for High-Risk Automations
 
-**Profile Level:** L2 (Hardened)
+**Profile Level:** L2 (Walk)
 **NIST 800-53:** SI-4, AU-14
 **CIS Controls v8:** 8 (Audit Log Management)
 

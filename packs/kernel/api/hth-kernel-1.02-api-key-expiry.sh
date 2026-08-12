@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control: 1.2 Set Expiration on Every API Key
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST 800-53 IA-5, CIS Controls v8 5, SOC 2 CC6.1
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Kernel REST API — POST /org/api_keys (OpenAPI: api.onkernel.com/spec.json)

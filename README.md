@@ -47,7 +47,7 @@ Like CIS Benchmarks, but free, vendor-neutral, and focused on integration contro
 Every control includes:
 - **ClickOps** (GUI/console) steps for manual implementation
 - **Code** (CLI/API/IaC) for automation and repeatability
-- Three profile levels: **L1** (Baseline), **L2** (Hardened), **L3** (Maximum Security)
+- Four profile levels: **L1** (Crawl), **L2** (Walk), **L3** (Run), **L4** (Fly)
 - Compliance mappings to SOC 2, NIST 800-53, ISO 27001, and PCI DSS
 
 ### 2. Code Packs -- Executable Security Controls

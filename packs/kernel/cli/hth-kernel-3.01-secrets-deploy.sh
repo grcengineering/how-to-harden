@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control: 3.1 Inject App Secrets at Deploy Time, Never in Code
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST 800-53 IA-5(7)/SA-3, CIS Controls v8 16, SOC 2 CC6.1
 # Guide: https://howtoharden.com/guides/kernel/
 # Interface: Kernel CLI (first-party) — https://www.kernel.sh/docs/apps/secrets

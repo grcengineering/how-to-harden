@@ -19,9 +19,10 @@ Brief description of the product and why hardening it matters for security.
 - Third-party risk managers
 
 ### How to Use This Guide
-- **L1 (Baseline):** Essential controls for all organizations
-- **L2 (Hardened):** Enhanced controls for security-sensitive environments
-- **L3 (Maximum Security):** Strictest controls for regulated industries (healthcare, finance, government)
+- **L1 (Crawl):** Essential controls for all organizations
+- **L2 (Walk):** Enhanced controls for security-sensitive environments
+- **L3 (Run):** Strictest controls for regulated industries (healthcare, finance, government)
+- **L4 (Fly):** Maximum-assurance controls — use only where a control genuinely exceeds L3 (most guides need only L1–L3)
 
 ### Scope
 What this guide covers and what it doesn't.
@@ -44,7 +45,7 @@ What this guide covers and what it doesn't.
 
 ### 1.1 [Control Title - e.g., "Enforce Multi-Factor Authentication"]
 
-**Profile Level:** L1 (Baseline) | L2 (Hardened) | L3 (Maximum Security)
+**Profile Level:** L1 (Crawl) | L2 (Walk) | L3 (Run) | L4 (Fly)
 **CIS Controls:** [Control IDs if applicable]
 **NIST 800-53:** [Control IDs if applicable]
 
