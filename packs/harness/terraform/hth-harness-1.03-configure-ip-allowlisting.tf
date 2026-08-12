@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Harness Control 1.3: Configure IP Allowlisting
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 13.5, NIST AC-17
 # Source: https://howtoharden.com/guides/harness/#13-configure-ip-allowlisting
 # =============================================================================

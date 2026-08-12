@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Auth0 Control 1.4: Configure Bot Detection
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SI-4 | CIS 4.10
 # Source: https://howtoharden.com/guides/auth0/#14-configure-bot-detection
 # =============================================================================

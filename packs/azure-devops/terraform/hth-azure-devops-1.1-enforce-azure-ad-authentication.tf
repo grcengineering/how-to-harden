@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 1.1: Enforce Azure AD Authentication with Conditional Access
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-2(1), SOC 2 CC6.1
 # Source: https://howtoharden.com/guides/azure-devops/#11-enforce-azure-ad-authentication-with-conditional-access
 # =============================================================================

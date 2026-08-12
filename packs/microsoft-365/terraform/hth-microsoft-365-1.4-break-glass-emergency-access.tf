@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft 365 Control 1.4: Configure Break-Glass Emergency Access Accounts
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Source: https://howtoharden.com/guides/microsoft-365/#14-configure-break-glass-emergency-access-accounts
 # =============================================================================
 

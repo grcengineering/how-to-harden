@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 2.01: Enable Secret Scanning
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5(7), SC-28
 # Source: https://howtoharden.com/guides/github/#21-enable-secret-scanning
 # =============================================================================

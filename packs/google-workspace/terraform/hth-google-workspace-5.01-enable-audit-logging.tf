@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Google Workspace Control 5.1: Enable Audit Logging and Investigation Tool
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 8.2, NIST AU-2/AU-3/AU-6, CIS Google Workspace 5.1
 # Source: https://howtoharden.com/guides/google-workspace/#51-enable-audit-logging-and-investigation-tool
 # =============================================================================

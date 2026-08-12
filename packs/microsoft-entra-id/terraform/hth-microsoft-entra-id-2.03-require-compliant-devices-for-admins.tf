@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft Entra ID Control 2.3: Require Compliant Devices for Admins
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 4.1/6.4, NIST AC-2(11)/AC-6(1)
 # Source: https://howtoharden.com/guides/microsoft-entra-id/#23-require-compliant-devices-for-admins
 # =============================================================================

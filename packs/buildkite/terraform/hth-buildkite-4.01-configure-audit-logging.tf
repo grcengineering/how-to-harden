@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Buildkite Control 4.1: Configure Audit Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 8.2 | NIST AU-2
 # Source: https://howtoharden.com/guides/buildkite/#41-configure-audit-logging
 #

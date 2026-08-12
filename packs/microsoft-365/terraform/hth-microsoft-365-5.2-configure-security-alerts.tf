@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft 365 Control 5.2: Configure Security Alerts and Microsoft Defender
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Source: https://howtoharden.com/guides/microsoft-365/#52-configure-security-alerts-and-microsoft-defender
 # =============================================================================
 

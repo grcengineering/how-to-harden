@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Oracle HCM Control 4.1: Enable Audit Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-3
 # Source: https://howtoharden.com/guides/oracle-hcm/#41-enable-audit-policies
 # =============================================================================

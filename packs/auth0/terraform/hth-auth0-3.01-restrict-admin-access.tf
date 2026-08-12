@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Auth0 Control 3.1: Restrict Dashboard Admin Access
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-6(1) | CIS 5.4
 # Source: https://howtoharden.com/guides/auth0/#31-restrict-dashboard-admin-access
 # =============================================================================

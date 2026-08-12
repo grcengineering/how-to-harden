@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Wiz Control 3.2: API Access Monitoring
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AU-6
 # Source: https://howtoharden.com/guides/wiz/#32-api-access-monitoring
 # =============================================================================

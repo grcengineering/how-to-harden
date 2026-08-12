@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Datadog Control 1.2: Enable SAML Strict Mode
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 6.3, NIST IA-2
 # Source: https://howtoharden.com/guides/datadog/#12-enable-saml-strict-mode
 # =============================================================================

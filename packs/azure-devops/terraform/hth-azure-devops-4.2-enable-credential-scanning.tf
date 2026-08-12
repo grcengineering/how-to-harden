@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 4.2: Enable Secret and Code Scanning with GitHub Advanced Security
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST RA-5
 # Source: https://howtoharden.com/guides/azure-devops/#42-enable-secret-and-code-scanning-with-github-advanced-security
 # =============================================================================

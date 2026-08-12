@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Google Workspace Control 3.1: Enable OAuth App Whitelisting
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 2.5, NIST AC-3/CM-7, CIS Google Workspace 2.1
 # Source: https://howtoharden.com/guides/google-workspace/#31-enable-oauth-app-whitelisting
 # =============================================================================

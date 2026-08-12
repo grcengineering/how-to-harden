@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 6.3: Rotate Deploy Hooks
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5, SA-15
 # Source: https://howtoharden.com/guides/vercel/#63-rotate-deploy-hooks
 # Rationale: Deploy Hook URLs are unauthenticated — the URL IS the credential.

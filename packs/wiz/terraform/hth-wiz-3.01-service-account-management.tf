@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Wiz Control 3.1: Service Account Management
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5
 # Source: https://howtoharden.com/guides/wiz/#31-service-account-management
 # =============================================================================

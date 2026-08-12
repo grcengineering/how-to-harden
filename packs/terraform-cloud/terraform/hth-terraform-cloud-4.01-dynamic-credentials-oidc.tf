@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Terraform Cloud Control 4.01: Dynamic Credentials (OIDC)
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST IA-5
 # Source: https://howtoharden.com/guides/terraform-cloud/#41-dynamic-credentials-oidc
 # =============================================================================

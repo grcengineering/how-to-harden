@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 3.4: Enable Browser Isolation
-# Profile Level: L3 (Maximum Security)
+# Profile Level: L3 (Run)
 # Frameworks: NIST SI-3 | CIS 10.5
 # Source: https://howtoharden.com/guides/cloudflare/#34-enable-browser-isolation-l3
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Splunk Control 3.1: Configure Search Security
-# Profile Level: L1 (Baseline), enhanced at L2
+# Profile Level: L1 (Crawl), enhanced at L2
 # Frameworks: CIS 3.3, NIST AC-3
 # Source: https://howtoharden.com/guides/splunk/#31-configure-search-security
 # =============================================================================

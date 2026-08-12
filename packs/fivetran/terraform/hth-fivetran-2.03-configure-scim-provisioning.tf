@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Fivetran Control 2.3: Configure SCIM Provisioning
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 5.3, NIST AC-2
 # Source: https://howtoharden.com/guides/fivetran/#23-configure-scim-provisioning
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Splunk Control 2.2: Configure Index Access
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.3, NIST AC-3
 # Source: https://howtoharden.com/guides/splunk/#22-configure-index-access
 # =============================================================================

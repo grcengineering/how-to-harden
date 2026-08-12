@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 8.2: Enable Audit Logging with SIEM Streaming
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AU-2, AU-3, AU-12
 # Source: https://howtoharden.com/guides/vercel/#82-enable-audit-logging-with-siem-streaming
 # =============================================================================

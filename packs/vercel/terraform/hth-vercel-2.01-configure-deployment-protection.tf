@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 2.1: Configure Deployment Protection
-# Profile Level: L1 (Baseline) + L2/L3 enhancements
+# Profile Level: L1 (Crawl) + L2/L3 enhancements
 # Frameworks: NIST CM-3, AC-3
 # Source: https://howtoharden.com/guides/vercel/#21-configure-deployment-protection
 # =============================================================================

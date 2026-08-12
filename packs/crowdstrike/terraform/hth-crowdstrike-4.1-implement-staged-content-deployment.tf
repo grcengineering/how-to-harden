@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH CrowdStrike Control 4.1: Implement Staged Content Deployment
-# Profile Level: L1 (Baseline) - CRITICAL (Post-July 2024 Lesson)
+# Profile Level: L1 (Crawl) - CRITICAL (Post-July 2024 Lesson)
 # Frameworks: NIST CM-3
 # Source: https://howtoharden.com/guides/crowdstrike/#41-implement-staged-content-deployment
 # =============================================================================

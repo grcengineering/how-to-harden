@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH CrowdStrike Control 3.2: Configure Prevention Policy Hardening
-# Profile Level: L1 (Baseline), L2/L3 increase aggressiveness
+# Profile Level: L1 (Crawl), L2/L3 increase aggressiveness
 # Frameworks: NIST SI-3, SI-4
 # Source: https://howtoharden.com/guides/crowdstrike/#32-configure-prevention-policy-hardening
 # =============================================================================

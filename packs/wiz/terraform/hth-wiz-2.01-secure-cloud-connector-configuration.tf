@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Wiz Control 2.1: Secure Cloud Connector Configuration
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5, AC-6
 # Source: https://howtoharden.com/guides/wiz/#21-secure-cloud-connector-configuration
 # =============================================================================

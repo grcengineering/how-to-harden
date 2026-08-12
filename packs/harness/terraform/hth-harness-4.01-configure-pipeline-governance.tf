@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Harness Control 4.1: Configure Pipeline Governance
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 16.1, NIST SA-15
 # Source: https://howtoharden.com/guides/harness/#41-configure-pipeline-governance
 # =============================================================================

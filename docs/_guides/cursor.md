@@ -549,7 +549,7 @@ Use `.cursorignore` for secrets and credentials. Use `.cursorindexingignore` for
 
 ---
 
-### 2.4 Enable Local AI Models (L3 Maximum Security)
+### 2.4 Enable Local AI Models (L3 Run)
 
 **Profile Level:** L3 (Run)
 **NIST 800-53:** SC-4, SC-7

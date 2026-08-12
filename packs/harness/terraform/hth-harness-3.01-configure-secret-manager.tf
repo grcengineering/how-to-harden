@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Harness Control 3.1: Configure Secret Manager
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.11, NIST SC-12
 # Source: https://howtoharden.com/guides/harness/#31-configure-secret-manager
 # =============================================================================

@@ -6,7 +6,7 @@
 #   QUALYS_USER       -- Qualys API username
 #   QUALYS_PASSWORD   -- Qualys API password
 #   QUALYS_PLATFORM   -- Qualys API platform (e.g., qualysapi.qualys.com)
-#   HTH_PROFILE_LEVEL -- 1 (Baseline), 2 (Hardened), 3 (Maximum Security) [default: 1]
+#   HTH_PROFILE_LEVEL -- 1 (Crawl), 2 (Walk), 3 (Run) [default: 1]
 #
 # https://howtoharden.com/guides/qualys/
 

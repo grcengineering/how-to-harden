@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft 365 Control 4.2: Configure External Sharing Restrictions
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Source: https://howtoharden.com/guides/microsoft-365/#42-configure-external-sharing-restrictions
 # =============================================================================
 

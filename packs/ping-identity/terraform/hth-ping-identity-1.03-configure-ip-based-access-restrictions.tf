@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 1.3: IP-Based Access Restrictions
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-3(7), SC-7
 # Source: https://howtoharden.com/guides/ping-identity/#13-configure-ip-based-access-restrictions
 # =============================================================================

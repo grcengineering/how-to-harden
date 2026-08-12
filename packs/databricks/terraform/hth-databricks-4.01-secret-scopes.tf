@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Databricks Control 4.1: Secret Scopes
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-28, SOC 2 CC6.7
 # Source: https://howtoharden.com/guides/databricks/#41-use-databricks-secret-scopes
 # =============================================================================

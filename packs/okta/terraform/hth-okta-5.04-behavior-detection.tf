@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Okta Control 5.4: Behavior Detection
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SI-4, AC-7
 # Source: https://howtoharden.com/guides/okta/#54-configure-behavior-detection-rules
 # =============================================================================

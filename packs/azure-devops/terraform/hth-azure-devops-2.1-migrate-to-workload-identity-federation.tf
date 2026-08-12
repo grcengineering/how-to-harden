@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 2.1: Migrate to Workload Identity Federation
-# Profile Level: L1 (Baseline) - CRITICAL
+# Profile Level: L1 (Crawl) - CRITICAL
 # Frameworks: NIST IA-5
 # Source: https://howtoharden.com/guides/azure-devops/#21-migrate-to-workload-identity-federation
 # =============================================================================

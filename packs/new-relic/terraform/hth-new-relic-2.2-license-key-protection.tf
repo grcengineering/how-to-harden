@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH New Relic Control 2.2: License Key Protection
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5
 # Source: https://howtoharden.com/guides/new-relic/#22-license-key-protection
 # =============================================================================

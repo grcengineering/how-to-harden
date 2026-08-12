@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 6.2: Deployment Retention Policy
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SI-12
 # Source: https://howtoharden.com/guides/vercel/#62-deployment-retention-policy
 # =============================================================================

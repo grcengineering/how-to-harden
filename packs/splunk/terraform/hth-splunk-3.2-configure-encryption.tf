@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Splunk Control 3.2: Configure Encryption
-# Profile Level: L1 (Baseline), enhanced at L2
+# Profile Level: L1 (Crawl), enhanced at L2
 # Frameworks: CIS 3.11, NIST SC-8/SC-28
 # Source: https://howtoharden.com/guides/splunk/#32-configure-encryption
 # =============================================================================

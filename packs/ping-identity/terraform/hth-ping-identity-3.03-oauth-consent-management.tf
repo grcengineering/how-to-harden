@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 3.3: OAuth Consent Management
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-6
 # Source: https://howtoharden.com/guides/ping-identity/#33-oauth-consent-management
 # =============================================================================

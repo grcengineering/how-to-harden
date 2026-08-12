@@ -5,7 +5,7 @@
 # Required environment variables:
 #   OKTA_DOMAIN       -- Your Okta domain (e.g., yourorg.okta.com)
 #   OKTA_API_TOKEN    -- SSWS API token with admin privileges
-#   HTH_PROFILE_LEVEL -- 1 (Baseline), 2 (Hardened), 3 (Maximum Security) [default: 1]
+#   HTH_PROFILE_LEVEL -- 1 (Crawl), 2 (Walk), 3 (Run) [default: 1]
 #
 # https://howtoharden.com/guides/okta/
 

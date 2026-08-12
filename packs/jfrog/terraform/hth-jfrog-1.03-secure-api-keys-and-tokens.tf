@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH JFrog Control 1.3: Secure API Keys and Tokens
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5
 # Source: https://howtoharden.com/guides/jfrog/#13-secure-api-keys-and-tokens
 # =============================================================================

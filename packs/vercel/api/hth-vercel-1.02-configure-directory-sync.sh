@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 1.2: Configure Directory Sync (SCIM)
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-2, IA-5(1)
 # Source: https://howtoharden.com/guides/vercel/#12-configure-directory-sync-scim
 # =============================================================================

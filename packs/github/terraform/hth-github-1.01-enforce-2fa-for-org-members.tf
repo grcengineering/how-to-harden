@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 1.01: Enforce Two-Factor Authentication
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-2(1), IA-2(2)
 # Source: https://howtoharden.com/guides/github/#11-enforce-two-factor-authentication
 # =============================================================================

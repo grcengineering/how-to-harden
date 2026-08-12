@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH CyberArk Control 5.2: Monitor Rotation Failures
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5(1)
 # Source: https://howtoharden.com/guides/cyberark/#52-monitor-rotation-failures
 # =============================================================================

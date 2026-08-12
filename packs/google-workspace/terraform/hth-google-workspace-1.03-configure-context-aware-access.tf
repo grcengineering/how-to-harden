@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Google Workspace Control 1.3: Configure Context-Aware Access
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 6.4/13.5, NIST AC-2(11)/AC-6(1)
 # Source: https://howtoharden.com/guides/google-workspace/#13-configure-context-aware-access
 # =============================================================================

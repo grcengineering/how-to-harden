@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Google Workspace Control 1.2: Restrict Super Admin Account Usage
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 5.4, NIST AC-6(1)/AC-6(5), CIS Google Workspace 1.2
 # Source: https://howtoharden.com/guides/google-workspace/#12-restrict-super-admin-account-usage
 # =============================================================================

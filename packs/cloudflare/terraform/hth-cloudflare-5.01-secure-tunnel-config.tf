@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 5.1: Secure Cloudflare Tunnel Configuration
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-7, SC-8 | CIS 12.1
 # Source: https://howtoharden.com/guides/cloudflare/#51-secure-cloudflare-tunnel-configuration
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft 365 Control 1.1: Enforce Phishing-Resistant MFA for All Users
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Source: https://howtoharden.com/guides/microsoft-365/#11-enforce-phishing-resistant-mfa-for-all-users
 # =============================================================================
 

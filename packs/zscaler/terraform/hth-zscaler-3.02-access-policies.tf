@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Zscaler Control 3.2: Create Access Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, AC-6 | CIS 6.4, 6.8
 # Source: https://howtoharden.com/guides/zscaler/#32-create-access-policies
 # =============================================================================

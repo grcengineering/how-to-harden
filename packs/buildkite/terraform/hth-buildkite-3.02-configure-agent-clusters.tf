@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Buildkite Control 3.2: Configure Agent Clusters
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 13.5 | NIST AC-17
 # Source: https://howtoharden.com/guides/buildkite/#32-configure-agent-clusters
 # =============================================================================

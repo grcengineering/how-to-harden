@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft Entra ID Control 1.2: Configure Emergency Access (Break-Glass) Accounts
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 5.1, NIST AC-2, CIS Azure 1.1.5
 # Source: https://howtoharden.com/guides/microsoft-entra-id/#12-configure-emergency-access-break-glass-accounts
 # =============================================================================

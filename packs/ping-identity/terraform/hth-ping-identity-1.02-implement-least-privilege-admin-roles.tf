@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 1.2: Least-Privilege Admin Roles
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-6, AC-6(1)
 # Source: https://howtoharden.com/guides/ping-identity/#12-implement-least-privilege-admin-roles
 # =============================================================================

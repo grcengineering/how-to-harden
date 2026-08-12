@@ -35,9 +35,9 @@ terraform apply
 
 | Level | Name | Description |
 |-------|------|-------------|
-| L1 | Baseline | 2FA enforcement, teams, agent tokens, audit logging |
-| L2 | Hardened | Adds clusters, pipeline permissions, agent isolation |
-| L3 | Maximum Security | Adds API IP restrictions |
+| L1 | Crawl | 2FA enforcement, teams, agent tokens, audit logging |
+| L2 | Walk | Adds clusters, pipeline permissions, agent isolation |
+| L3 | Run | Adds API IP restrictions |
 
 Set via: `terraform apply -var="profile_level=2"`
 

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Okta Control 1.10: Harden Self-Service Recovery
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5(1), IA-11
 # Source: https://howtoharden.com/guides/okta/#110-harden-self-service-recovery
 # =============================================================================

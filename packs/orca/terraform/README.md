@@ -63,7 +63,7 @@ terraform apply
 
 ## Resources Created
 
-### L1 (Baseline) - Always Applied
+### L1 (Crawl) - Always Applied
 
 - `orcasecurity_group.sso_users` - SSO user group for SAML attribute mapping
 - `orcasecurity_custom_sonar_alert.mfa_not_enforced` - MFA gap detection
@@ -76,13 +76,13 @@ terraform apply
 - `orcasecurity_custom_sonar_alert.overprivileged_integration` - Integration permission monitoring
 - `orcasecurity_discovery_view.cloud_accounts_inventory` - Cloud accounts inventory view
 
-### L2 (Hardened) - Added at Profile Level 2+
+### L2 (Walk) - Added at Profile Level 2+
 
 - `orcasecurity_business_unit.scoped_environment` - Scoped visibility business unit
 - `orcasecurity_custom_sonar_alert.stale_api_keys` - Stale API key detection
 - `orcasecurity_automation_v2.api_key_alert` - Email notifications for API findings
 
-### L3 (Maximum Security) - Added at Profile Level 3
+### L3 (Run) - Added at Profile Level 3
 
 - `orcasecurity_business_unit.restricted_production` - Restricted production business unit
 - `orcasecurity_discovery_view.api_key_inventory` - API key inventory view

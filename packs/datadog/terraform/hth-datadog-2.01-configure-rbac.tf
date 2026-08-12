@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Datadog Control 2.1: Configure Role-Based Access Control
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 5.4, NIST AC-6
 # Source: https://howtoharden.com/guides/datadog/#21-configure-role-based-access-control
 # =============================================================================
@@ -53,7 +53,7 @@ resource "datadog_security_monitoring_rule" "admin_role_assignment" {
     - Consider using a custom role with fewer permissions
 
     **HTH Control:** 2.1 Configure Role-Based Access Control / 2.2 Limit Admin Access
-    **Profile Level:** L1 (Baseline)
+    **Profile Level:** L1 (Crawl)
 
     ${length(var.audit_alert_recipients) > 0 ? join(" ", var.audit_alert_recipients) : ""}
   EOT

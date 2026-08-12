@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Oracle HCM Control 1.3: Configure Security Profiles
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-6(1)
 # Source: https://howtoharden.com/guides/oracle-hcm/#13-configure-security-profiles
 # =============================================================================

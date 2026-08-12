@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Fivetran Control 4.3: Data Governance
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 3.1, NIST AC-3
 # Source: https://howtoharden.com/guides/fivetran/#43-data-governance
 # =============================================================================

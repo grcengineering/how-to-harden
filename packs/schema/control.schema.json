@@ -26,7 +26,7 @@
     "profile_level": {
       "type": "integer",
       "enum": [1, 2, 3],
-      "description": "Minimum profile level: 1=Baseline, 2=Hardened, 3=Maximum Security"
+      "description": "Minimum profile level: 1=Crawl, 2=Walk, 3=Run"
     },
     "severity": {
       "type": "string",

@@ -24,8 +24,8 @@ cp terraform.tfvars.example terraform.tfvars
 
 terraform init
 terraform plan -var="profile_level=1"   # Preview L1 changes
-terraform apply -var="profile_level=1"  # Apply L1 (Baseline)
-terraform apply -var="profile_level=2"  # Apply L1 + L2 (Hardened)
+terraform apply -var="profile_level=1"  # Apply L1 (Crawl)
+terraform apply -var="profile_level=2"  # Apply L1 + L2 (Walk)
 terraform apply -var="profile_level=3"  # Apply all controls
 ```
 

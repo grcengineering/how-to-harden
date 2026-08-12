@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH JFrog Control 1.2: Implement Permission Targets
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3, AC-6
 # Source: https://howtoharden.com/guides/jfrog/#12-implement-permission-targets
 # =============================================================================

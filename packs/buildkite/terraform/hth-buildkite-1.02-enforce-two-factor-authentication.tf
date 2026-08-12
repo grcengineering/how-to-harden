@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Buildkite Control 1.2: Enforce Two-Factor Authentication
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 6.5 | NIST IA-2(1)
 # Source: https://howtoharden.com/guides/buildkite/#12-enforce-two-factor-authentication
 # =============================================================================

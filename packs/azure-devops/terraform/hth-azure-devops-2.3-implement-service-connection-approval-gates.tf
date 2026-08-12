@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 2.3: Implement Service Connection Approval Gates
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST CM-3
 # Source: https://howtoharden.com/guides/azure-devops/#23-implement-service-connection-approval-gates
 # =============================================================================

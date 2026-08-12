@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 5.1: Configure Comprehensive Audit Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-3, AU-6
 # Source: https://howtoharden.com/guides/ping-identity/#51-configure-comprehensive-audit-logging
 # =============================================================================

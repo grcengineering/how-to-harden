@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 3.1: Configure Secure OAuth Settings
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5(13), SC-23
 # Source: https://howtoharden.com/guides/ping-identity/#31-configure-secure-oauth-settings
 # =============================================================================

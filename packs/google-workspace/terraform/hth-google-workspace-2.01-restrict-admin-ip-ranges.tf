@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Google Workspace Control 2.1: Configure Allowed IP Ranges for Admin Console
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 13.5, NIST AC-17/SC-7
 # Source: https://howtoharden.com/guides/google-workspace/#21-configure-allowed-ip-ranges-for-admin-console
 # =============================================================================

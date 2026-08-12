@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Wiz Control 5.1: Audit Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-3
 # Source: https://howtoharden.com/guides/wiz/#51-audit-logging
 # =============================================================================

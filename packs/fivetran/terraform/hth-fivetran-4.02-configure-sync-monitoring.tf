@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Fivetran Control 4.2: Configure Sync Monitoring
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 8.2, NIST CA-7
 # Source: https://howtoharden.com/guides/fivetran/#42-configure-sync-monitoring
 # =============================================================================

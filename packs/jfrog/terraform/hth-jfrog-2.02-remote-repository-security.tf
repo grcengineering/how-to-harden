@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH JFrog Control 2.2: Remote Repository Security
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-7
 # Source: https://howtoharden.com/guides/jfrog/#22-remote-repository-security
 # =============================================================================

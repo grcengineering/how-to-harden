@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 4.2: Version Control for Flows
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST CM-3
 # Source: https://howtoharden.com/guides/ping-identity/#42-version-control-for-flows
 # =============================================================================

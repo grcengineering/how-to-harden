@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 1.4: Configure Admin Role Restrictions
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-6(1) | CIS 5.4
 # Source: https://howtoharden.com/guides/cloudflare/#14-configure-admin-role-restrictions
 # =============================================================================

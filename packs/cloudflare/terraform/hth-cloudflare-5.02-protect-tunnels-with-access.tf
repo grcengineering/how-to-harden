@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 5.2: Protect Tunnels with Access Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-3 | CIS 6.4
 # Source: https://howtoharden.com/guides/cloudflare/#52-protect-tunnels-with-access-policies
 # =============================================================================

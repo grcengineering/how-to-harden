@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 4.1: Configure WARP Client Settings
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST CM-7, SC-7 | CIS 4.1
 # Source: https://howtoharden.com/guides/cloudflare/#41-configure-warp-client-settings
 # =============================================================================

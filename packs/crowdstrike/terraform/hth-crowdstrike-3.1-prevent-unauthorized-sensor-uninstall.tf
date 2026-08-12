@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH CrowdStrike Control 3.1: Prevent Unauthorized Sensor Uninstall
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SI-3
 # Source: https://howtoharden.com/guides/crowdstrike/#31-prevent-unauthorized-sensor-uninstall
 # =============================================================================

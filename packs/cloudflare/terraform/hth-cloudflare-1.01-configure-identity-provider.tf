@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 1.1: Configure Identity Provider Integration
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-2, IA-8 | CIS 6.3, 12.5
 # Source: https://howtoharden.com/guides/cloudflare/#11-configure-identity-provider-integration
 # =============================================================================

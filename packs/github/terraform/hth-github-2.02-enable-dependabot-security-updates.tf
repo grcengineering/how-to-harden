@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 2.02: Enable Dependabot Security Updates
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST RA-5, SI-2
 # Source: https://howtoharden.com/guides/github/#22-enable-dependabot-security-updates
 # =============================================================================

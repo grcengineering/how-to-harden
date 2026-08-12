@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Google Chat Control 2.2: Restrict Google Chat File Sharing
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 3.3, NIST AC-3
 # SCuBA: GWS.CHAT.2.1v1 (external file sharing SHALL be disabled)
 # Source: https://howtoharden.com/guides/google-chat/#44-restrict-google-chat-file-sharing

@@ -5,7 +5,7 @@
 # Required environment variables:
 #   AUTH0_DOMAIN      -- Your Auth0 tenant domain (e.g., yourcompany.auth0.com)
 #   AUTH0_TOKEN       -- Auth0 Management API token
-#   HTH_PROFILE_LEVEL -- 1 (Baseline), 2 (Hardened), 3 (Maximum Security) [default: 1]
+#   HTH_PROFILE_LEVEL -- 1 (Crawl), 2 (Walk), 3 (Run) [default: 1]
 #
 # https://howtoharden.com/guides/auth0/
 

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Auth0 Control 5.1: Enable Logging and Monitoring
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-6 | CIS 8.2
 # Source: https://howtoharden.com/guides/auth0/#51-enable-logging-and-monitoring
 # =============================================================================

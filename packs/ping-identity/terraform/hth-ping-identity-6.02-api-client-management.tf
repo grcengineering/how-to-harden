@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 6.2: API Client Management
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5, AC-6
 # Source: https://howtoharden.com/guides/ping-identity/#62-api-client-management
 # =============================================================================

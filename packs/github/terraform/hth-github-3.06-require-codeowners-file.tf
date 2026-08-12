@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 3.06: Require CODEOWNERS Review
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST CM-3, CM-5
 # Source: https://howtoharden.com/guides/github/#36-require-codeowners
 # =============================================================================

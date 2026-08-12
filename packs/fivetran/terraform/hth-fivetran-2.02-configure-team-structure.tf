@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Fivetran Control 2.2: Configure Team Structure
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 5.4, NIST AC-6(1)
 # Source: https://howtoharden.com/guides/fivetran/#22-configure-team-structure
 # =============================================================================

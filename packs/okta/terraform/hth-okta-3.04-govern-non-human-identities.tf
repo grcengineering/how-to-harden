@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Okta Control 3.4: Govern Non-Human Identities (NHI)
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 6.2, NIST AC-6, CM-7
 # Source: https://howtoharden.com/guides/okta/#34-govern-non-human-identities
 # =============================================================================

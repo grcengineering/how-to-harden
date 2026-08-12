@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 2.03: Enable Secret Scanning Non-Provider Patterns
-# Profile Level: L3 (Maximum Security)
+# Profile Level: L3 (Run)
 # Frameworks: NIST IA-5, SC-28
 # Source: https://howtoharden.com/guides/github/#23-secret-scanning-non-provider-patterns
 # =============================================================================

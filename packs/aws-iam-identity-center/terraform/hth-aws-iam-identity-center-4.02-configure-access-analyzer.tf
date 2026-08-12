@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH AWS IAM Identity Center Control 4.2: Configure Access Analyzer
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-6, SOC 2 CC6.1, ISO 27001 A.9.2.5
 # Source: https://howtoharden.com/guides/aws-iam-identity-center/#42-configure-access-analyzer
 # =============================================================================

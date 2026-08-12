@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Oracle HCM Control 4.2: Monitor Integration Activity
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AU-2, AU-6, SI-4
 # Source: https://howtoharden.com/guides/oracle-hcm/#42-monitor-integration-activity
 # =============================================================================

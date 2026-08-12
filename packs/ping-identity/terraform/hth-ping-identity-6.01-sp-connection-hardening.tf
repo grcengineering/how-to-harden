@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Ping Identity Control 6.1: SP Connection Hardening
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5, SC-23
 # Source: https://howtoharden.com/guides/ping-identity/#61-sp-connection-hardening
 # =============================================================================

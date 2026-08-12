@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Microsoft 365 Control 2.1: Configure Trusted Locations and Named Locations
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Source: https://howtoharden.com/guides/microsoft-365/#21-configure-trusted-locations-and-named-locations
 # =============================================================================
 

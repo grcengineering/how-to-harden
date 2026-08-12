@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Oracle HCM Control 3.1: Configure Data Encryption
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-28
 # Source: https://howtoharden.com/guides/oracle-hcm/#31-configure-data-encryption
 # =============================================================================

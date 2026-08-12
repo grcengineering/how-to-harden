@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Zscaler Control 3.1: Configure Application Segments
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-4, SC-7 | CIS 6.4
 # Source: https://howtoharden.com/guides/zscaler/#31-configure-application-segments
 # =============================================================================

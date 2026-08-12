@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH HashiCorp Vault Control 2.1: Use Dynamic Secrets
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5, SC-12 | SOC 2 CC6.1 | ISO 27001 A.9.2.4
 # Source: https://howtoharden.com/guides/hashicorp-vault/#21-use-dynamic-secrets
 # =============================================================================

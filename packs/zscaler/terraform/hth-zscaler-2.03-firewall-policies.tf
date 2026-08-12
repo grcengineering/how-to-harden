@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Zscaler Control 2.3: Configure Firewall Policies
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SC-7, AC-4 | CIS 4.4, 13.4
 # Source: https://howtoharden.com/guides/zscaler/#23-configure-firewall-policies
 # =============================================================================

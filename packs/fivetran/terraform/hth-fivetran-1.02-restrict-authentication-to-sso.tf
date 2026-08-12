@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Fivetran Control 1.2: Restrict Authentication to SSO
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 6.3, NIST IA-2
 # Source: https://howtoharden.com/guides/fivetran/#12-restrict-authentication-to-sso
 # =============================================================================

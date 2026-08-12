@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Zscaler Control 2.2: Enable Advanced Threat Protection
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SI-3, SI-4 | CIS 10.1, 10.5
 # Source: https://howtoharden.com/guides/zscaler/#22-enable-advanced-threat-protection
 # =============================================================================

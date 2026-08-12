@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 5.1: Configure Security Response Headers
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SI-10, SC-28
 # Source: https://howtoharden.com/guides/vercel/#51-configure-security-response-headers
 # =============================================================================

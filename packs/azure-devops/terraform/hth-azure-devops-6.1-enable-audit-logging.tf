@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 6.1: Enable Audit Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-3
 # Source: https://howtoharden.com/guides/azure-devops/#61-enable-audit-logging
 # =============================================================================

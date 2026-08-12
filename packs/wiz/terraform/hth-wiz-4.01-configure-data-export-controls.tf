@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Wiz Control 4.1: Configure Data Export Controls
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-3
 # Source: https://howtoharden.com/guides/wiz/#41-configure-data-export-controls
 # =============================================================================

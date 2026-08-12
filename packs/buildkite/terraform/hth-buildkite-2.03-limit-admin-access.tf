@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Buildkite Control 2.3: Limit Admin Access
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 5.4 | NIST AC-6(1)
 # Source: https://howtoharden.com/guides/buildkite/#23-limit-admin-access
 #

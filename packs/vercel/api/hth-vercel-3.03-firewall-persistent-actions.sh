@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 3.3: Configure Firewall Persistent Actions
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SC-5, SI-4
 # Source: https://howtoharden.com/guides/vercel/#33-configure-firewall-persistent-actions
 # Reference: https://vercel.com/docs/vercel-firewall/vercel-waf/custom-rules#persistent-actions

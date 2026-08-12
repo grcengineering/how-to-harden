@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Buildkite Control 3.3: Secure Agent Infrastructure
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 4.1 | NIST CM-6
 # Source: https://howtoharden.com/guides/buildkite/#33-secure-agent-infrastructure
 #

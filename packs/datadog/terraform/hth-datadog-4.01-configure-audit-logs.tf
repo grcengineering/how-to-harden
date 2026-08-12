@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Datadog Control 4.1: Configure Audit Logs
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 8.2, NIST AU-2
 # Source: https://howtoharden.com/guides/datadog/#41-configure-audit-logs
 # =============================================================================
@@ -25,7 +25,7 @@ resource "datadog_security_monitoring_rule" "org_settings_changed" {
     - Document in change log
 
     **HTH Control:** 4.1 Configure Audit Logs
-    **Profile Level:** L1 (Baseline)
+    **Profile Level:** L1 (Crawl)
 
     ${length(var.audit_alert_recipients) > 0 ? join(" ", var.audit_alert_recipients) : ""}
   EOT
@@ -74,7 +74,7 @@ resource "datadog_security_monitoring_rule" "user_access_changed" {
     - Review if the user needs a custom role instead
 
     **HTH Control:** 4.1 Configure Audit Logs
-    **Profile Level:** L1 (Baseline)
+    **Profile Level:** L1 (Crawl)
 
     ${length(var.audit_alert_recipients) > 0 ? join(" ", var.audit_alert_recipients) : ""}
   EOT
@@ -123,7 +123,7 @@ resource "datadog_security_monitoring_rule" "saml_config_changed" {
     - Review login methods for unauthorized additions
 
     **HTH Control:** 4.1 Configure Audit Logs (SAML monitoring)
-    **Profile Level:** L2 (Hardened)
+    **Profile Level:** L2 (Walk)
 
     ${length(var.audit_alert_recipients) > 0 ? join(" ", var.audit_alert_recipients) : ""}
   EOT

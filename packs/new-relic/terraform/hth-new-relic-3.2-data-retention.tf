@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH New Relic Control 3.2: Data Retention
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SI-12
 # Source: https://howtoharden.com/guides/new-relic/#32-data-retention
 # =============================================================================

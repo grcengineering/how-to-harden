@@ -29,9 +29,9 @@ Profiles are cumulative. L2 includes all L1 controls. L3 includes all L1+L2 cont
 
 | Level | Name | Description |
 |-------|------|-------------|
-| L1 | Baseline | SSO enforcement, RBP, OData OAuth, token governance, data privacy, audit logging |
-| L2 | Hardened | Adds IAS subscription, auditor role, IP-restricted API, 8h refresh tokens, field masking, SIEM integration |
-| L3 | Maximum Security | Adds X.509/mTLS auth, no refresh tokens, data residency enforcement, alert notification |
+| L1 | Crawl | SSO enforcement, RBP, OData OAuth, token governance, data privacy, audit logging |
+| L2 | Walk | Adds IAS subscription, auditor role, IP-restricted API, 8h refresh tokens, field masking, SIEM integration |
+| L3 | Run | Adds X.509/mTLS auth, no refresh tokens, data residency enforcement, alert notification |
 
 ```bash
 # Apply L1 (default)

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Harness Control 3.2: Configure Secret Access
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 3.11, NIST SC-12
 # Source: https://howtoharden.com/guides/harness/#32-configure-secret-access
 # =============================================================================

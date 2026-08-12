@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Jamf Pro Control 3.1: Deploy CIS Benchmark Profiles
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: CIS 4.1, NIST CM-6
 # Source: https://howtoharden.com/guides/jamf/#31-deploy-cis-benchmark-profiles
 # =============================================================================

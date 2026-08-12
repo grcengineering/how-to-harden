@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Datadog Control 3.2: Secure Application Keys
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.11, NIST SC-12
 # Source: https://howtoharden.com/guides/datadog/#32-secure-application-keys
 # =============================================================================
@@ -35,7 +35,7 @@ resource "datadog_security_monitoring_rule" "app_key_lifecycle" {
     - Update key rotation schedule
 
     **HTH Control:** 3.2 Secure Application Keys
-    **Profile Level:** L1 (Baseline)
+    **Profile Level:** L1 (Crawl)
 
     ${length(var.audit_alert_recipients) > 0 ? join(" ", var.audit_alert_recipients) : ""}
   EOT

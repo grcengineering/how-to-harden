@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 1.3: Configure Personal Access Token Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5
 # Source: https://howtoharden.com/guides/azure-devops/#13-configure-personal-access-token-policies
 # =============================================================================

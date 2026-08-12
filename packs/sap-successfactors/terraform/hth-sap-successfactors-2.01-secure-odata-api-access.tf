@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH SAP SuccessFactors Control 2.1: Secure OData API Access
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5
 # Source: https://howtoharden.com/guides/sap-successfactors/#21-secure-odata-api-access
 # =============================================================================

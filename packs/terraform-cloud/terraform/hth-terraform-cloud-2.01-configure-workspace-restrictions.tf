@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Terraform Cloud Control 2.01: Configure Workspace Restrictions
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST CM-3
 # Source: https://howtoharden.com/guides/terraform-cloud/#21-configure-workspace-restrictions
 # =============================================================================

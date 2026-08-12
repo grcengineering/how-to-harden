@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 3.05: Enable Code Scanning (Default Setup)
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SA-11, SI-7
 # Source: https://howtoharden.com/guides/github/#35-enable-code-scanning
 # =============================================================================

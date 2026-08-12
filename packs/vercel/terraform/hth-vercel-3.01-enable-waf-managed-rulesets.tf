@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 3.1: Enable WAF with Managed Rulesets
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SC-7, SI-3
 # Source: https://howtoharden.com/guides/vercel/#31-enable-waf-with-managed-rulesets
 # =============================================================================

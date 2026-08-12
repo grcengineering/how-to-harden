@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Databricks Control 1.3: IP Access Lists
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-3(7), SOC 2 CC6.6
 # Source: https://howtoharden.com/guides/databricks/#13-configure-ip-access-lists
 # =============================================================================

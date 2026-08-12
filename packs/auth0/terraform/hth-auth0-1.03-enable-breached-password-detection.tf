@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Auth0 Control 1.3: Enable Breached Password Detection
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5 | CIS 5.2
 # Source: https://howtoharden.com/guides/auth0/#13-enable-breached-password-detection
 # =============================================================================

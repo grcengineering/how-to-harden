@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # HTH Vercel Control 8.4: Verify Drain Delivery Signatures
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-8, SC-13, AU-9
 # Source: https://howtoharden.com/guides/vercel/#84-verify-drain-signatures
 # Rationale: Vercel Drains post JSON payloads signed with HMAC-SHA1 via

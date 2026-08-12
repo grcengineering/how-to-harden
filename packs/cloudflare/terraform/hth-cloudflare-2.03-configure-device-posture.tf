@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 2.3: Configure Device Posture Checks
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST AC-2(11) | CIS 4.1
 # Source: https://howtoharden.com/guides/cloudflare/#23-configure-device-posture-checks
 # =============================================================================

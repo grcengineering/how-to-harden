@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Terraform Cloud Control 5.01: Audit Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-3
 # Source: https://howtoharden.com/guides/terraform-cloud/#51-audit-logging
 # =============================================================================

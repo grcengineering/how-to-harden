@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 3.3: Secure Agent Pool Configuration
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-7
 # Source: https://howtoharden.com/guides/azure-devops/#33-secure-agent-pool-configuration
 # =============================================================================

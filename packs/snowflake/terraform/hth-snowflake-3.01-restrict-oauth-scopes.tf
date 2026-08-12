@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Snowflake Control 3.1: Restrict OAuth Token Scope and Lifetime
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-5(13)
 # Source: https://howtoharden.com/guides/snowflake/#31-restrict-oauth-token-scope-and-lifetime
 # =============================================================================

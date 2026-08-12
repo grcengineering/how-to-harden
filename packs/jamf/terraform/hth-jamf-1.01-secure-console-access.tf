@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Jamf Pro Control 1.1: Secure Jamf Pro Console Access
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 5.4, NIST AC-6(1)
 # Source: https://howtoharden.com/guides/jamf/#11-secure-jamf-pro-console-access
 # =============================================================================

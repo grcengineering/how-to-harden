@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Databricks Control 1.1: Enforce SSO with MFA
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-2(1), SOC 2 CC6.1
 # Source: https://howtoharden.com/guides/databricks/#11-enforce-sso-with-mfa
 # =============================================================================

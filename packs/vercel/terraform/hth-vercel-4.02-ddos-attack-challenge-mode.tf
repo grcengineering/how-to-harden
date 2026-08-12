@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Vercel Control 4.2: Configure DDoS Protection and Attack Challenge Mode
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-5, CP-10
 # Source: https://howtoharden.com/guides/vercel/#42-configure-ddos-protection-and-attack-challenge-mode
 # =============================================================================

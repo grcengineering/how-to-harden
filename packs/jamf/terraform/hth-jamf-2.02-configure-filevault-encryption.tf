@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Jamf Pro Control 2.2: Configure FileVault Encryption
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.11, NIST SC-28
 # Source: https://howtoharden.com/guides/jamf/#22-configure-filevault-encryption
 # =============================================================================

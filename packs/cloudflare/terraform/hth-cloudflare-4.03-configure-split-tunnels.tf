@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 4.3: Configure Split Tunnel Settings
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SC-7 | CIS 13.5
 # Source: https://howtoharden.com/guides/cloudflare/#43-configure-split-tunnel-settings
 # =============================================================================

@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 5.02: Enable Delete Branch on Merge
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST CM-3
 # Source: https://howtoharden.com/guides/github/#52-delete-branches-on-merge
 # =============================================================================

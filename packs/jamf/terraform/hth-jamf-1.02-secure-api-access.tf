@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Jamf Pro Control 1.2: Secure API Access
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.11, NIST SC-12
 # Source: https://howtoharden.com/guides/jamf/#12-secure-api-access
 # =============================================================================

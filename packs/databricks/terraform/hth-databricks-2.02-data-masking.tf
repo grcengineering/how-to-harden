@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Databricks Control 2.2: Dynamic Data Masking
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SC-28, SOC 2 CC6.7
 # Source: https://howtoharden.com/guides/databricks/#22-configure-data-masking
 # =============================================================================

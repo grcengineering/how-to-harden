@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 6.1: Configure Logging
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, AU-6 | CIS 8.2
 # Source: https://howtoharden.com/guides/cloudflare/#61-configure-logging
 # =============================================================================

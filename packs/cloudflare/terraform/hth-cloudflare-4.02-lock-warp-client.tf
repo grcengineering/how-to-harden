@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 4.2: Lock WARP Client
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST CM-7 | CIS 4.1
 # Source: https://howtoharden.com/guides/cloudflare/#42-lock-warp-client
 # =============================================================================

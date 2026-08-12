@@ -8,7 +8,7 @@
 // Reference: code.claude.com/docs/en/sandboxing
 
 // HTH Guide Excerpt: begin sandbox-hardened
-// L2 Hardened sandbox configuration.
+// L2 Walk sandbox configuration.
 // Locks filesystem to CWD, denies sensitive credential paths,
 // restricts network to approved domains only.
   {
@@ -55,7 +55,7 @@
 // HTH Guide Excerpt: end sandbox-hardened
 
 // HTH Guide Excerpt: begin sandbox-maximum
-// L3 Maximum Security sandbox configuration.
+// L3 Run sandbox configuration.
 // No unsandboxed commands, no excluded commands, strict filesystem
 // and network lockdown. Suitable for regulated environments.
   {

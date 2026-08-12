@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Wiz Control 2.2: Connector Credential Rotation
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST IA-5(1)
 # Source: https://howtoharden.com/guides/wiz/#22-connector-credential-rotation
 # =============================================================================

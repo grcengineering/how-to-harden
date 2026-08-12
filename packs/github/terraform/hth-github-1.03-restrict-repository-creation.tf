@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH GitHub Control 1.03: Restrict Public Repository Creation
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-4, AC-22
 # Source: https://howtoharden.com/guides/github/#13-restrict-public-repository-creation
 # =============================================================================

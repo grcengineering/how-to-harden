@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Fivetran Control 3.1: Secure Connector Credentials
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.11, NIST SC-12
 # Source: https://howtoharden.com/guides/fivetran/#31-secure-connector-credentials
 # =============================================================================

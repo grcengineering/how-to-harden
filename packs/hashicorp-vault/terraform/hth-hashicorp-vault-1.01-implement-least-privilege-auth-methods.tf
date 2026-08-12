@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH HashiCorp Vault Control 1.1: Implement Least-Privilege Auth Methods
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-2, IA-5, AC-2 | SOC 2 CC6.1, CC6.2 | ISO 27001 A.9.2.1
 # Source: https://howtoharden.com/guides/hashicorp-vault/#11-implement-least-privilege-auth-methods
 # =============================================================================

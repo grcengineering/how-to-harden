@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Cloudflare Control 3.3: Configure Network Policies
-# Profile Level: L2 (Hardened)
+# Profile Level: L2 (Walk)
 # Frameworks: NIST SC-7, AC-4 | CIS 4.4, 13.4
 # Source: https://howtoharden.com/guides/cloudflare/#33-configure-network-policies
 # =============================================================================

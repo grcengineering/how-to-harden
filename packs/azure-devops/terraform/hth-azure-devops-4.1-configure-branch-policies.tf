@@ -1,6 +1,6 @@
 # =============================================================================
 # HTH Azure DevOps Control 4.1: Configure Branch Policies
-# Profile Level: L1 (Baseline)
+# Profile Level: L1 (Crawl)
 # Frameworks: NIST CM-3, SOC 2 CC8.1
 # Source: https://howtoharden.com/guides/azure-devops/#41-configure-branch-policies
 # =============================================================================
