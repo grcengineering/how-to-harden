@@ -3,10 +3,24 @@
 # Profile Level: L1 (Crawl)
 # Frameworks: CIS 3.3, NIST AC-3
 # SCuBA: GWS.CHAT.4.1v1 (external chat restricted to allowlisted domains)
-# Source: https://howtoharden.com/guides/google-chat/#43-restrict-external-google-chat--spaces
+# Source: https://howtoharden.com/guides/google-chat/#21-restrict-external-google-chat--spaces
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform
+#
+# ⚠ PROVIDER STATUS (verified 2026-08-12): the hashicorp/googleworkspace provider
+#   was ARCHIVED by HashiCorp on 2025-06-30 and is read-only — "New releases will
+#   not be published." Existing binaries remain downloadable from the registry, so
+#   this configuration still applies, but it receives no fixes or API updates.
+#   Pin the version you validated, and treat a fork or a migration to API-based
+#   automation as a planned action rather than an emergency one.
+#   https://github.com/hashicorp/terraform-provider-googleworkspace
+#
+#   The provider has never offered ANY Chat-specific resource (its full resource
+#   set is: chrome_policy, domain, domain_alias, gmail_send_as_alias, group,
+#   group_member, group_members, group_settings, org_unit, role, role_assignment,
+#   schema, user), which is why the blocks below build supporting structure only.
+#
 # External Google Chat is governed by Admin Console settings the googleworkspace
 # provider does NOT expose directly:
 #

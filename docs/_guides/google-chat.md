@@ -8,10 +8,10 @@ platform_slug: "google-workspace"
 product: "Google Chat"
 tier: "1"
 category: "Productivity"
-description: "Security hardening for Google Chat — app & webhook controls, external chat & spaces, file sharing, history, retention & auto-deletion, DLP for Chat, space access defaults, and audit logging, content protection & moderation."
-version: "0.2.1"
+description: "Security hardening for Google Chat — app & webhook controls, external chat & spaces, file sharing, history, retention & auto-deletion, third-party archiving, DLP for Chat, space access defaults and space inventory, audit logging, content protection, moderation, and Policy API drift detection."
+version: "0.3.0"
 maturity: "draft"
-last_updated: "2026-08-08"
+last_updated: "2026-08-12"
 ---
 
 ## Overview
@@ -19,6 +19,8 @@ last_updated: "2026-08-08"
 Google Chat is the messaging surface of Google Workspace, and an increasingly common path for data exfiltration, phishing, and malware delivery that is monitored less rigorously than email. This guide hardens Chat-specific surfaces: which apps and webhooks can run inside conversations, whether users can chat or share spaces externally, file-sharing posture, history/retention for traceability, and the audit + content-reporting controls that turn Chat into a detection sensor.
 
 This is a **product guide within the [Google Workspace platform](/guides/google-workspace/)**. Platform-wide controls (authentication, OAuth app allowlisting, DLP engine, admin audit logging) live in the Google Workspace **Common Controls** hub and are referenced here rather than duplicated.
+
+> **What changed for automation:** Chat settings have historically been ClickOps-only, and much published guidance still says so. That is now half-true. The **Cloud Identity Policy API** exposes eight Chat settings for **reading** — `chat.chat_apps_access`, `chat.external_chat_restriction`, `chat.external_spaces`, `chat.chat_file_sharing`, `chat.chat_history`, `chat.space_history`, `chat.space_access_default`, and `chat.third_party_archiving` — so almost every control in this guide can now be **continuously verified in code** even though none can be **set** in code (`Mutate supported: No` for all of them). The practical consequence runs through the whole guide: configure in the console, then prove and monitor with [3.4](#34-continuously-verify-chat-configuration-with-the-policy-api). Code Packs on each control follow that split, and say plainly which half they are.
 
 ### Intended Audience
 - Security engineers managing Google Workspace / Google Chat
@@ -32,7 +34,7 @@ This is a **product guide within the [Google Workspace platform](/guides/google-
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Google Chat hardening in the Google Workspace Admin Console: Chat app & webhook installation controls, external chat/spaces/group-DM restrictions, Chat file-sharing posture, history plus Vault-based retention and auto-deletion, Chat-scoped DLP rules, space access defaults, and Chat audit logging, content protection, and moderation. Platform-wide authentication, OAuth allowlisting, the DLP engine itself, and admin-console audit logging are covered in the [Google Workspace guide](/guides/google-workspace/). Gmail and Drive are covered in their own product guides.
+This guide covers Google Chat hardening in the Google Workspace Admin Console: Chat app & webhook installation controls, external chat/spaces/group-DM restrictions, Chat file-sharing posture, history plus Vault-based retention and auto-deletion, third-party archiving, Chat-scoped DLP rules, space access defaults and org-wide space inventory, and Chat audit logging, content protection, moderation, and configuration drift detection. Platform-wide authentication, OAuth allowlisting, the DLP engine itself, and admin-console audit logging are covered in the [Google Workspace guide](/guides/google-workspace/). Gmail and Drive are covered in their own product guides.
 
 ---
 
@@ -42,6 +44,23 @@ This guide covers Google Chat hardening in the Google Workspace Admin Console: C
 2. [Data Security](#2-data-security)
 3. [Monitoring & Detection](#3-monitoring--detection)
 4. [Compliance Quick Reference](#4-compliance-quick-reference)
+
+**Controls in this guide**
+
+| # | Control | Level | Automatable? |
+|---|---------|-------|--------------|
+| [1.1](#11-restrict--allowlist-google-chat-apps) | Restrict & allowlist Chat apps | L1 | Verify (Policy API) |
+| [2.1](#21-restrict-external-google-chat--spaces) | Restrict external chat & spaces | L1 | Verify (Policy API) |
+| [2.2](#22-restrict-google-chat-file-sharing) | Restrict Chat file sharing | L2 | Verify (Policy API) |
+| [2.3](#23-enforce-google-chat-history--retention) | Enforce history & retention | L2 | Verify (Policy API) + enforce holds (Vault API) |
+| [2.4](#24-configure-chat-auto-deletion-retention) | Auto-deletion retention | L2 | ClickOps only |
+| [2.5](#25-apply-dlp-to-google-chat-messages-and-attachments) | DLP for Chat | L2 | ClickOps only |
+| [2.6](#26-set-the-default-space-access-to-restricted) | Restricted space access default | L2 | Verify (Policy API) + inventory (Chat API) |
+| [2.7](#27-govern-third-party-chat-archiving) | Govern third-party archiving | L2 | Verify (Policy API) |
+| [3.1](#31-enable-google-chat-audit-logging--content-reporting) | Audit logging & content reporting | L1 | Enforce + detect (Reports API, BigQuery) |
+| [3.2](#32-understand-chat-content-protection-coverage-limits) | Content protection coverage limits | L1 | ClickOps only |
+| [3.3](#33-delegate-a-scoped-chat-moderator-role) | Scoped Chat moderator role | L2 | Enforce (Directory API) |
+| [3.4](#34-continuously-verify-chat-configuration-with-the-policy-api) | Policy API drift detection | L2 | Enforce (Policy API) |
 
 ---
 
@@ -64,7 +83,7 @@ Control which Google Chat apps (bots) and incoming webhooks users can add. Disab
 **Why This Matters:**
 - Chat apps and webhooks run with delegated access to conversations and can silently forward messages or files to external endpoints
 - A malicious or over-permissioned Chat app is an OAuth-style data-exfiltration path that bypasses Drive/Gmail controls
-- Incoming webhooks post to spaces using a URL that, if leaked, lets anyone inject messages (phishing, social engineering)
+- An incoming webhook is authenticated **solely by the secret embedded in its URL** — the documented form is `https://chat.googleapis.com/v1/spaces/SPACE_ID/messages?key=KEY&token=TOKEN`, with no signature verification or separate credential exchange. Anyone who obtains that URL can post into the space as the webhook, which is why a webhook leaked into a repository, a CI log, or a screenshot is a standing phishing channel inside a trusted space rather than a low-severity secret
 
 **Attack Prevented:** Malicious Chat app installation, webhook abuse, data exfiltration via bot integrations
 
@@ -82,6 +101,10 @@ Control which Google Chat apps (bots) and incoming webhooks users can add. Disab
 4. Click **Save**
 
 > **Note:** Chat apps must stay enabled at the **top** organizational unit for the Chat API to function. Use the Marketplace allowlist—not an OU block—to restrict which apps are usable.
+
+> **Two documented ways this control is bypassed — plan for both:**
+> 1. **Marketplace overrides the Chat-specific toggle.** If Marketplace app installation is enabled, users can install an allowed app *even without* the Chat-specific install permission. Turning "Allow users to install Chat apps" off is therefore not sufficient on its own — the Marketplace setting is the binding one, which is why Step 2 is not optional.
+> 2. **Allowlists do not cover unpublished apps.** A developer can publish an app to a small number of users without going through Marketplace approval, even with allowlisting enabled. That path is invisible to an allowlist review, so pair the allowlist with detection: monitor `app_added` and `app_invoked` in the Chat audit log ([3.1](#31-enable-google-chat-audit-logging--content-reporting)) and reconcile installed apps against the approved list rather than assuming the allowlist enforced itself.
 
 **Step 2: Curate the Marketplace Allowlist**
 1. Navigate to: **Admin Console** → **Apps** → **Google Workspace Marketplace apps** → **Apps list**
@@ -158,12 +181,14 @@ Restrict Google Chat and spaces with people outside your organization. Either tu
 2. For **Allow users to create & join spaces & group direct messages with people outside their organization**: select **Off**, or **On** restricted to allowlisted domains
 3. Click **Save**
 
-> **Note:** Because one setting covers both external spaces *and* external group DMs, turning it on to enable partner spaces simultaneously opens multi-party external DMs. Scope it per organizational unit rather than org-wide.
+> **⚠ This setting is organization-wide and cannot be scoped per organizational unit.** Google's documentation states plainly: "This setting applies to your entire organization." The external *chat* setting in Step 1 **can** be scoped to an OU ("To apply the setting to a department or team, at the side, select an organizational unit") — the spaces and group-DM setting cannot. The practical consequence is that the usual "enable it only for the partner-facing OU" pattern is unavailable here: enabling external spaces for one team enables multi-party external DMs for everyone. Treat it as a whole-tenant decision, and use the allowlisted-domains restriction rather than OU scoping to bound it.
+
+> **Turning it off does not undo what already exists.** Per Google's documentation, disabling external chat "does not delete already created chat messages, conversations, and spaces. They will still be visible and accessible to already invited external users and guests" — your own users lose access, but "their membership status will not change," and re-enabling the setting restores access to everything. Disabling the setting is therefore a control on *new* external collaboration only. Audit and remediate the external spaces and memberships that already exist ([2.6](#26-set-the-default-space-access-to-restricted) Step 3 inventories them), or the exposure survives the fix.
 
 **Step 3: Manage the Allowlisted Domains**
 1. The Chat allowlist is the **shared** Workspace trusted-domains allowlist (also used by Drive, Sites, Classroom, Looker Studio)
 2. Navigate to: **Account** → **Domains** → **Allowlisted domains** to add/remove trusted domains
-3. Apply external-chat exceptions per organizational unit, not org-wide
+3. Scope external-*chat* exceptions per organizational unit where possible; note that the spaces/group-DM setting above admits no such scoping
 
 **Time to Complete:** ~30 minutes
 
@@ -187,7 +212,7 @@ Restrict Google Chat and spaces with people outside your organization. Either tu
 | **NIST 800-53** | AC-20 | Use of external systems |
 | **SOC 2** | CC6.6 | Boundary protection / external access |
 
-> **CIS note:** a CIS Google Workspace Foundations Benchmark exists, but its Chat section numbering could not be verified against the benchmark PDF at authoring time — SCuBA is used as the primary mapping. Do not add specific CIS Google Workspace control numbers without confirming them against the downloaded benchmark.
+> **CIS note (re-checked 2026-08-12):** the CIS Google Workspace Foundations Benchmark does contain Chat recommendations, and a research pass located candidate numbering for external and internal Chat file sharing. Those numbers are still **deliberately not cited here**, for a reason worth stating plainly: the only full benchmark PDFs reachable in that pass came from unofficial third-party mirrors rather than CIS, and the recommendation numbering was shown to shift between benchmark versions. A control ID copied from a mirror is exactly the kind of citation that looks authoritative and is unverifiable, so SCuBA remains the primary mapping. Add CIS Google Workspace numbers only from a PDF downloaded from CIS itself, and pin the benchmark version alongside them.
 
 ---
 
@@ -292,6 +317,8 @@ Turn Chat history on by default, prevent users from changing their own history s
 2. In **Vault** → **Matters** → **Holds**, place relevant accounts/OUs on a Chat hold (include spaces the user belongs to)
 3. Note: holds never expire and override retention rules; Chat messages are kept 30 days after deletion
 
+> **The one place a Vault hold does not hold.** In **extra-large spaces** (documented at more than 50,000 members), Chat content follows the space retention policy **regardless of holds**. Everywhere else a hold beats retention; here it does not. If a legal hold must cover a conversation, confirm the space is not in that category — an assumption that "the hold covers it" is exactly the assumption that fails at the moment it is tested in an investigation.
+
 **Time to Complete:** ~45 minutes
 
 #### Code Implementation
@@ -350,7 +377,11 @@ Set an explicit auto-deletion period for Chat content per organizational unit, i
 3. Set an independent retention period for each of **1:1 direct messages**, **group direct messages**, and **space messages** — any value from **30** to **36,500** days
 4. Click **Save**
 
+> **Only 1:1 direct messages support per-OU scoping.** The group-DM and space-message periods are set for the organization, so a stricter retention period for one sensitive team is achievable for their 1:1 DMs only. Where a team genuinely needs tighter retention on spaces, the lever is a separate space with its own Vault retention rule, not this setting.
+
 > **Interaction with Vault:** auto-deletion does not defeat Vault. If auto-deletion fires before a Vault retention rule expires, the message is still held in Vault for the remainder of the Vault retention period, or a minimum of 30 days — whichever is longer. Configure both deliberately rather than assuming one overrides the other.
+
+> **No automation surface (verified 2026-08-12):** this control ships no Code Pack because none can be written honestly. Auto-deletion periods are absent from the eight Chat settings the Policy API exposes, so the setting can be neither enforced nor even *read* programmatically — configure and verify it in the console. Its prerequisite, history enforcement, **is** verifiable ([3.4](#34-continuously-verify-chat-configuration-with-the-policy-api)), so the strongest available proxy is confirming history is on and unmodifiable and reviewing the auto-deletion periods by hand on a schedule.
 
 **Time to Complete:** ~30 minutes
 
@@ -409,6 +440,8 @@ Create Chat-scoped data protection rules under **Security** → **Access and dat
 
 > **Rule conflicts:** when multiple rules match the same message, the most restrictive action wins — **block** takes precedence over **warn**, and **warn** over **audit only**. Start in **Audit only** to measure false positives, then promote to warn and block.
 
+> **No automation surface (verified 2026-08-12):** data protection rules are not among the Chat settings the Policy API exposes, so this control ships no Code Pack — rules are authored and reviewed in the console. Two facts make manual review tractable: the Chat triggers are identified as `google.workspace.chat.message.v1.send` and `google.workspace.chat.attachment.v1.upload`, and rule *hits* are visible in the security investigation tooling even though the rule *definitions* are not readable by API. Review the rule set on the same cadence as [3.4](#34-continuously-verify-chat-configuration-with-the-policy-api)'s drift check, since a deleted DLP rule leaves no trace in a settings baseline.
+
 **Time to Complete:** ~60 minutes
 
 #### Validation & Testing
@@ -444,7 +477,7 @@ Set the organization's default space access to **Restricted**, so that a newly c
 
 #### Rationale
 **Why This Matters:**
-- The **Primary Target Audience** default makes every newly created space discoverable and joinable by anyone in that audience — typically the whole organization — so a space created for a sensitive project is open by default and private only if its creator remembers to change it
+- The **Primary Target Audience** default makes every newly created space discoverable and joinable by anyone in that audience, and the shipped default audience is **all users in your domain** — so a space created for a sensitive project is domain-discoverable by default, and private only if its creator remembers to change it
 - Space membership grants access to the space's full message history and shared files, so an over-broad default silently widens access to everything ever posted there
 - Secure defaults beat user diligence: the creator of a legal, HR, or incident-response space is rarely thinking about discoverability at the moment of creation
 
@@ -469,14 +502,27 @@ Set the organization's default space access to **Restricted**, so that a newly c
 
 > **Note:** this sets the default, not a prohibition. Space creators can still widen access to a target audience; pair the restricted default with the external-chat restrictions in [2.1](#21-restrict-external-google-chat--spaces) to bound how far a space can be widened.
 
-**Time to Complete:** ~20 minutes
+**Step 3: Inventory the Spaces That Already Exist**
+
+1. A default only governs spaces created *after* it is set — it says nothing about the spaces already in the tenant, which is where the accumulated exposure lives
+2. Grant the **Manage Chat and Spaces conversation** admin privilege to the account that will run the inventory
+3. Use the Chat API's admin space search (`spaces.search` with `useAdminAccess`) to enumerate every named space, then review three populations: spaces with no recent activity, spaces with no remaining manager, and spaces whose membership includes external users
+4. Re-run on a schedule — space sprawl is continuous, so a one-off inventory ages out immediately
+
+**Time to Complete:** ~20 minutes (plus inventory review)
+
+#### Code Implementation
+
+{% include pack-code.html vendor="google-chat" section="2.6" %}
 
 #### Validation & Testing
 1. As a standard user, create a new space and confirm the access setting defaults to restricted rather than to a target audience
 2. From a second account not added to that space, confirm the space is not discoverable in Chat search
 3. If target audiences are used, confirm the first-position audience is the intended narrow one
+4. Run the admin space search and confirm it returns spaces — an empty result usually means the caller is missing the **Manage Chat and Spaces conversation** privilege rather than that the tenant has no spaces
+5. Confirm the Policy API reports `chat.space_access_default` `access_type` as `RESTRICTED` ([3.4](#34-continuously-verify-chat-configuration-with-the-policy-api))
 
-**Expected result:** New spaces are private by default and joinable only by explicitly added members.
+**Expected result:** New spaces are private by default and joinable only by explicitly added members, and the existing space estate has been inventoried rather than assumed.
 
 #### Compliance Mappings
 
@@ -486,6 +532,67 @@ Set the organization's default space access to **Restricted**, so that a newly c
 | **NIST 800-53** | AC-6 | Least privilege |
 | **SOC 2** | CC6.1 | Logical access security |
 | **ISO 27001** | A.5.15 | Access control |
+
+---
+
+### 2.7 Govern Third-Party Chat Archiving
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 3.3 |
+| NIST 800-53 | AC-4, AU-9, SI-4 |
+
+#### Description
+Establish whether Chat's third-party archiving is enabled and, if it is, that its destination is an address your organization actually approved. The setting delivers Chat content to an external email address on a recurring schedule (documented as every 1–24 hours), and it is exposed for reading through the Policy API as `chat.third_party_archiving`.
+
+#### Rationale
+**Why This Matters:**
+
+- This is a platform-sanctioned channel that continuously ships Chat content out of the tenant — configured deliberately it is a compliance archive, configured carelessly it is a permanent exfiltration path that no DLP rule inspects, because Google itself is doing the sending
+- The destination is a plain email address, so a single mistyped or maliciously altered value redirects the organization's conversations without breaking anything a user would notice
+- Archiving destinations outlive the vendor relationships that justified them: an address belonging to a decommissioned archiving provider keeps receiving content until someone thinks to look
+
+**Attack Prevented:** Sanctioned-channel data exfiltration, persistence of Chat content delivery to a decommissioned or attacker-controlled destination, silent redirection of an organization's conversation archive
+
+#### Prerequisites
+
+- A documented decision on whether third-party archiving is used at all, and the approved destination address if it is
+- Policy API access for verification ([3.4](#34-continuously-verify-chat-configuration-with-the-policy-api))
+
+#### ClickOps Implementation
+
+**Step 1: Determine the Current State**
+
+1. Navigate to: **Admin Console** → **Apps** → **Google Workspace** → **Google Chat**
+2. Locate the third-party archiving configuration and record whether it is enabled, its destination email address, and its archival frequency
+
+**Step 2: Decide and Document**
+
+1. If archiving is not required, confirm it is disabled
+2. If it is required, record the approved destination address and frequency in your data-flow documentation, and treat that address as a reviewed egress destination rather than an implementation detail
+3. Re-confirm the destination whenever the archiving vendor relationship changes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="google-chat" section="2.7" %}
+
+#### Validation & Testing
+1. Read `chat.third_party_archiving` through the Policy API and confirm `enabled` matches your documented decision
+2. If enabled, confirm `destination_email_address` exactly equals the approved address — the check is string equality against a recorded value, not a judgement call
+3. Confirm the configured `archival_frequency` matches what your retention documentation claims
+
+**Expected result:** Third-party archiving is either off, or on with a destination that matches an approved, documented address.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **NIST 800-53** | AC-4 | Information flow enforcement |
+| **NIST 800-53** | AU-9 | Protection of audit information |
+| **SOC 2** | CC6.7 | Restricted data transmission |
+| **ISO 27001** | A.8.12 | Data leakage prevention |
 
 ---
 
@@ -538,12 +645,23 @@ Monitor Google Chat through the Chat log events report (and Reports API / BigQue
 
 #### Key Chat Events to Monitor
 
+Event names below are transcribed from the Admin SDK Reports API Chat activity-events appendix. Two parameters are worth knowing because they carry the internal/external distinction the event name alone does not: `conversation_ownership` (`INTERNALLY_OWNED` / `EXTERNALLY_OWNED`) and `conversation_type` (which includes `GROUP_DIRECT_MESSAGE`).
+
 | Event | Detection Use Case |
 |-------|-------------------|
-| `attachment_upload` | Data exfiltration via Chat attachments |
+| `attachment_upload` | Data exfiltration into Chat |
+| `attachment_download` | Data exfiltration **out of** Chat — a compromised account harvesting an existing space downloads without ever uploading |
 | `message_posted` | Phishing / malicious link distribution |
+| `message_deleted` | Evidence destruction after exfiltration or misconduct |
+| `message_edited` | Retroactive alteration of preserved content |
 | `room_created` | Rogue or external space creation |
-| `add_room_member` | External users added to spaces |
+| `room_deleted` | Cascading destruction of a space, its messages, and its memberships |
+| `add_room_member` | Users added to spaces in bulk |
+| `remove_room_member` | Witnesses removed from a conversation before it continues |
+| `direct_message_started` | External DM initiation (check `conversation_ownership`) |
+| `app_added` / `app_removed` | Chat app installation outside the approved allowlist workflow ([1.1](#11-restrict--allowlist-google-chat-apps)) |
+| `app_invoked` | Chat app driven programmatically far beyond its business purpose |
+| `message_reported` / `message_report_resolved` | Content-reporting queue throughput — raised versus resolved is how you prove the queue in [3.3](#33-delegate-a-scoped-chat-moderator-role) is actually worked |
 
 #### Code Implementation
 
@@ -602,6 +720,8 @@ Confirm Chat content protection is on for external chat, and document what it do
 1. Record in your detection coverage documentation that internal-only Chat conversations are **not** scanned for spam or phishing
 2. Ensure a DLP for Chat rule ([2.5](#25-apply-dlp-to-google-chat-messages-and-attachments)) covers internal conversations for the sensitive-data categories that matter
 3. Ensure content reporting ([3.1](#31-enable-google-chat-audit-logging--content-reporting)) is enabled for internal 1:1, group, and space conversations so users can flag what automation does not catch
+
+> **No automation surface (verified 2026-08-12):** Chat content protection is not among the eight Chat settings the Policy API exposes, so its state cannot be read programmatically and this control ships no Code Pack. That makes the documentation step above the actual deliverable — the control's value is a written, reviewed coverage boundary, not a toggle.
 
 **Time to Complete:** ~20 minutes
 
@@ -668,13 +788,20 @@ Create a custom admin role carrying the **Moderate Chat content report** privile
 
 **Time to Complete:** ~30 minutes
 
+#### Code Implementation
+
+Unlike most controls in this guide, this one is fully automatable in both directions: the Admin SDK Directory API can create the custom role, assign it, and audit it. Discover the privilege identifier from your own tenant rather than hardcoding one — the pack's first step prints the Chat-related privileges with their `serviceId`.
+
+{% include pack-code.html vendor="google-chat" section="3.3" %}
+
 #### Validation & Testing
 1. Confirm the custom role lists **Moderate Chat content report** and no additional privileges
 2. As an assigned moderator, open the Moderation Tool and confirm reported content is visible and actionable
 3. As a non-assigned user, confirm the Moderation Tool is inaccessible
 4. Submit a test report from [3.1](#31-enable-google-chat-audit-logging--content-reporting) and confirm it reaches the queue and is dispositioned within the SLA
+5. Measure the queue rather than trusting it: compare `message_reported` against `message_report_resolved` counts over the review window ([3.1](#31-enable-google-chat-audit-logging--content-reporting) Code Pack) — a rising unresolved backlog means the role exists but the SLA does not
 
-**Expected result:** Reported Chat content is triaged by a named owner holding one narrowly scoped privilege, not by a super admin.
+**Expected result:** Reported Chat content is triaged by a named owner holding one narrowly scoped privilege, not by a super admin, and the resolution rate is measurable rather than assumed.
 
 #### Compliance Mappings
 
@@ -684,6 +811,75 @@ Create a custom admin role carrying the **Moderate Chat content report** privile
 | **NIST 800-53** | IR-4 | Incident handling |
 | **SOC 2** | CC7.3 | Evaluation of security events |
 | **ISO 27001** | A.5.25 | Assessment and decision on information security events |
+
+---
+
+### 3.4 Continuously Verify Chat Configuration with the Policy API
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.2, 8.5 |
+| NIST 800-53 | CM-2, CM-3, CM-6, SI-4 |
+
+#### Description
+Read every Chat setting the **Cloud Identity Policy API** exposes and compare it against this guide's baseline on a schedule, so configuration drift is detected rather than discovered during an incident. The API covers eight Chat settings — `chat.chat_apps_access`, `chat.external_chat_restriction`, `chat.external_spaces`, `chat.chat_file_sharing`, `chat.chat_history`, `chat.space_history`, `chat.space_access_default`, and `chat.third_party_archiving` — and is **read-only** for all of them.
+
+#### Rationale
+**Why This Matters:**
+
+- Every other Chat control in this guide is configured by hand in a console, which means every one of them can be changed by hand in a console — usually for a good short-term reason ("open external chat for the migration") that nobody remembers to close
+- Reading the settings in code turns the SCuBA baselines from a point-in-time audit answer into a continuously testable assertion: `history_on_by_default`, `allow_user_modification`, `external_file_sharing`, and `external_chat_restriction` map directly onto GWS.CHAT.1.1v1, 1.2v1, 2.1v1, and 4.1v1
+- Drift detection is the only control here that catches the *removal* of another control, which is exactly what an attacker with admin access does before acting
+
+**Attack Prevented:** Silent weakening of Chat security settings by an admin or a compromised admin account, undetected configuration drift between audits, unnoticed expiry of a temporary exception
+
+#### Prerequisites
+
+- **Super administrator** — the Policy API is restricted to super admins
+- A service account with domain-wide delegation, granted `https://www.googleapis.com/auth/cloud-identity.policies.readonly`
+- A recorded baseline of intended values per organizational unit
+
+> **Read-only, by design.** Every Chat setting reports `Mutate supported: No`. This control proves and monitors configuration; it cannot set it. Treat a finding as a ticket against the ClickOps control that owns the setting, not as something the script can remediate.
+
+#### ClickOps Implementation
+
+**Step 1: Authorize the Caller**
+
+1. Create (or reuse) a service account and enable domain-wide delegation for it
+2. Navigate to: **Admin Console** → **Security** → **Access and data control** → **API controls** → **Domain-wide delegation** → **Add new**
+3. Add the service account's client ID with the scope `https://www.googleapis.com/auth/cloud-identity.policies.readonly`
+4. Have it impersonate a **super administrator** — lesser admin roles cannot read policies
+
+**Step 2: Schedule the Comparison**
+
+1. Run the posture check against your recorded baseline on a schedule (daily is proportionate; the settings change rarely and drift matters immediately)
+2. Route findings to the same queue that owns the underlying control, and treat an unexplained change as an access-review trigger for whoever made it
+
+**Time to Complete:** ~45 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="google-chat" section="3.4" %}
+
+#### Validation & Testing
+1. Run the posture check against a known-good tenant and confirm it reports no findings
+2. Deliberately change one non-production setting (for example, set internal file sharing to a different value on a test OU) and confirm the next run flags exactly that setting and organizational unit
+3. Confirm a non-super-admin caller is rejected — if a lesser role appears to work, verify what it actually returned rather than assuming coverage
+4. Enumerate all returned policies after a Workspace release and confirm no new `chat.*` setting has appeared that your baseline does not model
+
+**Expected result:** Every Chat setting the Policy API exposes is compared to a recorded baseline on a schedule, and any deviation produces a finding naming the setting, the value, and the organizational unit.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **NIST 800-53** | CM-2 | Baseline configuration |
+| **NIST 800-53** | CM-3 | Configuration change control |
+| **NIST 800-53** | SI-4 | System monitoring |
+| **SOC 2** | CC7.1 | Detection of configuration changes |
+| **ISO 27001** | A.8.9 | Configuration management |
 
 ---
 
@@ -701,6 +897,17 @@ Create a custom admin role carrying the **Moderate Chat content report** privile
 | GWS.CHAT.5.1v1 | Content reporting enabled for all conversation types | [3.1](#31-enable-google-chat-audit-logging--content-reporting) |
 | GWS.CHAT.5.2v1 | All reporting categories selected | [3.1](#31-enable-google-chat-audit-logging--content-reporting) |
 
+**Machine-checking these baselines.** Five of the seven map onto Policy API fields, so they can be asserted continuously rather than sampled at audit time ([3.4](#34-continuously-verify-chat-configuration-with-the-policy-api)):
+
+| SCuBA Baseline | Policy API field to assert |
+|----------------|----------------------------|
+| GWS.CHAT.1.1v1 | `chat.chat_history` → `history_on_by_default` = `true` |
+| GWS.CHAT.1.2v1 | `chat.chat_history` → `allow_user_modification` = `false` |
+| GWS.CHAT.2.1v1 | `chat.chat_file_sharing` → `external_file_sharing` = `NO_FILES` |
+| GWS.CHAT.3.1v1 | `chat.space_history` → `history_state` = `HISTORY_ALWAYS_ON` |
+| GWS.CHAT.4.1v1 | `chat.external_chat_restriction` → `external_chat_restriction` = `TRUSTED_DOMAINS` (or `allow_external_chat` = `false`) |
+| GWS.CHAT.5.1v1 / 5.2v1 | No Policy API field — content-reporting configuration is verified in the console |
+
 ### SOC 2 / NIST 800-53 Summary
 
 | Control | SOC 2 | NIST 800-53 |
@@ -712,9 +919,11 @@ Create a custom admin role carrying the **Moderate Chat content report** privile
 | [2.4](#24-configure-chat-auto-deletion-retention) Auto-deletion retention | CC6.5 | AU-11, SI-12 |
 | [2.5](#25-apply-dlp-to-google-chat-messages-and-attachments) DLP for Chat | CC6.7 | AC-4, SI-4 |
 | [2.6](#26-set-the-default-space-access-to-restricted) Space access default | CC6.1 | AC-3, AC-6 |
+| [2.7](#27-govern-third-party-chat-archiving) Third-party archiving | CC6.7 | AC-4, AU-9 |
 | [3.1](#31-enable-google-chat-audit-logging--content-reporting) Audit & reporting | CC7.2 | AU-6, IR-6 |
 | [3.2](#32-understand-chat-content-protection-coverage-limits) Content protection coverage | CC7.1 | SI-3, SI-8 |
 | [3.3](#33-delegate-a-scoped-chat-moderator-role) Scoped moderator role | CC7.3 | AC-6(5), IR-4 |
+| [3.4](#34-continuously-verify-chat-configuration-with-the-policy-api) Policy API drift detection | CC7.1 | CM-2, CM-3, SI-4 |
 
 > Platform-wide compliance mappings (authentication, OAuth, DLP, admin audit logging) are in the [Google Workspace guide](/guides/google-workspace/#7-compliance-quick-reference).
 
@@ -731,10 +940,23 @@ Create a custom admin role carrying the **Moderate Chat content report** privile
 - [Security checklist for medium and large businesses](https://knowledge.workspace.google.com/admin/security/security-checklist-for-medium-and-large-businesses-100-users) — Google Workspace Admin Help
 - [CIS Google Workspace Foundations Benchmark](https://www.cisecurity.org/benchmark/google_workspace) — Center for Internet Security
 
+**Automation interfaces (verified 2026-08-12):**
+
+- [Settings available in the Policy API](https://cloud.google.com/identity/docs/concepts/supported-policy-api-settings) — the authoritative list of the eight readable `chat.*` settings and their exact fields and enum values
+- [Listing and getting policies](https://cloud.google.com/identity/docs/how-to/list-get-policies) — `cloudidentity.googleapis.com/v1/policies`, filter syntax `setting.type.matches("chat.*")`, scope `cloud-identity.policies.readonly`
+- [Chat activity events (Admin SDK Reports API)](https://developers.google.com/workspace/admin/reports/v1/appendix/activity/chat) — every Chat event name and its parameters
+- [Search for and manage spaces as an administrator](https://developers.google.com/workspace/chat/search-manage-admin) — `spaces.search` with `useAdminAccess`, admin scopes, and query syntax
+- [Directory API — roles.insert](https://developers.google.com/workspace/admin/directory/reference/rest/v1/roles/insert) — custom admin role creation for the scoped moderator role
+- [Set up service log exports to BigQuery](https://knowledge.workspace.google.com/admin/reports/set-up-service-log-exports-to-bigquery) — export setup and the Pacific-Time partition boundary
+- [Example queries for reporting logs in BigQuery](https://knowledge.workspace.google.com/admin/reports/example-queries-for-reporting-logs-in-bigquery) — the `activity` table shape these Code Packs query
+- [Google Workspace CLI (`gws`)](https://github.com/googleworkspace/cli) — Google-published, and explicitly "not an officially supported Google product"
+- [Terraform provider for Google Workspace](https://github.com/hashicorp/terraform-provider-googleworkspace) — **archived 2025-06-30, read-only**; it has never offered a Chat-specific resource
+
 ## Changelog
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.3.0 | 2026-08-12 | **Corrections:** 2.1 previously advised scoping the external spaces / group-DM setting per organizational unit — Google documents that setting as organization-wide with no OU override, so the advice was unachievable as written and is now corrected, with the OU-scopable external-*chat* setting distinguished from it. Also documented that disabling external chat does not remove existing external conversations or space memberships (they persist and are restored if the setting is re-enabled), which makes the disable a control on new collaboration only. Added the two documented bypasses of 1.1 (Marketplace installation overrides the Chat-specific toggle; unpublished apps can reach a small user set without Marketplace approval despite an allowlist), the extra-large-space exception where Chat content follows space retention *regardless of Vault holds*, and the fact that only 1:1 DMs support per-OU auto-deletion scoping. Sharpened 2.6 with the shipped default target audience (all users in the domain) and 1.1 with the incoming-webhook URL-secret authentication model. Re-checked the CIS Google Workspace citation question and re-affirmed the deliberate omission with its reason (candidate numbering was reachable only via unofficial mirrors and shifts between benchmark versions). SCuBA policy IDs re-verified against ScubaGoggles: unchanged, all seven still current. **Automation-surface currency pass.** **Cloud Identity Policy API** established as a readable interface for eight Chat settings, which reverses this guide's previous "Chat settings have no API" posture: added 3.4 (continuous drift detection) and verification Code Packs on 1.1, 2.1, 2.2, 2.3, and 2.6, each stating plainly that the API is read-only (`Mutate supported: No`). Added 2.7 (govern third-party Chat archiving) — a content-egress setting the guide had never covered. Extended 2.6 with org-wide space inventory via the Chat API's admin `spaces.search`. Added Code Packs to 3.3 (Directory API custom-role creation, assignment, and privilege-creep audit). Rewrote 3.1's Code Packs onto the first-party Reports API, moved the CLI variant to Google's `gws` CLI and off community-maintained GAM, and expanded the events table from 4 to 13 entries against the Reports API appendix — adding `attachment_download`, `message_deleted`/`message_edited`, `room_deleted`, `remove_room_member`, `direct_message_started`, the `app_*` family, and the `message_reported`/`message_report_resolved` pair that makes moderation-queue throughput measurable. Fleshed out the BigQuery detection layer from one file to three (Chat app abuse at 1.1, evidence tampering at 2.3, exfiltration and queue health at 3.1). Annotated 2.4, 2.5, and 3.2 as genuinely ClickOps-only with the reason, rather than leaving them silently pack-less. Disclosed that the `hashicorp/googleworkspace` Terraform provider was archived 2025-06-30. Corrected seven stale pre-platform-split control references in the Code Packs. |
 | 0.2.1 | 2026-08-08 | Rewrote §3.1 BigQuery detection pack against the documented Workspace activity schema — completed coverage of the control's event table by adding `message_posted` volume (with distinct source-IP count) and bulk `add_room_member` detections alongside the existing `attachment_upload` and `room_created` queries; all columns verified against Google's BigQuery export example-queries documentation. |
 | 0.2.0 | 2026-08-08 | Currency pass against Google Workspace admin docs and CISA SCuBA: corrected 3.1 content-reporting edition prerequisites and documented its history-off/external-DM/external-space blind spots; corrected 2.1's console path and label to the single External chat settings page covering spaces *and* group DMs, and dropped the unverifiable CIS Google Workspace citation; added 2.4 auto-deletion retention, 2.5 DLP for Chat, 2.6 restricted space access default, 3.2 Chat content protection coverage limits, and 3.3 scoped Chat moderator role. Rebuilt the BigQuery detection pack against the real Workspace activity-export schema (`activity` table, flat `email` column, `TIMESTAMP_MICROS(time_usec)` window). |
 | 0.1.0 | 2026-05-29 | Initial Google Chat product guide — split from the Google Workspace guide (controls 1.1 app allowlisting, 2.1 external chat, 2.2 file sharing, 2.3 history & retention, 3.1 audit & content reporting). Part of the multi-product platform restructure. |

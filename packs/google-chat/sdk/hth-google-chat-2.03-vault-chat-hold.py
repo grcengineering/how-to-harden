@@ -20,7 +20,7 @@ vault = build('vault', 'v1', credentials=credentials)
 # 1. Create a matter to own the hold (or reuse an existing matterId).
 matter = vault.matters().create(body={
     'name': 'HTH Chat Retention',
-    'description': 'HTH 4.5 -- preserves Google Chat content for legal/compliance hold',
+    'description': 'HTH 2.3 -- preserves Google Chat content for legal/compliance hold',
 }).execute()
 matter_id = matter['matterId']
 
