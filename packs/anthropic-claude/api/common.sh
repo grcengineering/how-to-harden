@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH Anthropic Claude — Shared helpers for Admin API scripts
 # Requires: ANTHROPIC_ADMIN_KEY (sk-ant-admin01-...) environment variable
-# API Docs: https://docs.anthropic.com/en/api/admin-api-overview
+# API Docs: https://platform.claude.com/docs/en/manage-claude/admin-api
 
 set -euo pipefail
 

@@ -9,9 +9,9 @@ product: "Claude API & Console"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for the Claude API and Console — API key scoping and rotation, workload identity federation, workspace segmentation, data residency and retention, and usage/spend monitoring."
-version: "1.0.0"
+version: "1.1.0"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-15"
 ---
 
 ## Overview
@@ -75,7 +75,7 @@ Every standard API key in Anthropic Claude is scoped to a single workspace. Leve
 #### ClickOps Implementation
 
 **Step 1: Create Workspace-Scoped Keys**
-1. Navigate to: **console.anthropic.com** → Select target workspace
+1. Navigate to: **platform.claude.com** → Select target workspace
 2. Go to: **Settings** → **API Keys**
 3. Click **Create Key**
 4. Name the key descriptively: `{team}-{environment}-{purpose}` (e.g., "ml-team-prod-inference")
@@ -118,13 +118,16 @@ Every standard API key in Anthropic Claude is scoped to a single workspace. Leve
 | SOC 2 | CC6.1 |
 
 #### Description
-Establish a 90-day rotation schedule for all API keys. Since API keys can only be created via the Console, rotation requires creating a new key, updating dependent services, and then disabling/archiving the old key via the Admin API.
+Make key lifetime bounded by default: set an **expiration at key creation** and back it with an **organization maximum expiration policy**, then run a rotation schedule for whatever non-expiring keys remain. Expiration is chosen when the key is created — presets of 3 hours, 1 day, 7 days, or 30 days, a custom duration, or **Never** — and **cannot be changed after creation**. Since API keys can only be created via the Console, rotation still means creating a new key, updating dependents, and disabling the old key via the Admin API.
+
+> **Native expiration changed this control (verified 2026-08-15).** Earlier guidance treated rotation as purely procedural because keys never expired on their own. Keys now carry an `expires_at` timestamp (`null` for non-expiring keys), reported by the Admin API's List and Retrieve API Keys endpoints. With an org **maximum expiration policy** in place, the Console caps the selectable durations and removes **Never** entirely — making unbounded credentials impossible to mint rather than merely discouraged. Expired keys return `401 authentication_error` and cannot be reactivated; Anthropic emails the key's creator 7 days before expiry (keys with ≥14-day lifetimes) and 1 day before (≥7-day lifetimes). ([Key expiration](https://platform.claude.com/docs/en/manage-claude/authentication#key-expiration))
 
 #### Rationale
 **Why This Matters:**
-- Long-lived API keys increase the window of opportunity for attackers
+- Long-lived API keys increase the window of opportunity for attackers; a leaked expiring key dies on its own, a leaked non-expiring key lives until someone notices
 - Keys may be accidentally exposed in logs, error messages, or code repositories
 - Anthropic API keys persist after user removal — orphaned keys remain active
+- `expires_at == null` is now an auditable finding, not an unavoidable state
 
 **Attack Prevented:** Stale credential exploitation, leaked key abuse
 
@@ -134,13 +137,17 @@ Establish a 90-day rotation schedule for all API keys. Since API keys can only b
 
 #### ClickOps Implementation
 
-**Step 1: Identify Keys Due for Rotation**
-1. Navigate to: **console.anthropic.com** → **Settings** → **API Keys**
-2. Review creation dates for each active key
-3. Flag any key older than 90 days
+**Step 1: Adopt Expiring Keys**
+1. When creating keys at **Console → Settings → API keys**, choose the shortest expiration the workload tolerates; reserve **Never** for keys held in a secrets manager with their own rotation automation
+2. If available to your organization, set the **maximum expiration policy** so the Console stops offering **Never** and caps custom durations
 
-**Step 2: Rotate**
-1. Create a new key in the same workspace with the same naming convention
+**Step 2: Identify Keys Due for Rotation**
+1. Navigate to: **Console → Settings → API keys**
+2. Review each key's expiration column; audit `expires_at` across the org via the Admin API and flag `null`
+3. Flag any non-expiring key older than 90 days
+
+**Step 3: Rotate**
+1. Create a new key in the same workspace with the same naming convention — with an expiration
 2. Update the dependent application/service to use the new key
 3. Verify the application works with the new key
 4. Disable the old key (set status to `inactive` via Admin API)
@@ -182,19 +189,21 @@ Establish a 90-day rotation schedule for all API keys. Since API keys can only b
 #### Description
 Anthropic's [Workload Identity Federation (WIF)](https://platform.claude.com/docs/en/manage-claude/workload-identity-federation) lets workloads authenticate to the Claude API using short-lived OpenID Connect (OIDC) tokens issued by an identity provider you already operate — AWS IAM, Google Cloud, Microsoft Azure / Entra ID, GitHub Actions, Kubernetes service accounts, SPIFFE/SPIRE, or Okta — instead of long-lived `sk-ant-...` API keys. Your workload presents a signed JWT to `POST /v1/oauth/token` (RFC 7523 `jwt-bearer` grant); Anthropic validates it against the trust rule you configured in the Console and returns a short-lived `sk-ant-oat01-...` access token bound to a service account in your organization. There are no static secrets to mint, store in CI, rotate, or leak.
 
-WIF complements (rather than replaces) the workspace scoping in 1.1 and the rotation discipline in 1.2: the federation rule pins the upstream identity, and the minted access token still inherits the target workspace's rate limits, billing, and OAuth scope (`workspace:developer` at launch). Use WIF anywhere a workload runs in a federable environment; keep static API keys only for environments that cannot present an OIDC JWT.
+WIF complements (rather than replaces) the workspace scoping in 1.1 and the rotation discipline in 1.2: the federation rule pins the upstream identity, and the minted access token still inherits the target workspace's rate limits, billing, and OAuth scope. Use WIF anywhere a workload runs in a federable environment; keep static API keys only for environments that cannot present an OIDC JWT.
+
+> **What changed (verified 2026-08-15).** Three updates since this control was written: **(1)** the Console now documents a **Connect workload** wizard (**Settings → Workload identity → Connect workload**) that creates the issuer, service account, and federation rule in one guided flow — with per-provider tiles, a **Verify issuer** JWKS dry-run before anything is created, and a 15-minute listener that confirms a successful end-to-end token exchange. **(2)** The OAuth scope set has grown beyond `workspace:developer`: `workspace:inference` exists as an API-manageable scope, `workspace:manage_tunnels` is set by the MCP-tunnels flow, and **`org:admin` federation rules exist** — a rule with `oauth_scope: org:admin` must target a service account whose `organization_role` is `admin`, and creating any rule beyond `workspace:developer`/`workspace:inference` requires the Console: "granting a workload organization-admin access is a deliberate human action, not something automation can bootstrap for itself." **(3)** WIF resources are now manageable programmatically via Admin API endpoints under `/v1/organizations/` (`service_accounts`, `federation_issuers`, `federation_rules`) — these endpoints **reject Admin API keys** and require an `org:admin` OAuth bearer token. ([WIF setup](https://platform.claude.com/docs/en/manage-claude/workload-identity-federation) · [WIF Admin API](https://platform.claude.com/docs/en/manage-claude/wif-admin-api))
 
 #### Rationale
 **Why This Matters:**
 - Removes long-lived `sk-ant-...` API keys from CI runners, container images, and secrets managers — the highest-value Anthropic credential class
-- Tokens expire in minutes (default 3600s; minimum 60s), not never; SDKs refresh transparently before expiry
+- Tokens expire in minutes, not never: the minted lifetime is the lesser of the rule's `token_lifetime_seconds` (API default 3600s) and **twice the remaining lifetime of the presented IdP JWT**, never below 60s — short-lived upstream JWTs automatically shorten Anthropic tokens; SDKs refresh on a two-tier schedule (advisory at expiry−120s, mandatory at expiry−30s)
 - Federation rule's `subject_prefix`, `audience`, `claims`, and CEL `condition` matchers bind the credential to a specific workload identity (e.g., a single GitHub repo + branch, a specific Kubernetes service account, or an EKS IRSA role)
 - Audit trail attributes API calls to the federated workload identity, not just to "the API key"
 - Eliminates the "key was leaked, rotation forgotten" incident class for federated workloads
 
 **Attack Prevented:** Static API key exfiltration from CI logs, container images, secrets managers, or developer machines; long-lived credential abuse after personnel changes; lateral movement using a stolen long-lived key
 
-**Important caveat:** WIF inherits the trust of your upstream IdP. A compromised IdP, an over-broad federation rule (e.g., `repo:my-org/*` without a branch claim), or a misconfigured `audience` value can grant broader access than intended. Pair WIF with your IdP's existing controls (workload identity binding, conditional access, audit logging) for defense in depth.
+**Important caveat:** WIF inherits the trust of your upstream IdP. A compromised IdP, an over-broad federation rule, or a misconfigured `audience` value can grant broader access than intended. The documented concrete vector: `subject_prefix` is an exact match unless it ends in `*`, and for GitHub Actions a trailing wildcard like `repo:my-org/my-repo:*` **also matches `pull_request` runs — including runs triggered from forks** — so anyone who can open a PR against the repository could mint a token under that rule (catastrophic for an `org:admin` rule). Pin the subject to a protected branch, e.g. `repo:my-org/my-repo:ref:refs/heads/main`. Pair WIF with your IdP's existing controls (workload identity binding, conditional access, audit logging) for defense in depth.
 
 #### Prerequisites
 - Organization Admin access to the Claude Console (Settings → Workload identity)
@@ -205,8 +214,16 @@ WIF complements (rather than replaces) the workspace scoping in 1.1 and the rota
 
 #### ClickOps Implementation
 
+**Step 0 (preferred path): Use the Connect Workload Wizard**
+1. Navigate to: **Console → Settings → Workload identity** → **Connect workload**
+2. Pick the provider tile (GitHub Actions, AWS, Google Cloud, Microsoft Entra ID, Kubernetes, or Custom OIDC); the wizard creates the issuer, service account, and federation rule in one flow
+3. Run **Verify issuer** — a JWKS-reachability dry-run — before anything is created
+4. Note the wizard prefills `oauth_scope=workspace:developer` and **`token_lifetime_seconds=600`** (the API default when the field is omitted is 3600) — keep the tighter 600s unless the workload needs longer
+5. Let the wizard's 15-minute listener confirm a successful token exchange end-to-end
+6. Steps 1–3 below remain the manual equivalents for providers or flows the wizard doesn't cover
+
 **Step 1: Register a Federation Issuer**
-1. Navigate to: **console.anthropic.com** → **Settings** → **Workload identity** → **Issuers** tab
+1. Navigate to: **Console** → **Settings** → **Workload identity** → **Issuers** tab
 2. Click **Create issuer** and select the appropriate preset (AWS, Google Cloud, or generic OIDC for GitHub Actions / Kubernetes / Entra ID / Okta)
 3. Set **Issuer URL** to the exact `iss` claim your IdP puts in its JWTs. Decode a sample token to verify: `jq -rR 'split(".")[1] | gsub("-";"+") | gsub("_";"/") | @base64d | fromjson | .iss' token`
 4. Set **JWKS source** to `discovery` for any provider that serves `/.well-known/openid-configuration`. Use `explicit_url` for providers without discovery, or `inline` for air-gapped clusters
@@ -217,6 +234,7 @@ WIF complements (rather than replaces) the workspace scoping in 1.1 and the rota
 2. Name it after the workload it represents (`inference-worker`, `ci-deploy`, `eks-prod-namespace-foo`)
 3. Note the service account ID (`svac_...`)
 4. Add the service account to each target workspace via that workspace's **Members** page — the federated token inherits the workspace's rate limits and usage attribution
+5. **Every service account is implicitly a member of the organization's default workspace** — a matched rule can mint tokens acting there with no explicit grant. Keep production keys and data out of the default workspace, or account for this when scoping rules; prefer explicit `workspace_id` on rules over `applies_to_all_workspaces: true`
 
 **Step 3: Create a Federation Rule**
 1. Back on **Workload identity** → **Federation rules** tab → **Create rule**
@@ -225,7 +243,7 @@ WIF complements (rather than replaces) the workspace scoping in 1.1 and the rota
    - **Static** matchers: `subject_prefix` (with optional trailing `*` for prefix match), exact `audience`, and a map of exact `claims` values
    - **CEL** matcher: a [CEL](https://cel.dev/) `condition` expression for complex logic (nested claims, list membership, boolean logic)
    - At least one of `subject_prefix`, `claims`, or `condition` is required — a rule that only matches `audience` is rejected
-4. Set **Authorization** scope (`workspace:developer` at launch) and **Token lifetime** (60–86400 seconds; default 3600)
+4. Set **Authorization** scope (`workspace:developer` for standard workloads; `org:admin` rules are Console-only, must target an `organization_role: admin` service account, and deserve the strictest possible match block) and **Token lifetime** (60–86400 seconds; API default 3600, wizard default 600)
 5. Note the rule ID (`fdrl_...`); the workload passes it on every token-exchange request
 
 **Step 4: Migrate the Workload Off the Static Key**
@@ -331,7 +349,7 @@ Create separate workspaces for development, staging, and production environments
 2. Determine data residency requirements per workspace (`workspace_geo` is immutable after creation)
 
 **Step 2: Create Workspaces**
-1. Navigate to: **console.anthropic.com** → **Settings** → **Workspaces**
+1. Navigate to: **platform.claude.com** → **Settings** → **Workspaces**
 2. Click **Create Workspace**
 3. Enter workspace name following naming convention
 4. Configure data residency settings if required
@@ -340,6 +358,10 @@ Create separate workspaces for development, staging, and production environments
 **Step 3: Archive Unused Workspaces**
 1. Identify workspaces with no recent activity
 2. Archive via Console (caution: this deactivates ALL API keys in the workspace and is irreversible)
+
+> **Two special workspaces need their own handling (verified 2026-08-15).** The **Default Workspace** cannot be archived, cannot carry spend or rate limits, and its API keys, usage, and cost rows report `null` for `workspace_id` — so the hardening move is keeping **zero production keys** in it and migrating all traffic to explicit workspaces where limits apply. The auto-created **Claude Code workspace** (created when any member first signs in to Claude Code with a Console account) mints per-user API keys you cannot create manually, is the only workspace supporting per-user monthly spend limits — and **archiving it disables Claude Code sign-in through Console billing for the whole organization**, a far larger blast radius than archiving a normal workspace. ([Workspaces](https://platform.claude.com/docs/en/manage-claude/workspaces))
+
+> **Isolation nuance for multi-cloud consumers:** prompt caches are isolated **per workspace** on the Claude API, Claude Platform on AWS, and Microsoft Foundry — but only **per organization** on Amazon Bedrock and Google Cloud. If workspace segmentation is your cache-isolation boundary, it does not hold on those two platforms.
 
 **Time to Complete:** ~5 minutes per workspace
 
@@ -374,7 +396,7 @@ Create separate workspaces for development, staging, and production environments
 | SOC 2 | CC6.2, CC6.3 |
 
 #### Description
-Assign users to only the workspaces they need. Workspace roles (`workspace_user`, `workspace_developer`, `workspace_admin`, `workspace_billing`) provide granular access control within each workspace. Organization admins automatically inherit `workspace_admin` in every workspace.
+Assign users to only the workspaces they need. Five workspace roles provide granular access control: `workspace_user`, **Workspace Limited Developer** (create/manage API keys and use the API, but no session-tracing views or file downloads — prefer it over Workspace Developer wherever tracing and file access aren't needed), `workspace_developer`, `workspace_admin`, and `workspace_billing`. Organization admins automatically inherit `workspace_admin` in every workspace, and the Workspace Billing role cannot be manually assigned — it is inherited from the organization `billing` role, so workspace-level access reviews for org admins and billing members happen at the organization-role level.
 
 #### Rationale
 **Why This Matters:**
@@ -391,7 +413,7 @@ Assign users to only the workspaces they need. Workspace roles (`workspace_user`
 #### ClickOps Implementation
 
 **Step 1: Review Current Membership**
-1. Navigate to: **console.anthropic.com** → Select workspace → **Members**
+1. Navigate to: **platform.claude.com** → Select workspace → **Members**
 2. Review each member's workspace role
 3. Document any users who don't belong in this workspace
 
@@ -409,9 +431,9 @@ Assign users to only the workspaces they need. Workspace roles (`workspace_user`
 #### Validation & Testing
 1. List workspace members via Admin API for each workspace
 2. Verify no workspace has more than 2 `workspace_admin` members (excluding inherited org admins)
-3. Confirm removed users cannot access workspace resources
+3. Confirm removed users can no longer sign in to workspace resources — but do **not** treat removal as key revocation: standard workspace API keys are scoped to the organization/workspace, not the person, and **keys created by a removed user keep working**. Pair every membership removal with a key rotation pass (see 1.2). The one exception is the Claude Code workspace, whose per-user keys stop working when their owner is removed.
 
-**Expected result:** Each workspace has only authorized members at appropriate role levels
+**Expected result:** Each workspace has only authorized members at appropriate role levels, and offboarding always pairs membership removal with key rotation
 
 #### Compliance Mappings
 
@@ -420,6 +442,76 @@ Assign users to only the workspaces they need. Workspace roles (`workspace_user`
 | **SOC 2** | CC6.2, CC6.3 | Access provisioning; role-based access |
 | **NIST 800-53** | AC-2, AC-6 | Account management; least privilege |
 | **ISO 27001** | A.9.2.5 | Review of user access rights |
+
+---
+
+### 2.3 Adapt Controls for Claude Platform on AWS
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-3, AC-6, AU-2, SC-12 |
+| CIS Controls | 4.6, 8.5 |
+
+#### Description
+If your organization consumes Claude through **Claude Platform on AWS** (base URL `aws-external-anthropic.{region}.api.aws`, SigV4 service name `aws-external-anthropic`, required `anthropic-workspace-id` header on every call), most of this guide's Admin-API-driven controls do not apply as written and must be re-implemented with AWS-native mechanisms. Only the workspace endpoints (create, get, list, update, archive on `/v1/organizations/workspaces`) exist; organization members, workspace members, invites, API keys, usage reports, cost reports, and rate-limit reports are absent.
+
+#### Rationale
+**Why This Matters:**
+
+- The §1 key-inventory/rotation validations, §2.2 member listing, and §4.1 usage/cost reporting all call Admin API endpoints that **do not exist** on this platform — running them "successfully" against the wrong org, or assuming their coverage, is a silent audit gap
+- Access control moves to AWS IAM: policies target workspace ARNs (`arn:aws:aws-external-anthropic:{region}:{account-id}:workspace/{workspace-id}`) with actions in the `aws-external-anthropic` namespace, and AWS ships five managed policies (`AnthropicFullAccess`, `AnthropicReadOnlyAccess`, `AnthropicInferenceAccess`, `AnthropicLimitedAccess`, `AnthropicSelfHostedEnvironmentAccess`)
+- Two hardening levers exist here that the first-party API has no equivalent for: denying the `aws-external-anthropic:CallWithBearerToken` IAM action forces SigV4-only authentication (no bearer tokens at all), and where bearer tokens are unavoidable, short-term API keys minted from AWS credentials are capped at 12 hours
+- The AWS region binding **does not pin inference geography** — Anthropic (not AWS) is the inference data processor, and data may route to Anthropic's primary cloud; pinning requires `inference_geo` per request or a workspace `default_inference_geo`
+- Monitoring shifts to CloudTrail, where only workspace, compliance, vault, and webhook operations are Management events; **inference, batch, file, skill, and model operations are Data events requiring explicit (paid) data-event logging** — default CloudTrail config silently misses the traffic that matters most
+
+**Attack Prevented:** Silent audit-coverage gaps on the AWS variant, unbounded bearer-token authentication, unlogged inference activity, mistaken data-residency assumptions
+
+#### Prerequisites
+
+- Confirmation of which platform variant each business unit actually uses
+- AWS account admin for IAM policy and CloudTrail configuration
+- One-time account prerequisite: `aws iam enable-outbound-web-identity-federation` (disabled by default; its absence is the most common setup failure)
+
+#### ClickOps Implementation
+
+**Step 1: Map This Guide's Controls to the AWS Variant**
+
+1. For each Admin-API-driven control in this guide, record its AWS substitute: membership → IAM policies on workspace ARNs; key inventory → short-term keys + `CallWithBearerToken` governance; usage/cost → Console dashboards + CloudTrail
+
+**Step 2: Force SigV4 Where Possible**
+
+1. Deny `aws-external-anthropic:CallWithBearerToken` for all principals that do not strictly need bearer tokens
+2. Where bearer tokens are unavoidable (gateways, serverless), mint short-term keys via AWS's token-generator libraries — lifetime defaults to 12 hours, capped at the lesser of the requested duration, the AWS credentials' expiry, and 12 hours
+
+**Step 3: Enable Data-Event Logging**
+
+1. In CloudTrail, add data-event logging for the `aws-external-anthropic` service so inference, batch, file, skill, and model operations are captured
+2. Index on `x-amzn-requestid` for CloudTrail correlation
+
+**Step 4: Pin Inference Geography Deliberately**
+
+1. Set `default_inference_geo` on residency-sensitive workspaces (supported geos: `us` — with a 1.1x pricing multiplier — and `global`), or pass `inference_geo` per request
+2. Note ZDR is opt-in and Anthropic's HIPAA-ready program is **not available** on this variant
+
+**Time to Complete:** ~2–4 hours initial mapping and IAM work
+
+#### Validation & Testing
+1. Attempt a bearer-token call from a principal denied `CallWithBearerToken` — must fail; SigV4 from the same principal must succeed
+2. Run an inference call and confirm it appears in CloudTrail as a Data event
+3. Confirm every workspace serving residency-sensitive workloads carries `default_inference_geo`
+
+**Expected result:** Every control in this guide has an explicit AWS-variant disposition; no bearer tokens outside approved principals; inference activity visible in CloudTrail. ([Claude Platform on AWS](https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws))
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1, CC7.2 | Access security; monitoring |
+| **NIST 800-53** | AC-6 | Least privilege |
+| **NIST 800-53** | AU-2 | Event logging |
+| **ISO 27001** | A.8.15 | Logging |
 
 ---
 
@@ -442,6 +534,7 @@ Configure data residency at the workspace level to control where Claude processe
 - Regulatory requirements (GDPR, data sovereignty laws) may mandate processing within specific regions
 - `workspace_geo` cannot be changed after workspace creation — plan carefully
 - The `inference_geo` parameter can also be set per-request by API callers, but `allowed_inference_geos` restricts what values are permitted
+- **Model floor (verified 2026-08-15):** the per-request `inference_geo` parameter is supported on Claude 4.6 and later models — requests carrying it on Claude Opus 4.5, Sonnet 4.5, or Haiku 4.5 return a `400` error, and models released before February 2026 report `not_available` in usage reports for this dimension. Residency-restricted workspaces must therefore also pin allowed model versions
 
 **Attack Prevented:** Data sovereignty violations, regulatory non-compliance
 
@@ -453,7 +546,7 @@ Configure data residency at the workspace level to control where Claude processe
 #### ClickOps Implementation
 
 **Step 1: Audit Current Settings**
-1. Navigate to: **console.anthropic.com** → **Settings** → **Workspaces**
+1. Navigate to: **platform.claude.com** → **Settings** → **Workspaces**
 2. Review each workspace's data residency configuration
 3. Note any workspaces without explicit geo settings
 
@@ -560,7 +653,9 @@ Understand and configure Anthropic's data retention policies. By default, API in
 | SOC 2 | CC7.2 |
 
 #### Description
-Use Anthropic's Admin API usage and cost reporting endpoints to monitor token consumption, request patterns, and spending across workspaces. The usage API supports 1-minute, 1-hour, and 1-day bucket granularity with filtering by model, workspace, API key, service tier, and geography.
+Use Anthropic's Admin API usage and cost reporting endpoints to monitor token consumption, request patterns, and spending across workspaces. The usage API supports 1-minute, 1-hour, and 1-day bucket granularity with filtering and grouping by API key, workspace, model, service tier, context window (e.g. `context_window[]=0-200k`), data residency (`inference_geo`: `global`, `us`, `not_available`), and — behind the `fast-mode-2026-02-01` beta header — speed (`standard`/`fast`).
+
+> **Scope and mechanics (verified 2026-08-15):** this Admin API applies to Claude Console organizations with an `sk-ant-admin01-` key. Claude Enterprise (claude.ai) orgs don't appear in Console and carry no Admin API keys — their usage/cost reporting is the Claude Enterprise Analytics API with an Analytics key; Claude Platform on AWS has no programmatic usage/cost endpoints at all (see 2.3). Bucket caps per request: 1m = 60 default/1,440 max, 1h = 24/168, 1d = 7/31, paginated via `has_more`/`next_page`; polling once per minute is the supported sustained cadence. The cost endpoint is daily-only (`1d`), reports decimal-string cents USD, **excludes Priority Tier** (track via the usage endpoint's `service_tier` = `priority`), and is the only place code-execution costs appear. Models released before February 2026 always report `not_available` for `inference_geo` — those rows are not residency violations. For per-user Claude Code cost attribution, Anthropic's sanctioned path is the Claude Code Analytics API, not per-key usage breakdowns. Every Claude API response also carries an `anthropic-workspace-id` header — log it to attribute traffic and to catch keys running in the wrong workspace (absent on Admin API calls and pre-auth failures like 401s).
 
 #### Rationale
 **Why This Matters:**
@@ -578,12 +673,12 @@ Use Anthropic's Admin API usage and cost reporting endpoints to monitor token co
 #### ClickOps Implementation
 
 **Step 1: Review Usage Dashboard**
-1. Navigate to: **console.anthropic.com** → **Usage**
+1. Navigate to: **platform.claude.com** → **Usage**
 2. Review token usage charts, rate limit utilization, and cache rates
 3. Filter by workspace, model, and time period
 
 **Step 2: Review Cost Dashboard**
-1. Navigate to: **console.anthropic.com** → **Cost**
+1. Navigate to: **platform.claude.com** → **Cost**
 2. Review cost breakdown by workspace and model
 3. Identify any unexpected cost increases
 
@@ -641,16 +736,14 @@ Set per-workspace spend limits and rate limits to prevent cost overruns and abus
 #### ClickOps Implementation
 
 **Step 1: Set Organization-Level Limits**
-1. Navigate to: **console.anthropic.com** → **Settings** → **Limits**
+1. Navigate to: **platform.claude.com** → **Settings** → **Limits**
 2. Review and configure organization-level spend limits
 3. For custom limits beyond Tier 4, contact Anthropic sales
 
 **Step 2: Set Workspace-Level Limits**
-1. Navigate to the target workspace → **Settings** → **Limits**
-2. Configure:
-   - **Monthly spend limit:** Set below org limit (e.g., $500 for dev, $5000 for prod)
-   - **Rate limits:** RPM, ITPM, OTPM per model as needed
-3. Repeat for each workspace
+1. Navigate to the target workspace: limits are split across two tabs — the **Rate limits** tab (per model tier: requests/min, input tokens, output tokens) and the **Spend limits** tab (monthly cap plus threshold alerts)
+2. Set the monthly spend cap below the org limit (e.g., $500 for dev, $5000 for prod) and rate limits as needed
+3. Repeat for each workspace — except the **Default Workspace**, which cannot carry limits at all (the mitigation is keeping production keys out of it, per 2.1); unset workspace limits inherit the organization's limits, and org-wide limits always apply even when per-workspace limits sum higher
 
 **Time to Complete:** ~5 minutes per workspace
 
@@ -662,8 +755,9 @@ Set per-workspace spend limits and rate limits to prevent cost overruns and abus
 1. Verify spend limits are set for every workspace via Console
 2. Run cost anomaly detection script to validate monitoring
 3. Test that requests return 429 when rate limits are exceeded (check `retry-after` header)
+4. Audit configured limits programmatically with the read-only **Rate Limits API** (verified 2026-08-15): `GET /v1/organizations/rate_limits` returns org-level limits grouped by `group_type` (`model_group`, `batch`, `token_count`, `files`, `skills`, `web_search`) with `limiter` `{type, value}` pairs; `GET /v1/organizations/workspaces/{workspace_id}/rate_limits` returns only workspace **overrides** with org-limit comparison values — a workspace absent from the response has no overrides. The API cannot write limits (Console only). ([Rate Limits API](https://platform.claude.com/docs/en/manage-claude/rate-limits-api))
 
-**Expected result:** Every workspace has explicit spend and rate limits configured
+**Expected result:** Every non-default workspace has explicit spend and rate limits configured, and the configuration is auditable in code rather than by Console screenshot
 
 #### Compliance Mappings
 
@@ -686,8 +780,8 @@ Per-control compliance mappings appear inside each control above. For organizati
 
 See the [Anthropic platform hub references](/guides/anthropic-claude/#appendix-b-references) for the shared reference list; key API/Console sources:
 
-- [Anthropic API Documentation](https://docs.anthropic.com/en/api/)
-- [Admin API Reference](https://docs.anthropic.com/en/api/administration-api)
+- [Claude API Documentation](https://platform.claude.com/docs/en/api/overview)
+- [Admin API Reference](https://platform.claude.com/docs/en/api/admin)
 
 ---
 
@@ -695,6 +789,7 @@ See the [Anthropic platform hub references](/guides/anthropic-claude/#appendix-b
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1.0 | 2026-08-15 | Admin API currency pass. §1.2 rewritten around native key expiration: creation-time presets/custom/Never, the organization maximum-expiration policy that removes Never entirely, `expires_at` auditing (null = finding), 401 at expiry, creator warning emails. §1.3 WIF updated: the Connect-workload wizard as the documented setup path (per-provider tiles, Verify-issuer JWKS dry-run, 15-minute exchange listener, 600s prefill vs the 3600s API default), the grown OAuth scope set (`workspace:inference`, `workspace:manage_tunnels`, Console-only `org:admin` rules targeting admin-role service accounts), the fork-PR wildcard-subject attack with the protected-branch pin, the 2×-remaining-IdP-JWT token-lifetime cap, implicit default-workspace service-account membership, and the OAuth-only WIF Admin API endpoints. §2.1 gains the special-workspace handling (Default Workspace cannot carry limits and reports null `workspace_id`; archiving the auto-created Claude Code workspace disables org-wide Claude Code sign-in) and the prompt-cache isolation platform split. §2.2 corrected: five workspace roles including Workspace Limited Developer, billing-role inheritance, and the offboarding fix — standard workspace keys survive member removal and demand a rotation pass. NEW §2.3: Claude Platform on AWS variant (workspace-endpoints-only Admin API, IAM policies on workspace ARNs, `CallWithBearerToken` denial forcing SigV4, 12-hour short-term keys, CloudTrail data-event logging gap, AWS region does not pin inference geography). §3.1: `inference_geo` model floor (Claude 4.6+; 400 on 4.5-generation). §4.1: expanded dimensions (context window, speed beta, `inference_geo` with the pre-Feb-2026 `not_available` caveat), bucket caps and pagination, cost-endpoint mechanics (daily-only, cents strings, Priority Tier excluded, code-execution only here), and the `anthropic-workspace-id` response header. §4.2: split Rate-limits/Spend-limits tabs and read-only Rate Limits API validation. All ClickOps hosts canonicalized to platform.claude.com. |
 | 1.0.0 | 2026-08-03 | Split out of the monolithic Anthropic Claude guide as part of the multi-product platform restructure; carries the API key, workspace, data, and usage controls (formerly sections 2-5) renumbered into four sections. |
 
 ## Contributing

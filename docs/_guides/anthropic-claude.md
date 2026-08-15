@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "AI/ML Platform"
 description: "Platform-wide security hardening for Anthropic — the Common Controls hub (SSO, organization roles, admin API keys, integration governance) shared by the Claude Enterprise, Claude Code, and Claude API & Console product guides."
-version: "1.0.2"
+version: "1.1.0"
 maturity: "draft"
-last_updated: "2026-08-08"
+last_updated: "2026-08-15"
 ---
 
 ## Overview
@@ -91,7 +91,7 @@ Configure SAML 2.0 or OIDC-based SSO to authenticate Claude users through your c
 #### ClickOps Implementation
 
 **Step 1: Access Identity & Access Settings**
-1. Navigate to: **console.anthropic.com** → **Settings** → **Identity & Access**
+1. Navigate to: **platform.claude.com** → **Settings** → **Identity & Access**
 2. Click **Configure SSO**
 
 **Step 2: Configure SSO via WorkOS**
@@ -169,14 +169,15 @@ Configure SAML 2.0 or OIDC-based SSO to authenticate Claude users through your c
 | SOC 2 | CC6.1, CC6.3 |
 
 #### Description
-Assign the minimum necessary organization role to each user. Anthropic provides six organization roles: `user`, `developer`, `billing`, `admin`, `claude_code_user`, and `managed`. Limit the `admin` role to a small number of trusted operators.
+Assign the minimum necessary organization role to each user. The role model differs by organization type, and the Admin API's `role` enum is wider than either product's assignable set — audit scripts must handle every value. **Claude Console / API organizations** assign `user`, `claude_code_user`, `developer`, `billing`, and `admin` (the Console UI additionally offers a **Limited Developer** tier between `user` and `developer`); above `admin` sit `owner` and `primary_owner`, which hold all admin permissions and additionally manage admins. **Claude Enterprise (claude.ai) organizations** manage members with `user` and `managed` via the API, and the enum also carries `membership_admin`. Limit the `admin` role (and its owner tiers) to a small number of trusted operators.
 
 #### Rationale
 **Why This Matters:**
-- The `admin` role can provision Admin API keys, manage all workspaces, and remove users
+- The `admin` role can provision Admin API keys, manage all workspaces, and remove users; `owner`/`primary_owner` additionally manage admins — the audit boundary is the whole elevated tier, not just `admin`
 - Admins automatically inherit `workspace_admin` in every workspace
-- The Admin API deliberately prevents assigning the `admin` role programmatically — a security design decision
+- The Admin API deliberately prevents assigning the `admin` role programmatically — the update endpoint documents: "Console and API organizations accept `user`, `developer`, `billing`, and `claude_code_user`; `admin` cannot be assigned through the API. Claude Enterprise organizations (beta) accept `user` and `managed`"
 - Admins cannot be removed via API — only through the Console
+- A role-audit script that only recognizes the classic four roles silently miscounts organizations using `claude_code_user`, `managed`, `membership_admin`, or the owner tiers — the full documented enum is `user`, `claude_code_user`, `developer`, `billing`, `admin`, `managed`, `membership_admin`, `owner`, `primary_owner`
 
 **Attack Prevented:** Privilege escalation, unauthorized admin key provisioning, insider threat
 
@@ -187,7 +188,7 @@ Assign the minimum necessary organization role to each user. Anthropic provides 
 #### ClickOps Implementation
 
 **Step 1: Review Current Role Assignments**
-1. Navigate to: **console.anthropic.com** → **Settings** → **Members**
+1. Navigate to: **platform.claude.com** → **Settings** → **Members**
 2. Review each member's role
 3. Document justification for each admin and billing role holder
 
@@ -245,38 +246,44 @@ Assign the minimum necessary organization role to each user. Anthropic provides 
 | SOC 2 | CC6.1, CC6.6 |
 
 #### Description
-Admin API keys (`sk-ant-admin...`) grant organization-wide management access. They can only be created through the Console by users with the `admin` role — a deliberate security design. Treat Admin API keys with the same care as cloud provider root credentials.
+Admin credentials grant organization-wide management access — treat them with the same care as cloud provider root credentials. The credential model is now two-track, and differs by organization type. **Claude Console organizations** create Admin API keys (`sk-ant-admin01-...`) at **Console → Settings → Admin keys** (admin role required); Console admin keys have **no selectable scopes** — every key carries full access to all endpoints that accept admin keys. **Claude Enterprise (claude.ai) organizations** create *scoped* keys (`sk-ant-api01-...`) at **claude.ai → Organization settings → API**: the parent org's **primary owner** can create keys for all linked organizations, while an **organization owner** can create only Compliance-scoped keys restricted to their own organization. Separately, the Admin API also accepts a short-lived **OAuth bearer token with the `org:admin` scope** — and the service-account, federation-issuer, and federation-rule endpoints accept *only* that OAuth token, never an admin key.
 
 #### Rationale
 **Why This Matters:**
 - Admin keys can list all users, manage all workspaces, disable API keys, and view usage data
-- Unlike standard API keys, admin keys are not scoped to a single workspace
-- Compromise of an admin key exposes the entire organization's Claude infrastructure
+- Unlike standard API keys, Console admin keys are not scoped to a single workspace — and cannot be scoped down at all, which makes each one a full-tenant credential
+- A key created in one organization cannot manage another — organizations running both Console and Enterprise need one key per org, each inventoried separately
+- The short-lived OAuth path (`org:admin`) exists precisely so interactive and break-glass administration need not mint another static full-access secret
 
 **Attack Prevented:** Organization takeover, unauthorized workspace creation, data exfiltration via usage APIs
 
 #### Prerequisites
-- Organization Admin access
+- Organization Admin access (Console) / primary owner or organization owner (Enterprise)
 - Secrets management solution (Vault, AWS Secrets Manager, etc.)
 
 #### ClickOps Implementation
 
 **Step 1: Audit Existing Admin Keys**
-1. Navigate to: **console.anthropic.com** → **Settings** → **Admin Keys**
+1. Navigate to: **Console → Settings → Admin keys** (Console orgs) and **claude.ai → Organization settings → API → Keys** (Enterprise orgs)
 2. Review all provisioned admin keys
 3. Identify and revoke any keys without a clear owner or purpose
 
 **Step 2: Establish Key Hygiene**
 1. Name each admin key descriptively (e.g., "CI/CD Org Audit — TeamName")
-2. Store keys in a secrets manager — never in source code, env files, or chat
-3. Rotate admin keys every 90 days
+2. **Set an expiration at creation.** Key expiration is chosen when the key is created (presets from 3 hours to 30 days, custom durations, or Never) and cannot be changed afterward; the same expiration choice applies to Admin API keys. If your organization has a **maximum expiration policy**, the Console limits the choices and **Never** becomes unavailable — adopt that policy so unexpiring admin keys cannot be minted at all
+3. Store keys in a secrets manager — never in source code, env files, or chat
+4. Rotate admin keys on a schedule; audit each key's `expires_at` via the Admin API (the field is `null` for non-expiring keys — treat those as findings)
 
 **Step 3: Limit Admin Key Provisioning**
 1. Restrict admin role to 2-3 trusted operators (see Control 1.2)
 2. Require documented approval before provisioning new admin keys
 3. Log all admin key creation events
 
-**Time to Complete:** ~10 minutes
+**Step 4: Prefer the OAuth Path for Interactive Administration**
+1. For human-driven admin work, use an `org:admin` OAuth bearer token via the `ant` CLI under a dedicated profile (`ant auth login --profile admin --scope "org:admin"`) instead of handling a static admin key — interactive tokens are short-lived and refresh on demand
+2. Reserve static admin keys for non-interactive integrations that cannot complete an OAuth flow, and consider Workload Identity Federation for CI (see the [Claude API guide](/guides/anthropic-api/))
+
+**Time to Complete:** ~15 minutes
 
 #### Code Implementation
 
@@ -371,7 +378,7 @@ Regularly audit pending organization invites. Invites in Anthropic expire after 
 #### ClickOps Implementation
 
 **Step 1: Review Pending Invites**
-1. Navigate to: **console.anthropic.com** → **Settings** → **Members** → **Invites**
+1. Navigate to: **platform.claude.com** → **Settings** → **Members** → **Invites**
 2. Review each pending invite: email, role, creation date
 3. Revoke any invite where the recipient is unknown or no longer needed
 
@@ -600,13 +607,15 @@ Assess the security posture of applications and services that consume your Claud
 ## Appendix B: References
 
 **Official Anthropic Documentation:**
-- [Admin API Overview](https://docs.anthropic.com/en/docs/build-with-claude/administration)
-- [Admin API Reference](https://docs.anthropic.com/en/api/admin-api)
-- [Workspaces Guide](https://docs.anthropic.com/en/docs/build-with-claude/workspaces)
-- [Rate Limits](https://docs.anthropic.com/en/api/rate-limits)
-- [Data Residency](https://docs.anthropic.com/en/docs/build-with-claude/data-residency)
-- [Zero Data Retention](https://docs.anthropic.com/en/docs/build-with-claude/zero-data-retention)
-- [Usage and Cost API](https://docs.anthropic.com/en/docs/build-with-claude/usage-cost-api)
+- [Admin API Overview](https://platform.claude.com/docs/en/manage-claude/admin-api)
+- [Admin API Reference](https://platform.claude.com/docs/en/api/admin)
+- [Create an Admin API Key (both org types + Enterprise scope table)](https://platform.claude.com/docs/en/manage-claude/admin-api-keys)
+- [Authentication & Key Expiration](https://platform.claude.com/docs/en/manage-claude/authentication)
+- [Workspaces Guide](https://platform.claude.com/docs/en/manage-claude/workspaces)
+- [Rate Limits](https://platform.claude.com/docs/en/api/rate-limits)
+- [Data Residency](https://platform.claude.com/docs/en/manage-claude/data-residency)
+- [API Data Retention (incl. Zero Data Retention)](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention)
+- [Usage and Cost API](https://platform.claude.com/docs/en/manage-claude/usage-cost-api)
 
 **Identity Provider Integration:**
 - [SSO Setup Guide](https://support.anthropic.com/en/articles/13132885-setting-up-single-sign-on-sso)
@@ -670,6 +679,7 @@ Assess the security posture of applications and services that consume your Claud
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-15 | 1.1.0 | draft | Admin API currency pass against platform.claude.com. §1.2 role model corrected to the two-org-type picture: five Console/API roles plus the Console UI's Limited Developer tier, `owner`/`primary_owner` above admin, `managed`/`membership_admin` on the Enterprise side, and the full nine-value API role enum documented so audit scripts stop silently miscounting; the admin-assignment and admin-removal API blocks are now quoted from the current references. §1.3 rebuilt on the two-track credential model — Console admin keys (`sk-ant-admin01-`, no selectable scopes) vs Claude Enterprise scoped keys (`sk-ant-api01-`, 12-scope table, primary-owner/org-owner creation split) — plus key expiration at creation, the organization maximum-expiration policy, the `org:admin` OAuth bearer path via the `ant` CLI (dedicated admin profile, `sk-ant-oat01-` prefix added for secret-scanning coverage), and the WIF-endpoints carve-out (service-account/federation endpoints reject admin keys). References moved to canonical platform.claude.com URLs — two of the old docs.anthropic.com links were dead 404s. Roles pack rewritten to count the full enum and the elevated tier; rotation pack now audits `expires_at`. | `Claude Code (Opus 5)` |
 | 2026-02-21 | 0.1.0 | draft | Initial guide: 12 controls across 6 categories, API pack scripts for Admin API | `Claude Code (Opus 4.6)` |
 | 2026-02-21 | 0.2.0 | draft | Added Section 7: Claude Code Enterprise Controls — MDM managed settings, permission restrictions, MCP server control, developer analytics | `Claude Code (Opus 4.6)` |
 | 2026-02-21 | 0.3.0 | draft | Added MDM config templates (L1/L2/L3 profiles), permission deny rule examples, sandbox config, managed-mcp.json template, MCP allowlist/denylist config | `Claude Code (Opus 4.6)` |

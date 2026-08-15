@@ -8,12 +8,25 @@ banner "2.2: Rotate API Keys Regularly"
 require_admin_key
 
 # HTH Guide Excerpt: begin api-find-stale-keys
-# Identify API keys that have not been rotated within 90 days
-info "Checking for stale API keys (>90 days since creation)..."
+# Two-part key-lifetime audit.
+#   Part 1 — NON-EXPIRING keys: the Admin API reports each key's expires_at
+#   (null = never expires). With native key expiration available, expires_at
+#   == null is a finding in itself, not an unavoidable state.
+#   Part 2 — stale keys: anything older than the 90-day rotation window.
+info "Auditing key expirations and staleness..."
 API_KEYS=$(anthropic_list_all "/v1/organizations/api_keys?status=active") || {
   fail "2.2 Failed to list API keys"
   summary; exit 0
 }
+
+NEVER_EXPIRING=$(echo "${API_KEYS}" | jq '[.[] | select(.expires_at == null)]')
+NEVER_COUNT=$(echo "${NEVER_EXPIRING}" | jq 'length')
+if [[ "${NEVER_COUNT}" -gt 0 ]]; then
+  warn "2.2 ${NEVER_COUNT} active keys NEVER expire (expires_at=null) — prefer expiring keys; adopt the org maximum expiration policy"
+  echo "${NEVER_EXPIRING}" | jq -r '.[] | "  \(.name // "unnamed") | Created: \(.created_at) | Workspace: \(.workspace_id)"'
+else
+  pass "2.2 Every active key carries an expiration (expires_at set)"
+fi
 
 CUTOFF=$(date -d '90 days ago' '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || \
          date -v-90d '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null)
@@ -24,7 +37,7 @@ STALE_COUNT=$(echo "${STALE_KEYS}" | jq 'length')
 
 if [[ "${STALE_COUNT}" -gt 0 ]]; then
   warn "2.2 ${STALE_COUNT} API keys are older than 90 days:"
-  echo "${STALE_KEYS}" | jq -r '.[] | "  \(.name // "unnamed") | Created: \(.created_at) | Workspace: \(.workspace_id)"'
+  echo "${STALE_KEYS}" | jq -r '.[] | "  \(.name // "unnamed") | Created: \(.created_at) | Expires: \(.expires_at // "never") | Workspace: \(.workspace_id)"'
 else
   pass "2.2 All API keys are within 90-day rotation window"
 fi
