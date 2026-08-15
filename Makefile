@@ -8,7 +8,7 @@
 #   - Ruby + Bundler (Jekyll build — CI only unless installed locally)
 
 .PHONY: help test test-all lint lint-content test-build \
-        test-build-jekyll test-build-sync
+        test-build-jekyll test-build-sync validate-packs
 
 # ─── Default ──────────────────────────────────────────────────────────────────
 
@@ -28,6 +28,9 @@ lint: lint-content ## Run all linters
 
 lint-content: ## Validate guide formatting, frontmatter, tables (7 checks)
 	@bash scripts/validate-guides.sh
+
+validate-packs: ## Validate pack corpus — collisions, schema, markers, syntax, sync freshness (14 checks)
+	@bash scripts/validate-packs.sh
 
 # ─── Build Verification ───────────────────────────────────────────────────────
 

@@ -89,6 +89,7 @@ This repo ships skills in `.claude/skills/` that encode the core workflows as pr
 | `update-hth-guide` | Currency updates, corrections, adding controls to existing guides |
 | `create-code-pack` | Any pack authoring or pack wiring |
 | `verify-hth` | The pre-commit verification battery (run after every change) |
+| `validate-hth-guide` | Proving ClickOps steps, Code Packs, and OCEAN scanning actually work — and iterating until they do |
 
 Source-selection standards (hardening guide vs Trust Center; which third parties are authoritative — CIS, DISA, CISA SCuBA, NIST, and the expert-vendor standing list) live in [SOURCES.md](SOURCES.md) — all four skills depend on it.
 
