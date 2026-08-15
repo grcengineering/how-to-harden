@@ -582,6 +582,20 @@ looker:
   api_docs: "https://docs.cloud.google.com/looker/docs/reference/looker-api/latest"
   hardening_docs: "https://cloud.google.com/looker/docs/best-practices/how-to-keep-looker-secure"
 
+lovable:
+  product_docs: "https://docs.lovable.dev"
+  api_docs: "https://docs.lovable.dev/features/business/scim"
+  hardening_docs:
+    - label: "Privacy & Security Settings"
+      url: "https://docs.lovable.dev/features/privacy-and-security-settings"
+    - label: "Security Scans & Features"
+      url: "https://docs.lovable.dev/features/security"
+    - label: "Security Best Practices"
+      url: "https://docs.lovable.dev/tips-tricks/security-best-practices"
+    - label: "Audit Logs"
+      url: "https://docs.lovable.dev/features/audit-logs"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/lovable"
+
 mailchimp:
   product_docs: "https://mailchimp.com/help/"
   api_docs: "https://mailchimp.com/developer/"
@@ -773,6 +787,20 @@ sailpoint:
     - label: "Security Integrations"
       url: "https://documentation.sailpoint.com/saas/help/security/security_integrations.html"
 
+replit:
+  product_docs: "https://docs.replit.com"
+  api_docs: "https://docs.replit.com/teams/admin-api"
+  hardening_docs:
+    - label: "Enterprise Privacy & Governance Settings"
+      url: "https://docs.replit.com/teams/enterprise-privacy-settings"
+    - label: "Project Security Center"
+      url: "https://docs.replit.com/features/security/project-security-center"
+    - label: "Workspace Security Center"
+      url: "https://docs.replit.com/features/security/workspace-security-center"
+    - label: "Private Deployments"
+      url: "https://docs.replit.com/features/publishing/private-deployments"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/replit"
+
 salesforce:
   product_docs: "https://help.salesforce.com/"
   api_docs: "https://developer.salesforce.com/docs/apis"
@@ -934,6 +962,18 @@ vercel:
       url: "https://vercel.com/docs/vercel-firewall"
     - label: "WAF Custom Rules"
       url: "https://vercel.com/docs/vercel-firewall/vercel-waf/custom-rules"
+
+windows-11:
+  product_docs: "https://learn.microsoft.com/en-us/windows/"
+  api_docs: ""
+  hardening_docs:
+    - label: "Windows Security Baselines"
+      url: "https://learn.microsoft.com/en-us/windows/security/operating-system-security/device-management/windows-security-configuration-framework/windows-security-baselines"
+    - label: "Configure Windows Diagnostic Data"
+      url: "https://learn.microsoft.com/en-us/windows/privacy/configure-windows-diagnostic-data-in-your-organization"
+    - label: "Manage Connections to Microsoft Services (Restricted Traffic)"
+      url: "https://learn.microsoft.com/en-us/windows/privacy/manage-connections-from-windows-operating-system-components-to-microsoft-services"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/windows-11"
 
 webex:
   product_docs: "https://help.webex.com/"
