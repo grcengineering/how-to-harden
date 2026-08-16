@@ -21,7 +21,7 @@ This file (AGENTS.md) provides **AI-specific guidance only**—it does not dupli
 
 ## Authoring Playbooks — Use These For Core Workflows
 
-Four prescriptive, step-by-step playbooks live in `.claude/skills/`. They auto-load as skills in Claude Code, and they are plain markdown any agent or human can open and follow. **For the tasks below, follow the playbook rather than improvising:**
+Five prescriptive, step-by-step playbooks live in `.claude/skills/`. They auto-load as skills in Claude Code, and they are plain markdown any agent or human can open and follow. **For the tasks below, follow the playbook rather than improvising:**
 
 | Task | Playbook |
 |------|----------|
@@ -29,6 +29,9 @@ Four prescriptive, step-by-step playbooks live in `.claude/skills/`. They auto-l
 | Currency update, correction, adding a control | [.claude/skills/update-hth-guide/SKILL.md](.claude/skills/update-hth-guide/SKILL.md) |
 | Any Code Pack authoring or wiring | [.claude/skills/create-code-pack/SKILL.md](.claude/skills/create-code-pack/SKILL.md) |
 | Pre-commit verification (every change) | [.claude/skills/verify-hth/SKILL.md](.claude/skills/verify-hth/SKILL.md) |
+| Proving ClickOps/packs/OCEAN actually work; pack-corpus integrity | [.claude/skills/validate-hth-guide/SKILL.md](.claude/skills/validate-hth-guide/SKILL.md) |
+
+`verify-hth` asks *does this render correctly*; `validate-hth-guide` asks *does this actually work* — structural vs. semantic, and they are not substitutes.
 
 The Task Procedures below remain as quick reference; the playbooks are the full processes.
 

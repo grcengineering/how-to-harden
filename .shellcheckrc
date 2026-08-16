@@ -1,0 +1,39 @@
+# ShellCheck configuration for the HTH Code Pack corpus.
+#
+# Every exclusion below is justified by a measured, structural property of the
+# pack system — not by "it was noisy." Adding a code here without that evidence
+# is a suppression, and the validate-hth-guide skill treats it as a failure
+# disguised as a fix. Fix the code instead.
+#
+# Measured on the corpus at time of writing: 77 findings at -S warning across
+# 49 files. The three exclusions below account for 48 of them; the remaining
+# ~13 (SC2046, SC2155, SC2128, …) are genuine and are being fixed, not silenced.
+
+# SC1083 — "This { is literal."
+# 16 instances, all from the GitHub CLI's own path-template syntax:
+#   gh api /orgs/{org}/…
+# The braces are literal input to `gh`, not shell expansion. Unfixable without
+# breaking the documented command.
+disable=SC1083
+
+# SC2034 — "Variable appears unused."
+# 30 instances. Packs are excerpted: `HTH Guide Excerpt: begin/end` markers pull
+# a SUBSET of the file into the guide, so a variable assigned inside one region
+# and consumed outside it reads as unused to a whole-file linter. Structural to
+# the pack system.
+disable=SC2034
+
+# SC1090/SC1091 — "Can't follow non-constant source."
+# The mandated shared-library idiom across all 18 vendor `common.sh` files:
+#   source "$(dirname "$0")/common.sh"
+# The path is intentionally relative so a pack stays runnable from any checkout.
+disable=SC1090
+disable=SC1091
+
+# NOT excluded, deliberately:
+#   SC2148 (missing shebang)  — that is a real defect; validate-packs.sh check 6.
+#   SC1072/SC1073/SC1078/…    — parse errors. Files that legitimately cannot parse
+#                               (documentation snippets with <placeholder> tokens)
+#                               declare themselves with an in-file directive:
+#                                 # HTH Pack Directive: doc-snippet — <reason>
+#                               which validate-packs.sh check 7 validates in turn.

@@ -160,6 +160,11 @@ See the [template usage notes](templates/vendor-guide-template.md#template-usage
 - [ ] Check all external links
 - [ ] Verify table formatting (blank lines before/after)
 
+Most of this checklist is now automated. Run `make validate-packs` for pack-corpus
+integrity, and follow the [`validate-hth-guide`](.claude/skills/validate-hth-guide/SKILL.md)
+playbook to prove ClickOps steps, Code Packs, and OCEAN scanning actually work —
+it iterates fix→revalidate until nothing fixable is left failing.
+
 ### 5. Set Version and Maturity
 
 For new guides:

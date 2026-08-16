@@ -9,9 +9,9 @@ product: "Claude Enterprise (claude.ai)"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for Claude.ai Team and Enterprise plans — SSO and SCIM provisioning, roles and groups, audit log export, Compliance API, connector and Claude-in-Chrome governance, Cowork controls, and per-member spend limits."
-version: "0.1.0"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-08-03"
+last_updated: "2026-08-15"
 ---
 
 ## Overview
@@ -148,26 +148,30 @@ Keep the claude.ai role model tight: minimize primary owner/owner/admin counts, 
 
 #### Rationale
 **Why This Matters:**
-- claude.ai roles (primary owner, owners, admins, members) are distinct from the Console org roles — auditing one does not cover the other
+- claude.ai roles are distinct from the Console org roles — auditing one does not cover the other. The documented Enterprise role vocabulary is five values: `user`, `managed` (permissions come solely from the custom roles attached to the member's groups — the least-privilege target state), `owner`, `membership_admin` (can manage members), and `primary_owner` (exactly one)
 - Enterprise custom roles + groups are the mechanism that scopes risky capabilities (Chrome extension, Cowork cloud sessions) to the users who need them
 - Excess owners multiply the accounts able to change identity, connector, and data settings org-wide
 
 **Attack Prevented:** Privilege sprawl enabling org-wide settings tampering from any one compromised account
 
+> **The role model is now auditable — and partly manageable — in code (verified 2026-08-15).** A beta Admin API surface is enabled for all Claude Enterprise organizations at `https://api.anthropic.com/v1/organizations/`: members (list, lookup-by-email, change-role, remove), invites (create, list, withdraw), groups including per-group membership (full CRUD for `direct` groups), and read-only custom roles. Group and custom-role requests need the beta header `anthropic-beta: ce-user-management-2026-07-13` (404 without it). The API can assign only `user` and `managed`; the administrative roles are assigned only in claude.ai settings and members holding them cannot be modified via API. SCIM-provisioned groups (`source_type: scim`) are API-read-only — change them in the IdP. ([User management](https://platform.claude.com/docs/en/manage-claude/user-management))
+
 #### ClickOps Implementation
 
 1. Navigate to: **Organization settings** → **Members**
-2. Reduce owners/admins to the minimum named set; everyone else is a member
+2. Reduce owners/admins to the minimum named set; everyone else is a member — and prefer `managed` (custom-roles-only permissions) as the standard member state where the org uses groups seriously
 3. (Enterprise) Define groups synced from the IdP and create custom roles gating capabilities per group
 4. Add role review to your quarterly access-review cycle
+5. **Guard two API-side privilege paths:** invite automation that passes `rbac_group_ids` grants the permissions of the groups' attached roles at accept-time and requires `write:rbac_groups` — treat keys holding that scope at the same tier as membership-admin credentials. And **deleting a group drops its members' attached-role permissions AND stops any group spend limit applying to them** — a group deletion can silently lift a spend cap (see 4.1)
 
 **Time to Complete:** ~30 minutes
 
 #### Validation & Testing
 1. Owner/admin list matches the documented named set
 2. A member without the gated role cannot enable Cowork/Chrome capabilities
+3. Programmatic blanket-grant sweep: page `GET /v1/organizations/rbac_roles/{role_id}/permissions` for every custom role and flag any `organization` permission with action `capability_access_all` or `capability_access_all_ga` — these are blanket product-feature grants that defeat capability-gating
 
-**Expected result:** Capability access follows group membership; admin count minimal. ([Enterprise administrator guide](https://claude.com/resources/tutorials/claude-enterprise-administrator-guide))
+**Expected result:** Capability access follows group membership; admin count minimal; no custom role silently carries a blanket grant. ([Enterprise administrator guide](https://claude.com/resources/tutorials/claude-enterprise-administrator-guide))
 
 #### Compliance Mappings
 
@@ -190,7 +194,7 @@ Keep the claude.ai role model tight: minimize primary owner/owner/admin counts, 
 | NIST 800-53 | AU-2, AU-11 |
 
 #### Description
-Export the Enterprise audit log on a schedule and retain it in your own log store. The in-product export covers a 180-day lookback with a 24-hour download link, excludes chat titles/content, and exists on Enterprise only.
+Export the Enterprise audit log on a schedule and retain it in your own log store. The in-product export covers a 180-day lookback with a 24-hour download link, excludes chat titles/content, and exists on Enterprise only. Anthropic's own docs now position this export as "significantly narrower" than the Compliance API — "a capped lookback window, CSV download only, and no access to chat, file, or project content. Standardize on the Compliance API for ongoing programmatic use" — so treat this control as the floor and [2.2](#22-enable-the-compliance-api-with-least-privilege-keys) as the programmatic path.
 
 #### Rationale
 **Why This Matters:**
@@ -234,29 +238,38 @@ Export the Enterprise audit log on a schedule and retain it in your own log stor
 | NIST 800-53 | AU-6, AC-6 |
 
 #### Description
-Use the Compliance API (`/v1/compliance/activities` plus directory, effective-settings, and content endpoints) for programmatic audit and eDiscovery over claude.ai activity, and scope the Enterprise keys that access it to the minimum selectable scopes. Scopes are fixed at key creation.
+Use the Compliance API (`/v1/compliance/activities` plus directory, effective-settings, content, and session endpoints) for programmatic audit and eDiscovery over claude.ai activity, and scope the keys that access it to the minimum selectable scopes. Scopes are fixed at key creation. Coverage now extends well beyond claude.ai chat: the session endpoints return transcripts of **Cowork and Claude Code sessions run on users' machines** (local sessions, captured while signed in with the Enterprise account) and cloud Cowork sessions from claude.ai web/mobile (remote sessions), plus directory data and effective settings across every linked organization.
+
+> **Two key types reach this API — only one reaches all of it (verified 2026-08-15).** A **Compliance Access Key** (`sk-ant-api01-...`, created by the primary owner or an organization owner at **claude.ai → Organization settings → API**) reaches every Compliance API endpoint per its scopes. An **Admin API key** (`sk-ant-admin01-...`, created in the Claude Console) reaches the **Activity Feed only** — every other compliance endpoint returns `403`. Wire full-content tooling to a Compliance Access Key, not a Console admin key.
+
+> **The enablement toggle governs recording itself.** The primary owner enables the Compliance API at claude.ai → Organization settings → API (cascades to linked orgs); eligible standalone Console orgs have a self-service toggle at **Console → Settings → Security**. While the toggle is off, **no activity events are recorded and local Cowork/Claude Code transcripts are not captured — un-recorded activity cannot be recovered later.** Treat the toggle as a protected setting: turning it off is an audit-destruction action, and Admin API keys carry `read:compliance_activities` only if the Compliance API was enabled when the key was created.
 
 #### Rationale
 **Why This Matters:**
-- The Compliance API is the programmatic audit path for claude.ai — and the only audit path for organizations using customer-managed encryption keys
-- Enterprise keys carry selectable scopes (`read:compliance_activities`, `read:compliance_user_data`, `delete:compliance_user_data`, `read:org_audit`, and more) — an unscoped or over-scoped key is a standing exfiltration risk over your entire org's conversation content
+- The Compliance API is the programmatic audit path for claude.ai — the vendor's own docs position the in-product CSV export as "significantly narrower" and say to standardize on this API for programmatic use
+- The four Compliance Access Key scopes are `read:compliance_activities` (Activity Feed), `read:compliance_user_data` (chats, files, projects, Cowork/Claude Code session transcripts, users, group members), `delete:compliance_user_data` (delete chats/files/projects), and `read:compliance_org_data` (org metadata + effective settings). The broader `read:org_audit` scope — one read-only scope covering every user-management GET plus every Compliance read — is the cleanest choice for SIEM/security-audit integrations; an unscoped or over-scoped key is a standing exfiltration risk over your entire org's conversation and session content
 - `delete:compliance_user_data` in particular should live on its own tightly-held key, if issued at all
+- Compliance Access Keys **do not expire on their own**, and scopes are immutable — rotation is create-new-then-delete (deletion takes effect on the next request, no grace period)
 
-**Attack Prevented:** Bulk conversation-content exfiltration via an over-scoped compliance key
+**Attack Prevented:** Bulk conversation- and session-content exfiltration via an over-scoped compliance key, silent audit-recording disablement
 
 #### ClickOps Implementation
 
-1. Create keys at the Enterprise admin key surface with only the scopes each consumer needs (see the [key scope table](https://platform.claude.com/docs/en/manage-claude/admin-api-keys))
-2. Wire your compliance/DLP tooling to `/v1/compliance/activities` for continuous activity feed consumption
-3. Inventory issued keys, their scopes, and their holders; rotate on your standard credential cadence
+1. Enable the Compliance API (primary owner, claude.ai → Organization settings → API), and record the toggle as a protected setting in your change-control docs
+2. Create **Compliance Access Keys** at claude.ai → Organization settings → API with only the scopes each consumer needs (see the [key scope table](https://platform.claude.com/docs/en/manage-claude/admin-api-keys)); use `read:org_audit` for audit-only consumers
+3. Wire your compliance/DLP tooling to `/v1/compliance/activities` for continuous activity-feed consumption — all `/v1/compliance/*` endpoints share a **600 requests-per-minute** limit per parent organization, so size polling cadence and backoff accordingly
+4. Inventory issued keys, their scopes, and their holders; store them in a secrets manager, never in source control or SIEM forwarder configuration
+5. **Put key deletion in the offboarding runbook:** keys are scoped to the organization, not the creator — removing, deprovisioning, or downgrading the creator leaves every key they created active with its original scopes. Delete their keys and issue replacements
 
 **Time to Complete:** ~1 hour
 
 #### Validation & Testing
-1. A read-scoped key is refused on delete endpoints
+1. A read-scoped key is refused on delete endpoints — the `403` body lists held vs required scopes
 2. Activity feed events arrive in your tooling for a test conversation
+3. Confirm a local Claude Code session run under an Enterprise-signed-in account appears in the session endpoints
+4. On suspected key leak: delete the key, then audit the feed with `activity_types[]=compliance_api_accessed`, matching `actor.type` `api_actor` and `actor.api_key_id` to the compromised key
 
-**Expected result:** Continuous programmatic audit with scope-minimal keys. ([Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api) · [Admin key scopes](https://platform.claude.com/docs/en/manage-claude/admin-api-keys))
+**Expected result:** Continuous programmatic audit with scope-minimal keys, recording provably on, and key lifecycle tied to offboarding. ([Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api) · [Access setup](https://platform.claude.com/docs/en/manage-claude/compliance-api-access) · [Admin key scopes](https://platform.claude.com/docs/en/manage-claude/admin-api-keys))
 
 #### Compliance Mappings
 
@@ -471,17 +484,19 @@ Use the Enterprise Spend Limits API to set per-user overrides over the group/sea
 
 #### ClickOps Implementation
 
-1. Set the org and seat-tier defaults in **Organization settings** (spend limits)
-2. Automate per-user overrides and increase-request handling via the [Spend Limits API](https://platform.claude.com/docs/en/manage-claude/spend-limits-api) with a scoped key ([2.2](#22-enable-the-compliance-api-with-least-privilege-keys))
-3. Alert on limit-hit events and review the approval queue on a cadence
+1. Set the org and seat-tier defaults in **Organization settings** (spend limits) — the API writes **only per-user overrides** (`POST /v1/organizations/spend_limits` accepts only `scope.type: "user"`); seat-tier, group, and org defaults are Console-of-claude.ai-settings territory
+2. Automate per-user overrides and increase-request handling via the [Spend Limits API](https://platform.claude.com/docs/en/manage-claude/spend-limits-api) with a key scoped `read:spend_limits`/`write:spend_limits` ([2.2](#22-enable-the-compliance-api-with-least-privilege-keys))
+3. Alert on limit-hit events and review the approval queue on a cadence. Queue mechanics worth encoding (verified 2026-08-15): requests originate only from a member clicking **Request more usage** in claude.ai and carry **no requested amount** — the admin supplies the new cap on the approve call; **setting a limit directly does NOT resolve a pending request** (use the approve endpoint or the audit trail gaps); a denial hides the member's request button for 30 days
+4. Monthly spend resets at 00:00 UTC on the first of each month (`monthly` is the only period)
 
 **Time to Complete:** ~1 hour
 
 #### Validation & Testing
 1. A test account hitting its limit is stopped and generates an increase request
 2. Overrides read back correctly via the API
+3. **Unlimited-member sweep:** page `GET /v1/organizations/spend_limits/effective` and flag every member whose effective `amount` is `null` — that member is **unlimited**, the exact failure state this control exists to prevent (`"0"` by contrast means included-usage only; amounts are minor-unit strings — `"50000"` = 500.00 USD; `source` tells you which hierarchy level supplied the cap: `user`/`seat_tier`/`rbac_group`/`organization`)
 
-**Expected result:** Every member spend-bounded with an approval trail. ([Spend Limits API](https://platform.claude.com/docs/en/manage-claude/spend-limits-api))
+**Expected result:** Every member spend-bounded with an approval trail, and an automated sweep proving no member is unlimited. ([Spend Limits API](https://platform.claude.com/docs/en/manage-claude/spend-limits-api))
 
 #### Compliance Mappings
 
@@ -517,6 +532,7 @@ Per-control compliance mappings appear inside each control above. For organizati
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.2.0 | 2026-08-15 | Admin API currency pass. §2.2 corrected to the two-key-type model — a Compliance Access Key (`sk-ant-api01-`, created at claude.ai → Organization settings → API) reaches every Compliance endpoint per its scopes, while a Console Admin key reaches the Activity Feed only — with the exact four Compliance scopes plus `read:org_audit` for audit-only integrations, the recording-governance warning (toggle off = no events recorded, no local Cowork/Claude Code transcript capture, irrecoverable), session-transcript coverage (local and remote Cowork/Claude Code sessions), the shared 600 rpm limit, the never-expiring-key offboarding rule (keys survive their creator's removal), and leaked-key incident response via `activity_types[]=compliance_api_accessed`. §1.3 updated with the five-value Enterprise role vocabulary (`managed` as the least-privilege target state), the beta user-management API (`anthropic-beta: ce-user-management-2026-07-13`; API assigns only `user`/`managed`; SCIM groups API-read-only), the `rbac_group_ids` invite-write privilege path, the group-deletion spend-cap-lift warning, and a blanket-grant validation sweep (`capability_access_all`). §4.1 gains the spend-limits mechanics (API writes per-user overrides only, increase-request lifecycle with admin-supplied amounts and the 30-day denial cooldown, 00:00 UTC monthly reset) and an unlimited-member sweep (`amount: null` on an effective row = unlimited). §2.1 cites the vendor's own framing positioning the CSV export below the Compliance API. |
 | 0.1.0 | 2026-08-03 | Authored as part of the Anthropic multi-product platform restructure: 10 controls across identity/provisioning, audit/compliance, connector/Chrome/Cowork governance, and spend limits — every setting verified against Anthropic's live admin documentation. |
 
 ## Contributing

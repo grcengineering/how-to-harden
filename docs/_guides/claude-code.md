@@ -9,9 +9,9 @@ product: "Claude Code"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for Claude Code — managed settings via MDM, permission and tool restriction, MCP server governance, sandbox isolation, prompt-injection defense, CI/CD hardening, Cowork governance, and incident response."
-version: "1.0.1"
+version: "1.0.2"
 maturity: "draft"
-last_updated: "2026-08-08"
+last_updated: "2026-08-15"
 ---
 
 ## Overview
@@ -806,20 +806,22 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 **Why This Matters:**
 - Per-user metrics enable detection of anomalous Claude Code usage patterns
 - Tool acceptance rates below 70% may indicate permission configuration issues or developer friction
-- Cost attribution by user and model enables budget management
+- Cost attribution by user and model enables budget management — this API is Anthropic's sanctioned path for per-user Claude Code cost, superseding per-key Usage API breakdowns
 - Tracking commits and PRs created by Claude Code quantifies AI-assisted development impact
+- Dimension fields sharpen detection: `terminal_type` (e.g. `vscode`, `iTerm.app`, `tmux` — flag unexpected environments), `customer_type` (`api` vs `subscription`), and `actor` (`user_actor` with `email_address`, or `api_actor` with `api_key_name` — correlate against your key inventory)
 
 **Attack Prevented:** Unauthorized bulk code generation, cost abuse, shadow AI usage detection
 
+> **Monitoring blind spot (verified 2026-08-15):** this API only tracks Claude Code usage **on the Claude API**. Sessions routed through Claude in Amazon Bedrock, Microsoft Foundry, Google Cloud (Vertex AI), or Claude Platform on AWS are invisible to it. If those deployments are permitted, close the gap with the OpenTelemetry integration or provider-side logging — otherwise "shadow AI usage detection" is only true for one of your routing paths.
+
 #### Prerequisites
-- Admin API key provisioned
-- Claude Team or Enterprise plan with Claude Code enabled
-- Monitoring infrastructure for alert thresholds
+- Admin API key on a **Claude Console organization** — the API is free for all organizations with Admin API access, covering both `customer_type` `api` (pay-as-you-go) and `subscription` (Pro/Team) customers; a Team/Enterprise plan is **not** the gate. Claude Enterprise (claude.ai) organizations' Claude Code activity is reported by the **Claude Enterprise Analytics API** (Analytics key) instead, and Claude Platform on AWS is not covered
+- Monitoring infrastructure for alert thresholds; data lands with up to 1-hour delay, single-day queries via `starting_at` (YYYY-MM-DD, UTC), `limit` max 1000
 
 #### ClickOps Implementation
 
 **Step 1: Review Usage in Console**
-1. Navigate to: **console.anthropic.com** → **Usage**
+1. Navigate to: **platform.claude.com** → **Usage**
 2. Filter for Claude Code usage
 3. Review per-user activity patterns
 
@@ -1187,6 +1189,7 @@ See the [Anthropic platform hub references](/guides/anthropic-claude/#appendix-b
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.0.2 | 2026-08-15 | §5.1 corrections from the Admin API currency pass: prerequisites fixed — the gate is an Admin API key on a Claude Console organization (free for every org with Admin API access, both `api` pay-as-you-go and `subscription` Pro/Team customer types), not a Team/Enterprise plan; Claude Enterprise (claude.ai) users' Claude Code activity reports through the separate Claude Enterprise Analytics API. Documented the cloud-provider monitoring blind spot (sessions via Bedrock, Foundry, Vertex AI, or Claude Platform on AWS are invisible to this API — close with OpenTelemetry or provider-side logging), added the detection dimensions (`terminal_type`, `customer_type`, `user_actor`/`api_actor`), and the operational facts (up to 1-hour data delay, single-day `starting_at` queries, `limit` max 1000). Console hosts canonicalized to platform.claude.com. |
 | 1.0.1 | 2026-08-08 | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §5.3 (no content-facts changed) |
 | 1.0.0 | 2026-08-03 | Split out of the monolithic Anthropic Claude guide as part of the multi-product platform restructure; carries the 11 Claude Code controls (formerly section 7) renumbered into five thematic sections. |
 

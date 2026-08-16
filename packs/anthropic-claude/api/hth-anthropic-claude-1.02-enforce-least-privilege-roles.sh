@@ -8,29 +8,33 @@ banner "1.2: Enforce Least-Privilege Organization Roles"
 require_admin_key
 
 # HTH Guide Excerpt: begin api-audit-roles
-# Audit organization member roles — flag users with admin or billing roles
+# Audit organization member roles across the FULL documented enum. The Admin
+# API can return: user, claude_code_user, developer, billing, admin, managed,
+# membership_admin, owner, primary_owner — a distribution that only counts the
+# classic four silently miscounts real organizations. The elevated tier to
+# limit is admin PLUS owner/primary_owner (owners hold all admin permissions
+# and additionally manage admins).
 info "Auditing organization member roles..."
 MEMBERS=$(anthropic_list_all "/v1/organizations/users") || {
   fail "1.2 Failed to list organization users"
   summary; exit 0
 }
 
-# Count by role
-ADMIN_COUNT=$(echo "${MEMBERS}" | jq '[.[] | select(.role == "admin")] | length')
-BILLING_COUNT=$(echo "${MEMBERS}" | jq '[.[] | select(.role == "billing")] | length')
-DEVELOPER_COUNT=$(echo "${MEMBERS}" | jq '[.[] | select(.role == "developer")] | length')
-USER_COUNT=$(echo "${MEMBERS}" | jq '[.[] | select(.role == "user")] | length')
 TOTAL=$(echo "${MEMBERS}" | jq 'length')
+info "Role distribution (all roles present, no value dropped):"
+echo "${MEMBERS}" | jq -r 'group_by(.role) | map("  \(.[0].role)=\(length)") | .[]'
 
-info "Role distribution: admin=${ADMIN_COUNT}, billing=${BILLING_COUNT}, developer=${DEVELOPER_COUNT}, user=${USER_COUNT}, total=${TOTAL}"
+# Any role outside the documented enum is worth eyes-on (API drift or new tier)
+echo "${MEMBERS}" | jq -r '.[] | select([.role] | inside(["user","claude_code_user","developer","billing","admin","managed","membership_admin","owner","primary_owner"]) | not) | "  UNDOCUMENTED ROLE: \(.role) — \(.email)"'
 
-# Flag excessive admin count
-if [[ "${ADMIN_COUNT}" -gt 3 ]]; then
-  warn "1.2 ${ADMIN_COUNT} users have admin role — review for least privilege"
-  echo "Admins:"
-  echo "${MEMBERS}" | jq -r '.[] | select(.role == "admin") | "  \(.name) <\(.email)>"'
+# Flag excessive ELEVATED-tier count: admin + owner + primary_owner
+ELEVATED_COUNT=$(echo "${MEMBERS}" | jq '[.[] | select(.role == "admin" or .role == "owner" or .role == "primary_owner")] | length')
+if [[ "${ELEVATED_COUNT}" -gt 3 ]]; then
+  warn "1.2 ${ELEVATED_COUNT} members hold admin/owner/primary_owner — review for least privilege"
+  echo "Elevated members:"
+  echo "${MEMBERS}" | jq -r '.[] | select(.role == "admin" or .role == "owner" or .role == "primary_owner") | "  \(.role): \(.name) <\(.email)>"'
 else
-  pass "1.2 Admin count (${ADMIN_COUNT}) is within recommended limit (<=3)"
+  pass "1.2 Elevated-tier count (${ELEVATED_COUNT}) is within recommended limit (<=3), total members: ${TOTAL}"
 fi
 # HTH Guide Excerpt: end api-audit-roles
 

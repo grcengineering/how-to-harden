@@ -160,7 +160,8 @@ how-to-harden/
 │   ├── create-hth-guide/SKILL.md         # New guide authoring process
 │   ├── update-hth-guide/SKILL.md         # Currency-update process
 │   ├── create-code-pack/SKILL.md         # Pack authoring process
-│   └── verify-hth/SKILL.md               # Pre-commit verification battery
+│   ├── verify-hth/SKILL.md               # Pre-commit verification battery
+│   └── validate-hth-guide/SKILL.md       # Active validation: does it actually work?
 ├── VERSIONS.md                           # Central version registry for all guides
 ├── PHILOSOPHY.md                         # Project scope and design principles
 ├── SOURCES.md                            # Authoritative-source taxonomy for guide content
@@ -171,7 +172,7 @@ how-to-harden/
 
 ### Authoring Playbooks (for humans and any AI agent)
 
-The four playbooks under `.claude/skills/` are prescriptive, step-by-step processes for the project's core workflows. They load automatically as skills in Claude Code, but they are **plain markdown** — contributors and any other AI tool (Cursor, Copilot, etc.) can open and follow them directly:
+The five playbooks under `.claude/skills/` are prescriptive, step-by-step processes for the project's core workflows. They load automatically as skills in Claude Code, but they are **plain markdown** — contributors and any other AI tool (Cursor, Copilot, etc.) can open and follow them directly:
 
 | Playbook | Use it when |
 |----------|-------------|
@@ -179,6 +180,7 @@ The four playbooks under `.claude/skills/` are prescriptive, step-by-step proces
 | [`update-hth-guide`](.claude/skills/update-hth-guide/SKILL.md) | Refreshing a guide with current guidance, fixing an inaccuracy, adding a control |
 | [`create-code-pack`](.claude/skills/create-code-pack/SKILL.md) | Adding or fixing any Code Pack, wiring pack includes |
 | [`verify-hth`](.claude/skills/verify-hth/SKILL.md) | The pass/fail verification battery — run before every commit |
+| [`validate-hth-guide`](.claude/skills/validate-hth-guide/SKILL.md) | Proving ClickOps steps, Code Packs, and OCEAN scanning actually work — and iterating until they do |
 
 Source-selection standards (what counts as a "hardening guide" vs a Trust Center, and which third parties are authoritative) live in [SOURCES.md](SOURCES.md).
 
