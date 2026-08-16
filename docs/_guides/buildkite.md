@@ -72,7 +72,7 @@ Configure SAML SSO to centralize authentication for Buildkite users.
 #### ClickOps Implementation
 
 **Step 1: Access SSO Settings**
-1. Navigate to: **Organization Settings** → **SSO**
+1. Navigate to: **Organization Settings** → **SSO Settings**
 2. Select SAML provider type
 
 **Step 2: Configure SAML**
@@ -130,7 +130,7 @@ Require 2FA for all Buildkite users.
 
 **Step 1: Enable 2FA Requirement**
 1. Navigate to: **Organization Settings** → **Security**
-2. Enable **Require two-factor authentication**
+2. Enable **Enforce Two-factor authentication**
 3. All users must configure 2FA
 
 **Step 2: Configure via IdP**

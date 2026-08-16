@@ -22,8 +22,10 @@ resource "buildkite_pipeline" "pipelines" {
   maximum_timeout_in_minutes = each.value.maximum_timeout_in_minutes
   allow_rebuilds             = each.value.allow_rebuilds
 
-  # Restrict fork builds to prevent untrusted code execution
-  provider_settings {
+  # Restrict fork builds to prevent untrusted code execution.
+  # provider_settings is an ATTRIBUTE in buildkite/buildkite ~> 1.0, not a block —
+  # block syntax fails `terraform validate` with "Unsupported block type".
+  provider_settings = {
     build_pull_request_forks              = false
     publish_commit_status                 = true
     publish_commit_status_per_step        = true

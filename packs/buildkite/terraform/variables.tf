@@ -11,7 +11,7 @@
 # -----------------------------------------------------------------------------
 
 variable "profile_level" {
-  description = "Hardening profile level: 1 = Baseline, 2 = Hardened, 3 = Maximum Security"
+  description = "Hardening profile level: 1 = L1 (Crawl), 2 = L2 (Walk), 3 = L3 (Run)"
   type        = number
   default     = 1
 
