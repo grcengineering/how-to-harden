@@ -72,7 +72,7 @@ Configure SAML SSO to centralize authentication for Buildkite users.
 #### ClickOps Implementation
 
 **Step 1: Access SSO Settings**
-1. Navigate to: **Organization Settings** → **SSO Settings**
+1. Navigate to: **Organization Settings** → **Single Sign On**
 2. Select SAML provider type
 
 **Step 2: Configure SAML**
