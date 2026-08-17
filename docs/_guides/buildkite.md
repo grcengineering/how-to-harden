@@ -126,6 +126,11 @@ Require 2FA for all Buildkite users.
 
 **Attack Prevented:** Credential stuffing, password reuse, phishing, account takeover
 
+#### Prerequisites
+
+- **ClickOps: none.** The Security page toggle is available on every plan.
+- **Terraform: a plan that includes the API IP allowlist feature.** The `buildkite_organization` resource fails to create without it, even when your configuration sets only `enforce_2fa` and never mentions IP allowlisting — the provider touches that field regardless. Verified against a live organization: `Unable to create Organization settings: input: The API IP allowlist feature is not available for your organization. Please upgrade your plan to access it.` The same resource backs [4.1](#41-configure-audit-logging), so that control inherits the constraint. On plans without the feature, use the ClickOps path below; `terraform validate` and `terraform plan` both pass, so this surfaces only at `apply`.
+
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA Requirement**
@@ -631,6 +636,9 @@ Enable and monitor audit logs.
 
 #### Prerequisites
 - **Buildkite Enterprise.** The audit log is an Enterprise-plan feature; organizations below Enterprise have no audit log to review, and compliance commitments that assume one need to account for that gap.
+- **Terraform (L3 IP restriction only): a plan including the API IP allowlist feature**, and the same `buildkite_organization` caveat described in [1.2](#12-enforce-two-factor-authentication) — the two controls share one singleton resource, so adopt one Terraform path or merge them, never both.
+
+> **Lockout warning — API IP allowlist.** `allowed_api_ip_addresses` is a hard allowlist on REST and GraphQL access. A CIDR list that omits the network you automate from severs your own API access the moment it applies, including the access required to reverse it. The undo path (`organizationApiIpAllowlistUpdate`) is itself an API call, so a wrong list is self-sealing. Confirm your egress address is covered before applying, and keep a route in from an allowlisted network. This is distinct from the agent-token IP allowlist in [3.1](#31-configure-agent-tokens), which carries no such risk.
 
 #### ClickOps Implementation
 
