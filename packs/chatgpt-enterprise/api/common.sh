@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -euo pipefail
 
 # Shared helpers for OpenAI ChatGPT Enterprise Compliance API scripts.

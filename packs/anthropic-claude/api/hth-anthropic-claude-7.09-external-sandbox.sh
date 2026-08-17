@@ -76,5 +76,5 @@ openshell logs --tail
 
 # List and manage running sandboxes
 openshell sandbox list
-openshell sandbox connect <name>
+openshell sandbox connect "${SANDBOX_NAME:?set SANDBOX_NAME to a name from the list above}"
 # HTH Guide Excerpt: end openshell-setup
