@@ -888,21 +888,33 @@ matches_any "${repo}" "${HTH_ALLOWED_REPOSITORIES}" \
 # "git://github.com/acme-inc/my-project.git". Compare identity, not text: the
 # scheme, any userinfo, a port and a trailing ".git" carry none of it.
 norm_repo() {
-  local u="${1}" host rest sep port
+  local u="${1}" host rest sep port had_scheme=0
   u="${u%/}"
-  case "${u}" in *://*) u="${u#*://}" ;; esac        # git:// https:// ssh:// http://
+  # Whether the ORIGINAL, untouched input carried an explicit scheme matters
+  # downstream: a scheme is the only thing that can legitimately put a port
+  # after a colon. Record it before this same case stripping manufactures a
+  # colon-shaped remainder that looks identical to genuine SCP syntax.
+  case "${u}" in *://*) had_scheme=1; u="${u#*://}" ;; esac  # git:// https:// ssh:// http://
   case "${u%%[/:]*}" in *@*) u="${u#*@}" ;; esac     # git@ / user@ / token@, authority only
   u="${u%.git}"
   host="${u%%[:/]*}"
   rest="${u#"${host}"}"
   sep="${rest:0:1}"
   rest="${rest:1}"
-  # "host:org/repo" (scp form) and "host:443/org/repo" (URL port) both land here.
-  # Strip the leading segment ONLY when it is entirely digits and something
-  # follows it: dropping a path segment that merely starts with a digit would
-  # make two DIFFERENT repositories compare equal, and that is the direction
-  # that turns a fork into a permitted internal build.
-  if [ "${sep}" = ":" ]; then
+  # A colon here is a real port ONLY when the input had an explicit scheme
+  # (e.g. "ssh://host:2222/org/repo" -> after stripping "ssh://", "host:2222/org/repo").
+  # Git's scp-like syntax ("user@host:path" or "host:path", no scheme) has NO
+  # port field at all — per git-clone(1), that form "should not be used with a
+  # port number, as that will be interpreted as part of the path" — so a
+  # digits-only leading segment after an SCP colon is ALWAYS part of the
+  # repository's path, never a port, and must never be stripped. Applying the
+  # port heuristic to a genuine SCP colon is exactly what let a repo whose
+  # namespace happens to start with digits normalize to two different
+  # identities depending on which form Buildkite happened to hand us
+  # (git@host:1234/x.git kept "1234" from https://host/1234/x.git, or vice
+  # versa) — the same misclassify-an-internal-PR-as-a-fork failure T11 exists
+  # to close, just reached through the URL-form side instead of the compare.
+  if [ "${sep}" = ":" ] && [ "${had_scheme}" = "1" ]; then
     port="${rest%%/*}"
     case "${port}" in
       ""|*[!0-9]*) : ;;
