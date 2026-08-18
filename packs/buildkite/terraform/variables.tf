@@ -477,39 +477,31 @@ variable "untemplated_pipelines_allowed" {
   default     = []
 }
 
-variable "templated_pipeline_default_team_id" {
-  description = "Team GraphQL ID assigned to every pipeline pack 3.10 creates. The provider documents default_team_id as \"required by the Buildkite API when creating a new pipeline\", and the team named here is granted 'Manage Build and Read'; further associations go through buildkite_pipeline_team. Pack 2.1 emits usable IDs as its `team_ids` output. Null fails the plan with that explanation rather than failing later at the API with a vaguer one."
-  type        = string
-  default     = null
-}
-
-variable "mandated_template_steps_yaml" {
-  description = "Steps prepended to EVERY template in var.pipeline_templates, as YAML list items indented at least two spaces (no `steps:` key — pack 3.10 supplies it). This is the block a template author cannot forget: removing it is a reviewed variable edit rather than a quiet deletion inside one pipeline."
-  type        = string
-  default     = <<EOT
-  - label: ":lock: Security scan"
-    key: "hth-security-scan"
-    command: "buildkite-agent pipeline upload .buildkite/security-scan.yml"
-EOT
-}
-
-variable "max_assignable_templates" {
-  description = "Upper bound on templates carrying available = true (attachable by non-admins). Defaults to 0: an assignable permissive template lets a pipeline editor reach the same result as deleting a step, without editing one. Raise deliberately, and only for templates that themselves carry the mandated steps."
-  type        = number
-  default     = 0
-}
-
-variable "audited_template_names" {
-  description = "Names of pipeline templates to re-read and assert on, including console-authored templates this configuration does not own. Terraform cannot enumerate templates (no plural data source) and cannot read a pipeline's assigned template (the buildkite_pipeline DATA SOURCE exposes no pipeline_template_id), so a full inventory needs the GraphQL/REST API — this audits the templates you name."
-  type        = list(string)
-  default     = []
-}
-
-variable "mandated_step_markers" {
-  description = "Literal substrings that must appear in every audited template's configuration — typically the key or command of the mandated security step. A template that lost its mandated step is the same failure as a pipeline that lost it, applied at once to every pipeline assigned that template."
-  type        = list(string)
-  default     = ["hth-security-scan"]
-}
+# ─── REMOVED: five control-3.10 variables that no pack ever read ─────────────
+# templated_pipeline_default_team_id, mandated_template_steps_yaml,
+# max_assignable_templates, audited_template_names and mandated_step_markers were
+# declared here from an earlier draft of pack 3.10 and were referenced by nothing
+# in this directory. A declared variable with a description is a promise, and
+# these promised behaviour that does not exist — `mandated_template_steps_yaml`
+# described steps "prepended to EVERY template ... (no `steps:` key — pack 3.10
+# supplies it)" while pack 3.10 does the opposite: `configuration` is the complete
+# step document supplied by the operator, and its precondition REFUSES a value
+# with no top-level `steps:` key. An operator who set that variable got no
+# mandated step and no error; one who fed its default in as a `configuration` got
+# a precondition failure quoting a rule the variable's own text contradicted.
+#
+# The shipped equivalents, all read by hth-buildkite-3.10-pipeline-templates.tf:
+#   templated_pipeline_default_team_id -> var.templated_pipelines[*].default_team_id
+#                                         (per pipeline, not one org-wide default)
+#   mandated_template_steps_yaml       -> var.required_step_patterns, ASSERTED
+#                                         against each configuration by
+#                                         check "managed_templates_contain_their_required_steps"
+#                                         rather than prepended
+#   max_assignable_templates           -> var.audited_templates[*].allow_non_admin_assignment
+#                                         + check "audited_templates_are_not_self_assignable"
+#   audited_template_names             -> var.audited_templates (a map of objects:
+#                                         it also carries the approved hash)
+#   mandated_step_markers              -> var.required_step_patterns
 
 # ─── Control 3.11 — inbound OIDC trust (registries, test suites) ─────────────
 # Shapes match the encoder in pack 3.11 exactly. A claim rule is a MATCHER object,
@@ -756,13 +748,15 @@ variable "cluster_secrets" {
   default = {}
 }
 
-variable "cluster_secret_values" {
-  description = "Secret material for var.cluster_secrets, keyed identically. EPHEMERAL: pack 3.5 passes each value to Buildkite through the resource's write-only `value_wo` argument, so it is never written to a plan file or to state and cannot be recovered by anyone holding state. Supply from an ephemeral resource, an uncommitted -var-file, or TF_VAR_ variables sourced from your secret manager. Note the size ceiling is disputed: the Terraform provider documents 8 KB while Buildkite's own secrets documentation says 32 KB — design to the lower figure."
-  type        = map(string)
-  ephemeral   = true
-  sensitive   = true
-  default     = {}
-}
+# var.cluster_secret_values is NOT declared here. It is declared inside
+# hth-buildkite-3.05-cluster-secrets.tf, deliberately, because it must be marked
+# `ephemeral = true` and that keyword raises the toolchain floor of every file in
+# the module that loads with it (Terraform >= 1.10, OpenTofu >= 1.11 — the
+# releases that introduced ephemeral input variables). Declaring it in this shared
+# file would put that floor on every control in the directory, including 1.02 and
+# 2.01, which need nothing newer than the >= 1.5 providers.tf asks for; keeping it
+# next to its only consumer means only an operator who adopts 3.5 pays for 3.5.
+# Delete that pack file and the floor goes with it.
 
 variable "require_first_party_claim" {
   description = "Fail the plan when any cluster secret policy rule is built only from third-party claims (pipeline_slug, build_branch, build_creator, build_creator_team, cluster_queue_key). Those values are supplied by users or third-party tools: a slug is reusable by a pipeline recreated after the original was deleted, and a branch name is chosen by anyone who can push. Leave true so a soft boundary has to be accepted deliberately rather than by omission; the audit check reports the same finding either way."

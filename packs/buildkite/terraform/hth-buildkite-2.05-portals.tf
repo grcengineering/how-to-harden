@@ -4,7 +4,7 @@
 # Frameworks: CIS 5.4 | NIST IA-5, AC-6
 # Source: https://howtoharden.com/guides/buildkite/#25-manage-api-access-token-hygiene
 #
-# Guide Step 3 recommends Portals in one sentence and ships no code. Portals
+# Guide Step 4 recommends Portals in one sentence and ships no code. Portals
 # exist because, in Buildkite's own words, the GraphQL API "is accessed using an
 # authenticated API access token whose scopes cannot be restricted" — so handing
 # an integration a GraphQL token hands it the whole organization. A portal

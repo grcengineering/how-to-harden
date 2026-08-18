@@ -11,7 +11,7 @@
 # either — tokens are minted in Personal Settings only. What the control plane
 # DOES expose is the half that matters for hygiene: read the whole inventory,
 # revoke individual tokens, and set an org-wide auto-revoke-on-inactivity clock.
-# Guide Step 4 says "revoke tokens that stop appearing" and ships no code; this
+# Guide Step 5 says "revoke tokens that stop appearing" and ships no code; this
 # pack is that code.
 #
 # ── TRAP 1: the connection has no `count` field ──────────────────────────────
@@ -52,10 +52,35 @@
 # never been seen" sweep breaks hosted agents. `stale` reports null separately
 # and never folds it into the age ranking.
 #
+# ── TRAP 7: restrict-token-creation is REST, and PATCH is PARTIAL ───────────
+# Guide Step 1 (`restrict_user_api_token_creation`) is the only organization-wide
+# token control on this page that has NO GraphQL mutation and NO Terraform
+# attribute — buildkite_organization exposes allowed_api_ip_addresses and
+# enforce_2fa and nothing else. It lives solely on the REST api-settings
+# resource, which is why this verb speaks REST while everything else here
+# speaks GraphQL.
+#
+# The danger is the resource it shares. PATCH .../api-settings also carries
+# `allowed_ip_addresses`, and the vendor's own page warns: "The IP allowlist
+# takes effect immediately. If you write a CIDR range that does not include your
+# own IP address, your next API request will be rejected. There is no dry-run
+# mode." A read-modify-write that echoes the whole document back would re-assert
+# that allowlist on every run — and one stale local copy locks the organization
+# out of its own API. The vendor documents PATCH as partial ("Include only the
+# fields you want to change"), so `set_restrict_token_creation` below builds a
+# SINGLE-KEY body with jq and never reads the current document first. Do not
+# "improve" it into a read-modify-write.
+#
 # ── VERIFICATION STATUS ─────────────────────────────────────────────────────
 #   inventory / stale / auto-revoke-status  VERIFIED-LIVE — executed against a
 #     real organization; pagination, self-token match, and the null-lastAccessedAt
 #     bucket all exercised on real data.
+#   restrict-token-creation-status / set-restrict-token-creation
+#                                            DOC-VERIFIED-ONLY — authored from the
+#     vendor's api-settings REST reference (verbs, path, request/response field
+#     names, scope, and the plan-gate `features` map all transcribed from that
+#     page) and NOT executed against any tenant in this run. Treat as unproven
+#     against a live organization until someone runs the status verb.
 #   set-auto-revoke                          DRIFT-CHECKED-ONLY — the mutation is
 #     Enterprise-gated and this tenant reads as non-Enterprise. The document was
 #     validated against the live schema (only the deliberately-omitted variables
@@ -91,6 +116,62 @@ die_on_gql_errors() {
     exit 1
   fi
 }
+
+# HTH Guide Excerpt: begin restrict-token-creation
+# Guide Step 1. `restrict_user_api_token_creation` = "only organization
+# administrators can create API access tokens" (vendor wording). It is the only
+# organization-wide token setting here that is NOT plan-gated: the `features`
+# map this resource returns enumerates the gated ones — api_ip_allow_list and
+# inactive_api_token_revocation — and this field is not among them. So a
+# non-Enterprise organization that cannot arm the inactivity clock can still
+# close the tap.
+rest_api_settings_get() {
+  curl -sS --fail-with-body \
+    -H "Authorization: Bearer ${BUILDKITE_TOKEN}" \
+    "${REST}/organizations/${BUILDKITE_ORG_SLUG}/api-settings"
+}
+
+# Read-only. Reports the setting plus the plan-gate map, so an operator can tell
+# "configured off" apart from "not available on this plan" — the distinction the
+# `features` map exists to make.
+restrict_token_creation_status() {
+  rest_api_settings_get | jq '{
+    restrict_user_api_token_creation,
+    compliant: (.restrict_user_api_token_creation == true),
+    ip_allowlist_configured: (.allowed_ip_addresses != null),
+    revoke_inactive_tokens_after_days,
+    plan_gated_features: .features,
+    note: "restrict_user_api_token_creation is absent from .features, so it is not plan-gated"
+  }'
+}
+
+# Write. TRAP 7: single-key PATCH body, built here and never derived from a read.
+# Nothing in this function can emit allowed_ip_addresses, so it cannot re-assert
+# (or clear) an IP allowlist as a side effect of toggling token creation.
+set_restrict_token_creation() {
+  local value="$1"
+  case "${value}" in
+    true|false) ;;
+    *) echo "invalid value '${value}'; expected true or false" >&2; exit 2 ;;
+  esac
+
+  # Turning this OFF re-opens token creation to every member. That is a
+  # loosening, so say so rather than performing it silently.
+  if [ "${value}" = "false" ]; then
+    echo "NOTE: setting restrict_user_api_token_creation=false lets every" >&2
+    echo "organization member mint API access tokens again. This widens the" >&2
+    echo "credential surface the rest of this pack is written to police." >&2
+  fi
+
+  jq -n --argjson v "${value}" '{restrict_user_api_token_creation: $v}' \
+  | curl -sS --fail-with-body \
+      -H "Authorization: Bearer ${BUILDKITE_TOKEN}" \
+      -H "Content-Type: application/json" \
+      -X PATCH "${REST}/organizations/${BUILDKITE_ORG_SLUG}/api-settings" \
+      --data @- \
+  | jq '{restrict_user_api_token_creation, plan_gated_features: .features}'
+}
+# HTH Guide Excerpt: end restrict-token-creation
 
 # HTH Guide Excerpt: begin inventory-api-tokens
 # Full inventory of the organization's API access tokens, paginated.
@@ -345,6 +426,9 @@ revoke_token() {
 case "${1:-inventory}" in
   inventory)          inventory ;;
   stale)              stale "${2:-90}" ;;
+  restrict-token-creation-status) restrict_token_creation_status ;;
+  set-restrict-token-creation)
+                      set_restrict_token_creation "${2:?value required (true|false)}" ;;
   auto-revoke-status) read_auto_revoke ;;
   set-auto-revoke)    set_auto_revoke "${2:?period required (DAYS_30|DAYS_60|DAYS_90|DAYS_180|DAYS_365|NEVER)}" ;;
   revoke)             revoke_token "${2:?token uuid required}" ;;
@@ -353,6 +437,11 @@ case "${1:-inventory}" in
 usage:
   hth-buildkite-2.05-token-hygiene.sh inventory
   hth-buildkite-2.05-token-hygiene.sh stale [DAYS]            # default 90
+  hth-buildkite-2.05-token-hygiene.sh restrict-token-creation-status
+  hth-buildkite-2.05-token-hygiene.sh set-restrict-token-creation true|false
+      Guide Step 1. true = only organization administrators may create API
+      access tokens. NOT plan-gated. Sends a single-key PATCH (TRAP 7) so it
+      can never touch the IP allowlist on the same resource.
   hth-buildkite-2.05-token-hygiene.sh auto-revoke-status
   hth-buildkite-2.05-token-hygiene.sh set-auto-revoke PERIOD  # Enterprise
       PERIOD = DAYS_30|DAYS_60|DAYS_90|DAYS_180|DAYS_365|NEVER

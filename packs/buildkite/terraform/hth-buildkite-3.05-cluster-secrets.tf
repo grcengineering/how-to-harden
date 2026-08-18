@@ -18,14 +18,22 @@
 # schema: the value is sent to the API and is never persisted to plan or state.
 # That ephemeral path IS the hardening story of this pack, not an optimisation.
 #
-# ── ⚠️ VERSION FLOOR: this file needs Terraform >= 1.11 ──────────────────────
-# Write-only arguments are a Terraform 1.11 core feature (OpenTofu: use a release
-# with write-only attribute support). providers.tf in this directory declares
-# `required_version = ">= 1.4"`, which is the floor for the OTHER packs and is
-# NOT sufficient here. Raise it in providers.tf before applying this file:
-#     required_version = ">= 1.11"   # value_wo (control 3.5)
+# ── ⚠️ VERSION FLOOR: this file needs Terraform >= 1.11 / OpenTofu >= 1.11 ───
+# Two separate keywords, two separate floors, and this file uses both:
+#   `value_wo` (write-only arguments) — Terraform 1.11.0, OpenTofu 1.11.0.
+#   `ephemeral = true` on an input variable — Terraform 1.10.0, OpenTofu 1.11.0.
+# providers.tf in this directory declares `required_version = ">= 1.5"`, which is
+# the floor for the OTHER packs and is NOT sufficient here. Raise it in
+# providers.tf before applying this file:
+#     required_version = ">= 1.11"   # value_wo + ephemeral (control 3.5)
+#
 # It is left unedited so adopting one pack does not silently raise the toolchain
-# floor for every other control in the directory.
+# floor for every other control in the directory — and that promise is only true
+# if NOTHING SHARED uses a 1.10+ keyword. It previously was not: the ephemeral
+# `var.cluster_secret_values` sat in the shared variables.tf, so `tofu validate`
+# on a 1.5 toolchain failed for every pack in the directory, including ones that
+# never touch a secret. That declaration now lives in THIS file, below, where the
+# floor it imposes is the floor of the pack that imposes it.
 #
 # ── ⚠️ TRAP 1: sensitive maps cannot drive for_each ──────────────────────────
 # The instinct is one map of {key = secret_value} marked `sensitive = true`.
@@ -130,6 +138,18 @@
 # the principal's real organization, so no resource in this file was executed
 # against the tenant.
 # =============================================================================
+
+# Declared HERE and not in the shared variables.tf, on purpose: `ephemeral = true`
+# is what raises this directory's toolchain floor, so the declaration lives with
+# the only pack that needs it. Adopting 3.5 means adopting the floor; deleting
+# this file removes both. See the VERSION FLOOR note above.
+variable "cluster_secret_values" {
+  description = "Secret material for var.cluster_secrets, keyed identically. EPHEMERAL: pack 3.5 passes each value to Buildkite through the resource's write-only `value_wo` argument, so it is never written to a plan file or to state and cannot be recovered by anyone holding state. Supply from an ephemeral resource, an uncommitted -var-file, or TF_VAR_ variables sourced from your secret manager. Note the size ceiling is disputed: the Terraform provider documents 8 KB while Buildkite's own secrets documentation says 32 KB — design to the lower figure."
+  type        = map(string)
+  ephemeral   = true
+  sensitive   = true
+  default     = {}
+}
 
 # HTH Guide Excerpt: begin manage-cluster-secrets
 locals {

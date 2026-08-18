@@ -24,7 +24,7 @@
 # below was executed here. Nothing below is quoted from documentation either —
 # every key, env var, default and interaction was read out of the agent source
 # at tag v3.137.0 and cross-checked against `main`, 2026-08-18:
-#   clicommand/agent_start.go     :185-195, 615-676, 954-982, 1118-1130, 1286-1298
+#   clicommand/agent_start.go     :185-195, 615-676, 954-982, 1117-1133, 1281-1302
 #   clicommand/global.go          :151-168   (redacted-vars defaults)
 #   cliconfig/file.go             :86-148, 150-153  (the config parser itself)
 #   clicommand/pipeline_upload.go :86-148, 611-621  (v3) / :86-142, 627-637 (main)
@@ -32,6 +32,7 @@
 #   internal/job/executor.go      :861-925, 1030-1035, 1173-1183, 1317-1327
 #   internal/job/hook/hook.go     :16-36     (hook file resolution)
 #   agent/job_runner.go           :493-500, 555-600, 888-897, 909-951
+#   agent/run_job.go              :231, 267-279, 299  (validateJobValue: MatchString)
 # Env-var semantics ("this value cannot be modified", fork/PR vars) come from
 # buildkite.com/docs/pipelines/configure/environment-variables, read the same day.
 #
@@ -81,7 +82,8 @@
 # full-name match, case-sensitive. A regex in redacted-vars is not an error; it
 # just never matches anything, and no secret is ever redacted. FAILS SILENT.
 # allowed-plugins / allowed-repositories / allowed-environment-variables are fed
-# to regexp.Compile (agent_start.go:1286-1298); a glob like `*_TOKEN` is an
+# to regexp.Compile (agent_start.go:1122-1133 for the env-var list, 1281-1302 for
+# repositories and plugins); a glob like `*_TOKEN` is an
 # invalid regex, the agent calls l.Fatalf and REFUSES TO START. FAILS LOUD.
 # validate_globs()/validate_regexes() below reject each kind before you ship it.
 #
@@ -99,13 +101,36 @@
 # defence-in-depth for control 3.5, not a reason to let a secret reach a log.
 #
 # -----------------------------------------------------------------------------
-# ⚠️ T4 — THE ALLOWLIST REGEXES ARE NOT ANCHORED FOR YOU
+# ⚠️ T4 — THE ALLOWLIST REGEXES ARE NOT ANCHORED FOR YOU, AT EITHER END
 # -----------------------------------------------------------------------------
-# The agent compiles them with regexp.Compile, which yields an unanchored
-# pattern; every example in the agent's own flag usage strings starts with `^`
-# ("^git@github.com:buildkite/.*", "^buildkite-plugins/.*$", "^MYAPP_.*$").
-# An unanchored `github\.com/acme/` matches `https://evil.example/github.com/acme/`.
-# This pack refuses any policy pattern that does not begin with `^`.
+# The agent compiles them with regexp.Compile (agent_start.go:1281-1302) and then
+# tests them with `re.MatchString(jobValue)` (agent/run_job.go:267-279,
+# validateJobValue, reached from :231 for the repository and :299 for every
+# plugin) — a SUBSTRING search: the pattern may match anywhere inside the
+# value. Both ends have to be anchored by hand, and the agent's own flag usage
+# strings only get this half right —
+# "^git@github.com:buildkite/.*" and "^MYAPP_.*$" and "^buildkite-plugins/.*$"
+# are quoted below as the source's examples, not as this pack's advice.
+#   * No leading `^`: `github\.com/acme/` matches
+#     `https://evil.example/github.com/acme/` — a repository you do not own.
+#   * No trailing `$`: `^git@github\.com:acme/app\.git` matches
+#     `git@github.com:acme/app.git.evil.example/x` — a prefix of a hostile URL.
+# This pack refuses any policy pattern that does not begin with `^` AND end
+# with `$`.
+#
+# Anchoring is necessary, not sufficient. `.*$` is still a wildcard: the fully
+# anchored `^git@github\.com:acme/.*$` matches `git@github.com:acme/anything`,
+# which is the intent, but it also matches every trailing character a URL can
+# legally carry. Where the value's shape is known, bound the class instead of
+# reaching for `.*` — `^git@github\.com:acme/[A-Za-z0-9._-]+$` says what you
+# actually mean. And escape the dots: an unescaped `.` in `github.com` matches
+# any character, so `^git@github.com:acme/.*$` also admits `git@githubXcom:…`.
+#
+# One asymmetry to know about: RE2's `^`/`$` are TEXT anchors while grep -E's
+# are LINE anchors, so a value containing a newline would satisfy the admission
+# hook's grep on one of its lines while the agent's own pattern matched none of
+# it. The generated hook refuses any value carrying a newline rather than let
+# the two disagree.
 #
 # -----------------------------------------------------------------------------
 # ⚠️ T5 — A pre-bootstrap HOOK THAT READS $BUILDKITE_* FAILS OPEN
@@ -242,6 +267,27 @@
 # expands \" and \n, so keep quote characters out of policy patterns entirely
 # (validate_regexes/validate_globs refuse them).
 #
+# -----------------------------------------------------------------------------
+# ⚠️ T11 — BUILDKITE_PULL_REQUEST_REPO AND BUILDKITE_REPO NAME THE SAME
+#           REPOSITORY IN DIFFERENT URL FORMS, SO `!=` MEANS "IS A FORK" NEVER.
+# -----------------------------------------------------------------------------
+# The docs page above gives these two variables' examples side by side:
+#   BUILDKITE_REPO               git@github.com:acme-inc/my-project.git
+#   BUILDKITE_PULL_REQUEST_REPO  git://github.com/acme-inc/my-project.git
+# — the same repository, one in scp/SSH form and one in git-protocol form. The
+# obvious fork test, `[ "$pr_repo" != "$repo" ]`, is therefore TRUE on every
+# INTERNAL pull request, and a hook built on it rejects all of them. That fails
+# CLOSED, so it is not a hole; it is worse in practice, because a control that
+# blocks the org's own pull requests on day one gets ripped back out on day two.
+# Setting HTH_ALLOW_FORK_BUILDS=true does not rescue it either — the raw
+# `git://` URL then fails an allowlist written as `^git@github\.com:acme/…`.
+# The generated hook normalises both values (scheme, userinfo, port and a
+# trailing ".git" dropped, host lower-cased) and compares host + path. It still
+# matches the ALLOWLIST against the raw value, because that is the text the
+# agent's own allowed-repositories is compiled against — so if you enable fork
+# builds, HTH_ALLOWED_REPOSITORIES needs a `^git://host/org/…` alternate
+# alongside the `^git@` one. install-hooks warns when it does not.
+#
 # Requires: jq (on the agent host, at job time too), and root write access to
 # the agent config and hooks directory. Run ON THE AGENT HOST.
 # =============================================================================
@@ -253,7 +299,7 @@ set -euo pipefail
 # permitted" — the exact silent-failure this control exists to remove.
 case "${1:-audit}" in
   emit|apply|install-hooks)
-    : "${HTH_ALLOWED_REPOSITORIES:?set HTH_ALLOWED_REPOSITORIES (comma-separated ANCHORED regexes, e.g. '^git@github.com:acme/.*,^https://github.com/acme/.*')}"
+    : "${HTH_ALLOWED_REPOSITORIES:?set HTH_ALLOWED_REPOSITORIES (comma-separated ANCHORED regexes, e.g. '^git@github\.com:acme/[A-Za-z0-9._-]+$,^https://github\.com/acme/[A-Za-z0-9._-]+$')}"
     : "${HTH_ALLOWED_PLUGINS:?set HTH_ALLOWED_PLUGINS (comma-separated ANCHORED regexes, or NONE to forbid plugins entirely)}"
     ;;
 esac
@@ -364,8 +410,22 @@ agent_parse_line() {
   printf '%s' "${value}"
 }
 
-# T4: the agent does not anchor these for you. Refuse to ship a pattern that
-# would match a substring of a hostile URL or plugin source.
+# True when the pattern ends in a '$' that RE2 will read as an end-of-text
+# anchor rather than as a literal dollar sign.
+anchored_end() {
+  local p="$1" body bs=0
+  case "${p}" in *'$') ;; *) return 1 ;; esac
+  body="${p%'$'}"
+  while [ -n "${body}" ] && [ "${body%"${_HTH_BS}"}" != "${body}" ]; do
+    body="${body%"${_HTH_BS}"}"
+    bs=$(( bs + 1 ))
+  done
+  [ $(( bs % 2 )) -eq 0 ]
+}
+
+# T4: the agent does not anchor these for you, at either end. Refuse to ship a
+# pattern that would match a substring or a prefix of a hostile URL or plugin
+# source.
 validate_regexes() {
   local label="$1" list="$2" pat
   local IFS=','
@@ -378,8 +438,15 @@ validate_regexes() {
     esac
     case "${pat}" in
       '^'*) ;;
-      *) die "${label}: pattern '${pat}' is not anchored. regexp.Compile leaves it unanchored, so it matches anywhere in the value. Prefix it with '^'." ;;
+      *) die "${label}: pattern '${pat}' is not anchored at the start. regexp.Compile + re.MatchString (run_job.go:267-279) is a substring search, so it would match anywhere in the value — '${pat}' would admit 'https://evil.example/${pat}'. Prefix it with '^'." ;;
     esac
+    # T4: the end matters just as much. Without '$' the pattern matches a PREFIX
+    # of the value, so '^git@github\.com:acme/app\.git' admits
+    # 'git@github.com:acme/app.git.evil.example/x'. A trailing '$' preceded by an
+    # ODD number of backslashes is an escaped literal dollar, not an anchor —
+    # counting them is the difference between checking for an anchor and
+    # checking for a character.
+    anchored_end "${pat}" || die "${label}: pattern '${pat}' is not anchored at the end. MatchString matches a prefix, so it would admit '${pat}' followed by anything. Append an unescaped '\$' (and prefer a bounded character class over a trailing '.*' — see T4)."
     # grep -E exits 1 on "no match" (fine) and 2 on a malformed pattern. The
     # agent calls l.Fatalf on a pattern regexp.Compile rejects, so catching it
     # here is the difference between a config error and an agent restart loop.
@@ -578,7 +645,8 @@ no-command-eval="true"
 # Repository hooks are attacker-authored on an untrusted branch. See T6.
 no-local-hooks="true"
 ${plugin_lines}
-# Anchored. The agent does not anchor these for you (T4).
+# Anchored at BOTH ends. MatchString is a substring search, so a pattern without
+# '^' matches inside a hostile URL and one without '$' matches a prefix of it (T4).
 allowed-repositories="${HTH_ALLOWED_REPOSITORIES}"
 ${env_lines}
 # Built-in nine plus local additions; globs, not regexes; 6-byte floor (T2, T3).
@@ -788,8 +856,19 @@ pipeline="$(jget BUILDKITE_PIPELINE_SLUG)"
 # grep -E is POSIX ERE while the agent uses Go RE2. Keep policy patterns in the
 # common subset (anchors, character classes, ., *, +, ?, alternation) so the
 # admission decision here and the agent's own allowlist cannot disagree.
+#
+# The one place they WOULD disagree is a newline: RE2's `^` and `$` anchor the
+# whole text, grep's anchor each LINE, so a value spliced together as
+# "git@github.com:evil/x\ngit@github.com:acme/ok.git" satisfies grep on its
+# second line while the agent's pattern matches none of it. Refuse such a value
+# outright rather than let this hook be the more permissive of the two.
+HTH_NL='
+'
 matches_any() {
   local value="$1" list="$2" pat
+  case "${value}" in
+    *"${HTH_NL}"*) return 1 ;;
+  esac
   local IFS=','
   for pat in ${list}; do
     [ -n "${pat}" ] || continue
@@ -802,14 +881,52 @@ matches_any() {
 matches_any "${repo}" "${HTH_ALLOWED_REPOSITORIES}" \
   || reject "repository ${repo} is not in the allowlist"
 
+# T11: the two repository variables arrive in DIFFERENT URL FORMS for the SAME
+# repository, so `[ "$pr_repo" != "$repo" ]` calls every internal pull request a
+# fork. Buildkite's own examples are BUILDKITE_REPO
+# "git@github.com:acme-inc/my-project.git" against BUILDKITE_PULL_REQUEST_REPO
+# "git://github.com/acme-inc/my-project.git". Compare identity, not text: the
+# scheme, any userinfo, a port and a trailing ".git" carry none of it.
+norm_repo() {
+  local u="${1}" host rest sep port
+  u="${u%/}"
+  case "${u}" in *://*) u="${u#*://}" ;; esac        # git:// https:// ssh:// http://
+  case "${u%%[/:]*}" in *@*) u="${u#*@}" ;; esac     # git@ / user@ / token@, authority only
+  u="${u%.git}"
+  host="${u%%[:/]*}"
+  rest="${u#"${host}"}"
+  sep="${rest:0:1}"
+  rest="${rest:1}"
+  # "host:org/repo" (scp form) and "host:443/org/repo" (URL port) both land here.
+  # Strip the leading segment ONLY when it is entirely digits and something
+  # follows it: dropping a path segment that merely starts with a digit would
+  # make two DIFFERENT repositories compare equal, and that is the direction
+  # that turns a fork into a permitted internal build.
+  if [ "${sep}" = ":" ]; then
+    port="${rest%%/*}"
+    case "${port}" in
+      ""|*[!0-9]*) : ;;
+      *) [ "${port}" = "${rest}" ] || rest="${rest#*/}" ;;
+    esac
+  fi
+  rest="${rest#/}"
+  printf '%s/%s' "$(printf '%s' "${host}" | tr 'A-Z' 'a-z')" "${rest}"
+}
+
 # Fork detection. BUILDKITE_PULL_REQUEST_REPO is "" when the build is not a pull
-# request, and holds the SOURCE repository's URL when it is. A value that differs
-# from BUILDKITE_REPO means the code is coming from a repository you do not own.
-if [ -n "${pr_repo}" ] && [ "${pr_repo}" != "${repo}" ]; then
+# request, and holds the SOURCE repository's URL when it is. A value that is not
+# the same repository as BUILDKITE_REPO means the code is coming from a
+# repository you do not own.
+if [ -n "${pr_repo}" ] && [ "$(norm_repo "${pr_repo}")" != "$(norm_repo "${repo}")" ]; then
   [ "${HTH_ALLOW_FORK_BUILDS}" = "true" ] \
     || reject "fork build (PR #${pr_num} from ${pr_repo}) — forks run contributor code on this agent's credentials"
+  # The allowlist is matched against the RAW value, because that is the form the
+  # agent's own allowed-repositories sees. Buildkite hands fork URLs as
+  # "git://host/org/repo.git", so an allowlist written only as "^git@host:org/…"
+  # rejects every fork even with fork builds enabled — add a "^git://…"
+  # alternate when HTH_ALLOW_FORK_BUILDS is true.
   matches_any "${pr_repo}" "${HTH_ALLOWED_REPOSITORIES}" \
-    || reject "fork ${pr_repo} is not in the allowlist"
+    || reject "fork ${pr_repo} is not in the allowlist (fork URLs arrive in git:// form; HTH_ALLOWED_REPOSITORIES needs a '^git://' alternate)"
 fi
 
 # Plugins. BUILDKITE_PLUGINS is a JSON array of single-key objects whose key is
@@ -901,6 +1018,19 @@ PRECOMMAND
 }
 
 install_hooks() {
+  validate_regexes "allowed-repositories" "${HTH_ALLOWED_REPOSITORIES}"
+  [ "${HTH_ALLOWED_PLUGINS}" = "NONE" ] \
+    || validate_regexes "allowed-plugins" "${HTH_ALLOWED_PLUGINS}"
+  # T11: fork URLs arrive as git://host/org/repo.git. An allowlist that only
+  # spells the git@ or https:// form admits no fork at all, so enabling fork
+  # builds without a git:// alternate produces a control that looks configured
+  # and rejects every pull request from outside the org.
+  if [ "${HTH_ALLOW_FORK_BUILDS}" = "true" ]; then
+    case ",${HTH_ALLOWED_REPOSITORIES}," in
+      *',^git://'*) : ;;
+      *) echo "WARNING: HTH_ALLOW_FORK_BUILDS=true but no '^git://' pattern is in HTH_ALLOWED_REPOSITORIES. Buildkite reports BUILDKITE_PULL_REQUEST_REPO in git:// form (T11), so every fork build will be rejected by the allowlist." >&2 ;;
+    esac
+  fi
   write_pre_bootstrap
   write_pre_command
   echo "Hooks installed under ${HOOKS_PATH}. Restart buildkite-agent so the"
@@ -923,14 +1053,17 @@ usage:
 
 Required for emit/apply/install-hooks:
   HTH_ALLOWED_REPOSITORIES  comma-separated ANCHORED regexes, e.g.
-                            '^git@github.com:acme/.*,^https://github.com/acme/.*'
+                            '^git@github\.com:acme/[A-Za-z0-9._-]+$,^https://github\.com/acme/[A-Za-z0-9._-]+$'
   HTH_ALLOWED_PLUGINS       comma-separated ANCHORED regexes, or the literal
                             NONE to forbid plugins entirely
 
 Optional:
   HTH_EXTRA_REDACTED_VARS            extra GLOBS appended to the built-in nine
   HTH_ALLOWED_ENVIRONMENT_VARIABLES  anchored regexes for job-supplied env vars
-  HTH_ALLOW_FORK_BUILDS              'true' to admit fork PR builds (default false)
+  HTH_ALLOW_FORK_BUILDS              'true' to admit fork PR builds (default false).
+                                     Buildkite reports fork URLs in git:// form,
+                                     so HTH_ALLOWED_REPOSITORIES then needs a
+                                     '^git://github\.com/…$' alternate too (T11)
   HTH_REQUIRE_PLUGIN_SHA             'true' to demand 40-hex plugin pins
   BUILDKITE_AGENT_CONFIG             default /etc/buildkite-agent/buildkite-agent.cfg
   BUILDKITE_HOOKS_PATH               default /etc/buildkite-agent/hooks

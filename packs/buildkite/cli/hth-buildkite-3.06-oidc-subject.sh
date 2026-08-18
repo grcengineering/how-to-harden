@@ -18,12 +18,16 @@
 # 2026-08-18 — same eight flags, same env var sources, same validation, only the
 # urfave/cli generation differs.
 #
-# MINIMUM AGENT VERSION: v3.121.0. `--subject-claim` and `--claim` are ABSENT from
-# clicommand/oidc_request_token.go at v3.120.0 and present at v3.121.0 (checked
-# tag by tag). On an older agent the flag is not "ignored" — urfave/cli errors on
-# an unknown flag and the token request fails, so a fleet mid-upgrade fails the
-# build rather than silently minting a default-subject token. Related: OIDC tokens
-# are auto-redacted from build logs only from v3.104.0.
+# MINIMUM AGENT VERSION: v3.121.0, and it is `--subject-claim` ALONE that sets it.
+# Reading clicommand/oidc_request_token.go tag by tag: at v3.120.0 the registered
+# flags are audience, lifetime, job, claim, aws-session-tag, skip-redaction,
+# format — `--claim` is already there — and v3.121.0 adds `subject-claim` to that
+# list. So `--claim` is NOT a v3.121.0 feature and carries no floor of its own;
+# only the subject half of this pack does. On an older agent the new flag is not
+# "ignored" — urfave/cli errors on an unknown flag and the token request fails, so
+# a fleet mid-upgrade fails the build rather than silently minting a
+# default-subject token. Related: OIDC tokens are auto-redacted from build logs
+# only from v3.104.0.
 #
 # AUTHORING STATUS: DRIFT-CHECKED-ONLY.
 # `buildkite-agent` is not on PATH in the authoring environment, so NONE of these
@@ -126,6 +130,30 @@
 #     registers Name: "claim" with no alias. `--claims` is an unknown flag and
 #     errors out. Multiple values go in ONE flag, comma separated:
 #     --claim "organization_id,pipeline_id".
+# T5b --claim TAKES OPTIONAL CLAIMS ONLY, AND MOST SCOPING CLAIMS ARE NOT OPTIONAL.
+#     The docs split the claim table in two. Everything above "### Optional claims"
+#     — organization_slug, pipeline_slug, build_number, build_branch, build_tag,
+#     build_commit, step_key, job_id, agent_id, build_source, runner_environment —
+#     is ALREADY in every token; the vendor's own "Example token contents" prints
+#     all of them for a request that passed no --claim at all. The `--claim` flag
+#     ADDS from the optional table and from nothing else:
+#         organization_id  pipeline_id  build_id
+#         cluster_id  cluster_name  queue_id  queue_key  agent_tag:NAME
+#     So `--claim "build_branch,step_key"` asks the API to add two claims the token
+#     already carries. It reads as scoping and buys nothing. What the API does with
+#     an unaddable name is UNVERIFIED and cannot be settled from the client: the
+#     agent does no validation of its own — oidc_request_token.go carries a literal
+#     `// TODO: enumerate possible values` above the flag and forwards whatever it
+#     is given — so the outcome is somewhere between silently ignored and a failed
+#     token request, decided server-side. Not knowing which, in the command that
+#     mints a cloud credential, is reason enough not to send one. Branch and step
+#     conditions belong in the RELYING PARTY's policy, keyed on the default claims
+#     that are already present.
+#     assert_optional_claims() below refuses any name outside the optional table.
+#     NOTE the asymmetry with --aws-session-tag, three lines of argv away: session
+#     tags may carry "any of the supported claims" (docs, "AWS session tags"), and
+#     the vendor's own example tags organization_slug — a DEFAULT claim. Mixing is
+#     correct there and wrong here, which is exactly why this trap exists.
 # T6  DEFAULT LIFETIME IS 5 MINUTES, AND --lifetime 0 MEANS "DEFAULT", NOT
 #     "FOREVER". `exp` defaults to 5 minutes out; --lifetime must be a
 #     non-negative integer and 0 is explicitly treated as unset. Do not read a
@@ -168,6 +196,13 @@ SUBJECT_CLAIMS_BROADENING="organization_id cluster_id queue_id"
 # Subjects that change every build and therefore cannot be matched by a static
 # cloud trust policy.
 SUBJECT_CLAIMS_PER_BUILD="build_id job_id"
+
+# T5b. The ONLY names `--claim` may add, from the docs' "### Optional claims"
+# table. `agent_tag:NAME` is handled separately because NAME is operator-chosen.
+OPTIONAL_CLAIMS_ALLOWED="organization_id pipeline_id build_id cluster_id cluster_name queue_id queue_key"
+# Present in every token already. Passing one of these to --claim is the mistake
+# T5b describes: it looks like scoping and adds nothing.
+DEFAULT_CLAIMS="organization_slug pipeline_slug build_number build_branch build_tag build_commit step_key job_id agent_id build_source runner_environment"
 
 # HTH Guide Excerpt: begin cli-oidc-subject-request
 # Mint a token with an explicit, immutable subject. Run inside a Buildkite job:
@@ -221,16 +256,63 @@ assert_subject_claim() {
   done
 }
 
+# T5b: refuse a default claim passed where an OPTIONAL claim name belongs. Reading
+# `--claim "build_branch"` as a scoping control is the specific mistake this
+# catches; the value is already in the token and the flag cannot add it.
+assert_optional_claims() {
+  local csv="$1" claim ok d list
+
+  # Commas to spaces rather than `local IFS=,`: the allow-lists below are
+  # space-separated, and re-scoping IFS would stop THEM splitting.
+  list="$(printf '%s' "${csv}" | tr ',' ' ')"
+
+  for claim in ${list}; do
+    [ -n "${claim}" ] || continue
+
+    # agent_tag:NAME — the suffix is an operator-chosen agent tag, not a fixed
+    # name, so only the prefix can be checked.
+    case "${claim}" in agent_tag:?*) continue ;; esac
+
+    for d in ${DEFAULT_CLAIMS}; do
+      if [ "${d}" = "${claim}" ]; then
+        echo "FATAL: '${claim}' is a DEFAULT claim — every token already carries it." >&2
+        echo "       --claim adds from the optional table only: ${OPTIONAL_CLAIMS_ALLOWED}" >&2
+        echo "       Condition on '${claim}' in the relying party's policy instead;" >&2
+        echo "       for AWS, carry it with --aws-session-tag, which DOES accept" >&2
+        echo "       default claims." >&2
+        exit 3
+      fi
+    done
+
+    ok=0
+    for d in ${OPTIONAL_CLAIMS_ALLOWED}; do [ "${d}" = "${claim}" ] && ok=1; done
+    if [ "${ok}" -ne 1 ]; then
+      echo "FATAL: '${claim}' is not an addable claim." >&2
+      echo "       Accepted: ${OPTIONAL_CLAIMS_ALLOWED} agent_tag:<NAME>" >&2
+      exit 3
+    fi
+  done
+}
+
 # T7 audience, T6 lifetime, T4 no redundant --claim for the subject itself.
 # T5: extra claims go in ONE comma-separated --claim, never --claims.
+# T5b: and only OPTIONAL claims may go in it. The default adds organization_id —
+# the immutable counterpart to the mutable organization_slug the token already
+# carries — so a relying party can pin the tenant to a UUID that survives a
+# rename. Branch and step are deliberately absent: they are default claims,
+# present already, and --claim cannot add them. Pass "" to send no --claim at all.
+# If you ever set --subject-claim organization_id (which needs
+# HTH_ALLOW_BROAD_SUBJECT=1 and is refused otherwise), drop it from extra-claims:
+# T4 — the subject claim is auto-included and repeating it is redundant.
 request_token() {
   local audience="${1:?audience required, e.g. sts.amazonaws.com}"
   local subject_claim="${2:?subject claim name required, e.g. pipeline_id}"
   local lifetime="${3:-900}"
-  local extra_claims="${4:-build_branch,step_key}"
+  local extra_claims="${4-organization_id}"
 
   require_agent
   assert_subject_claim "${subject_claim}"
+  assert_optional_claims "${extra_claims}"
 
   [ "${lifetime}" -ge 1 ] 2>/dev/null || {
     echo "FATAL: lifetime must be a positive integer of seconds. 0 means 'API" >&2
@@ -238,11 +320,18 @@ request_token() {
     exit 3
   }
 
-  "${BK_AGENT}" oidc request-token \
-    --audience "${audience}" \
-    --subject-claim "${subject_claim}" \
-    --lifetime "${lifetime}" \
-    --claim "${extra_claims}"
+  if [ -z "${extra_claims}" ]; then
+    "${BK_AGENT}" oidc request-token \
+      --audience "${audience}" \
+      --subject-claim "${subject_claim}" \
+      --lifetime "${lifetime}"
+  else
+    "${BK_AGENT}" oidc request-token \
+      --audience "${audience}" \
+      --subject-claim "${subject_claim}" \
+      --lifetime "${lifetime}" \
+      --claim "${extra_claims}"
+  fi
 }
 
 # AWS variant. The audience is fixed by STS, and the claims that a trust policy
@@ -250,6 +339,14 @@ request_token() {
 # rather than plain claims, because that is the only form
 # sts:AssumeRoleWithWebIdentity can condition on. The role's trust policy must
 # also permit sts:TagSession.
+#
+# The default tag set below deliberately mixes DEFAULT claims (organization_slug,
+# build_branch, build_source) with an OPTIONAL one (pipeline_id), which would be
+# rejected by assert_optional_claims one function up. That is not an
+# inconsistency: --aws-session-tag takes "any of the supported claims" (docs, "AWS
+# session tags") and the vendor's own example tags organization_slug, whereas
+# --claim adds from the optional table only (T5b). Session tags are where branch
+# and step conditions belong on AWS.
 request_token_aws() {
   local subject_claim="${1:-pipeline_id}"
   local lifetime="${2:-900}"
@@ -278,20 +375,104 @@ request_token_aws() {
 #
 # It lives on the agent host under hooks-path. It is not in the build's
 # repository, so a pull request cannot change the subject of its own token.
+#
+# ── ⚠️ THE HOOK FILE IS SHARED. DO NOT WRITE IT WHOLE. ──────────────────────
+# An agent has exactly ONE ${hooks-path}/environment, and control 3.9
+# (packs/buildkite/config/hth-buildkite-3.09-agent-env.sh) needs the same file:
+# it is the only place BUILDKITE_CLEAN_CHECKOUT is read, and the only place that
+# can win the GIT_SSH_COMMAND first-wins race. A whole-file `cat >` by either
+# pack silently deletes the other control — and neither `audit` verb would see
+# it, because each greps for its own settings elsewhere. Adopt 3.6 then 3.9 that
+# way round and every OIDC token quietly reverts to the default compound subject
+# while three PASSes print.
+#
+# So both packs write a DELIMITED BLOCK and rewrite only their own:
+#   # >>> HTH-BLOCK <id>
+#   ...
+#   # <<< HTH-BLOCK <id>
+# hth_write_hook_block() below is byte-identical in 3.6 and 3.9 apart from the
+# block id. It preserves every other line in the file — the other pack's block,
+# and any hook the operator wrote themselves — and takes a timestamped backup
+# before touching anything. Running either pack twice is idempotent.
 
-install_environment_hook() {
-  local hook="${AGENT_HOOKS_PATH}/environment"
-  local dir; dir="$(dirname "${hook}")"
+# The one line that differs between the two copies of this protocol.
+HTH_HOOK_BLOCK_ID="hth-3.6-oidc-subject"
+
+# $1 = hook path, $2 = block id, block body on stdin.
+hth_write_hook_block() {
+  local hook="$1" id="$2"
+  local dir tmp begin end
+  dir="$(dirname "${hook}")"
+  begin="# >>> HTH-BLOCK ${id}"
+  end="# <<< HTH-BLOCK ${id}"
 
   [ -d "${dir}" ] || { echo "FATAL: hooks-path '${dir}' does not exist." >&2; exit 5; }
   [ -w "${dir}" ] || { echo "FATAL: cannot write '${dir}' (run as root)." >&2; exit 5; }
-  [ -e "${hook}" ] && cp -p "${hook}" "${hook}.hth-bak.$(date -u +%Y%m%dT%H%M%SZ)"
 
-  cat >"${hook}" <<'HOOKEOF'
+  tmp="$(mktemp "${dir}/.hth-environment.XXXXXX")"
+
+  if [ -e "${hook}" ]; then
+    # Backup first, always — including when the result will be identical. A hook
+    # is arbitrary code that runs as the agent user on every job; there is no
+    # such thing as an edit here that is not worth being able to undo. The
+    # counter matters: the stamp has one-second resolution, and installing 3.6
+    # then 3.9 back to back lands in the same second, so a bare stamp would let
+    # the second install overwrite the backup of the operator's ORIGINAL file.
+    # A backup is never overwritten. (`environment.hth-bak.*` is inert — the
+    # agent looks up hooks by exact filename, not by glob.)
+    local stamp bak n=0
+    stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+    bak="${hook}.hth-bak.${stamp}"
+    while [ -e "${bak}" ]; do n=$((n + 1)); bak="${hook}.hth-bak.${stamp}-${n}"; done
+    cp -p "${hook}" "${bak}"
+    echo "Backed up ${hook} -> ${bak}"
+
+    # Carry over everything except a previous copy of THIS block. awk with
+    # index() rather than a regex: the markers contain > and < and the id
+    # contains dots, none of which should be read as metacharacters.
+    awk -v b="${begin}" -v e="${end}" '
+      index($0, b) == 1 { skip = 1; next }
+      index($0, e) == 1 { skip = 0; next }
+      !skip { print }
+    ' "${hook}" >"${tmp}"
+
+    # An `exit` in code that already ran means this block never will. Cheap to
+    # detect, invisible at runtime (the hook "succeeds" and does nothing).
+    # Only unmanaged lines are scanned: the sibling pack's block legitimately
+    # exits to refuse a job, and warning about that every run would be noise.
+    if awk '
+         /^# >>> HTH-BLOCK / { skip = 1; next }
+         /^# <<< HTH-BLOCK / { skip = 0; next }
+         !skip { print }
+       ' "${tmp}" | grep -qE '^[[:space:]]*exit([[:space:]]|$)'; then
+      echo "WARN: ${hook} contains an 'exit' outside any HTH-BLOCK. If it runs" >&2
+      echo "      before the block below, the block never executes." >&2
+    fi
+  else
+    cat >"${tmp}" <<'HEADEOF'
 #!/usr/bin/env bash
-# Buildkite agent `environment` hook — OIDC subject scoping.
-# Runs before every plugin environment hook. Managed by HTH control 3.6.
+# Buildkite agent `environment` hook.
+# Runs once per job, before checkout and before every plugin environment hook.
+# Sections delimited by "HTH-BLOCK <id>" markers are managed by How to Harden
+# packs and are rewritten in place; edit outside them.
 set -euo pipefail
+HEADEOF
+  fi
+
+  printf '\n%s\n' "${begin}" >>"${tmp}"
+  cat >>"${tmp}"
+  printf '%s\n' "${end}" >>"${tmp}"
+
+  chmod 0755 "${tmp}"
+  chown root:root "${tmp}" 2>/dev/null || true
+  mv "${tmp}" "${hook}"
+}
+
+install_environment_hook() {
+  local hook="${AGENT_HOOKS_PATH}/environment"
+
+  hth_write_hook_block "${hook}" "${HTH_HOOK_BLOCK_ID}" <<'HOOKEOF'
+# OIDC subject scoping. Managed by HTH control 3.6.
 
 # Unconditional assignment, never a ${VAR:-default}: a pipeline.yml `env:` block
 # is applied to the job environment, and deferring to an inherited value would
@@ -324,20 +505,25 @@ esac
 # Vault's plugin does not mint a token; it reads one from the environment. Mint
 # it here so it exists before the vault-secrets environment hook runs. The
 # audience must match the `bound_audiences` on the Vault JWT role.
+#
+# No --claim here. The Vault JWT role's bound_claims are written against
+# build_branch / step_key / pipeline_slug, and all three are DEFAULT claims that
+# every token already carries — --claim adds from the optional table only and
+# cannot re-add them. organization_id is the one worth adding: it pins the role to
+# a tenant UUID that survives an organization rename, unlike organization_slug.
 if [ "${BUILDKITE_PIPELINE_SLUG:-}" = "payments-service" ] &&
    [ "${BUILDKITE_STEP_KEY:-}" = "db-migrate" ]; then
   BUILDKITE_OIDC_VAULT_JWT="$(buildkite-agent oidc request-token \
     --audience "https://vault.internal.example.com" \
     --subject-claim "${BUILDKITE_OIDC_TOKEN_SUBJECT_CLAIM}" \
     --lifetime 300 \
-    --claim "build_branch,step_key")"
+    --claim "organization_id")"
   export BUILDKITE_OIDC_VAULT_JWT
 fi
 HOOKEOF
 
-  chown root:root "${hook}" 2>/dev/null || true
-  chmod 0755 "${hook}"
-  echo "Installed ${hook}. Restart buildkite-agent, then run: $0 audit"
+  echo "Wrote block '${HTH_HOOK_BLOCK_ID}' in ${hook}."
+  echo "Restart buildkite-agent, then run: $0 audit ${AGENT_HOOKS_PATH}"
 }
 # HTH Guide Excerpt: end cli-oidc-environment-hook
 
@@ -410,12 +596,47 @@ verify_subject() {
   return "${rc}"
 }
 
-# Host-side review. Catches the two configurations that turn this control off:
-# a repository choosing its own subject, and redaction being disabled.
+# Host-side review. Catches the configurations that turn this control off: a
+# repository choosing its own subject, redaction being disabled, and — the one
+# this pack used to be blind to — the agent-side block being gone. Nothing here
+# greps the hook file until now, so a whole-file overwrite by another pack (or by
+# a config-management run) removed the entire control while every check passed.
 audit_oidc_usage() {
   local root="${1:-.}" rc=0 hits
+  local hook="${AGENT_HOOKS_PATH}/environment"
 
   echo "scanning: ${root}"
+
+  # 0. Is the control still installed on this host? Only meaningful where the
+  # hooks-path exists, i.e. when auditing an agent rather than a repository.
+  if [ -d "${AGENT_HOOKS_PATH}" ]; then
+    if [ ! -e "${hook}" ]; then
+      echo "FAIL: ${hook} does not exist. Nothing sets" >&2
+      echo "      BUILDKITE_OIDC_TOKEN_SUBJECT_CLAIM off-repo, so every token" >&2
+      echo "      carries the default compound subject. Run: $0 install-hook" >&2
+      rc=1
+    elif ! grep -q "HTH-BLOCK ${HTH_HOOK_BLOCK_ID}" "${hook}"; then
+      echo "FAIL: ${hook} exists but carries no '${HTH_HOOK_BLOCK_ID}' block." >&2
+      echo "      Either it was never installed, or something rewrote the file" >&2
+      echo "      whole — control 3.9 writes the same hook. Check for a" >&2
+      echo "      ${hook}.hth-bak.* sibling, then re-run: $0 install-hook" >&2
+      rc=1
+    elif ! grep -q 'BUILDKITE_OIDC_TOKEN_SUBJECT_CLAIM' "${hook}"; then
+      echo "FAIL: the '${HTH_HOOK_BLOCK_ID}' block no longer sets" >&2
+      echo "      BUILDKITE_OIDC_TOKEN_SUBJECT_CLAIM." >&2
+      rc=1
+    else
+      echo "PASS: ${hook} carries the ${HTH_HOOK_BLOCK_ID} block and sets the subject claim."
+    fi
+
+    # A hook anyone but root can rewrite is arbitrary code on every job, and
+    # would let the pipeline's own owners restore a subject of their choosing.
+    if [ -e "${hook}" ] && [ -n "$(find "${hook}" -perm -g+w -o -perm -o+w 2>/dev/null)" ]; then
+      echo "FAIL: ${hook} is group- or world-writable. The off-repo guarantee this" >&2
+      echo "      control depends on is only as strong as the file's permissions." >&2
+      rc=1
+    fi
+  fi
 
   hits="$(grep -rIn --include='*.yml' --include='*.yaml' \
           'BUILDKITE_OIDC_TOKEN_SUBJECT_CLAIM' "${root}" 2>/dev/null || true)"
@@ -450,6 +671,20 @@ audit_oidc_usage() {
     rc=1
   fi
 
+  # T5b. A default claim passed to --claim reads as scoping and is not. Matched on
+  # the same line as the flag so an --aws-session-tag carrying the same name — which
+  # is correct — is not flagged.
+  hits="$(grep -rIn -E -e '--claim[ =]"?[^"]*\b(organization_slug|pipeline_slug|build_number|build_branch|build_tag|build_commit|step_key|runner_environment|build_source)\b' \
+          "${root}" 2>/dev/null || true)"
+  if [ -n "${hits}" ]; then
+    echo "WARN: '--claim' is passed a DEFAULT claim, which every token already" >&2
+    echo "      carries. --claim adds from the optional table only" >&2
+    echo "      (${OPTIONAL_CLAIMS_ALLOWED} agent_tag:<NAME>)." >&2
+    echo "      Condition on it in the relying party's policy, or on AWS carry it" >&2
+    echo "      with --aws-session-tag, which does accept default claims." >&2
+    printf '%s\n' "${hits}" >&2
+  fi
+
   return "${rc}"
 }
 # HTH Guide Excerpt: end cli-oidc-subject-verify
@@ -468,11 +703,20 @@ usage:
   hth-buildkite-3.06-oidc-subject.sh install-hook          write the agent environment hook
   hth-buildkite-3.06-oidc-subject.sh verify <jwt> <claim>  prove sub == that claim's value
   hth-buildkite-3.06-oidc-subject.sh audit [path]          scan a repo/host tree (exit 1 on fail)
+                                                           also checks the agent hook when
+                                                           $BUILDKITE_AGENT_HOOKS_PATH exists
 
 subject-claim is a claim NAME, never a UUID. Accepted:
   organization_id pipeline_id cluster_id queue_id build_id job_id agent_id
 organization_id / cluster_id / queue_id are BROADER than the default subject and
 require HTH_ALLOW_BROAD_SUBJECT=1.
+
+extra-claims goes to --claim, which ADDS optional claims only:
+  organization_id pipeline_id build_id cluster_id cluster_name queue_id queue_key
+  agent_tag:<NAME>
+Default is organization_id; pass "" for none. build_branch, step_key, build_source
+and the other default claims are in every token already and are REJECTED here —
+put those conditions in the relying party's policy, or (AWS only) in session-tags.
 
 request/request-aws must run inside a job (--job defaults from BUILDKITE_JOB_ID).
 install-hook runs on the agent host; restart buildkite-agent afterwards.

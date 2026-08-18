@@ -300,6 +300,97 @@ apply_host_key_pinning() {
 # The agent-level `environment` hook. This is the ONLY supported place to set
 # BUILDKITE_CLEAN_CHECKOUT, and the only place that can win the GIT_SSH_COMMAND
 # race, because it runs after the agent configured SSH and before checkout.
+#
+# ── ⚠️ THE HOOK FILE IS SHARED. DO NOT WRITE IT WHOLE. ──────────────────────
+# An agent has exactly ONE ${hooks-path}/environment, and control 3.6
+# (packs/buildkite/cli/hth-buildkite-3.06-oidc-subject.sh) needs the same file:
+# it is the only off-repo place to set BUILDKITE_OIDC_TOKEN_SUBJECT_CLAIM, and a
+# pipeline that can set that variable can widen its own cloud trust. This pack
+# previously did `cat > "${hook}"` with no existence check and no backup, so
+# adopting 3.6 and then 3.9 deleted 3.6's control outright — silently, because
+# neither audit read the other's settings.
+#
+# So both packs write a DELIMITED BLOCK and rewrite only their own:
+#   # >>> HTH-BLOCK <id>
+#   ...
+#   # <<< HTH-BLOCK <id>
+# hth_write_hook_block() below is byte-identical to the copy in pack 3.6 apart
+# from the block id. It preserves every other line in the file — the other pack's
+# block, and any hook the operator wrote themselves — and takes a timestamped
+# backup before touching anything. Running either pack twice is idempotent.
+
+# The one line that differs between the two copies of this protocol.
+HTH_HOOK_BLOCK_ID="hth-3.9-agent-env"
+
+# $1 = hook path, $2 = block id, block body on stdin.
+hth_write_hook_block() {
+  local hook="$1" id="$2"
+  local dir tmp begin end
+  dir="$(dirname "${hook}")"
+  begin="# >>> HTH-BLOCK ${id}"
+  end="# <<< HTH-BLOCK ${id}"
+
+  [ -d "${dir}" ] || { echo "FATAL: hooks-path '${dir}' does not exist." >&2; exit 5; }
+  [ -w "${dir}" ] || { echo "FATAL: cannot write '${dir}' (run as root)." >&2; exit 5; }
+
+  tmp="$(mktemp "${dir}/.hth-environment.XXXXXX")"
+
+  if [ -e "${hook}" ]; then
+    # Backup first, always — including when the result will be identical. A hook
+    # is arbitrary code that runs as the agent user on every job; there is no
+    # such thing as an edit here that is not worth being able to undo. The
+    # counter matters: the stamp has one-second resolution, and installing 3.6
+    # then 3.9 back to back lands in the same second, so a bare stamp would let
+    # the second install overwrite the backup of the operator's ORIGINAL file.
+    # A backup is never overwritten. (`environment.hth-bak.*` is inert — the
+    # agent looks up hooks by exact filename, not by glob.)
+    local stamp bak n=0
+    stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+    bak="${hook}.hth-bak.${stamp}"
+    while [ -e "${bak}" ]; do n=$((n + 1)); bak="${hook}.hth-bak.${stamp}-${n}"; done
+    cp -p "${hook}" "${bak}"
+    echo "Backed up ${hook} -> ${bak}"
+
+    # Carry over everything except a previous copy of THIS block. awk with
+    # index() rather than a regex: the markers contain > and < and the id
+    # contains dots, none of which should be read as metacharacters.
+    awk -v b="${begin}" -v e="${end}" '
+      index($0, b) == 1 { skip = 1; next }
+      index($0, e) == 1 { skip = 0; next }
+      !skip { print }
+    ' "${hook}" >"${tmp}"
+
+    # An `exit` in code that already ran means this block never will. Cheap to
+    # detect, invisible at runtime (the hook "succeeds" and does nothing).
+    # Only unmanaged lines are scanned: the sibling pack's block legitimately
+    # exits to refuse a job, and warning about that every run would be noise.
+    if awk '
+         /^# >>> HTH-BLOCK / { skip = 1; next }
+         /^# <<< HTH-BLOCK / { skip = 0; next }
+         !skip { print }
+       ' "${tmp}" | grep -qE '^[[:space:]]*exit([[:space:]]|$)'; then
+      echo "WARN: ${hook} contains an 'exit' outside any HTH-BLOCK. If it runs" >&2
+      echo "      before the block below, the block never executes." >&2
+    fi
+  else
+    cat >"${tmp}" <<'HEADEOF'
+#!/usr/bin/env bash
+# Buildkite agent `environment` hook.
+# Runs once per job, before checkout and before every plugin environment hook.
+# Sections delimited by "HTH-BLOCK <id>" markers are managed by How to Harden
+# packs and are rewritten in place; edit outside them.
+set -euo pipefail
+HEADEOF
+  fi
+
+  printf '\n%s\n' "${begin}" >>"${tmp}"
+  cat >>"${tmp}"
+  printf '%s\n' "${end}" >>"${tmp}"
+
+  chmod 0755 "${tmp}"
+  chown root:root "${tmp}" 2>/dev/null || true
+  mv "${tmp}" "${hook}"
+}
 
 write_environment_hook() {
   local hooks hook
@@ -307,11 +398,11 @@ write_environment_hook() {
   hook="${hooks}/environment"
   mkdir -p "${hooks}"
 
-  # Quoted heredoc: nothing here is expanded at write time except the two
-  # placeholders substituted immediately below.
-  cat > "${hook}" <<'HOOKEOF'
-#!/usr/bin/env bash
-set -euo pipefail
+  # Quoted heredoc so nothing is expanded at write time, piped through sed for
+  # the one placeholder. The block body carries no shebang and no `set` — those
+  # belong to the file, which hth_write_hook_block owns.
+  sed "s|__KNOWN_HOSTS__|${KNOWN_HOSTS}|g" <<'HOOKEOF' | hth_write_hook_block "${hook}" "${HTH_HOOK_BLOCK_ID}"
+# git host-key trust + workspace hygiene. Managed by HTH control 3.9.
 
 # --- git host-key trust -----------------------------------------------------
 # REBUILT, not appended. ssh resolves duplicate -o options first-wins, so a
@@ -334,12 +425,7 @@ export BUILDKITE_CLEAN_CHECKOUT=true
 # in it.
 HOOKEOF
 
-  # Substitute the operator-configured known_hosts path into the hook.
-  sed -i.bak "s|__KNOWN_HOSTS__|${KNOWN_HOSTS}|g" "${hook}" && rm -f "${hook}.bak"
-
-  chown root:root "${hook}" 2>/dev/null || true
-  chmod 0755 "${hook}"
-  echo "Wrote ${hook}"
+  echo "Wrote block '${HTH_HOOK_BLOCK_ID}' in ${hook}."
 }
 
 # The maximum-control option, kept deliberately thin.
@@ -429,6 +515,18 @@ audit_agent_env() {
       rc=1
     fi
   else
+    # Own-block presence. Without it this pack's settings may still be in the
+    # file by hand, but nothing can be rewritten safely and a re-run would
+    # append a second copy of the policy rather than replace the first.
+    if grep -q "HTH-BLOCK ${HTH_HOOK_BLOCK_ID}" "${hook}"; then
+      echo "PASS: ${hook} carries the ${HTH_HOOK_BLOCK_ID} block."
+    else
+      echo "WARN: ${hook} exists but carries no '${HTH_HOOK_BLOCK_ID}' block, so"
+      echo "      this pack does not own its contents. Run '$0 write-environment-hook'"
+      echo "      to bring it under management (your current file is preserved and"
+      echo "      backed up; the block is appended)."
+    fi
+
     if grep -q 'BUILDKITE_CLEAN_CHECKOUT=true' "${hook}"; then
       echo "PASS: environment hook forces a clean checkout."
     elif [ "${disconnect}" = "true" ]; then
