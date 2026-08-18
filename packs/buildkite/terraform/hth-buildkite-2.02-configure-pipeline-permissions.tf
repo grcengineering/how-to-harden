@@ -22,6 +22,18 @@ resource "buildkite_pipeline" "pipelines" {
   maximum_timeout_in_minutes = each.value.maximum_timeout_in_minutes
   allow_rebuilds             = each.value.allow_rebuilds
 
+  # Guide Step 1 ("Configure Pipeline Visibility") implemented. PUBLIC exposes
+  # build logs, job output, artifacts metadata and the pipeline definition to
+  # anonymous internet users, so this defaults to PRIVATE in var.pipelines.
+  #
+  # WHY IT MUST BE DECLARED, NOT OMITTED: `visibility` is optional + COMPUTED in
+  # buildkite/buildkite. An omitted computed attribute is not "the safe default" —
+  # Terraform reads whatever the server currently holds into state and treats that
+  # value as desired. A console flip to PUBLIC therefore produces an empty plan and
+  # survives every subsequent apply, forever. Declaring it is what converts that
+  # flip into drift the next `terraform plan` reverts.
+  visibility = each.value.visibility
+
   # Restrict fork builds to prevent untrusted code execution.
   # provider_settings is an ATTRIBUTE in buildkite/buildkite ~> 1.0, not a block —
   # block syntax fails `terraform validate` with "Unsupported block type".

@@ -1,0 +1,299 @@
+#!/usr/bin/env bash
+# =============================================================================
+# HTH Buildkite Control 2.5: Manage API Access Token Hygiene
+# Profile Level: L1 (Crawl)
+# Frameworks: CIS 5.4 | NIST IA-5, AC-6
+# Source: https://howtoharden.com/guides/buildkite/#25-manage-api-access-token-hygiene
+#
+# WHY THIS IS AN api/ PACK AND NOT terraform/.
+# The buildkite/buildkite provider (v1.38.0) has no resource and no data source
+# for organization API access tokens. There is no apiAccessTokenCreate mutation
+# either — tokens are minted in Personal Settings only. What the control plane
+# DOES expose is the half that matters for hygiene: read the whole inventory,
+# revoke individual tokens, and set an org-wide auto-revoke-on-inactivity clock.
+# Guide Step 4 says "revoke tokens that stop appearing" and ships no code; this
+# pack is that code.
+#
+# ── TRAP 1: the connection has no `count` field ──────────────────────────────
+# OrganizationAPIAccessTokenConnection exposes only edges / nodes / pageInfo.
+# Asking for `apiAccessTokens(first:0){ count }` — the idiom that works on
+# Organization.members — is a hard GraphQL error here. Every count below is
+# computed client-side from edges, and the query paginates on pageInfo.
+#
+# ── TRAP 2: your own token is in the inventory ───────────────────────────────
+# The token authenticating this script appears in its own results. Revoking it
+# locks you out of the API mid-runbook and there is no undo. `revoke` below
+# refuses to proceed on a self-match; the match is made against
+# GET /v2/access-token, which returns the calling token's uuid.
+#
+# ── TRAP 3: revoke takes the GraphQL id, not the uuid ────────────────────────
+# organizationApiAccessTokenRevoke wants `apiAccessTokenId: ID!` — the opaque
+# base64 node id, NOT the human-visible uuid you see in the console. The
+# inventory query below returns both and `revoke` resolves uuid -> id for you.
+#
+# ── TRAP 4: `ipAddress` is NOT an allowlist ──────────────────────────────────
+# OrganizationAPIAccessToken.ipAddress reads like a restriction field. It is
+# not: it is the source address the token was LAST USED FROM (verified live —
+# the value equalled the caller's egress IP and moved with it; a never-used
+# token reads null). Per-token IP allowlists are console-only and have no API.
+# Treat this field as detection — a token answering from an address your
+# integration does not own is the finding.
+#
+# ── TRAP 5: `scopes` governs REST only ───────────────────────────────────────
+# Buildkite's own docs: the GraphQL API "is accessed using an authenticated API
+# access token whose scopes cannot be restricted." A token whose REST scope list
+# looks narrow may still hold unrestricted GraphQL. Whether GraphQL is enabled
+# on a token is not exposed on this type, so it cannot be audited from here —
+# which is exactly the argument for Portals (see the 2.5 terraform pack).
+#
+# ── TRAP 6: null lastAccessedAt means NEVER USED, not stale ──────────────────
+# Buildkite provisions system tokens (e.g. "Hosted Queue API Access Token") that
+# legitimately carry null lastAccessedAt. A naive "revoke everything that has
+# never been seen" sweep breaks hosted agents. `stale` reports null separately
+# and never folds it into the age ranking.
+#
+# ── VERIFICATION STATUS ─────────────────────────────────────────────────────
+#   inventory / stale / auto-revoke-status  VERIFIED-LIVE — executed against a
+#     real organization; pagination, self-token match, and the null-lastAccessedAt
+#     bucket all exercised on real data.
+#   set-auto-revoke                          DRIFT-CHECKED-ONLY — the mutation is
+#     Enterprise-gated and this tenant reads as non-Enterprise. The document was
+#     validated against the live schema (only the deliberately-omitted variables
+#     errored), so field and type names are confirmed, but it was not executed.
+#   revoke                                   DRIFT-CHECKED-ONLY — every guard was
+#     exercised live; the mutation itself was schema-validated but not executed,
+#     because revoking a real token is not reversible.
+#
+# Requires: BUILDKITE_TOKEN (GraphQL-enabled API access token), BUILDKITE_ORG_SLUG,
+#           curl, jq.
+# =============================================================================
+
+set -euo pipefail
+
+: "${BUILDKITE_TOKEN:?set BUILDKITE_TOKEN (GraphQL-enabled API access token)}"
+: "${BUILDKITE_ORG_SLUG:?set BUILDKITE_ORG_SLUG (organization slug from your Buildkite URL)}"
+
+GQL="https://graphql.buildkite.com/v1"
+REST="https://api.buildkite.com/v2"
+
+gql() {
+  curl -sS --fail-with-body -X POST "${GQL}" \
+    -H "Authorization: Bearer ${BUILDKITE_TOKEN}" \
+    -H "Content-Type: application/json" \
+    --data @-
+}
+
+# Abort on a GraphQL-layer error rather than letting jq quietly emit nulls.
+die_on_gql_errors() {
+  local body="$1"
+  if jq -e '.errors' >/dev/null 2>&1 <<<"${body}"; then
+    jq -r '"GraphQL error: " + ([.errors[].message] | join("; "))' <<<"${body}" >&2
+    exit 1
+  fi
+}
+
+# HTH Guide Excerpt: begin inventory-api-tokens
+# Full inventory of the organization's API access tokens, paginated.
+# There is no `count` on this connection — pull every edge and count locally.
+fetch_token_page() {
+  local after="$1"
+  jq -n --arg slug "${BUILDKITE_ORG_SLUG}" --arg after "${after}" '{
+    query: "query($slug:ID!,$after:String){ organization(slug:$slug){
+              revokeInactiveTokensAfter
+              apiAccessTokens(first:100, after:$after){
+                edges { node {
+                  id uuid description scopes
+                  createdAt expiresAt lastAccessedAt ipAddress
+                  owner { name email }
+                } }
+                pageInfo { hasNextPage endCursor }
+              } } }",
+    variables: { slug: $slug, after: (if $after == "" then null else $after end) }
+  }' | gql
+}
+
+collect_tokens() {
+  local after="" page body
+  : >/tmp/hth-bk-tokens.$$.jsonl
+  while :; do
+    page=$(fetch_token_page "${after}")
+    die_on_gql_errors "${page}"
+    jq -c '.data.organization.apiAccessTokens.edges[].node' <<<"${page}" \
+      >>/tmp/hth-bk-tokens.$$.jsonl
+    if [ "$(jq -r '.data.organization.apiAccessTokens.pageInfo.hasNextPage' <<<"${page}")" != "true" ]; then
+      break
+    fi
+    after=$(jq -r '.data.organization.apiAccessTokens.pageInfo.endCursor' <<<"${page}")
+  done
+  jq -s '.' /tmp/hth-bk-tokens.$$.jsonl
+  rm -f /tmp/hth-bk-tokens.$$.jsonl
+}
+
+# The uuid of the token running this script. Revoking it is unrecoverable.
+self_token_uuid() {
+  curl -sS --fail-with-body -H "Authorization: Bearer ${BUILDKITE_TOKEN}" \
+    "${REST}/access-token" | jq -r '.uuid'
+}
+
+# Risk-annotated inventory. ORG_ADMIN_SCOPES are the REST scopes that let a
+# token change who can do what — a token holding any of them is an admin
+# credential no matter what it was created for.
+inventory() {
+  local self
+  self=$(self_token_uuid)
+  collect_tokens | jq --arg self "${self}" '
+    def age_days: if . == null then null
+                  else ((now - (sub("\\.[0-9]+";"") | fromdateiso8601)) / 86400 | floor) end;
+    def admin_scopes: ["WRITE_ORGANIZATIONS","WRITE_ORGANIZATION_SETTINGS",
+                       "WRITE_ORGANIZATION_INVITATIONS","WRITE_TEAMS","WRITE_CLUSTERS"];
+    {
+      total: length,
+      never_expiring: [ .[] | select(.expiresAt == null) ] | length,
+      never_used:     [ .[] | select(.lastAccessedAt == null) ] | length,
+      admin_capable:  [ .[] | select((.scopes - admin_scopes) != .scopes) ] | length,
+      tokens: [ .[] | {
+        uuid, description,
+        owner: .owner.name,
+        is_self: (.uuid == $self),
+        scope_count: (.scopes | length),
+        admin_capable: ((.scopes - admin_scopes) != .scopes),
+        expires_at: .expiresAt,
+        never_expires: (.expiresAt == null),
+        last_used_days_ago: (.lastAccessedAt | age_days),
+        last_used_from_ip: .ipAddress
+      } ] | sort_by(.last_used_days_ago == null, -(.last_used_days_ago // 0))
+    }'
+}
+
+# Tokens unused for longer than the threshold. Never-used tokens are reported
+# in a separate bucket because Buildkite provisions system tokens that read null.
+stale() {
+  local days="${1:-90}" self
+  self=$(self_token_uuid)
+  collect_tokens | jq --argjson days "${days}" --arg self "${self}" '
+    def age_days: if . == null then null
+                  else ((now - (sub("\\.[0-9]+";"") | fromdateiso8601)) / 86400 | floor) end;
+    {
+      threshold_days: $days,
+      stale: [ .[] | . + {age: (.lastAccessedAt | age_days)}
+               | select(.age != null and .age >= $days)
+               | {uuid, description, owner: .owner.name, age_days: .age,
+                  last_used_from_ip: .ipAddress, is_self: (.uuid == $self)} ],
+      never_used_review_manually: [ .[] | select(.lastAccessedAt == null)
+               | {uuid, description, owner: .owner.name, created_at: .createdAt} ]
+    }'
+}
+# HTH Guide Excerpt: end inventory-api-tokens
+
+# HTH Guide Excerpt: begin auto-revoke-inactive-tokens
+# The org-wide inactivity clock. This is the single setting that turns Step 4's
+# manual review into an automatic control: Buildkite revokes any API access token
+# that has not been used within the period, without anyone running a script.
+#
+# ENTERPRISE-GATED (the mutation, not the read). Organization
+# .revokeInactiveTokensAfter reads on every plan and returns null when unset —
+# so the CHECK half below runs anywhere. The update mutation requires Enterprise
+# and returns a plan error otherwise.
+#
+# Valid RevokeInactiveTokenPeriod values:
+#   DAYS_30  DAYS_60  DAYS_90  DAYS_180  DAYS_365  NEVER
+# NEVER is the insecure setting; it is also what null means in practice.
+read_auto_revoke() {
+  local body
+  body=$(jq -n --arg slug "${BUILDKITE_ORG_SLUG}" '{
+    query: "query($slug:ID!){ organization(slug:$slug){ id revokeInactiveTokensAfter } }",
+    variables: { slug: $slug }
+  }' | gql)
+  die_on_gql_errors "${body}"
+  jq '{
+    organization_id: .data.organization.id,
+    revoke_inactive_tokens_after: .data.organization.revokeInactiveTokensAfter,
+    compliant: (.data.organization.revokeInactiveTokensAfter
+                | . != null and . != "NEVER")
+  }' <<<"${body}"
+}
+
+set_auto_revoke() {
+  local period="$1" org_id body
+  case "${period}" in
+    DAYS_30|DAYS_60|DAYS_90|DAYS_180|DAYS_365|NEVER) ;;
+    *) echo "invalid period '${period}'; expected one of DAYS_30 DAYS_60 DAYS_90 DAYS_180 DAYS_365 NEVER" >&2
+       exit 2 ;;
+  esac
+
+  org_id=$(read_auto_revoke | jq -r '.organization_id')
+
+  # NOTE the exact input type name: OrganizationRevokeInactiveTokensAfterUpdate
+  # MutationInput. It carries the "Mutation" infix; the shorter ...UpdateInput
+  # spelling does not exist and fails schema validation before it ever executes.
+  body=$(jq -n --arg org "${org_id}" --arg period "${period}" '{
+    query: "mutation($org:ID!,$period:RevokeInactiveTokenPeriod!){
+              organizationRevokeInactiveTokensAfterUpdate(input:{
+                organizationId:$org, revokeInactiveTokensAfter:$period
+              }){ organization { id revokeInactiveTokensAfter } } }",
+    variables: { org: $org, period: $period }
+  }' | gql)
+  die_on_gql_errors "${body}"
+  jq '.data.organizationRevokeInactiveTokensAfterUpdate.organization' <<<"${body}"
+}
+# HTH Guide Excerpt: end auto-revoke-inactive-tokens
+
+# HTH Guide Excerpt: begin revoke-api-token
+# Revoke one token by uuid. Resolves uuid -> GraphQL id, and refuses to revoke
+# the token this script is authenticating with.
+revoke_token() {
+  local target_uuid="$1" self node org_id body
+  self=$(self_token_uuid)
+
+  if [ "${target_uuid}" = "${self}" ]; then
+    echo "REFUSING: ${target_uuid} is the token authenticating this script." >&2
+    echo "Revoking it ends your API access with no way back. Mint a replacement," >&2
+    echo "re-export BUILDKITE_TOKEN, then revoke this one." >&2
+    exit 3
+  fi
+
+  node=$(collect_tokens | jq -c --arg u "${target_uuid}" 'map(select(.uuid == $u)) | first')
+  if [ -z "${node}" ] || [ "${node}" = "null" ]; then
+    echo "no API access token in ${BUILDKITE_ORG_SLUG} with uuid ${target_uuid}" >&2
+    echo "run 'inventory' to list the uuids this organization actually has." >&2
+    exit 4
+  fi
+
+  org_id=$(read_auto_revoke | jq -r '.organization_id')
+
+  # Exact input type: OrganizationAPIAccessTokenRevokeMutationInput — capital
+  # API, "Mutation" infix. Fields: organizationId, apiAccessTokenId.
+  body=$(jq -n --arg org "${org_id}" --arg id "$(jq -r '.id' <<<"${node}")" '{
+    query: "mutation($org:ID!,$id:ID!){
+              organizationApiAccessTokenRevoke(input:{
+                organizationId:$org, apiAccessTokenId:$id
+              }){ revokedApiAccessTokenId } }",
+    variables: { org: $org, id: $id }
+  }' | gql)
+  die_on_gql_errors "${body}"
+
+  jq -n --argjson node "${node}" --argjson res "${body}" '{
+    revoked_description: $node.description,
+    revoked_uuid: $node.uuid,
+    revoked_api_access_token_id: $res.data.organizationApiAccessTokenRevoke.revokedApiAccessTokenId
+  }'
+}
+# HTH Guide Excerpt: end revoke-api-token
+
+case "${1:-inventory}" in
+  inventory)          inventory ;;
+  stale)              stale "${2:-90}" ;;
+  auto-revoke-status) read_auto_revoke ;;
+  set-auto-revoke)    set_auto_revoke "${2:?period required (DAYS_30|DAYS_60|DAYS_90|DAYS_180|DAYS_365|NEVER)}" ;;
+  revoke)             revoke_token "${2:?token uuid required}" ;;
+  *)
+    cat >&2 <<'USAGE'
+usage:
+  hth-buildkite-2.05-token-hygiene.sh inventory
+  hth-buildkite-2.05-token-hygiene.sh stale [DAYS]            # default 90
+  hth-buildkite-2.05-token-hygiene.sh auto-revoke-status
+  hth-buildkite-2.05-token-hygiene.sh set-auto-revoke PERIOD  # Enterprise
+  hth-buildkite-2.05-token-hygiene.sh revoke UUID
+USAGE
+    exit 2 ;;
+esac

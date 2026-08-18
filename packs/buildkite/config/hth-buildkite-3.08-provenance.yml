@@ -1,0 +1,299 @@
+# =============================================================================
+# HTH Buildkite Control 3.8: Attest Build Artifacts (SLSA build provenance)
+# Profile Level: L3 (Run)
+# Frameworks: CIS Controls 16.1 | NIST 800-53 SI-7, SR-4
+# Source: https://howtoharden.com/guides/buildkite/#38-attest-build-artifacts
+#
+# PAIRS WITH: packs/buildkite/{cli,config}/hth-buildkite-3.04-*  (pipeline signing).
+# 3.4 signs the INSTRUCTIONS. This pack signs the OUTPUT. They are separate
+# integrity claims and neither substitutes for the other.
+#
+# AGENT MAJOR VERSION: buildkite-agent **v3**. `buildkite-agent oidc request-token`
+# and its flags (--audience/--lifetime/--claim/--subject-claim/--format/
+# --skip-redaction) verified against github.com/buildkite/agent at main,
+# clicommand/oidc_request_token.go lines 22-99, read 2026-08-18.
+#
+# AUTHORING STATUS (split — read both):
+#   VERIFIED-LIVE  — every plugin option name, type and required-ness below was
+#     read from the pinned plugin.yml at the pinned tag:
+#       generate-provenance-attestation v1.1.0 -> artifacts: string (REQUIRED),
+#         attestation_name: string (REQUIRED), additionalProperties: false,
+#         requirements: python3, openssl; hooks/post-artifact.
+#       publish-to-packages v2.2.0 -> artifacts: string (REQUIRED),
+#         registry: string (REQUIRED), attestations: string|array,
+#         artifact_build_id: string, additionalProperties: false.
+#     Sigstore trust of Buildkite verified from sigstore/fulcio
+#     config/identity/config.yaml: issuer https://agent.buildkite.com, client-id
+#     `sigstore`, ci-provider `buildkite-job`, SAN template
+#     "https://buildkite.com/{organization_slug}/{pipeline_slug}".
+#     cosign flags verified against sigstore/cosign doc/cosign_{sign,verify}-blob.md.
+#   DRIFT-CHECKED-ONLY — the `publish-to-packages` step. Buildkite Package
+#     Registries is Enterprise-gated and this tenant reads as non-Enterprise, so
+#     that step was authored from the pinned plugin schema and never executed.
+#     GENERATION IS NOT GATED. Only the publish half is.
+#
+# -----------------------------------------------------------------------------
+# T1  THE PLUGIN'S DSSE SIGNATURE IS NOT A TRUST ANCHOR. THIS IS THE WHOLE POINT.
+# -----------------------------------------------------------------------------
+# generate-provenance-attestation v1.1.0 wraps the in-toto Statement in a DSSE
+# v1.0 Envelope and signs it -- with a private key that is CHECKED INTO THE
+# PLUGIN REPOSITORY. From the plugin's own main.py, verbatim:
+#
+#     # Eventually we'll take a base64-encoded private key here.
+#     # But for now, we'll use the hard-coded example_rsa_private_key()
+#     # which SHOULD NOT BE TRUSTED because anyone can make up a fake
+#     # statement payload and sign it with this key.
+#
+# and from attestation_generator/helpers.py:
+#
+#     # THIS IS INSECURE AND INTENDED SOLELY TO DEMONSTRATE SIGNING MECHANISMS.
+#
+# The envelope therefore always carries
+#   signatures[0].keyid == "generate_provenance_attestation_plugin_example_key"
+# and anybody on the internet can mint a byte-identical, "valid" envelope
+# asserting that your organization built their malware. The plugin README says so
+# in as many words: it "lays the groundwork for the Statement to be signed with a
+# user-specified private key in the future, which will satisfy the Provenance is
+# Authentic requirement needed for SLSA Build Level 2."
+#
+# So the honest reading of this plugin is: it is a PROVENANCE GENERATOR, not a
+# signer. That is exactly SLSA Build L1 -- provenance exists and is consumable;
+# it is not authenticated. Shipping only region `config-provenance-generate`'s
+# first step and calling the artifact "attested" would be the same class of
+# false assurance the 3.4 pack exists to remove.
+#
+# The fix is in this file and it is ungated on every plan: extract the Statement
+# and re-sign it with a real Sigstore keyless identity bound to this job. That is
+# what the `sign-provenance` step does and what the verify region checks. The
+# verify region FAILS CLOSED on the example keyid; it never treats it as a
+# signature.
+#
+# -----------------------------------------------------------------------------
+# T2  `$` IN A pipeline.yml IS EATEN BEFORE THE SHELL EVER SEES IT.
+# -----------------------------------------------------------------------------
+# `buildkite-agent pipeline upload` interpolates the YAML before the agent runs
+# it. Per the grammar in github.com/buildkite/interpolate parser.go:26-33,
+#   EscapedDollar = ( "\$" | "$$" )
+# A bare `$VAR` inside a `command:` is expanded AT UPLOAD TIME -- usually to the
+# empty string -- and your script then runs with an unset variable. Every shell
+# variable below is written `$$VAR` so the shell receives a literal `$VAR`.
+# `set -u` turns the failure mode from silent-wrong into loud-fail; keep it.
+# (`pipeline upload --no-interpolation` is the alternative, but it disables
+# interpolation for the whole file, not per-step.)
+#
+# -----------------------------------------------------------------------------
+# T3  PIN THE PLUGIN OR THE ATTESTATION ASSERTS NOTHING ABOUT WHO BUILT IT.
+# -----------------------------------------------------------------------------
+# The generator sets predicate.runDetails.builder.id to
+#   https://github.com/buildkite-plugins/generate-provenance-attestation-buildkite-plugin@refs/tags/<plugin-version>
+# (provenance_generator.py builder_id()). The "builder" this provenance names is
+# the PLUGIN, not Buildkite. An unpinned `#main` reference makes that identity --
+# and the code that computes every digest in the statement -- mutable by anyone
+# with push access to the plugin repo. Pin to a tag (below) or to a commit SHA.
+# Same argument applies to publish-to-packages.
+#
+# -----------------------------------------------------------------------------
+# T4  BOTH PLUGIN OPTIONS ARE REQUIRED AND NO OTHERS ARE ACCEPTED.
+# -----------------------------------------------------------------------------
+# plugin.yml declares `required: [artifacts, attestation_name]` with
+# `additionalProperties: false`. Omitting either, or adding a plausible-looking
+# extra key, fails plugin configuration validation. `artifacts` is a single glob
+# STRING -- not a list -- and is passed through to `main.py --artifacts-glob`.
+#
+# -----------------------------------------------------------------------------
+# T5  THE HOOK IS post-artifact, SO ORDERING IS NOT WHAT IT LOOKS LIKE.
+# -----------------------------------------------------------------------------
+# hooks/post-artifact runs AFTER the step's `artifact_paths` upload. Consequences:
+#   - the artifacts must be declared in `artifact_paths`, not merely produced;
+#   - the attestation is itself uploaded as a build artifact named
+#     `attestation_name`, from a temp dir, by the hook;
+#   - nothing later in the SAME step's `command:` can see the attestation --
+#     signing it needs a separate step, which is why `sign-provenance` exists;
+#   - if the hook fails the job goes red, but the artifacts were already
+#     uploaded. Presence of an artifact is therefore not evidence that provenance
+#     was produced for it. Gate on the attestation, never on the artifact.
+#
+# -----------------------------------------------------------------------------
+# T6  THE GENERATOR READS AN UNDOCUMENTED BUILDKITE ENDPOINT WITH THE AGENT TOKEN.
+# -----------------------------------------------------------------------------
+# attestation_generator/api_client.py resolves the artifact digests via
+#   GET https://agent.buildkite.com/v3/builds/{build_id}/artifacts/search
+# authenticated with `BUILDKITE_AGENT_ACCESS_TOKEN`, above the plugin's own
+# comment: "Warning, this uses an internal undocumented endpoint and can break
+# without any notice." Two operational facts follow. (1) This plugin executes
+# with the agent access token in scope -- treat it as trusted code and allowlist
+# it explicitly via 2.4's `allowed-plugins` rather than running with plugins
+# unrestricted. (2) A Buildkite-side change to that endpoint breaks attestation
+# generation with no version bump on your side; the verify region failing closed
+# is what turns that into a visible build failure instead of silent drift.
+#
+# -----------------------------------------------------------------------------
+# T7  THE GENERATOR HARD-INDEXES ITS ENVIRONMENT.
+# -----------------------------------------------------------------------------
+# provenance_generator.py reads BUILDKITE_REPO, BUILDKITE_BRANCH, BUILDKITE_COMMIT,
+# BUILDKITE_TAG, BUILDKITE_STEP_ID, BUILDKITE_COMMAND, BUILDKITE_STEP_KEY,
+# BUILDKITE_JOB_ID, BUILDKITE_ORGANIZATION_{ID,SLUG}, BUILDKITE_PIPELINE_{ID,SLUG},
+# BUILDKITE_BUILD_{ID,NUMBER} through `self.environment[key]` -- a plain dict
+# index, so a missing key is a KeyError and a dead hook, not a degraded
+# statement. Anything that filters the job environment (2.4's
+# `enable-environment-variable-allowlist`) must keep these.
+# Also note `resolvedDependencies[0].uri` is built by urlparse() over
+# BUILDKITE_REPO; an `scp`-style SSH remote (git@host:org/repo.git) has no
+# netloc and yields a malformed URI. Use an https or ssh:// remote if consumers
+# will parse that field.
+#
+# Requires on the agent: python3, openssl (plugin), jq, cosign v2 (this file).
+# =============================================================================
+
+steps:
+  # HTH Guide Excerpt: begin config-provenance-generate
+  # pipeline.yml -- add under `steps:` in the pipeline that BUILDS the artifact.
+  # Two steps: the plugin GENERATES provenance (SLSA Build L1, unauthenticated),
+  # then a second step gives that provenance a signature worth trusting.
+
+  - label: ":package: build"
+    key: "build"
+    command: "./scripts/build.sh"
+    # post-artifact fires after THIS upload, so the globs must be declared here.
+    artifact_paths:
+      - "dist/*.tar.gz"
+    plugins:
+      # Pin to a tag or commit SHA. This reference becomes the `builder.id` the
+      # attestation asserts, and it is the code that computes the digests.
+      - generate-provenance-attestation#v1.1.0:
+          # Single glob STRING (plugin.yml: type: string). Both keys are
+          # required; additionalProperties is false, so nothing else is accepted.
+          artifacts: "dist/*.tar.gz"
+          attestation_name: "provenance.json"
+
+  - label: ":lock: sign provenance (sigstore keyless)"
+    key: "sign-provenance"
+    depends_on: "build"
+    command: |
+      set -euo pipefail
+
+      buildkite-agent artifact download provenance.json .
+
+      # Refuse to build on the plugin's own signature. v1.1.0 signs with a key
+      # published in its repository; treating it as authentic is worse than
+      # having no signature, because it looks like one.
+      KEYID="$$(jq -r '.signatures[0].keyid // ""' provenance.json)"
+      if [ "$$KEYID" = "generate_provenance_attestation_plugin_example_key" ]; then
+        echo "note: plugin DSSE signature is the published example key - discarding it" >&2
+      fi
+
+      # The Statement is the payload. That is what gets a real signature.
+      jq -r '.payload' provenance.json | base64 -d > statement.json
+      jq -e '._type == "https://in-toto.io/Statement/v1"
+             and .predicateType == "https://slsa.dev/provenance/v1"
+             and (.subject | length) > 0' statement.json > /dev/null
+
+      # Job-scoped OIDC token. Fulcio trusts issuer https://agent.buildkite.com
+      # with audience `sigstore`; the certificate SAN it mints is
+      # https://buildkite.com/<org-slug>/<pipeline-slug>.
+      OIDC_TOKEN="$$(buildkite-agent oidc request-token --audience sigstore --lifetime 300)"
+
+      cosign sign-blob \
+        --yes \
+        --identity-token "$$OIDC_TOKEN" \
+        --bundle statement.cosign.bundle \
+        statement.json
+
+      buildkite-agent artifact upload statement.json
+      buildkite-agent artifact upload statement.cosign.bundle
+  # HTH Guide Excerpt: end config-provenance-generate
+
+  # HTH Guide Excerpt: begin config-provenance-publish
+  # pipeline.yml -- ENTERPRISE ONLY (Buildkite Package Registries).
+  # DRIFT-CHECKED-ONLY: authored from publish-to-packages v2.2.0's pinned
+  # plugin.yml; not executed. `artifacts` and `registry` are both required,
+  # `attestations` accepts a string or an array, additionalProperties is false.
+  # On any other plan, delete this step: the generation and signing above are
+  # ungated and the cosign bundle publishes to your own registry unchanged.
+
+  - label: ":outbox_tray: publish with attestation"
+    key: "publish"
+    depends_on: "sign-provenance"
+    plugins:
+      - publish-to-packages#v2.2.0:
+          artifacts: "dist/*.tar.gz"
+          registry: "my-org/my-registry"
+          # Ship the attestation WITH the package. An attestation that stays in
+          # the build is provenance nobody downstream can reach.
+          attestations:
+            - "provenance.json"
+  # HTH Guide Excerpt: end config-provenance-publish
+
+  # HTH Guide Excerpt: begin config-provenance-verify
+  # pipeline.yml -- run this in the CONSUMING pipeline before deploy.
+  # Guide Step 3 is the load-bearing one: an attestation nobody verifies is a
+  # file, not a control. Every check below exits non-zero on failure, so the
+  # deploy step gated on it cannot run against an artifact whose provenance is
+  # missing, unsigned, forged, or points at the wrong commit.
+
+  - label: ":mag: verify provenance before deploy"
+    key: "verify-provenance"
+    depends_on: "sign-provenance"
+    command: |
+      set -euo pipefail
+
+      # Policy. Deploy is allowed ONLY for artifacts this pipeline built from
+      # this repository on this branch. Anything looser is not a control.
+      EXPECT_IDENTITY="https://buildkite.com/my-org/my-build-pipeline"
+      EXPECT_ISSUER="https://agent.buildkite.com"
+      EXPECT_REPO="https://github.com/my-org/my-repo.git"
+      EXPECT_BRANCH="main"
+      ARTIFACT="dist/app.tar.gz"
+
+      # `artifact download` defaults --build to $BUILDKITE_BUILD_ID (the current
+      # build). When the consumer is a SEPARATE pipeline, append
+      # `--build <upstream-build-uuid>` to each of these three commands.
+      buildkite-agent artifact download "$$ARTIFACT" .
+      buildkite-agent artifact download statement.json .
+      buildkite-agent artifact download statement.cosign.bundle .
+
+      # 1. AUTHENTICITY. Pin both the identity and the issuer: --certificate-identity
+      #    alone is satisfiable by any issuer Fulcio trusts.
+      cosign verify-blob \
+        --bundle statement.cosign.bundle \
+        --certificate-identity "$$EXPECT_IDENTITY" \
+        --certificate-oidc-issuer "$$EXPECT_ISSUER" \
+        statement.json
+
+      # 2. INTEGRITY. Bind the signed statement to the bytes actually downloaded.
+      #    Without this the signature only proves a statement existed, not that
+      #    it describes this file. sha256sum is GNU-only; macOS agents have shasum.
+      if command -v sha256sum > /dev/null 2>&1; then
+        ACTUAL_SHA="$$(sha256sum "$$ARTIFACT" | cut -d' ' -f1)"
+      else
+        ACTUAL_SHA="$$(shasum -a 256 "$$ARTIFACT" | cut -d' ' -f1)"
+      fi
+      jq -e --arg sha "$$ACTUAL_SHA" \
+        '[.subject[] | select(.digest.sha256 == $$sha)] | length == 1' \
+        statement.json > /dev/null \
+        || { echo "FAIL: $$ARTIFACT (sha256 $$ACTUAL_SHA) is not a subject of the signed statement" >&2; exit 1; }
+
+      # 3. PROVENANCE POLICY. The statement is authentic and describes this file;
+      #    now decide whether that origin is one you deploy.
+      jq -e --arg repo "$$EXPECT_REPO" --arg branch "$$EXPECT_BRANCH" \
+        '.predicate.buildDefinition.externalParameters.repository == $$repo
+         and .predicate.buildDefinition.externalParameters.build.branch == $$branch
+         and (.predicate.buildDefinition.externalParameters.build.commit | length) == 40' \
+        statement.json > /dev/null \
+        || { echo "FAIL: provenance does not match the deploy policy (repo/branch/commit)" >&2; exit 1; }
+
+      # 4. Never accept the plugin's own envelope as the authenticity evidence.
+      #    If a consumer ever hands you provenance.json instead of the signed
+      #    statement + bundle, this is the check that stops it.
+      if [ -f provenance.json ]; then
+        BAD="$$(jq -r '.signatures[0].keyid // ""' provenance.json)"
+        if [ "$$BAD" = "generate_provenance_attestation_plugin_example_key" ]; then
+          echo "FAIL: DSSE envelope is signed with the plugin's published example key." >&2
+          echo "      That key is in the plugin repo; anyone can forge this envelope." >&2
+          echo "      Verify statement.json against statement.cosign.bundle instead." >&2
+          exit 1
+        fi
+      fi
+
+      echo "PASS: provenance authentic, bound to $$ARTIFACT, and within deploy policy"
+  # HTH Guide Excerpt: end config-provenance-verify

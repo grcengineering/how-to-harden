@@ -48,27 +48,46 @@ enforce_2fa = true
 # Section 2.1: Team Permissions
 # Define teams with least-privilege defaults
 # -----------------------------------------------------------------------------
+# All five members_can_* privileges are optional + computed in the provider, so an
+# attribute you leave out here is ADOPTED from whatever the Buildkite console
+# currently says and is never drift-corrected. Set every one of them explicitly.
+# members_can_destroy_packages / members_can_destroy_registries are the
+# destructive pair: they let a non-admin erase published artifacts, the registries
+# holding them, and the attestations attached to them. Keep both false unless a
+# named team owns artifact lifecycle.
 teams = {
   platform = {
-    description                  = "Platform engineering team"
-    privacy                      = "VISIBLE"
-    default_team                 = false
-    default_member_role          = "MEMBER"
-    members_can_create_pipelines = true
+    description                    = "Platform engineering team"
+    privacy                        = "VISIBLE"
+    default_team                   = false
+    default_member_role            = "MEMBER"
+    members_can_create_pipelines   = true
+    members_can_create_registries  = true
+    members_can_create_suites      = true
+    members_can_destroy_packages   = false
+    members_can_destroy_registries = false
   }
   developers = {
-    description                  = "Development team with read and build access"
-    privacy                      = "VISIBLE"
-    default_team                 = true
-    default_member_role          = "MEMBER"
-    members_can_create_pipelines = false
+    description                    = "Development team with read and build access"
+    privacy                        = "VISIBLE"
+    default_team                   = true
+    default_member_role            = "MEMBER"
+    members_can_create_pipelines   = false
+    members_can_create_registries  = false
+    members_can_create_suites      = false
+    members_can_destroy_packages   = false
+    members_can_destroy_registries = false
   }
   security = {
-    description                  = "Security team with audit access"
-    privacy                      = "SECRET"
-    default_team                 = false
-    default_member_role          = "MEMBER"
-    members_can_create_pipelines = false
+    description                    = "Security team with audit access"
+    privacy                        = "SECRET"
+    default_team                   = false
+    default_member_role            = "MEMBER"
+    members_can_create_pipelines   = false
+    members_can_create_registries  = false
+    members_can_create_suites      = false
+    members_can_destroy_packages   = false
+    members_can_destroy_registries = false
   }
 }
 
@@ -89,6 +108,10 @@ pipelines = {
   #   maximum_timeout_in_minutes = 120
   #   allow_rebuilds             = true
   #   cluster_id                 = null  # Set to a cluster ID to bind
+  #   # PUBLIC | PRIVATE. Always state it: the provider attribute is optional +
+  #   # computed, so omitting it makes Terraform adopt the server's current value
+  #   # and a console flip to PUBLIC survives every apply.
+  #   visibility                 = "PRIVATE"
   # }
 }
 
@@ -110,14 +133,30 @@ pipeline_team_access = {
 # Section 3.1: Agent Tokens
 # Scoped tokens per environment
 # -----------------------------------------------------------------------------
+# Cluster-scoped registration tokens. `allowed_ip_addresses` is REQUIRED in
+# practice: an empty list means unrestricted, and pack 3.1 fails the plan on it.
+# Bump `rotation_id` to force a replacement token (this is how rotation works —
+# Buildkite tokens have no Terraform-settable expiry).
 agent_tokens = {
   production = {
-    description = "Agent token for production environment"
+    description          = "Agent token for production environment"
+    cluster              = "production"
+    allowed_ip_addresses = ["203.0.113.0/24"]
+    rotation_id          = "1"
   }
   staging = {
-    description = "Agent token for staging environment"
+    description          = "Agent token for staging environment"
+    cluster              = "staging"
+    allowed_ip_addresses = ["198.51.100.0/24"]
+    rotation_id          = "1"
   }
 }
+
+# Cluster used by any agent_tokens entry that leaves `cluster` null.
+agent_token_cluster_name = "Default cluster"
+
+# Set false ONLY to accept an unrestricted registration token deliberately.
+agent_token_require_ip_allowlist = true
 
 
 # -----------------------------------------------------------------------------

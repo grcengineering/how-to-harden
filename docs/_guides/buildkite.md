@@ -6,9 +6,9 @@ slug: "buildkite"
 tier: "2"
 category: "DevOps"
 description: "CI/CD platform hardening for Buildkite including SAML SSO, team permissions, agent security, and pipeline controls"
-version: "0.2.1"
+version: "0.3.0"
 maturity: "draft"
-last_updated: "2026-08-17"
+last_updated: "2026-08-18"
 ---
 
 ## Overview
@@ -230,6 +230,13 @@ Control access to specific pipelines.
 2. Restrict manual builds on production
 3. Audit build triggers
 
+**Step 3: Set the Organization-Level Pipeline Toggles**
+1. Go to **Settings → Security → Pipelines** and review the six organization-wide toggles: **Create Pipelines**, **Delete Pipelines**, **Change Pipeline Visibility**, **Manage Notification Services**, **Manage Agent Registration Tokens**, and **Stop Agents**.
+2. These are distinct from the team-level `members_can_create_pipelines` setting in [2.1](#21-configure-team-permissions) — a team can be denied pipeline creation while the organization still permits every member to create one.
+3. **Change Pipeline Visibility** is the toggle that most directly undoes Step 1: leaving it open means any member can flip a private pipeline public regardless of how the pipeline itself is configured.
+
+**Automation:** ClickOps only — Buildkite exposes no write interface for these six toggles. REST `/organizations` is GET-only, none of the 85 GraphQL mutations sets them, and `buildkite_organization` exposes only `allowed_api_ip_addresses` and `enforce_2fa` ([organization settings](https://buildkite.com/docs/pipelines/security/permissions), verified against the live schema 2026-08-18). This step is Enterprise-gated and must be verified in the console.
+
 #### Code Implementation
 
 {% include pack-code.html vendor="buildkite" section="2.2" %}
@@ -314,6 +321,10 @@ Constrain what a build is allowed to do when the code or configuration driving i
 1. Set job time limits so a hijacked build cannot mine, scan, or exfiltrate indefinitely.
 2. Put your enforcement in **agent lifecycle hooks**, which live on the agent host and cannot be overridden by `pipeline.yml`.
 
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="2.4" %}
+
 Source: [Buildkite security controls](https://buildkite.com/docs/pipelines/best-practices/security-controls)
 
 ---
@@ -350,11 +361,109 @@ Govern Buildkite **API access tokens** — the user-scoped REST and GraphQL cred
 
 **Step 3: Narrow GraphQL Exposure**
 1. Where an integration only needs a fixed set of queries, use **Portals** to expose those specific operations instead of handing out a general GraphQL token.
+2. **A portal is not automatically a downgrade in privilege.** Portal tokens carry administrator-level permissions *within the operations the portal exposes*, and they are long-lived. A portal whose query is written loosely is an admin credential with a friendlier name — scope the query itself, and set the portal's IP allowlist.
 
 **Step 4: Monitor Token Use**
 1. Review token activity in the audit log (see [4.1](#41-configure-audit-logging)) and revoke tokens that stop appearing — an unused token is pure standing risk.
 
+**Step 5: Automate Revocation of Inactive Tokens**
+1. Set the organization's **inactive token revocation period** so Buildkite revokes tokens that go unused for a chosen window (30, 60, 90, 180 or 365 days). This turns Step 4 from a recurring human task into a platform guarantee, and it is the single highest-leverage organization-wide setting on this control.
+2. The setting is **Enterprise**-gated. The current value is readable on any plan, so you can at least detect that it is unset.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="2.5" %}
+
 Source: [Buildkite security controls](https://buildkite.com/docs/pipelines/best-practices/security-controls)
+
+---
+
+### 2.6 Remove Dormant Organization Members
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.3 |
+| NIST 800-53 | AC-2(3) |
+
+#### Description
+Find organization members who have stopped using Buildkite and remove them, as a recurring review rather than a one-off cleanup.
+
+#### Rationale
+**Why This Matters:**
+- SCIM deprovisioning only catches people who left the company; it does nothing about a current employee who moved to another team two years ago and still holds pipeline access
+- A dormant account is the ideal account to compromise precisely because nobody is watching it — there is no legitimate activity for malicious activity to stand out against
+- Buildkite membership survives changes that feel like they should have removed it, including team deletion and repository access changes, so access accumulates by default
+- Nobody notices an account that does nothing, which means the window between compromise and detection on a dormant account is bounded only by your audit-log retention
+
+**Attack Prevented:** Persistent access via abandoned accounts, privilege accumulation across internal role changes, undetected credential reuse against accounts with no baseline activity
+
+#### ClickOps Implementation
+
+**Step 1: Establish a Dormancy Threshold**
+1. Pick an inactivity window that matches your access-review cadence — 90 days is a common starting point, and it should be shorter than your audit-log retention so you can still investigate what a dormant account did before you remove it.
+2. Write the threshold down as policy, because a threshold that lives only in someone's head produces inconsistent reviews.
+
+**Step 2: Review Members Against It**
+1. Go to **Settings → Users** and sort by last activity.
+2. For each member past the threshold, confirm with their manager whether the access is still needed rather than assuming dormancy means departure.
+
+**Step 3: Remove and Record**
+1. Remove members whose access is no longer needed.
+2. Record the review itself — an access review you cannot evidence is an access review you cannot claim in an audit.
+
+**Note on availability:** the Inactive User List and the `inactiveSince` filter are Enterprise features that also require Audit Logging. On lower plans, read `lastSeenAt` per member and filter client-side; the Code Pack does this automatically when the filter is unavailable.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="2.6" %}
+
+Source: [Buildkite user management](https://buildkite.com/docs/platform/team-management/permissions)
+
+---
+
+### 2.7 Govern Cross-Pipeline Access with Rules
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 6.8 |
+| NIST 800-53 | AC-3, AC-4 |
+
+#### Description
+Use Buildkite **Rules** to declare explicitly which pipelines may trigger which other pipelines and read each other's artifacts, instead of relying on the implicit permissions that team membership grants.
+
+#### Rationale
+**Why This Matters:**
+- Rules **override the usual trigger-step permission checks**, so a rule is not a tightening of existing permissions — it is a separate grant that can widen them, and an unreviewed rule is a standing authorization nobody audited
+- Artifact-read rules cross **cluster boundaries**, which means a rule can quietly undo the isolation that [3.2](#32-configure-agent-clusters) was configured to enforce
+- A public pipeline can be granted the ability to trigger a private one, turning a low-trust entry point into a path to high-trust infrastructure
+- Cross-pipeline triggering is the most direct lateral-movement primitive Buildkite offers, and without an inventory of rules there is no way to answer "what can this pipeline reach"
+
+**Attack Prevented:** Lateral movement from a compromised low-trust pipeline into production pipelines, cross-cluster artifact exfiltration, privilege escalation through unreviewed trigger grants
+
+#### ClickOps Implementation
+
+**Step 1: Inventory What Exists**
+1. Go to **Settings → Rules** and list every rule currently defined.
+2. For each, identify the source pipeline, the target pipeline, and who added it — a rule with no owner is a rule to remove.
+
+**Step 2: Apply Deny-by-Default**
+1. Remove rules that are not tied to a documented workflow. Cross-pipeline access should be the exception you justified, not the default you inherited.
+2. Where a rule is needed, scope it to the narrowest source and target pair that makes the workflow function.
+
+**Step 3: Review Rules on the Same Cadence as Permissions**
+1. Add rules to your access-review cycle. They grant access, so they age the same way permissions do.
+
+**Note:** Rules are in public preview and available on all plans. They are exposed through Terraform, GraphQL (`ruleCreate`/`ruleUpdate`/`ruleDelete`) and REST (`/v2/organizations/{org}/rules`).
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="2.7" %}
+
+Source: [Buildkite rules](https://buildkite.com/docs/pipelines/security/rules)
 
 ---
 
@@ -515,16 +624,23 @@ Cryptographically sign pipeline steps so agents will only execute a pipeline who
 #### ClickOps Implementation
 
 **Step 1: Choose a Key Backend**
-1. **JWKS file:** point the agent at a key set with `--jwks-file`, selecting the signing key with `--jwks-key-id`.
-2. **AWS KMS** or **GCP KMS:** keep the private key in a managed KMS so it is never on the agent host at all. Prefer this where your agents run in a cloud you already trust with key material.
+1. **JWKS file:** generate a key set with `buildkite-agent tool keygen`, then configure the agent with `signing-jwks-file` and `signing-jwks-key-id` on uploading agents, and `verification-jwks-file` on executing agents.
+   **Note:** `--jwks-file` and `--jwks-key-id` are flags on the `buildkite-agent tool sign` **command**, not agent configuration keys. Setting them where an agent config key belongs does nothing.
+2. **AWS KMS:** keep the private key in a managed KMS so it is never on the agent host at all, via `signing-aws-kms-key`.
+   **On GCP KMS:** the agent configuration reference lists a `signing-gcp-kms-key` option, but Buildkite's signed-pipelines documentation describes AWS KMS only. Confirm current support with Buildkite before designing around GCP KMS.
 
 **Step 2: Enable Signing and Verification**
 1. Configure the signing key on the agents responsible for uploading pipelines, and the verification key on every agent that executes steps.
-2. Roll out verification in a warning posture first, then move to rejecting unsigned steps once the fleet is covered — an agent that verifies before the uploaders sign will fail every build.
+2. **Configuring `verification-jwks-file` is what turns verification on.** The agent gates the entire verification path on a verification key being present, so an agent with `verification-failure-behavior=block` and no key configured executes unsigned jobs anyway. Setting the behavior without the key is security theater.
+3. `verification-failure-behavior` defaults to **`block`**. The rollout therefore runs in the opposite direction to the usual pattern: temporarily set `warn` while you bring uploaders onto signing, then remove the override to return to `block`. An agent that has a verification key but whose uploaders are not yet signing will fail every build until you either finish the rollout or loosen the behavior deliberately.
 
 **Step 3: Keep Signing Diagnostics Out of Production**
 
 **Do not leave `--debug-signing` enabled.** It writes signing diagnostics into build logs and can expose secret values there. Use it to troubleshoot a rollout and turn it off immediately afterward.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="3.4" %}
 
 Source: [Signed pipelines](https://buildkite.com/docs/agent/v3/cli-pipeline#signed-pipelines)
 
@@ -563,11 +679,22 @@ Buildkite's own first recommendation is to use an external secrets service — H
 **Step 2: Use Cluster-Scoped Buildkite Secrets**
 1. Create secrets on the cluster that needs them. Each cluster has its own encryption key, and secrets are encrypted in transit and at rest.
 2. Values are **automatically redacted from build logs**.
-3. Work within the documented limits: keys up to 255 characters, values up to 32 KB, and **keys are immutable** — changing a key name means creating a new secret and deleting the old one.
+3. Work within the documented limits: keys up to 255 characters and **keys are immutable** — changing a key name means creating a new secret and deleting the old one.
+   **On value size:** Buildkite's secrets documentation states 32 KB while the Terraform provider documentation states 8 KB. The two have not been reconciled; design against the lower figure until Buildkite confirms which applies to your path.
 
-**Step 3: Scope and Review**
+**Step 3: Never Put Secrets in Pipeline Settings**
+1. Do not place secrets in a pipeline's `env` block, step configuration, or pipeline settings. Buildkite states plainly that **pipeline settings are often returned in REST and GraphQL API payloads** — so a secret there is exposed to every token that can read the pipeline, not only to the build.
+2. This is a separate exposure path from log echo, and log redaction does not close it.
+3. Where a literal `$` must survive into a command, escape it as `$$`. An unescaped `$` is interpolated at upload time, which both breaks the value and can print it.
+4. Uploaded pipelines are visible in the build's timeline, so a secret interpolated into an uploaded step is exposed there too.
+
+**Step 4: Scope and Review**
 1. Keep production secrets in the production cluster only, so a development agent has no path to them.
 2. Review secrets alongside the cluster's agent tokens, since the two together define what a compromised agent can reach.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="3.5" %}
 
 Sources: [Buildkite secrets](https://buildkite.com/docs/pipelines/security/secrets/buildkite-secrets) · [Managing secrets](https://buildkite.com/docs/pipelines/security/secrets/managing)
 
@@ -607,7 +734,219 @@ Let builds obtain short-lived cloud credentials by exchanging a Buildkite OIDC t
 **Step 3: Remove What You Replaced**
 1. Delete the static access keys the pipelines previously used, and confirm in the cloud provider that they are no longer being exercised. A migration that leaves the old key live has added a path rather than closed one.
 
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="3.6" %}
+
 Source: [Buildkite security controls](https://buildkite.com/docs/pipelines/best-practices/security-controls)
+
+---
+
+### 3.7 Delegate Cluster Administration
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-5, AC-6(1) |
+
+#### Description
+Name explicit **cluster maintainers** so that managing a cluster's agent tokens, queues, and secrets does not require granting organization-wide administrator access.
+
+#### Rationale
+**Why This Matters:**
+- Without maintainers, the only way to let someone manage a cluster is to make them an organization admin — so the isolation boundary [3.2](#32-configure-agent-clusters) establishes is routinely undone by the access needed to operate it
+- Cluster maintainers hold authority over agent tokens, queues **and cluster secrets**, which makes an unmanaged maintainer list equivalent to an unmanaged list of people who can read production credentials
+- Maintainer grants are invisible from the organization member list, so an access review that only reads roles will miss them entirely
+- The set of people who need to operate a cluster changes faster than the set of people who should administer the organization, and conflating the two guarantees the wider grant persists
+
+**Attack Prevented:** Privilege escalation through unnecessary org-admin grants, unaudited access to cluster secrets, persistence via maintainer grants that survive an org-role review
+
+#### ClickOps Implementation
+
+**Step 1: Inventory Current Maintainers**
+1. Go to **Agents → Clusters**, open each cluster, and review its **Maintainers** list.
+2. Record whether each entry is a user or a team — team-scoped maintainers age better, because team membership is already reviewed.
+
+**Step 2: Replace Org-Admin Grants**
+1. For each person who holds organization admin solely to operate a cluster, add them as a maintainer of that cluster and remove the org-admin grant per [2.3](#23-limit-admin-access).
+
+**Step 3: Prefer Teams Over Individuals**
+1. Assign maintainership to a team rather than named individuals wherever the workflow allows, so joiner/leaver handling flows through the existing team process instead of a second list nobody remembers.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="3.7" %}
+
+Source: [Buildkite clusters](https://buildkite.com/docs/agent/v3/clusters)
+
+---
+
+### 3.8 Attest Build Artifacts
+
+**Profile Level:** L3 (Run)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 16.1 |
+| NIST 800-53 | SI-7, SR-4 |
+
+#### Description
+Generate SLSA build provenance for the artifacts a pipeline produces, so a consumer can verify **where an artifact came from** rather than only that the pipeline definition was signed.
+
+#### Rationale
+**Why This Matters:**
+- Pipeline signing ([3.4](#34-enable-pipeline-signing-and-verification)) proves the *instructions* were not tampered with; it says nothing about the *artifact* those instructions produced, and the two are separate integrity claims
+- Without provenance, an artifact in a registry is an anonymous blob — nothing binds it to the commit, pipeline, and build that created it, so a substituted artifact is indistinguishable from a legitimate one
+- Downstream consumers cannot enforce a policy such as "only deploy artifacts built by our pipeline from our main branch" unless the artifact carries a verifiable statement of that fact
+- Provenance is what makes a compromise investigable after the fact: without it, establishing which builds produced which shipped artifacts is archaeology rather than a query
+
+**Attack Prevented:** Artifact substitution between build and deploy, laundering a malicious artifact through a trusted registry, unverifiable software supply chains during incident response
+
+#### ClickOps Implementation
+
+**Step 1: Decide What Must Carry Provenance**
+1. Identify the artifacts that cross a trust boundary — anything published to a registry, shipped to customers, or deployed to production.
+2. Artifacts that never leave the build are lower priority; start where the blast radius is largest.
+
+**Step 2: Enable Attestation Generation**
+1. Add the provenance plugin to the pipelines producing those artifacts. It runs as a post-artifact hook and emits an in-toto Statement wrapped in a DSSE v1.0 Envelope, meeting SLSA Build Level 1.
+
+**Step 3: Verify Downstream**
+1. Make the deploy step *check* the attestation rather than merely accepting that one exists. An attestation nobody verifies provides no security property.
+
+**Note on plan gating:** generating attestations is ungated. **Publishing** them to Buildkite Package Registries requires Enterprise. On other plans, publish the same in-toto statements to your own registry or use cosign — the generation half is unchanged.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="3.8" %}
+
+Source: [Buildkite build provenance](https://buildkite.com/docs/package-registries/security/build-provenance)
+
+---
+
+### 3.9 Harden the Agent Execution Environment
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.1 |
+| NIST 800-53 | CM-6, CM-7 |
+
+#### Description
+Configure the agent's own execution behavior — host-key handling, workspace hygiene between jobs, and the bootstrap path — as distinct from the input controls in [2.4](#24-control-untrusted-input-to-pipelines).
+
+#### Rationale
+**Why This Matters:**
+- `no-ssh-keyscan` defaults to **false**, which means the agent blindly accepts whatever host key your git server presents on first checkout — a textbook trust-on-first-use window against the source of everything it builds
+- On a persistent agent, the workspace survives between jobs, so one poisoned build can leave artifacts, credentials, or modified tooling behind for the next unrelated build to pick up
+- These settings live on the agent host and cannot be overridden by a `pipeline.yml`, which makes them the controls a malicious pipeline definition genuinely cannot switch off
+- The controls are individually small and collectively decisive, which is exactly the profile of settings that get skipped because no single one looks urgent
+
+**Attack Prevented:** Man-in-the-middle against the source host during checkout, build-to-build contamination on persistent agents, tampering with the bootstrap path
+
+#### ClickOps Implementation
+
+**Step 1: Disable Automatic Host-Key Acceptance**
+1. Set `no-ssh-keyscan=true` in `buildkite-agent.cfg` and pre-populate `known_hosts` on the agent host with the verified key for your git server. Provisioning the key deliberately is the point; disabling keyscan without it just breaks checkout.
+
+**Step 2: Force a Clean Workspace**
+1. Set `BUILDKITE_CLEAN_CHECKOUT=true`. **This is not a `buildkite-agent.cfg` key** — it is a bootstrap/job environment variable, and writing it into the config file is silently ignored. Set it through an `environment` hook, or run ephemeral agents with `disconnect-after-job` instead.
+
+**Step 3: Consider a Bootstrap Handler**
+1. For maximum control, point `bootstrap-script` at a wrapper that applies your own admission logic before calling `buildkite-agent bootstrap`. Keep the wrapper thin — Buildkite documents no handler contract beyond invoking bootstrap, so elaborate logic here is building on unspecified behavior.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="3.9" %}
+
+Source: [Buildkite agent configuration](https://buildkite.com/docs/agent/v3/configuration)
+
+---
+
+### 3.10 Standardize Pipeline Steps with Templates
+
+**Profile Level:** L3 (Run)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 4.1 |
+| NIST 800-53 | CM-2, CM-6 |
+
+#### Description
+Define pipeline templates centrally and assign them to pipelines, which makes the assigned pipeline's step configuration **read-only** to pipeline editors.
+
+#### Rationale
+**Why This Matters:**
+- Without templates, anyone who can edit a pipeline can delete the security scan step from it, and the pipeline keeps passing — the control disappears and the signal it produced disappears with it
+- A mandated step that lives in each pipeline's own configuration is mandated only by convention; a template makes it structural
+- Templates give you one place to fix a step across every pipeline, rather than a migration every time a scanning tool changes its invocation
+- The difference matters most for the pipelines nobody looks at, which are also the pipelines where a removed control goes unnoticed longest
+
+**Attack Prevented:** Silent removal of security gates by an insider or a compromised maintainer account, configuration drift between pipelines that were meant to enforce the same controls
+
+#### ClickOps Implementation
+
+**Step 1: Author the Template**
+1. Go to **Settings → Pipeline Templates** and define the step sequence every pipeline of that class must run.
+
+**Step 2: Assign It**
+1. Assign the template to each pipeline. Once assigned, the pipeline's step configuration becomes read-only in the UI and via the API.
+
+**Step 3: Decide Whether Templates Are Mandatory**
+1. Organization-wide "require templates" strictness is set in the console. There is **no Terraform resource for it** — do not assume infrastructure-as-code covers this setting; verify it in the UI.
+
+**Automation:** Terraform manages template definition and assignment. The org-level strictness toggle is **ClickOps only** — Buildkite exposes no Terraform resource and no documented mutation for it ([pipeline templates](https://buildkite.com/docs/pipelines/templates), 2026-08-18).
+
+**Note on plan gating:** pipeline templates are an **Enterprise** feature.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="3.10" %}
+
+Source: [Buildkite pipeline templates](https://buildkite.com/docs/pipelines/templates)
+
+---
+
+### 3.11 Govern Inbound OIDC Trust
+
+**Profile Level:** L3 (Run)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 5.4 |
+| NIST 800-53 | AC-3, IA-9 |
+
+#### Description
+Constrain which pipelines may authenticate **into** Buildkite-hosted services — package registries and test suites — using OIDC policies, the inbound counterpart to the outbound cloud federation in [3.6](#36-use-oidc-instead-of-static-cloud-credentials).
+
+#### Rationale
+**Why This Matters:**
+- [3.6](#36-use-oidc-instead-of-static-cloud-credentials) governs Buildkite authenticating outward to your cloud; this governs pipelines authenticating inward to your registries, and they are different trust directions with different blast radii
+- Publish authority to a registry is a supply-chain control: whoever can publish decides what your consumers install, which makes "which pipeline may publish here" a first-class security question
+- The alternative is a long-lived static registry token, and a test suite's `api_token` is exactly the standing credential an OIDC policy exists to displace
+- Without a policy, any pipeline holding the token can publish — the registry cannot distinguish your release pipeline from a pull-request build that happened to read the same secret
+
+**Attack Prevented:** Malicious package publication from a non-release pipeline, supply-chain compromise via a leaked static registry token, branch-based trust bypass during publication
+
+#### ClickOps Implementation
+
+**Step 1: Identify Publication Points**
+1. List every registry and test suite that a pipeline writes to, and the single pipeline that legitimately writes to each.
+
+**Step 2: Write the Policy**
+1. Define an OIDC policy scoping the issuer, scopes, and claims — `organization_slug`, `pipeline_slug`, `build_branch`, `repository`, `actor`. Constrain `build_branch` where publication should only happen from your release branch.
+
+**Step 3: Remove the Static Credential**
+1. Once the policy works, stop distributing the static token. Leaving it live means you added a path rather than closing one.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="3.11" %}
+
+Source: [Buildkite package registries OIDC](https://buildkite.com/docs/package-registries/security/oidc)
 
 ---
 
@@ -665,6 +1004,52 @@ Source: [Buildkite audit log](https://buildkite.com/docs/pipelines/security/audi
 #### Code Implementation
 
 {% include pack-code.html vendor="buildkite" section="4.1" %}
+
+---
+
+### 4.2 Contain a Compromised Build Fleet
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls | 17.4 |
+| NIST 800-53 | IR-4 |
+
+#### Description
+Establish and rehearse the mechanisms for stopping work on a compromised cluster — pausing queue dispatch, pausing or stopping agents, and revoking agent tokens — before an incident requires them.
+
+#### Rationale
+**Why This Matters:**
+- **Revoking an agent token does not disconnect agents that are already connected.** A responder who revokes tokens and believes the fleet is contained has stopped new agents from registering while the compromised ones keep running jobs
+- Containment has an order — pause dispatch, then stop agents, then revoke tokens — and working it out during an incident costs the time the incident is consuming
+- Pausing queue dispatch stops new work without deleting the queue and losing its configuration, which is the difference between containment and an outage you then have to rebuild from
+- There is no `buildkite_agent` Terraform resource, so the agent half of containment is CLI and API only; a team whose entire operational muscle is `terraform apply` has no path to the controls that matter here
+
+**Attack Prevented:** Continued execution of malicious jobs during an incident, credential exfiltration from agents that survived an incomplete containment, destruction of evidence by builds that keep running
+
+#### ClickOps Implementation
+
+**Step 1: Pause Dispatch First**
+1. Go to **Agents → Clusters → Queues** and pause dispatch on the affected queue. New jobs stop being handed out; running jobs are unaffected, which is why this is first rather than sufficient.
+
+**Step 2: Stop the Agents**
+1. Stop the affected agents. Use a forced stop only when you accept losing the running job's output — sometimes that output is the evidence.
+
+**Step 3: Revoke Tokens**
+1. Revoke the cluster's agent tokens so nothing re-registers. Do this **after** stopping agents, not instead of it.
+
+**Step 4: Rehearse It**
+1. Run the sequence against a non-production cluster at least once. A containment procedure nobody has executed is a hypothesis.
+
+**Step 5: Restore Deliberately**
+1. Resume dispatch only after issuing fresh tokens and confirming the agent hosts were rebuilt rather than restarted.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="buildkite" section="4.2" %}
+
+Source: [Buildkite agent lifecycle](https://buildkite.com/docs/agent/v3/securing)
 
 ---
 
@@ -733,6 +1118,7 @@ Source: [Buildkite audit log](https://buildkite.com/docs/pipelines/security/audi
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-08-18 | 0.3.0 | draft | Close the Buildkite reconciliation: end the Terraform monoculture and make every leveled control carry a real automation verdict. **New controls:** 2.6 dormant organization members, 2.7 cross-pipeline access via Buildkite Rules, 3.7 delegated cluster administration, 3.8 build-artifact attestation (SLSA provenance), 3.9 agent execution environment, 3.10 pipeline templates, 3.11 inbound OIDC trust, 4.2 build-fleet incident containment. **New Code Packs:** 21 files across four surfaces — `api/` (6), `cli/` (3), `config/` (5) and `terraform/` (15) — where the corpus previously shipped Terraform only; non-comment HCL in control packs rises from 61 to 1,009 lines, and the GraphQL, REST, CLI and agent-config surfaces go from 0% coverage to shipped code. **Corrections:** 2.2 documents the six organization-level pipeline toggles as ClickOps-only with evidence that no write interface exists; 2.5 adds inactive-token auto-revocation and warns that Portal tokens are admin-privileged and long-lived; 3.4 fixes `--jwks-file`/`--jwks-key-id` being presented as agent config keys when they are `tool sign` flags, records that `verification-failure-behavior` already defaults to `block` (so the rollout runs the other way), states that verification is gated on a configured JWKS — without one, unsigned jobs execute regardless — and flags the unverified GCP KMS claim; 3.5 adds the API-payload exposure path, `$$` escaping, and the unreconciled 32 KB / 8 KB value-size discrepancy. | Claude Code (Opus 5) |
 | 2026-08-17 | 0.2.1 | draft | Replace three prose-only Code Packs with real, schema-verified code. **1.1:** the Terraform provider exposes no SSO resource (21 resources, 16 data sources, none for SSO), so the empty `.tf` is replaced by a GraphQL `api/` pack using the live-introspected `ssoProvider*` mutation family, with the disable path documented as the way back from an SSO lockout. **2.3:** now a real verification pack over the `buildkite_organization_members` data source and `buildkite_team_member` roles, stating honestly that org-level role is not exposed to Terraform and lives in GraphQL. **3.3:** now real cluster isolation — `buildkite_cluster`, `buildkite_cluster_queue`, and cluster-scoped `buildkite_cluster_agent_token` with the lockout-capable IP allowlist. | Claude Code (Opus 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass. **1.1:** correct the plan gate to Pro or Enterprise (no "Business" tier exists) and expand enforcement — SSO required/optional is per user, organization-wide enforcement works by disabling 2FA authentication as a login method, session timeout ranges from 6 hours to 1 year, IP address pinning revokes a session on IP change (Enterprise), SCIM deprovisioning (Enterprise), and members are provisioned just-in-time on first login. **3.1:** correct agent tokens to cluster-scoped, and add expiration timestamps (API-only, at least 10 minutes out, immutable once set; web-UI tokens have no expiry) and the Allowed IP Addresses CIDR allowlist. **3.2:** add the unclustered agents and tokens deprecation, unavailable to organizations created after 2024-02-26. **4.1:** correct the non-existent retention setting — the audit log is Enterprise-only at Organization Settings → Audit → Audit Log, events are stored indefinitely, the UI browses 12 months with older events via GraphQL, and search covers 90 days with 3 terms and 250 characters; add EventBridge streaming and REST/GraphQL retrieval. **New controls:** 2.4 untrusted-input pipeline controls, 2.5 API access token hygiene, 3.4 pipeline signing and verification, 3.5 build secrets management, 3.6 OIDC instead of static cloud credentials. **§5:** add mappings for the new controls and record that no CIS, DISA, or SCuBA baseline exists for Buildkite. **Appendix A:** remove the Trust Center and marketing security-page rows and add the newly cited documentation. Not surveyed this pass: Tier 3/4 research | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |

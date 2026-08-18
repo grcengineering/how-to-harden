@@ -62,14 +62,19 @@ output "pipeline_webhook_urls" {
 # -----------------------------------------------------------------------------
 
 output "agent_token_ids" {
-  description = "Map of agent token names to their IDs"
-  value       = { for k, v in buildkite_agent_token.tokens : k => v.id }
+  description = "Map of agent token labels to their cluster-scoped token IDs"
+  value       = { for k, v in buildkite_cluster_agent_token.scoped_lifecycle : k => v.id }
 }
 
 output "agent_token_values" {
-  description = "Map of agent token names to their token values (sensitive)"
-  value       = { for k, v in buildkite_agent_token.tokens : k => v.token }
+  description = "Map of agent token labels to their secret values. Returned by the create call only — pipe straight into a secret manager."
+  value       = { for k, v in buildkite_cluster_agent_token.scoped_lifecycle : k => v.token }
   sensitive   = true
+}
+
+output "agent_token_cluster_uuids" {
+  description = "Map of agent token labels to the UUID of the cluster they register into. This is the identifier the REST lifecycle pack needs — REST paths take the cluster UUID, GraphQL takes the base64 cluster ID, and they are not interchangeable."
+  value       = { for k, v in buildkite_cluster_agent_token.scoped_lifecycle : k => v.cluster_uuid }
 }
 
 

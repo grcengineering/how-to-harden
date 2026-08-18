@@ -7,7 +7,8 @@
 # =============================================================================
 
 terraform {
-  required_version = ">= 1.0"
+  # >= 1.4 for terraform_data (pack 3.1 rotation keeper) and resource preconditions.
+  required_version = ">= 1.4"
   required_providers {
     buildkite = {
       source  = "buildkite/buildkite"

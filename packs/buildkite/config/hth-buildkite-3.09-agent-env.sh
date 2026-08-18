@@ -1,0 +1,458 @@
+#!/usr/bin/env bash
+# =============================================================================
+# HTH Buildkite Control 3.9: Harden the Agent Execution Environment
+# Profile Level: L2 (Walk)
+# Frameworks: CIS Controls 4.1 | NIST 800-53 CM-6, CM-7
+# Source: https://howtoharden.com/guides/buildkite/#39-harden-the-agent-execution-environment
+#
+# SCOPE BOUNDARY — DOES NOT DUPLICATE 2.4.
+# packs/buildkite/config/hth-buildkite-2.04-agent-untrusted-input.sh owns the
+# INPUT controls: no-command-eval, allowed-plugins, no-local-hooks,
+# allowed-repositories, redacted-vars, enable-environment-variable-allowlist /
+# allowed-environment-variables, reject-secrets, pre-bootstrap admission.
+# This pack owns the EXECUTION ENVIRONMENT: git host-key trust, workspace
+# hygiene between jobs, the bootstrap path, and agent lifetime. Nothing below
+# writes a key that pack writes. Run both; they are complementary and neither
+# is sufficient alone.
+#
+# AGENT MAJOR VERSION: buildkite-agent **v3** (no released v4).
+#
+# AUTHORING STATUS: DRIFT-CHECKED-ONLY for the Buildkite half — buildkite-agent
+# is not installed in the authoring environment, so no function below was run
+# against a live agent. Every key, env var, default and code path was read from
+# github.com/buildkite/agent at main on 2026-08-18:
+#   clicommand/agent_start.go:576-579   no-ssh-keyscan / BUILDKITE_NO_SSH_KEYSCAN
+#   clicommand/agent_start.go:1011      SSHKeyscan: !cfg.NoSSHKeyscan
+#   clicommand/agent_start.go:399-403   disconnect-after-job / BUILDKITE_AGENT_DISCONNECT_AFTER_JOB
+#   clicommand/agent_start.go:552-556   bootstrap-script / BUILDKITE_BOOTSTRAP_SCRIPT_PATH
+#   clicommand/agent_start.go:855-861   bootstrap default = "<agent-exe> bootstrap"
+#   clicommand/global.go:172-177        hooks-path (flag default is EMPTY)
+#   internal/job/config.go:85           CleanCheckout `env:"BUILDKITE_CLEAN_CHECKOUT"`
+#   internal/job/checkout.go:47         if e.CleanCheckout { removeCheckoutDir() }
+#   internal/job/ssh_host_key_checking.go   the whole host-key mechanism
+#   internal/job/executor.go:979,1008   keyscan config THEN environment hook
+#   internal/job/executor.go:706-733    applyEnvironmentChanges -> ReadFromEnvironment
+#   env/protected.go                    which vars a job may not overwrite
+#   agent/job_runner.go:306-329         how bootstrap-script is executed
+# The OpenSSH precedence finding in T2 is VERIFIED-LIVE — reproduced on this
+# machine against OpenSSH_10.3p1 (see T2 for the exact commands and output).
+#
+# -----------------------------------------------------------------------------
+# T1  WHAT `no-ssh-keyscan` ACTUALLY DOES IS NOT WHAT ITS NAME SAYS
+# -----------------------------------------------------------------------------
+# The agent no longer shells out to ssh-keyscan. ssh_host_key_checking.go
+# configures GIT_SSH_COMMAND instead, and the three outcomes are:
+#
+#   no-ssh-keyscan=false (THE DEFAULT), OpenSSH >= 7.6
+#       -o StrictHostKeyChecking=accept-new
+#       Trust-on-first-use. The first checkout accepts whatever key answers;
+#       changes are rejected afterwards. The MITM window is one connection wide
+#       and it is the connection that fetches all of your source code.
+#
+#   no-ssh-keyscan=false, OpenSSH < 7.6
+#       -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+#       This is strictly worse than TOFU and it is not documented as a
+#       possibility anywhere the operator will look: host key checking is
+#       disabled on EVERY job forever, because the known_hosts file it would
+#       compare against is /dev/null. Old distro images land here silently.
+#
+#   no-ssh-keyscan=true
+#       -o StrictHostKeyChecking=yes
+#       Checkout FAILS unless the host key is already in known_hosts. Setting
+#       this key without provisioning known_hosts does not harden anything; it
+#       breaks the agent. apply_host_key_pinning() below refuses to do one
+#       without the other.
+#
+# -----------------------------------------------------------------------------
+# T2  ssh -o IS FIRST-WINS AND THE AGENT *APPENDS*, SO A JOB CAN NEUTER T1
+# -----------------------------------------------------------------------------
+# The good news first: `no-ssh-keyscan` itself cannot be flipped by a pipeline.
+# internal/job/config.go:192 declares `SSHKeyscan bool` with NO `env:` tag, and
+# BUILDKITE_SSH_KEYSCAN is in env/protected.go. A pipeline.yml cannot set it.
+#
+# The bad news: it does not have to. ssh_host_key_checking.go builds the command
+# by APPENDING to whatever GIT_SSH_COMMAND already holds:
+#
+#     existingSSHCommand, _ := e.shell.Env.Get("GIT_SSH_COMMAND")
+#     if existingSSHCommand == "" { existingSSHCommand = "ssh" }
+#     e.shell.Env.Set("GIT_SSH_COMMAND", existingSSHCommand+" "+sshOptions)
+#
+# and OpenSSH resolves duplicate -o options FIRST-WINS. ssh_config(5): "Unless
+# noted otherwise, for each parameter, the first obtained value will be used."
+# Reproduced here on OpenSSH_10.3p1:
+#
+#     $ ssh -o StrictHostKeyChecking=no -o StrictHostKeyChecking=yes -G host
+#     stricthostkeychecking false
+#     $ ssh -o StrictHostKeyChecking=yes -o StrictHostKeyChecking=no -G host
+#     stricthostkeychecking true
+#
+# So a step carrying
+#     env:
+#       GIT_SSH_COMMAND: "ssh -o StrictHostKeyChecking=no"
+# wins over the agent's appended `=yes`, and neither GIT_SSH_COMMAND nor GIT_SSH
+# appears anywhere in env/protected.go, so nothing blocks it. The GIT_SSH escape
+# is even cleaner: ssh_host_key_checking.go returns immediately when GIT_SSH is
+# set ("GIT_SSH is set, skipping SSH host key configuration"), so the agent
+# configures nothing at all.
+#
+# THE FIX IS THE environment HOOK, AND THE ORDERING IS WHY IT WORKS.
+# executor.go calls configureSSHKeyChecking at line 979 and the global
+# environment hook at line 1008 — the hook runs LAST, before CheckoutPhase, and
+# its exports are applied through applyEnvironmentChanges. A hook that REBUILDS
+# GIT_SSH_COMMAND from scratch (rather than appending) and unsets GIT_SSH is
+# therefore the final word, whatever the pipeline supplied. git honours
+# GIT_SSH_COMMAND over GIT_SSH (git connect.c: GIT_SSH_COMMAND is read first at
+# :1172, GIT_SSH only as the fallback at :1406), so rewriting the former closes
+# both holes. write_environment_hook() does exactly this.
+#
+# -----------------------------------------------------------------------------
+# T3  `BUILDKITE_CLEAN_CHECKOUT` IN buildkite-agent.cfg IS SILENTLY IGNORED
+# -----------------------------------------------------------------------------
+# This is the single most expensive misconfiguration in this control, because it
+# fails green. BUILDKITE_CLEAN_CHECKOUT is NOT an agent flag: it appears nowhere
+# in clicommand/agent_start.go (grep it). It is a job/bootstrap variable —
+# internal/job/config.go:85, `CleanCheckout bool \`env:"BUILDKITE_CLEAN_CHECKOUT"\`` —
+# consumed at internal/job/checkout.go:47 to call removeCheckoutDir().
+#
+# buildkite-agent.cfg keys map to CLI flags. An unrecognised key is not a flag,
+# so writing `BUILDKITE_CLEAN_CHECKOUT=true` (or `clean-checkout=true`) into the
+# config file configures nothing, warns nobody, and leaves the operator
+# believing workspaces are wiped between jobs while a poisoned build's leftovers
+# sit there for the next one. audit_agent_env() FAILS on finding it there.
+#
+# The supported paths are exactly two:
+#   (a) export it from the agent-level `environment` hook — applied via
+#       applyEnvironmentChanges -> ReadFromEnvironment, which refreshes
+#       e.CleanCheckout before CheckoutPhase reads it; or
+#   (b) run ephemeral agents (disconnect-after-job=true), where there is no
+#       second job to contaminate.
+# Do (a) on persistent agents. Do (b) where you can. Doing neither is the
+# default and it is the finding.
+#
+# -----------------------------------------------------------------------------
+# T4  KEEP THE BOOTSTRAP WRAPPER THIN, AND NEVER LOG ITS ENVIRONMENT
+# -----------------------------------------------------------------------------
+# agent/job_runner.go:309 shellwords-splits `bootstrap-script` into Path=cmd[0]
+# and Args=cmd[1:]. The agent appends NOTHING: the wrapper receives no job data
+# in argv, because every piece of it — including BUILDKITE_AGENT_ACCESS_TOKEN —
+# arrives in the environment. A wrapper that runs `env`, `set -x`, or `printenv`
+# for debugging prints an agent credential into the build log. Keep it to
+# `exec buildkite-agent bootstrap "$@"` plus whatever admission check you can
+# justify; Buildkite documents no handler contract beyond invoking bootstrap, so
+# anything richer is building on unspecified behavior. The wrapper also runs as
+# the agent user, so a wrapper the agent user can write to is arbitrary code
+# execution as that user on every job — audit_agent_env() checks its ownership
+# and mode.
+#
+# Requires: root (or write access to the agent config, hooks dir and known_hosts).
+# Run on the AGENT host. Restart buildkite-agent after any apply-*, then re-audit.
+# =============================================================================
+
+set -euo pipefail
+
+AGENT_CFG="${BUILDKITE_AGENT_CONFIG:-/etc/buildkite-agent/buildkite-agent.cfg}"
+KNOWN_HOSTS="${BUILDKITE_KNOWN_HOSTS:-/etc/buildkite-agent/known_hosts}"
+BOOTSTRAP_WRAPPER="${BUILDKITE_BOOTSTRAP_WRAPPER:-/etc/buildkite-agent/bootstrap-wrapper.sh}"
+AGENT_BIN="${BUILDKITE_AGENT_BIN:-/usr/bin/buildkite-agent}"
+
+# Read a single key out of buildkite-agent.cfg (last occurrence wins, matching
+# the agent's own file parser). Empty output means "not set".
+read_cfg() {
+  sed -nE "s|^[[:space:]]*$1[[:space:]]*=[[:space:]]*(.*)$|\1|p" "${AGENT_CFG}" | tail -1
+}
+
+# Idempotent upsert of `key=value`.
+set_cfg() {
+  local key="$1" value="$2" tmp
+  tmp="$(mktemp)"
+  if grep -qE "^[[:space:]]*${key}[[:space:]]*=" "${AGENT_CFG}"; then
+    sed -E "s|^[[:space:]]*${key}[[:space:]]*=.*$|${key}=${value}|" "${AGENT_CFG}" >"${tmp}"
+  else
+    cat "${AGENT_CFG}" >"${tmp}"
+    printf '%s=%s\n' "${key}" "${value}" >>"${tmp}"
+  fi
+  cat "${tmp}" >"${AGENT_CFG}"
+  rm -f "${tmp}"
+}
+
+# hooks-path has an EMPTY flag default (global.go:172-177) — the real value comes
+# from the packaged config file, and it differs per platform. Derive it, never
+# assume it.
+hooks_dir() {
+  local h
+  h="$(read_cfg hooks-path)"
+  if [ -z "${h}" ]; then
+    h="$(dirname "${AGENT_CFG}")/hooks"
+  fi
+  printf '%s' "${h}"
+}
+
+# HTH Guide Excerpt: begin config-agent-env-hostkeys
+# Pin the git host key. Provision known_hosts FIRST, then turn off TOFU —
+# reversing that order just breaks every checkout on this agent.
+
+# Capture the server's key, then require a human to confirm the fingerprint out
+# of band. This deliberately does not auto-accept: fetching a key over the same
+# path an attacker would sit on and calling it verified is TOFU with extra steps.
+propose_known_hosts() {
+  local host="${1:?usage: propose_known_hosts <git-host> [port]}"
+  local port="${2:-22}"
+  local staged
+  staged="$(mktemp)"
+
+  # ssh-keyscan emits a "# host:port SSH-2.0-..." banner alongside the keys; drop
+  # it so an emptiness check cannot pass on a banner alone.
+  ssh-keyscan -p "${port}" -t rsa,ecdsa,ed25519 "${host}" 2>/dev/null \
+    | grep -vE '^[[:space:]]*(#.*)?$' > "${staged}" || true
+  [ -s "${staged}" ] || { echo "FATAL: no host keys returned for ${host}:${port}" >&2; rm -f "${staged}"; exit 3; }
+
+  echo "Fingerprints for ${host}:${port} — CONFIRM THESE against the vendor's"
+  echo "published SSH key fingerprints before running accept_known_hosts:"
+  ssh-keygen -lf "${staged}"
+  echo
+  echo "staged file: ${staged}"
+  echo "then: $0 accept-known-hosts ${staged}"
+}
+
+accept_known_hosts() {
+  local staged="${1:?usage: accept_known_hosts <staged-file-from-propose>}"
+  [ -s "${staged}" ] || { echo "FATAL: '${staged}' is empty or missing." >&2; exit 3; }
+
+  # Append-and-dedupe so multiple git hosts can be pinned over several runs.
+  touch "${KNOWN_HOSTS}"
+  sort -u "${KNOWN_HOSTS}" "${staged}" | grep -vE '^[[:space:]]*(#.*)?$' > "${KNOWN_HOSTS}.new"
+  mv "${KNOWN_HOSTS}.new" "${KNOWN_HOSTS}"
+  chmod 0644 "${KNOWN_HOSTS}"
+  echo "known_hosts now pins $(grep -c . "${KNOWN_HOSTS}") key(s) at ${KNOWN_HOSTS}"
+}
+
+# Turn off automatic host-key acceptance. Fails closed if known_hosts is not
+# populated, because StrictHostKeyChecking=yes with an empty known_hosts is an
+# outage, not a control.
+apply_host_key_pinning() {
+  [ -w "${AGENT_CFG}" ] || { echo "FATAL: cannot write ${AGENT_CFG} (run as root)." >&2; exit 5; }
+  if [ ! -s "${KNOWN_HOSTS}" ]; then
+    echo "FATAL: ${KNOWN_HOSTS} is empty or missing." >&2
+    echo "       Run '$0 propose-known-hosts <git-host>' and verify the fingerprints" >&2
+    echo "       first. Setting no-ssh-keyscan=true without this breaks checkout on" >&2
+    echo "       every job." >&2
+    exit 3
+  fi
+  set_cfg "no-ssh-keyscan" "true"
+  echo "Applied no-ssh-keyscan=true. Restart the agent, then run: $0 audit"
+}
+# HTH Guide Excerpt: end config-agent-env-hostkeys
+
+# HTH Guide Excerpt: begin config-agent-env-hooks
+# The agent-level `environment` hook. This is the ONLY supported place to set
+# BUILDKITE_CLEAN_CHECKOUT, and the only place that can win the GIT_SSH_COMMAND
+# race, because it runs after the agent configured SSH and before checkout.
+
+write_environment_hook() {
+  local hooks hook
+  hooks="$(hooks_dir)"
+  hook="${hooks}/environment"
+  mkdir -p "${hooks}"
+
+  # Quoted heredoc: nothing here is expanded at write time except the two
+  # placeholders substituted immediately below.
+  cat > "${hook}" <<'HOOKEOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+# --- git host-key trust -----------------------------------------------------
+# REBUILT, not appended. ssh resolves duplicate -o options first-wins, so a
+# pipeline-supplied GIT_SSH_COMMAND containing StrictHostKeyChecking=no would
+# beat the option the agent appends. Discard whatever arrived and state the
+# policy from scratch. GIT_SSH is unset because ssh_host_key_checking.go skips
+# all configuration when it is present, and git prefers GIT_SSH_COMMAND anyway.
+unset GIT_SSH
+export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile=__KNOWN_HOSTS__"
+
+# --- workspace hygiene ------------------------------------------------------
+# NOT a buildkite-agent.cfg key. Exported here so applyEnvironmentChanges ->
+# ReadFromEnvironment refreshes the executor's CleanCheckout before the checkout
+# phase reads it. Drop this block on agents that already run one job and exit
+# (disconnect-after-job): re-cloning a workspace nothing else will ever touch is
+# pure build time.
+export BUILDKITE_CLEAN_CHECKOUT=true
+
+# Do not print the environment from this hook. BUILDKITE_AGENT_ACCESS_TOKEN is
+# in it.
+HOOKEOF
+
+  # Substitute the operator-configured known_hosts path into the hook.
+  sed -i.bak "s|__KNOWN_HOSTS__|${KNOWN_HOSTS}|g" "${hook}" && rm -f "${hook}.bak"
+
+  chown root:root "${hook}" 2>/dev/null || true
+  chmod 0755 "${hook}"
+  echo "Wrote ${hook}"
+}
+
+# The maximum-control option, kept deliberately thin.
+write_bootstrap_wrapper() {
+  [ -x "${AGENT_BIN}" ] || { echo "FATAL: agent binary '${AGENT_BIN}' not found or not executable." >&2; exit 3; }
+
+  cat > "${BOOTSTRAP_WRAPPER}" <<HOOKEOF
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Buildkite documents no handler contract beyond invoking bootstrap, and passes
+# no job data in argv — it is all in the environment. Add admission checks here
+# ONLY if they read documented BUILDKITE_* variables; never dump the
+# environment, which carries BUILDKITE_AGENT_ACCESS_TOKEN.
+
+exec "${AGENT_BIN}" bootstrap "\$@"
+HOOKEOF
+
+  chown root:root "${BOOTSTRAP_WRAPPER}" 2>/dev/null || true
+  chmod 0755 "${BOOTSTRAP_WRAPPER}"
+  set_cfg "bootstrap-script" "${BOOTSTRAP_WRAPPER}"
+  echo "Wrote ${BOOTSTRAP_WRAPPER} and pointed bootstrap-script at it."
+}
+
+# Ephemeral agents: one job per agent process, then disconnect. Structurally
+# removes build-to-build contamination instead of cleaning up after it.
+apply_ephemeral() {
+  [ -w "${AGENT_CFG}" ] || { echo "FATAL: cannot write ${AGENT_CFG} (run as root)." >&2; exit 5; }
+  set_cfg "disconnect-after-job" "true"
+  echo "Applied disconnect-after-job=true. Your supervisor must restart the agent"
+  echo "after each job, or capacity drops to zero once every worker has run once."
+}
+# HTH Guide Excerpt: end config-agent-env-hooks
+
+# HTH Guide Excerpt: begin config-agent-env-audit
+# Prove the control is real. Fails closed on the two combinations that look
+# configured and enforce nothing: keyscan disabled with no pinned host keys, and
+# BUILDKITE_CLEAN_CHECKOUT written into a file that never reads it.
+audit_agent_env() {
+  local rc=0 keyscan disconnect bootstrap hooks hook
+  keyscan="$(read_cfg no-ssh-keyscan)"
+  disconnect="$(read_cfg disconnect-after-job)"
+  bootstrap="$(read_cfg bootstrap-script)"
+  hooks="$(hooks_dir)"
+  hook="${hooks}/environment"
+
+  echo "config file          : ${AGENT_CFG}"
+  echo "no-ssh-keyscan       : ${keyscan:-<unset> (agent default: false)}"
+  echo "disconnect-after-job : ${disconnect:-<unset> (agent default: false)}"
+  echo "bootstrap-script     : ${bootstrap:-<unset> (agent default: buildkite-agent bootstrap)}"
+  echo "environment hook     : ${hook}"
+
+  # 1. The silent-failure check. Nothing reads these out of the config file.
+  if grep -qiE '^[[:space:]]*(BUILDKITE_)?CLEAN[-_]CHECKOUT[[:space:]]*=' "${AGENT_CFG}"; then
+    echo "FAIL: a clean-checkout key is set in ${AGENT_CFG}. It is NOT an agent flag" >&2
+    echo "      (absent from clicommand/agent_start.go) and is silently ignored." >&2
+    echo "      Move it to the environment hook: $0 write-environment-hook" >&2
+    rc=1
+  fi
+
+  # 2. Host-key trust.
+  case "${keyscan}" in
+    true)
+      if [ -s "${KNOWN_HOSTS}" ]; then
+        echo "PASS: automatic host-key acceptance is off and ${KNOWN_HOSTS} pins $(grep -c . "${KNOWN_HOSTS}") key(s)."
+      else
+        echo "FAIL: no-ssh-keyscan=true but ${KNOWN_HOSTS} is empty/missing." >&2
+        echo "      StrictHostKeyChecking=yes with no pinned keys fails every checkout." >&2
+        rc=1
+      fi ;;
+    *)
+      echo "FAIL: no-ssh-keyscan is not true. The agent accepts whatever host key" >&2
+      echo "      answers on first checkout (StrictHostKeyChecking=accept-new), or" >&2
+      echo "      disables host-key checking outright on OpenSSH < 7.6." >&2
+      rc=1 ;;
+  esac
+
+  # 3. The environment hook, and whether it actually says anything.
+  if [ ! -f "${hook}" ]; then
+    if [ "${disconnect}" = "true" ]; then
+      echo "WARN: no environment hook, but disconnect-after-job=true — no second job"
+      echo "      exists to contaminate. GIT_SSH_COMMAND is still overridable by a"
+      echo "      pipeline env block; write the hook to close that."
+    else
+      echo "FAIL: no environment hook and the agent is persistent. Workspaces survive" >&2
+      echo "      between jobs and BUILDKITE_CLEAN_CHECKOUT is set nowhere that reads it." >&2
+      rc=1
+    fi
+  else
+    if grep -q 'BUILDKITE_CLEAN_CHECKOUT=true' "${hook}"; then
+      echo "PASS: environment hook forces a clean checkout."
+    elif [ "${disconnect}" = "true" ]; then
+      echo "WARN: hook does not force a clean checkout; relying on disconnect-after-job."
+    else
+      echo "FAIL: environment hook does not export BUILDKITE_CLEAN_CHECKOUT=true, and" >&2
+      echo "      this agent is persistent. One job's leftovers reach the next." >&2
+      rc=1
+    fi
+
+    if grep -q 'StrictHostKeyChecking=yes' "${hook}" && grep -q '^unset GIT_SSH$' "${hook}"; then
+      echo "PASS: environment hook rebuilds GIT_SSH_COMMAND and unsets GIT_SSH."
+    else
+      echo "FAIL: environment hook does not pin GIT_SSH_COMMAND. Because ssh resolves" >&2
+      echo "      duplicate -o options first-wins and the agent APPENDS its own, a" >&2
+      echo "      pipeline env block setting GIT_SSH_COMMAND or GIT_SSH defeats" >&2
+      echo "      no-ssh-keyscan entirely." >&2
+      rc=1
+    fi
+
+    # A hook anyone but root can rewrite is arbitrary code on every job.
+    if [ -n "$(find "${hook}" -perm -g+w -o -perm -o+w 2>/dev/null)" ]; then
+      echo "FAIL: ${hook} is group- or world-writable. Anyone who can edit it runs code" >&2
+      echo "      on every job before the checkout, as the agent user." >&2
+      rc=1
+    fi
+  fi
+
+  # 4. Bootstrap wrapper integrity, when one is configured.
+  if [ -n "${bootstrap}" ]; then
+    local path="${bootstrap%% *}"
+    if [ ! -x "${path}" ]; then
+      echo "FAIL: bootstrap-script '${path}' is missing or not executable — no job can start." >&2
+      rc=1
+    elif [ -n "$(find "${path}" -perm -g+w -o -perm -o+w 2>/dev/null)" ]; then
+      echo "FAIL: bootstrap-script '${path}' is group- or world-writable. It runs as the" >&2
+      echo "      agent user on every job, before any of your other controls do." >&2
+      rc=1
+    else
+      echo "PASS: bootstrap-script present and not group/world-writable."
+    fi
+  fi
+
+  return "${rc}"
+}
+# HTH Guide Excerpt: end config-agent-env-audit
+
+case "${1:-audit}" in
+  propose-known-hosts)      shift; propose_known_hosts "$@" ;;
+  accept-known-hosts)       shift; accept_known_hosts "$@" ;;
+  apply-host-key-pinning)   apply_host_key_pinning ;;
+  write-environment-hook)   write_environment_hook ;;
+  write-bootstrap-wrapper)  write_bootstrap_wrapper ;;
+  apply-ephemeral)          apply_ephemeral ;;
+  audit)                    audit_agent_env ;;
+  *)
+    cat >&2 <<'USAGE'
+usage:
+  hth-buildkite-3.09-agent-env.sh propose-known-hosts <host> [port]
+                                            capture host keys + print fingerprints to verify
+  hth-buildkite-3.09-agent-env.sh accept-known-hosts <staged-file>
+                                            commit verified keys to known_hosts
+  hth-buildkite-3.09-agent-env.sh apply-host-key-pinning
+                                            set no-ssh-keyscan=true (refuses if known_hosts empty)
+  hth-buildkite-3.09-agent-env.sh write-environment-hook
+                                            clean checkout + GIT_SSH_COMMAND lock (the ONLY
+                                            supported home for BUILDKITE_CLEAN_CHECKOUT)
+  hth-buildkite-3.09-agent-env.sh write-bootstrap-wrapper
+                                            thin bootstrap handler + bootstrap-script
+  hth-buildkite-3.09-agent-env.sh apply-ephemeral
+                                            disconnect-after-job=true
+  hth-buildkite-3.09-agent-env.sh audit     prove enforcement is real (exit 1 on fail)
+
+Order matters: propose/accept known hosts BEFORE apply-host-key-pinning.
+Restart buildkite-agent after any apply-*; the config is read once at start.
+Input controls (no-command-eval, allowed-plugins, redacted-vars, ...) live in
+packs/buildkite/config/hth-buildkite-2.04-agent-untrusted-input.sh — run both.
+USAGE
+    exit 2 ;;
+esac
