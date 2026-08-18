@@ -13,30 +13,17 @@ A step-by-step process any agent or human can follow to produce `docs/_guides/{s
    - **Reject on sight:** Trust Centers, `/security` marketing pages, compliance-badge pages, whitepapers about the vendor's own infrastructure. The test: does the page give an administrator settings and steps? If it describes certifications instead, it is not a source.
 2. **Check every Tier 2 body for product coverage:** CIS Benchmark (search `CIS Benchmark {product}` — note GitHub/GitLab live under the "Software Supply Chain Security" benchmark, not product slugs), DISA STIG, CISA SCuBA baseline (ScubaGear/ScubaGoggles repos), NIST/NSA/ACSC guidance. Record which exist — they seed the compliance mappings.
 3. **Sweep Tier 3/4 research** from the SOURCES.md standing list for product-specific attack research and incidents from the last ~24 months. These seed rationale sections and often reveal controls the vendor under-documents. If a source you cite isn't yet on the standing list, add it there with a real fetch-verified example URL (SOURCES.md Maintenance rule) — never a placeholder, and never only cite it inline without adding the row.
-4. **Sweep the vendor's AUTOMATION documentation, not only its prose.** SOURCES.md Tier 1 covers "API/CLI references" — these are first-party sources, and skipping them is what produces a guide that is accurate and unautomatable. Fetch, for real, whichever exist:
-   - the **Terraform provider registry index** — the full resource list *and* the full data-source list;
-   - the **REST API reference index** (endpoint categories) and the **GraphQL schema** (introspect it if a token is available);
-   - the vendor's row in [`docs/research/cli-inventory.md`](../../../docs/research/cli-inventory.md) — **no row means research the vendor and add one**, not "assume no CLI";
-   - SDK references, and vendor-native **config files** (agent/daemon `*.cfg`, `*.jsonc`) — for infrastructure products this is often where the real security surface lives, not in the console at all.
-5. **Fetch-verify every URL you intend to cite.** Blocked hosts (403/JS-shell) get a real-browser check. Unverifiable URL = not a source. Record verified URLs with one-line notes.
-6. **Do not stop at the first good source.** Enumerate the vendor's documentation **by product area** (identity, access, agents/runners, data, logging, integrations, billing) and confirm each area was looked at. One excellent hardening page is a starting point, never a finish line — a vendor's security surface is routinely spread across areas that no single page indexes.
-7. **Checkpoint:** you have (a) ≥1 verified Tier 1 hardening/admin doc, (b) a yes/no per Tier 2 body, (c) a short list of verified Tier 3/4 findings, **(d) a fetched-or-"none, verified" answer for each of the six automation surfaces in step 4**. If (a) is empty, STOP — a guide cannot be written without vendor configuration docs; report the gap instead of fabricating. If (d) is unanswered, Phase 2's automation column will be guesswork.
+4. **Fetch-verify every URL you intend to cite.** Blocked hosts (403/JS-shell) get a real-browser check. Unverifiable URL = not a source. Record verified URLs with one-line notes.
+5. **Checkpoint:** you have (a) ≥1 verified Tier 1 hardening/admin doc, (b) a yes/no per Tier 2 body, (c) a short list of verified Tier 3/4 findings. If (a) is empty, STOP — a guide cannot be written without vendor configuration docs; report the gap instead of fabricating.
 
 ## Phase 2 — Control inventory design
 
 1. List candidate controls from the Tier 1 docs: every security-relevant admin setting with its exact console path.
 2. Add controls demanded by Tier 2 baselines (each SCuBA policy / CIS recommendation that maps to a real setting).
 3. Add controls motivated by Tier 3/4 findings — but ONLY where Tier 1 documents an implementable setting for the mitigation.
-4. For each control record: name · console path · profile level (L1 Crawl = everyone, L2 Walk = security-sensitive, L3 Run = regulated, L4 Fly = maximum-assurance, rare) · **automation surfaces (plural)** · source URL(s).
-
-   The automation column is a **matrix, not a pick-one**. Record a verdict per surface — `terraform` (resource / data source) · `api` (REST / GraphQL) · `cli` · `sdk` · `config` · `siem` — each either a specific documented handle or `none (verified: {url})`. Never invent endpoints. Many admin surfaces are read-only: a read-only API still supports a **verification** pack, so "read-only" is not "no automation."
-
-   > Writing this as a single slash-separated guess — *"Terraform/API/CLI resource IF documented"* — is what this column used to say, and it invites recording the first surface that comes to mind and moving on. Buildkite's guide was authored that way: 14 controls, one surface examined, 9 Terraform packs, 5 controls with nothing, while `bk` (GA-official, admin-capable) and the whole GraphQL mutation family sat unexamined.
-
+4. For each control record: name · console path · profile level (L1 Crawl = everyone, L2 Walk = security-sensitive, L3 Run = regulated, L4 Fly = maximum-assurance, rare) · automation surface (Terraform/API/CLI resource IF documented, else "ClickOps only" — never invent endpoints; many admin surfaces have read-only APIs) · source URL(s).
 5. Group into numbered `## N.` sections by theme (identity → protection → data/compliance → access → monitoring is the common arc; mirror `docs/_guides/gmail.md`).
-6. **Checkpoint:** 8–20 controls, each with a verified source and a **complete** automation matrix. Fewer than 5 → consider whether the product belongs in a platform hub instead.
-
-   A control count is not a coverage measure — it says how many things you wrote about, never how many you can automate. Before leaving this phase, state two numbers: **how many controls have at least one real automation surface**, and **how many distinct surfaces the vendor exposes**. If every control resolves to the same single surface, you have probably enumerated one surface rather than found one.
+6. **Checkpoint:** 8–20 controls, each with a verified source and an honest automation note. Fewer than 5 → consider whether the product belongs in a platform hub instead.
 
 ## Phase 3 — Frontmatter and scaffold
 
@@ -56,11 +43,7 @@ Write every control with this exact anatomy (it is the cheat-sheet parser contra
 5. `#### Rationale` — `**Why This Matters:**` with 2-3 bullets, then `**Attack Prevented:**` one line; add `**Real-World Incidents:**` bullets where Tier 3/4 sources support them
 6. `#### Prerequisites` — only when real (licenses, roles, dependencies)
 7. `#### ClickOps Implementation` — numbered steps with **exact** console paths in bold, transcribed from the Tier 1 doc (never from memory)
-8. `#### Code Implementation` — a pack include ONLY if a verified pack exists (create via create-code-pack). **If no pack exists, replace the heading with an explicit verdict, never with silence:**
-
-   `**Automation:** ClickOps only — {vendor} exposes no write interface for this setting ({verified-url}, {date}).`
-
-   Omitting both the pack and the verdict is not permitted (AGENTS.md Rule 4). A silent omission is indistinguishable from an oversight, so nobody can tell a genuinely ClickOps-only control from one whose surface was never checked — which is exactly how a guide reaches a third of its controls unautomated with every review passing.
+8. `#### Code Implementation` — a pack include ONLY if a verified pack exists (create via create-code-pack); otherwise omit the heading entirely
 9. `#### Validation & Testing` — how an admin proves the control is active
 10. `#### Compliance Mappings` — table; never invent IDs (CIS numbering drifts between majors — map by name with a version note when unverifiable; prefer stable SCuBA policy IDs)
 

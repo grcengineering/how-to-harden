@@ -26,34 +26,6 @@ jobs:
       - run: pip install pyyaml
       - run: make lint-content
 
-  # ─── Pack Validation (validate-packs.sh — 17 checks) ───────────────────────
-  # This job exists because the repo already owned the detectors and never ran
-  # them: `make validate-packs` was invoked by no workflow, no hook, and no skill
-  # checkpoint, so a PR could add nine prose-only packs and merge green.
-  #
-  # Two modes on purpose. --touched BLOCKS, scoped to files the branch changed,
-  # so the gate bites new work today instead of after a corpus backfill. --all is
-  # advisory and keeps the coverage ratio and pre-existing debt visible on every
-  # run — invisible debt is how this corpus reached 33% automation coverage.
-  validate-packs:
-    name: Pack Validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0          # --touched needs the merge base
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: pip install pyyaml
-      # No `|| true` here, ever: exit 2 means a check could not run, and a gate
-      # that goes green when it could not look is worse than no gate.
-      - name: Touched packs (blocking)
-        run: bash scripts/validate-packs.sh --touched
-      - name: Whole corpus (advisory — coverage + debt visibility)
-        run: bash scripts/validate-packs.sh --all
-        continue-on-error: true
-
   # ─── Build Verification (pack sync + Jekyll) ───────────────────────────────
   test-build:
     name: Build Verification

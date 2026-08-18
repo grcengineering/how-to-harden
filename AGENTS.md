@@ -108,21 +108,11 @@ echo "hello"
 
 Valid languages: `bash`, `hcl`, `python`, `sql`, `yaml`, `json`, `markdown`
 
-### 4. Every Control Needs ClickOps AND a Documented Automation Verdict
+### 4. Every Control Needs Both ClickOps AND Code
 
-AI generates one method and stops. The bar is not "a code block exists" — it is **"every surface this vendor actually offers for this control was enumerated, then used or ruled out with evidence."**
-
-- **ClickOps** — GUI/console steps with exact navigation paths.
-- **Code** — one pack per surface the vendor documents for this control: `terraform` (**resources AND data sources**), `api` (REST **and** GraphQL), `cli` (first-party only), `sdk`, `config`, `siem`.
-- **No surface exists?** Say so in the control, in place of `#### Code Implementation`:
-  `**Automation:** ClickOps only — {vendor} exposes no write interface for this setting ({url}, {date}).`
-  Silently omitting *both* the pack and this line is not permitted. An omission is indistinguishable from an oversight — which is how a guide ships with a third of its controls unautomated and nobody notices.
-
-**Enforcement and verification are different packs.** A write pack sets the control; a read pack (Terraform *data source*, read-only endpoint, audit script) proves it. A vendor with zero read packs has skipped half its surface. Corpus-wide today: 692 Terraform `resource` blocks against 40 `data` blocks.
-
-**Never decide "no CLI exists" from memory.** [`docs/research/cli-inventory.md`](docs/research/cli-inventory.md) is the fetch-verified census of first-party CLIs — look the vendor up. A row reading `GA-Official`/`PowerShell-Only` with admin coverage **Yes** means a `cli/` pack is *expected*, not merely permitted. `None`/`Vendor-Adjacent`/`Deprecated` means a `cli/` pack would be fabrication. No row → research it and add one in the same PR.
-
-> This rule previously read *"at least one of: CLI, API (curl), Terraform, or script."* That sentence was a standing licence for a single-type pack corpus — one Terraform file satisfied it permanently, for every control, for the whole vendor — and 14 vendors currently ship 5+ packs of exactly one type. `scripts/validate-packs.sh` checks 15–17 now measure what this rule asserts.
+AI often generates only one method. Always provide:
+- **ClickOps** - GUI/console steps with exact navigation paths
+- **Code** - At least one of: CLI, API (curl), Terraform, or script
 
 ### 5. Revision Dates Reflect the Publish Date, Not the Drafting Date
 
@@ -301,10 +291,7 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 | Literal `{{...}}` eaten by Jekyll | Vault templates, Handlebars, etc. in prose or inline code must be wrapped in `{% raw %}...{% endraw %}` (lint Test 8 catches this) |
 | Control invisible on the cheat sheet | It's missing part of the parser contract (Rule 6): Profile Level + Description H4 + Rationale/Why bullets |
 | Same-section same-type pack files | The sync silently keeps only the last alphabetically (Collision rule, Rule 2) — check before numbering |
-| Automation for settings with no write API | Read-only does not mean no pack — ship a **verification** pack (Terraform data source, read-only endpoint, audit script). Claiming "none" requires evidence: the `**Automation:** ClickOps only` line with a fetched URL (Rule 4). An unevidenced "ClickOps only" is a coverage defect, not an honest note |
-| One automation type for a vendor that documents several | Enumerate every surface before choosing a type (`create-code-pack` Phase 1). A single-type pack corpus is a **monoculture** — `validate-packs.sh` Check 16 flags it. Terraform is the usual default; it is frequently the *minority* of a vendor's real surface (Buildkite's security surface is mostly agent config + GraphQL) |
-| Deciding "this vendor has no CLI" from memory | Look it up in `docs/research/cli-inventory.md`. 26 vendors with a documented admin-capable first-party CLI currently ship zero `cli/` packs — Check 17 lists them |
-| A pack file that is 100% comments | Prose in code markers is not a Code Pack (Rule 2b). Check 15 fails it. If the honest answer is "no automation exists," that belongs in the guide as the Rule 4 `**Automation:**` line — not in a `.tf` file with nothing in it |
+| Automation for settings with no write API | Many admin surfaces are ClickOps-only (read-only Policy APIs). State that honestly; ship verification-style packs (assessment tools, read-only audits) or none |
 | Renumbering existing controls | Never — pack includes and inbound anchors depend on the numbers. New controls take the next free number at the end of their section |
 | SOURCES.md example URL left as an unverified placeholder | Every row in every standing-list table needs a real, specific, fetch-verified, currently-live example URL — never ship an italicized "described, not verified" placeholder; that notation is a research-in-progress state only, not a final answer. "Relevant" is broader than literal "hardening guide" wording: product docs, threat-intel writeups, and detection-engineering posts all count if they teach prevention, detection, deception, remediation, or recovery for a specific platform |
 
@@ -332,9 +319,8 @@ Run the battery (Windows: through Git Bash — the scripts carry cygpath/UTF-8 s
 2. `grep -rcE '^ *```' docs/_guides/*.md | grep -v ':0'` → must print nothing (zero fences)
 3. If packs/includes changed: `bash scripts/sync-packs-to-data.sh` → every vendor `✓`, and every include's section key must exist in its vendor yml (a missing key renders nothing, silently)
 4. Cheat parity on touched guides: every `**Profile Level:**` section has `#### Description` + Rationale/Why (Rule 6)
-5. If packs changed: `bash scripts/validate-packs.sh [vendor]` → zero FAILs, and **read the coverage warnings** (checks 15–17). They are the only thing in this repo that measures whether Rule 4 was actually followed; a green run with an ignored monoculture warning is how the corpus got here.
 
-Claude Code users: the repo ships skills that encode these workflows end-to-end — `create-hth-guide`, `update-hth-guide`, `create-code-pack`, `validate-hth-guide`, `verify-hth` (in `.claude/skills/`).
+Claude Code users: the repo ships skills that encode these workflows end-to-end — `create-hth-guide`, `update-hth-guide`, `create-code-pack`, `verify-hth` (in `.claude/skills/`).
 
 ---
 

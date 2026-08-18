@@ -140,7 +140,7 @@ Every recommendation includes:
 - **Operational impact** - What might break, rollback procedure
 
 **Dual-Method Approach:**
-Every control ships a **ClickOps** implementation. Every control whose vendor documents *any* automation surface ships a **Code** implementation. A control with neither carries an evidenced `**Automation:** ClickOps only — … ({url}, {date})` line naming the surface that was checked and found absent — so a genuinely manual control is always distinguishable from one nobody looked into.
+We provide **both "ClickOps" (GUI-based) and "Code" (automation-based)** implementations for every control:
 
 - **ClickOps** = Console/GUI-based configuration with screenshots
   - For IT admins without IaC expertise
@@ -204,10 +204,6 @@ We measure impact through:
 - Platform coverage (% of top 50 SaaS platforms with guides)
 - Defensive pattern coverage (% of common integration pairs documented)
 - Freshness (% of guides updated within last 6 months)
-- **Automation coverage** (% of leveled controls with a Code Pack — baseline **33%**, 604/1805 as of 2026-08-17; `scripts/validate-packs.sh` Check 16)
-- **Surface coverage** (per vendor, % of documented automation surfaces actually used — 14 vendors currently ship 5+ packs of a single type)
-
-> The three original metrics all measure *breadth of guides*. Neither measures whether a guide can be **executed**, which is why a third-of-controls automation gap persisted without ever appearing as a number. Stating the baseline is what makes the coverage gate defensible rather than arbitrary: it may only go up.
 
 **Community Engagement:**
 - Contributors per quarter

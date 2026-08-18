@@ -11,7 +11,7 @@
 # -----------------------------------------------------------------------------
 
 variable "profile_level" {
-  description = "Hardening profile level: 1 = L1 (Crawl), 2 = L2 (Walk), 3 = L3 (Run)"
+  description = "Hardening profile level: 1 = Baseline, 2 = Hardened, 3 = Maximum Security"
   type        = number
   default     = 1
 
@@ -53,32 +53,32 @@ variable "enforce_2fa" {
 variable "teams" {
   description = "Map of teams to create with their configurations"
   type = map(object({
-    description                  = optional(string, "")
-    privacy                      = optional(string, "VISIBLE")
-    default_team                 = optional(bool, false)
-    default_member_role          = optional(string, "MEMBER")
+    description                = optional(string, "")
+    privacy                    = optional(string, "VISIBLE")
+    default_team               = optional(bool, false)
+    default_member_role        = optional(string, "MEMBER")
     members_can_create_pipelines = optional(bool, false)
   }))
   default = {
     platform = {
-      description                  = "Platform engineering team"
-      privacy                      = "VISIBLE"
-      default_team                 = false
-      default_member_role          = "MEMBER"
+      description                = "Platform engineering team"
+      privacy                    = "VISIBLE"
+      default_team               = false
+      default_member_role        = "MEMBER"
       members_can_create_pipelines = true
     }
     developers = {
-      description                  = "Development team with read and build access"
-      privacy                      = "VISIBLE"
-      default_team                 = true
-      default_member_role          = "MEMBER"
+      description                = "Development team with read and build access"
+      privacy                    = "VISIBLE"
+      default_team               = true
+      default_member_role        = "MEMBER"
       members_can_create_pipelines = false
     }
     security = {
-      description                  = "Security team with audit access"
-      privacy                      = "SECRET"
-      default_team                 = false
-      default_member_role          = "MEMBER"
+      description                = "Security team with audit access"
+      privacy                    = "SECRET"
+      default_team               = false
+      default_member_role        = "MEMBER"
       members_can_create_pipelines = false
     }
   }
@@ -91,16 +91,16 @@ variable "teams" {
 variable "pipelines" {
   description = "Map of pipelines to create with hardened configurations"
   type = map(object({
-    repository                 = string
-    description                = optional(string, "")
-    default_branch             = optional(string, "main")
-    branch_configuration       = optional(string, null)
-    skip_intermediate_builds   = optional(bool, true)
-    cancel_intermediate_builds = optional(bool, true)
-    cluster_id                 = optional(string, null)
-    default_timeout_in_minutes = optional(number, 60)
-    maximum_timeout_in_minutes = optional(number, 120)
-    allow_rebuilds             = optional(bool, true)
+    repository                   = string
+    description                  = optional(string, "")
+    default_branch               = optional(string, "main")
+    branch_configuration         = optional(string, null)
+    skip_intermediate_builds     = optional(bool, true)
+    cancel_intermediate_builds   = optional(bool, true)
+    cluster_id                   = optional(string, null)
+    default_timeout_in_minutes   = optional(number, 60)
+    maximum_timeout_in_minutes   = optional(number, 120)
+    allow_rebuilds               = optional(bool, true)
   }))
   default = {}
 }
@@ -180,59 +180,6 @@ variable "cluster_queues" {
 
 variable "allowed_api_ip_addresses" {
   description = "List of IP addresses in CIDR format allowed to access the Buildkite API (L3). Empty list allows all."
-  type        = list(string)
-  default     = []
-}
-
-# ─── Control 2.3 — administrative access ────────────────────────────────────
-variable "max_org_members" {
-  description = "Upper bound on organization membership. The check block in pack 2.3 fails the plan when the real roster exceeds this, turning silent membership growth into a review."
-  type        = number
-  default     = 25
-}
-
-variable "team_maintainers" {
-  description = "Explicitly declared team maintainers, keyed by a stable label. Declaring them means an out-of-band promotion shows up as drift."
-  type = map(object({
-    team_id = string
-    user_id = string
-  }))
-  default = {}
-}
-
-variable "team_members" {
-  description = "Explicitly declared non-maintainer team members, keyed by a stable label."
-  type = map(object({
-    team_id = string
-    user_id = string
-  }))
-  default = {}
-}
-
-# ─── Control 3.3 — agent infrastructure ─────────────────────────────────────
-variable "agent_clusters" {
-  description = "Agent clusters, one per trust boundary. Key is the cluster name."
-  type = map(object({
-    description = optional(string, "Managed by HTH pack 3.3")
-    emoji       = optional(string, ":lock:")
-    color       = optional(string, "#0F172A")
-  }))
-  default = {}
-}
-
-variable "agent_queues" {
-  description = "Queues within the declared clusters. `cluster` must be a key of agent_clusters."
-  type = map(object({
-    cluster     = string
-    key         = string
-    description = optional(string, "Managed by HTH pack 3.3")
-    paused      = optional(bool, false)
-  }))
-  default = {}
-}
-
-variable "agent_allowed_cidrs" {
-  description = "Egress CIDRs permitted to register agents. LOCKOUT-CAPABLE: an agent outside this list cannot register, and a wrong entry strands the entire cluster. Leave empty to apply no IP restriction rather than guessing."
   type        = list(string)
   default     = []
 }

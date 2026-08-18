@@ -6,9 +6,9 @@ slug: "buildkite"
 tier: "2"
 category: "DevOps"
 description: "CI/CD platform hardening for Buildkite including SAML SSO, team permissions, agent security, and pipeline controls"
-version: "0.2.1"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-08-17"
+last_updated: "2026-08-08"
 ---
 
 ## Overview
@@ -72,7 +72,7 @@ Configure SAML SSO to centralize authentication for Buildkite users.
 #### ClickOps Implementation
 
 **Step 1: Access SSO Settings**
-1. Navigate to: **Organization Settings** → **Single Sign On**
+1. Navigate to: **Organization Settings** → **SSO**
 2. Select SAML provider type
 
 **Step 2: Configure SAML**
@@ -126,16 +126,11 @@ Require 2FA for all Buildkite users.
 
 **Attack Prevented:** Credential stuffing, password reuse, phishing, account takeover
 
-#### Prerequisites
-
-- **ClickOps: none.** The Security page toggle is available on every plan.
-- **Terraform: a plan that includes the API IP allowlist feature.** The `buildkite_organization` resource fails to create without it, even when your configuration sets only `enforce_2fa` and never mentions IP allowlisting — the provider touches that field regardless. Verified against a live organization: `Unable to create Organization settings: input: The API IP allowlist feature is not available for your organization. Please upgrade your plan to access it.` The same resource backs [4.1](#41-configure-audit-logging), so that control inherits the constraint. On plans without the feature, use the ClickOps path below; `terraform validate` and `terraform plan` both pass, so this surfaces only at `apply`.
-
 #### ClickOps Implementation
 
 **Step 1: Enable 2FA Requirement**
 1. Navigate to: **Organization Settings** → **Security**
-2. Enable **Enforce Two-factor authentication**
+2. Enable **Require two-factor authentication**
 3. All users must configure 2FA
 
 **Step 2: Configure via IdP**
@@ -636,9 +631,6 @@ Enable and monitor audit logs.
 
 #### Prerequisites
 - **Buildkite Enterprise.** The audit log is an Enterprise-plan feature; organizations below Enterprise have no audit log to review, and compliance commitments that assume one need to account for that gap.
-- **Terraform (L3 IP restriction only): a plan including the API IP allowlist feature**, and the same `buildkite_organization` caveat described in [1.2](#12-enforce-two-factor-authentication) — the two controls share one singleton resource, so adopt one Terraform path or merge them, never both.
-
-> **Lockout warning — API IP allowlist.** `allowed_api_ip_addresses` is a hard allowlist on REST and GraphQL access. A CIDR list that omits the network you automate from severs your own API access the moment it applies, including the access required to reverse it. The undo path (`organizationApiIpAllowlistUpdate`) is itself an API call, so a wrong list is self-sealing. Confirm your egress address is covered before applying, and keep a route in from an allowlisted network. This is distinct from the agent-token IP allowlist in [3.1](#31-configure-agent-tokens), which carries no such risk.
 
 #### ClickOps Implementation
 
@@ -733,7 +725,6 @@ Source: [Buildkite audit log](https://buildkite.com/docs/pipelines/security/audi
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-17 | 0.2.1 | draft | Replace three prose-only Code Packs with real, schema-verified code. **1.1:** the Terraform provider exposes no SSO resource (21 resources, 16 data sources, none for SSO), so the empty `.tf` is replaced by a GraphQL `api/` pack using the live-introspected `ssoProvider*` mutation family, with the disable path documented as the way back from an SSO lockout. **2.3:** now a real verification pack over the `buildkite_organization_members` data source and `buildkite_team_member` roles, stating honestly that org-level role is not exposed to Terraform and lives in GraphQL. **3.3:** now real cluster isolation — `buildkite_cluster`, `buildkite_cluster_queue`, and cluster-scoped `buildkite_cluster_agent_token` with the lockout-capable IP allowlist. | Claude Code (Opus 5) |
 | 2026-08-08 | 0.2.0 | draft | Currency pass. **1.1:** correct the plan gate to Pro or Enterprise (no "Business" tier exists) and expand enforcement — SSO required/optional is per user, organization-wide enforcement works by disabling 2FA authentication as a login method, session timeout ranges from 6 hours to 1 year, IP address pinning revokes a session on IP change (Enterprise), SCIM deprovisioning (Enterprise), and members are provisioned just-in-time on first login. **3.1:** correct agent tokens to cluster-scoped, and add expiration timestamps (API-only, at least 10 minutes out, immutable once set; web-UI tokens have no expiry) and the Allowed IP Addresses CIDR allowlist. **3.2:** add the unclustered agents and tokens deprecation, unavailable to organizations created after 2024-02-26. **4.1:** correct the non-existent retention setting — the audit log is Enterprise-only at Organization Settings → Audit → Audit Log, events are stored indefinitely, the UI browses 12 months with older events via GraphQL, and search covers 90 days with 3 terms and 250 characters; add EventBridge streaming and REST/GraphQL retrieval. **New controls:** 2.4 untrusted-input pipeline controls, 2.5 API access token hygiene, 3.4 pipeline signing and verification, 3.5 build secrets management, 3.6 OIDC instead of static cloud credentials. **§5:** add mappings for the new controls and record that no CIS, DISA, or SCuBA baseline exists for Buildkite. **Appendix A:** remove the Trust Center and marketing security-page rows and add the newly cited documentation. Not surveyed this pass: Tier 3/4 research | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, teams, and agent security | Claude Code (Opus 4.5) |

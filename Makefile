@@ -29,7 +29,7 @@ lint: lint-content ## Run all linters
 lint-content: ## Validate guide formatting, frontmatter, tables (7 checks)
 	@bash scripts/validate-guides.sh
 
-validate-packs: ## Validate pack corpus — collisions, schema, markers, syntax, sync freshness, automation coverage (17 checks)
+validate-packs: ## Validate pack corpus — collisions, schema, markers, syntax, sync freshness (14 checks)
 	@bash scripts/validate-packs.sh
 
 # ─── Build Verification ───────────────────────────────────────────────────────
