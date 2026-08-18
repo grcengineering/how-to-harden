@@ -47,7 +47,8 @@
 # T1  --graphql-token SILENTLY DISCARDS your local file. Vendor's own flag text:
 #     "Both 'repo' and 'pipeline-file' will be ignored in preference of values
 #     from the GraphQL API if the token in provided." Passing a token AND a local
-#     .yml signs whatever is stored server-side, not the file you edited.
+#     .yml signs whatever is stored server-side, not the file you edited. Read T9
+#     with this one: the token does not have to be TYPED to be "provided".
 # T2  Offline signing (no --graphql-token) HARD-REQUIRES --repo. Without it the
 #     tool returns ErrUseGraphQL. The repo URL is bound into the signature.
 # T3  Offline signing REJECTS any pipeline containing `$` interpolations —
@@ -70,6 +71,18 @@
 # T8  Without --private-jwks-file/--public-jwks-file, keygen writes files named
 #     from the key id into the CWD — easy to commit by accident. This pack
 #     refuses to generate into a path git does not ignore.
+# T9  THE GRAPHQL TOKEN MUST NOT TRAVEL IN argv, AND IT HAS A SECOND EDGE.
+#     `--graphql-token <value>` puts a write_pipelines credential on the process
+#     table: readable by every user on the host via `ps`, and captured by process
+#     accounting and audit logging. tool_sign.go:110-112 binds the flag to
+#     BUILDKITE_GRAPHQL_TOKEN, so the environment form is available and is what
+#     this pack uses — no flag, same code path.
+#     The edge: :218 chooses signWithGraphQL whenever cfg.GraphQLToken is
+#     non-empty, and it cannot tell a flag from an env var. A token merely
+#     EXPORTED in the shell therefore triggers T1 on an offline run — the local
+#     file you meant to sign is silently discarded in favour of the server-side
+#     definition, with no flag anywhere in the command. sign_offline() runs the
+#     agent under `env -u BUILDKITE_GRAPHQL_TOKEN` for exactly this reason.
 #
 # -----------------------------------------------------------------------------
 # GCP KMS — UNRESOLVED, DO NOT PROPAGATE EITHER CLAIM
@@ -164,16 +177,23 @@ keygen() {
 #   offline  - signs the local YAML file. Requires --repo (T2). Rejects any
 #              pipeline containing $ interpolations (T3). Prints the signed
 #              pipeline to stdout; nothing is uploaded.
-#   publish  - passes --graphql-token, so the tool downloads the pipeline and
-#              repo URL from Buildkite and IGNORES the local file entirely (T1),
-#              then writes the signed definition back with --update.
+#   publish  - supplies the GraphQL token (via the environment, never argv — T9),
+#              so the tool downloads the pipeline and repo URL from Buildkite and
+#              IGNORES the local file entirely (T1), then writes the signed
+#              definition back with --update.
 sign_offline() {
   local pipeline_file="${1:?path to pipeline YAML required}"
   require_agent
   : "${BUILDKITE_REPO:?set BUILDKITE_REPO to the pipeline repository URL (bound into the signature)}"
   [ -r "${PRIVATE_JWKS}" ] || { echo "FATAL: no signing key at ${PRIVATE_JWKS}; run keygen." >&2; exit 5; }
 
-  "${BK_AGENT}" tool sign \
+  # `env -u` is load-bearing, not tidiness. tool_sign.go:110-112 binds
+  # --graphql-token to BUILDKITE_GRAPHQL_TOKEN, and :218 selects signWithGraphQL
+  # on cfg.GraphQLToken being non-empty REGARDLESS of which source filled it. So
+  # a token merely present in this shell's environment silently converts an
+  # offline signing run into a GraphQL one — T1, reached without ever typing the
+  # flag. Strip it from the child's environment so `offline` means offline.
+  env -u BUILDKITE_GRAPHQL_TOKEN "${BK_AGENT}" tool sign \
     --jwks-file "${PRIVATE_JWKS}" \
     --jwks-key-id "${KEY_ID}" \
     --repo "${BUILDKITE_REPO}" \
@@ -187,9 +207,18 @@ sign_and_publish() {
   : "${BUILDKITE_PIPELINE_SLUG:?set BUILDKITE_PIPELINE_SLUG}"
   [ -r "${PRIVATE_JWKS}" ] || { echo "FATAL: no signing key at ${PRIVATE_JWKS}; run keygen." >&2; exit 5; }
 
+  # T9: the write-scoped token is NEVER passed as a flag. Anything in argv is
+  # readable via `ps` by every user on the host and lands in process accounting
+  # and audit logs. tool_sign.go:110-112 binds --graphql-token to
+  # BUILDKITE_GRAPHQL_TOKEN, and :218 picks signWithGraphQL on cfg.GraphQLToken
+  # being non-empty whichever source filled it — so the env-only form is the
+  # identical code path with the secret off the process table. The export is what
+  # makes the child inherit it: the :? guard above proves the variable is SET,
+  # not that it is EXPORTED.
+  export BUILDKITE_GRAPHQL_TOKEN
+
   local -a args=(
     tool sign
-    --graphql-token "${BUILDKITE_GRAPHQL_TOKEN}"
     --jwks-file "${PRIVATE_JWKS}"
     --jwks-key-id "${KEY_ID}"
     --organization-slug "${BUILDKITE_ORGANIZATION_SLUG}"
@@ -218,9 +247,11 @@ sign_with_aws_kms() {
   : "${BUILDKITE_ORGANIZATION_SLUG:?set BUILDKITE_ORGANIZATION_SLUG}"
   : "${BUILDKITE_PIPELINE_SLUG:?set BUILDKITE_PIPELINE_SLUG}"
 
+  # T9 again: token via the environment binding, never argv. See sign_and_publish.
+  export BUILDKITE_GRAPHQL_TOKEN
+
   local -a args=(
     tool sign
-    --graphql-token "${BUILDKITE_GRAPHQL_TOKEN}"
     --signing-aws-kms-key "${BUILDKITE_SIGNING_AWS_KMS_KEY}"
     --organization-slug "${BUILDKITE_ORGANIZATION_SLUG}"
     --pipeline-slug "${BUILDKITE_PIPELINE_SLUG}"

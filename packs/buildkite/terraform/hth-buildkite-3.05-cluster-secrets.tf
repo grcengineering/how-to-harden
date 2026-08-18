@@ -87,6 +87,23 @@
 # creation, so a typo is a create-and-delete, not an edit. The preconditions
 # below fail the plan on the operator's machine rather than mid-apply.
 #
+# ── ⚠️ TRAP 7b: THE MAP LABEL IS NOT THE SECRET KEY ──────────────────────────
+# `var.cluster_secrets` is a map keyed by a Terraform LABEL, and every entry
+# additionally declares `key`, which is the name the secret is created under in
+# Buildkite and the name a pipeline references. They are deliberately separate:
+# the label is a Terraform address (it must be stable, it appears in state, and
+# renaming it moves the resource), while the key is an immutable Buildkite
+# identifier. Writing `key = each.key` — using the label — is the specific bug
+# this pack must not have: the operator declares `key = "DEPLOY_KEY"`, gets a
+# secret named after their label, and every pipeline reading `DEPLOY_KEY` reads
+# nothing. Every reference below reads `each.value.key`; the label is used only
+# to identify the declaration in error messages.
+#
+# Because the key is no longer forced unique by the map's own keys, the
+# uniqueness precondition below rejects two entries that declare the same key in
+# the same cluster — a collision Buildkite would otherwise resolve by having the
+# second apply fight the first.
+#
 # ── ⚠️ TRAP 8: Terraform cannot verify the value it stored ───────────────────
 # Secret values are write-only in the Buildkite API and cannot be read back. No
 # drift detection exists on the value: if somebody overwrites the secret in the
@@ -149,6 +166,15 @@ locals {
       # A rule with no claims would match every build. Terraform's type system
       # permits the empty map, so it is rejected here.
       empty_rules = [for i, rule in s.policy_rules : i if length(keys(rule)) == 0]
+
+      # TRAP 7b: how many declarations target this same (cluster, key) pair.
+      # The map label makes the Terraform address unique; nothing makes the
+      # Buildkite key unique, and two entries claiming one key in one cluster is
+      # two applies overwriting each other's credential.
+      key_collisions = [
+        for k2, s2 in var.cluster_secrets : k2
+        if s2.cluster == s.cluster && s2.key == s.key
+      ]
     }
   }
 }
@@ -167,8 +193,13 @@ resource "buildkite_cluster_secret" "managed" {
   # only the cluster, version marker and policy — so it is legal to iterate.
   for_each = var.cluster_secrets
 
-  cluster_id  = data.buildkite_cluster.secret_scoped[each.value.cluster].uuid
-  key         = each.key
+  cluster_id = data.buildkite_cluster.secret_scoped[each.value.cluster].uuid
+
+  # TRAP 7b: the DECLARED key, never the map label. The label is a Terraform
+  # address; this is the name Buildkite creates the secret under and the name a
+  # pipeline references. It is immutable — changing it is a create-plus-delete.
+  key = each.value.key
+
   description = each.value.description
 
   # TRAP 1 + the reason this pack exists. Indexed inside the resource body, never
@@ -186,44 +217,55 @@ resource "buildkite_cluster_secret" "managed" {
     # TRAP 4: refuse to create a secret with no policy.
     precondition {
       condition     = length(each.value.policy_rules) > 0
-      error_message = format("Secret '%s' declares no policy_rules. A cluster secret with no access policy is not a documented state — Buildkite does not specify whether it is reachable by every build in cluster '%s'. Declare the pipelines that may read it.", each.key, each.value.cluster)
+      error_message = format("Secret '%s' (Buildkite key '%s') declares no policy_rules. A cluster secret with no access policy is not a documented state — Buildkite does not specify whether it is reachable by every build in cluster '%s'. Declare the pipelines that may read it.", each.key, each.value.key, each.value.cluster)
     }
 
     # TRAP 6, degenerate case: a claimless rule constrains nothing, and because
     # rules are OR'd it makes every other rule in the policy irrelevant.
     precondition {
       condition     = length(local.hth_secret_policy[each.key].empty_rules) == 0
-      error_message = format("Secret '%s' has policy rule(s) at index %s with no claims. Rules are OR'd, so a claimless rule matches every build and supersedes every other rule in the policy.", each.key, join(", ", [for i in local.hth_secret_policy[each.key].empty_rules : tostring(i)]))
+      error_message = format("Secret '%s' (Buildkite key '%s') has policy rule(s) at index %s with no claims. Rules are OR'd, so a claimless rule matches every build and supersedes every other rule in the policy.", each.key, each.value.key, join(", ", [for i in local.hth_secret_policy[each.key].empty_rules : tostring(i)]))
     }
 
     # A misspelled claim is the worst failure mode available here: it reads like
     # a restriction and enforces nothing.
     precondition {
       condition     = length(setsubtract(toset(local.hth_secret_policy[each.key].claims_used), toset(local.hth_known_claims))) == 0
-      error_message = format("Secret '%s' uses unrecognised policy claim(s): %s. Buildkite implements exactly these: first-party %s; third-party %s.", each.key, join(", ", tolist(setsubtract(toset(local.hth_secret_policy[each.key].claims_used), toset(local.hth_known_claims)))), join(", ", local.hth_first_party_claims), join(", ", local.hth_third_party_claims))
+      error_message = format("Secret '%s' (Buildkite key '%s') uses unrecognised policy claim(s): %s. Buildkite implements exactly these: first-party %s; third-party %s.", each.key, each.value.key, join(", ", tolist(setsubtract(toset(local.hth_secret_policy[each.key].claims_used), toset(local.hth_known_claims)))), join(", ", local.hth_first_party_claims), join(", ", local.hth_third_party_claims))
     }
 
     # TRAP 5, enforced per secret when the operator opts in.
     precondition {
       condition     = !var.require_first_party_claim || length(local.hth_secret_policy[each.key].third_party_only_rules) == 0
-      error_message = format("Secret '%s' has policy rule(s) at index %s built only from third-party claims, whose values are supplied by users or third-party tools. Anchor each rule on pipeline_id, build_source or cluster_queue_id, or set require_first_party_claim = false to accept the softer boundary deliberately.", each.key, join(", ", [for i in local.hth_secret_policy[each.key].third_party_only_rules : tostring(i)]))
+      error_message = format("Secret '%s' (Buildkite key '%s') has policy rule(s) at index %s built only from third-party claims, whose values are supplied by users or third-party tools. Anchor each rule on pipeline_id, build_source or cluster_queue_id, or set require_first_party_claim = false to accept the softer boundary deliberately.", each.key, each.value.key, join(", ", [for i in local.hth_secret_policy[each.key].third_party_only_rules : tostring(i)]))
     }
 
-    # TRAP 7: the key is immutable, so a typo costs a create-and-delete cycle.
+    # TRAP 7 + 7b: the key is immutable, so a typo costs a create-and-delete
+    # cycle — and the string validated here is the DECLARED key that Buildkite
+    # will actually receive, not the map label. Validating the label would pass a
+    # well-formed address while creating a malformed credential.
     precondition {
-      condition     = can(regex("^[A-Za-z][A-Za-z0-9_]{0,254}$", each.key))
-      error_message = format("Secret key '%s' is invalid. Keys must start with a letter, contain only letters, numbers and underscores, and be at most 255 characters. The key cannot be changed after creation.", each.key)
+      condition     = can(regex("^[A-Za-z][A-Za-z0-9_]{0,254}$", each.value.key))
+      error_message = format("Secret '%s' declares an invalid Buildkite key '%s'. Keys must start with a letter, contain only letters, numbers and underscores, and be at most 255 characters. The key cannot be changed after creation.", each.key, each.value.key)
     }
 
     precondition {
-      condition     = !startswith(lower(each.key), "buildkite") && !startswith(lower(each.key), "bk")
-      error_message = format("Secret key '%s' uses a reserved prefix. Keys must not begin with 'buildkite' or 'bk' in any casing.", each.key)
+      condition     = !startswith(lower(each.value.key), "buildkite") && !startswith(lower(each.value.key), "bk")
+      error_message = format("Secret '%s' declares the Buildkite key '%s', which uses a reserved prefix. Keys must not begin with 'buildkite' or 'bk' in any casing.", each.key, each.value.key)
+    }
+
+    # TRAP 7b: the map label guarantees a unique Terraform address; nothing
+    # guarantees a unique Buildkite key. Two declarations naming one key in one
+    # cluster are two resources writing the same credential.
+    precondition {
+      condition     = length(local.hth_secret_policy[each.key].key_collisions) == 1
+      error_message = format("Buildkite key '%s' in cluster '%s' is declared by %d entries of var.cluster_secrets: %s. The map label is a Terraform address and does not make the key unique — these declarations would overwrite one another's value and policy. Give each secret its own key.", each.value.key, each.value.cluster, length(local.hth_secret_policy[each.key].key_collisions), join(", ", local.hth_secret_policy[each.key].key_collisions))
     }
 
     # TRAP 2, the other half: the provider requires a non-empty version marker.
     precondition {
       condition     = trimspace(each.value.value_wo_version) != ""
-      error_message = format("Secret '%s' has an empty value_wo_version. It is required whenever value_wo is set, and it is the only change Terraform can detect when the secret value rotates.", each.key)
+      error_message = format("Secret '%s' (Buildkite key '%s') has an empty value_wo_version. It is required whenever value_wo is set, and it is the only change Terraform can detect when the secret value rotates.", each.key, each.value.key)
     }
   }
 }
@@ -289,7 +331,7 @@ check "secrets_placed_in_declared_clusters" {
 # Metadata only. The value is write-only in the Buildkite API and unreadable by
 # design, so there is deliberately nothing here that could carry it.
 output "cluster_secrets_managed" {
-  description = "Declared cluster secrets and the shape of their access policies. Contains no secret material — values are write-only and cannot be read back from Buildkite (TRAP 8: this means Terraform can never detect a console overwrite of a value)."
+  description = "Declared cluster secrets and the shape of their access policies, keyed by the var.cluster_secrets DECLARATION LABEL. `key` is the separate, immutable Buildkite key the secret was created under and the name a pipeline must reference (TRAP 7b) — compare the two when a pipeline reports an empty secret. Contains no secret material — values are write-only and cannot be read back from Buildkite (TRAP 8: this means Terraform can never detect a console overwrite of a value)."
   value = {
     for k, s in buildkite_cluster_secret.managed : k => {
       id                     = s.id

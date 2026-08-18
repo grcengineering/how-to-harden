@@ -65,6 +65,24 @@
 # refuse to target the calling identity (resolved via `viewer`) or to reduce the
 # admin population to zero.
 #
+# TRAP 7 — `remove` deletes a membership, and this pack owns only ADMINS.
+# Two separate things follow from that, and neither is a formality.
+#   (a) SCOPE. preflight_target resolves its target out of the admin census and
+#       nowhere else, so `remove` can only ever act on someone who is currently
+#       an organization administrator. That is deliberate — this pack's subject
+#       is the admin population — but it means `remove` is NOT the general
+#       membership-removal verb. Removing an ordinary member is
+#       packs/buildkite/api/hth-buildkite-2.06-dormant-members.sh, which owns
+#       the dormancy evidence that justifies such a removal. The usage text and
+#       the refusal message below say admin-member-id for that reason.
+#   (b) SCIM. organizationMemberDelete is the same irreversible mutation 2.6
+#       runs, and no field on any type exposes whether the organization is
+#       SCIM-managed. If the IdP still asserts this user the deletion is reverted
+#       at the next sync, and the access review then evidences a removal that did
+#       not hold. 2.6 makes the operator assert that check with
+#       HTH_SCIM_REVIEWED=1; the identical operation here carries the identical
+#       gate. Deprovision in the IdP, not here, when SCIM is in play.
+#
 # Requires: curl, jq, BUILDKITE_TOKEN (GraphQL-enabled API access token),
 #           BUILDKITE_ORG_SLUG.
 # Tuning:   BUILDKITE_MAX_ADMINS (default 3, per the guide's "2-3 users"),
@@ -295,7 +313,12 @@ preflight_target() {
   admin_count="$(jq -r '.admin_count' <<<"${report}")"
 
   if [ -z "${target_user_uuid}" ]; then
+    # TRAP 7(a): this is a scope statement, not a lookup failure. Both mutations
+    # in this pack act on the admin population only.
     echo "refusing: ${id} is not currently an organization administrator" >&2
+    echo "          this pack acts on administrators only — take member_id from" >&2
+    echo "          'census', and remove an ordinary member with" >&2
+    echo "          packs/buildkite/api/hth-buildkite-2.06-dormant-members.sh" >&2
     return 2
   fi
 
@@ -331,12 +354,23 @@ demote_admin() {
   }' | gql_checked | jq '.data.organizationMemberUpdate.organizationMember'
 }
 
-# Remove a member from the organization entirely. Requires BUILDKITE_CONFIRM=remove.
+# Remove an ADMIN's membership from the organization entirely (TRAP 7).
+# Requires BUILDKITE_CONFIRM=remove AND HTH_SCIM_REVIEWED=1.
 remove_member() {
   local id="$1"
   require_member_id "${id}" || return $?
   [ "${BUILDKITE_CONFIRM:-}" = "remove" ] || {
     echo "refusing: set BUILDKITE_CONFIRM=remove to authorise this mutation" >&2; return 2; }
+  # TRAP 7(b). organizationMemberDelete is irreversible and no field exposes SCIM
+  # management, so the operator asserts the check — the same gate the 2.6 pack
+  # puts on the same mutation. Deletion is the one place this pack must not be a
+  # guard weaker than its sibling.
+  [ "${HTH_SCIM_REVIEWED:-}" = "1" ] || {
+    echo "refusing: set HTH_SCIM_REVIEWED=1 to confirm you checked whether this" >&2
+    echo "organization is SCIM-managed. If the IdP still asserts this user, this" >&2
+    echo "deletion is reverted at the next sync and the access review evidences a" >&2
+    echo "removal that did not hold. Deprovision in the IdP instead." >&2
+    return 2; }
   preflight_target "${id}" || return $?
 
   jq -n --arg id "${id}" '{
@@ -351,9 +385,20 @@ case "${1:-assert}" in
   census) census ;;
   assert) assert_admins ;;
   demote) demote_admin "${2:?member relay id required — take member_id from the census subcommand}" ;;
-  remove) remove_member "${2:?member relay id required — take member_id from the census subcommand}" ;;
+  remove) remove_member "${2:?ADMIN member relay id required — take member_id from the census subcommand}" ;;
   *)
-    echo "usage: $0 [census|assert|demote <member-id>|remove <member-id>]" >&2
+    cat >&2 <<'USAGE'
+usage: hth-buildkite-2.03-limit-admin-access.sh [census|assert|demote <admin-member-id>|remove <admin-member-id>]
+
+  census   list the organization's administrators
+  assert   fail if the admin population breaches the bound or the 2FA/SSO rules
+  demote   ADMIN -> MEMBER.  BUILDKITE_CONFIRM=demote
+  remove   delete an ADMIN's membership.  BUILDKITE_CONFIRM=remove HTH_SCIM_REVIEWED=1
+
+Both mutations act on administrators only (TRAP 7). To remove an ordinary
+member, use packs/buildkite/api/hth-buildkite-2.06-dormant-members.sh, which
+owns the dormancy evidence that justifies the removal.
+USAGE
     exit 2
     ;;
 esac

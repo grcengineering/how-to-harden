@@ -26,6 +26,7 @@
 # at tag v3.137.0 and cross-checked against `main`, 2026-08-18:
 #   clicommand/agent_start.go     :185-195, 615-676, 954-982, 1118-1130, 1286-1298
 #   clicommand/global.go          :151-168   (redacted-vars defaults)
+#   cliconfig/file.go             :86-148, 150-153  (the config parser itself)
 #   clicommand/pipeline_upload.go :86-148, 611-621  (v3) / :86-142, 627-637 (main)
 #   internal/redact/redact.go     :20-24, 108-160   (LengthMin, path.Match)
 #   internal/job/executor.go      :861-925, 1030-1035, 1173-1183, 1317-1327
@@ -185,6 +186,62 @@
 # is safe and useful: `enable-environment-variable-allowlist=true` alone permits
 # only Buildkite-set variables, which is the tightest posture available.
 #
+# -----------------------------------------------------------------------------
+# ⚠️ T9 — "SAFE" IN T8 MEANS THE AGENT STARTS, NOT THAT YOUR PIPELINES STILL RUN
+# -----------------------------------------------------------------------------
+# The switch-alone posture T8 calls safe is a BREAKING CHANGE on a live agent.
+# `enable-environment-variable-allowlist=true` with no list permits only
+# Buildkite-set variables, so every pipeline `env:` block and every plugin that
+# exports a variable stops taking effect on that host at the next restart. That
+# is a legitimate target state; it is not a safe default. This pack therefore
+# refuses to reach it by omission — HTH_ALLOWED_ENVIRONMENT_VARIABLES is
+# required for emit/apply exactly like the other two policy inputs, and the
+# deny-all posture must be written as the literal `NONE`.
+#
+# The same "starts fine, builds fail" shape applies to no-command-eval. It is
+# not only a plugin switch: executor.go:1282-1291 refuses any `command:` whose
+# value does not resolve to an existing file INSIDE the checkout —
+#   "this agent is not allowed to evaluate console commands; to allow this,
+#    re-run the agent without the `--no-command-eval` option or specify a script
+#    within your repository to run instead (such as scripts/test.sh)"
+# — and a second check refuses a script that resolves outside the checkout dir.
+# So every inline `command: make test` step in the org fails on this agent until
+# it is moved into a repository script. Stage this pack on a CANARY agent in its
+# own queue and drain a representative build set through it before a fleet
+# rollout; nothing here can be validated by reading the config file back.
+#
+# -----------------------------------------------------------------------------
+# ⚠️ T10 — buildkite-agent.cfg IS NOT "key=value". AN UNQUOTED '#' TRUNCATES
+#           THE VALUE, AND TRUNCATION IS WHAT UN-ANCHORS A PINNED ALLOWLIST.
+# -----------------------------------------------------------------------------
+# The agent does not parse this file itself; cliconfig/file.go does, and that
+# code is copied from godotenv (its own comment says so, file.go:82-85). Before
+# it splits key from value it strips comments (file.go:92-112) — everything from
+# the first '#' is discarded UNLESS the '#' sits inside a quoted segment:
+#
+#   allowed-plugins=^github\.com/acme/docker#v1\.2\.3$
+#   -> the agent holds     ^github\.com/acme/docker
+#
+# The trailing '$' is gone, so the pattern is no longer anchored at the end and
+# now matches `github.com/acme/docker-evil#anything` and every ref of the real
+# plugin. The operator reads a pinned, anchored allowlist in the file and the
+# agent enforces a prefix match. This is not an exotic input: allowed-plugins is
+# matched against `plugin.FullSource()` (agent/run_job.go:299), which is
+# literally `Location + "#" + Version` (go-pipeline plugin.go:65-108), so a '#'
+# is what pinning a plugin version LOOKS LIKE. The same applies to
+# allowed-repositories for any URL carrying a fragment.
+# Two consequences this pack acts on:
+#   * Every value is written QUOTED, and set_cfg re-parses the line it is about
+#     to write through the port of parseLine below and refuses to write it
+#     unless the agent would read back exactly the intended value.
+#   * read_cfg returns what the AGENT will hold, not the text on the line, and
+#     audit() fails when the two disagree — a sed-based reader cannot see this
+#     class of defect at all, so audit would otherwise print the pinned pattern
+#     and PASS while the agent enforced the truncated one.
+# The quoted form round-trips: file.go:133-145 strips the edge quotes and
+# expands \" and \n, so keep quote characters out of policy patterns entirely
+# (validate_regexes/validate_globs refuse them).
+#
 # Requires: jq (on the agent host, at job time too), and root write access to
 # the agent config and hooks directory. Run ON THE AGENT HOST.
 # =============================================================================
@@ -200,12 +257,24 @@ case "${1:-audit}" in
     : "${HTH_ALLOWED_PLUGINS:?set HTH_ALLOWED_PLUGINS (comma-separated ANCHORED regexes, or NONE to forbid plugins entirely)}"
     ;;
 esac
+# The identical reasoning in the opposite direction (T9). An unset environment
+# allowlist would emit the switch with no list, which strips every
+# pipeline-supplied variable on this host — the tightest posture, and a breaking
+# change for every existing `env:` block and every plugin that sets one. Only
+# emit/apply need it; install-hooks writes no config keys.
+case "${1:-audit}" in
+  emit|apply)
+    : "${HTH_ALLOWED_ENVIRONMENT_VARIABLES:?set HTH_ALLOWED_ENVIRONMENT_VARIABLES (comma-separated ANCHORED regexes for job-supplied env vars, e.g. '^MYAPP_.*$', or NONE to permit only Buildkite-set variables — see T9)}"
+    ;;
+esac
 
 AGENT_CFG="${BUILDKITE_AGENT_CONFIG:-/etc/buildkite-agent/buildkite-agent.cfg}"
 HOOKS_PATH="${BUILDKITE_HOOKS_PATH:-/etc/buildkite-agent/hooks}"
 # Extra glob patterns appended to the built-in nine. Globs, never regexes (T2).
 HTH_EXTRA_REDACTED_VARS="${HTH_EXTRA_REDACTED_VARS:-}"
-# Anchored regexes for job-supplied env vars. Empty = only Buildkite-set vars.
+# Anchored regexes for job-supplied env vars, or the literal NONE for the
+# deliberate deny-all. Required for emit/apply by the guard above; the :- here
+# only keeps `audit`, `install-hooks` and `help` runnable without it.
 HTH_ALLOWED_ENVIRONMENT_VARIABLES="${HTH_ALLOWED_ENVIRONMENT_VARIABLES:-}"
 # Fork builds are rejected at admission unless this is exactly "true", in which
 # case the fork's repo URL must still satisfy HTH_ALLOWED_REPOSITORIES.
@@ -223,6 +292,78 @@ AGENT_DEFAULT_REDACTED_VARS='*_PASSWORD,*_SECRET,*_TOKEN,*_PRIVATE_KEY,*_SSH_KEY
 
 die() { echo "FATAL: $*" >&2; exit 1; }
 
+# T10: buildkite-agent.cfg is parsed by cliconfig/file.go, a godotenv derivative,
+# not by a "split on the first =" reader. These helpers are a faithful port of
+# parseLine (v3.137.0:86-148, byte-identical on main) so that this pack writes
+# only configs the agent reads back unchanged, and audit only ever reports the
+# value the agent will actually enforce.
+_HTH_DQ='"'
+_HTH_SQ="'"
+_HTH_BS='\'
+
+# Occurrences of a single character in a string, without spawning a process.
+_hth_count() {
+  local s="$1" c="$2" t
+  t="${s//"${c}"/}"
+  printf '%s' "$(( ${#s} - ${#t} ))"
+}
+
+# Given one raw config line, return the value the AGENT will hold for it.
+# Empty output means "the agent gets nothing here", which is the fail-closed
+# answer for every line parseLine would reject outright.
+agent_parse_line() {
+  local line="$1" seg rest more kept open out value nd ns
+  # file.go:92-112 — strip comments, but keep a '#' inside a quoted segment.
+  if [ "${line#*#}" != "${line}" ]; then
+    rest="${line}"; kept=0; open=0; out=""
+    while :; do
+      if [ "${rest#*#}" != "${rest}" ]; then
+        seg="${rest%%#*}"; rest="${rest#*#}"; more=1
+      else
+        seg="${rest}"; more=0
+      fi
+      nd="$(_hth_count "${seg}" "${_HTH_DQ}")"
+      ns="$(_hth_count "${seg}" "${_HTH_SQ}")"
+      if [ "${nd}" -eq 1 ] || [ "${ns}" -eq 1 ]; then
+        if [ "${open}" -eq 1 ]; then
+          open=0
+          if [ "${kept}" -eq 0 ]; then out="${seg}"; else out="${out}#${seg}"; fi
+          kept=$(( kept + 1 ))
+        else
+          open=1
+        fi
+      fi
+      if [ "${kept}" -eq 0 ] || [ "${open}" -eq 1 ]; then
+        if [ "${kept}" -eq 0 ]; then out="${seg}"; else out="${out}#${seg}"; fi
+        kept=$(( kept + 1 ))
+      fi
+      [ "${more}" -eq 1 ] || break
+    done
+    line="${out}"
+  fi
+  # file.go:114-135 — '=' first; ':' only when the line has no '=' at all.
+  case "${line}" in
+    *=*) value="${line#*=}" ;;
+    *:*) value="${line#*:}" ;;
+    *)   return 0 ;;
+  esac
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  # file.go:137-145 — exactly two quotes of one kind means the value is quoted:
+  # strip every edge quote, then expand \" and \n.
+  nd="$(_hth_count "${value}" "${_HTH_DQ}")"
+  ns="$(_hth_count "${value}" "${_HTH_SQ}")"
+  if [ "${nd}" -eq 2 ] || [ "${ns}" -eq 2 ]; then
+    while :; do case "${value}" in [\"\']*) value="${value#?}" ;; *) break ;; esac; done
+    while :; do case "${value}" in *[\"\']) value="${value%?}" ;; *) break ;; esac; done
+    local _esc_dq="${_HTH_BS}${_HTH_DQ}" _esc_nl="${_HTH_BS}n" _nl
+    _nl=$'\n'
+    value="${value//"${_esc_dq}"/${_HTH_DQ}}"
+    value="${value//"${_esc_nl}"/${_nl}}"
+  fi
+  printf '%s' "${value}"
+}
+
 # T4: the agent does not anchor these for you. Refuse to ship a pattern that
 # would match a substring of a hostile URL or plugin source.
 validate_regexes() {
@@ -230,6 +371,11 @@ validate_regexes() {
   local IFS=','
   for pat in ${list}; do
     [ -n "${pat}" ] || continue
+    # T10: every value is written quoted, and the agent's parser cannot round-trip
+    # a quoted value that itself contains a quote character.
+    case "${pat}" in
+      *'"'*|*"'"*) die "${label}: pattern '${pat}' contains a quote character. buildkite-agent.cfg values are written quoted (T10) and cliconfig/file.go cannot round-trip a nested quote — the agent would compile a different pattern than the one written. Remove it." ;;
+    esac
     case "${pat}" in
       '^'*) ;;
       *) die "${label}: pattern '${pat}' is not anchored. regexp.Compile leaves it unanchored, so it matches anywhere in the value. Prefix it with '^'." ;;
@@ -254,32 +400,121 @@ validate_globs() {
   for pat in ${list}; do
     [ -n "${pat}" ] || continue
     case "${pat}" in
+      *'"'*|*"'"*) die "${label}: '${pat}' contains a quote character, which cannot survive the quoted write this pack performs (T10)." ;;
+    esac
+    case "${pat}" in
       *'^'*|*'$'*|*'.*'*|*'\'*)
         die "${label}: '${pat}' looks like a regex. This field is matched with path.Match (globs); a regex here matches nothing and redacts nothing. Use '*_SUFFIX' form." ;;
     esac
   done
 }
 
-read_cfg() {
-  local key="$1" raw
+# The last line that sets ${key}, verbatim. `export ` is tolerated because
+# parseLine strips that prefix (file.go:128); a config carrying it would
+# otherwise be read by this pack and by the agent as two different files.
+cfg_line() {
   [ -r "${AGENT_CFG}" ] || return 1
-  raw="$(sed -nE "s|^[[:space:]]*${key}[[:space:]]*=[[:space:]]*(.*)$|\1|p" "${AGENT_CFG}" | tail -1)"
-  # Values may be written bare or quoted; normalise both.
+  sed -nE "/^[[:space:]]*(export[[:space:]]*)?$1[[:space:]]*=/p" "${AGENT_CFG}" | tail -1
+}
+
+# What the file APPEARS to say: the text after the first '=', with at most one
+# layer of surrounding quotes removed. Only audit uses this, and only to compare
+# it against read_cfg — a human reads this, the agent reads read_cfg (T10).
+read_cfg_text() {
+  local raw
+  raw="$(cfg_line "$1")" || return 1
+  case "${raw}" in *=*) raw="${raw#*=}" ;; *) raw="" ;; esac
+  raw="${raw#"${raw%%[![:space:]]*}"}"
+  raw="${raw%"${raw##*[![:space:]]}"}"
   raw="${raw%\"}"; raw="${raw#\"}"
   printf '%s' "${raw}"
+}
+
+# What the AGENT will hold. Every decision in this pack is made on this value and
+# never on the file text, because an unquoted '#' makes the two differ (T10).
+read_cfg() {
+  local raw
+  raw="$(cfg_line "$1")" || return 1
+  agent_parse_line "${raw}"
 }
 
 # Delete-then-append rather than sed-substitute: these values are regexes and
 # routinely contain the alternation pipe, which would terminate any sed
 # replacement delimiter you pick. Only the key is ever interpolated into a
 # pattern here; the value is only ever written by printf.
+# ATOMIC CONFIG REPLACEMENT. buildkite-agent.cfg carries this host's registration
+# token; a truncate-then-write (`cat "${tmp}" >"${AGENT_CFG}"`) interrupted by a
+# signal, a full disk, or a set -e abort leaves a config the agent cannot parse,
+# the agent then fails to start, and the host silently leaves the fleet. apply
+# calls set_cfg once per emitted key, so that window was opened repeatedly in one
+# run. Every mutation below stages a sibling file and rename(2)s it into place
+# instead, so a reader sees the old config or the new one, never a partial one.
+#   * the temp lives in the target's OWN directory — rename(2) is EXDEV across
+#     filesystems and mv would fall back to a non-atomic copy
+#   * `cp -p` seeds it from the incumbent so mode, ownership and times ride onto
+#     the replacement inode; a bare mktemp would hand the agent mktemp's 0600
+#   * AGENT_CFG is resolved through symlinks first, because this path is commonly
+#     a link into a config-management tree and renaming over the link would
+#     replace it with a regular file
+#   * no .bak is written: a persistent second copy of the agent token on disk is
+#     a worse trade than the failure mode the rename already removes
+# The trap is what keeps that staged full copy of the config — token included —
+# out of the directory when a run dies mid-mutation.
+HTH_CFG_TMP=""
+HTH_CFG_DST=""
+hth_cfg_cleanup() {
+  if [ -n "${HTH_CFG_TMP}" ]; then rm -f "${HTH_CFG_TMP}"; fi
+  HTH_CFG_TMP=""
+}
+trap hth_cfg_cleanup EXIT
+trap 'hth_cfg_cleanup; exit 130' INT
+trap 'hth_cfg_cleanup; exit 143' TERM
+
+# Real path of the config, following symlinks where the platform's readlink can.
+hth_cfg_path() {
+  if [ -L "${AGENT_CFG}" ]; then
+    readlink -f "${AGENT_CFG}" 2>/dev/null || printf '%s\n' "${AGENT_CFG}"
+  else
+    printf '%s\n' "${AGENT_CFG}"
+  fi
+}
+
+# Stage a writable copy beside the target: HTH_CFG_DST is the real path to read
+# from and commit to, HTH_CFG_TMP is the staged file to write into.
+# This assigns globals rather than printing a value on purpose. Written as
+# `dst="$(hth_cfg_stage)"` the function would run in a SUBSHELL, the parent's
+# HTH_CFG_TMP would stay empty, and the cleanup trap would never see — or remove
+# — the full copy of the token-bearing config that mktemp just created.
+hth_cfg_stage() {
+  HTH_CFG_DST="$(hth_cfg_path)"
+  HTH_CFG_TMP="$(mktemp "$(dirname "${HTH_CFG_DST}")/.hth-bk-cfg.XXXXXX")"
+  cp -p "${HTH_CFG_DST}" "${HTH_CFG_TMP}"
+}
+
+# Atomic swap. After this returns there is no temp left for the trap to clean up.
+hth_cfg_commit() {
+  mv -f "${HTH_CFG_TMP}" "${HTH_CFG_DST}"
+  HTH_CFG_TMP=""
+}
+
+# T10: the value is written QUOTED, and the exact line about to be written is
+# fed back through the port of the agent's own parser first. A line the agent
+# would read differently from what was intended is never written at all — a
+# silently truncated allowlist regex is worse than a refusal, because the file,
+# audit and the operator all then agree on a control the agent is not enforcing.
+# The staged-and-renamed write above is preserved; only the line changes.
 set_cfg() {
-  local key="$1" value="$2" tmp
-  tmp="$(mktemp)"
-  grep -vE "^[[:space:]]*${key}[[:space:]]*=" "${AGENT_CFG}" >"${tmp}" || true
-  printf '%s=%s\n' "${key}" "${value}" >>"${tmp}"
-  cat "${tmp}" >"${AGENT_CFG}"
-  rm -f "${tmp}"
+  local key="$1" value="$2" tmp dst line effective
+  case "${value}" in
+    *'"'*|*"'"*) die "${key}: value contains a quote character; cliconfig/file.go cannot round-trip it (T10)." ;;
+  esac
+  line="$(printf '%s="%s"' "${key}" "${value}")"
+  effective="$(agent_parse_line "${line}")"
+  [ "${effective}" = "${value}" ] || die "${key}: refusing to write. The agent would read '${effective}' from that line, not '${value}' (T10, cliconfig/file.go:86-148)."
+  hth_cfg_stage; dst="${HTH_CFG_DST}"; tmp="${HTH_CFG_TMP}"
+  grep -vE "^[[:space:]]*(export[[:space:]]*)?${key}[[:space:]]*=" "${dst}" >"${tmp}" || true
+  printf '%s\n' "${line}" >>"${tmp}"
+  hth_cfg_commit
 }
 
 # T3: union, never replace. Starts from whatever is already on disk if that is
@@ -309,21 +544,23 @@ render_cfg() {
   if [ "${HTH_ALLOWED_PLUGINS}" = "NONE" ]; then
     # Written explicitly even though no-command-eval would force it: an implicit
     # value cannot be audited, and a later reviewer must not have to know T1.
-    plugin_lines="no-plugins=true"
+    plugin_lines='no-plugins="true"'
   else
     validate_regexes "allowed-plugins" "${HTH_ALLOWED_PLUGINS}"
-    plugin_lines="no-plugins=false
-allowed-plugins=${HTH_ALLOWED_PLUGINS}"
+    plugin_lines="no-plugins=\"false\"
+allowed-plugins=\"${HTH_ALLOWED_PLUGINS}\""
   fi
 
-  if [ -n "${HTH_ALLOWED_ENVIRONMENT_VARIABLES}" ]; then
-    validate_regexes "allowed-environment-variables" "${HTH_ALLOWED_ENVIRONMENT_VARIABLES}"
-    env_lines="enable-environment-variable-allowlist=true
-allowed-environment-variables=${HTH_ALLOWED_ENVIRONMENT_VARIABLES}"
-  else
-    # T8: the switch alone is valid and is the tightest posture. The list alone
+  if [ "${HTH_ALLOWED_ENVIRONMENT_VARIABLES}" = "NONE" ]; then
+    # T8/T9: the switch alone is valid and is the tightest posture available —
+    # and it strips every pipeline-supplied variable on this host, so reaching it
+    # requires writing NONE rather than leaving a variable unset. The list alone
     # is a startup Fatalf, which is why it is never emitted without the switch.
-    env_lines="enable-environment-variable-allowlist=true"
+    env_lines='enable-environment-variable-allowlist="true"'
+  else
+    validate_regexes "allowed-environment-variables" "${HTH_ALLOWED_ENVIRONMENT_VARIABLES}"
+    env_lines="enable-environment-variable-allowlist=\"true\"
+allowed-environment-variables=\"${HTH_ALLOWED_ENVIRONMENT_VARIABLES}\""
   fi
 
   validate_regexes "allowed-repositories" "${HTH_ALLOWED_REPOSITORIES}"
@@ -331,17 +568,21 @@ allowed-environment-variables=${HTH_ALLOWED_ENVIRONMENT_VARIABLES}"
 
   cat <<CFGEOF
 # --- HTH control 2.4: untrusted input ----------------------------------------
+# Every value is QUOTED. buildkite-agent.cfg is parsed by a godotenv derivative
+# that discards everything after an unquoted '#', which silently truncates any
+# pinned plugin pattern ("source#version") and un-anchors it (T10). Keep the
+# quotes if you hand-edit this block.
 # Only the reviewed definition executes: the pipeline's own command string is
 # refused and checkout-override-mode is forced to 'strict'.
-no-command-eval=true
+no-command-eval="true"
 # Repository hooks are attacker-authored on an untrusted branch. See T6.
-no-local-hooks=true
+no-local-hooks="true"
 ${plugin_lines}
 # Anchored. The agent does not anchor these for you (T4).
-allowed-repositories=${HTH_ALLOWED_REPOSITORIES}
+allowed-repositories="${HTH_ALLOWED_REPOSITORIES}"
 ${env_lines}
 # Built-in nine plus local additions; globs, not regexes; 6-byte floor (T2, T3).
-redacted-vars=${redacted}
+redacted-vars="${redacted}"
 # --- end HTH control 2.4 -----------------------------------------------------
 CFGEOF
 }
@@ -352,19 +593,34 @@ emit_cfg() { render_cfg; }
 # Idempotent in-place application against an existing config file.
 apply_cfg() {
   [ -w "${AGENT_CFG}" ] || die "cannot write ${AGENT_CFG} (run as root)."
-  local line key value
+  local line key value rendered
+  # Render FIRST, into a variable, and only then loop.
+  # `done <<<"$(render_cfg)"` is fail-OPEN: die's `exit 1` inside the command
+  # substitution kills only that subshell, `set -e` does not propagate a failed
+  # substitution used as a redirection word, so the loop reads an empty string,
+  # the function runs to completion and apply exits 0 having written NOTHING.
+  # An operator provisioning a host then gets "Applied." and exit 0 on an agent
+  # with no control on it — the exact "believe 2.4 is implemented when it is
+  # not" failure T1 exists to prevent. A plain assignment DOES propagate, and
+  # the explicit `|| die` makes it independent of how this function is called.
+  rendered="$(render_cfg)" || die "config rendering failed; NOTHING was written to ${AGENT_CFG}. Fix the policy inputs above and re-run."
+  [ -n "${rendered}" ] || die "config rendering produced no output; NOTHING was written to ${AGENT_CFG}."
   while IFS= read -r line; do
     case "${line}" in ''|'#'*) continue ;; esac
-    key="${line%%=*}"; value="${line#*=}"
+    key="${line%%=*}"
+    # The rendered value is quoted (T10); recover the intended value with the
+    # same parser the agent uses, then let set_cfg re-quote and re-verify it.
+    value="$(agent_parse_line "${line}")"
     set_cfg "${key}" "${value}"
-  done <<<"$(render_cfg)"
+  done <<<"${rendered}"
   # A key we deliberately never write: reject-secrets. It is a pipeline-upload
   # flag and has no meaning in this file (T7). If a previous attempt put it
   # here, remove it rather than leaving a line that implies a control.
   if grep -qE '^[[:space:]]*reject-secrets[[:space:]]*=' "${AGENT_CFG}"; then
-    local tmp; tmp="$(mktemp)"
-    grep -vE '^[[:space:]]*reject-secrets[[:space:]]*=' "${AGENT_CFG}" >"${tmp}"
-    cat "${tmp}" >"${AGENT_CFG}"; rm -f "${tmp}"
+    local tmp dst
+    hth_cfg_stage; dst="${HTH_CFG_DST}"; tmp="${HTH_CFG_TMP}"
+    grep -vE '^[[:space:]]*reject-secrets[[:space:]]*=' "${dst}" >"${tmp}"
+    hth_cfg_commit
     echo "removed inert 'reject-secrets' key from ${AGENT_CFG} (see T7)."
   fi
   echo "Applied. Restart buildkite-agent, then run: $0 audit"
@@ -384,6 +640,7 @@ audit_cfg() {
   envlist="$(read_cfg allowed-environment-variables || true)"
   redacted="$(read_cfg redacted-vars || true)"
 
+  # Every value below is the AGENT's view of the file, not the file's text (T10).
   echo "config file                           : ${AGENT_CFG}"
   echo "no-command-eval                       : ${eval_off:-<unset> (default false)}"
   echo "no-local-hooks                        : ${hooks_off:-<unset> (default false)}"
@@ -392,6 +649,26 @@ audit_cfg() {
   echo "allowed-repositories                  : ${repos:-<unset>}"
   echo "enable-environment-variable-allowlist : ${envswitch:-<unset> (default false)}"
   echo "redacted-vars                         : ${redacted:-<unset> (built-in nine)}"
+
+  # T10, and it must run BEFORE every other check, because every other check
+  # reads read_cfg — the agent's view — and would otherwise report a healthy
+  # config without ever mentioning that the file says something else. A sed
+  # reader cannot see this class of defect: it prints the pinned, anchored
+  # pattern the operator wrote while the agent compiled the truncated one.
+  local ktext keff
+  for pat in no-command-eval no-local-hooks no-plugins allowed-plugins \
+             allowed-repositories enable-environment-variable-allowlist \
+             allowed-environment-variables redacted-vars; do
+    ktext="$(read_cfg_text "${pat}" || true)"
+    keff="$(read_cfg "${pat}" || true)"
+    [ -n "${ktext}" ] || continue
+    [ "${ktext}" != "${keff}" ] || continue
+    echo "FAIL: ${pat} is written as '${ktext}' but the agent will read '${keff}' (T10)." >&2
+    echo "      cliconfig/file.go parseLine drops everything after an unquoted '#', so a pinned" >&2
+    echo "      plugin pattern loses its version AND its trailing '\$' anchor and degrades to a" >&2
+    echo "      prefix match. Quote the value, or re-run '$0 apply' — this pack now quotes on write." >&2
+    rc=1
+  done
 
   [ "${eval_off}" = "true" ] || { echo "FAIL: no-command-eval is not true. A pipeline.yml can run arbitrary commands here." >&2; rc=1; }
   [ "${hooks_off}" = "true" ] || { echo "FAIL: no-local-hooks is not true. .buildkite/hooks/* from the checkout executes, and can undo every hook-based control (T6)." >&2; rc=1; }

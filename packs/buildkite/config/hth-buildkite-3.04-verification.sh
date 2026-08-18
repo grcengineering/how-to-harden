@@ -115,26 +115,78 @@ assert_public_only() {
   }
 }
 
+# ATOMIC CONFIG REPLACEMENT. buildkite-agent.cfg carries this host's registration
+# token; a truncate-then-write (`cat "${tmp}" >"${AGENT_CFG}"`) interrupted by a
+# signal, a full disk, or a set -e abort leaves a config the agent cannot parse,
+# the agent then fails to start, and the host silently leaves the fleet. Every
+# mutation below stages a sibling file and rename(2)s it into place instead, so a
+# reader sees the old config or the new one, never a partial one.
+#   * the temp lives in the target's OWN directory — rename(2) is EXDEV across
+#     filesystems and mv would fall back to a non-atomic copy
+#   * `cp -p` seeds it from the incumbent so mode, ownership and times ride onto
+#     the replacement inode; a bare mktemp would hand the agent mktemp's 0600
+#   * AGENT_CFG is resolved through symlinks first, because this path is commonly
+#     a link into a config-management tree and renaming over the link would
+#     replace it with a regular file
+#   * no .bak is written: a persistent second copy of the agent token on disk is
+#     a worse trade than the failure mode the rename already removes
+# The trap is what keeps that staged full copy of the config — token included —
+# out of the directory when a run dies mid-mutation.
+HTH_CFG_TMP=""
+HTH_CFG_DST=""
+hth_cfg_cleanup() {
+  if [ -n "${HTH_CFG_TMP}" ]; then rm -f "${HTH_CFG_TMP}"; fi
+  HTH_CFG_TMP=""
+}
+trap hth_cfg_cleanup EXIT
+trap 'hth_cfg_cleanup; exit 130' INT
+trap 'hth_cfg_cleanup; exit 143' TERM
+
+# Real path of the config, following symlinks where the platform's readlink can.
+hth_cfg_path() {
+  if [ -L "${AGENT_CFG}" ]; then
+    readlink -f "${AGENT_CFG}" 2>/dev/null || printf '%s\n' "${AGENT_CFG}"
+  else
+    printf '%s\n' "${AGENT_CFG}"
+  fi
+}
+
+# Stage a writable copy beside the target: HTH_CFG_DST is the real path to read
+# from and commit to, HTH_CFG_TMP is the staged file to write into.
+# This assigns globals rather than printing a value on purpose. Written as
+# `dst="$(hth_cfg_stage)"` the function would run in a SUBSHELL, the parent's
+# HTH_CFG_TMP would stay empty, and the cleanup trap would never see — or remove
+# — the full copy of the token-bearing config that mktemp just created.
+hth_cfg_stage() {
+  HTH_CFG_DST="$(hth_cfg_path)"
+  HTH_CFG_TMP="$(mktemp "$(dirname "${HTH_CFG_DST}")/.hth-bk-cfg.XXXXXX")"
+  cp -p "${HTH_CFG_DST}" "${HTH_CFG_TMP}"
+}
+
+# Atomic swap. After this returns there is no temp left for the trap to clean up.
+hth_cfg_commit() {
+  mv -f "${HTH_CFG_TMP}" "${HTH_CFG_DST}"
+  HTH_CFG_TMP=""
+}
+
 # Idempotent upsert of a single `key=value` line in buildkite-agent.cfg.
 set_cfg() {
-  local key="$1" value="$2" tmp
-  tmp="$(mktemp)"
-  if grep -qE "^[[:space:]]*${key}[[:space:]]*=" "${AGENT_CFG}"; then
-    sed -E "s|^[[:space:]]*${key}[[:space:]]*=.*$|${key}=${value}|" "${AGENT_CFG}" >"${tmp}"
+  local key="$1" value="$2" tmp dst
+  hth_cfg_stage; dst="${HTH_CFG_DST}"; tmp="${HTH_CFG_TMP}"
+  if grep -qE "^[[:space:]]*${key}[[:space:]]*=" "${dst}"; then
+    sed -E "s|^[[:space:]]*${key}[[:space:]]*=.*$|${key}=${value}|" "${dst}" >"${tmp}"
   else
-    cat "${AGENT_CFG}" >"${tmp}"
+    cat "${dst}" >"${tmp}"
     printf '%s=%s\n' "${key}" "${value}" >>"${tmp}"
   fi
-  cat "${tmp}" >"${AGENT_CFG}"
-  rm -f "${tmp}"
+  hth_cfg_commit
 }
 
 unset_cfg() {
-  local key="$1" tmp
-  tmp="$(mktemp)"
-  grep -vE "^[[:space:]]*${key}[[:space:]]*=" "${AGENT_CFG}" >"${tmp}" || true
-  cat "${tmp}" >"${AGENT_CFG}"
-  rm -f "${tmp}"
+  local key="$1" tmp dst
+  hth_cfg_stage; dst="${HTH_CFG_DST}"; tmp="${HTH_CFG_TMP}"
+  grep -vE "^[[:space:]]*${key}[[:space:]]*=" "${dst}" >"${tmp}" || true
+  hth_cfg_commit
 }
 
 # Step 1 + 4: the end state. verification-failure-behavior=block is written

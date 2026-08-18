@@ -55,6 +55,15 @@
 # (https://portal.buildkite.com/organizations/{org}/portals/{slug}), so changing
 # it moves the URL out from under existing callers.
 #
+# ── TRAP 5: a tfvars rename is a credential rotation you did not ask for ─────
+# `name = each.key`, so the map label is both the resource address and the
+# portal's name. Renaming a key — or dropping one — is a destroy-then-create,
+# and by TRAP 3 the replacement issues a token you cannot compare with the old
+# one because the old one was never readable. `prevent_destroy = true` on the
+# resource turns that into a plan-time error instead of a silent break, exactly
+# as 3.11 does for registries. Retiring a portal means removing that line in the
+# same commit as the map entry.
+#
 # ── VERIFICATION STATUS: DRIFT-CHECKED-ONLY ─────────────────────────────────
 # Authored from the provider v1.38.0 schema (buildkite_portal: name/query/slug
 # required; allowed_ip_addresses string; user_invokable optional+computed; token
@@ -90,6 +99,22 @@ resource "buildkite_portal" "scoped" {
   user_invokable = each.value.user_invokable
 
   lifecycle {
+    # TRAP 5. Destroying a portal is unrecoverable, and the two ways to trigger
+    # it do not look destructive in a diff:
+    #   * renaming a key in var.portals changes the RESOURCE ADDRESS, which is a
+    #     destroy-then-create no matter what the provider marks force-new — and
+    #     because name = each.key, renaming the portal and destroying it are the
+    #     same edit; and
+    #   * dropping an entry from the map destroys it outright.
+    # TRAP 3 is the consequence: `token` is returned once, never read back, so
+    # the replacement portal issues a NEW token and every caller holding the old
+    # one is broken until it is redistributed. This is a long-lived,
+    # admin-privileged credential — the same reason 3.11 pins its registries.
+    # To retire a portal deliberately, delete this line in the same commit that
+    # removes the map entry, so the destroy is a reviewed decision rather than a
+    # side effect of a tfvars rename.
+    prevent_destroy = true
+
     # A portal that can WRITE and can be called from any address is the worst
     # combination this resource can express: an unauthenticated-by-network,
     # non-expiring, admin-level mutation endpoint. Refuse to plan it.

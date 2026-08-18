@@ -18,6 +18,14 @@
 # 1 = Baseline (L1) -- essential controls for all organizations
 # 2 = Hardened (L2) -- adds clusters, pipeline permissions, agent isolation
 # 3 = Maximum Security (L3) -- adds API IP restrictions
+#
+# WHAT THIS DOES NOT DO: profile_level does NOT create or delete resources. Every
+# resource in this directory is switched on by its own declaration map being
+# non-empty, and off by that map being empty. Profile level used to gate the
+# for_each on clusters, pipelines and templates, which meant LOWERING it -- or
+# simply forgetting `-var="profile_level=2"` on a later apply -- planned a
+# DESTROY of those clusters, pipelines and templates. That gate is gone. Set this
+# to the level you are operating at; it is a label, not a switch.
 # -----------------------------------------------------------------------------
 profile_level = 1
 
@@ -93,8 +101,12 @@ teams = {
 
 
 # -----------------------------------------------------------------------------
-# Section 2.2: Pipeline Permissions (L2+ only)
-# Pipelines with hardened configurations
+# Section 2.2: Pipeline Permissions (control 2.2, an L2 control)
+# Pipelines with hardened configurations. This map is the on/off switch for pack
+# 2.2; an empty map creates nothing. buildkite_pipeline carries prevent_destroy,
+# because a destroyed pipeline takes its build history and its webhook URL with
+# it and neither comes back -- so removing an entry fails the plan rather than
+# quietly deleting the pipeline.
 # -----------------------------------------------------------------------------
 pipelines = {
   # "my-app" = {
@@ -135,8 +147,17 @@ pipeline_team_access = {
 # -----------------------------------------------------------------------------
 # Cluster-scoped registration tokens. `allowed_ip_addresses` is REQUIRED in
 # practice: an empty list means unrestricted, and pack 3.1 fails the plan on it.
-# Bump `rotation_id` to force a replacement token (this is how rotation works —
-# Buildkite tokens have no Terraform-settable expiry).
+# ROTATION IS TWO APPLIES. Buildkite tokens have no Terraform-settable expiry and
+# the secret is returned exactly once, so replacing a token inside one apply
+# revokes the incumbent before anyone can distribute the replacement — the fleet
+# then keeps running and quietly stops being able to re-register (pack 3.1,
+# TRAP 5). Do NOT edit `rotation_id` in place; it only relabels the live token.
+# Instead:
+#   apply 1  add `production_gen2` alongside `production` (same cluster, same
+#            description, rotation_id = "2") — both tokens valid, new secret in
+#            the output; put it in your secret manager
+#   then     roll the agent hosts and confirm every one has re-registered
+#   apply 2  delete the `production` entry — the plan reads "1 to destroy"
 agent_tokens = {
   production = {
     description          = "Agent token for production environment"
@@ -144,6 +165,14 @@ agent_tokens = {
     allowed_ip_addresses = ["203.0.113.0/24"]
     rotation_id          = "1"
   }
+  # Phase 1 of a rotation looks exactly like this — uncomment alongside the entry
+  # above, apply, roll the hosts, then delete the entry above and apply again.
+  # production_gen2 = {
+  #   description          = "Agent token for production environment"
+  #   cluster              = "production"
+  #   allowed_ip_addresses = ["203.0.113.0/24"]
+  #   rotation_id          = "2"
+  # }
   staging = {
     description          = "Agent token for staging environment"
     cluster              = "staging"
@@ -160,25 +189,37 @@ agent_token_require_ip_allowlist = true
 
 
 # -----------------------------------------------------------------------------
-# Section 3.2: Agent Clusters (L2+ only)
-# Isolated clusters per environment
+# Section 3.2: Agent Clusters (control 3.2, an L2 control)
+# Isolated clusters per environment.
+#
+# COMMENTED OUT ON PURPOSE. var.clusters defaults to {} and this map is the
+# on/off switch for pack 3.2 -- uncommenting an entry is what creates a cluster.
+# It is left commented so that copying this file and applying it cannot create
+# infrastructure you did not ask for. Uncomment the environments you actually
+# want, then apply.
+#
+# Note that buildkite_cluster carries prevent_destroy: once a cluster is created,
+# deleting its entry here (or renaming the key, which renames the cluster) fails
+# the plan instead of destroying the cluster, its queues and its cluster-scoped
+# agent tokens. To retire one deliberately, remove prevent_destroy in
+# hth-buildkite-3.02-configure-agent-clusters.tf, apply, then restore it.
 # -----------------------------------------------------------------------------
 clusters = {
-  production = {
-    description = "Production deployment agents - restricted access"
-    color       = "#FF0000"
-    emoji       = ":lock:"
-  }
-  development = {
-    description = "Development build agents"
-    color       = "#00FF00"
-    emoji       = ":hammer:"
-  }
-  security = {
-    description = "Security-sensitive build agents"
-    color       = "#FF8800"
-    emoji       = ":shield:"
-  }
+  # production = {
+  #   description = "Production deployment agents - restricted access"
+  #   color       = "#FF0000"
+  #   emoji       = ":lock:"
+  # }
+  # development = {
+  #   description = "Development build agents"
+  #   color       = "#00FF00"
+  #   emoji       = ":hammer:"
+  # }
+  # security = {
+  #   description = "Security-sensitive build agents"
+  #   color       = "#FF8800"
+  #   emoji       = ":shield:"
+  # }
 }
 
 cluster_queues = {

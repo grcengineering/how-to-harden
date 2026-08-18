@@ -503,6 +503,7 @@ Securely manage agent registration tokens.
 
 **Step 3: Bound the Token in Space**
 1. Set **Allowed IP Addresses** on the token — a CIDR allowlist of the networks your agents register from. A token that leaks outside those ranges is inert.
+2. **Lockout warning — this allowlist strands agents.** The list is enforced at *registration*, so an agent whose egress address falls outside it cannot register at all. A wrong CIDR silently takes every agent presenting that token offline on its next restart, and an empty list means unrestricted rather than blocked. Derive the ranges from your runners' **observed** egress addresses, not from the VPC block you assume they use, and leave the allowlist unset rather than guessing at it. The undo path here is *not* self-sealing — unlike the API IP allowlist in [4.1](#41-configure-audit-logging), your API and console access are unaffected, so you can widen or clear the list to recover the fleet.
 
 **Step 4: Handle Tokens Safely**
 1. Store tokens in a secrets manager, never in an agent AMI, container image, or repository.
@@ -977,7 +978,7 @@ Enable and monitor audit logs.
 - **Buildkite Enterprise.** The audit log is an Enterprise-plan feature; organizations below Enterprise have no audit log to review, and compliance commitments that assume one need to account for that gap.
 - **Terraform (L3 IP restriction only): a plan including the API IP allowlist feature**, and the same `buildkite_organization` caveat described in [1.2](#12-enforce-two-factor-authentication) — the two controls share one singleton resource, so adopt one Terraform path or merge them, never both.
 
-> **Lockout warning — API IP allowlist.** `allowed_api_ip_addresses` is a hard allowlist on REST and GraphQL access. A CIDR list that omits the network you automate from severs your own API access the moment it applies, including the access required to reverse it. The undo path (`organizationApiIpAllowlistUpdate`) is itself an API call, so a wrong list is self-sealing. Confirm your egress address is covered before applying, and keep a route in from an allowlisted network. This is distinct from the agent-token IP allowlist in [3.1](#31-configure-agent-tokens), which carries no such risk.
+> **Lockout warning — API IP allowlist.** `allowed_api_ip_addresses` is a hard allowlist on REST and GraphQL access. A CIDR list that omits the network you automate from severs your own API access the moment it applies, including the access required to reverse it. The undo path (`organizationApiIpAllowlistUpdate`) is itself an API call, so a wrong list is self-sealing. Confirm your egress address is covered before applying, and keep a route in from an allowlisted network. The agent-token IP allowlist in [3.1](#31-configure-agent-tokens) is lockout-capable in its own way — a wrong CIDR strands every agent presenting that token — but it differs in one respect that matters here: it does not seal its own undo path, because it restricts agent registration only and leaves your API and console access intact.
 
 #### ClickOps Implementation
 

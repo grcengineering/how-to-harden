@@ -420,7 +420,7 @@ rest_get() {
 # under replace semantics a partial env would silently delete every other
 # variable on the pipeline.
 strip_env() {
-  local slug="$1" var="$2" ack="${3:-}" current remaining
+  local slug="$1" var="$2" ack="${3:-}" current remaining response after
 
   if [ "${ack}" != "--rotated" ]; then
     cat >&2 <<'ROTATE'
@@ -450,15 +450,43 @@ ROTATE
 
   remaining=$(jq --arg v "${var}" 'del(.[$v])' <<<"${current}")
 
-  curl -sS --fail-with-body -X PATCH \
+  if ! response=$(curl -sS --fail-with-body -X PATCH \
     -H "Authorization: Bearer ${BUILDKITE_TOKEN}" \
     -H "Content-Type: application/json" \
     --data "$(jq -n --argjson env "${remaining}" '{env: $env}')" \
-    "${REST}/organizations/${BUILDKITE_ORG_SLUG}/pipelines/${slug}" \
-  | jq --arg v "${var}" '{
-      pipeline: .slug,
+    "${REST}/organizations/${BUILDKITE_ORG_SLUG}/pipelines/${slug}"); then
+    echo "FAILED: the API rejected the PATCH for pipeline '${slug}':" >&2
+    printf '%s\n' "${response}" >&2
+    echo "'${var}' is still set and the credential remains exposed." >&2
+    exit 5
+  fi
+
+  # VERIFY THE REMOVAL — do not assert it. The comment above establishes that the
+  # request is correct under EITHER merge or replace semantics; it does not
+  # establish that the key is gone. Under merge semantics the variable survives
+  # the PATCH, and printing removed_variable from the write's own reply reports a
+  # removal that did not happen. This runs during a live credential exposure,
+  # immediately after the operator confirmed rotation, so a false "removed" is
+  # exactly the output that ends an incident response one step too early.
+  # Re-read from the server rather than reading the write's echo: the PATCH
+  # response is not guaranteed to carry .env, and an omitted field is
+  # indistinguishable from a deleted key when you only look at the reply.
+  after=$(rest_get "/organizations/${BUILDKITE_ORG_SLUG}/pipelines/${slug}" | jq '.env // {}')
+
+  if [ "$(jq --arg v "${var}" 'has($v)' <<<"${after}")" = "true" ]; then
+    echo "FAILED: '${var}' is STILL present on pipeline '${slug}' after the PATCH." >&2
+    echo "This API merged the env object rather than replacing it, so a payload" >&2
+    echo "that omits a key cannot delete it. Remove the variable in the console" >&2
+    echo "(Pipeline Settings -> Environment Variables) and re-run this command to" >&2
+    echo "confirm. Until it reports verified_absent, treat the value as exposed." >&2
+    exit 6
+  fi
+
+  jq -n --arg s "${slug}" --arg v "${var}" --argjson after "${after}" '{
+      pipeline: $s,
       removed_variable: $v,
-      remaining_env_keys: ((.env // {}) | keys),
+      verified_absent: true,
+      remaining_env_keys: ($after | keys),
       reminder: "Rotation at the issuer is what actually remediated this. Confirm the old credential is dead."
     }'
 }

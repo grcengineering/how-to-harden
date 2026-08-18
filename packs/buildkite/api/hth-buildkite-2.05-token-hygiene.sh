@@ -112,21 +112,36 @@ fetch_token_page() {
   }' | gql
 }
 
+HTH_TOKENS_TMP=""
+hth_tokens_cleanup() {
+  if [ -n "${HTH_TOKENS_TMP}" ]; then rm -f "${HTH_TOKENS_TMP}"; fi
+  HTH_TOKENS_TMP=""
+}
+
 collect_tokens() {
-  local after="" page body
-  : >/tmp/hth-bk-tokens.$$.jsonl
+  local after="" page
+  # mktemp, not `: >/tmp/hth-bk-tokens.$$.jsonl`. A PID-derived name in a shared
+  # world-writable directory is guessable, and `>` follows a symlink planted at
+  # that path. What accumulates here is the whole token inventory —
+  # descriptions, uuids, owner emails, last-used IPs. No secret VALUES are in it
+  # (GraphQL never returns them), which is why this is hygiene and not
+  # disclosure, but it is still a reconnaissance map of every credential in the
+  # organization.
+  HTH_TOKENS_TMP="$(mktemp "${TMPDIR:-/tmp}/hth-bk-tokens.XXXXXX")"
+  # RETURN covers the normal path. EXIT is the one that matters: die_on_gql_errors
+  # calls exit mid-loop on any GraphQL error, so a plain `rm -f` after the loop is
+  # unreachable on exactly the runs most likely to strand the file.
+  trap hth_tokens_cleanup RETURN EXIT
   while :; do
     page=$(fetch_token_page "${after}")
     die_on_gql_errors "${page}"
-    jq -c '.data.organization.apiAccessTokens.edges[].node' <<<"${page}" \
-      >>/tmp/hth-bk-tokens.$$.jsonl
+    jq -c '.data.organization.apiAccessTokens.edges[].node' <<<"${page}" >>"${HTH_TOKENS_TMP}"
     if [ "$(jq -r '.data.organization.apiAccessTokens.pageInfo.hasNextPage' <<<"${page}")" != "true" ]; then
       break
     fi
     after=$(jq -r '.data.organization.apiAccessTokens.pageInfo.endCursor' <<<"${page}")
   done
-  jq -s '.' /tmp/hth-bk-tokens.$$.jsonl
-  rm -f /tmp/hth-bk-tokens.$$.jsonl
+  jq -s '.' "${HTH_TOKENS_TMP}"
 }
 
 # The uuid of the token running this script. Revoking it is unrecoverable.
@@ -213,13 +228,60 @@ read_auto_revoke() {
   }' <<<"${body}"
 }
 
+# RevokeInactiveTokenPeriod -> days, so the pre-flight below can ask `stale` the
+# same question the clock will ask. NEVER has no day count; it never reaches here.
+period_days() {
+  case "$1" in
+    DAYS_30) echo 30 ;; DAYS_60) echo 60 ;; DAYS_90) echo 90 ;;
+    DAYS_180) echo 180 ;; DAYS_365) echo 365 ;;
+    *) echo 90 ;;
+  esac
+}
+
+# TRAP 6 IS THE WHOLE REASON THIS VERB IS GATED.
+# `stale` deliberately buckets null lastAccessedAt separately because Buildkite
+# provisions system tokens that legitimately read null, and "revoke everything
+# never seen" breaks hosted agents. set-auto-revoke hands that same sweep to
+# Buildkite to run automatically and permanently, org-wide, against every token
+# including the ones nobody in this organization created. Dormant-BY-DESIGN
+# credentials are the casualties: break-glass tokens, DR tokens, the token behind
+# a quarterly job, and the vendor's own system tokens. None of them announce
+# themselves, and a token revoked by the clock cannot be un-revoked.
+#
+# So this is the one mutation here that refuses to run blind. The operator must
+# have looked at what the clock will eat — the never-used bucket is printed on
+# every invocation — and must assert it with HTH_AUTO_REVOKE_REVIEWED=1, the same
+# shape as the SCIM gate in the 2.6 pack. NEVER is exempt: it only ever loosens.
 set_auto_revoke() {
-  local period="$1" org_id body
+  local period="$1" org_id body never_used
   case "${period}" in
     DAYS_30|DAYS_60|DAYS_90|DAYS_180|DAYS_365|NEVER) ;;
     *) echo "invalid period '${period}'; expected one of DAYS_30 DAYS_60 DAYS_90 DAYS_180 DAYS_365 NEVER" >&2
        exit 2 ;;
   esac
+
+  if [ "${period}" != "NEVER" ]; then
+    # Pre-flight, not advice: show the tokens the clock is most likely to take
+    # first. Anything below with no legitimate reason to be used inside the
+    # period is a token this setting will revoke without asking again.
+    never_used=$(stale "$(period_days "${period}")" | jq '.never_used_review_manually')
+    echo "Tokens with NO recorded use (TRAP 6 — includes Buildkite's own system" >&2
+    echo "tokens, break-glass and DR credentials). Every one of these is revoked" >&2
+    echo "by ${period} unless it is exercised inside the period:" >&2
+    jq -r 'if length == 0 then "  (none)"
+           else .[] | "  \(.uuid)  \(.description // "<no description>")  owner=\(.owner // "-")  created=\(.created_at)"
+           end' <<<"${never_used}" >&2
+    echo >&2
+
+    if [ "${HTH_AUTO_REVOKE_REVIEWED:-}" != "1" ]; then
+      echo "REFUSING: set HTH_AUTO_REVOKE_REVIEWED=1 to confirm you have read the" >&2
+      echo "list above and the '${period}' bucket in 'stale', and that no token" >&2
+      echo "that is dormant BY DESIGN will be destroyed by this clock. This arms" >&2
+      echo "an automatic, permanent, org-wide revocation of API access tokens." >&2
+      echo "Run '$0 inventory' and '$0 stale $(period_days "${period}")' first." >&2
+      exit 5
+    fi
+  fi
 
   org_id=$(read_auto_revoke | jq -r '.organization_id')
 
@@ -293,6 +355,9 @@ usage:
   hth-buildkite-2.05-token-hygiene.sh stale [DAYS]            # default 90
   hth-buildkite-2.05-token-hygiene.sh auto-revoke-status
   hth-buildkite-2.05-token-hygiene.sh set-auto-revoke PERIOD  # Enterprise
+      PERIOD = DAYS_30|DAYS_60|DAYS_90|DAYS_180|DAYS_365|NEVER
+      Arms an automatic org-wide revocation clock. Anything but NEVER prints the
+      never-used bucket (TRAP 6) and requires HTH_AUTO_REVOKE_REVIEWED=1.
   hth-buildkite-2.05-token-hygiene.sh revoke UUID
 USAGE
     exit 2 ;;

@@ -49,7 +49,52 @@
 #   space-separated String in GraphQL (ClusterAgentTokenCreateInput). Never copy
 #   a literal between the .tf pack and the .sh pack.
 #
-# Requires Terraform >= 1.4 / OpenTofu >= 1.6 (`terraform_data`, preconditions).
+# TRAP 5 — ROTATION TAKES TWO APPLIES, AND ONE APPLY STRANDS THE FLEET.
+#   This pack used to rotate by forcing a replacement inside a single apply
+#   (a `terraform_data` keeper plus `replace_triggered_by`). That is unsafe here,
+#   and `create_before_destroy` does not rescue it. Chain the facts:
+#     * TRAP 3 — the new secret is returned exactly ONCE, in this apply's output.
+#     * So the operator cannot distribute it to the agent hosts until the apply
+#       has already finished — by which point the incumbent token is destroyed.
+#     * TRAP 1 of the companion api/ pack — revoking a token does NOT disconnect
+#       agents that already registered with it.
+#   The result is the worst detection profile available: nothing breaks at the
+#   moment of the change. The fleet keeps running on connections it already holds
+#   and quietly stops being able to REPLACE itself — the next host restart, the
+#   next scale-out, the next spot reclaim fails to register, and the fleet
+#   silently shrinks hours or days later.
+#
+#   ROTATION IS THEREFORE A TWO-PHASE, TWO-APPLY OPERATION, and it is encoded by
+#   the shape of var.agent_tokens rather than by a keeper:
+#
+#     phase 1  ADD a new entry beside the incumbent — a new map key, same
+#              cluster, same description, rotation_id bumped:
+#                 prod_gen1 = { description = "prod agents", rotation_id = "1", ... }
+#                 prod_gen2 = { description = "prod agents", rotation_id = "2", ... }
+#              apply. Both tokens are now valid. Capture the new secret from the
+#              output and put it in your secret manager.
+#     phase 2  ROLL the agent hosts onto the new secret and confirm every host
+#              has re-registered (the companion api/ pack's `audit`, or the
+#              cluster's agent list in the console).
+#     phase 3  REMOVE the old entry (`prod_gen1`) and apply again. The plan reads
+#              "1 to destroy", which is the truth, and it is the only apply that
+#              can strand anything — by which point nothing is using it.
+#
+#   EMERGENCY REVOCATION (leaked token) is the same act done deliberately:
+#   delete the entry and apply. The plan says "1 to destroy" rather than
+#   "1 to replace", so the responder reads what actually happens. Faster still is
+#   the GraphQL path in api/hth-buildkite-3.01-agent-token-lifecycle.sh, which
+#   also stops the agents the token registered — revocation on its own is not
+#   containment.
+#
+#   CONSEQUENCE, STATED PLAINLY: editing `rotation_id` on an EXISTING entry no
+#   longer mints anything. It is an in-place description update — it relabels the
+#   incumbent token and rotates nothing. `rotation_id` is the generation marker
+#   of the entry it is declared in; you set it when you add the entry and you
+#   never edit it afterwards.
+#
+# Requires Terraform >= 1.5 / OpenTofu >= 1.6 (resource preconditions arrived in
+# 1.4; the rotation `check` block below needs 1.5).
 # =============================================================================
 
 # HTH Guide Excerpt: begin resolve-token-cluster
@@ -73,18 +118,14 @@ data "buildkite_cluster" "token_target" {
 # HTH Guide Excerpt: end resolve-token-cluster
 
 # HTH Guide Excerpt: begin scope-restrict-and-rotate-tokens
-# Rotation keeper. Buildkite agent tokens have no server-side expiry that
-# Terraform can set, so the only rotation primitive available in this surface is
-# forced replacement. Bumping a token's `rotation_id` changes this object, which
-# trips replace_triggered_by below and mints a NEW secret. Changing `description`
-# alone would not: that is an in-place update (clusterAgentTokenUpdate) and the
-# old secret would survive.
-resource "terraform_data" "agent_token_rotation" {
-  for_each = var.agent_tokens
-
-  input = each.value.rotation_id
-}
-
+# Buildkite agent tokens have no server-side expiry that Terraform can set, so
+# rotation on this surface is "mint a second token, move the fleet, delete the
+# first". There is deliberately NO keeper resource and NO replace_triggered_by
+# here: a same-apply replacement destroys the incumbent before the operator can
+# possibly have distributed the replacement secret, which strands every host that
+# has not yet re-registered (TRAP 5). Rotation is expressed by ADDING a map entry
+# and, one apply later, REMOVING the old one — two applies, with the host roll in
+# between, so the dangerous half is an explicit destroy the operator has read.
 resource "buildkite_cluster_agent_token" "scoped_lifecycle" {
   for_each = var.agent_tokens
 
@@ -94,8 +135,10 @@ resource "buildkite_cluster_agent_token" "scoped_lifecycle" {
 
   # The description is the only human-readable handle on a token in the console
   # and in `GET /v2/organizations/{org}/clusters/{uuid}/tokens`. Stamping the
-  # rotation generation into it makes "which token are the agents actually
-  # presenting?" answerable during an incident.
+  # generation into it makes "which token are the agents actually presenting?"
+  # answerable during an incident, and makes a two-phase rotation legible in the
+  # console: during phase 2 you will see gen 1 and gen 2 side by side, which is
+  # the state you are supposed to be in until every host has rolled.
   description = "${each.value.description} [hth-3.1 gen ${each.value.rotation_id}]"
 
   # CIDR allowlist. Empty list = unrestricted; the precondition below refuses to
@@ -106,11 +149,13 @@ resource "buildkite_cluster_agent_token" "scoped_lifecycle" {
   allowed_ip_addresses = each.value.allowed_ip_addresses
 
   lifecycle {
-    # Mint the replacement before destroying the incumbent, so a rotation does
-    # not leave the cluster with no registerable token between apply steps.
+    # Retained for any replacement the PROVIDER forces (changing cluster_id moves
+    # the token to a different cluster, which cannot be done in place): the new
+    # token is minted before the old one is destroyed. It is NOT a rotation
+    # safety net — TRAP 5 — because the ordering it guarantees is within one
+    # apply, and the gap that actually matters is the human one between reading
+    # the new secret and every agent host presenting it.
     create_before_destroy = true
-
-    replace_triggered_by = [terraform_data.agent_token_rotation[each.key]]
 
     precondition {
       condition = !var.agent_token_require_ip_allowlist || length(each.value.allowed_ip_addresses) > 0
@@ -120,6 +165,38 @@ resource "buildkite_cluster_agent_token" "scoped_lifecycle" {
         "Set allowed_ip_addresses to your runners' egress CIDRs, or set agent_token_require_ip_allowlist = false to accept the risk deliberately."
       ])
     }
+  }
+}
+
+# Phase-2 reminder, not a guard — the destructive half of a rotation is the
+# operator deleting a map entry, and nothing here should try to stop that. What
+# this DOES catch is the half that fails silently: a rotation started and never
+# finished, leaving the superseded token live and registerable indefinitely.
+# Two entries sharing a cluster and a description are two generations of one
+# token, which is the correct state during a roll and a finding afterwards.
+check "agent_token_rotations_are_completed" {
+  assert {
+    condition = length(distinct([
+      for k, t in var.agent_tokens :
+      format("%s|%s", coalesce(t.cluster, var.agent_token_cluster_name), t.description)
+      if length([
+        for k2, t2 in var.agent_tokens : k2
+        if coalesce(t2.cluster, var.agent_token_cluster_name) == coalesce(t.cluster, var.agent_token_cluster_name)
+        && t2.description == t.description
+      ]) > 1
+    ])) == 0
+    error_message = format(
+      "Rotation in flight: %s. Two or more agent_tokens entries share a cluster and a description, so more than one generation of the same token is registerable. That is the CORRECT state during phase 2 of a rotation (both tokens valid while the agent hosts roll onto the new secret). It is a finding once the roll is done: confirm every host has re-registered, then delete the superseded entry and apply again. Revoking a token does not disconnect agents already connected with it, so a forgotten old generation is a live registration credential nobody is watching.",
+      jsonencode({
+        for k, t in var.agent_tokens :
+        k => format("%s [gen %s] in %s", t.description, t.rotation_id, coalesce(t.cluster, var.agent_token_cluster_name))
+        if length([
+          for k2, t2 in var.agent_tokens : k2
+          if coalesce(t2.cluster, var.agent_token_cluster_name) == coalesce(t.cluster, var.agent_token_cluster_name)
+          && t2.description == t.description
+        ]) > 1
+      })
+    )
   }
 }
 # HTH Guide Excerpt: end scope-restrict-and-rotate-tokens

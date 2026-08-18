@@ -40,19 +40,23 @@ output "team_uuids" {
 # Section 2.2: Pipeline Permissions (L2+)
 # -----------------------------------------------------------------------------
 
+# These read the RESOURCE map, not a profile-level expression. Packs 2.2 and 3.2
+# no longer gate their for_each on profile_level (a gate there made a level
+# downgrade a destroy), so an output that blanks itself below L2 would now be
+# reporting {} for pipelines that exist.
 output "pipeline_ids" {
-  description = "Map of pipeline names to their Buildkite IDs (L2+ only)"
-  value       = var.profile_level >= 2 ? { for k, v in buildkite_pipeline.pipelines : k => v.id } : {}
+  description = "Map of pipeline names to their Buildkite IDs. Empty unless var.pipelines is populated."
+  value       = { for k, v in buildkite_pipeline.pipelines : k => v.id }
 }
 
 output "pipeline_slugs" {
-  description = "Map of pipeline names to their generated slugs (L2+ only)"
-  value       = var.profile_level >= 2 ? { for k, v in buildkite_pipeline.pipelines : k => v.slug } : {}
+  description = "Map of pipeline names to their generated slugs. Empty unless var.pipelines is populated."
+  value       = { for k, v in buildkite_pipeline.pipelines : k => v.slug }
 }
 
 output "pipeline_webhook_urls" {
-  description = "Map of pipeline names to their webhook URLs (L2+ only)"
-  value       = var.profile_level >= 2 ? { for k, v in buildkite_pipeline.pipelines : k => v.webhook_url } : {}
+  description = "Map of pipeline names to their webhook URLs. Empty unless var.pipelines is populated. Destroying a pipeline destroys this URL permanently, which is why pack 2.2 sets prevent_destroy."
+  value       = { for k, v in buildkite_pipeline.pipelines : k => v.webhook_url }
   sensitive   = true
 }
 
@@ -83,18 +87,18 @@ output "agent_token_cluster_uuids" {
 # -----------------------------------------------------------------------------
 
 output "cluster_ids" {
-  description = "Map of cluster names to their Buildkite IDs (L2+ only)"
-  value       = var.profile_level >= 2 ? { for k, v in buildkite_cluster.clusters : k => v.id } : {}
+  description = "Map of cluster names to their Buildkite IDs. Empty unless var.clusters is populated."
+  value       = { for k, v in buildkite_cluster.clusters : k => v.id }
 }
 
 output "cluster_uuids" {
-  description = "Map of cluster names to their UUIDs (L2+ only)"
-  value       = var.profile_level >= 2 ? { for k, v in buildkite_cluster.clusters : k => v.uuid } : {}
+  description = "Map of cluster names to their UUIDs. Empty unless var.clusters is populated."
+  value       = { for k, v in buildkite_cluster.clusters : k => v.uuid }
 }
 
 output "cluster_queue_ids" {
-  description = "Map of cluster queue keys to their IDs (L2+ only)"
-  value       = var.profile_level >= 2 ? { for k, v in buildkite_cluster_queue.queues : k => v.id } : {}
+  description = "Map of cluster queue keys to their IDs. Empty unless var.cluster_queues is populated."
+  value       = { for k, v in buildkite_cluster_queue.queues : k => v.id }
 }
 
 
@@ -110,19 +114,19 @@ output "profile_level_applied" {
 output "hardening_summary" {
   description = "Summary of hardening controls applied at the selected profile level"
   value = {
-    profile_level          = var.profile_level
-    l1_controls_applied    = true
-    l2_controls_applied    = var.profile_level >= 2
-    l3_controls_applied    = var.profile_level >= 3
-    enforce_2fa            = var.enforce_2fa
-    teams_created          = length(var.teams)
-    agent_tokens_created   = length(var.agent_tokens)
-    clusters_created       = var.profile_level >= 2 ? length(var.clusters) : 0
-    pipelines_managed      = var.profile_level >= 2 ? length(var.pipelines) : 0
-    api_ip_restrictions    = var.profile_level >= 3 && length(var.allowed_api_ip_addresses) > 0
-    saml_sso               = "configure-via-ui"
-    admin_access_review    = "manual-quarterly"
-    agent_infrastructure   = "configure-via-host-tooling"
-    audit_logging          = "enabled-by-default"
+    profile_level        = var.profile_level
+    l1_controls_applied  = true
+    l2_controls_applied  = var.profile_level >= 2
+    l3_controls_applied  = var.profile_level >= 3
+    enforce_2fa          = var.enforce_2fa
+    teams_created        = length(var.teams)
+    agent_tokens_created = length(var.agent_tokens)
+    clusters_created     = length(buildkite_cluster.clusters)
+    pipelines_managed    = length(buildkite_pipeline.pipelines)
+    api_ip_restrictions  = var.profile_level >= 3 && length(var.allowed_api_ip_addresses) > 0
+    saml_sso             = "configure-via-ui"
+    admin_access_review  = "manual-quarterly"
+    agent_infrastructure = "configure-via-host-tooling"
+    audit_logging        = "enabled-by-default"
   }
 }

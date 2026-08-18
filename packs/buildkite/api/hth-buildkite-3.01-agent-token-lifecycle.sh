@@ -49,6 +49,23 @@
 #   Terraform attribute of the same name is list(string). Do not copy literals
 #   between the two packs.
 #
+# TRAP 6 — A CONTAINMENT THAT EXITS 0 IS NOT EVIDENCE OF A CONTAINMENT.
+#   Buildkite's GraphQL endpoint answers application errors with HTTP 200 and an
+#   `errors` array, so a permission-scoped token, an expired session or a
+#   per-agent rejection all look like ordinary output to a naive pipeline. Two
+#   consequences are designed against here rather than hoped away:
+#     * every agentStop response is inspected for `.errors` AND for a missing
+#       `.data.agentStop.agent`; failures are counted, named on stderr, and
+#       returned as exit 4 from `stop-agents` / `contain`;
+#     * the agent list is PAGINATED and reconciled against the connection's own
+#       `count` (AgentConnection.count is NON_NULL Int). A short read aborts with
+#       exit 1 instead of contentedly stopping a subset of the fleet.
+#   Exit codes: 0 every agent stopped · 1 enumeration incomplete, nothing can be
+#   claimed · 4 some agents were not stopped (they are named).
+#   This matters more than usual because of TRAP 1: revocation does not
+#   disconnect anything, so an unstopped agent is a live compromise sitting
+#   behind a report that says the incident is handled.
+#
 # Requires: BUILDKITE_TOKEN (GraphQL scope; REST subcommands additionally need
 # read_clusters/write_clusters), BUILDKITE_ORG_SLUG, curl, jq.
 # Default subcommand is `audit`, which is read-only.
@@ -247,39 +264,101 @@ rest_revoke_token() {
 # agent that already walked through it running jobs. Stop those agents too.
 # graceful=true lets in-flight jobs finish; pass "false" when you believe the
 # agent itself is hostile and you want it gone mid-job.
+#
+# TWO WAYS THIS USED TO REPORT A CONTAINMENT IT HAD NOT PERFORMED, both closed:
+#   1. `agents(first:500)` was unpaginated with no truncation guard, so a fleet
+#      larger than one page was silently under-contained. AgentConnection exposes
+#      `count` (NON_NULL Int) and `pageInfo`, so the page loop below walks
+#      hasNextPage AND reconciles what it collected against the server's own
+#      count — a mismatch aborts rather than proceeding on a partial list.
+#   2. Each agentStop piped straight into `jq '.data.agentStop.agent // .errors'`.
+#      Buildkite returns HTTP 200 with an `errors` array on application errors, so
+#      a permission-scoped token or a per-agent rejection printed the error and
+#      the loop continued, the function returned 0, and `contain` reported
+#      success. Every stop is now checked and counted; the function returns
+#      non-zero naming the agents it failed to stop.
+fetch_cluster_agent_page() {
+  local cluster_graphql_id="$1" after="$2"
+  jq -n --arg slug "${BUILDKITE_ORG_SLUG}" --arg c "${cluster_graphql_id}" --arg after "${after}" '{
+    query: "query($slug:ID!,$c:ID,$after:String){ organization(slug:$slug){ agents(first:100, cluster:$c, after:$after){ count edges { node { id name connectionState } } pageInfo { hasNextPage endCursor } } } }",
+    variables: { slug:$slug, c:$c, after: (if $after == "" then null else $after end) }
+  }' | gql
+}
+
 stop_cluster_agents() {
-  local cluster_graphql_id="$1" graceful="${2:-true}" org body agent_ids
-  org="$(org_id)"
+  local cluster_graphql_id="$1" graceful="${2:-true}"
+  local after="" page agents="[]" reported_count collected id name stop_body
+  local -a failed=()
 
   # NOTE: agents(cluster:) takes the base64 cluster ID. The UUID is rejected with
   # "An invalid ID was supplied" — verified against a live organization.
-  body="$(jq -n --arg slug "${BUILDKITE_ORG_SLUG}" --arg c "${cluster_graphql_id}" '{
-    query: "query($slug:ID!,$c:ID){ organization(slug:$slug){ agents(first:500, cluster:$c){ count edges { node { id name connectionState } } } } }",
-    variables: { slug:$slug, c:$c }
-  }' | gql)"
-  assert_no_errors "${body}" >/dev/null
+  while :; do
+    page="$(fetch_cluster_agent_page "${cluster_graphql_id}" "${after}")"
+    assert_no_errors "${page}" >/dev/null
+    reported_count="$(printf '%s' "${page}" | jq -r '.data.organization.agents.count')"
+    agents="$(jq -s 'add' \
+      <(printf '%s' "${agents}") \
+      <(printf '%s' "${page}" | jq '[.data.organization.agents.edges[].node]'))"
+    [ "$(printf '%s' "${page}" | jq -r '.data.organization.agents.pageInfo.hasNextPage')" = "true" ] || break
+    after="$(printf '%s' "${page}" | jq -r '.data.organization.agents.pageInfo.endCursor')"
+  done
 
-  agent_ids="$(printf '%s' "${body}" | jq -r '.data.organization.agents.edges[].node.id')"
-  if [ -z "${agent_ids}" ]; then
+  # Truncation guard. Under-containment must never be silent: if the server says
+  # there are more agents than the pages handed back, stop rather than contain a
+  # subset and report success.
+  collected="$(printf '%s' "${agents}" | jq 'length')"
+  case "${reported_count}" in
+    ''|*[!0-9]*)
+      echo "FATAL: the API did not report an agent count for cluster ${cluster_graphql_id} (got '${reported_count}'). Without it there is no way to prove the fleet was fully enumerated, and an under-contained fleet must never be reported as contained." >&2
+      return 1 ;;
+  esac
+  if [ "${collected}" -ne "${reported_count}" ]; then
+    echo "FATAL: collected ${collected} agent(s) but the API reports ${reported_count} in cluster ${cluster_graphql_id}. Refusing to report a containment over a partial fleet — re-run, and stop the remainder by id." >&2
+    return 1
+  fi
+
+  if [ "${collected}" -eq 0 ]; then
     echo "no agents connected to ${cluster_graphql_id}; revocation alone is sufficient"
     return 0
   fi
 
-  local id
-  while IFS= read -r id; do
+  while IFS=$'\t' read -r id name; do
     [ -n "${id}" ] || continue
-    jq -n --arg id "${id}" --argjson g "${graceful}" '{
+    stop_body="$(jq -n --arg id "${id}" --argjson g "${graceful}" '{
       query: "mutation($id:ID!,$g:Boolean){ agentStop(input:{id:$id, graceful:$g}){ agent { id name connectionState } } }",
       variables: { id:$id, g:$g }
-    }' | gql | jq -c '.data.agentStop.agent // .errors'
-  done <<< "${agent_ids}"
+    }' | gql)"
+    # A GraphQL error here is a FAILED STOP, not a datum to print and move past.
+    if printf '%s' "${stop_body}" | jq -e '.errors // empty' >/dev/null 2>&1; then
+      printf 'FAILED to stop %s (%s): %s\n' "${name}" "${id}" \
+        "$(printf '%s' "${stop_body}" | jq -c '[.errors[].message]')" >&2
+      failed+=( "${name}:${id}" )
+      continue
+    fi
+    # A 200 with no error but no agent in the payload is also not a stop.
+    if [ "$(printf '%s' "${stop_body}" | jq -r '.data.agentStop.agent // "null"')" = "null" ]; then
+      printf 'FAILED to stop %s (%s): agentStop returned no agent\n' "${name}" "${id}" >&2
+      failed+=( "${name}:${id}" )
+      continue
+    fi
+    printf '%s' "${stop_body}" | jq -c '.data.agentStop.agent'
+  done < <(printf '%s' "${agents}" | jq -r '.[] | [.id, .name] | @tsv')
+
+  if [ "${#failed[@]}" -gt 0 ]; then
+    echo "CONTAINMENT INCOMPLETE: ${#failed[@]} of ${collected} agent(s) were NOT stopped: ${failed[*]}. The token may be revoked, but these agents are still connected and still running jobs — revocation does not disconnect them (TRAP 1)." >&2
+    return 4
+  fi
+  echo "stopped ${collected}/${collected} agent(s) in cluster ${cluster_graphql_id}"
 }
 
 # Full containment for a leaked token, in the order that actually contains it.
+# Propagates the agent-stop verdict: a revoke that succeeded while agents kept
+# running is NOT a containment and must not exit 0.
 contain_leaked_token() {
-  local cluster_graphql_id="$1" token_id="$2" graceful="${3:-true}"
+  local cluster_graphql_id="$1" token_id="$2" graceful="${3:-true}" rc=0
   revoke_token "${token_id}"
-  stop_cluster_agents "${cluster_graphql_id}" "${graceful}"
+  stop_cluster_agents "${cluster_graphql_id}" "${graceful}" || rc=$?
+  return "${rc}"
 }
 # HTH Guide Excerpt: end revoke-and-contain
 
@@ -296,6 +375,12 @@ usage: hth-buildkite-3.01-agent-token-lifecycle.sh <subcommand> [args]
   rest-revoke <cluster_uuid> <token_id>
   stop-agents <cluster_graphql_id> [true|false]      graceful, default true
   contain <cluster_graphql_id> <token_id> [true|false]
+
+stop-agents / contain exit codes (TRAP 6): 0 = every agent in the cluster was
+stopped; 1 = the fleet could not be fully enumerated, so nothing is claimed;
+4 = one or more agents were NOT stopped and are named on stderr. Revoking a
+token does not disconnect a connected agent, so a non-zero exit here means the
+incident is still live no matter what the revoke printed.
 
 <cidrs> is ONE space-separated string, e.g. "203.0.113.0/24 198.51.100.7/32".
 USAGE

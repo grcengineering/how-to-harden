@@ -78,14 +78,26 @@
 # possible: it re-reads templates BY NAME, including console-authored ones this
 # configuration does not own, and asserts their contents and their `available`
 # flag.
+#
+# TRAP 7 - PROFILE LEVEL IS NOT AN ON/OFF SWITCH AND MUST NEVER BE A DESTROY
+# TRIGGER. An earlier revision gated both resources below on
+# `local.hth_templates_active = var.profile_level >= 3`. var.profile_level
+# defaults to 1 and the directory README's quick start ran a bare
+# `terraform apply`, so the second apply that forgot `-var="profile_level=3"`
+# emptied both for_each maps and Terraform DESTROYED every template and every
+# pipeline this pack had created - build history and webhook URL gone with them.
+# The `check` block at the foot of the first region was named as the mitigation
+# and cannot be one: Terraform `check` blocks emit WARNINGS ONLY. They never fail
+# a plan and never halt an apply, and under `terraform apply -auto-approve` the
+# warning scrolls past a completed destroy. The gate is removed. DECLARATION is
+# the switch - an empty var.pipeline_templates / var.templated_pipelines is the
+# "off" state and it is the only one. profile_level now only records which level
+# this configuration operates at, and the check that says so says out loud that
+# it cannot enforce it.
 # =============================================================================
 
 # HTH Guide Excerpt: begin standardize-pipeline-steps-with-templates
 locals {
-  # Control 3.10 is L3. Declarations are inert below that level; the check at the
-  # foot of this region makes that visible instead of silently destructive.
-  hth_templates_active = var.profile_level >= 3
-
   # TRAP 4. Templates that hand step definition back to the repository without an
   # explicit acceptance on file.
   hth_delegating_templates = [
@@ -109,7 +121,9 @@ locals {
 # The step sequence every pipeline of this class must run. THIS resource is the
 # control; the assignment below only points a pipeline at it.
 resource "buildkite_pipeline_template" "governed" {
-  for_each = local.hth_templates_active ? var.pipeline_templates : {}
+  # TRAP 7. No profile-level gate. The declaration map is the switch; an empty
+  # var.pipeline_templates is the off state.
+  for_each = var.pipeline_templates
 
   name          = each.key
   configuration = each.value.configuration
@@ -119,6 +133,12 @@ resource "buildkite_pipeline_template" "governed" {
   available = each.value.available
 
   lifecycle {
+    # No prevent_destroy here, deliberately. A template's entire content lives in
+    # this configuration, so a destroyed template is recreatable byte-for-byte
+    # from `configuration`. A destroyed PIPELINE is not - see the guard on
+    # buildkite_pipeline.templated below. Removing a template that a declared
+    # pipeline still names is refused anyway, by that pipeline's first
+    # precondition.
     precondition {
       condition     = trimspace(each.value.configuration) != ""
       error_message = format("Pipeline template '%s' has an empty configuration. Assigning it would make every adopting pipeline's step configuration read-only AND empty, which deletes their steps instead of standardizing them.", each.key)
@@ -147,7 +167,9 @@ locals {
 # Terraform adopt the template-rendered value instead of putting two sources of
 # truth on one attribute.
 resource "buildkite_pipeline" "templated" {
-  for_each = local.hth_templates_active ? var.templated_pipelines : {}
+  # TRAP 7. No profile-level gate. The declaration map is the switch; an empty
+  # var.templated_pipelines is the off state.
+  for_each = var.templated_pipelines
 
   name                       = each.key
   repository                 = each.value.repository
@@ -177,6 +199,21 @@ resource "buildkite_pipeline" "templated" {
   }
 
   lifecycle {
+    # TRAP 7, enforced rather than narrated. A Buildkite pipeline carries its
+    # build history and its webhook URL; both are destroyed with it and neither
+    # comes back. Dropping a key from var.templated_pipelines must therefore be a
+    # deliberate act, not the side effect of a forgotten -var or an edited tfvars
+    # file - so Terraform refuses the destroy at PLAN time. This is the same
+    # guard pack 3.11 puts on buildkite_registry. To retire a pipeline on
+    # purpose: delete this line, apply, restore it.
+    #
+    # DELIBERATELY A LITERAL. OpenTofu 1.12 does accept an expression here
+    # (measured, not assumed), which is precisely why this must not become
+    # `var.profile_level >= 3`: the one forgotten -var would then empty the
+    # for_each AND disarm the guard in the same plan, rebuilding the original
+    # bug with an extra step.
+    prevent_destroy = true
+
     precondition {
       condition     = contains(keys(var.pipeline_templates), each.value.template)
       error_message = format("Templated pipeline '%s' names template '%s', which is not declared in var.pipeline_templates. This pack refuses to point a pipeline at a console-authored template: an undeclared template's contents can be edited in the UI without drift showing, so the read-only guarantee would be enforcing an ungoverned step list. Bring the template under var.pipeline_templates, or audit it through var.audited_templates and accept that it is not enforced from code.", each.key, each.value.template)
@@ -223,14 +260,20 @@ check "templates_do_not_silently_delegate_steps_to_the_repository" {
   }
 }
 
-check "template_declarations_require_profile_level_3" {
+# WARNING ONLY, and labelled as such. This is a `check` block: Terraform check
+# blocks annotate a run, they cannot fail a plan or halt an apply. It is here to
+# keep the RECORDED profile level honest, not to guard anything - per TRAP 7
+# nothing in this file is gated on profile_level any more, so there is nothing
+# left for a guard to stop.
+check "template_declarations_record_an_l3_control" {
   assert {
-    condition = local.hth_templates_active || (length(var.pipeline_templates) == 0 && length(var.templated_pipelines) == 0)
+    condition = var.profile_level >= 3 || (length(var.pipeline_templates) == 0 && length(var.templated_pipelines) == 0)
     error_message = format(
-      "profile_level is %d but %d template(s) and %d templated pipeline(s) are declared. Control 3.10 is L3, so at this level they are not created — and if they already exist, this plan DESTROYS them, pipelines included. Raise profile_level to 3, or clear the declarations deliberately.",
+      "profile_level is %d, but %d template(s) and %d templated pipeline(s) are declared. Control 3.10 is an L3 control. Those resources ARE created at the level you set - profile level selects WHAT you declare, never whether declared resources survive - so the only thing wrong here is the number: this configuration enforces an L3 control while reporting level %d. Raise profile_level to 3 so the recorded level matches what is applied, or clear the declarations. This message is a warning and does not stop the apply.",
       var.profile_level,
       length(var.pipeline_templates),
       length(var.templated_pipelines),
+      var.profile_level,
     )
   }
 }

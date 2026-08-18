@@ -40,9 +40,28 @@
 #     1 <= n <= 1440, and pauseOpts is populated on every invocation — the CLI
 #     has no way to express "paused until I say otherwise". A responder who types
 #     `bk agent pause <id>` and moves on gets the agent back five minutes later.
-#     GraphQL agentPause's `timeoutInMinutes` is a nullable Int and CAN be
-#     omitted, so the indefinite pause exists only on the GraphQL path. This
-#     script uses GraphQL for pause and says so.
+#     That part is VERIFIED, from source.
+# T1b OMITTING timeoutInMinutes IS LEGAL. WHETHER IT MEANS "FOREVER" IS NOT
+#     VERIFIED, AND THIS PACK NO LONGER ASSUMES IT.
+#     `AgentPauseInput.timeoutInMinutes` is a nullable `Int` in the live schema,
+#     so the GraphQL path CAN omit it where `bk` cannot. What no source here
+#     establishes is what the server DOES with the omission: "no auto-resume" and
+#     "apply the same default `bk` sends" are both consistent with a nullable
+#     input, and the mutations in this pack have never been executed against a
+#     live agent (see VERIFICATION STATUS). Two facts make a wrong assumption
+#     invisible rather than loud:
+#       * `Agent.pausedTimeoutInMinutes` is `Int!` — NON_NULL in the live schema.
+#         The server therefore always reports a number, so a `// "indefinite"`
+#         jq fallback can never fire and a server-applied 5 would print as an
+#         ordinary field under a header promising no auto-resume.
+#       * containment that releases itself does so silently, minutes after the
+#         responder has read the handoff and moved on.
+#     So `pause_agent` ASSERTS on the value the server returns and fails loudly
+#     on any non-zero timeout instead of trusting the omission. Treat "indefinite
+#     pause" as an unverified assumption that the tool checks, not a guarantee —
+#     and note that pause is never the containment step regardless (T2): `stop`
+#     is. Executing agentPause against a real agent and recording what
+#     pausedTimeoutInMinutes comes back as is the one thing that would settle it.
 # T2  PAUSE IS NOT STOP. Vendor help text: a paused agent "will stop accepting
 #     new jobs but will continue running any jobs it has already started." On a
 #     compromised agent the job already started IS the compromise. Pause buys
@@ -70,6 +89,19 @@
 # T7  `bk agent list` HAS NO CLUSTER FILTER. Its options are name / hostname /
 #     version / state / tags. Containment is cluster-scoped, so cluster targeting
 #     must come from GraphQL, where Agent.clusterQueue.cluster.uuid is readable.
+# T7b CLUSTER-SCOPED CONTAINMENT CANNOT REACH AN AGENT WITH NO CLUSTER.
+#     `Agent.clusterQueue` is `ClusterQueue` — OBJECT, not NON_NULL — and
+#     `ClusterQueue.cluster` is nullable too, so an agent can legitimately have
+#     no resolvable cluster uuid. Legacy UNCLUSTERED agents are the obvious case
+#     (organizations created before 2024-02-26 can still have them; see
+#     terraform/hth-buildkite-3.03-secure-agent-infrastructure.tf). Filtering on
+#     `.clusterQueue.cluster.uuid == $cu` silently DROPS every one of them, and a
+#     total counted after that filter hides the omission: the responder reads a
+#     fleet size that already excludes the agents nobody told them about, and
+#     `contain` leaves those agents running. Every read path here therefore
+#     reports an explicit `agents_unassociated` bucket alongside the in-cluster
+#     count, `contain` prints a loud warning naming them, and both `status` and
+#     `agents` show the organization-wide total next to the scoped one.
 # T8  agentStop's `graceful: Boolean` IS THE INVERSE OF `bk agent stop --force`.
 #     graceful=true lets the running job finish; --force "terminat[es] any jobs in
 #     progress" (REST PUT .../agents/{id}/stop with {"force":true}). Choose
@@ -100,7 +132,14 @@
 #   Agent fields (paused, pausedAt, pausedNote, pausedTimeoutInMinutes,
 #   isRunningJob, connectionState, clusterQueue, stopForcedAt) and ClusterQueue
 #   fields (dispatchPaused, dispatchPausedAt, dispatchPausedBy, dispatchPausedNote)
-#   are all confirmed present.
+#   are all confirmed present. Two nullabilities from that same introspection
+#   drive real behaviour here and are worth restating: Agent.clusterQueue is
+#   NULLABLE (T7b) and Agent.pausedTimeoutInMinutes is NON_NULL (T1b).
+#   WHAT IS NOT VERIFIED: the server-side MEANING of omitting
+#   AgentPauseInput.timeoutInMinutes. Schema introspection proves the omission is
+#   accepted; it cannot prove the resulting pause never expires. That claim is
+#   asserted at runtime rather than assumed (T1b) and is the top item to settle
+#   the next time this pack is exercised against a live agent.
 #   Every mutation document below was then submitted to the LIVE endpoint with its
 #   variables deliberately omitted, so the server answered in the VALIDATION phase
 #   and no resolver ran. All five returned exactly one error — "Variable $id of
@@ -215,10 +254,10 @@ fetch_agent_page() {
   }' | gql
 }
 
-# `id` here is the GraphQL node id (GraphQL mutations); `uuid` is what `bk` and
-# REST want (T3). Both are emitted so no caller has to know which is which.
-list_agents() {
-  local cluster_uuid="${1:-}"
+# Every agent in the ORGANIZATION, unfiltered. `id` here is the GraphQL node id
+# (GraphQL mutations); `uuid` is what `bk` and REST want (T3). Both are emitted
+# so no caller has to know which is which.
+list_all_agents() {
   local after="" page out="[]"
   while :; do
     page=$(fetch_agent_page "${after}")
@@ -229,29 +268,66 @@ list_agents() {
     [ "$(jq -r '.data.organization.agents.pageInfo.hasNextPage' <<<"${page}")" = "true" ] || break
     after=$(jq -r '.data.organization.agents.pageInfo.endCursor' <<<"${page}")
   done
-  if [ -n "${cluster_uuid}" ]; then
-    jq --arg cu "${cluster_uuid}" '[.[] | select(.clusterQueue.cluster.uuid == $cu)]' <<<"${out}"
-  else
-    printf '%s\n' "${out}"
-  fi
+  printf '%s\n' "${out}"
+}
+
+# Agents whose cluster uuid cannot be resolved AT ALL — clusterQueue is null, or
+# it is present but its cluster is (both are nullable, T7b). These are the agents
+# cluster-scoped containment structurally cannot reach. Kept as its own function
+# so the omission has a name and can be printed, rather than being an invisible
+# consequence of a `select`.
+select_unassociated_agents() {
+  jq '[.[] | select((.clusterQueue.cluster.uuid // null) == null)]'
+}
+
+select_cluster_agents() {
+  jq --arg cu "${1}" '[.[] | select(.clusterQueue.cluster.uuid == $cu)]'
+}
+
+# Cluster-scoped view. WARNS on stderr about anything the scope cannot reach
+# (T7b) so a caller that only reads stdout still cannot be misled about totals.
+list_agents() {
+  local cluster_uuid="${1:-}"
+  local all unassoc n_unassoc
+  all=$(list_all_agents)
+  [ -n "${cluster_uuid}" ] || { printf '%s\n' "${all}"; return 0; }
+
+  unassoc=$(select_unassociated_agents <<<"${all}")
+  n_unassoc=$(jq 'length' <<<"${unassoc}")
+  [ "${n_unassoc}" -eq 0 ] || echo "WARNING: ${n_unassoc} agent(s) have no resolvable cluster and are NOT in this list; cluster-scoped containment does not reach them (T7b). See: status ${cluster_uuid} | jq .agents_unassociated" >&2
+  select_cluster_agents "${cluster_uuid}" <<<"${all}"
 }
 
 # Read-only situation report. Safe to run at any time and the first thing to run
 # during a drill: it answers "is anything still contained" for queues Terraform
 # does not manage, which the 4.2 Terraform pack structurally cannot see.
+#
+# The counts are deliberately THREE numbers, not one. `agents_total` used to be
+# reported after the cluster filter, so an agent the filter had dropped (T7b) was
+# missing from the list AND from the total that was supposed to reveal the gap.
+# Reconciliation is now explicit: agents_in_cluster + agents_unassociated +
+# (agents in other clusters) = agents_org_total.
 status() {
   local cluster_uuid="${1:?usage: status <cluster-uuid>}"
-  local queues agents
+  local queues all
   queues=$(list_queues "${cluster_uuid}")
-  agents=$(list_agents "${cluster_uuid}")
-  jq -n --argjson q "${queues}" --argjson a "${agents}" '{
-    queues_paused:   [ $q[] | select(.dispatchPaused)   | {key, id, dispatchPausedAt, dispatchPausedNote} ],
-    queues_dispatching: [ $q[] | select(.dispatchPaused | not) | .key ],
-    agents_total:    ($a | length),
-    agents_running_job: [ $a[] | select(.isRunningJob) | {name, uuid, graphql_id: .id, queue: .clusterQueue.key} ],
-    agents_paused:   [ $a[] | select(.paused) | {name, uuid, graphql_id: .id, pausedNote, pausedTimeoutInMinutes} ],
-    agents_connected: [ $a[] | select(.connectionState == "connected") | {name, uuid, graphql_id: .id} ]
-  }'
+  all=$(list_all_agents)
+  jq -n --arg cu "${cluster_uuid}" --argjson q "${queues}" --argjson all "${all}" '
+    ($all | map(select(.clusterQueue.cluster.uuid == $cu)))          as $a |
+    ($all | map(select((.clusterQueue.cluster.uuid // null) == null))) as $u |
+    {
+      queues_paused:      [ $q[] | select(.dispatchPaused)       | {key, id, dispatchPausedAt, dispatchPausedNote} ],
+      queues_dispatching: [ $q[] | select(.dispatchPaused | not) | .key ],
+      agents_in_cluster:  ($a   | length),
+      agents_org_total:   ($all | length),
+      agents_running_job: [ $a[] | select(.isRunningJob) | {name, uuid, graphql_id: .id, queue: .clusterQueue.key} ],
+      agents_paused:      [ $a[] | select(.paused) | {name, uuid, graphql_id: .id, pausedNote, pausedTimeoutInMinutes} ],
+      agents_connected:   [ $a[] | select(.connectionState == "connected") | {name, uuid, graphql_id: .id} ],
+      agents_unassociated_count: ($u | length),
+      agents_unassociated: [ $u[] | {name, uuid, graphql_id: .id, connectionState, isRunningJob} ],
+      agents_unassociated_note:
+        "Agents with no resolvable cluster (Agent.clusterQueue or ClusterQueue.cluster is null — legacy unclustered agents). Cluster-scoped containment does not reach them: `contain <cluster-uuid>` will NOT pause or stop these. Contain each directly with stop-agent <graphql_id> graceful|force."
+    }'
 }
 # HTH Guide Excerpt: end enumerate-fleet
 
@@ -273,13 +349,38 @@ pause_queue() {
          | "queue \(.key) dispatchPaused=\(.dispatchPaused) at \(.dispatchPausedAt // "-") by \(.dispatchPausedBy.name // "-")"' <<<"${body}"
 }
 
-# STEP 1b — pause agents. INDEFINITE, on purpose. `bk agent pause` cannot express
-# this: its --timeout-in-minutes defaults to 5 and is always sent (T1). Omitting
-# timeoutInMinutes here means the agent stays paused until someone resumes it.
-# Still not containment on its own — a paused agent finishes its current job (T2).
+# STEP 1b — pause agents. `timeoutInMinutes` is OMITTED, which `bk agent pause`
+# cannot do (its --timeout-in-minutes defaults to 5 and is always sent, T1).
+# The INTENT is a pause with no auto-resume. That intent is not verified (T1b),
+# so it is checked rather than announced: Agent.pausedTimeoutInMinutes is NON_NULL
+# in the schema, so the server always tells us what it actually applied, and a
+# non-zero answer means containment has a clock on it and the responder must be
+# told before they walk away. Pause is not containment on its own regardless —
+# a paused agent finishes its current job (T2); `stop` is the step that ends it.
+#
+# Returns 4 when the pause carries an auto-resume, so a caller can count the
+# agents that need re-pausing or stopping instead of trusting a green run.
+assert_pause_has_no_auto_resume() {
+  local body="$1" name gid timeout
+  name=$(jq -r '.data.agentPause.agent.name // "<unknown>"' <<<"${body}")
+  gid=$(jq -r '.data.agentPause.agent.id // "<agent-graphql-id>"' <<<"${body}")
+  timeout=$(jq -r '.data.agentPause.agent.pausedTimeoutInMinutes // "unreported"' <<<"${body}")
+  [ "${timeout}" = "0" ] && return 0
+  cat >&2 <<EOF
+WARNING: agent ${name} is paused WITH AN AUTO-RESUME of ${timeout} minute(s).
+  This pack omits timeoutInMinutes intending an indefinite pause, but the server
+  reported a non-zero timeout — so this agent WILL start accepting jobs again on
+  its own, without anyone deciding that it should.
+  Do not treat this agent as contained. Either re-pause it before the clock
+  expires, or (correctly) stop it:
+      stop-agent ${gid} graceful|force
+EOF
+  return 4
+}
+
 pause_agent() {
   local agent_gql_id="${1:?usage: pause-agent <agent-graphql-id> [note]}"
-  local note="${2:-HTH 4.2 containment — indefinite, no auto-resume}"
+  local note="${2:-HTH 4.2 containment — no auto-resume intended, verify timeout below}"
   local body
   body=$(jq -n --arg id "${agent_gql_id}" --arg note "${note}" '{
     query: "mutation($id:ID!,$note:String){ agentPause(input:{id:$id, note:$note}){
@@ -288,8 +389,12 @@ pause_agent() {
     variables: { id: $id, note: $note }
   }' | gql)
   die_on_gql_errors "${body}"
+  # No `// "indefinite"` fallback here: pausedTimeoutInMinutes is NON_NULL, so a
+  # jq alternative operator on it is dead code that would print a reassurance the
+  # server never sent. Print the number the server actually returned.
   jq -r '.data.agentPause.agent
-         | "agent \(.name) paused=\(.paused) timeout=\(.pausedTimeoutInMinutes // "none (indefinite)") stillRunningJob=\(.isRunningJob)"' <<<"${body}"
+         | "agent \(.name) paused=\(.paused) pausedTimeoutInMinutes=\(.pausedTimeoutInMinutes) stillRunningJob=\(.isRunningJob)"' <<<"${body}"
+  assert_pause_has_no_auto_resume "${body}"
 }
 
 # STEP 2 — stop agents. This is the step that ends execution.
@@ -356,17 +461,49 @@ stop_agents_bulk() {
 contain() {
   local cluster_uuid="${1:?usage: contain <cluster-uuid> [graceful|force]}"
   local mode="${2:-graceful}"
+  local all unassoc n_unassoc aid
+  local -a auto_resumed=()
+
+  # STEP 0 — say what this run structurally cannot reach BEFORE doing anything,
+  # so it is at the top of the responder's scrollback rather than buried (T7b).
+  all=$(list_all_agents)
+  unassoc=$(select_unassociated_agents <<<"${all}")
+  n_unassoc=$(jq 'length' <<<"${unassoc}")
+  echo "── step 0: scope — $(jq 'length' <<<"${all}") agent(s) in the organization, $(select_cluster_agents "${cluster_uuid}" <<<"${all}" | jq 'length') in this cluster"
+  if [ "${n_unassoc}" -gt 0 ]; then
+    {
+      echo "!! ${n_unassoc} AGENT(S) ARE OUT OF SCOPE FOR THIS CONTAINMENT."
+      echo "   They have no resolvable cluster (Agent.clusterQueue / ClusterQueue.cluster"
+      echo "   is null — legacy unclustered agents look like this). Nothing below pauses or"
+      echo "   stops them; they keep taking jobs while this runbook reports success."
+      jq -r '.[] | "   OUT OF SCOPE: \(.name) graphql_id=\(.id) uuid=\(.uuid) state=\(.connectionState) runningJob=\(.isRunningJob)"' <<<"${unassoc}"
+      echo "   Contain each directly:  stop-agent <graphql_id> ${mode}"
+    } >&2
+  fi
 
   echo "── step 1: pause dispatch on every queue in the cluster"
   while read -r qid; do pause_queue "${qid}" "HTH 4.2 containment"; done \
     < <(list_queues "${cluster_uuid}" | jq -r '.[] | select(.dispatchPaused | not) | .id')
 
-  echo "── step 1b: pause agents indefinitely (no auto-resume)"
-  while read -r aid; do pause_agent "${aid}"; done \
-    < <(list_agents "${cluster_uuid}" | jq -r '.[] | select(.paused | not) | .id')
+  echo "── step 1b: pause agents (timeoutInMinutes omitted; the reported timeout is asserted)"
+  # A pause that came back with an auto-resume clock must NOT abort the run:
+  # step 2 is the step that actually contains, and aborting before it would leave
+  # the fleet running. Collect the failures and surface them at the end instead.
+  while read -r aid; do
+    pause_agent "${aid}" || auto_resumed+=( "${aid}" )
+  done < <(select_cluster_agents "${cluster_uuid}" <<<"${all}" | jq -r '.[] | select(.paused | not) | .id')
 
   echo "── step 2: stop agents (mode=${mode})"
   stop_agents_bulk "${cluster_uuid}" "${mode}"
+
+  if [ "${#auto_resumed[@]}" -gt 0 ]; then
+    {
+      echo "!! ${#auto_resumed[@]} agent(s) were paused WITH AN AUTO-RESUME CLOCK (see warnings above):"
+      printf '   %s\n' "${auto_resumed[@]}"
+      echo "   The indefinite-pause assumption did not hold on this tenant. Verify each was"
+      echo "   stopped by step 2, and correct T1b in this pack's header with what you saw."
+    } >&2
+  fi
 
   echo "── step 3: REVOKE TOKENS — NOT DONE BY THIS SCRIPT, AND NOT OPTIONAL"
   cat >&2 <<'HANDOFF'
@@ -375,14 +512,31 @@ connected agents, which is why it comes last — but skipping it means the clust
 registration token is still valid and a rebuilt-from-the-same-image host will
 re-register straight back into the incident.
 
-  cluster agent tokens : packs/buildkite/terraform/hth-buildkite-3.01-configure-agent-tokens.tf
-                         (change rotation_id to force replacement), or GraphQL
-                         clusterAgentTokenRevoke{ id: ID!, organizationId: ID! }
+  cluster agent tokens : GraphQL clusterAgentTokenRevoke{ id: ID!, organizationId: ID! },
+                         or packs/buildkite/api/hth-buildkite-3.01-agent-token-lifecycle.sh
+                         (`revoke <token_id>`, or `contain <cluster_graphql_id> <token_id>`
+                         which revokes AND stops the agents the token registered).
+                         Terraform: DELETE the token's entry from var.agent_tokens in
+                         hth-buildkite-3.01-configure-agent-tokens.tf and apply — the plan
+                         reads "1 to destroy". Do NOT reach for a rotation here: rotation in
+                         that pack is deliberately a two-apply add-then-remove (its TRAP 5),
+                         because the new secret is returned exactly once and revoking the
+                         incumbent in the same apply strands every host that has not yet
+                         re-registered. During an incident you WANT the revoke; issue the
+                         replacement token as a separate, later act.
   org API tokens       : packs/buildkite/api/hth-buildkite-2.05-token-hygiene.sh revoke
 
 Do not resume dispatch until fresh tokens are issued and the agent hosts are
 REBUILT rather than restarted.
 HANDOFF
+
+  # A run that could not reach every agent, or that paused agents onto an
+  # auto-resume clock, must not exit 0 into a runbook that treats 0 as "the
+  # fleet is contained".
+  if [ "${n_unassoc}" -gt 0 ] || [ "${#auto_resumed[@]}" -gt 0 ]; then
+    echo "CONTAINMENT INCOMPLETE: ${n_unassoc} agent(s) out of cluster scope, ${#auto_resumed[@]} agent(s) paused with an auto-resume clock. Exit 5." >&2
+    return 5
+  fi
 }
 # HTH Guide Excerpt: end contain-fleet
 
@@ -457,7 +611,7 @@ case "${1:-help}" in
   queues)        list_queues "${2:-}" ;;
   agents)        list_agents "${2:-}" ;;
   pause-queue)   pause_queue "${2:-}" "${3:-HTH 4.2 containment}" ;;
-  pause-agent)   pause_agent "${2:-}" "${3:-HTH 4.2 containment — indefinite, no auto-resume}" ;;
+  pause-agent)   pause_agent "${2:-}" "${3:-HTH 4.2 containment — no auto-resume intended, verify timeout below}" ;;
   stop-agent)    stop_agent "${2:-}" "${3:-graceful}" ;;
   stop-agents)   stop_agents_bulk "${2:-}" "${3:-graceful}" ;;
   contain)       contain "${2:-}" "${3:-graceful}" ;;
@@ -469,17 +623,27 @@ case "${1:-help}" in
 usage: hth-buildkite-4.02-agent-containment.sh <verb> [args]
 
   read-only
-    status <cluster-uuid>              what is paused, what is running a job
+    status <cluster-uuid>              what is paused, what is running a job,
+                                       plus agents_unassociated: the agents this
+                                       cluster scope CANNOT reach (T7b)
     queues <cluster-uuid>              queues + dispatch state (JSON)
     agents [cluster-uuid]              agents with BOTH ids: .uuid for bk/REST,
-                                       .id for GraphQL
+                                       .id for GraphQL. With a cluster-uuid this
+                                       is FILTERED — anything with no resolvable
+                                       cluster is omitted and warned about on
+                                       stderr. Omit the argument for every agent.
 
   contain (order matters)
     pause-queue  <queue-graphql-id> [note]      step 1  stop new dispatch
-    pause-agent  <agent-graphql-id> [note]      step 1b indefinite, no auto-resume
+    pause-agent  <agent-graphql-id> [note]      step 1b timeoutInMinutes omitted;
+                                                exits 4 if the server came back
+                                                with an auto-resume clock anyway
     stop-agent   <agent-graphql-id> graceful|force
     stop-agents  <cluster-uuid>      graceful|force   step 2 bulk
-    contain      <cluster-uuid>      graceful|force   steps 1 -> 1b -> 2
+    contain      <cluster-uuid>      graceful|force   steps 0 -> 1 -> 1b -> 2
+                                                exits 5 if any agent was out of
+                                                cluster scope or came back paused
+                                                with an auto-resume clock
 
   restore (requires HTH_HOSTS_REBUILT=1)
     resume-queue <queue-graphql-id>
@@ -487,6 +651,17 @@ usage: hth-buildkite-4.02-agent-containment.sh <verb> [args]
     restore      <cluster-uuid>
 
 `force` terminates jobs in progress. Sometimes that output is the evidence.
+
+PAUSE IS AN UNVERIFIED INDEFINITE (T1b). This script omits timeoutInMinutes,
+which is legal, but no source establishes that the server reads the omission as
+"never auto-resume" — and `bk`'s own default is 5 minutes. Agent.pausedTimeout-
+InMinutes is NON_NULL, so the server always reports what it applied; every pause
+here asserts on it and fails loudly rather than promising you something.
+
+CLUSTER SCOPE IS NOT THE WHOLE FLEET (T7b). Agent.clusterQueue is nullable, so a
+legacy unclustered agent has no cluster uuid and no cluster-scoped verb touches
+it. `status` counts it in agents_unassociated and `contain` names it at step 0.
+
 Token revocation is NOT part of this script — see controls 3.1 and 2.5. Revoking
 a token does not disconnect a connected agent, so revocation alone is not
 containment, and containment alone does not stop re-registration.

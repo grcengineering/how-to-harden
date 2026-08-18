@@ -162,8 +162,18 @@ variable "agent_tokens" {
       cluster              — name of an EXISTING cluster; null falls back to var.agent_token_cluster_name.
       allowed_ip_addresses — CIDR allowlist. EMPTY MEANS UNRESTRICTED, which pack 3.1 refuses to plan
                              unless agent_token_require_ip_allowlist is set false.
-      rotation_id          — free-form generation marker. Changing it forces a REPLACEMENT token
-                             (Buildkite tokens have no Terraform-settable expiry, so replacement is rotation).
+      rotation_id          — generation marker for THIS entry, stamped into the token's description.
+                             Set it when you add the entry; do NOT edit it afterwards. Editing it in
+                             place only relabels the incumbent token — it mints nothing.
+    ROTATION IS TWO APPLIES, NOT AN EDIT. Buildkite tokens have no Terraform-settable expiry, and the
+    secret is returned exactly once — from the apply that creates it — so a same-apply replacement
+    revokes the incumbent before the operator can have distributed the replacement. Instead:
+    (1) ADD a second entry with a new map key, the same cluster and description, and rotation_id
+    bumped, then apply — both tokens are now valid and the new secret is in the output;
+    (2) roll the agent hosts onto the new secret and confirm every one has re-registered;
+    (3) DELETE the old entry and apply again. Pack 3.1's check block reports any rotation left
+    unfinished. To revoke immediately (leaked token), delete the entry and apply — the plan reads
+    "1 to destroy", and note that revocation does not disconnect already-connected agents.
     Defaults to {} so no unrestricted token is ever created by accident.
   EOT
   type = map(object({
@@ -192,29 +202,27 @@ variable "agent_token_require_ip_allowlist" {
 # -----------------------------------------------------------------------------
 
 variable "clusters" {
-  description = "Map of agent clusters to create for environment isolation (L2+)"
+  description = <<-EOT
+    Map of agent clusters to create for environment isolation. Control 3.2 is an
+    L2 control, but this map — not profile_level — is what switches pack 3.2 on:
+    the resource is no longer gated on profile_level, because a profile-level
+    gate makes a level DOWNGRADE destroy the cluster, its queues and its
+    cluster-scoped agent tokens.
+
+    DEFAULTS TO EMPTY, DELIBERATELY. This used to default to three clusters
+    (production/development/security). Combined with the README's bare
+    `terraform apply`, that meant adopting any single control in this directory
+    silently created three clusters nobody asked for. The worked
+    three-environment example is preserved in terraform.tfvars.example — copy it
+    from there and edit it, so creating a cluster is always something you wrote
+    down.
+  EOT
   type = map(object({
     description = optional(string, "")
     color       = optional(string, null)
     emoji       = optional(string, null)
   }))
-  default = {
-    production = {
-      description = "Production deployment agents - restricted access"
-      color       = "#FF0000"
-      emoji       = ":lock:"
-    }
-    development = {
-      description = "Development build agents"
-      color       = "#00FF00"
-      emoji       = ":hammer:"
-    }
-    security = {
-      description = "Security-sensitive build agents"
-      color       = "#FF8800"
-      emoji       = ":shield:"
-    }
-  }
+  default = {}
 }
 
 variable "cluster_queues" {
