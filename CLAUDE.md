@@ -60,10 +60,14 @@ In files other than guides (README, AGENTS.md, CONTRIBUTING.md, etc.), always us
 
 Never use bare ` ``` ` without a language.
 
-### 4. Every Control Needs Both Methods
+### 4. Every Control Needs ClickOps AND an Automation Verdict
 
-- **ClickOps** - GUI/console steps for manual implementation
-- **Code** - CLI, API, and/or Terraform for automation
+- **ClickOps** — GUI/console steps for manual implementation.
+- **Code** — one pack per surface the vendor actually documents for that control: `terraform` (**resources AND data sources**), `api` (REST **and** GraphQL), `cli`, `sdk`, `config`, `siem`. Enumerate all six before choosing; one code artifact is not automatically "done."
+- **No surface?** The control carries `**Automation:** ClickOps only — {vendor} exposes no write interface for this setting ({url}, {date}).` Omitting both the pack and this line is not permitted — it makes an unchecked control look identical to a checked one.
+- **Never decide "no CLI exists" from memory** — look the vendor up in `docs/research/cli-inventory.md`.
+
+Full rule with the failure history behind it: [AGENTS.md §4](AGENTS.md).
 
 ### 5. Revision Dates Reflect the Commit Date
 
@@ -124,7 +128,9 @@ cp templates/vendor-guide-template.md docs/_guides/[vendor-name].md
 - [ ] **No .txt files** in packs — only executable code files
 - [ ] Tables have blank lines before AND after
 - [ ] Code blocks specify language (non-guide files only)
-- [ ] Both ClickOps and Code implementations provided
+- [ ] Every control has ClickOps **and** either a pack or an evidenced `**Automation:** ClickOps only` line (rule 4)
+- [ ] Every automation surface enumerated before choosing pack types — no single-type monoculture left unjustified
+- [ ] `bash scripts/validate-packs.sh {vendor}` run and its **coverage warnings read** (checks 15–17), not just its exit code
 - [ ] All code uses pack includes: `{% include pack-code.html vendor="X" section="Y.Z" %}`
 - [ ] Compliance mappings verified (never invent IDs; CIS numbering shifts between majors — map by name with a version note when unverifiable; prefer CISA SCuBA policy IDs where a baseline exists)
 - [ ] Changelog updated; frontmatter `version` matches the new changelog row

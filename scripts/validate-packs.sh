@@ -19,8 +19,11 @@
 #   12. Link host-policy parity        — SKIPPED until scripts/link-host-policy.yml exists
 #   13. HTH Pack Contract v1 coverage  — WARN while the corpus is being backfilled
 #   14. Declared `mode:` vs actual mutation verbs — FAIL on mismatch
+#   15. Pack substance             — a file that is 100% comments is prose, not code
+#   16. Automation-surface coverage — pack-type monoculture (WARN) + coverage report
 #
-# Usage: bash scripts/validate-packs.sh
+# Usage: bash scripts/validate-packs.sh [vendor-slug]
+#        A vendor slug scopes the check-16 coverage report to that vendor.
 # Exit:  0 = all pass · 1 = failures found · 2 = a check could not run
 #
 # Exit 2 matters: sync-packs-to-data.sh silently SKIPS its only YAML check when
@@ -30,6 +33,94 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# ─── --touched: gate new work without pinning main red on old debt ──────────
+# The corpus carries pre-existing failures (40 extension-table violations, 4
+# collisions, unresolved anchors). A blanket required check would block every PR
+# on debt it did not create, so the CI gate runs this mode: full sweep, but only
+# findings in files the branch actually touched decide the exit code. Everything
+# else still prints, so the debt stays visible instead of silently growing.
+#
+# Implemented as a self re-exec so the 17 checks below need no filtering logic.
+if [ "${1:-}" = "--touched" ]; then
+  base=""
+  for ref in "${GITHUB_BASE_REF:+origin/$GITHUB_BASE_REF}" origin/main main; do
+    [ -n "$ref" ] || continue
+    if git -C "${REPO_ROOT}" rev-parse --verify -q "$ref" >/dev/null; then
+      base="$(git -C "${REPO_ROOT}" merge-base HEAD "$ref" 2>/dev/null || true)"
+      [ -n "$base" ] && break
+    fi
+  done
+  if [ -z "$base" ]; then
+    echo "▸ --touched: no merge base found (shallow clone?) — falling back to full corpus"
+    exec bash "$0" --all
+  fi
+  touched="$(git -C "${REPO_ROOT}" diff --name-only "$base"...HEAD -- packs docs/_guides docs/_data/packs || true)"
+  if [ -z "$touched" ]; then
+    echo "▸ --touched: this branch changes no packs or guides — nothing to gate."
+    exit 0
+  fi
+  echo "▸ --touched: gating on $(echo "$touched" | wc -l | tr -d ' ') changed file(s)"
+  echo ""
+  set +e
+  report="$(bash "$0" --all 2>&1)"          # bash "$0": the file need not be +x
+  raw_exit=$?
+  set -e
+  echo "$report"
+  if [ $raw_exit -eq 2 ]; then exit 2; fi   # a check could not run — never mask that
+  # Fail CLOSED on a malformed inner run. Without this, an inner failure that
+  # produced no output would yield an empty finding list and a green verdict —
+  # the filter would report "no failures in your files" having seen no report at
+  # all. A gate that passes when it cannot see is worse than no gate.
+  if ! echo "$report" | grep -q "═══════"; then
+    echo "❌ CANNOT RUN: inner --all run produced no recognisable report (exit ${raw_exit})"
+    exit 2
+  fi
+  echo ""
+  echo "═══ --touched verdict ═══"
+  TOUCHED="$touched" REPORT="$report" python3 << 'PYEOF' || exit 1
+import os, re, sys
+
+touched = [p for p in os.environ["TOUCHED"].splitlines() if p.strip()]
+# A finding is "yours" when it names a file you changed, or that file's vendor
+# directory. Findings are printed either inline on the FAIL line or as indented
+# items beneath it, so both forms are matched.
+keys = set()
+for p in touched:
+    keys.add(p)
+    keys.add(os.path.basename(p))
+    parts = p.split('/')
+    if parts[0] == 'packs' and len(parts) > 1:
+        keys.add(parts[1] + '/')
+    if parts[0] == 'docs' and parts[1] == '_guides':
+        keys.add(os.path.splitext(parts[-1])[0] + '/')
+
+mine, in_fail = [], None
+for line in os.environ["REPORT"].splitlines():
+    m = re.match(r'\s*FAIL: (.*)', line)
+    if m:
+        in_fail = m.group(1)
+        if any(k in line for k in keys):
+            mine.append(line.strip())
+        continue
+    if in_fail and re.match(r'\s{4,}\S', line):
+        if any(k in line for k in keys):
+            mine.append(f"[{in_fail[:48]}] {line.strip()}")
+        continue
+    if line.strip() and not line.startswith(' '):
+        in_fail = None
+
+if mine:
+    print(f"❌ {len(mine)} failure(s) in files this branch touched:")
+    for f in mine[:40]:
+        print(f"    {f}")
+    sys.exit(1)
+print("✅ No failures in the files this branch touched.")
+print("   (Corpus-wide findings above are pre-existing debt — not introduced here.)")
+PYEOF
+  exit 0
+fi
+[ "${1:-}" = "--all" ] && shift || true
 # Git Bash for Windows: native-exe python3 can't open POSIX /c/... paths.
 if command -v cygpath &>/dev/null; then
   REPO_ROOT="$(cygpath -m "${REPO_ROOT}")"
@@ -483,6 +574,218 @@ echo ""
 
 echo "▸ Check 14: Declared mode vs actual mutation verbs"
 report MODE "packs whose declared mode contradicts their code" fail
+echo ""
+
+# ─── Checks 15-16: pack substance and coverage ──────────────────────────────
+# These two exist because prose review did not catch either failure mode. A pack
+# can satisfy every other check while containing no code at all, and a vendor can
+# ship a dozen packs that all automate the same surface while five of its controls
+# have none.
+coverage=$(PACKS_DIR="${PACKS_DIR}" GUIDES_DIR="${GUIDES_DIR}" \
+           ONLY_VENDOR="${1:-}" python3 << 'PYEOF'
+import os, re, glob, collections
+
+packs_dir  = os.environ["PACKS_DIR"]
+guides_dir = os.environ["GUIDES_DIR"]
+
+COMMENT = {'.tf':'#', '.sh':'#', '.py':'#', '.ps1':'#', '.yml':'#', '.yaml':'#',
+           '.sql':'--', '.kql':'//', '.js':'//', '.jsonc':'//', '.spl':'#',
+           '.groovy':'//', '.rb':'#', '.hcl':'#', '.graphql':'#', '.dax':'//'}
+SKIP_DIRS = ('controls', 'scripts')
+
+empty, mono, uncovered = [], [], []
+per_vendor = collections.defaultdict(collections.Counter)
+
+for path in sorted(glob.glob(os.path.join(packs_dir, '**', '*'), recursive=True)):
+    if not os.path.isfile(path):
+        continue
+    base = os.path.basename(path)
+    if not base.startswith('hth-'):
+        continue
+    rel = os.path.relpath(path, packs_dir)
+    parts = rel.split(os.sep)
+    if len(parts) < 2:
+        continue
+    vendor = parts[0]
+    seg = parts[1:-1]
+    ptype = 'sigma' if 'sigma' in seg else (seg[0] if seg else 'other')
+    if ptype in SKIP_DIRS:
+        continue
+    per_vendor[vendor][ptype] += 1
+
+    # Check 15: a pack whose every line is a comment is prose in code markers.
+    ext = os.path.splitext(base)[1]
+    marker = COMMENT.get(ext)
+    if marker:
+        try:
+            lines = open(path, encoding='utf-8').read().splitlines()
+        except (UnicodeDecodeError, OSError):
+            continue
+        code = [l for l in lines if l.strip() and not l.strip().startswith(marker)]
+        if not code:
+            empty.append(f"{rel}: {len(lines)} lines, ZERO executable — prose in code markers (AGENTS.md rule 2b)")
+
+# Check 16a: pack-type monoculture. One type across a large pack set means the
+# other automation surfaces were never enumerated.
+for vendor, types in sorted(per_vendor.items()):
+    total = sum(types.values())
+    if total >= 5 and len(types) == 1:
+        mono.append(f"{vendor}: {total} packs, all '{list(types)[0]}' — other surfaces likely unexamined")
+
+# Check 16b: pack coverage per leveled control. This is a REPORT, not a gate.
+# Many SaaS admin settings genuinely have no automation surface, so "no pack" is
+# often the honest answer (AGENTS.md). What the number is for: an agent working a
+# vendor sees at a glance how much of that guide is still ClickOps-only, and a
+# currency pass can diff it against the vendor's Surface Inventory.
+only = os.environ.get("ONLY_VENDOR", "").strip()
+inc_re = re.compile(r'pack-code\.html')
+tot_leveled = tot_packed = 0
+for g in sorted(glob.glob(os.path.join(guides_dir, '*.md'))):
+    slug = os.path.basename(g)[:-3]
+    if only and slug != only:
+        continue
+    body = re.sub(r'^---\r?\n.*?\r?\n---', '', open(g, encoding='utf-8').read(), flags=re.S)
+    missing, leveled = [], 0
+    for sec in re.split(r'^### ', body, flags=re.M)[1:]:
+        head = sec.split('\n', 1)[0]
+        m = re.match(r'(\d+(?:\.\d+)+)\s', head)
+        if not m or 'Profile Level' not in sec:
+            continue
+        leveled += 1
+        if not inc_re.search(sec):
+            missing.append(m.group(1))
+    tot_leveled += leveled
+    tot_packed += leveled - len(missing)
+    # Only name a vendor when explicitly scoped — corpus-wide this is ~70 lines
+    # of noise, and a warning that always fires is a warning nobody reads.
+    if only and missing:
+        uncovered.append(f"{slug}: {leveled - len(missing)}/{leveled} leveled controls have a pack; "
+                         f"no pack for {', '.join(missing)}")
+if not only and tot_leveled:
+    uncovered.append(f"corpus: {tot_packed}/{tot_leveled} leveled controls have a pack "
+                     f"({100*tot_packed//tot_leveled}%) — re-run with a vendor slug to itemise")
+
+def emit(name, items, cap=25):
+    print(f"==={name}===")
+    print(len(items))
+    for i in items[:cap]:
+        print(f"    {i}")
+
+emit("EMPTY", empty)
+emit("MONO", mono)
+emit("UNCOVERED", uncovered, cap=200)
+print("===END===")   # sentinel: csection() reads up to the next ===marker===
+PYEOF
+) || die_cannot_run "coverage sweep failed"
+
+csection() { echo "$coverage" | sed -n "/===$1===/,/^===/p" | sed '$d' | tail -n +2; }
+creport() {
+  local sec="$1" label="$2" mode="$3" n
+  n=$(csection "$sec" | head -1)
+  if [ "${n:-0}" -gt 0 ]; then
+    case "$mode" in
+      warn) warn "${n} ${label}:" ;;
+      info) echo "  INFO: ${label}" ;;
+      *)    fail "${n} ${label}:" ;;
+    esac
+    csection "$sec" | tail -n +2
+  else
+    pass "${label}: none"
+  fi
+}
+
+echo "▸ Check 15: Packs contain executable code (not prose in code markers)"
+creport EMPTY "pack files with ZERO executable content" fail
+echo ""
+
+echo "▸ Check 16: Automation-surface coverage"
+creport MONO "vendors whose packs are a single-type monoculture" warn
+creport UNCOVERED "pack coverage of leveled controls" info
+echo ""
+
+# ─── Check 17: CLI-inventory conformance ────────────────────────────────────
+# docs/research/cli-inventory.md is a fetch-verified census of which vendors ship
+# a first-party CLI. Until now NOTHING read it (grep: zero hits in scripts/,
+# Makefile, .github/, .claude/skills/). It recorded Buildkite as GA-Official `bk`
+# with admin coverage "Yes" while the Buildkite guide shipped zero cli/ packs —
+# the repo owned the answer in writing and the workflow never asked. This check
+# is that question, asked automatically, in both directions.
+INVENTORY="${REPO_ROOT}/docs/research/cli-inventory.md"
+echo "▸ Check 17: CLI-inventory conformance (docs/research/cli-inventory.md)"
+if [ ! -f "${INVENTORY}" ]; then
+  warn "cli-inventory.md not found — check skipped"
+else
+  cliconf=$(INVENTORY="${INVENTORY}" PACKS_DIR="${PACKS_DIR}" python3 << 'PYEOF'
+import os, re, glob
+
+inv_path  = os.environ["INVENTORY"]
+packs_dir = os.environ["PACKS_DIR"]
+
+def slugify(name):
+    s = name.lower().replace('(', '').replace(')', '').replace('.', '').replace("'", '')
+    return re.sub(r'[^a-z0-9]+', '-', s).strip('-')
+
+# Column order: vendor | status | binary | install | covers-admin-ops | docs
+rows = {}
+row_re = re.compile(r'^\|\s*\d+\s*\|([^|]*)\|([^|]*)\|([^|]*)\|([^|]*)\|([^|]*)\|')
+for line in open(inv_path, encoding='utf-8'):
+    m = row_re.match(line)
+    if m:
+        cells = [c.strip() for c in m.groups()]
+        rows[slugify(cells[0])] = cells
+
+def lookup(vendor):
+    for cand in (vendor, vendor.replace('-', ''), vendor.split('-')[0]):
+        if cand in rows:
+            return rows[cand]
+    for key, cells in rows.items():
+        if key.startswith(vendor) or vendor.startswith(key):
+            return cells
+    return None
+
+# "None" / "Vendor-Adjacent" / "Deprecated" mean no admin-capable first-party CLI.
+NO_CLI = ('none', 'vendor-adjacent', 'deprecated')
+
+expected, fabricated, unlisted = [], [], []
+for vdir in sorted(glob.glob(os.path.join(packs_dir, '*'))):
+    if not os.path.isdir(vdir):
+        continue
+    vendor = os.path.basename(vdir)
+    if not glob.glob(os.path.join(vdir, '**', 'hth-*'), recursive=True):
+        continue                              # no packs at all — nothing to conform
+    has_cli = bool(glob.glob(os.path.join(vdir, 'cli', 'hth-*')))
+    row = lookup(vendor)
+    if row is None:
+        if has_cli:
+            unlisted.append(f"{vendor}: ships cli/ packs but has NO row in cli-inventory.md — add one")
+        continue
+    status, admin = row[1], row[4]
+    usable = not status.lower().startswith(NO_CLI)
+    if has_cli and not usable:
+        fabricated.append(f"{vendor}: ships cli/ packs but inventory status is '{status}' "
+                          f"— no admin-capable first-party CLI (AGENTS.md pack-type table)")
+    if (not has_cli) and usable and admin.lower().startswith('yes'):
+        expected.append(f"{vendor}: inventory says '{status}' CLI, admin coverage YES "
+                        f"— zero cli/ packs shipped")
+
+def emit(name, items):
+    print(f"==={name}===")
+    print(len(items))
+    for i in items[:40]:
+        print(f"    {i}")
+
+emit("FABRICATED", fabricated)
+emit("EXPECTED", expected)
+emit("UNLISTED", unlisted)
+print("===END===")
+PYEOF
+) || die_cannot_run "cli-inventory cross-check failed"
+
+  csection() { echo "$cliconf" | sed -n "/===$1===/,/^===/p" | sed '$d' | tail -n +2; }
+  creport FABRICATED "cli/ packs for a vendor with no admin-capable first-party CLI" fail
+  creport EXPECTED   "vendors with a documented admin CLI but no cli/ packs" warn
+  creport UNLISTED   "vendors shipping cli/ packs with no cli-inventory row" warn
+fi
 echo ""
 
 echo "───────────────────────────────"

@@ -1,11 +1,11 @@
 ---
 name: verify-hth
-description: Run the How to Harden verification battery — content lint, cheat-sheet parity, zero-fence check, pack include/yml integrity, bookkeeping consistency — as a prescriptive pass/fail checklist before committing guide or pack changes. USE WHEN verifying HTH changes, before committing guides or packs, checking cheat sheet parity, or diagnosing why a control/pack isn't rendering. Run this at the end of every create-hth-guide, update-hth-guide, and create-code-pack task.
+description: Run the How to Harden verification battery — content lint, cheat-sheet parity, zero-fence check, pack include/yml integrity, bookkeeping consistency, pack corpus validation and automation-surface coverage — as a prescriptive pass/fail checklist before committing guide or pack changes. USE WHEN verifying HTH changes, before committing guides or packs, checking cheat sheet parity, or diagnosing why a control/pack isn't rendering. Run this at the end of every create-hth-guide, update-hth-guide, and create-code-pack task.
 ---
 
 # Verify HTH
 
-Six checks, each with a command and an explicit pass condition. ALL must pass before commit. Commands run from repo root; on Windows use Git Bash (`bash ...` — the scripts carry cygpath/UTF-8 shims).
+Seven checks, each with a command and an explicit pass condition. ALL must pass before commit. Commands run from repo root; on Windows use Git Bash (`bash ...` — the scripts carry cygpath/UTF-8 shims).
 
 ## Check 1 — Repo lint suite
 
@@ -69,7 +69,24 @@ Manual three-liner — verify each:
 3. No existing control renumbered; new controls take the next free `### N.M` at the end of their section
 4. Profile levels use the canonical Crawl/Walk/Run/Fly names — `grep -cE '\((Baseline|Hardened|Maximum Security)\)' docs/_guides/{slug}.md` must return 0
 
-## Check 6 — Post-deploy spot check (after push only)
+## Check 6 — Pack corpus validation and automation coverage
+
+```bash
+bash scripts/validate-packs.sh --touched     # blocking: findings in files you changed
+bash scripts/validate-packs.sh {vendor}      # then read the coverage lines for your vendor
+```
+
+**Pass:** `--touched` exits 0. Exit 2 means a check could not run (missing `python3`/`pyyaml`) — treat that as a failure, never as a pass; it is the exit code that exists specifically so a validator cannot go green while blind.
+
+**Then read checks 15–17 — the exit code is not the whole result:**
+
+- **15** a pack file with zero executable content (prose in code markers — not a Code Pack, AGENTS.md rule 2b)
+- **16** a single-type pack **monoculture**, plus how many of this vendor's leveled controls have a pack at all
+- **17** a vendor with a documented admin-capable first-party CLI and no `cli/` packs
+
+> Until now this battery ran `validate-guides.sh` and `sync-packs-to-data.sh` and **never ran the pack validator at all** — so every authoring skill terminated in a check that could not see pack quality or coverage. That is how nine packs shipped for one vendor with three of them containing no code, all of it structurally valid and fully "verified."
+
+## Check 7 — Post-deploy spot check (after push only)
 
 Open `/guides/{slug}/?view=cheat` on the live site. **Pass:** row count equals the guide's leveled-control count with no empty cells; new controls appear.
 **Browser gotcha:** a backgrounded Chrome tab pauses CSS transitions and rejects screenshot capture — foreground the tab, or verify final-state styles with transitions disabled via injected `* { transition: none !important; }`.
@@ -79,4 +96,4 @@ Open `/guides/{slug}/?view=cheat` on the live site. **Pass:** row count equals t
 - Check 3's parser contract mirrors `docs/_includes/cheat-sheet.html` exactly — if that include's parsing logic ever changes, update Check 3 and the create-hth-guide Phase 4 anatomy in the same commit.
 - The lint suite validates structure, not consistency — Check 5's version/date agreement is exactly the class of slip automated agents make most.
 - Never "fix" a Check 3 failure by removing `**Profile Level:**` from a real control — that hides it from the cheat sheet instead of completing it. Profile Level is removed only from reference sections that were never controls.
-- **This battery proves the repo RENDERS, not that the guidance WORKS.** Nothing here executes a pack, re-fetches a cited vendor doc, or runs an OCEAN control — a guide can pass all six checks while instructing a console path the vendor renamed last quarter. For that, run the `validate-hth-guide` skill; the two are complements, not substitutes.
+- **This battery proves the repo RENDERS, not that the guidance WORKS.** Nothing here executes a pack, re-fetches a cited vendor doc, or runs an OCEAN control — a guide can pass all seven checks while instructing a console path the vendor renamed last quarter. For that, run the `validate-hth-guide` skill; the two are complements, not substitutes.
