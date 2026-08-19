@@ -1,0 +1,68 @@
+# HTH Pack Contract: v1
+#   control: ona-2.1
+#   guide:   https://howtoharden.com/guides/ona/#21-enforce-an-executable-policy-with-veto
+#   profile: L2
+#   mode:    read-only
+#   requires: audit-log ingestion from EventService/ListAuditLogs (Enterprise plan)
+# Frameworks: CIS Controls 2.5, 2.7 | NIST 800-53 CM-7, SI-3 | NIST AI RMF MANAGE-2.3
+# Feed: packs/ona/cli/hth-ona-6.01-export-audit-logs.sh --veto  (NDJSON)
+title: Ona Veto Exec Audited an Executable
+id: 2c87d670-a398-462c-b42c-964a8c9247f3
+status: experimental
+description: |
+    Fires when Ona's Veto LSM RECORDED an executable launch that matched an
+    EFFECT_AUDIT rule. Execution was allowed — audit rules observe, they do not
+    deny. This is the drift and baselining signal behind control 2.1: it tells
+    you which watched binaries agents actually reach for, which is the evidence
+    the vendor's rollout expects you to review before promoting any rule to
+    EFFECT_BLOCK.
+    Low severity by design. A single audited exec is not an incident; a NEW
+    executable appearing, or an old one appearing from a new environment, is what
+    deserves a look. Tune this as a trend, not a page.
+    Field names are those of gitpod.v1.EventService/ListAuditLogs. `kind` is a
+    closed enum and carries the signal; `action` is free text, and the only
+    documented grammar (executable-deny-list: "The action starts with `Veto Exec
+    audited` or `Veto Exec blocked`"; audit-logs overview: "Audited events use
+    `audited` in place of `blocked`") is "Veto Exec audited: <filename> (<hash>)" with three
+    shorter fallbacks. details.vetoExec.* comes back only from GetAuditLog on a
+    single entry id, not from ListAuditLogs.
+    WatchEvents cannot back this rule — that stream carries no actor, no action
+    text and no timestamp, so only ListAuditLogs/GetAuditLog can feed it.
+    This corresponds to HTH Ona control hth-ona-2.01-enforce-an-executable-policy-with-veto (section 2.1, L2).
+references:
+    - https://howtoharden.com/guides/ona/#21-enforce-an-executable-policy-with-veto
+    - https://ona.com/docs/ona/audit-logs/overview
+    - https://ona.com/docs/ona/organizations/policies/executable-deny-list
+author: How to Harden
+date: 2026/08/19
+tags:
+    - attack.execution
+    - attack.t1059
+    - attack.discovery
+logsource:
+    product: ona
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_kind:
+        kind: 'AUDIT_LOG_ENTRY_KIND_ENVIRONMENT_VETO'
+    selection_action:
+        action|startswith: 'Veto Exec audited'
+    condition: selection_kind and selection_action
+fields:
+    - createdAt
+    - actorPrincipal
+    - actorId
+    - subjectId
+    - subjectType
+    - action
+    - details.vetoExec.filename
+    - details.vetoExec.executable
+    - details.vetoExec.action
+    - details.vetoExec.process.name
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Expected by design — every audit-mode rule produces these on normal developer and agent activity; volume is the point, not the exception
+    - An audit rule on a common binary (npx, python3) will dominate the feed; baseline per executable before alerting
+    - Silence is not proof of safety — Veto Exec audit entries are preview-gated and only appear for organizations with the preview enabled
+level: low

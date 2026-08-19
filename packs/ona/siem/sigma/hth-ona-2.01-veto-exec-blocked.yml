@@ -1,0 +1,66 @@
+# HTH Pack Contract: v1
+#   control: ona-2.1
+#   guide:   https://howtoharden.com/guides/ona/#21-enforce-an-executable-policy-with-veto
+#   profile: L2
+#   mode:    read-only
+#   requires: audit-log ingestion from EventService/ListAuditLogs (Enterprise plan)
+# Frameworks: CIS Controls 2.5, 2.7 | NIST 800-53 CM-7, SI-3 | NIST AI RMF MANAGE-2.3
+# Feed: packs/ona/cli/hth-ona-6.01-export-audit-logs.sh --veto  (NDJSON)
+title: Ona Veto Exec Blocked an Executable
+id: 4b3c77a5-8d6f-4e75-80ec-fd14e00f1394
+status: experimental
+description: |
+    Fires when Ona's kernel-level Veto LSM DENIED an executable launch inside an
+    organization environment. This is enforcement, not observation: an
+    EFFECT_BLOCK rule matched the SHA-256 content identity of the binary and the
+    exec was refused. Treat it as an agent (or an injected instruction) reaching
+    for a tool the organization has ruled out.
+    Field names are those of gitpod.v1.EventService/ListAuditLogs. `kind` is a
+    closed enum and carries the signal; `action` is a free-text string, so the
+    startswith test is the ONE documented exception — the vendor publishes the
+    grammar "Veto Exec blocked: <filename> (<hash>)" with three shorter
+    fallbacks. The typed payload (details.vetoExec.*) is returned only by
+    GetAuditLog for a single entry id, never by ListAuditLogs, so enrich per id
+    if you want filename and digest on every alert.
+    WatchEvents cannot back this rule. That stream carries only
+    {operation, resourceType, resourceId} — no actor, no action text, no
+    timestamp — so only ListAuditLogs/GetAuditLog can feed these detections.
+    This corresponds to HTH Ona control hth-ona-2.01-enforce-an-executable-policy-with-veto (section 2.1, L2).
+references:
+    - https://howtoharden.com/guides/ona/#21-enforce-an-executable-policy-with-veto
+    - https://ona.com/docs/ona/audit-logs/overview
+    - https://ona.com/docs/ona/organizations/policies/executable-deny-list
+author: How to Harden
+date: 2026/08/19
+tags:
+    - attack.execution
+    - attack.t1059
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: ona
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection_kind:
+        kind: 'AUDIT_LOG_ENTRY_KIND_ENVIRONMENT_VETO'
+    selection_action:
+        action|startswith: 'Veto Exec blocked'
+    condition: selection_kind and selection_action
+fields:
+    - createdAt
+    - actorPrincipal
+    - actorId
+    - subjectId
+    - subjectType
+    - action
+    - details.vetoExec.filename
+    - details.vetoExec.executable
+    - details.vetoExec.action
+    - details.vetoExec.process.name
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Deliberate rollout testing — running a blocked executable in a test environment to confirm the policy applies is the documented promotion step
+    - A blocked interpreter (for example /bin/bash) makes ordinary scripts fail; expect a burst of unrelated-looking blocks rather than one attack
+    - Audit-mode rules do NOT reach this rule; they emit 'Veto Exec audited' and are covered by hth-ona-2.01-veto-exec-audited-b.yml
+level: high

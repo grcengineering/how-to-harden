@@ -6,9 +6,9 @@ slug: "ona"
 tier: "2"
 category: "AI/ML Platform"
 description: "Security hardening for Ona (formerly Gitpod) — the cloud platform for autonomous AI software-engineering agents: SSO/SCIM identity, agent guardrails (Veto, command deny list, MCP), environment and network policy, secrets, self-hosted runners, and audit logging."
-version: "0.1.0"
+version: "0.2.0"
 maturity: "draft"
-last_updated: "2026-08-08"
+last_updated: "2026-08-19"
 ---
 
 ## Overview
@@ -33,7 +33,9 @@ This guide hardens Ona's admin surfaces: identity (OIDC SSO, SCIM, roles), agent
 ### Scope
 This guide covers Ona organization administration: OIDC SSO and SCIM provisioning, roles and groups, service-account and token hygiene, the Veto executable-policy engine and agent command deny lists, MCP and SCM-tool governance, automation limits, port-admission and in-environment browser policy, environment lifetime/retention, dotfiles supply-chain risk, secrets scoping, OIDC workload identity, repository-access scoping, self-hosted runners, and audit logging. Model-behavior configuration (prompts, agent reasoning) is out of scope.
 
-> **Documentation caveats to verify in your tenant:** (1) Ona's own docs give inconsistent console locations for the policy surface (`Settings → Organization → Policies`, `Settings → Agents → Policies`, and `Settings → Security → …` all appear) — confirm the live path per setting. (2) Current docs still reference `app.gitpod.io` URLs and `gitpod.v1.*` API service names alongside the documented `app.ona.com` base — confirm which host your console serves. (3) Audit-log retention, LLM training-use posture, and environment isolation technology (VM vs container) are undocumented — treat them as open questions with your Ona account team.
+> **How the console is laid out (verified live, 2026-08-19).** Ona's own docs give inconsistent locations for the policy surface, so every navigation path in this guide was read off the live console rather than transcribed from the docs. The console served at `app.gitpod.io`; **Settings** is one page with a sidebar grouped as **Organization** (General, Terms of Service, Members, Integrations, Billing, Cost & Budgets), **Infrastructure** (All Environments, Runners, Secrets, Policies, Security), **Agents** (Policies, Skills), and **Login & Identity** (Login Configuration, SCIM, OIDC Tokens); personal settings live under the user menu → **Account**. Many controls below are Enterprise-gated (the page renders, the toggle is locked behind "Upgrade") — the paths still hold.
+>
+> **Hosts and names.** `app.ona.com` and `app.gitpod.io` are both live: `https://app.ona.com/api` answers **308** to `https://app.gitpod.io/api` (and `curl -L` drops the bearer token on that cross-host hop), the OIDC issuer (`iss`) is `https://app.gitpod.io`, and the API namespace remains `gitpod.v1.*` — none of that is legacy debris, so do not "correct" it. Audit-log retention and the LLM training-use posture remain undocumented — treat them as open questions with your Ona account team.
 
 ---
 
@@ -83,16 +85,20 @@ Configure OIDC single sign-on (Ona supports OIDC only — no SAML is documented)
 1. Publish the DNS TXT record Ona provides for your domain — "Sign in with SSO" does not appear on the login screen until the domain is verified.
 
 **Step 2: Configure the OIDC Provider**
-1. Navigate to: **Settings** → **Login & Identity** → **Login Configuration**
-2. Add your OIDC provider (issuer URL, client ID, client secret)
-3. Optionally add **Claims expressions (CEL)** for conditional access (e.g., require verified email and a specific domain)
+1. Navigate to: **Settings** → **Login & Identity** → **Login Configuration** — the **Login domains** section (**Add domain**) is where the email domain is verified, and **Single Sign On** (**New SSO**) is where the provider is added
+2. Add your OIDC provider (issuer URL, client ID, client secret) and assign the verified email domain(s) to it
+3. Optionally add a **claims expression (CEL)** for conditional access (e.g., `claims.email_verified && claims.email.endsWith("@example.com")`)
 
 **Time to Complete:** ~1 hour
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="1.1" %}
 
 #### Validation & Testing
 1. A user on the verified domain is redirected to your IdP at login
 2. A CEL rule denies a test principal that fails its condition
-3. **Note the platform limitation:** SSO cannot be mandated org-wide and at least one provider must remain active — pair this control with SCIM account restriction ([1.2](#12-enforce-scim-provisioning-and-restrict-account-creation)) to close the non-SSO join path.
+3. **Note the platform limitation:** Ona documents no org-wide SSO-enforcement toggle, and a built-in provider (Google/GitHub) can stay active alongside your IdP — pair this control with SCIM account restriction ([1.2](#12-enforce-scim-provisioning-and-restrict-account-creation)) to close the non-SSO join path.
 
 **Expected result:** Domain-verified OIDC sign-in active. ([SSO overview](https://ona.com/docs/ona/sso/overview.md))
 
@@ -132,15 +138,18 @@ Enable SCIM provisioning against your IdP, then enable the **Restrict account cr
 #### ClickOps Implementation
 
 **Step 1: Configure SCIM**
-1. Navigate to: **Organization Settings** → **Login and Security** → **SCIM Provisioning**
+1. Navigate to: **Settings** → **Login & Identity** → **SCIM** → **Configuration** → **Set up SCIM**
 2. Generate the SCIM endpoint and bearer token. **The token is shown once and is unrecoverable** — store it in your secrets manager immediately.
-3. Configure the SCIM integration in your IdP with the endpoint and token.
+3. Configure the SCIM integration in your IdP with the endpoint and token. (An SCIM configuration created through the API is stored disabled until `UpdateSCIMConfiguration` sets `enabled: true`.)
 
 **Step 2: Restrict Account Creation**
-1. Navigate to: **Settings** → **Organization** → **Policies**
-2. Enable **Restrict account creation to SCIM**
+1. On the same **SCIM** page, enable **Require SCIM provisioning** — "Only SCIM-provisioned members can access this organization. SSO accounts without SCIM provisioning are blocked." (API/Terraform name: `restrictAccountCreationToScim`)
 
 **Time to Complete:** ~45 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="1.2" %}
 
 #### Validation & Testing
 1. Remove a test user from the IdP and confirm deprovisioning in Ona
@@ -181,14 +190,18 @@ Use Ona's delegated organization roles (Runners Admin, Projects Admin, Groups Ad
 #### ClickOps Implementation
 
 **Step 1: Assign Delegated Roles**
-1. Navigate to: **Settings** → **Members** → **Groups**
-2. Toggle the specific role columns per group — grant the narrowest admin role that covers the duty
+1. Navigate to: **Settings** → **Organization** → **Members** → **Groups** tab (delegated roles are Enterprise-tier)
+2. Toggle the specific role columns per group — grant the narrowest admin role that covers the duty. Under the hood these are **group role assignments over the organization** (`RESOURCE_ROLE_ORG_RUNNERS_ADMIN`, `…_PROJECTS_ADMIN`, `…_GROUPS_ADMIN`, `…_AUTOMATIONS_ADMIN`, `…_AUDIT_LOG_READER`, `…_BILLING_VIEWER`, `…_INSIGHTS_VIEWER`); the member-level role itself is only Admin or Member. Two roles worth knowing that the console list omits: `RESOURCE_ROLE_ORG_SECURITY_ADMIN` and `RESOURCE_ROLE_SECURITY_POLICY_ADMIN`/`_VIEWER` — the least-privilege way to delegate the Veto and port policies ([2.1](#21-enforce-an-executable-policy-with-veto), [3.1](#31-restrict-port-admission-levels)) without full org admin.
 
 **Step 2: Audit Group Unions**
-1. Review each group's effective permissions, remembering the highest level across a user's groups wins
+1. Review each group's effective permissions, remembering the highest level across a user's groups wins; the `derivedFromOrgRole` field on a role assignment separates inherited grants from ad-hoc shares
 2. Keep full organization admin to a small named set
 
 **Time to Complete:** ~30 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="1.3" %}
 
 #### Validation & Testing
 1. A Runners Admin cannot change identity or policy settings
@@ -229,15 +242,19 @@ Constrain machine credentials: never issue service-account tokens with **indefin
 #### ClickOps Implementation
 
 **Step 1: Constrain Service Accounts**
-1. Navigate to: **Settings** → **Members** → **Service Accounts**
-2. Set token validity to the shortest that works (30/60/90 days or 1 year) — **never Indefinite**
-3. Grant read-only unless the automation genuinely needs write
+1. Navigate to: **Settings** → **Organization** → **Members** → **Service Accounts** tab (Core tier and above)
+2. Set token validity to the shortest that works (30/60/90 days or 1 year) — **never "no expiry"**. The API contract itself requires `validUntil` on the service account; only the *token* can be minted without an expiry, so audit `expiresAt` on every token.
+3. Service-account tokens can start automations and perform read (GET/LIST) API operations; Ona documents no read/write access level for them — keep automations to what a service account can do and use PATs (below) where write access must be scoped.
 
 **Step 2: Govern Personal Access Tokens**
-1. At **Account settings** → **Personal access tokens**, require the shortest expiry (30/60/90 days) and **Read-only** scope unless write is justified
-2. Because scope is immutable after creation, review and re-issue rather than widening an existing token
+1. In the user menu → **Account** → **Personal access tokens** → **New token** (or `app.ona.com/settings/personal-access-tokens`): expiry is **30 / 60 / 90 days** and access is **Read-only** or **Read & Write Access** — the form defaults to Read & Write, so choose Read-only deliberately unless write is justified
+2. Because access level is immutable after creation, review and re-issue rather than widening an existing token; a read-only token is enforced at the data layer ("Mutations will be denied")
 
 **Time to Complete:** ~30 minutes plus recurring review
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="1.4" %}
 
 #### Validation & Testing
 1. No service account carries an indefinite token
@@ -278,13 +295,16 @@ Review the organization's invitation surface: the shareable invite link, email i
 #### ClickOps Implementation
 
 **Step 1: Remove Domain Auto-Admit**
-1. Navigate to: **Settings** → **Members** → **Invite**
-2. Remove the email-domain whitelist entries so matching addresses no longer auto-join
+1. The domain allow-list is the organization's `inviteDomains` (API: `UpdateOrganization` with `inviteDomains: {domains: []}`; readable via `GetOrganization`). Where your tier exposes it in the console (**Settings** → **Organization** → **Members**), clear every entry so matching addresses no longer auto-join; the API pack below audits and clears it on any tier.
 
 **Step 2: Control the Invite Link**
-1. Reset the shareable invite link if it may have leaked; prefer explicit email invites or SCIM
+1. Navigate to: **Settings** → **Login & Identity** → **Login Configuration** → **Organization login link** — this is the shareable join link; regenerate it if it may have leaked (API: `CreateOrganizationInvite` issues a new id, killing the old link). Email invitations are console-only (no public API method); prefer SCIM ([1.2](#12-enforce-scim-provisioning-and-restrict-account-creation)).
 
 **Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="1.5" %}
 
 #### Validation & Testing
 1. A new address on your domain is not auto-admitted after the whitelist is removed
@@ -314,7 +334,7 @@ Review the organization's invitation surface: the shareable invite link, email i
 | NIST AI RMF | MANAGE-2.3 |
 
 #### Description
-Use Veto — Ona's kernel-level Linux Security Module that sits below the agent and is documented as "unobservable and unevadable" by it — to define an executable policy. Veto Exec rules match by absolute path (`/usr/bin/curl`) or bare name (`npx`), resolve to SHA-256 content identity (rename- and symlink-resistant), and block execution AND read/copy/modify of the target.
+Use Veto — Ona's Linux Security Module that "runs as a Linux Security Module (LSM) inside the environment kernel, below the agent"; per Ona, "the LLM cannot bypass or disable it" and the agent cannot unload it, modify its configuration, or observe whether an action was flagged — to define an executable policy. Veto Exec rules match by absolute path (`/usr/bin/curl`) or bare name (`npx`), resolve to SHA-256 content identity (rename- and symlink-resistant), and block execution AND read/copy/modify of the target.
 
 #### Rationale
 **Why This Matters:**
@@ -330,18 +350,22 @@ Use Veto — Ona's kernel-level Linux Security Module that sits below the agent 
 #### ClickOps Implementation
 
 **Step 1: Define Veto Executable Rules**
-1. Navigate to: **Settings** → **Security** → **Veto Executables**
-2. Add rules by absolute path or bare name; set each rule's effect to **EFFECT_AUDIT** (observe) or **EFFECT_BLOCK** (enforce)
-3. Leave `defaultEffect` unset or `EFFECT_ALLOW` and block specific high-risk binaries; start in AUDIT, then move to BLOCK once the audit trail is clean
-4. Ona runtime binaries are safelisted and cannot be blocked
+1. Navigate to: **Settings** → **Infrastructure** → **Security** (Enterprise tier — on lower tiers the page shows only the security-agents section)
+2. Add rules by absolute path or bare name (`.`/`..`/relative paths are rejected); leave **Block** unchecked to audit a rule or check it to block execution (`EFFECT_AUDIT` / `EFFECT_BLOCK` in the YAML/API)
+3. Leave the default effect at allow (`defaultEffect` omitted or `EFFECT_ALLOW`) and block specific high-risk binaries; start in audit, then move to block once the audit trail is clean
+4. Ona runtime binaries are on a server-populated **safelist** (`vetoExecPolicy.safelist`, output-only) and cannot be blocked — a rule naming one silently does not take effect
 
-**Automation surface:** Veto executable policy is manageable as code via the Security Policy API/CLI (`ona organization security-policy set-default <file>.yaml`; `spec.executables.defaultEffect` + `rules[{path, effect}]`). See the [Security Policy API](https://ona.com/docs/api-reference/generated/security/create-security-policy.md).
+**Automation surface:** manageable as code. CLI: `ona organization security-policy init policy.yaml --validate-only` → `create policy.yaml -o yaml` → `set-default <security-policy-id>` (a created policy is inert until assigned as the org default; `set-default --clear` removes *every* control in the policy, and running environments keep the policy from their last start). API: `SecurityService/CreateSecurityPolicy` + `OrganizationService/UpdateOrganizationPolicies.securityPolicyId`. Terraform: `ona_security_policy` + `ona_organization_policies.security_policy_id`.
 
 **Time to Complete:** ~1 hour plus an audit-mode observation window
 
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="2.1" %}
+
 #### Validation & Testing
-1. In AUDIT mode, confirm the intended binaries appear in the veto-enforcement audit events ([6.1](#61-enable-audit-logging-and-siem-streaming))
-2. In BLOCK mode, an agent attempt to run a blocked binary fails and is logged
+1. In audit mode, confirm the intended binaries appear as `AUDIT_LOG_ENTRY_KIND_ENVIRONMENT_VETO` audit events ([6.1](#61-enable-audit-logging-and-siem-streaming)) — Veto Exec enforcement entries are in preview and appear only for organizations where that preview is enabled
+2. In block mode, an agent attempt to run a blocked binary fails and is logged
 3. A renamed copy of a blocked binary is still blocked (content-identity check)
 
 **Expected result:** Kernel-enforced executable policy on agent environments. ([Veto](https://ona.com/docs/ona/guardrails/veto.md) · [Executable deny list](https://ona.com/docs/ona/organizations/policies/executable-deny-list.md))
@@ -379,11 +403,15 @@ Block dangerous agent-issued bash commands with wildcard patterns (e.g., `shutdo
 #### ClickOps Implementation
 
 **Step 1: Add Deny Patterns**
-1. Navigate to: **Settings** → **Agents** → **Policies**
-2. In the command deny list, add wildcard patterns one per line (start with destructive and network-exfil patterns)
+1. Navigate to: **Settings** → **Agents** → **Policies** → **Command deny list**
+2. Add wildcard patterns one per line (start with destructive and network-exfil patterns) and **Save**
 3. Confirm the list applies to new agent sessions
 
 **Time to Complete:** ~20 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="2.2" %}
 
 #### Validation & Testing
 1. Start a new agent session and confirm a denied command is refused
@@ -410,7 +438,7 @@ Block dangerous agent-issued bash commands with wildcard patterns (e.g., `shutdo
 | NIST 800-53 | CM-7, AC-3 |
 
 #### Description
-Decide organization policy on Model Context Protocol (MCP) servers. Org owners can disable MCP entirely — repo `.ona/mcp-config.json` files are then ignored and external MCP is blocked. Note this is a **binary toggle**: Ona does not document an MCP allowlist.
+Decide organization policy on Model Context Protocol (MCP) servers. Org owners can disable MCP entirely — repo `.ona/mcp-config.json` files are then ignored and external MCP is blocked. The org toggle is **all-or-nothing**: there is no org-level allowlist constraining repo-local configs. What Ona does document is admin-curated **organization MCP integrations** (HTTP servers added under Settings → Organization → Integrations and enabled per integration) and a per-server `toolDenyList` in repo-local configs.
 
 #### Rationale
 **Why This Matters:**
@@ -423,11 +451,15 @@ Decide organization policy on Model Context Protocol (MCP) servers. Org owners c
 #### ClickOps Implementation
 
 **Step 1: Set the Org MCP Policy**
-1. Navigate to: **Settings** → **Integrations** (organization level)
-2. If your organization cannot vet MCP servers individually, disable MCP — repo `.ona/mcp-config.json` files will be ignored and external MCP blocked
-3. If MCP stays enabled, treat every repo MCP config as untrusted input and pair with the command deny list (2.2) and Veto (2.1)
+1. Navigate to: **Settings** → **Agents** → **Policies** → **Agent capabilities** → **Model Context Protocol (MCP)**
+2. If your organization cannot vet MCP servers individually, turn MCP off — repo `.ona/mcp-config.json` files will be ignored and external MCP blocked
+3. If MCP stays enabled, curate the org-wide integrations at **Settings** → **Organization** → **Integrations** (**Add MCP integration**), treat every repo MCP config as untrusted input, use `toolDenyList` per server, and pair with the command deny list (2.2) and Veto (2.1)
 
 **Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="2.3" %}
 
 #### Validation & Testing
 1. With MCP disabled, an agent in a repo carrying `.ona/mcp-config.json` does not load the external server
@@ -453,7 +485,7 @@ Decide organization policy on Model Context Protocol (MCP) servers. Org owners c
 | NIST 800-53 | AC-3, CM-7 |
 
 #### Description
-Scope what agents can do against source-control hosts and which model providers they use. The SCM-tools policy chooses whether agents get PR/issue API tools (vs. git commands only), per org / per group / disabled; LLM-provider governance controls whether the Ona-managed default, BYOK, or a specific cloud model backend is used.
+Scope what agents can do against source-control hosts and which model providers they use. The SCM-tools policy chooses whether agents get PR/issue API tools (vs. git commands only), for all members / a specific group / disabled. Provider governance is narrower than it once was: on Ona Cloud, OpenAI model access for Codex Agent is the default; **Ona Agent and Ona-managed Anthropic model access are no longer available on Ona Cloud**; customer-managed runners require Ona Intelligence or an approved OpenAI-compatible provider; custom token providers (BYOK) are available by exception to Enterprise customers; and the AWS Bedrock Runtime, Google Vertex AI, and direct Anthropic API integrations are deprecated and maintenance-only.
 
 #### Rationale
 **Why This Matters:**
@@ -466,13 +498,18 @@ Scope what agents can do against source-control hosts and which model providers 
 #### ClickOps Implementation
 
 **Step 1: Scope SCM Tools**
-1. Navigate to: **Settings** → **Agents** → **Policies**
-2. Set the SCM-tools policy to the narrowest that works: all members, a specific group, or disabled (git commands only, no PR/issue API tools)
+1. Navigate to: **Settings** → **Agents** → **Policies** → **Agent capabilities** → **Source Code Management Tools (SCM)** → **Restrict access to**
+2. Set it to the narrowest that works: all members, a specific group, or disabled (git commands only, no PR/issue API tools). API: `agentPolicy.scmToolsDisabled` × `agentPolicy.scmToolsAllowedGroupId`.
 
 **Step 2: Govern Model Providers**
-1. Review the [LLM providers documentation](https://ona.com/docs/ona/agents/llm-providers/overview.md); for regulated data, pursue BYOK/Enterprise-managed backends and confirm the training-use and residency posture with your Ona account team (undocumented as of this writing)
+1. On the same page, **Agents available** governs which agents and which Codex models, reasoning-effort ceilings, and service tiers members may use (`agentPolicy.allowedAgentIds`, `codexModelPolicy.modelStates`, `allowedCodexReasoningEfforts`, `allowedCodexServiceTiers`)
+2. Review the [LLM providers documentation](https://ona.com/docs/ona/agents/llm-providers/overview.md); for regulated data, confirm the training-use and residency posture with your Ona account team (undocumented as of this writing) and treat any remaining BYOK/self-managed backend as an Enterprise exception to request, not a menu to pick from
 
 **Time to Complete:** ~30 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="2.4" %}
 
 #### Validation & Testing
 1. With SCM tools disabled, an agent cannot open a PR via API
@@ -512,8 +549,10 @@ Set the automation guardrails that cap how much autonomous work members can run:
 #### ClickOps Implementation
 
 **Step 1: Set Automation Limits**
-1. Navigate to: **Settings** → **Agents** → **Policies** → **Automations**
-2. Set active automations per member (default 5), projects per automation (up to 100), and concurrent actions (up to 25 on Enterprise) to values matched to your risk tolerance
+1. Navigate to: **Settings** → **Agents** → **Policies** → **Automations** — **Note:** automation organization policy controls are in preview and available only to selected Enterprise organizations; the section is absent on other tiers
+2. Set active automations per member (default 5, Enterprise maximum 50), projects per automation (up to 100), and concurrent actions (up to 25 on Enterprise) to values matched to your risk tolerance
+
+**Automation:** ClickOps only — Ona exposes no write interface for this setting ([Automation guardrails](https://ona.com/docs/ona/automations/guardrails.md), 2026-08-19). The limits are visible on the `GetOrganizationPolicies` read path as `agentPolicy.automationPolicy{maxAutomationsPerUser, maxParallelActions, maxProjectsPerAutomation}` (observed live), but that field is undocumented and no method sets it.
 
 **Time to Complete:** ~15 minutes
 
@@ -559,10 +598,14 @@ For regulated or high-sensitivity estates, enable the CrowdStrike Falcon integra
 #### ClickOps Implementation
 
 **Step 1: Enable Falcon**
-1. Navigate to: **Settings** → **Organization** → **Policies** → **Enable CrowdStrike Falcon** → **Settings**
-2. Provide the CID and sensor image reference; the sensor deploys as a privileged sidecar to all environments and cannot be disabled by users
+1. Navigate to: **Settings** → **Infrastructure** → **Security** → **Security agents** → **CrowdStrike Falcon** (Enterprise tier)
+2. Provide the CID (stored as an organization secret and referenced by `cidSecretId`) and the sensor image reference; the sensor deploys as a privileged sidecar to all environments and cannot be disabled by users. API: `UpdateOrganizationPolicies.securityAgentPolicy.crowdstrike{enabled, image, cidSecretId, tags, additionalOptions}` — the read-back type is not expanded in the API docs, so audit scripts must treat its shape defensively.
 
 **Time to Complete:** ~1 hour
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="2.6" %}
 
 #### Validation & Testing
 1. Confirm the falcon-sensor is present in a newly created environment
@@ -605,12 +648,16 @@ Cap how widely environment ports can be exposed. Admission levels run `creator_o
 #### ClickOps Implementation
 
 **Step 1: Set the Maximum Admission Level**
-1. Navigate to: **Settings** → **Organization** → **Policies**
-2. Set **Maximum port admission level** to the lowest that supports collaboration needs (prefer `creator_only` or `organization`), or disable port sharing entirely
+1. Navigate to: **Settings** → **Infrastructure** → **Policies** → **Environment access** → **Port sharing** / **Maximum port admission level** (Enterprise tier; the observed default is **Anyone (no login required)**, i.e. no cap)
+2. Set **Maximum port admission level** to the lowest that supports collaboration needs (prefer `creator_only` or `organization`), or turn **Port sharing** off entirely (`portSharingDisabled: true` takes precedence over the level)
 
-**Automation surface:** Manageable as code via the Security Policy API/CLI (`spec.ports.maxAdmissionLevel`, enum `ADMISSION_LEVEL_{OWNER_ONLY, CREATOR_ONLY, ORGANIZATION, EVERYONE}`). See the [Security Policy API](https://ona.com/docs/api-reference/generated/security/create-security-policy.md).
+**Automation surface:** manageable as code — org policy `maxPortAdmissionLevel` / `portSharingDisabled` (`OrganizationService/UpdateOrganizationPolicies`, Terraform `ona_organization_policies`), and per security policy `spec.ports.maxAdmissionLevel` (`SecurityService`, Terraform `ona_security_policy`). Enum `ADMISSION_LEVEL_{UNSPECIFIED, CREATOR_ONLY, ORGANIZATION, EVERYONE}` — `ADMISSION_LEVEL_OWNER_ONLY` is **deprecated** in favor of `CREATOR_ONLY` (the vendor's own cURL example still uses it), and `UNSPECIFIED` applies no cap. See the [Security Policy API](https://ona.com/docs/api-reference/generated/security/create-security-policy.md).
 
 **Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="3.1" %}
 
 #### Validation & Testing
 1. A member attempting to expose a port above the cap sees "restricted by policy"
@@ -650,10 +697,14 @@ Govern the built-in environment web browser and the agent's browse-web skill, wh
 #### ClickOps Implementation
 
 **Step 1: Review the Browser Policy**
-1. Navigate to: **Settings** → **Organization** → **Policies** → **Allow Web Browser in Environments**
-2. On Enterprise, disable it where agents have no legitimate browsing need; where enabled, treat browsed content as untrusted agent input and pair with command/executable guardrails (2.1, 2.2)
+1. Navigate to: **Settings** → **Infrastructure** → **Policies** → **Environment access** → **Web browser** ("Allow members to open the built-in browser panel. VS Code Browser is not affected.")
+2. On Enterprise, disable it where agents have no legitimate browsing need (API/Terraform: `webBrowserDisabled: true`); where enabled, treat browsed content as untrusted agent input and pair with command/executable guardrails (2.1, 2.2)
 
 **Time to Complete:** ~15 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="3.2" %}
 
 #### Validation & Testing
 1. With the browser disabled, the agent's browse-web skill is unavailable
@@ -693,14 +744,18 @@ Bound how long environments live and linger: set a maximum environment lifetime 
 #### ClickOps Implementation
 
 **Step 1: Enforce Maximum Lifetime**
-1. Navigate to: **Settings** → **Organization** → **Policies**
-2. Set **Maximum environment lifetime** (1h–1mo) and enable **strict enforcement** so expired environments cannot be restarted
+1. Navigate to: **Settings** → **Infrastructure** → **Policies** → **Environment lifecycle**
+2. Set **Maximum lifetime** (1h–1mo) and enable **Strict enforcement** ("Block non-compliant environments from restarting") so expired environments cannot be restarted
 
 **Step 2: Cap Timeout and Retention**
-1. Set the **auto-stop timeout** ceiling (default user value is 30 min if unset)
-2. Set **archive timing** and **auto-delete retention** to the shortest that meets your workflow — deletion is irreversible
+1. Set the **Auto-stop timeout** ceiling (default user value is 30 min if unset; the observed org default is "No max timeout")
+2. Set **Archive inactive** and **Auto-delete archived** to the shortest that meets your workflow — deletion is irreversible. **API trap:** on `UpdateOrganizationPolicies` a duration of `0s` means *no limit* for `maximumEnvironmentTimeout`, `maximumEnvironmentLifetime`, and `deleteArchivedEnvironmentsAfter` — zeroing these fields *weakens* the org; `archiveEnvironmentsAfter` must be a whole number of days.
 
 **Time to Complete:** ~20 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="3.3" %}
 
 #### Validation & Testing
 1. An expired environment cannot be restarted under strict enforcement
@@ -740,10 +795,14 @@ Limit who can spin up blank environments with the **Only admins can start from s
 #### ClickOps Implementation
 
 **Step 1: Restrict Blank Creation**
-1. Navigate to: **Settings** → **Organization** → **Policies** → **Environment policies**
-2. Enable **Only admins can start from scratch**
+1. Navigate to: **Settings** → **Infrastructure** → **Policies** → **Environment setup**
+2. Enable **Only admins can start from scratch** (API/Terraform `disableFromScratch`); consider **Only admins can create projects** and `membersRequireProjects` alongside it
 
 **Time to Complete:** ~10 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="3.4" %}
 
 #### Validation & Testing
 1. A non-admin member cannot create a from-scratch environment and must use a project
@@ -769,7 +828,7 @@ Limit who can spin up blank environments with the **Only admins can start from s
 | NIST 800-53 | CM-7, SI-3 |
 
 #### Description
-Ona clones a user's configured dotfiles repository into every environment and **auto-executes** the first of `install.sh` / `install` / `bootstrap.sh` / `bootstrap` / `setup.sh` / `setup`. Ona documents **no admin control to restrict dotfiles**, so treat this as a supply-chain gap and enforce it through the guardrails that do exist.
+Ona clones a user's configured dotfiles repository (user menu → **Account** → **Preferences** → **Dotfiles repository**, or `ona user dotfiles set`) into every environment and **auto-executes** the first of `install.sh` / `install` / `bootstrap.sh` / `bootstrap` / `setup.sh` / `setup`. Ona documents **no admin control to restrict dotfiles** — and no admin *visibility* either: `GetDotfilesConfiguration` reads only the caller's own setting — so treat this as a supply-chain gap and enforce it through the guardrails that do exist.
 
 #### Rationale
 **Why This Matters:**
@@ -785,6 +844,8 @@ Ona clones a user's configured dotfiles repository into every environment and **
 1. Use the **Veto executable policy** ([2.1](#21-enforce-an-executable-policy-with-veto)) to AUDIT then BLOCK high-risk binaries the bootstrap might invoke (network and package tooling)
 2. Use the **command deny list** ([2.2](#22-configure-the-agent-command-deny-list)) for destructive/exfil patterns
 3. Publish a policy requiring dotfiles repositories to be organization-controlled and reviewed; monitor for dotfiles-driven execution in audit logs ([6.1](#61-enable-audit-logging-and-siem-streaming))
+
+**Automation:** ClickOps only — Ona exposes no write interface for this setting at the organization level ([Dotfiles](https://ona.com/docs/ona/configuration/dotfiles/overview.md), 2026-08-19); the only surfaces are per-user (`UserService/SetDotfilesConfiguration`, `ona user dotfiles set`).
 
 **Time to Complete:** ~30 minutes (plus the Veto/command-deny setup they depend on)
 
@@ -829,10 +890,15 @@ Use the tightest secret scope (user > project > organization precedence) and tre
 #### ClickOps Implementation
 
 **Step 1: Prefer Narrow Scope**
-1. Define secrets at **user** or **project** scope wherever possible rather than organization scope
-2. For unavoidable org secrets (**Settings** → **Organization** → **Secrets**), document that they are readable org-wide and reserve them for genuinely shared, lower-sensitivity values
+1. Define secrets at **user** (user menu → **Account** → **Secrets**) or **project** scope wherever possible rather than organization scope
+2. For unavoidable org secrets (**Settings** → **Infrastructure** → **Secrets**, Enterprise tier), document that they are readable org-wide and reserve them for genuinely shared, lower-sensitivity values
+3. Prefer the **credential proxy** mount where the target is an HTTPS API: "the credential proxy intercepts HTTPS traffic to the target hosts and replaces the dummy mounted value with the real value in the specified HTTP header. The real secret value is never exposed in the environment." (`Secret.credentialProxy`) — an agent that cannot read the value cannot exfiltrate it
 
 **Time to Complete:** ~30 minutes plus inventory
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="4.1" %}
 
 #### Validation & Testing
 1. A project-scoped secret is not visible to environments outside that project
@@ -872,10 +938,15 @@ Instead of storing long-lived cloud credentials as secrets, use Ona's OIDC workl
 #### ClickOps Implementation
 
 **Step 1: Configure Workload Identity**
-1. In your cloud IAM, create an OIDC trust to Ona and constrain the trust policy using the documented sub claims (`organization_id`, `project_id`, etc.)
-2. In Ona, configure OIDC workload identity (settings page: `.../settings/security/oidc`) and use `authenticator`-style keyless auth from agents/automations instead of stored keys
+1. In your cloud IAM, register **`https://app.gitpod.io`** as the OIDC issuer (that is the `iss` claim even for an org that only ever sees `ona.com` branding) and constrain the trust policy using the sub claims you selected (`organization_id`, `project_id`, `runner_id`, `environment_id`, `creator_email`, …)
+2. In Ona, navigate to **Settings** → **Login & Identity** → **OIDC Tokens** (Enterprise tier; API `UpdateOIDCConfig`): choose **v3** tokens and set `extraSubFields` so the `sub` pins a specific project/runner/environment rather than the whole org
+3. From agents/automations, retrieve a token with `ona idp token --audience <audience>` or authenticate directly with `ona idp login aws --role-arn <arn>` / `ona idp login vault --role <role>` instead of stored keys
 
 **Time to Complete:** ~1-2 hours with cloud IAM changes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="4.2" %}
 
 #### Validation & Testing
 1. An agent obtains short-lived cloud credentials via token exchange with no stored long-lived key
@@ -915,11 +986,15 @@ Configure per-runner repository access deliberately. The GitHub integration requ
 #### ClickOps Implementation
 
 **Step 1: Configure Repository Access Deliberately**
-1. Navigate to: **Settings** → **Runners** → **Configure repository access** → **Add a provider**
-2. Prefer OAuth over PAT where possible; where a PAT is used, mint it on a least-privilege service identity
-3. Remove providers/integrations that are no longer needed to revoke their stored credentials
+1. Navigate to: **Settings** → **Infrastructure** → **Runners** → open the runner → **Configure repository access** → **New provider** (Ona Cloud runners ship github/gitlab/bitbucket via OAuth; private or self-hosted Git servers require Enterprise)
+2. Prefer OAuth over PAT where possible (`SCMIntegration.pat` allows PAT auth — leave it off when `supportsOauth2` is true); where a PAT is used, mint it on a least-privilege service identity
+3. Remove providers/integrations that are no longer needed to revoke their stored credentials; `CheckRepositoryAccess` and `ListSCMOrganizations` answer "what can this runner actually reach"
 
 **Time to Complete:** ~30 minutes
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="4.3" %}
 
 #### Validation & Testing
 1. Deleting an unused integration removes its stored credentials (access no longer works)
@@ -966,17 +1041,21 @@ For sensitive codebases, run self-hosted runners in your own AWS/GCP VPC rather 
 #### ClickOps Implementation
 
 **Step 1: Provision a Self-Hosted Runner**
-1. Navigate to: **Settings** → **Runners** and add an AWS or GCP self-hosted runner in your VPC
+1. Navigate to: **Settings** → **Infrastructure** → **Runners** → **Set up a new runner** → **AWS** or **GCP** (Enterprise tier; Azure is waitlisted) and deploy it in your VPC
 2. Provision the documented network access. **Gotcha:** the AWS runner requires direct TCP 443 to Secrets Manager, CloudWatch Logs, ECR API, ECR Docker, and S3 — these **bypass HTTP proxies**; use PrivateLink/VPC endpoints. Allow Ona AMIs by **owner account ID `995913728426`**, not by AMI ID.
-3. Configure repository access on the runner ([4.3](#43-scope-repository-access-to-least-privilege))
+3. Configure repository access on the runner ([4.3](#43-scope-repository-access-to-least-privilege)); block the deprecated local-runner path with the org policy `allowLocalRunners: false` (or set the system-managed `RUNNER_KIND_LOCAL_CONFIGURATION` runner's desired phase to STOPPED)
 
 **Time to Complete:** ~half day including cloud networking
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="5.1" %}
 
 #### Validation & Testing
 1. Confirm source code and SCM credentials remain in your VPC (never transit the management plane)
 2. Confirm centrally-defined guardrails enforce at the self-hosted runner
 
-**Expected result:** Sensitive code processed in your own VPC under central governance. ([Runners overview](https://ona.com/docs/ona/runners/overview.md) · [Architecture](https://ona.com/docs/ona/understanding/architecture.md) · [AWS networking](https://ona.com/docs/ona/runners/aws/networking.md))
+**Expected result:** Sensitive code processed in your own VPC under central governance. ([Runners overview](https://ona.com/docs/ona/runners/overview.md) · [Ona Cloud regions](https://ona.com/docs/ona/runners/ona-cloud.md) · [Architecture](https://ona.com/docs/ona/understanding/architecture.md) · [AWS setup](https://ona.com/docs/ona/runners/aws/setup.md) · [AWS networking](https://ona.com/docs/ona/runners/aws/networking.md))
 
 #### Compliance Mappings
 
@@ -1013,17 +1092,21 @@ Operationalize Ona's audit logs — covering infrastructure, execution, security
 #### ClickOps Implementation
 
 **Step 1: Assign Oversight and Stream Logs**
-1. Assign the **Audit Log Reader** role to your security team ([1.3](#13-apply-least-privilege-organization-roles-and-groups))
-2. Export via CLI (`ona audit-logs --format=json --limit=1000`) or the API (`POST /api/gitpod.v1.EventService/ListAuditLogs`, base `https://app.ona.com`), filtering on `actorIds`, `actorPrincipals` (USER/SERVICE_ACCOUNT/RUNNER), `subjectTypes`, and `from`/`to` (RFC3339)
-3. For continuous monitoring, consume the **WatchEvents** streaming API into your SIEM
+1. Assign the **Audit Log Reader** role to your security team ([1.3](#13-apply-least-privilege-organization-roles-and-groups)); audit logs are Enterprise-only, and there is no console page for them — the surfaces are the CLI and the API
+2. Export via CLI (`ona audit-logs --format=json --limit=1000`) or the API (`POST /api/gitpod.v1.EventService/ListAuditLogs`, base `https://app.gitpod.io` — or your custom dashboard domain), filtering on `actorIds`, `actorPrincipals` (USER/SERVICE_ACCOUNT/RUNNER/…), `subjectTypes`, and `from`/`to` (RFC 3339, `[from, to)` half-open; max 100 entries per page, 25 values per filter)
+3. For SIEM ingestion, **poll `ListAuditLogs` on a schedule** — it is the only surface carrying actor attribution. `WatchEvents` streams resource changes only (`{operation, resourceType, resourceId}`, no actor, readable by anyone with resource read access) and is a live-dashboard feed, not the audit trail; there is no method to enable logging, set retention, or register a SIEM destination (logging is always-on and pull-only, and Ona documents no named SIEM connector)
 
-**Automation surface:** genuinely API-manageable — the EventService ListAuditLogs and WatchEvents APIs are the honest programmatic surface (see [audit-log API](https://ona.com/docs/api-reference/generated/event/list-audit-logs.md)).
+**Automation surface:** genuinely API-manageable for the read side — `EventService/ListAuditLogs` + `GetAuditLog` (the typed `details.vetoExec` payload lives on `GetAuditLog`), plus the `ona audit-logs` CLI (see [audit-log API](https://ona.com/docs/api-reference/generated/event/list-audit-logs.md)).
 
 **Time to Complete:** ~1 hour
 
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="6.1" %}
+
 #### Validation & Testing
-1. A Veto-enforcement event appears in the audit log after a blocked execution (2.1)
-2. Confirm events reach your SIEM via WatchEvents
+1. A Veto-enforcement event (`AUDIT_LOG_ENTRY_KIND_ENVIRONMENT_VETO`) appears in the audit log after a blocked execution (2.1) — Veto Exec entries are in preview and appear only for organizations where that preview is enabled
+2. Confirm polled `ListAuditLogs` entries reach your SIEM
 3. **Note:** audit-log retention is undocumented ("per your data retention policy") — export continuously rather than relying on in-platform retention
 
 **Expected result:** Auditable, SIEM-integrated activity trail with oversight roles assigned. ([Audit logs](https://ona.com/docs/ona/audit-logs/overview.md))
@@ -1047,11 +1130,11 @@ Operationalize Ona's audit logs — covering infrastructure, execution, security
 | NIST 800-53 | SC-8, AU-10 |
 
 #### Description
-Where automations use webhooks, rely on Ona's HMAC signature verification (invalid signatures are rejected), rotate secrets when needed (rotation invalidates the old secret immediately), and keep webhook management to organization admins — the Automations Admin role deliberately cannot manage webhooks.
+Where automations are triggered by Git-provider webhooks, Ona is the **receiver**: you register Ona's payload URL and the webhook secret in your Git provider, and Ona verifies the HMAC signature on every inbound payload (invalid signatures are rejected). Rotate the secret when needed (rotation invalidates the old secret immediately) and keep webhook management to organization admins — the Automations Admin role deliberately cannot manage webhooks (webhook-scoped roles are `RESOURCE_ROLE_WEBHOOK_ADMIN` / `_VIEWER`).
 
 #### Rationale
 **Why This Matters:**
-- HMAC verification ensures a webhook consumer only acts on payloads genuinely from Ona, not spoofed triggers
+- HMAC verification ensures Ona only triggers automations on payloads genuinely from your Git provider, not spoofed calls to the payload URL
 - Immediate old-secret invalidation on rotation closes the window a leaked secret is usable
 - Restricting webhook management to org admins keeps a high-trust integration point out of broader delegated hands
 
@@ -1060,14 +1143,18 @@ Where automations use webhooks, rely on Ona's HMAC signature verification (inval
 #### ClickOps Implementation
 
 **Step 1: Verify and Restrict Webhooks**
-1. Navigate to: **Automations** → **Webhooks** → **+ Webhook**
-2. Implement HMAC signature verification on the receiving side and reject invalid signatures
-3. Rotate the signing secret on suspicion of exposure (old secret invalidates immediately); keep webhook management limited to org admins
+1. Navigate to: **Automations** → **Webhooks** → **+ Webhook** (Automations require the Core tier or above)
+2. Register the generated payload URL and secret in your Git provider (repository or organization scope); Ona verifies the HMAC signature and matches the event to bound automations
+3. Rotate the signing secret on suspicion of exposure (`WebhookService/RotateWebhookSecret`, or `ona webhook secret get <id>` to re-read it for the provider side — the old secret invalidates immediately); keep webhook management limited to org admins and review `boundWorkflowCount` / `lastTriggeredAt` for orphaned or dormant webhooks
 
 **Time to Complete:** ~30 minutes
 
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="6.2" %}
+
 #### Validation & Testing
-1. A payload with an invalid signature is rejected by your consumer
+1. A payload with an invalid signature is rejected by Ona (no automation triggers)
 2. After rotation, a payload signed with the old secret is rejected
 
 **Expected result:** Authenticated, admin-managed webhooks. ([Webhooks](https://ona.com/docs/ona/automations/webhooks.md))
@@ -1140,8 +1227,9 @@ Source: [NVD keyword search "gitpod"](https://services.nvd.nist.gov/rest/json/cv
 - [Organization policies overview](https://ona.com/docs/ona/organizations/policies/overview.md) · [Best practices](https://ona.com/docs/ona/best-practices.md)
 - [SSO](https://ona.com/docs/ona/sso/overview.md) · [SCIM](https://ona.com/docs/ona/scim/overview.md) · [Audit logs](https://ona.com/docs/ona/audit-logs/overview.md) · [Secrets](https://ona.com/docs/ona/configuration/secrets/overview.md)
 
-**API:**
-- [API reference](https://ona.com/docs/api-reference.md) · [Security Policy API](https://ona.com/docs/api-reference/generated/security/create-security-policy.md) · [Audit-log API](https://ona.com/docs/api-reference/generated/event/list-audit-logs.md)
+**API, CLI, Terraform, SDK:**
+- [API reference](https://ona.com/docs/api-reference.md) · [Organization policies API](https://ona.com/docs/api-reference/generated/organization/get-organization-policies.md) · [Security Policy API](https://ona.com/docs/api-reference/generated/security/create-security-policy.md) · [Audit-log API](https://ona.com/docs/api-reference/generated/event/list-audit-logs.md)
+- [Ona CLI](https://ona.com/docs/ona/integrations/cli.md) · [CLI reference](https://ona.com/docs/ona/reference/cli.md) · [Terraform provider `gitpod-io/ona`](https://ona.com/docs/ona/integrations/terraform-provider.md) (beta, Linux-only packages) · [SDKs](https://ona.com/docs/ona/integrations/sdk.md) · [MCP configuration](https://ona.com/docs/ona/mcp.md)
 
 **Hardening Baselines:** none product-specific as of this writing (no CIS Benchmark, DISA STIG, or CISA SCuBA baseline for cloud development environments / coding agents).
 
@@ -1151,6 +1239,7 @@ Source: [NVD keyword search "gitpod"](https://services.nvd.nist.gov/rest/json/cv
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.2.0 | 2026-08-19 | Live validation pass (validate-hth-guide): every console path re-read off the live console (`app.gitpod.io`; sidebar Organization / Infrastructure / Agents / Login & Identity) — 11 controls needed path corrections (1.2, 1.5, 2.3, 2.6, 3.1–3.4, 4.1, 4.3 wrong; 2.1 partial — its executables section is plan-gated on the tenant walked); 14 doc-drift corrections (`set-default` takes a policy id, MCP toggle lives under Agents → Policies, WatchEvents is not the audit trail, API base `app.gitpod.io`, LLM-provider posture, `ona idp token`, webhook direction, deprecated `OWNER_ONLY`, preview gating for automation limits and Veto audit entries, service-account "no expiry" wording); Code Packs landed for the first time — api (read-only audit scripts, executed against a live tenant), terraform (`gitpod-io/ona`), cli (`ona`), config (Veto policy YAML, MCP `toolDenyList`), and Sigma rules on the audit-log schema; controls with no write surface now carry an explicit Automation verdict (2.5, 3.5); Ona added to the CLI inventory. |
 | 0.1.0 | 2026-08-08 | Initial guide — 20 controls across identity, agent guardrails (Veto/command-deny/MCP), environment & network policy, secrets, self-hosted runners, and audit logging. Authored per the create-hth-guide playbook: every control traces to fetched Ona documentation; no product benchmark exists so mappings use NIST 800-53/AI RMF/SOC 2 catalogs; the Gitpod-era CVE history grounds the rationale. Automation surfaces stated honestly (Security Policy API/CLI for ports+executables, EventService for audit) — Code Packs deferred to a follow-up. Unverified "Ona joining OpenAI" claim deliberately excluded. |
 
 ## Contributing

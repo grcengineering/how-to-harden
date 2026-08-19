@@ -1,0 +1,62 @@
+# HTH Pack Contract: v1
+#   control: ona-1.2
+#   guide:   https://howtoharden.com/guides/ona/#12-enforce-scim-provisioning-and-restrict-account-creation
+#   profile: L1
+#   mode:    read-only
+#   requires: audit-log ingestion from EventService/ListAuditLogs (Enterprise plan)
+# Frameworks: CIS Controls 5.3, 6.2 | NIST 800-53 AC-2 | SOC 2 CC6.2
+# Feed: packs/ona/cli/hth-ona-6.01-export-audit-logs.sh with SUBJECT_TYPE=sso_config
+title: Ona SSO, SCIM or Domain Verification Configuration Changed
+id: ecce2bca-9250-48d8-ab4b-763ae5445b81
+status: experimental
+description: |
+    Fires on a change to the three resources that decide WHO can hold an
+    identity in the organization: the SSO configuration, the SCIM provisioning
+    configuration, and domain verification. Together they are the join and leave
+    path — SSO decides how members authenticate, SCIM decides who is
+    provisioned and (critically) deprovisioned, and domain verification is the
+    precondition for enforcing either. A change here can re-open self-service
+    account creation, point authentication at an attacker-controlled IdP, or
+    break the deprovisioning path so leavers keep access.
+    The rule keys on the closed `subjectType` (ResourceType) and `kind`
+    (AuditLogEntryKind) enums. `action` is FREE TEXT in the Ona audit log — no
+    enumeration of action strings is published — so it appears in `fields` as
+    analyst context only and is never part of the condition.
+    WatchEvents cannot back this rule — that stream carries no actor, no action
+    text and no timestamp, so only ListAuditLogs/GetAuditLog can feed it.
+    This corresponds to HTH Ona control hth-ona-1.02-enforce-scim-provisioning-and-restrict-account-creation (section 1.2, L1).
+references:
+    - https://howtoharden.com/guides/ona/#12-enforce-scim-provisioning-and-restrict-account-creation
+    - https://ona.com/docs/ona/audit-logs/overview
+author: How to Harden
+date: 2026/08/19
+tags:
+    - attack.persistence
+    - attack.t1556
+    - attack.privilege_escalation
+    - attack.t1098
+logsource:
+    product: ona
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        subjectType:
+            - 'RESOURCE_TYPE_SSO_CONFIG'
+            - 'RESOURCE_TYPE_SCIM_CONFIGURATION'
+            - 'RESOURCE_TYPE_DOMAIN_VERIFICATION'
+        kind: 'AUDIT_LOG_ENTRY_KIND_RESOURCE_CHANGE'
+    condition: selection
+fields:
+    - createdAt
+    - actorId
+    - actorPrincipal
+    - subjectId
+    - subjectType
+    - action
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned IdP migration or certificate rotation — expect a cluster of SSO_CONFIG events inside a known change window
+    - Initial onboarding, when domain verification and SCIM are configured for the first time
+    - SCIM configuration touched by the IdP vendor during an upgrade; correlate with the actorId rather than dismissing the class
+level: high

@@ -1,0 +1,64 @@
+# HTH Pack Contract: v1
+#   control: ona-2.2
+#   guide:   https://howtoharden.com/guides/ona/#22-configure-the-agent-command-deny-list
+#   profile: L1
+#   mode:    read-only
+#   requires: audit-log ingestion from EventService/ListAuditLogs (Enterprise plan)
+# Frameworks: CIS Controls 2.7 | NIST 800-53 CM-7 | NIST AI RMF MANAGE-2.3
+# Feed: packs/ona/cli/hth-ona-6.01-export-audit-logs.sh  (no --subject-type flag value exists
+#       for organization_policy, so filter this subjectType client-side or in the SIEM)
+title: Ona Organization Policy Changed
+id: 8f9eec64-b1b1-4a10-bcc7-ff68f48be2c0
+status: experimental
+description: |
+    Fires on any change to an Ona organization policy. This one resource type
+    carries most of the guardrails in this guide: the agent command deny list
+    (2.2), the MCP enable/disable toggle (2.3), the in-environment web browser
+    (3.2), the maximum port admission level (3.1), environment lifetime and
+    inactivity timeouts (3.3), and environment creation restrictions (3.4).
+    Weakening any of them is a single administrative edit, and every one of those
+    edits lands here.
+    This is the meta-detection: it does not tell you a control was bypassed, it
+    tells you a control was CHANGED. Route it to whoever owns the baseline and
+    diff the policy afterwards — the audit entry records that a policy changed,
+    not which field moved or what the old value was.
+    The rule keys on the closed `subjectType` enum. `action` is FREE TEXT in the
+    Ona audit log, so it is carried in `fields` as context and never used as a
+    condition. `kind` is deliberately left out of the condition: policy edits are
+    RESOURCE_CHANGE today, and constraining on it would drop any historical entry
+    returned as AUDIT_LOG_ENTRY_KIND_UNSPECIFIED, which the vendor documents as a
+    real return value for entries with a missing or unrecognised stored kind.
+    WatchEvents cannot back this rule — that stream carries no actor, no action
+    text and no timestamp, so only ListAuditLogs/GetAuditLog can feed it.
+    This corresponds to HTH Ona control hth-ona-2.02-configure-the-agent-command-deny-list (section 2.2, L1).
+references:
+    - https://howtoharden.com/guides/ona/#22-configure-the-agent-command-deny-list
+    - https://ona.com/docs/ona/audit-logs/overview
+    - https://ona.com/docs/ona/organizations/policies/overview
+author: How to Harden
+date: 2026/08/19
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+    - attack.impair_defenses
+logsource:
+    product: ona
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        subjectType: 'RESOURCE_TYPE_ORGANIZATION_POLICY'
+    condition: selection
+fields:
+    - createdAt
+    - actorId
+    - actorPrincipal
+    - subjectId
+    - action
+    - kind
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Deliberate hardening — tightening a policy produces the same event as loosening one; the entry does not say which way it moved
+    - Initial organization setup, when every policy is written once in a short burst
+    - Policy edits made through Terraform or the API during a planned rollout; correlate with the change window and the actorPrincipal
+level: medium
