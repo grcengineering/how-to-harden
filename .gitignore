@@ -12,3 +12,8 @@ MEMORY/
 docs/_site/
 docs/vendor/
 docs/.bundle/
+
+# validate-hth-guide run artifacts — findings ledger, evidence, scratch.
+# NEVER commit: a live-tenant validation run captures tokens, cookies, org
+# identifiers, and member emails that must not reach a public repo.
+.hth-validation/

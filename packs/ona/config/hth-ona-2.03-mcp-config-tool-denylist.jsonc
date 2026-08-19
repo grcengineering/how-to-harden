@@ -1,0 +1,131 @@
+// HTH Pack Contract: v1
+//   control: ona-2.3
+//   guide:   https://howtoharden.com/guides/ona/#23-restrict-mcp-server-access
+//   profile: L2
+//   mode:    read-only
+//   requires: nothing at runtime — this is a repo-committed config file
+// ============================================================================
+// HTH Ona Control 2.3: Restrict MCP Server Access — repo-local `.ona/mcp-config.json`
+// Profile Level: L2 (Walk)
+// Frameworks: CIS Controls 2.5 | NIST 800-53 CM-7, AC-3
+// Source: https://ona.com/docs/ona/mcp.md
+//
+// WHY config/: MCP servers are declared in a vendor-native repository file, not
+// through an API or CLI. The only org-level control is a dashboard toggle, and
+// it is BINARY — Ona documents no MCP allowlist. So the per-repo file is where
+// the graduated controls live: `toolDenyList`, `timeout`, `disabled`, and
+// runtime secret injection.
+//
+// FILE FORMAT: the vendor documents `.ona/mcp-config.json` as JSON. This pack
+// carries the `.jsonc` extension because How to Harden annotates its config
+// packs inline; Ona does NOT document comment support, so STRIP EVERY `//` LINE
+// when you commit the real file. Verify with:
+//   sed 's:^[[:space:]]*//.*::' .ona/mcp-config.json | jq .
+// (anchor the match at the start of the line — an unanchored `//` also eats the
+// scheme separator inside "https://…" and corrupts the file.)
+//
+// -----------------------------------------------------------------------------
+// WHAT THIS FILE CAN AND CANNOT DO
+// -----------------------------------------------------------------------------
+// It restricts servers YOU declare. It is not a boundary against a server
+// someone else adds: anyone who can commit to the repository can add an MCP
+// server here, and the agent will use it. If your organization cannot vet
+// individual servers, the honest control is the org toggle — Settings > Agents >
+// Policies — which makes Ona ignore `.ona/mcp-config.json` entirely and blocks
+// external MCP connections. Then this file is inert by design.
+//
+// -----------------------------------------------------------------------------
+// TRAPS
+// -----------------------------------------------------------------------------
+// T1  READ ONCE PER AGENT EXECUTION. "Ona reads MCP configuration once at the
+//     start of each agent execution. Changes are not picked up mid-conversation"
+//     — true for this file, org integrations, and the org MCP toggle alike. A
+//     tightened deny list does not take effect until the next execution.
+// T2  ONE TRANSPORT PER SERVER. "A server cannot have both `command` and `url`."
+//     Set `command` for stdio, `url` for HTTP. `env` applies to stdio only,
+//     `headers` to HTTP only; setting the wrong one is silently ignored.
+// T3  `toolDenyList` MATCHES EXACT TOOL NAMES. It is not a pattern or a prefix.
+//     A server that renames or adds a tool escapes an existing entry, so the
+//     deny list needs re-review whenever a server version changes.
+// T4  NEVER COMMIT A LITERAL TOKEN. `env` and `headers` both expand
+//     `${exec:...}` and `${file:...}` at runtime. That is the documented way to
+//     keep credentials out of source control — use Ona Secrets to provision
+//     them into the environment.
+// T5  `${exec:...}` RUNS A SHELL COMMAND FROM A REPO-COMMITTED FILE. It is a
+//     credential-fetch mechanism and a code-execution path in the same syntax.
+//     Review every `${exec:}` in a pull request as if it were a build script.
+// T6  A MISCONFIGURED SERVER IS SKIPPED, NOT FATAL. "If your MCP configuration
+//     has syntax errors or invalid server definitions, the agent logs the error
+//     and skips the misconfigured server" — so a typo in a deny list can leave
+//     the server absent (fail-closed) while a typo elsewhere leaves a server
+//     running with no restrictions. Check the MCP Integrations panel.
+// T7  `disabled: true` IS THE REVIEWABLE OFF SWITCH. It keeps the definition in
+//     the diff instead of deleting it, so removal is visible in review.
+// T8  THE RUNTIME MUST EXIST IN THE DEV CONTAINER IMAGE. Stdio servers need
+//     `npx` / `docker` in the base image or they simply fail to start.
+// ============================================================================
+
+// HTH Guide Excerpt: begin config-mcp-tool-denylist
+{
+  "mcpServers": {
+    // ---- HTTP transport: remote server, token injected at runtime ---------
+    "issue-tracker": {
+      "name": "issue-tracker",
+      "url": "https://mcp.example.com/mcp",
+      "headers": {
+        // T4: read the token from a file the environment provisions. Never a
+        // literal value. `${exec:printenv MCP_API_TOKEN}` is the equivalent
+        // form when the secret arrives as an environment variable.
+        "Authorization": "Bearer ${file:/run/secrets/issue-tracker-token}"
+      },
+      // T3: exact tool names. Deny the write side of the server and keep the
+      // read side, so the agent can look things up but not act unattended.
+      "toolDenyList": [
+        "delete_issue",
+        "update_issue_state",
+        "add_comment"
+      ],
+      "timeout": 30
+    },
+
+    // ---- stdio transport: local process ----------------------------------
+    "github": {
+      "name": "github",
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "env": {
+        // T4/T5: expansion happens at runtime, and this command is code —
+        // review it as such.
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${exec:printenv GITHUB_MCP_TOKEN}"
+      },
+      // Deny the tools that turn a read-only integration into a write path
+      // into the SCM, plus the org-wide code search that widens the agent's
+      // reach far beyond the repository it was invited into.
+      "toolDenyList": [
+        "search_code",
+        "create_or_update_file",
+        "push_files",
+        "merge_pull_request",
+        "delete_file"
+      ],
+      "workingDir": "/workspaces",
+      "timeout": 30
+    },
+
+    // ---- Kept in the diff, switched off (T7) ------------------------------
+    "playwright": {
+      "name": "playwright",
+      "command": "npx",
+      "args": ["-y", "@executeautomation/playwright-mcp-server"],
+      "timeout": 60,
+      "disabled": true
+    }
+  },
+  // Default per-server timeout when a server does not set its own.
+  "globalTimeout": 30
+}
+// HTH Guide Excerpt: end config-mcp-tool-denylist

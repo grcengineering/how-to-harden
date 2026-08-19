@@ -1,0 +1,116 @@
+# HTH Pack Contract: v1
+#   control: ona-2.1
+#   guide:   https://howtoharden.com/guides/ona/#21-enforce-an-executable-policy-with-veto
+#   profile: L2
+#   mode:    mutating
+#   requires: ONA_TOKEN(applied by packs/ona/cli/hth-ona-2.01-veto-policy-lifecycle.sh)
+# =============================================================================
+# HTH Ona Control 2.1: Veto Exec executable policy (audit-first)
+# Profile Level: L2 (Walk)
+# Frameworks: CIS Controls 2.5, 2.7 | NIST 800-53 CM-7, SI-3 | NIST AI RMF MANAGE-2.3
+# Source: https://ona.com/docs/ona/organizations/policies/executable-deny-list.md
+#
+# This is the SecurityPolicy document itself. It is not read from the repository
+# by Ona — apply it with the companion CLI pack:
+#   packs/ona/cli/hth-ona-2.01-veto-policy-lifecycle.sh
+# which runs init --validate-only -> create -> set-default <id> -> list.
+#
+# CONTRACT: the public Veto Exec contract is `spec.executables` ONLY. Ports,
+# files, block devices and data are not part of it. `spec.ports` exists in the
+# Terraform provider schema but is out of scope for this document.
+#
+# EFFECTS: `defaultEffect` may be omitted or EFFECT_ALLOW. Every rule must be
+# EFFECT_AUDIT or EFFECT_BLOCK — "an executable rule cannot use EFFECT_ALLOW".
+#
+# SELECTORS: an absolute path (/usr/bin/curl) or a bare executable name (npx).
+# Bare names are expanded through runtime discovery; surrounding whitespace is
+# ignored. Empty selectors, `.`, `..`, `./npx` and relative paths like
+# `tools/npx` are INVALID after trimming. A selector is persistent policy intent,
+# not a one-time hash input: Veto resolves it to SHA-256 content identity, so a
+# matched binary keeps its decision when moved, renamed, hard-linked, copied byte
+# for byte, or reached through a symlink.
+#
+# AUDIT FIRST, ALWAYS. Every rule below is EFFECT_AUDIT. Run it, review the
+# matches in Audit Logs, then promote a confirmed rule by changing that one line
+# to EFFECT_BLOCK and running `update`. Effects are per-rule, so a policy can
+# hold both — but "Preview supports policies whose rules all use the same
+# effect", so mixed policies must be verified by restarting a test environment.
+#
+# TRAPS
+#   T1  BLOCKING AN INTERPRETER CAN BRICK THE ENVIRONMENT. Vendor warning:
+#       blocking /bin/bash "also blocks scripts that use that interpreter and can
+#       make an environment unusable." No shell appears below for this reason.
+#   T2  THE SAFELIST WINS. "Veto safelists Ona runtime binaries by content hash
+#       and cannot block them." A rule naming one is silently inert.
+#   T3  BLOCK BEATS AUDIT ON A SHARED HASH. "If one resolved hash has both audit
+#       and block rules, block wins for every path with that hash." Different
+#       paths can resolve to identical content — choose hash-distinct binaries
+#       when testing mixed effects.
+#   T4  A HASH VETO CANNOT COMPUTE IS A HASH VETO CANNOT ENFORCE. "If the kernel
+#       cannot compute an executable hash for a launch because of an internal
+#       failure, execution is allowed." This is a detective control at the
+#       margins, not an absolute one.
+#   T5  RESTART TO APPLY. New environments receive the assigned policy; an
+#       already-running environment keeps the policy from its last start.
+#   T6  NOT AN EGRESS CONTROL. Auditing curl/wget does not stop exfiltration —
+#       any statically linked or freshly built binary reaches the network without
+#       matching a rule here. Pair with network egress policy.
+#
+# WHY THESE EXECUTABLES: each is a documented agent-reachable path for pulling
+# code in or pushing data out of an environment, and each has a legitimate use,
+# which is exactly why the first pass audits rather than blocks. `python3 -m
+# http.server` is NOT expressible — a rule selects an executable, never an
+# argument list, so the selector is `python3`.
+# =============================================================================
+
+# HTH Guide Excerpt: begin config-veto-exec-policy
+metadata:
+  name: HTH Veto Exec audit-first
+spec:
+  executables:
+    # Executables matching no rule are allowed. Omitting this key means the same.
+    defaultEffect: EFFECT_ALLOW
+    rules:
+      # --- Network fetch / exfiltration primitives -------------------------
+      - path: /usr/bin/curl
+        effect: EFFECT_AUDIT
+      - path: /usr/bin/wget
+        effect: EFFECT_AUDIT
+      - path: nc
+        effect: EFFECT_AUDIT
+      - path: ncat
+        effect: EFFECT_AUDIT
+      - path: socat
+        effect: EFFECT_AUDIT
+
+      # --- Remote copy / remote shell --------------------------------------
+      - path: /usr/bin/scp
+        effect: EFFECT_AUDIT
+      - path: /usr/bin/ssh
+        effect: EFFECT_AUDIT
+      - path: /usr/bin/sftp
+        effect: EFFECT_AUDIT
+      - path: rsync
+        effect: EFFECT_AUDIT
+
+      # --- Arbitrary-package execution: the agent's fastest route to running
+      #     third-party code that was never reviewed in a PR.
+      - path: npx
+        effect: EFFECT_AUDIT
+      - path: pnpx
+        effect: EFFECT_AUDIT
+      - path: bunx
+        effect: EFFECT_AUDIT
+      - path: pipx
+        effect: EFFECT_AUDIT
+      - path: uvx
+        effect: EFFECT_AUDIT
+
+      # --- Interpreters that can host a server or an inline exfil one-liner.
+      #     AUDIT ONLY. Promoting an interpreter to EFFECT_BLOCK also blocks
+      #     every script that uses it (T1).
+      - path: python3
+        effect: EFFECT_AUDIT
+      - path: /usr/bin/base64
+        effect: EFFECT_AUDIT
+# HTH Guide Excerpt: end config-veto-exec-policy

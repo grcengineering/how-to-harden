@@ -1,0 +1,61 @@
+# HTH Pack Contract: v1
+#   control: ona-1.4
+#   guide:   https://howtoharden.com/guides/ona/#14-harden-service-accounts-and-personal-access-tokens
+#   profile: L2
+#   mode:    read-only
+#   requires: audit-log ingestion from EventService/ListAuditLogs (Enterprise plan)
+# Frameworks: CIS Controls 5.4, 16.9 | NIST 800-53 IA-5, AC-2 | SOC 2 CC6.1
+# Feed: packs/ona/cli/hth-ona-6.01-export-audit-logs.sh with SUBJECT_TYPE=personal_access_token
+title: Ona Personal Access Token Lifecycle Change
+id: cd104725-f156-446a-804f-7e3f7b8987d5
+status: experimental
+description: |
+    Fires on any lifecycle change to an Ona personal access token — creation,
+    rotation, or deletion. A PAT inherits the full permissions of the user who
+    minted it, is valid for 30, 60 or 90 days, and its access level (Read-only vs
+    Read & Write) is fixed at creation, so a new token is a new standing
+    credential that no approval workflow gates.
+    READ THIS BEFORE TUNING: `action` in the Ona audit log is a FREE-TEXT human
+    string ("Environment created", "started environment"). Ona publishes no
+    enumeration of action strings, so a rule that keys on action text is
+    string-matching against an unversioned surface and will silently stop
+    matching when the wording changes. This rule therefore keys ONLY on the two
+    closed enums — `subjectType` (ResourceType) and `kind` (AuditLogEntryKind) —
+    and carries `action` in `fields` as CONTEXT for the analyst, never as a
+    condition. That is why it fires on the whole lifecycle rather than on
+    creation alone: create/delete cannot be separated without trusting free text.
+    WatchEvents cannot back this rule — that stream carries no actor, no action
+    text and no timestamp, so only ListAuditLogs/GetAuditLog can feed it.
+    This corresponds to HTH Ona control hth-ona-1.04-harden-service-accounts-and-personal-access-tokens (section 1.4, L2).
+references:
+    - https://howtoharden.com/guides/ona/#14-harden-service-accounts-and-personal-access-tokens
+    - https://ona.com/docs/ona/audit-logs/overview
+    - https://ona.com/docs/ona/integrations/personal-access-token
+author: How to Harden
+date: 2026/08/19
+tags:
+    - attack.persistence
+    - attack.t1098.001
+    - attack.credential_access
+logsource:
+    product: ona
+    service: audit
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        subjectType: 'RESOURCE_TYPE_PERSONAL_ACCESS_TOKEN'
+        kind: 'AUDIT_LOG_ENTRY_KIND_RESOURCE_CHANGE'
+    condition: selection
+fields:
+    - createdAt
+    - actorId
+    - actorPrincipal
+    - subjectId
+    - action
+    - kind
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Routine rotation — tokens expire at 30/60/90 days, so every active integration produces a predictable creation event on that cadence
+    - Deletions raised by the same rule; use the action text in fields to tell lifecycle stages apart, but do not build the condition on it
+    - CI and automation onboarding; prefer service accounts for these and alert on PATs minted by a human for a machine workflow
+level: medium
