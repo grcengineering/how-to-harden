@@ -7,7 +7,7 @@ tier: "4"
 category: "Productivity"
 description: "Visual collaboration security for board sharing, app governance, classification guardrails, and AI controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

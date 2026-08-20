@@ -10,7 +10,7 @@ tier: "2"
 category: "Productivity"
 description: "Jira Cloud hardening for in-product authorization — permission schemes, work item security schemes, public space exposure, global permissions, guest access, and automation rule egress."
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "1"
 category: "Security"
 description: "EDR platform hardening for API security, update policies, and RTR access"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

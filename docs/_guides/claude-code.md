@@ -10,7 +10,7 @@ tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for Claude Code — managed settings via MDM, permission and tool restriction, MCP server governance, sandbox isolation, prompt-injection defense, CI/CD hardening, Cowork governance, and incident response."
 version: "1.0.2"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-15"
 ---
 

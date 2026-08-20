@@ -7,7 +7,7 @@ tier: "2"
 category: "Identity"
 description: "Enterprise password manager hardening for Keeper Security including role enforcement, MFA, and admin console security"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "2"
 category: "HR/Finance"
 description: "Travel and expense management platform hardening for SAP Concur including SAML SSO enforcement, sign-in settings, API and integration security, expense policies, and audit controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "2"
 category: "Security"
 description: "Security awareness training platform hardening for KnowBe4 including SAML SSO, admin access, and campaign security"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

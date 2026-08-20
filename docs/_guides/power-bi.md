@@ -7,7 +7,7 @@ tier: "5"
 category: "Data"
 description: "Microsoft BI security for tenant settings, gateway credentials, and embed controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

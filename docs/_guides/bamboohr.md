@@ -7,7 +7,7 @@ tier: "5"
 category: "HR/Finance"
 description: "HR platform security for OAuth integrations, API keys, access levels, webhooks, and sensitive field protection"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

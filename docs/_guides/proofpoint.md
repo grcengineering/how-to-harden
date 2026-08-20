@@ -7,7 +7,7 @@ tier: "2"
 category: "Security"
 description: "Email security platform hardening for Proofpoint including SAML SSO, admin access controls, and threat protection policies"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

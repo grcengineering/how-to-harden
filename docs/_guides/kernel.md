@@ -7,7 +7,7 @@ tier: "3"
 category: "AI/ML Platform"
 description: "Cloud browser infrastructure security hardening for API key scoping, project isolation, managed-auth credential protection, Chrome policy enforcement, egress control, and audit log streaming"
 version: "0.1.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-11"
 ---
 

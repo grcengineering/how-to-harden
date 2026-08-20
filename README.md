@@ -4,8 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Guides: 125](https://img.shields.io/badge/Guides-125-blueviolet)](https://howtoharden.com)
-[![Code Packs: 55](https://img.shields.io/badge/Code%20Packs-55-orange)](packs/)
+[![Guides: 130](https://img.shields.io/badge/Guides-130-blueviolet)](https://howtoharden.com)
+[![Code Packs: 76](https://img.shields.io/badge/Code%20Packs-76-orange)](packs/)
 
 **Website:** [howtoharden.com](https://howtoharden.com) | **Organization:** [GRC Engineering](https://grc.engineering)
 
@@ -29,19 +29,19 @@ This is defense-in-depth done right: **First-party controls you configure** to l
 
 ### 1. Platform-Specific Hardening Guides
 
-Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **125 guides** across 10 categories:
+Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **130 guides** across 10 categories:
 
 | Category | Count | Examples |
 |----------|-------|---------|
 | Productivity | 25 | Slack, Airtable, Asana, Notion |
 | Security | 21 | CrowdStrike, Snyk, Wiz, Zscaler |
 | Data | 17 | Snowflake, Databricks, MongoDB Atlas |
-| DevOps | 16 | GitHub, GitLab, Jenkins, Terraform Cloud |
+| DevOps | 17 | GitHub, GitLab, Jenkins, Buildkite |
 | Identity | 13 | Okta, Auth0, Microsoft Entra ID, Duo |
 | HR/Finance | 11 | BambooHR, ADP, Workday, Stripe |
+| AI/ML Platform | 9 | Anthropic (Claude Enterprise, Claude Code, API), ChatGPT Enterprise, Ona, LangChain |
 | Marketing | 9 | HubSpot, Braze, SendGrid, Twilio |
-| AI/ML Platform | 6 | Anthropic (Claude Enterprise, Claude Code, API), ChatGPT Enterprise, LangChain |
-| IT Operations | 5 | ServiceNow, Jamf, PagerDuty |
+| IT Operations | 6 | ServiceNow, Jamf, PagerDuty, Windows 11 |
 | IaC | 2 | Terraform Cloud, Pulumi |
 
 Every control includes:
@@ -52,7 +52,7 @@ Every control includes:
 
 ### 2. Code Packs -- Executable Security Controls
 
-**55 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
+**76 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
 
 | Language Type | Directory | What It Does |
 |---------------|-----------|-------------|
@@ -143,7 +143,7 @@ how-to-harden/
 │   └── assets/
 │       └── css/
 │           └── style.css                 # Dark + light theme stylesheet
-├── packs/                                # Code Packs (55 vendors)
+├── packs/                                # Code Packs (76 vendors)
 │   ├── README.md                         # Code Pack Ontology documentation
 │   ├── schema/                           # YAML schema definitions
 │   ├── okta/                             # Example vendor pack
@@ -231,20 +231,28 @@ We maintain independence while accurately representing platform capabilities. We
 
 ## Current Status
 
-**Guide maturity system:**
-- **Draft** -- AI-generated initial content, structurally complete
-- **Reviewed** -- Expert-validated by a practitioner with platform experience
-- **Verified** -- Production-tested in a real environment
+**Guide maturity system --- a matrix, not a ladder.** Every guide carries a `maturity` value that says how much contact it has had with reality, split across two axes that were previously being collapsed into one number: **what was done** (drafted -> reviewed -> validated) and **who did it** (`ai`, a machine; `ni`, natural intelligence -- a person). Six statuses, and a guide holds a *set* of them rather than a position on a line. Defined once, canonically, in [VERSIONS.md](VERSIONS.md#maturity-statuses--the-matrix); summarised here:
+
+| | **Drafted** --- it exists | **Reviewed** --- someone judged it | **Validated** --- it was applied to a real system |
+|--|---------------------------|------------------------------------|--------------------------------------------------|
+| **AI** (a machine did it) | `ai-drafted` | `ai-reviewed` | `ai-validated` |
+| **NI** (a person did it) | `ni-drafted` | `ni-reviewed` | `ni-validated` |
+
+The statuses **combine**: a guide can be AI Drafted and NI Drafted at once, and holding both AI Validated and NI Validated is strictly better than holding either alone -- that pairing is the strongest thing this vocabulary can express. A guide's version qualifier names the furthest stage it reached, agent-prefixed unless *both* agents got there, so `v1.0.0-validated` is the strongest string in the system.
+
+**An `ai-*` status is a claim about a machine's act, and asserts nothing about human judgement.** An agent can prove a console path is where the guide says it is; it cannot decide whether that control is the right control for your organization. So an AI status never discharges the need for its NI twin -- a guide sitting at AI Validated is a guide still waiting for its human reviewer, however long it sits there.
 
 **Current coverage:**
-- 116 hardening guides across 9 categories (all currently at draft maturity)
-- 47 Code Packs with Terraform, API, CLI, SDK, DB, and Sigma implementations
-- Full Jekyll site with search, category filtering, and dark/light themes
+- 130 hardening guides across 10 categories --- **all 130 `ai-drafted`**, of which **2 also hold `ai-validated`** (Buildkite, Ona)
+- **No guide holds any `ni-*` status.** Nothing here has been drafted, reviewed, or validated by a person -- the entire NI row of the matrix is empty, and it is the half that matters most
+- 76 vendor Code Packs with Terraform, API, CLI, SDK, config, DB, and Sigma implementations
+- Full Jekyll site with search, six-status filtering, and dark/light themes
 
 **What we need:**
-- Expert reviewers to validate draft guides and advance them to **reviewed** maturity
+- **Expert reviewers** --- the ceiling on this project. Read a guide against your platform experience and add **NI Reviewed**. This is needed whether or not a guide is AI Validated: no amount of machine validation produces a human judgement, and no guide in the corpus has this status yet
+- **Practitioners who apply the controls** and report what happened, adding **NI Validated** --- also currently at zero across all 130 guides
+- Live validation runs to add **AI Validated** --- console paths re-read off the real UI, Code Packs executed against a real tenant
 - Code Pack contributions for CLI, SDK, and DB language types
-- Real-world testing to advance guides to **verified** maturity
 
 ---
 
@@ -253,8 +261,8 @@ We maintain independence while accurately representing platform capabilities. We
 ### Ways to Contribute
 
 **For Security Practitioners:**
-- Review and validate existing guides against your platform experience
-- Test controls in your environment and report results
+- Review existing guides against your platform experience --- this is what adds `ni-reviewed`, a status no guide holds yet
+- Apply and test controls in your environment and report results --- this is what adds `ni-validated`, likewise at zero
 - Submit new guides for platforms not yet covered
 
 **For Developers:**
@@ -288,8 +296,17 @@ You are free to use, modify, and distribute this work for any purpose.
 **Q: How is this different from CIS Benchmarks?**
 A: CIS focuses on infrastructure (AWS, Azure, Kubernetes). We focus on SaaS platforms and cross-platform integration security. CIS also requires paid membership for automation-friendly formats; we're free and open source.
 
-**Q: Why are all guides at "draft" maturity?**
-A: The initial 116 guides were AI-generated to provide comprehensive structural coverage. We need expert practitioners to review and validate them against real platform behavior. This is the highest-impact contribution you can make.
+**Q: Why is every guide only "AI Drafted"?**
+A: They were AI-generated to provide comprehensive structural coverage, and `ai-drafted` says exactly that and nothing more: a machine wrote it from vendor documentation, and every console path in it is a claim transcribed from a document. Moving beyond that means adding statuses from the [matrix](VERSIONS.md#maturity-statuses--the-matrix), and the two axes move independently. A `validate-hth-guide` run exercises the guidance against a live tenant and adds **AI Validated** (two guides have cleared this). A human practitioner reading it against their own platform experience adds **NI Reviewed**, and one applying the controls on a real system adds **NI Validated** --- **no guide has either yet.** The NI half is what we are short of, and it is the highest-impact contribution you can make: an AI-validated guide is still an unreviewed guide.
+
+**Q: What does "NI" mean?**
+A: Natural intelligence --- a person. It is the counterpart to `ai` on the agent axis, and it is spelled out rather than implied because "reviewed" with no agent named is exactly the ambiguity this vocabulary exists to remove. Every status says who did the thing, so a reader never has to guess whether a human was involved.
+
+**Q: What does the "AI Validated" badge on a control actually assert?**
+A: That an AI agent went to a real tenant or console and exercised that specific requirement -- read the console path off the live UI, or ran the Code Pack against a live tenant -- and the guidance survived. It asserts nothing about human review, and it is only ever applied to requirements that came back verified live; controls that were skipped, blocked, or only checked against documentation do not get the mark. The page-level status is the sum of those per-control marks, which is why they render as the same icon.
+
+**Q: How do I read the badges and chips?**
+A: Each mark encodes both axes. The **glyph** is the stage --- pencil for drafted, eye for reviewed, check for validated. The **spark** in the top-right corner means a machine did it; no spark means a person did. An AI mark and its NI twin are otherwise identical, so "AI Validated + NI Validated" reads as one thing done twice rather than two unrelated badges. A control can carry more than one badge for the same reason a guide can hold more than one status: they add, they do not replace.
 
 **Q: Can I contribute a guide for a platform not yet covered?**
 A: Yes! Check [CONTRIBUTING.md](CONTRIBUTING.md) for platform selection criteria and use our [guide template](templates/vendor-guide-template.md).

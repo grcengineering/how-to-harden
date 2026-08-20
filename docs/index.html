@@ -104,8 +104,11 @@ title: Home
         <div class="filter-dropdown-menu">
           <label class="filter-option"><input type="radio" name="status" value="all" checked> All Status</label>
           <label class="filter-option"><input type="radio" name="status" value="ai-drafted"> <span class="dot dot-drafted"></span> AI Drafted</label>
-          <label class="filter-option"><input type="radio" name="status" value="human-reviewed"> <span class="dot dot-reviewed"></span> Reviewed</label>
-          <label class="filter-option"><input type="radio" name="status" value="human-verified"> <span class="dot dot-verified"></span> Verified</label>
+          <label class="filter-option"><input type="radio" name="status" value="ni-drafted"> <span class="dot dot-drafted"></span> NI Drafted</label>
+          <label class="filter-option"><input type="radio" name="status" value="ai-reviewed"> <span class="dot dot-reviewed"></span> AI Reviewed</label>
+          <label class="filter-option"><input type="radio" name="status" value="ni-reviewed"> <span class="dot dot-reviewed"></span> NI Reviewed</label>
+          <label class="filter-option"><input type="radio" name="status" value="ai-validated"> <span class="dot dot-validated"></span> AI Validated</label>
+          <label class="filter-option"><input type="radio" name="status" value="ni-validated"> <span class="dot dot-validated"></span> NI Validated</label>
         </div>
       </div>
 
@@ -158,43 +161,26 @@ title: Home
         {% assign data_cat = "security" %}
         {% assign cat_label = "Security" %}
       {% endif %}
-      {% if guide.maturity == "human-reviewed" %}
-        {% assign review_status = "human-reviewed" %}
-        {% assign status_class = "status-reviewed" %}
-        {% assign status_label = "Reviewed" %}
-      {% elsif guide.maturity == "human-verified" %}
-        {% assign review_status = "human-verified" %}
-        {% assign status_class = "status-verified" %}
-        {% assign status_label = "Verified" %}
-      {% else %}
-        {% assign review_status = "ai-drafted" %}
-        {% assign status_class = "status-draft" %}
-        {% assign status_label = "AI Drafted" %}
-      {% endif %}
+      {% include status-set.html guide=guide %}
+      {% assign status_attr = statuses | join: " " %}
       {% assign has_pack = false %}
       {% assign pack_data = site.data.packs[guide.slug] %}
       {% if pack_data %}{% assign has_pack = true %}{% endif %}
-      <div class="guide-card" data-category="{{ data_cat }}" data-name="{{ guide.slug }}" data-reviewed="{{ review_status }}" data-has-pack="{{ has_pack }}">
+      <div class="guide-card" data-category="{{ data_cat }}" data-name="{{ guide.slug }}" data-status="{{ status_attr }}" data-has-pack="{{ has_pack }}">
         <div class="guide-card-header">
           <h3><a href="{{ guide.url | relative_url }}">{{ guide.vendor }}</a></h3>
-          <span class="status-badge {{ status_class }}">
-            {% if review_status == "ai-drafted" %}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-              <line x1="12" y1="9" x2="12" y2="13"></line>
-              <circle cx="12" cy="17" r="1" fill="currentColor"></circle>
-            </svg>
-            {% elsif review_status == "human-reviewed" %}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-            {% else %}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            {% endif %}
-            {{ status_label }}
+          {% comment %} Every status the guide holds, so a card that says both
+          AI Validated and NI Validated visibly outranks one that says either. {% endcomment %}
+          <span class="status-badge-set">
+            {% for s in statuses %}
+              {% assign p = s | split: "-" %}
+              {% assign card_agent = p[0] %}
+              {% assign card_stage = p[1] %}
+              <span class="status-badge status-{{ s }}" title="{{ card_agent | upcase }} {{ card_stage | capitalize }}">
+                {% include status-icon.html stage=card_stage agent=card_agent size=12 %}
+                {{ card_agent | upcase }} {{ card_stage | capitalize }}
+              </span>
+            {% endfor %}
           </span>
         </div>
         <p class="guide-card-description">{{ guide.description }}</p>
@@ -238,7 +224,16 @@ title: Home
           {% assign p_cat_list = p_cat_list | append: " " | append: g_data_cat %}
         {% endfor %}
         {% assign p_cats = p_cat_list | strip | split: " " | uniq | sort %}
-        <div class="guide-card platform-card" data-category="{{ p_cats | join: ' ' }}" data-name="{{ p_names }}" data-reviewed="ai-drafted" data-has-pack="{{ p_has_pack }}">
+        {% comment %} A platform card stands in for its member guides, so it carries
+        the UNION of their statuses — filtering for AI Validated must surface the
+        platform whose product guide holds it, not hide it behind the parent. {% endcomment %}
+        {% assign p_status_list = "" %}
+        {% for g in pg.items %}
+          {% include status-set.html guide=g %}
+          {% assign p_status_list = p_status_list | append: " " | append: statuses | join: " " %}
+        {% endfor %}
+        {% assign p_statuses = p_status_list | strip | split: " " | uniq | sort %}
+        <div class="guide-card platform-card" data-category="{{ p_cats | join: ' ' }}" data-name="{{ p_names }}" data-status="{{ p_statuses | join: ' ' }}" data-has-pack="{{ p_has_pack }}">
           <div class="guide-card-header platform-card-header">
             <h3>{{ p0.platform }}</h3>
             <span class="platform-count">{{ pg.items.size }} guides
@@ -406,7 +401,11 @@ document.addEventListener('DOMContentLoaded', function() {
     guideCards.forEach(card => {
       const name = card.dataset.name.toLowerCase();
       const category = card.dataset.category;
-      const reviewed = card.dataset.reviewed;
+      // data-status is a space-joined SET (a guide can be both AI and NI
+      // validated; a platform card carries the union of its members'), so match
+      // on membership, never equality — equality would hide a guide that holds
+      // the selected status alongside any other.
+      const statuses = (card.dataset.status || '').split(' ').filter(Boolean);
       const hasPack = card.dataset.hasPack;
       const title = card.querySelector('h3').textContent.toLowerCase();
       const desc = card.querySelector('.guide-card-description').textContent.toLowerCase();
@@ -415,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // data-category is a space-joined list (platform cards carry the union of
       // their member guides' categories), so match on tokens, not the whole string.
       const matchesCategory = activeCategory === 'all' || category.split(' ').indexOf(activeCategory) !== -1;
-      const matchesReview = activeStatus === 'all' || reviewed === activeStatus;
+      const matchesReview = activeStatus === 'all' || statuses.indexOf(activeStatus) !== -1;
       const matchesPack = activePack === 'all' || hasPack === 'true';
 
       card.style.display = matchesSearch && matchesCategory && matchesReview && matchesPack ? '' : 'none';

@@ -41,7 +41,9 @@ A step-by-step process any agent or human can follow to produce `docs/_guides/{s
 ## Phase 3 — Frontmatter and scaffold
 
 1. Copy `templates/vendor-guide-template.md` → `docs/_guides/{slug}.md`.
-2. Fill frontmatter: `layout: guide`, `title`, `vendor`, `slug`, `tier`, `category` (must be in `scripts/validate-guides.sh` VALID_CATS), `description`, `version: "0.1.0"`, `maturity: "draft"`, `last_updated` (will be re-stamped at commit).
+2. Fill frontmatter: `layout: guide`, `title`, `vendor`, `slug`, `tier`, `category` (must be in `scripts/validate-guides.sh` VALID_CATS), `description`, `version: "0.1.0"`, `maturity: ["ai-drafted"]`, `last_updated` (will be re-stamped at commit).
+
+   **`maturity` is a LIST and a new guide holds exactly `["ai-drafted"]`.** Maturity is a matrix, not a ladder: three stages (`drafted` → `reviewed` → `validated`) × two agents (`ai` = a machine, `ni` = natural intelligence, i.e. a person), six statuses that combine rather than replace each other ([VERSIONS.md](../../../VERSIONS.md#maturity-statuses--the-matrix) defines each one). A guide this skill produces was written by a machine from documentation and has touched no tenant, which is exactly and only what `ai-drafted` asserts — however thorough the research was. Never write it as a scalar (`maturity: "ai-drafted"` fails Test 5b), never add a second status, and never write `ni-drafted` for a guide you wrote: that status belongs to a human author. Only a [`validate-hth-guide`](../validate-hth-guide/SKILL.md) run may add `ai-validated`, and only maintainers may add any `ni-*`. Do not add per-requirement `status-badge.html` badges either: there is nothing yet to evidence them with.
 3. **If this is a product guide in a multi-product platform**, add: `platform: "Platform Name"`, `platform_slug: "{platform-slug}"`, `product: "Product Name"`. The hub guide uses `product: "Common Controls"` and holds ONLY org-wide controls; product guides open with a one-line pointer to the hub and cross-reference instead of duplicating. Reference pairs: google-workspace + gmail; anthropic-claude + claude-code.
 4. Write Overview / Intended Audience / How to Use / Scope, then a linked Table of Contents.
 
@@ -69,7 +71,7 @@ Sections that are NOT controls (reference tables, `### N.N.N` implementation wal
 ## Phase 5 — Close out
 
 1. Add the vendor to `docs/_data/doc_links.yml`: `product_docs`, `api_docs` (if real), `hardening_docs` per the SOURCES.md standard (literal hardening docs or omit; multi-source = list of `{label, url}`).
-2. Compliance Quick Reference section + Appendices (edition table, references) + Changelog + Contributing per the template.
+2. Compliance Quick Reference section + Appendices (edition table, references) + Changelog + Contributing per the template. Add the guide's row to the `VERSIONS.md` registry — regenerate from frontmatter rather than hand-typing one row.
 3. Re-stamp `last_updated` and the changelog date to `date +%F`.
 4. **Run the `verify-hth` skill.** Do not commit without it.
 
@@ -81,4 +83,5 @@ Sections that are NOT controls (reference tables, `### N.N.N` implementation wal
 - Google-style doc hosts migrate (support.google.com/a → knowledge.workspace.google.com); cite the post-redirect canonical URL.
 - SPAs can return HTTP 200 for nonexistent pages — confirm real content rendered, not a shell.
 - When vendor and benchmark disagree on strictness (SPF `~all` vs SCuBA `-all`), document BOTH with a callout — never silently pick one (SOURCES.md conflict rules).
+- A finished-feeling guide is still only `ai-drafted`. The status tracks who did what, not effort or polish — a machine wrote it from documents and nothing else has happened, which is the whole claim. Adding anything here would assert an act (a live run, a human reading it) that has not occurred.
 - On Windows, repo scripts run through Git Bash (`bash scripts/...`).

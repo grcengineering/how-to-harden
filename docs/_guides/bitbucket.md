@@ -10,7 +10,7 @@ tier: "2"
 category: "DevOps"
 description: "Code repository security hardening for Bitbucket Cloud — workspace membership and app access, project permissions, forking, branch restrictions and merge checks, signed commits, and Pipelines secrets and deployment controls."
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

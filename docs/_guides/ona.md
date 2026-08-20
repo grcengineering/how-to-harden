@@ -6,9 +6,9 @@ slug: "ona"
 tier: "2"
 category: "AI/ML Platform"
 description: "Security hardening for Ona (formerly Gitpod) — the cloud platform for autonomous AI software-engineering agents: SSO/SCIM identity, agent guardrails (Veto, command deny list, MCP), environment and network policy, secrets, self-hosted runners, and audit logging."
-version: "0.2.0"
-maturity: "draft"
-last_updated: "2026-08-19"
+version: "0.2.1"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-08-20"
 ---
 
 ## Overview
@@ -54,6 +54,8 @@ This guide covers Ona organization administration: OIDC SSO and SCIM provisionin
 ## 1. Identity & Access Controls
 
 ### 1.1 Enforce SSO with Domain Verification
+
+{% include status-badge.html status="ai-validated" evidence="Console path observed live" date="2026-08-19" %}
 
 **Profile Level:** L1 (Crawl)
 
@@ -113,6 +115,8 @@ Configure OIDC single sign-on (Ona supports OIDC only — no SAML is documented)
 
 ### 1.2 Enforce SCIM Provisioning and Restrict Account Creation
 
+{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
+
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -168,6 +172,8 @@ Enable SCIM provisioning against your IdP, then enable the **Restrict account cr
 
 ### 1.3 Apply Least-Privilege Organization Roles and Groups
 
+{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
+
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -219,6 +225,8 @@ Use Ona's delegated organization roles (Runners Admin, Projects Admin, Groups Ad
 ---
 
 ### 1.4 Harden Service Accounts and Personal Access Tokens
+
+{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
 
 **Profile Level:** L2 (Walk)
 
@@ -272,6 +280,8 @@ Constrain machine credentials: never issue service-account tokens with **indefin
 ---
 
 ### 1.5 Control Member Invitations and Remove Domain Auto-Admit
+
+{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
 
 **Profile Level:** L2 (Walk)
 
@@ -381,6 +391,8 @@ Use Veto — Ona's Linux Security Module that "runs as a Linux Security Module (
 
 ### 2.2 Configure the Agent Command Deny List
 
+{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
+
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -430,6 +442,8 @@ Block dangerous agent-issued bash commands with wildcard patterns (e.g., `shutdo
 
 ### 2.3 Restrict MCP Server Access
 
+{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
+
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -476,6 +490,8 @@ Decide organization policy on Model Context Protocol (MCP) servers. Org owners c
 ---
 
 ### 2.4 Govern SCM Tools and LLM Provider Access
+
+{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
 
 **Profile Level:** L2 (Walk)
 
@@ -573,6 +589,8 @@ Set the automation guardrails that cap how much autonomous work members can run:
 
 ### 2.6 Deploy Runtime EDR to Agent Environments
 
+{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
+
 **Profile Level:** L3 (Run)
 
 | Framework | Control |
@@ -626,6 +644,8 @@ For regulated or high-sensitivity estates, enable the CrowdStrike Falcon integra
 
 ### 3.1 Restrict Port Admission Levels
 
+{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
+
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -676,6 +696,8 @@ Cap how widely environment ports can be exposed. Admission levels run `creator_o
 
 ### 3.2 Control the In-Environment Web Browser
 
+{% include status-badge.html status="ai-validated" evidence="Console path and toggle label corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
+
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -722,6 +744,8 @@ Govern the built-in environment web browser and the agent's browse-web skill, wh
 ---
 
 ### 3.3 Enforce Environment Lifetime, Timeout, and Retention
+
+{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
 
 **Profile Level:** L2 (Walk)
 
@@ -774,6 +798,8 @@ Bound how long environments live and linger: set a maximum environment lifetime 
 
 ### 3.4 Restrict Environment Creation
 
+{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
+
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -819,6 +845,8 @@ Limit who can spin up blank environments with the **Only admins can start from s
 ---
 
 ### 3.5 Mitigate Dotfiles Auto-Execution Supply-Chain Risk
+
+{% include status-badge.html status="ai-validated" evidence="Console path observed live; no organization-level control exists at the tenant's tier" date="2026-08-19" %}
 
 **Profile Level:** L2 (Walk)
 
@@ -867,6 +895,8 @@ Ona clones a user's configured dotfiles repository (user menu → **Account** �
 ## 4. Data & Secrets
 
 ### 4.1 Scope Secrets and Restrict Organization Secrets
+
+{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
 
 **Profile Level:** L2 (Walk)
 
@@ -917,6 +947,8 @@ Use the tightest secret scope (user > project > organization precedence) and tre
 
 ### 4.2 Use OIDC Workload Identity for Keyless Cloud Access
 
+{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
+
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -964,6 +996,8 @@ Instead of storing long-lived cloud credentials as secrets, use Ona's OIDC workl
 ---
 
 ### 4.3 Scope Repository Access to Least Privilege
+
+{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
 
 **Profile Level:** L2 (Walk)
 
@@ -1014,6 +1048,8 @@ Configure per-runner repository access deliberately. The GitHub integration requ
 ## 5. Deployment Architecture
 
 ### 5.1 Run Self-Hosted Runners for Sensitive Source Code
+
+{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
 
 **Profile Level:** L2 (Walk)
 
@@ -1239,6 +1275,7 @@ Source: [NVD keyword search "gitpod"](https://services.nvd.nist.gov/rest/json/cv
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.2.1 | 2026-08-20 | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated** — an AI agent exercised this guidance against a live Ona tenant and the guidance survived that contact; no human practitioner has reviewed or applied it, so the guide claims no **ni-** status, and an AI status never substitutes for one. **What was exercised:** all 22 controls walked on the live console (`app.gitpod.io`, a `free_ona` tenant) and 18 read-only `api/` audit packs executed against that tenant, exit codes and sanitized output captured per pack; the OCEAN `ona` source observed live against the same organization. 18 controls carry a per-requirement badge naming what was run for that control. **What was NOT exercised — the badges are absent on purpose:** every `terraform/` pack was only `terraform validate`d inside Docker and was never applied to any organization, so no Terraform path in this guide has been proven to run; the four `cli/` packs were never executed (the `ona` CLI was not installed on the run host); the three mutating packs (`api` 1.01 and 1.05, `cli` 2.01) were deliberately not run, so 1.1 and 1.5 rest on console observation alone; 2.5 and 6.2 are plan-gated to Core+/Enterprise on this tenant and 6.1 has no console surface at all with its API pack returning the Enterprise gate, so all three are unbadged; 2.1 came back PARTIAL because its executables section is Enterprise-gated, so it too is unbadged even though its audit pack ran. Enterprise-gated toggle behaviour throughout remains a documentation claim, not a live one. No control text, control number, or heading changed. |
 | 0.2.0 | 2026-08-19 | Live validation pass (validate-hth-guide): every console path re-read off the live console (`app.gitpod.io`; sidebar Organization / Infrastructure / Agents / Login & Identity) — 11 controls needed path corrections (1.2, 1.5, 2.3, 2.6, 3.1–3.4, 4.1, 4.3 wrong; 2.1 partial — its executables section is plan-gated on the tenant walked); 14 doc-drift corrections (`set-default` takes a policy id, MCP toggle lives under Agents → Policies, WatchEvents is not the audit trail, API base `app.gitpod.io`, LLM-provider posture, `ona idp token`, webhook direction, deprecated `OWNER_ONLY`, preview gating for automation limits and Veto audit entries, service-account "no expiry" wording); Code Packs landed for the first time — api (read-only audit scripts, executed against a live tenant), terraform (`gitpod-io/ona`), cli (`ona`), config (Veto policy YAML, MCP `toolDenyList`), and Sigma rules on the audit-log schema; controls with no write surface now carry an explicit Automation verdict (2.5, 3.5); Ona added to the CLI inventory. |
 | 0.1.0 | 2026-08-08 | Initial guide — 20 controls across identity, agent guardrails (Veto/command-deny/MCP), environment & network policy, secrets, self-hosted runners, and audit logging. Authored per the create-hth-guide playbook: every control traces to fetched Ona documentation; no product benchmark exists so mappings use NIST 800-53/AI RMF/SOC 2 catalogs; the Gitpod-era CVE history grounds the rationale. Automation surfaces stated honestly (Security Policy API/CLI for ports+executables, EventService for audit) — Code Packs deferred to a follow-up. Unverified "Ona joining OpenAI" claim deliberately excluded. |
 

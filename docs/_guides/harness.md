@@ -7,7 +7,7 @@ tier: "2"
 category: "DevOps"
 description: "Software delivery platform hardening for Harness including SAML SSO, RBAC, secret management, and pipeline security"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

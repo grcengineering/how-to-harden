@@ -10,7 +10,7 @@ tier: "1"
 category: "Productivity"
 description: "Security hardening for Gmail within Google Workspace — email authentication (SPF/DKIM/DMARC), phishing & malware safety settings, mail-flow compliance rules, legacy-access lockdown, and Gmail log monitoring."
 version: "0.1.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-03"
 ---
 

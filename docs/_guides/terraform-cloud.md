@@ -7,7 +7,7 @@ tier: "3"
 category: "IaC"
 description: "IaC platform security for HCP Terraform (formerly Terraform Cloud): workspace variables, team access, audit trails, and run triggers"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

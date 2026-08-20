@@ -7,7 +7,7 @@ tier: "2"
 category: "Identity"
 description: "Enterprise password manager hardening for LastPass Business including MFA policies, admin controls, and security dashboard"
 version: "0.1.2"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

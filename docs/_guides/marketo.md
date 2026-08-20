@@ -7,7 +7,7 @@ tier: "3"
 category: "Marketing"
 description: "Marketing automation security for API users, LaunchPoint services, and lead database"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "2"
 category: "Productivity"
 description: "Revenue platform hardening for Clari including SAML SSO, user permissions, and forecast data security"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

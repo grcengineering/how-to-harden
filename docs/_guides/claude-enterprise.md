@@ -10,7 +10,7 @@ tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for Claude.ai Team and Enterprise plans — SSO and SCIM provisioning, roles and groups, audit log export, Compliance API, connector and Claude-in-Chrome governance, Cowork controls, and per-member spend limits."
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-15"
 ---
 

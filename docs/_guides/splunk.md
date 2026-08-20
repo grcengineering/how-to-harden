@@ -7,7 +7,7 @@ tier: "1"
 category: "Security"
 description: "SIEM platform hardening for Splunk Cloud including SAML SSO, role-based access control, and data security"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

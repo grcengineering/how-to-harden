@@ -7,7 +7,7 @@ tier: "1"
 category: "IT Operations"
 description: "IT service management platform hardening for ServiceNow including SSO configuration, Security Center, and high-security plugins"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

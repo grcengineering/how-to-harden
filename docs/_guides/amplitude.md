@@ -7,7 +7,7 @@ tier: "2"
 category: "Data"
 description: "Product analytics platform hardening for Amplitude including SAML SSO, project access, and data governance"
 version: "0.1.2"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "2"
 category: "DevOps"
 description: "CI/CD pipeline security including contexts, secrets, and runner hardening"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

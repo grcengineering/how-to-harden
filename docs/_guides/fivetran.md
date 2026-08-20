@@ -7,7 +7,7 @@ tier: "2"
 category: "Data"
 description: "Data integration platform hardening for Fivetran including SSO configuration, role-based access, and connector security"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

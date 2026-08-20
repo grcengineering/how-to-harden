@@ -7,7 +7,7 @@ tier: "2"
 category: "Marketing"
 description: "CRM security for private apps, OAuth scopes, and data export controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

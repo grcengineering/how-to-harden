@@ -7,7 +7,7 @@ tier: "1"
 category: "Security"
 description: "Security hardening for Cloudflare Zero Trust, Access, Gateway, and WARP deployment"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

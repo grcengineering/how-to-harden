@@ -7,7 +7,7 @@ tier: "2"
 category: "Productivity"
 description: "Video conferencing security for meeting policies, recording controls, and app marketplace"
 version: "0.2.2"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

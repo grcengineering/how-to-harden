@@ -7,7 +7,7 @@ tier: "3"
 category: "DevOps"
 description: "Issue tracking platform hardening for Linear including SAML SSO, workspace access, and team permissions"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

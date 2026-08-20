@@ -7,7 +7,7 @@ tier: "2"
 category: "Security"
 description: "Email security hardening for Mimecast including targeted threat protection, impersonation policies, and gateway configuration"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

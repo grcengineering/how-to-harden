@@ -7,7 +7,7 @@ tier: "5"
 category: "Data"
 description: "Google BI security for model access, embed secrets, and database connections"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "2"
 category: "Marketing"
 description: "CRM platform security for MFA enforcement, Connected Apps, and Shield Event Monitoring"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-03"
 ---
 

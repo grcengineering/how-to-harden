@@ -7,7 +7,7 @@ tier: "2"
 category: "IT Operations"
 description: "Incident management platform hardening for PagerDuty including SSO configuration, user provisioning, and access controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

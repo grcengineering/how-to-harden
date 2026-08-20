@@ -10,7 +10,7 @@ tier: "1"
 category: "AI/ML Platform"
 description: "Platform-wide security hardening for Anthropic — the Common Controls hub (SSO, organization roles, admin API keys, integration governance) shared by the Claude Enterprise, Claude Code, and Claude API & Console product guides."
 version: "1.1.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-15"
 ---
 

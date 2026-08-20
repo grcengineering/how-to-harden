@@ -7,7 +7,7 @@ tier: "2"
 category: "Productivity"
 description: "Revenue intelligence platform hardening for Gong including SAML SSO, data access controls, and recording security"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

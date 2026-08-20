@@ -7,7 +7,7 @@ tier: "2"
 category: "Security"
 description: "Enterprise password manager hardening for 1Password Business SSO, policies, and vault security"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

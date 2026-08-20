@@ -7,7 +7,7 @@ tier: "1"
 category: "Identity"
 description: "Remote access security for PRA, session monitoring, and credential injection"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

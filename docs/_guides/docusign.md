@@ -7,7 +7,7 @@ tier: "2"
 category: "Productivity"
 description: "eSignature platform hardening for DocuSign including SSO configuration, session security, and admin controls"
 version: "0.1.2"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

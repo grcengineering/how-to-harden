@@ -7,7 +7,7 @@ tier: "4"
 category: "Productivity"
 description: "Support platform security for API tokens, app marketplace, and ticket redaction"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

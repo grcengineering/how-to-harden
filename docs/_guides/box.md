@@ -7,7 +7,7 @@ tier: "3"
 category: "Data"
 description: "Enterprise content security for sharing policies, app controls, and classification"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

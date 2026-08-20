@@ -7,7 +7,7 @@ tier: "1"
 category: "Data"
 description: "Data warehouse security including network policies, MFA enforcement, and access controls"
 version: "0.4.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

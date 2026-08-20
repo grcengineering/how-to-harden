@@ -7,7 +7,7 @@ tier: "2"
 category: "Productivity"
 description: "Collaboration platform hardening for Notion including SAML SSO, workspace security, DLP, AI and MCP connection governance, and audit logging"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

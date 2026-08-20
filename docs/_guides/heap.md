@@ -7,7 +7,7 @@ tier: "3"
 category: "Data"
 description: "Digital insights platform hardening for Heap including SAML SSO, environment access, and data governance"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "5"
 category: "DevOps"
 description: "Comprehensive platform security for authentication, WAF, deployment protection, secrets, network isolation, security headers, and monitoring"
 version: "1.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

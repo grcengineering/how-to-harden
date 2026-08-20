@@ -7,7 +7,7 @@ tier: "2"
 category: "DevOps"
 description: "Microsoft DevOps security for pipelines, service connections, and artifact feeds"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

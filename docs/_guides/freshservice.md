@@ -7,7 +7,7 @@ tier: "5"
 category: "IT Operations"
 description: "ITSM security for API tokens, CMDB access, and change management controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

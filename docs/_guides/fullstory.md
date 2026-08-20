@@ -7,7 +7,7 @@ tier: "3"
 category: "Data"
 description: "Digital experience intelligence platform hardening for Fullstory including SAML SSO, data privacy controls, and access management"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

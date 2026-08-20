@@ -7,7 +7,7 @@ tier: "2"
 category: "Data"
 description: "ERP security for role-based access, SuiteScript controls, and integration hardening"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

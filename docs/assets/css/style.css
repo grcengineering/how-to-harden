@@ -522,6 +522,7 @@ body {
 .dot-ai { background: var(--color-ai); }
 .dot-drafted { background: #eab308; }
 .dot-reviewed { background: #3b82f6; }
+.dot-validated { background: #22c55e; }
 .dot-verified { background: #22c55e; }
 
 /* View toggle */
@@ -760,18 +761,91 @@ body {
   color: #eab308;
 }
 
-/* Human Reviewed - Blue with eye icon */
-.status-reviewed {
-  background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
+/* Card badges — one per status the guide holds, so both-agent guides visibly
+   carry more. Stage sets the hue; AI is a tint, NI is a solid. */
+.status-badge-set {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-/* Human Verified - Green with checkmark icon */
-.status-verified {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
+.status-ai-drafted   { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+.status-ai-reviewed  { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.status-ai-validated { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.status-ni-drafted   { background: #eab308; color: #1a1a1a; }
+.status-ni-reviewed  { background: #3b82f6; color: #ffffff; }
+.status-ni-validated { background: #22c55e; color: #1a1a1a; }
+
+
+/* ==========================================================================
+   Maturity matrix — per-requirement mark
+   Rendered by _includes/status-badge.html between a control's `### N.N` heading
+   and its `**Profile Level:**` line. It carries the same icon as the page
+   status banner on purpose: the page-level claim is the sum of these, so the
+   reader should recognise the mark in both places.
+   ========================================================================== */
+.status-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 0 0 var(--space-sm);
+  padding: 3px 10px 3px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
 }
 
+.status-mark .status-icon { flex-shrink: 0; }
+
+.status-mark-label { white-space: nowrap; }
+
+/* The evidence phrase is what makes the badge falsifiable — it names what was
+   actually exercised. Muted so the mark stays scannable. */
+.status-mark-evidence {
+  color: var(--color-text-secondary);
+  opacity: 0.95;
+  font-weight: 400;
+  font-size: 0.7rem;
+}
+
+.status-mark-evidence::before { content: "— "; }
+
+/* Per-status colours for the requirement mark — stage hue again, so the mark
+   beside a requirement matches the chip in the banner above it. */
+/* Scoped through .guide-body on purpose. `.guide-body p` (line ~1404) sets a
+   colour at the SAME specificity as a bare `p.status-mark-*` and appears later
+   in the file, so it won on source order and the mark rendered body-grey inside
+   a guide — losing the stage hue that ties it to the banner chip above. Measured,
+   not guessed: computed colour was rgb(57,69,80) until this selector matched. */
+.guide-body p.status-mark-ai-drafted, .guide-body p.status-mark-ni-drafted     { color: #a16207; }
+.guide-body p.status-mark-ai-reviewed, .guide-body p.status-mark-ni-reviewed   { color: #1D4ED8; }
+.guide-body p.status-mark-ai-validated, .guide-body p.status-mark-ni-validated { color: #15803d; }
+
+[data-theme="dark"] .guide-body p.status-mark-ai-drafted, [data-theme="dark"] .guide-body p.status-mark-ni-drafted     { color: #eab308; }
+[data-theme="dark"] .guide-body p.status-mark-ai-reviewed, [data-theme="dark"] .guide-body p.status-mark-ni-reviewed   { color: #6FA8FF; }
+[data-theme="dark"] .guide-body p.status-mark-ai-validated, [data-theme="dark"] .guide-body p.status-mark-ni-validated { color: #4ade80; }
+
+/* Cheat-sheet row badge: same mark, icon only, so a scanning reader sees which
+   requirements carry evidence without leaving the condensed view. */
+.cs-status-mark {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  color: #8b5cf6;
+  vertical-align: middle;
+}
+
+.cs-status-mark-ai-validated, .cs-status-mark-ni-validated { color: #16a34a; }
+.cs-status-mark-ai-reviewed, .cs-status-mark-ni-reviewed { color: #3b82f6; }
+.cs-status-mark-ai-drafted, .cs-status-mark-ni-drafted { color: #a16207; }
+[data-theme="dark"] .cs-status-mark-ai-validated, [data-theme="dark"] .cs-status-mark-ni-validated { color: #4ade80; }
 .guide-card-description {
   color: var(--color-text-secondary);
   font-size: 0.875rem;
@@ -902,19 +976,65 @@ body {
   color: #1a1a1a;
 }
 
-/* Human Reviewed banner - Blue with eye icon */
-.reviewed-banner {
+/* ==========================================================================
+   Maturity matrix — banner
+   Colour tracks the STAGE (how far the guide has come): amber drafted, blue
+   reviewed, green validated. The agent (AI vs NI) is carried by the chips
+   inside, not by the bar, because a guide can hold both agents at one stage and
+   the bar can only be one colour.
+   ========================================================================== */
+.stage-banner-drafted {
+  background: rgba(234, 179, 8, 0.95);
+  border-bottom: 1px solid rgba(234, 179, 8, 0.5);
+  color: #1a1a1a;
+}
+
+.stage-banner-reviewed {
   background: rgba(59, 130, 246, 0.95);
   border-bottom: 1px solid rgba(59, 130, 246, 0.5);
   color: #ffffff;
 }
 
-/* Human Verified banner - Green with checkmark icon */
-.verified-banner {
+.stage-banner-validated {
   background: rgba(34, 197, 94, 0.95);
   border-bottom: 1px solid rgba(34, 197, 94, 0.5);
   color: #1a1a1a;
 }
+
+.status-banner-version {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* Banner chips. NI is a person's judgement and reads heavier by design: solid
+   fill. AI is machine work: outlined. Same glyph, same size — the spark and the
+   weight are the only differences, so the pair reads as one system. */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 10px 2px 8px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.status-chip[class*="status-chip-ni-"] {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.92);
+  color: #1a1a1a;
+}
+
+.status-chip[class*="status-chip-ai-"] {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.stage-banner-reviewed .status-chip[class*="status-chip-ai-"] { color: #ffffff; }
+
 
 /* Adjust guide content to account for status banner */
 .guide {
@@ -2915,6 +3035,8 @@ summary:focus-visible,
    ========================================================================== */
 [data-theme="light"] .status-draft    { color: #6F5700; } /* amber  6.3:1 */
 [data-theme="light"] .status-reviewed { color: #1D4ED8; } /* blue   5.6:1 */
+[data-theme="light"] .status-ai-validated,
+
 [data-theme="light"] .status-verified { color: #166534; } /* green  6.3:1 */
 
 [data-theme="light"] .tier-1 { color: #A8262D; } /* red     ~6:1 */
@@ -2939,6 +3061,8 @@ summary:focus-visible,
    tint — brighten it to match how the DS lifts blue in dark mode. */
 [data-theme="dark"] .status-reviewed,
 [data-theme="dark"] .category-identity { color: #6FA8FF; }
+
+
 
 /* Honour reduced-motion: kill the homepage terminal cursor blink + transitions */
 @media (prefers-reduced-motion: reduce) {

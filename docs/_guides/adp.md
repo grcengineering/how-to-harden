@@ -7,7 +7,7 @@ tier: "3"
 category: "HR/Finance"
 description: "Payroll platform security for federated SSO, security roles, registration codes, third-party delegations, and security reporting"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

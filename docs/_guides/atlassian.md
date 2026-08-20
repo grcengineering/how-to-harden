@@ -10,7 +10,7 @@ tier: "2"
 category: "Productivity"
 description: "Platform-wide security hardening for Atlassian Cloud — the Common Controls hub (organization authentication, Atlassian Guard, Marketplace app governance, data security policies, org audit logging) shared by the Jira Cloud and Bitbucket product guides."
 version: "0.4.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

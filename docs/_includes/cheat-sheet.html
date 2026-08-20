@@ -92,6 +92,11 @@
         why: [],
         attack: '',
         packLinks: [],
+        // The per-requirement status marks this control carries (a control can
+        // hold more than one — e.g. AI Validated and NI Validated). Cloned from
+        // the rendered guide body rather than re-authored, so the cheat sheet
+        // can never drift from the marks the guide itself shows.
+        statusMarks: [],
         anchorId: h3.id || ''
       };
 
@@ -103,7 +108,22 @@
       while (node && node.tagName !== 'H3') {
         var tag = node.tagName;
 
-        if (tag === 'H4') {
+        if (node.classList && node.classList.contains('status-mark')) {
+          // Must precede the generic P branch below: the mark IS a <p>, so a
+          // tag-first chain would swallow it and the cheat sheet would silently
+          // show no marks while the guide body showed them all.
+          var markIcon = node.querySelector('svg.status-icon');
+          if (markIcon) {
+            var statusClass = (node.className.match(/status-mark-([a-z-]+)/) || [null, ''])[1];
+            ctrl.statusMarks.push({
+              svg: markIcon.outerHTML,
+              status: statusClass,
+              label: node.getAttribute('aria-label') || 'Validated'
+            });
+          }
+          prevWasWhy = false;
+
+        } else if (tag === 'H4') {
           var h4t = node.textContent.trim().toLowerCase();
           inDescription = (h4t === 'description');
           inRationale = (h4t === 'rationale');
@@ -146,7 +166,7 @@
           }
           prevWasWhy = false;
 
-        } else if (node.classList && node.classList.contains('pack-code-section')) {
+                } else if (node.classList && node.classList.contains('pack-code-section')) {
           // Pull the pack type from the type badge class and the GitHub source URL
           var typeEl = node.querySelector('[class*="pack-type-"]');
           var typeMatch = typeEl ? typeEl.className.match(/pack-type-(\w+)/) : null;
@@ -213,6 +233,12 @@
           + '<span class="ctrl-num">' + esc(c.num) + '</span>'
           + esc(c.name)
           + '</a>';
+
+        c.statusMarks.forEach(function(sm) {
+          reqCell += '<span class="cs-status-mark cs-status-mark-' + esc(sm.status)
+            + '" role="img" aria-label="' + esc(sm.label) + '" title="' + esc(sm.label) + '">'
+            + sm.svg + '</span>';
+        });
 
         if (c.packLinks.length) {
           reqCell += '<div class="cs-pack-links">';

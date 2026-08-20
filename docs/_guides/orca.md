@@ -7,7 +7,7 @@ tier: "2"
 category: "Security"
 description: "Cloud security platform hardening for Orca Security including SAML SSO, role-based access, and cloud account integration"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

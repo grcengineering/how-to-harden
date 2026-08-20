@@ -7,7 +7,7 @@ tier: "4"
 category: "Data"
 description: "BI platform security for site roles, data source credentials, and embed controls"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

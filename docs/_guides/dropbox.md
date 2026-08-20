@@ -7,7 +7,7 @@ tier: "3"
 category: "Data"
 description: "Cloud storage security for sharing policies, linked apps, and admin controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

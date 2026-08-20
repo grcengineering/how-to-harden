@@ -1,0 +1,67 @@
+{% comment %}
+  Normalises a guide's `maturity` frontmatter into an ordered status set.
+
+  `maturity` is a SET, because the ladder is a matrix: a guide can be AI Drafted
+  and NI Drafted at once, and being both AI Validated and NI Validated is
+  strictly better than either alone. So the frontmatter carries a list:
+
+      maturity: ["ai-drafted", "ai-validated"]
+
+  Sets in, three things out (Liquid assigns leak to the caller by design, which
+  is what makes this shareable between the guide layout and the home page):
+
+    statuses        — the guide's statuses in canonical order (stage ascending,
+                      AI before NI within a stage), never frontmatter order, so
+                      the chips read the same everywhere no matter how the file
+                      was written.
+    top_stage       — drafted | reviewed | validated. The furthest stage reached
+                      by either agent; the banner paints with this.
+    version_suffix  — what follows the version number. A stage reached by BOTH
+                      agents drops the agent prefix — `-validated` means a
+                      machine AND a person did it, which is the strongest thing
+                      this vocabulary can say.
+
+  Legacy scalars still resolve, so no guide can silently lose its status while
+  the corpus is being converted: "draft" → ai-drafted, "reviewed" → ni-reviewed,
+  "verified" → ni-validated (the old label meant a person tested it in a real
+  environment, which is exactly ni-validated).
+
+  Param: guide — the page/document. Defaults to `page`.
+{% endcomment %}
+{% assign status_doc = include.guide | default: page %}
+{% assign raw_maturity = status_doc.maturity %}
+
+{% if raw_maturity.first %}
+  {% assign raw_list = raw_maturity %}
+{% elsif raw_maturity == "verified" or raw_maturity == "human-verified" %}
+  {% assign raw_list = "ai-drafted,ni-validated" | split: "," %}
+{% elsif raw_maturity == "reviewed" or raw_maturity == "human-reviewed" %}
+  {% assign raw_list = "ai-drafted,ni-reviewed" | split: "," %}
+{% elsif raw_maturity == "ai-validated" %}
+  {% assign raw_list = "ai-drafted,ai-validated" | split: "," %}
+{% else %}
+  {% assign raw_list = "ai-drafted" | split: "," %}
+{% endif %}
+
+{% assign status_order = "ai-drafted,ni-drafted,ai-reviewed,ni-reviewed,ai-validated,ni-validated" | split: "," %}
+{% assign statuses = "" | split: "," %}
+{% for candidate in status_order %}
+  {% if raw_list contains candidate %}
+    {% assign statuses = statuses | push: candidate %}
+  {% endif %}
+{% endfor %}
+{% if statuses.size == 0 %}{% assign statuses = "ai-drafted" | split: "," %}{% endif %}
+
+{% assign top_stage = "drafted" %}
+{% assign top_agents = "" %}
+{% if statuses contains "ai-reviewed" or statuses contains "ni-reviewed" %}{% assign top_stage = "reviewed" %}{% endif %}
+{% if statuses contains "ai-validated" or statuses contains "ni-validated" %}{% assign top_stage = "validated" %}{% endif %}
+{% assign ai_top = "ai-" | append: top_stage %}
+{% assign ni_top = "ni-" | append: top_stage %}
+{% if statuses contains ai_top and statuses contains ni_top %}
+  {% assign version_suffix = top_stage %}
+{% elsif statuses contains ni_top %}
+  {% assign version_suffix = ni_top %}
+{% else %}
+  {% assign version_suffix = ai_top %}
+{% endif %}

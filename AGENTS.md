@@ -158,6 +158,38 @@ hardening_docs:
     url: "https://..."
 ```
 
+
+### 8. Maturity Is a Matrix, and Every Cell Is Earned by an Act
+
+Every guide carries a `maturity` value drawn from a **matrix, not a ladder**: three **stages** — `drafted` → `reviewed` → `validated` — crossed with two **agents** — `ai` (artificial intelligence, a machine) and `ni` (natural intelligence, a person). Six statuses, and they are **not mutually exclusive**, so the value is a **list**:
+
+```yaml
+maturity: ["ai-drafted", "ai-validated"]
+```
+
+**The six statuses are defined once, in [VERSIONS.md](VERSIONS.md#maturity-statuses--the-matrix).** Do not restate the definitions here, in a guide, or in a PR description — link to them, so there is one copy to keep true.
+
+The operational rule is who may write each status:
+
+| Status | Set by |
+|--------|--------|
+| `ai-drafted` | An AI authoring run (`create-hth-guide`). Every AI-written guide starts here and holds nothing else until something makes contact with the product or exercises judgement over the content. |
+| `ni-drafted` | The human author, in the PR that lands the content. Writing is not reviewing. |
+| `ai-reviewed` | An agent review run, named in the changelog. Never hand-typed. |
+| `ni-reviewed` | Maintainers, after a named human review. |
+| `ai-validated` | Only a [`validate-hth-guide`](.claude/skills/validate-hth-guide/SKILL.md) run, as its Phase 6 close-out, and only when that run closed `FAIL = 0` with at least one `VERIFIED-LIVE` result. |
+| `ni-validated` | Maintainers, after a named test on a real system. |
+
+**An `ai-*` status asserts what a machine did and asserts nothing about human judgement.** `ai-validated` means an agent exercised the guidance against a real tenant or console and it survived — not that anyone decided the control was the right control. It is not a cheap `ni-reviewed` and never discharges the need for one. Writing any status by hand is not a formatting choice; it is asserting an act that did not happen.
+
+**Statuses combine; that is how "better" is expressed.** There is no seventh status above `ai-validated`. A guide that a machine *and* a person validated holds both, and the version qualifier drops the agent prefix to say so — `v1.0.0-validated` is the strongest string in the system. The qualifier is derived by `docs/_includes/status-set.html`, never typed: furthest stage reached, agent-prefixed unless both agents reached it.
+
+**Right now the entire NI row is empty.** All 130 guides are `ai-drafted`; two (Buildkite, Ona) are additionally `ai-validated`. No guide has ever held `ni-drafted`, `ni-reviewed`, or `ni-validated`. When writing about the corpus, say that plainly — the NI half of the matrix is a standing invitation to reviewers, not a description of anything that has happened.
+
+**The per-requirement badge.** Any status can also mark an individual control, via `{% include status-badge.html status="…" evidence="…" date="…" %}` — one line, on its own line, **between** the control's `### N.N` heading and its `**Profile Level:**` line. In practice `ai-validated` is what gets stamped, and only on controls that came back `VERIFIED-LIVE`; `SKIPPED`, `BLOCKED`, and `DRIFT-CHECKED-ONLY` controls may not carry it. Two badges on one control go on consecutive lines in the same slot — they add, they do not replace. Every other placement breaks something **silently**: inside the heading it rewrites the kramdown anchor that 2,300+ in-guide links and every pack `guide_url` depend on and corrupts the cheat-sheet control name; alongside `**Profile Level:**` the cheat parser stops seeing the level and the control drops off the sheet entirely; under `#### Description` the badge text is captured as the description cell. The contract lives in the comment block of `docs/_includes/status-badge.html` — read it before stamping.
+
+**`scripts/validate-guides.sh` Test 5b** rejects a bare scalar, any name outside the six statuses, an empty list, and any `*-reviewed`/`*-validated` claim that does not rest on a `*-drafted` claim in the same set (nothing can be reviewed or validated before it exists). It exists because an unrecognised value fails nowhere else — `docs/_includes/status-set.html` falls through to a bare `{% else %}` that resolves to `ai-drafted`, publishing a guide whose banner contradicts its own frontmatter with zero red anywhere. The test cannot tell an earned status from a typed one; that part is Rule 8.
+
 ---
 
 ## Task Procedures
@@ -306,6 +338,13 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 | Deciding "this vendor has no CLI" from memory | Look it up in `docs/research/cli-inventory.md`. 26 vendors with a documented admin-capable first-party CLI currently ship zero `cli/` packs — Check 17 lists them |
 | A pack file that is 100% comments | Prose in code markers is not a Code Pack (Rule 2b). Check 15 fails it. If the honest answer is "no automation exists," that belongs in the guide as the Rule 4 `**Automation:**` line — not in a `.tf` file with nothing in it |
 | Renumbering existing controls | Never — pack includes and inbound anchors depend on the numbers. New controls take the next free number at the end of their section |
+| Hand-adding a `maturity` status | Each status is a claim that a specific act happened (Rule 8). `ai-validated` is written only by a `validate-hth-guide` run; every `ni-*` only by a maintainer after a named review or test. Test 5b checks the shape and the spelling, not the truth |
+| Writing `maturity` as a scalar | It is a SET — `maturity: ["ai-drafted"]`, never `maturity: "ai-drafted"`. Statuses combine (a guide can be AI Drafted and NI Drafted, AI Validated and NI Validated), so the frontmatter is a list and Test 5b rejects the scalar form outright |
+| Describing a guide as "reviewed" or "validated" with no agent named | That ambiguity is exactly what the agent axis removes. Say `ai-validated` or `ni-validated`; an unqualified word invites a reader to assume a human was involved when none was |
+| Claiming any `ni-*` status for the corpus | No guide has ever held one. Every guide is `ai-drafted`, two are also `ai-validated`. Prose that implies human review exists is the single most damaging inaccuracy this repo can ship |
+| A status badge on a control nobody exercised | The badge and the page banner render the same mark, so a badge on a `SKIPPED`/`BLOCKED`/`DRIFT-CHECKED-ONLY` control reads as the page-level claim applied to that requirement. Stamp one badge per `VERIFIED-LIVE` row in the run ledger — never from memory of what the run "basically covered" |
+| Badge placed anywhere but between the `### N.N` heading and `**Profile Level:**` | Every other slot fails silently — corrupted heading anchor, control dropped from the cheat sheet, or the badge eaten as the description cell (Rule 8) |
+| Correcting a validated guide and leaving the status standing | A currency pass that moves a console path invalidates the validation. Remove the statuses that finding invalidates (usually back to `["ai-drafted"]`) and strip the badges on the controls you changed — nothing in the lint compares a badge to the text beside it |
 | SOURCES.md example URL left as an unverified placeholder | Every row in every standing-list table needs a real, specific, fetch-verified, currently-live example URL — never ship an italicized "described, not verified" placeholder; that notation is a research-in-progress state only, not a final answer. "Relevant" is broader than literal "hardening guide" wording: product docs, threat-intel writeups, and detection-engineering posts all count if they teach prevention, detection, deception, remediation, or recovery for a specific platform |
 
 ---
@@ -320,6 +359,10 @@ See [docs/about.md](docs/about.md) for category descriptions and examples.
 | Scope/philosophy | `PHILOSOPHY.md` |
 | Project structure | `README.md` |
 | Categories | `docs/about.md` |
+| Versioning + the maturity matrix (canonical) | `VERSIONS.md` |
+| Status badge contract | `docs/_includes/status-badge.html` (comment block) |
+| Status set → chips + version qualifier | `docs/_includes/status-set.html` (comment block) |
+| Status icon (stage = glyph, AI = spark) | `docs/_includes/status-icon.html` (comment block) |
 | Jekyll config | `docs/_config.yml` |
 
 ---
@@ -332,7 +375,8 @@ Run the battery (Windows: through Git Bash — the scripts carry cygpath/UTF-8 s
 2. `grep -rcE '^ *```' docs/_guides/*.md | grep -v ':0'` → must print nothing (zero fences)
 3. If packs/includes changed: `bash scripts/sync-packs-to-data.sh` → every vendor `✓`, and every include's section key must exist in its vendor yml (a missing key renders nothing, silently)
 4. Cheat parity on touched guides: every `**Profile Level:**` section has `#### Description` + Rationale/Why (Rule 6)
-5. If packs changed: `bash scripts/validate-packs.sh [vendor]` → zero FAILs, and **read the coverage warnings** (checks 15–17). They are the only thing in this repo that measures whether Rule 4 was actually followed; a green run with an ignored monoculture warning is how the corpus got here.
+5. If a guide's `maturity` set or any status badge changed: the value is a list drawn from the six statuses, every status was written by whoever Rule 8 permits, and the badge count equals the run ledger's `VERIFIED-LIVE` count — `grep -c 'include status-badge.html' docs/_guides/{slug}.md`
+6. If packs changed: `bash scripts/validate-packs.sh [vendor]` → zero FAILs, and **read the coverage warnings** (checks 15–17). They are the only thing in this repo that measures whether Rule 4 was actually followed; a green run with an ignored monoculture warning is how the corpus got here.
 
 Claude Code users: the repo ships skills that encode these workflows end-to-end — `create-hth-guide`, `update-hth-guide`, `create-code-pack`, `validate-hth-guide`, `verify-hth` (in `.claude/skills/`).
 
@@ -352,6 +396,8 @@ Claude Code users: the repo ships skills that encode these workflows end-to-end 
 
 | Date | Changes |
 |------|---------|
+| 2026-08-20 | Rewrote Rule 8 for the maturity **matrix**: three stages × two agents (`ai` / `ni`), six non-exclusive statuses held as a list, who may write each, the derived version qualifier, the `status-badge.html` placement contract, and Test 5b's list/name/`*-drafted` rules. Recorded that no guide holds any `ni-*` status. Added Common Mistakes rows for scalar `maturity`, agent-less status words, and claiming human review that does not exist. |
+| 2026-08-20 | Added Rule 8: machine validation entered the vocabulary as `ai-validated` — superseded the same day by the matrix. |
 | 2026-08-08 | Post-audit refresh: full pack-type table (config/, siem/ split from db/, first-party-CLI rule) with the (section,type) collision rule; Rule 6 cheat-sheet parser contract; Rule 7 hardening-link standard with multi-source list form; multi-product platform procedure; verification battery section; incident table extended (Storm-2372, ELUSIVE COMET, UNC6040, Cyata Vault); new mistake rows (Liquid raw-escape, invisible cheat rows, pack collisions, no-write-API honesty, renumbering ban); pointer to the .claude/skills authoring skills. |
 | 2026-05-06 | Added Rule 5: revision dates must reflect the commit/push date, not the drafting date. Added matching Common Mistakes row. |
 | 2025-12-27 | Restructured to reference source files, removed duplications |

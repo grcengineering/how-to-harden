@@ -7,7 +7,7 @@ tier: "1"
 category: "DevOps"
 description: "AI code editor security hardening for code privacy, MCP security, agent sandboxing, API key management, and workspace trust"
 version: "0.4.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 
