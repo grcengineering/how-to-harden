@@ -78,21 +78,55 @@ if [ "${1:-}" = "--touched" ]; then
   fi
   echo ""
   echo "═══ --touched verdict ═══"
-  TOUCHED="$touched" REPORT="$report" python3 << 'PYEOF' || exit 1
+  # Split touched guides into body-changed vs frontmatter-only: only the former
+  # inherits its vendor's pack findings (see the note in the filter below).
+  body_changed=""
+  for g in $(echo "$touched" | grep '^docs/_guides/' || true); do
+    old_body="$(git -C "${REPO_ROOT}" show "$base:$g" 2>/dev/null | awk 'BEGIN{n=0} /^---[[:space:]]*$/{n++; if(n<=2) next} n>=2{print}' || true)"
+    new_body="$(awk 'BEGIN{n=0} /^---[[:space:]]*$/{n++; if(n<=2) next} n>=2{print}' "${REPO_ROOT}/$g" 2>/dev/null || true)"
+    if [ "$old_body" != "$new_body" ]; then
+      body_changed="${body_changed}${g}"$'\n'
+    fi
+  done
+
+  TOUCHED="$touched" BODY_CHANGED="$body_changed" REPORT="$report" python3 << 'PYEOF' || exit 1
 import os, re, sys
 
 touched = [p for p in os.environ["TOUCHED"].splitlines() if p.strip()]
+# Guides whose content (not just YAML frontmatter) changed on this branch.
+BODY_CHANGED_GUIDES = set(
+    p for p in os.environ.get("BODY_CHANGED", "").splitlines() if p.strip()
+)
 # A finding is "yours" when it names a file you changed, or that file's vendor
 # directory. Findings are printed either inline on the FAIL line or as indented
 # items beneath it, so both forms are matched.
 keys = set()
 for p in touched:
+    parts = p.split('/')
+    is_guide = parts[0] == 'docs' and len(parts) > 1 and parts[1] == '_guides'
+    # A frontmatter-only guide edit claims NOTHING. Its own path and basename are
+    # withheld too, because findings name a guide as the TARGET of a broken
+    # anchor ("... NOT FOUND in github.md") — matching on the bare filename is
+    # how a metadata sweep inherited another vendor's anchor debt.
+    if is_guide and p not in BODY_CHANGED_GUIDES:
+        continue
     keys.add(p)
     keys.add(os.path.basename(p))
-    parts = p.split('/')
     if parts[0] == 'packs' and len(parts) > 1:
         keys.add(parts[1] + '/')
-    if parts[0] == 'docs' and parts[1] == '_guides':
+    if is_guide:
+        # A guide edit inherits its vendor's pack findings, because editing a
+        # guide really can break that vendor's packs — a renamed heading moves
+        # an anchor a control YAML's guide_url points at, a removed include
+        # orphans a pack section.
+        #
+        # But ONLY when the guide's BODY changed. A frontmatter-only edit (a
+        # maturity sweep across every guide, a date restamp) cannot move an
+        # anchor, cannot touch an include, cannot rename a control — so
+        # attributing the vendor's pre-existing pack debt to it is a false
+        # accusation, and a repo-wide metadata edit would inherit the debt of
+        # all 71 vendors at once. Measured: one such sweep attributed 43
+        # findings across 8 vendors to a branch that changed one line per file.
         keys.add(os.path.splitext(parts[-1])[0] + '/')
 
 mine, in_fail = [], None
