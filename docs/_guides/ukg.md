@@ -7,7 +7,7 @@ tier: "2"
 category: "HR/Finance"
 description: "HCM platform hardening for UKG Pro including SAML SSO configuration, authentication upgrade features, and access controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

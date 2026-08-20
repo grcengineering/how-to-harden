@@ -7,7 +7,7 @@ tier: "2"
 category: "Marketing"
 description: "Customer engagement platform hardening for Braze including SAML SSO, permission sets, and API security"
 version: "0.1.2"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

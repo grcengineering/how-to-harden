@@ -10,7 +10,7 @@ tier: "1"
 category: "Productivity"
 description: "Tenant-wide security hardening for Microsoft 365 — the Common Controls hub (MFA and legacy auth, PIM, break-glass, OAuth consent, data security, unified audit logging, Exchange Online and Teams) shared by the Microsoft Entra ID and Microsoft Intune product guides."
 version: "0.3.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "2"
 category: "Productivity"
 description: "E-commerce platform hardening for Shopify Plus including SAML SSO, staff permissions, and store security"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -13,7 +13,7 @@ Seven checks, each with a command and an explicit pass condition. ALL must pass 
 bash scripts/validate-guides.sh
 ```
 
-**Pass:** output ends `ALL TESTS PASSED`. Covers pack-YAML validity, code-block languages, table separators, table blank lines, unescaped Liquid, valid categories, required frontmatter, required structural sections.
+**Pass:** output ends `ALL TESTS PASSED`. Covers pack-YAML validity, code-block languages, table separators, table blank lines, unescaped Liquid, valid categories, maturity sets (Test 5b — list form, the six status names, and the rule that a `*-reviewed`/`*-validated` claim rests on a `*-drafted` one), required frontmatter, required structural sections.
 **On fail:** the failing test names the file/line. Unescaped Liquid → wrap the literal `{{...}}` in `{% raw %}...{% endraw %}`.
 
 ## Check 2 — Zero inline fences in guides
@@ -62,12 +62,21 @@ Also confirm no same-(section, type) shadowing was introduced (create-code-pack 
 
 ## Check 5 — Bookkeeping consistency (touched guides)
 
-Manual three-liner — verify each:
+Manual pass — verify each:
 
 1. Frontmatter `last_updated` == newest changelog row date == `date +%F` (the commit date, not the drafting date)
 2. Frontmatter `version` == newest changelog row version
 3. No existing control renumbered; new controls take the next free `### N.M` at the end of their section
 4. Profile levels use the canonical Crawl/Walk/Run/Fly names — `grep -cE '\((Baseline|Hardened|Maximum Security)\)' docs/_guides/{slug}.md` must return 0
+5. If `maturity` or any status badge changed, three things must agree:
+
+```bash
+grep -E '^maturity:' docs/_guides/{slug}.md                  # a LIST of the six statuses, resting on a *-drafted one
+grep -c 'include status-badge.html' docs/_guides/{slug}.md   # == the VERIFIED-LIVE count in the run ledger
+grep -c 'include ai-validated.html' docs/_guides/{slug}.md   # must be 0 — retired include, replaced by status-badge.html
+```
+
+   Maturity is a matrix (three stages × `ai`/`ni`), held as a **set**, so a promotion *adds* a member — `["ai-drafted"]` → `["ai-drafted", "ai-validated"]` — and never overwrites the list with a scalar. Test 5b catches the shape; only you can catch a status that was typed rather than earned, and only a `validate-hth-guide` run may write `ai-validated`. **No guide holds any `ni-*` status**, so any `ni-*` appearing here is a defect unless a maintainer put it there deliberately.
 
 ## Check 6 — Pack corpus validation and automation coverage
 

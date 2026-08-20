@@ -50,8 +50,9 @@ Hunt MATERIAL deltas per source tier (SOURCES.md):
 
 1. Changelog: new top row — date `date +%F`, version bump (minor for new controls, patch for corrections only), a one-line summary naming what changed.
 2. Frontmatter `version` and `last_updated` must equal the new changelog row.
-3. Escape any literal `{{...}}` introduced (Vault templates etc.) with `{% raw %}...{% endraw %}`.
-4. **Run the `verify-hth` skill.** Its battery has caught real slips in this exact workflow (missing changelog rows, unescaped Liquid) — never skip it.
+3. **`maturity` is not yours to add to — and may well need statuses removed.** Maturity is a matrix, not a ladder: three stages (`drafted` → `reviewed` → `validated`) × two agents (`ai` = a machine, `ni` = a person), held as a **list** ([VERSIONS.md](../../../VERSIONS.md#maturity-statuses--the-matrix)). Only a [`validate-hth-guide`](../validate-hth-guide/SKILL.md) run may add `ai-validated`, and only maintainers may add any `ni-*`. A currency pass reads documents; it does not touch a tenant and it is not a human practitioner's judgement, so it can never earn a status. It can however **invalidate** one: if you corrected a guide holding `ai-validated` — a moved console path, a removed setting, a changed default — that status is now a claim about a world that has moved. Remove it from the set (usually leaving `["ai-drafted"]`), delete the per-requirement `{% include status-badge.html %}` badges on every control you changed, and say so in the changelog row, whose Maturity column carries the full set as of that row so the narrowing is visible. A stale status is worse than none: it is the site telling a reader that something was checked when what was checked is gone.
+4. Escape any literal `{{...}}` introduced (Vault templates etc.) with `{% raw %}...{% endraw %}`.
+5. **Run the `verify-hth` skill.** Its battery has caught real slips in this exact workflow (missing changelog rows, unescaped Liquid) — never skip it.
 
 ## Gotchas
 
@@ -59,4 +60,5 @@ Hunt MATERIAL deltas per source tier (SOURCES.md):
 - Conflicting strictness between vendor and benchmark is documented as BOTH-with-callout, never silently resolved (SOURCES.md conflict rules).
 - When two research sources disagree on a date/status, re-fetch the primary; if still ambiguous, state the claim cautiously without asserting the disputed specifics.
 - Version bumps and changelog rows move together — the linter checks structure, not consistency; consistency is on you.
+- Correcting a validated guide silently downgrades its truth without downgrading its badge. The frontmatter set still contains `ai-validated` and the control still wears the mark, because nothing in the lint compares a badge to the text beside it — that check is this step, done by you.
 - On Windows, repo scripts run through Git Bash (`bash scripts/...`).

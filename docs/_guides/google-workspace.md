@@ -10,7 +10,7 @@ tier: "1"
 category: "Productivity"
 description: "Platform-wide security hardening for Google Workspace — the Common Controls hub (authentication, OAuth, DLP engine, audit logging) shared by the Gmail, Google Drive, and Google Chat product guides."
 version: "0.4.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

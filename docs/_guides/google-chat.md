@@ -10,7 +10,7 @@ tier: "1"
 category: "Productivity"
 description: "Security hardening for Google Chat — app & webhook controls, external chat & spaces, file sharing, history, retention & auto-deletion, third-party archiving, DLP for Chat, space access defaults and space inventory, audit logging, content protection, moderation, and Policy API drift detection."
 version: "0.3.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-12"
 ---
 

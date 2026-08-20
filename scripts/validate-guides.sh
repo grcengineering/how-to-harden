@@ -30,8 +30,12 @@ DATA_DIR="${REPO_ROOT}/docs/_data/packs"
 FAIL_COUNT=0
 WARN_COUNT=0
 
-fail() { echo "  FAIL: $1"; ((FAIL_COUNT++)); }
-warn() { echo "  WARN: $1"; ((WARN_COUNT++)); }
+# `|| true`: under `set -e`, ((FAIL_COUNT++)) returns the PRE-increment value, so
+# the very first failure returned 0 and killed the script — the run printed the
+# FAIL headline, then no detail lines, no later tests and no summary. A gate that
+# goes quiet exactly when it fires is worse than no gate.
+fail() { echo "  FAIL: $1"; ((FAIL_COUNT++)) || true; }
+warn() { echo "  WARN: $1"; ((WARN_COUNT++)) || true; }
 pass() { echo "  PASS: $1"; }
 
 echo "═══ HTH Guide Validation ═══"
@@ -212,10 +216,23 @@ guides_dir = os.environ["GUIDES_DIR"]
 files = sorted(glob.glob(os.path.join(guides_dir, "*.md")))
 
 VALID_CATS = {"Identity", "Security", "DevOps", "Data", "Productivity", "HR/Finance", "Marketing", "IaC", "IT Operations", "AI/ML Platform"}
+# The maturity matrix: three STAGES (drafted -> reviewed -> validated) x two
+# AGENTS (ai = artificial intelligence, ni = natural intelligence, i.e. a
+# person). The six are not mutually exclusive, so `maturity` is a SET:
+#
+#     maturity: ["ai-drafted", "ai-validated"]
+#
+# This test exists because an unrecognised value does NOT fail anywhere else:
+# docs/_includes/status-set.html falls through to a bare {% else %} that assigns
+# "ai-drafted", so a typo'd or invented status silently publishes a guide whose
+# banner contradicts its own frontmatter. That is the one failure mode of this
+# matrix that produces zero red, so it is caught here instead.
+VALID_MATURITY = {"ai-drafted", "ni-drafted", "ai-reviewed", "ni-reviewed", "ai-validated", "ni-validated"}
 REQUIRED_FIELDS = ["layout", "vendor", "slug", "category", "description", "version", "maturity", "last_updated"]
 REQUIRED_SECTIONS = ["Overview", "Intended Audience", "How to Use This Guide", "Scope", "Changelog"]
 
 cat_issues = []
+mat_issues = []
 fm_issues = []
 struct_issues = []
 
@@ -240,6 +257,29 @@ for fpath in files:
     if cat_val and cat_val not in VALID_CATS:
         cat_issues.append(f"{fname}: invalid category '{cat_val}'")
 
+    # Test 5b: Maturity must be a non-empty set of statuses the site can render,
+    # and the set must be internally honest about its own order.
+    mat_val = fm_fields.get("maturity", "")
+    if mat_val:
+        if not (mat_val.startswith("[") and mat_val.endswith("]")):
+            mat_issues.append(f"{fname}: invalid maturity '{mat_val}' (expected a list, e.g. [\"ai-drafted\"] — maturity is a set, not a scalar)")
+        else:
+            inner = mat_val[1:-1].strip()
+            members = [p.strip().strip('"').strip("'") for p in inner.split(",")] if inner else []
+            members = [p for p in members if p]
+            if not members:
+                mat_issues.append(f"{fname}: empty maturity '{mat_val}' (expected at least one of: " + ", ".join(sorted(VALID_MATURITY)) + ")")
+            else:
+                bad = [p for p in members if p not in VALID_MATURITY]
+                for p in bad:
+                    mat_issues.append(f"{fname}: invalid maturity '{p}' (expected one of: " + ", ".join(sorted(VALID_MATURITY)) + ")")
+                if not bad:
+                    # Nothing can be reviewed or validated before it exists, so any
+                    # higher stage has to sit on top of a *-drafted claim.
+                    higher = sorted(p for p in members if p.endswith("-reviewed") or p.endswith("-validated"))
+                    if higher and not any(p.endswith("-drafted") for p in members):
+                        mat_issues.append(f"{fname}: maturity claims " + ", ".join(higher) + " without a *-drafted status (nothing can be reviewed or validated before it exists)")
+
     # Test 6: Required frontmatter fields
     for field in REQUIRED_FIELDS:
         if field not in fm_fields:
@@ -256,6 +296,11 @@ print(len(cat_issues))
 for issue in cat_issues:
     print(f"    {issue}")
 
+print("===MAT===")
+print(len(mat_issues))
+for issue in mat_issues:
+    print(f"    {issue}")
+
 print("===FM===")
 print(len(fm_issues))
 for issue in fm_issues[:40]:
@@ -270,13 +315,25 @@ PYEOF
 
 # Parse Test 5 results
 echo "▸ Test 5: Frontmatter categories are valid"
-cat_section=$(echo "$meta_results" | sed -n '/===CAT===/,/===FM===/p' | sed '$d' | tail -n +2)
+cat_section=$(echo "$meta_results" | sed -n '/===CAT===/,/===MAT===/p' | sed '$d' | tail -n +2)
 cat_count=$(echo "$cat_section" | head -1)
 if [ "$cat_count" -gt 0 ]; then
   fail "${cat_count} invalid categories found:"
   echo "$cat_section" | tail -n +2
 else
   pass "All categories valid across $(ls "${GUIDES_DIR}"/*.md | wc -l) guides"
+fi
+echo ""
+
+# Parse Test 5b results
+echo "▸ Test 5b: Frontmatter maturity is a renderable, self-consistent status set"
+mat_section=$(echo "$meta_results" | sed -n '/===MAT===/,/===FM===/p' | sed '$d' | tail -n +2)
+mat_count=$(echo "$mat_section" | head -1)
+if [ "$mat_count" -gt 0 ]; then
+  fail "${mat_count} invalid maturity values found:"
+  echo "$mat_section" | tail -n +2
+else
+  pass "All maturity sets render ({ai,ni}-{drafted,reviewed,validated}) and rest on a *-drafted claim"
 fi
 echo ""
 

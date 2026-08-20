@@ -7,7 +7,7 @@ tier: "2"
 category: "DevOps"
 description: "API platform security hardening for Postman Enterprise including SSO, team policies, and API key management"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

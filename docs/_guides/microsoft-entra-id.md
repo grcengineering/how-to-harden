@@ -10,7 +10,7 @@ tier: "1"
 category: "Identity"
 description: "Microsoft Entra ID hardening for the identity control plane — authentication methods and strengths, Conditional Access policy authoring, PIM role settings, access reviews, restricted management administrative units, and identity log export."
 version: "0.3.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

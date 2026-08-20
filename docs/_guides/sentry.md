@@ -7,7 +7,7 @@ tier: "2"
 category: "DevOps"
 description: "Application monitoring platform hardening for Sentry including SAML SSO, team access, data scrubbing, and integration security"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "4"
 category: "Marketing"
 description: "E-commerce marketing security for API keys, profile protection, and export controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

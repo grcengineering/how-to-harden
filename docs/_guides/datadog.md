@@ -7,7 +7,7 @@ tier: "1"
 category: "Security"
 description: "Observability platform hardening for Datadog including SAML SSO, role-based access control, sensitive data redaction, cloud integration security, and organization security settings"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

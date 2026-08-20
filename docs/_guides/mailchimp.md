@@ -7,7 +7,7 @@ tier: "4"
 category: "Marketing"
 description: "Email marketing security for API keys, audience protection, and domain authentication"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

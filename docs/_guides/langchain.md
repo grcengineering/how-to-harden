@@ -7,7 +7,7 @@ tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for the LangChain library, LangSmith observability platform, and LangGraph deployment platform — covering SSO/RBAC, SDK CVE patching, prompt injection defense (OWASP LLM Top 10), tracing redaction, audit logs, and self-hosted deployment"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "2"
 category: "Marketing"
 description: "Customer messaging platform hardening for Intercom including SAML SSO, workspace security, and data protection"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

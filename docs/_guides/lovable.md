@@ -7,7 +7,7 @@ tier: "3"
 category: "AI/ML Platform"
 description: "Security and privacy hardening for Lovable workspaces and the apps they publish — SSO/SCIM, workspace access governance, AI-agent and MCP surface controls, Lovable Cloud data protection (RLS, secrets, storage), security scanning gates, AI training opt-out, and audit logging."
 version: "0.1.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-15"
 ---
 

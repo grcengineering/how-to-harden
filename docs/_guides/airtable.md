@@ -7,7 +7,7 @@ tier: "2"
 category: "Productivity"
 description: "Low-code platform hardening for Airtable Business and Enterprise Scale including SSO, admin panel controls, AI governance, export controls, and collaboration security"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

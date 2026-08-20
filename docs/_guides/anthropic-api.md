@@ -10,7 +10,7 @@ tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for the Claude API and Console — API key scoping and rotation, workload identity federation, workspace segmentation, data residency and retention, and usage/spend monitoring."
 version: "1.1.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-15"
 ---
 

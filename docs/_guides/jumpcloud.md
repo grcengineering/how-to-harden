@@ -7,7 +7,7 @@ tier: "2"
 category: "Identity"
 description: "Cloud directory and identity management hardening for JumpCloud SSO, MFA, and device management"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

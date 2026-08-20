@@ -7,7 +7,7 @@ tier: "2"
 category: "Identity"
 description: "Multi-factor authentication hardening for Cisco Duo, admin policies, and bypass protection"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

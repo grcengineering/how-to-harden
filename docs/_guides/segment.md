@@ -7,7 +7,7 @@ tier: "2"
 category: "Data"
 description: "Customer data platform hardening for Segment including SAML SSO, workspace access, and data governance"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

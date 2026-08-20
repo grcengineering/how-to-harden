@@ -1,8 +1,8 @@
 # [Vendor Name] [Product Name] Hardening Guide
 
-**Version:** v0.1.0-draft
+**Version:** v0.1.0-ai-drafted
 **Last Updated:** YYYY-MM-DD
-**Maturity:** Draft (AI-generated, pending human review)
+**Maturity:** AI Drafted (written by a machine from vendor documentation; nothing has been reviewed, applied, or tested by a person)
 **Product Editions Covered:** [List supported tiers/editions]
 **Authors:** How to Harden Community
 
@@ -324,7 +324,7 @@ Table showing how to assess third-party integration risk:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| YYYY-MM-DD | 0.1.0 | draft | Initial guide | [Author - see guidelines below] |
+| YYYY-MM-DD | 0.1.0 | ai-drafted | Initial guide | [Author - see guidelines below] |
 
 ### Author Attribution Guidelines
 
@@ -399,22 +399,42 @@ HTH uses Extended SemVer with Maturity Qualifiers, aligned with [CIS Benchmarks]
   title: "[Vendor] Hardening Guide"
   vendor: "[Vendor]"
   version: "0.1.0"
-  maturity: "draft"  # draft | reviewed | verified
+  # A LIST, never a string — maturity is a SET drawn from a 3x2 matrix:
+  #   stage: drafted | reviewed | validated     agent: ai (machine) | ni (person)
+  #   => ai-drafted | ni-drafted | ai-reviewed | ni-reviewed | ai-validated | ni-validated
+  # A new guide holds exactly its drafted status and nothing else. Only a
+  # validate-hth-guide run may add "ai-validated"; only maintainers may add any
+  # "ni-*". Test 5b rejects a scalar, an unknown name, and any *-reviewed/*-validated
+  # claim that does not rest on a *-drafted one.
+  maturity: ["ai-drafted"]
   last_updated: "YYYY-MM-DD"   # date of the commit/push that ships the change — NOT the drafting date. Run `date +%F` immediately before `git commit` and use that value here AND in the new changelog row's Date column.
   ---
   ```
 
 - **Version Increments:**
-  - MAJOR: Scope expansion (net-new product, major feature area, first verified release)
+  - MAJOR: Scope expansion (net-new product, major feature area, first `ni-validated` release)
   - MINOR: Incremental improvements (new controls, new sections)
   - PATCH: Editorial (typos, URL fixes, vendor UI changes)
 
 - **Changelog Tags:** Use `[SECURITY]` for critical additions, `[BREAKING]` for disruptive changes
 
-- **Maturity Levels:**
-  - `draft`: AI-generated or unreviewed
-  - `reviewed`: SME-validated content
-  - `verified`: Production-tested controls
+- **Maturity Statuses:** a matrix, not a ladder — three stages (`drafted` → `reviewed` → `validated`) × two agents (`ai` = a machine, `ni` = natural intelligence, i.e. a person). Six statuses, held as a **set**; they combine rather than replace each other. Defined once in [VERSIONS.md](../VERSIONS.md#maturity-statuses--the-matrix); do not restate the definitions in a guide.
+  - `ai-drafted`: a machine wrote it from vendor documentation — start here, always, unless a person wrote it
+  - `ni-drafted`: a person wrote it. Authorship, not review — the author cannot be their own reviewer
+  - `ai-reviewed`: a machine re-read every control against current vendor docs. **Asserts nothing about human judgement**
+  - `ni-reviewed`: a human practitioner vouched for accuracy and appropriateness
+  - `ai-validated`: an AI agent exercised the guidance against a real tenant and it survived. **Not a human review, and never a substitute for one.** Set only by a `validate-hth-guide` run
+  - `ni-validated`: a person applied and tested the controls on a real system
+  - Holding both agents at one stage (e.g. `ai-validated` **and** `ni-validated`) is the strongest claim available, and the version qualifier drops the agent prefix to say so: `v1.0.0-validated`
+  - **As of now, no HTH guide holds any `ni-*` status** — every one is `ai-drafted`, two are also `ai-validated`. The NI row is an invitation, not a description
+
+- **Per-Requirement Status Badge:** when — and only when — a `validate-hth-guide` run returns `VERIFIED-LIVE` for a specific control, that control carries one badge line, placed **between** its `### N.N` heading and its `**Profile Level:**` line:
+
+  ```liquid
+  {% raw %}{% include status-badge.html status="ai-validated" evidence="what was actually exercised" date="YYYY-MM-DD" %}{% endraw %}
+  ```
+
+  `status` takes any of the six statuses. Two badges on one control (a machine and a person both exercised it) go on consecutive lines in that same slot — they add, they do not replace. Placement is load-bearing — inside the heading it corrupts the anchor and the cheat-sheet control name; below `**Profile Level:**` or under `#### Description` it silently eats a cheat-sheet cell. See the comment block in `docs/_includes/status-badge.html`. Never hand-apply it, and never put it on a control that was skipped, blocked, or only drift-checked against documentation.
 
 - **Changelog Entry:** Every version change requires a changelog entry with proper author attribution
 

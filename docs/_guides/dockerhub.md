@@ -7,7 +7,7 @@ tier: "3"
 category: "DevOps"
 description: "Container registry security for access tokens, image signing, and repository controls"
 version: "0.3.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

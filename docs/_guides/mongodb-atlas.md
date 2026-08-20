@@ -7,7 +7,7 @@ tier: "1"
 category: "Data"
 description: "Database-as-a-Service security hardening for MongoDB Atlas network access, authentication, and encryption"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

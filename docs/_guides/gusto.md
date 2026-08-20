@@ -7,7 +7,7 @@ tier: "5"
 category: "HR/Finance"
 description: "Payroll security for admin controls, partner integrations, and bank account protection"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

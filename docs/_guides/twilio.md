@@ -7,7 +7,7 @@ tier: "2"
 category: "Marketing"
 description: "Cloud communications platform hardening for Twilio including SSO configuration, account security, and API key management"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

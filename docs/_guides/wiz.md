@@ -7,7 +7,7 @@ tier: "2"
 category: "Security"
 description: "Cloud security platform hardening for connector security and RBAC controls"
 version: "0.1.2"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

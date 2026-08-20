@@ -7,7 +7,7 @@ tier: "2"
 category: "Identity"
 description: "Identity platform hardening for Auth0 tenant security, MFA, and attack protection"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

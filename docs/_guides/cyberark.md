@@ -7,7 +7,7 @@ tier: "1"
 category: "Identity"
 description: "Privileged access management hardening for vaults, PSM, and credential rotation"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

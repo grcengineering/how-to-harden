@@ -7,7 +7,7 @@ tier: "3"
 category: "Data"
 description: "Product experience platform hardening for Pendo including SAML SSO, subscription access, and data privacy controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

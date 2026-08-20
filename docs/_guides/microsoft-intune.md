@@ -10,7 +10,7 @@ tier: "1"
 category: "IT Operations"
 description: "Endpoint management hardening for Microsoft Intune — defending against admin-plane abuse, credential theft, and destructive wipe attacks"
 version: "0.3.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

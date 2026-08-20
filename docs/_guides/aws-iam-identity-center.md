@@ -7,7 +7,7 @@ tier: "1"
 category: "Identity"
 description: "AWS identity management hardening for IAM Identity Center including MFA, permission sets, and account access"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

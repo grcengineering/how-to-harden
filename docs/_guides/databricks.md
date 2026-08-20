@@ -7,7 +7,7 @@ tier: "2"
 category: "Data"
 description: "Data platform security for workspace access, Unity Catalog, and secrets management"
 version: "0.3.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-03"
 ---
 

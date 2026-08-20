@@ -7,7 +7,7 @@ tier: "2"
 category: "Productivity"
 description: "Enterprise collaboration hardening for Cisco Webex including meeting security, SSO configuration, and admin controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

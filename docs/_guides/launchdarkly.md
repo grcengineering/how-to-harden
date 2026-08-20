@@ -7,7 +7,7 @@ tier: "4"
 category: "DevOps"
 description: "Feature flag security for SDK keys, environment access, and approval workflows"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

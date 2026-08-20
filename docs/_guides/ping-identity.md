@@ -7,7 +7,7 @@ tier: "1"
 category: "Identity"
 description: "Identity federation security for PingFederate, PingOne, and OAuth configurations"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -83,6 +83,19 @@ A control renders as a cheat-sheet row when its `### N.N` section carries `**Pro
 
 `hardening_docs` in `docs/_data/doc_links.yml` = actual hardening/config documentation or an authoritative benchmark, never a Trust Center or marketing security page; omit the key when no honest link exists. Multi-source entries use a list of `{label, url}` (renders an expandable button). Full standard: [AGENTS.md §7](AGENTS.md).
 
+### 8. Maturity Is a Matrix, and Every Cell Is Earned
+
+A **matrix, not a ladder**: three stages (`drafted` → `reviewed` → `validated`) × two agents (`ai` = a machine, `ni` = natural intelligence, i.e. a person) = six statuses. They are **not mutually exclusive**, so `maturity` is a **list**: `maturity: ["ai-drafted", "ai-validated"]`. **Defined once, canonically, in [VERSIONS.md](VERSIONS.md#maturity-statuses--the-matrix)** — link to it, never restate it.
+
+- An **`ai-*` status is a claim about a machine's act and asserts nothing about human judgement.** `ai-validated` means an agent exercised the guidance against a real tenant or console and it survived — it never substitutes for its `ni-*` twin, and there is no rung above it to climb to. "Better" is expressed by holding **both** agents at a stage, which is also why the version qualifier drops the agent prefix in that case: `v1.0.0-validated` is the strongest string in the system. The qualifier is derived by `docs/_includes/status-set.html`, never typed.
+- **No guide currently holds any `ni-*` status.** All 130 are `ai-drafted`; two (Buildkite, Ona) are also `ai-validated`. Never write prose implying a human has reviewed or tested any of it.
+- Only a `validate-hth-guide` run may write `ai-validated` (its Phase 6, gated on `FAIL = 0` **and** ≥1 `VERIFIED-LIVE` result). New AI-written guides are `["ai-drafted"]` and nothing else; every `ni-*` is maintainers only. Typing a status by hand asserts an act that did not happen.
+- The per-requirement badge — `{% include status-badge.html status="ai-validated" evidence="…" date="…" %}` — goes on its own line **between** the `### N.N` heading and `**Profile Level:**`, on `VERIFIED-LIVE` controls only. Never `SKIPPED`/`BLOCKED`/`DRIFT-CHECKED-ONLY`. Two badges on one control stack on consecutive lines in that slot. Every other placement breaks the heading anchor, the cheat-sheet row, or the description cell — **silently**. Contract: the comment block in `docs/_includes/status-badge.html`.
+- `scripts/validate-guides.sh` Test 5b rejects a scalar, an unknown status name, an empty list, and any `*-reviewed`/`*-validated` that does not rest on a `*-drafted` in the same set; it cannot tell an earned status from a typed one.
+
+Full rule: [AGENTS.md §8](AGENTS.md).
+
+
 ## Authoring Skills — Use These, Don't Improvise
 
 This repo ships skills in `.claude/skills/` that encode the core workflows as prescriptive step-by-step processes. They auto-load in Claude Code and are plain markdown for everyone else. **When a task matches, follow the skill:**
@@ -93,7 +106,7 @@ This repo ships skills in `.claude/skills/` that encode the core workflows as pr
 | `update-hth-guide` | Currency updates, corrections, adding controls to existing guides |
 | `create-code-pack` | Any pack authoring or pack wiring |
 | `verify-hth` | The pre-commit verification battery (run after every change) |
-| `validate-hth-guide` | Proving ClickOps steps, Code Packs, and OCEAN scanning actually work — and iterating until they do |
+| `validate-hth-guide` | Proving ClickOps steps, Code Packs, and OCEAN scanning actually work — and iterating until they do. **The only thing allowed to promote a guide to `ai-validated`** |
 
 Source-selection standards (hardening guide vs Trust Center; which third parties are authoritative — CIS, DISA, CISA SCuBA, NIST, and the expert-vendor standing list) live in [SOURCES.md](SOURCES.md) — all four skills depend on it.
 
@@ -135,6 +148,8 @@ cp templates/vendor-guide-template.md docs/_guides/[vendor-name].md
 - [ ] Compliance mappings verified (never invent IDs; CIS numbering shifts between majors — map by name with a version note when unverifiable; prefer CISA SCuBA policy IDs where a baseline exists)
 - [ ] Changelog updated; frontmatter `version` matches the new changelog row
 - [ ] `last_updated` frontmatter AND new changelog row's Date column both equal today's date (`date +%F`) — not the drafting date
+- [ ] `maturity` is a **list** drawn from `ai-drafted` | `ni-drafted` | `ai-reviewed` | `ni-reviewed` | `ai-validated` | `ni-validated`, rests on a `*-drafted` status, and every member was set by whoever rule 8 permits — not hand-added
+- [ ] Every `status-badge.html` badge sits between its `### N.N` heading and `**Profile Level:**`, and marks a control that came back VERIFIED-LIVE (never SKIPPED/BLOCKED/DRIFT-CHECKED-ONLY)
 - [ ] `bash scripts/validate-guides.sh` ends ALL TESTS PASSED (Windows: run via Git Bash)
 - [ ] Every touched control still meets the cheat-parser contract (rule 6)
 - [ ] Every pack include's section key exists in its vendor's `docs/_data/packs/*.yml` (a missing key renders nothing, silently)

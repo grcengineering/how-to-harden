@@ -7,7 +7,7 @@ tier: "2"
 category: "Marketing"
 description: "Email delivery platform hardening for Twilio SendGrid including API key management, two-factor authentication, and SSO configuration"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

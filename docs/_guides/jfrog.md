@@ -7,7 +7,7 @@ tier: "2"
 category: "DevOps"
 description: "Artifact management security for repository permissions, Xray policies, and access tokens"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

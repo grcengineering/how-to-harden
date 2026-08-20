@@ -7,7 +7,7 @@ tier: "2"
 category: "IaC"
 description: "Comprehensive security hardening for Workato including SSO, RBAC, encryption key management, API security, secrets management, environment separation, and audit logging"
 version: "0.3.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

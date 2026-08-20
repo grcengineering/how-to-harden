@@ -7,7 +7,7 @@ tier: "2"
 category: "Security"
 description: "Vulnerability management platform hardening for Tenable One Vulnerability Management and Security Center including user access, scanning security, and agent configuration"
 version: "0.2.2"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

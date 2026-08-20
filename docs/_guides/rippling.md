@@ -7,7 +7,7 @@ tier: "5"
 category: "HR/Finance"
 description: "Workforce platform security for app provisioning, device management, and SCIM controls"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

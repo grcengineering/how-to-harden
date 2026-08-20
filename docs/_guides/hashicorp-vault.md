@@ -7,7 +7,7 @@ tier: "1"
 category: "Security"
 description: "Secrets management security including auth methods, policies, and audit logging"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "2"
 category: "Security"
 description: "Email security platform hardening for Abnormal AI including SSO configuration, admin access, API token security, audit logging, and posture management"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -10,7 +10,7 @@ tier: "1"
 category: "Productivity"
 description: "Security hardening for Google Drive — external sharing restrictions, trust rules, general access defaults, shared drive lockdown, DLP for Drive, Drive SDK and Drive for desktop controls, ransomware detection, and Drive log monitoring."
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "3"
 category: "DevOps"
 description: "Security and privacy hardening for Replit organizations and the apps they deploy — SAML SSO/SCIM, admin tiering, Enterprise governance toggles, Agent guardrails (dev/prod database separation, Plan mode, rollbacks), deployment access control, secrets, external access tokens, and audit/SIEM logging."
 version: "0.1.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-15"
 ---
 

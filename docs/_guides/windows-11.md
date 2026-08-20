@@ -7,7 +7,7 @@ tier: "3"
 category: "IT Operations"
 description: "Dual-track security and privacy hardening for Windows 11 — enterprise (baselines, Defender, BitLocker, Credential Guard, LAPS, ASR) and consumer (Home/Pro), with an honest, edition-scoped answer to minimizing Microsoft telemetry and connected-experience data collection."
 version: "0.1.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-15"
 ---
 

@@ -7,7 +7,7 @@ tier: "2"
 category: "Security"
 description: "Compliance automation platform hardening for Vanta including access controls, integration security, and continuous monitoring"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

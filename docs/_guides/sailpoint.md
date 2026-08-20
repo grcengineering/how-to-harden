@@ -7,7 +7,7 @@ tier: "3"
 category: "Identity"
 description: "Identity Security Cloud hardening for tenant access, API clients and PATs, sessions, network restrictions, and audit reporting"
 version: "0.2.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

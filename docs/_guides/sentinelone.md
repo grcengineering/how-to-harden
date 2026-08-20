@@ -7,7 +7,7 @@ tier: "1"
 category: "Security"
 description: "Endpoint Detection and Response (EDR) hardening for SentinelOne Singularity platform"
 version: "0.1.3"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

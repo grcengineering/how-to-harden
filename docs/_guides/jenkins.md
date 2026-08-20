@@ -7,7 +7,7 @@ tier: "2"
 category: "DevOps"
 description: "CI/CD security hardening for Jenkins including authorization, agent security, and pipeline protection"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

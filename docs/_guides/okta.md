@@ -7,7 +7,7 @@ tier: "1"
 category: "Identity"
 description: "Identity Provider hardening for SSO, MFA policies, and API token security"
 version: "0.4.1"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

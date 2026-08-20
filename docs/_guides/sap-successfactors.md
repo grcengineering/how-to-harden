@@ -7,7 +7,7 @@ tier: "3"
 category: "HR/Finance"
 description: "HCM security for permission groups, integration center, data protection, and the SAP security-recommendations baseline"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 

@@ -7,7 +7,7 @@ tier: "2"
 category: "IT Operations"
 description: "MDM hardening for Jamf Pro macOS and iOS device management"
 version: "0.2.0"
-maturity: "draft"
+maturity: ["ai-drafted"]
 last_updated: "2026-08-08"
 ---
 
