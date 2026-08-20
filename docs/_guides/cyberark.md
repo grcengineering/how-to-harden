@@ -685,9 +685,9 @@ Use Identity Insights, in the Detect and Respond space, to monitor multi-factor 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Rename to Idira (formerly CyberArk) throughout per the current Palo Alto Networks documentation portal — URL slug deliberately unchanged to preserve inbound links; reframe 2.1 connector hardening as automated-at-deployment (GPO in-domain / INF out-of-domain via the PSM_CPM file) with the vendor's required-TLS channels; add 2.3 Tier 0 connector isolation and 6.2 Identity Insights; update 1.1 Step 3 for the Identity docs "spaces" migration (previous doc sets frozen as of April 2026); add missing Attack Prevented to 3.1; remove six rotted or bright-line Appendix A links | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial CyberArk hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Rename to Idira (formerly CyberArk) throughout per the current Palo Alto Networks documentation portal — URL slug deliberately unchanged to preserve inbound links; reframe 2.1 connector hardening as automated-at-deployment (GPO in-domain / INF out-of-domain via the PSM_CPM file) with the vendor's required-TLS channels; add 2.3 Tier 0 connector isolation and 6.2 Identity Insights; update 1.1 Step 3 for the Identity docs "spaces" migration (previous doc sets frozen as of April 2026); add missing Attack Prevented to 3.1; remove six rotted or bright-line Appendix A links | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial CyberArk hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

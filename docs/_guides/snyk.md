@@ -356,9 +356,9 @@ Review Snyk audit logs and forward them to your SIEM to retain a record of user 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.1 | draft | Added api Code Packs for §2.1 (service-account credential-type audit + legacy-key deletion via the REST service_accounts endpoints) and §4.1 (org/group audit-log export via audit_logs/search inside the 90-day window), plus a cli Code Pack for §3.2 (snyk ignore with mandatory reason and expiry, .snyk suppression audit), all verified against docs.snyk.io API and CLI references | Claude Code (Fable 5) |
-| 2026-08-08 | 0.2.0 | draft | Currency pass (Tier 1 only): rewrote 2.1 for the three service-account credential types (API key never expires and is not recommended; access token 1-year max with no in-place rotation; OAuth 2.0 recommended); added Universal vs Classic Broker and the April 2026 Broker high-availability default to 2.2; documented Enterprise-only audit logs, 90-day rolling retention, and the login/logout exclusion in 4.1; repaired rotted docs.snyk.io links to the platform-administration tree and removed Trust Center / marketing pages from Appendix B. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial Snyk hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.1 | ai-drafted | Added api Code Packs for §2.1 (service-account credential-type audit + legacy-key deletion via the REST service_accounts endpoints) and §4.1 (org/group audit-log export via audit_logs/search inside the 90-day window), plus a cli Code Pack for §3.2 (snyk ignore with mandatory reason and expiry, .snyk suppression audit), all verified against docs.snyk.io API and CLI references | Claude Code (Fable 5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass (Tier 1 only): rewrote 2.1 for the three service-account credential types (API key never expires and is not recommended; access token 1-year max with no in-place rotation; OAuth 2.0 recommended); added Universal vs Classic Broker and the April 2026 Broker high-availability default to 2.2; documented Enterprise-only audit logs, 90-day rolling retention, and the login/logout exclusion in 4.1; repaired rotted docs.snyk.io links to the platform-administration tree and removed Trust Center / marketing pages from Appendix B. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial Snyk hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

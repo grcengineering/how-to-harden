@@ -400,9 +400,9 @@ Recent vendor advisories, all published via [Proofpoint Security Advisories](htt
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Add 2.3 Threat Insight API credential hygiene; add a patch-currency callout to 3.1 covering the URL/attachment defense bypass advisories; add CVE-2025-0431, CVE-2024-10635, and CVE-2025-8558 to Appendix B; replace the broken help.proofpoint.com root link with the working API documentation index | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and threat protection | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Add 2.3 Threat Insight API credential hygiene; add a patch-currency callout to 3.1 covering the URL/attachment defense bypass advisories; add CVE-2025-0431, CVE-2024-10635, and CVE-2025-8558 to Appendix B; replace the broken help.proofpoint.com root link with the working API documentation index | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO and threat protection | Claude Code (Opus 4.5) |
 
 ---
 

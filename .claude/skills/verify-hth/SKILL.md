@@ -72,8 +72,9 @@ Manual pass — verify each:
 
 ```bash
 grep -E '^maturity:' docs/_guides/{slug}.md                  # a LIST of the six statuses, resting on a *-drafted one
-grep -c 'include status-badge.html' docs/_guides/{slug}.md   # == the VERIFIED-LIVE count in the run ledger
-grep -c 'include ai-validated.html' docs/_guides/{slug}.md   # must be 0 — retired include, replaced by status-badge.html
+grep -c 'include status-mark.html' docs/_guides/{slug}.md    # == the per-surface VERIFIED-LIVE count in the run ledger
+grep -c 'include status-badge.html' docs/_guides/{slug}.md   # must be 0 — retired include, replaced by status-mark.html
+grep -n 'status-mark.html' docs/_guides/{slug}.md            # every hit is on a '#### ClickOps/Code Implementation' line
 ```
 
    Maturity is a matrix (three stages × `ai`/`ni`), held as a **set**, so a promotion *adds* a member — `["ai-drafted"]` → `["ai-drafted", "ai-validated"]` — and never overwrites the list with a scalar. Test 5b catches the shape; only you can catch a status that was typed rather than earned, and only a `validate-hth-guide` run may write `ai-validated`. **No guide holds any `ni-*` status**, so any `ni-*` appearing here is a defect unless a maintainer put it there deliberately.

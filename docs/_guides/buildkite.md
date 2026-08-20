@@ -45,8 +45,6 @@ This guide covers Buildkite security including SAML SSO, team permissions, agent
 
 ### 1.1 Configure SAML Single Sign-On
 
-{% include status-badge.html status="ai-validated" evidence="Console nav label corrected against the live console" date="2026-08-16" %}
-
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -71,7 +69,7 @@ Configure SAML SSO to centralize authentication for Buildkite users.
 - **Pro or Enterprise plan.** SSO is not available below Pro, and there is no "Business" tier — if a runbook or vendor questionnaire references one, it is wrong.
 - SAML 2.0 compatible IdP
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console nav label corrected against the live console" date="2026-08-16" %}
 
 **Step 1: Access SSO Settings**
 1. Navigate to: **Organization Settings** → **Single Sign On**
@@ -109,8 +107,6 @@ Source: [Buildkite SSO](https://buildkite.com/docs/platform/sso)
 
 ### 1.2 Enforce Two-Factor Authentication
 
-{% include status-badge.html status="ai-validated" evidence="Console path and checkbox label confirmed on the live console; Terraform apply against a live organization surfaced the plan gate" date="2026-08-16" %}
-
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -135,7 +131,7 @@ Require 2FA for all Buildkite users.
 - **ClickOps: none.** The Security page toggle is available on every plan.
 - **Terraform: a plan that includes the API IP allowlist feature.** The `buildkite_organization` resource fails to create without it, even when your configuration sets only `enforce_2fa` and never mentions IP allowlisting — the provider touches that field regardless. Verified against a live organization: `Unable to create Organization settings: input: The API IP allowlist feature is not available for your organization. Please upgrade your plan to access it.` The same resource backs [4.1](#41-configure-audit-logging), so that control inherits the constraint. On plans without the feature, use the ClickOps path below; `terraform validate` and `terraform plan` both pass, so this surfaces only at `apply`.
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path and checkbox label confirmed on the live console" date="2026-08-16" %}
 
 **Step 1: Enable 2FA Requirement**
 1. Navigate to: **Organization Settings** → **Security**
@@ -157,8 +153,6 @@ Require 2FA for all Buildkite users.
 
 ### 2.1 Configure Team Permissions
 
-{% include status-badge.html status="ai-validated" evidence="Console path observed live; Terraform applied to a live organization (3 teams created, console-confirmed, destroyed)" date="2026-08-16" %}
-
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -178,7 +172,7 @@ Implement least privilege using Buildkite teams.
 
 **Attack Prevented:** Privilege escalation, lateral movement, insider misuse, unauthorized pipeline changes
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live" date="2026-08-16" %}
 
 **Step 1: Create Teams**
 1. Navigate to: **Organization Settings** → **Teams**
@@ -197,7 +191,7 @@ Implement least privilege using Buildkite teams.
 2. Update access as needed
 3. Remove inactive members
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Terraform applied to a live organization (3 teams created, console-confirmed, destroyed)" date="2026-08-16" %}
 
 {% include pack-code.html vendor="buildkite" section="2.1" %}
 
@@ -337,8 +331,6 @@ Source: [Buildkite security controls](https://buildkite.com/docs/pipelines/best-
 
 ### 2.5 Manage API Access Token Hygiene
 
-{% include status-badge.html status="ai-validated" evidence="Console path observed live" date="2026-08-16" %}
-
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -359,7 +351,7 @@ Govern Buildkite **API access tokens** — the user-scoped REST and GraphQL cred
 
 **Attack Prevented:** Standing API access from leaked tokens, privilege inheritance from over-scoped admin tokens, undetected token reuse, data harvesting via over-broad GraphQL access, unreviewed token sprawl from non-administrator accounts
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live" date="2026-08-16" %}
 
 **Step 1: Restrict Who Can Mint Tokens**
 1. Set `restrict_user_api_token_creation` to `true` so that, in Buildkite's words, "only organization administrators can create API access tokens." Everything below governs an inventory; this is the only setting that governs how that inventory grows, and without it every member can add to it without review.
@@ -488,8 +480,6 @@ Sources: [Rules overview](https://buildkite.com/docs/pipelines/security/clusters
 
 ### 3.1 Configure Agent Tokens
 
-{% include status-badge.html status="ai-validated" evidence="Terraform applied to a live organization (2 agent tokens created, console-confirmed, destroyed)" date="2026-08-16" %}
-
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -530,7 +520,7 @@ Securely manage agent registration tokens.
 
 Sources: [Buildkite agent tokens](https://buildkite.com/docs/agent/self-hosted/tokens) · [Manage clusters and queues](https://buildkite.com/docs/pipelines/security/clusters/manage)
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Terraform applied to a live organization (2 agent tokens created, console-confirmed, destroyed)" date="2026-08-16" %}
 
 {% include pack-code.html vendor="buildkite" section="3.1" %}
 
@@ -1167,7 +1157,7 @@ Sources: [Buildkite agent tokens](https://buildkite.com/docs/agent/self-hosted/t
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-20 | 0.3.1 | ai-drafted, ai-validated | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated** — the first changelog entry to record that this guide was exercised against a live Buildkite organization, which is what makes the new per-requirement badges legible. An AI agent did the exercising; no human practitioner has reviewed or applied this guide, so it claims no **ni-** status. **What was exercised (2026-08-16):** an authenticated console session confirmed 1.1's nav item reads **Single Sign On** at `/sso` — the previous doc-derived "SSO Settings" label was wrong, and trusting the vendor doc over the UI had made the guide more wrong, not less — plus 1.2's Organization Settings → Security page and its **Enforce Two-factor authentication** checkbox verbatim, 2.1's `/teams` page, and 2.5's `/api-access-audit` page with its Owner/Used/Created/Scopes/Pipelines columns and CSV export. Terraform was then applied against a real organization: 3 teams (2.1) and 2 agent tokens (3.1) were created, confirmed in the console, and destroyed with the organization returned to baseline; control 1.2's `buildkite_organization` resource failed at apply on an API-IP-allowlist plan gate that `validate` and `plan` both reported clean, which is why 1.2 now carries a Prerequisites block. **What was NOT exercised:** only 5 of 22 controls carry a badge. Most mutations were deliberately never run, and no `api/`, `cli/`, or `config/` pack was executed against the tenant. The eight controls added after the live pass — 2.6, 2.7, 3.7, 3.8, 3.9, 3.10, 3.11 and 4.2 — carry no live evidence whatsoever. 4.1's audit log is Enterprise-only and returns 404 on the trial organization walked, so it is plan-gated and unbadged. No control text, control number, or heading changed. | Claude Code (Opus 5) |
+| 2026-08-20 | 0.3.1 | ai-drafted · ai-validated | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated** — the first changelog entry to record that this guide was exercised against a live Buildkite organization, which is what makes the new per-requirement badges legible. An AI agent did the exercising; no human practitioner has reviewed or applied this guide, so it claims no **ni-** status. **What was exercised (2026-08-16):** an authenticated console session confirmed 1.1's nav item reads **Single Sign On** at `/sso` — the previous doc-derived "SSO Settings" label was wrong, and trusting the vendor doc over the UI had made the guide more wrong, not less — plus 1.2's Organization Settings → Security page and its **Enforce Two-factor authentication** checkbox verbatim, 2.1's `/teams` page, and 2.5's `/api-access-audit` page with its Owner/Used/Created/Scopes/Pipelines columns and CSV export. Terraform was then applied against a real organization: 3 teams (2.1) and 2 agent tokens (3.1) were created, confirmed in the console, and destroyed with the organization returned to baseline; control 1.2's `buildkite_organization` resource failed at apply on an API-IP-allowlist plan gate that `validate` and `plan` both reported clean, which is why 1.2 now carries a Prerequisites block. **What was NOT exercised:** only 5 of 22 controls carry a badge. Most mutations were deliberately never run, and no `api/`, `cli/`, or `config/` pack was executed against the tenant. The eight controls added after the live pass — 2.6, 2.7, 3.7, 3.8, 3.9, 3.10, 3.11 and 4.2 — carry no live evidence whatsoever. 4.1's audit log is Enterprise-only and returns 404 on the trial organization walked, so it is plan-gated and unbadged. No control text, control number, or heading changed. | Claude Code (Opus 5) |
 | 2026-08-18 | 0.3.0 | ai-drafted | Close the Buildkite reconciliation: end the Terraform monoculture and make every leveled control carry a real automation verdict. **New controls:** 2.6 dormant organization members, 2.7 cross-pipeline access via Buildkite Rules, 3.7 delegated cluster administration, 3.8 build-artifact attestation (SLSA provenance), 3.9 agent execution environment, 3.10 pipeline templates, 3.11 inbound OIDC trust, 4.2 build-fleet incident containment. **New Code Packs:** 21 new files across four surfaces — `api/` (5 new, 6 total), `cli/` (3 new, 3 total), `config/` (6 new, 6 total) and `terraform/` (7 new, 15 total); before this version the corpus was 8 Terraform control packs plus the single GraphQL `api/` pack added in 0.2.1. Non-comment HCL across the vendor's control `.tf` files rises from 121 lines over 8 files to more than 1,100 over 15, and the REST, CLI and agent-config surfaces go from 0% coverage to shipped code. **Corrections:** 2.2 documents the organization-level pipeline toggles as ClickOps-only, replacing an incorrect "REST `/organizations` is GET-only" premise with the real evidence (the resource family *is* writable — `PATCH`/`PUT`/`DELETE` on `pipeline-settings` and its sub-resources, `PATCH` on `api-settings` — but carries no permissions payload, and no organization security resource exists), and corrects the **Create Pipelines** claim: the vendor's own permissions page states the org toggle "will be unavailable on this page" when teams are enabled, so it and the team-level `members_can_create_pipelines` are mutually exclusive alternatives rather than layers, making the previously described state unreachable in both configurations; 2.5 adds inactive-token auto-revocation, warns that Portal tokens are admin-privileged and long-lived, and adds the previously missing `restrict_user_api_token_creation` ("only organization administrators can create API access tokens") as Step 1 — the one organization-wide token control that is not plan-gated — with `restrict-token-creation-status` / `set-restrict-token-creation` verbs in the `api/` pack that send a single-key `PATCH` so toggling it can never re-assert the IP allowlist sharing that resource; 3.4 fixes `--jwks-file`/`--jwks-key-id` being presented as agent config keys when they are `tool sign` flags, records that `verification-failure-behavior` already defaults to `block` (so the rollout runs the other way), corrects the over-broad claim that verification is gated entirely on a configured JWKS — unsigned jobs do execute without one, but a *signed* job reaching a keyless agent is still rejected under `block`, so a partial rollout fails closed in both directions — and flags the unverified GCP KMS claim; 3.9 corrects a blanket assertion that all three of its settings are beyond a `pipeline.yml`'s reach: `no-ssh-keyscan` and `bootstrap-script` are agent configuration options, but `BUILDKITE_CLEAN_CHECKOUT` is not an agent config option at all and sits outside the scope `checkout-override-mode` governs, so even `strict` does not lock it — the step now names the plugin allowlist and `disconnect-after-job` as what actually closes the gap; 3.5 adds the API-payload exposure path, `$$` escaping, and the unreconciled 32 KB / 8 KB value-size discrepancy. **§5 and Appendix A:** add SOC 2 and NIST 800-53 rows for all eight new controls (the tables had been left at the 0.2.0 control set) and add the newly cited Buildkite documentation. **Compliance mapping fixes:** 3.4's CIS safeguard was 16.9 "Train Developers in Application Security Concepts and Secure Coding", a training safeguard with nothing to do with signing — replaced with 2.7 "Allowlist Authorized Scripts", whose catalog text prescribes "digital signatures ... to ensure that only authorized scripts ... are allowed to execute" and "Block unauthorized scripts from executing"; 3.11's was 5.4 "Restrict Administrator Privileges to Dedicated Administrator Accounts", which governs human admin accounts rather than the pipeline machine identity the control constrains — replaced with 5.5 "Establish and Maintain an Inventory of Service Accounts". | Claude Code (Opus 5) |
 | 2026-08-17 | 0.2.1 | ai-drafted | Replace three prose-only Code Packs with real, schema-verified code. **1.1:** the Terraform provider exposes no SSO resource (21 resources, 16 data sources, none for SSO), so the empty `.tf` is replaced by a GraphQL `api/` pack using the live-introspected `ssoProvider*` mutation family, with the disable path documented as the way back from an SSO lockout. **2.3:** now a real verification pack over the `buildkite_organization_members` data source and `buildkite_team_member` roles, stating honestly that org-level role is not exposed to Terraform and lives in GraphQL. **3.3:** now real cluster isolation — `buildkite_cluster`, `buildkite_cluster_queue`, and cluster-scoped `buildkite_cluster_agent_token` with the lockout-capable IP allowlist. | Claude Code (Opus 5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass. **1.1:** correct the plan gate to Pro or Enterprise (no "Business" tier exists) and expand enforcement — SSO required/optional is per user, organization-wide enforcement works by disabling 2FA authentication as a login method, session timeout ranges from 6 hours to 1 year, IP address pinning revokes a session on IP change (Enterprise), SCIM deprovisioning (Enterprise), and members are provisioned just-in-time on first login. **3.1:** correct agent tokens to cluster-scoped, and add expiration timestamps (API-only, at least 10 minutes out, immutable once set; web-UI tokens have no expiry) and the Allowed IP Addresses CIDR allowlist. **3.2:** add the unclustered agents and tokens deprecation, unavailable to organizations created after 2024-02-26. **4.1:** correct the non-existent retention setting — the audit log is Enterprise-only at Organization Settings → Audit → Audit Log, events are stored indefinitely, the UI browses 12 months with older events via GraphQL, and search covers 90 days with 3 terms and 250 characters; add EventBridge streaming and REST/GraphQL retrieval. **New controls:** 2.4 untrusted-input pipeline controls, 2.5 API access token hygiene, 3.4 pipeline signing and verification, 3.5 build secrets management, 3.6 OIDC instead of static cloud credentials. **§5:** add mappings for the new controls and record that no CIS, DISA, or SCuBA baseline exists for Buildkite. **Appendix A:** remove the Trust Center and marketing security-page rows and add the newly cited documentation. Not surveyed this pass: Tier 3/4 research | Claude Code (Opus 5) |

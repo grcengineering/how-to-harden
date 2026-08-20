@@ -412,9 +412,9 @@ Secure Orca API access.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Add 2.4 network restriction and automated access review; annotate the region-gated Knowledge Base link and add the public Terraform provider docs; drop the Trust Center from Official Documentation; fix the Terraform pack provider constraint (`~> 0.5` was unsatisfiable — provider ships 0.0.x only) and rewrite the 3.2 automation onto the current `orcasecurity_automation_v2` schema | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and integration security | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Add 2.4 network restriction and automated access review; annotate the region-gated Knowledge Base link and add the public Terraform provider docs; drop the Trust Center from Official Documentation; fix the Terraform pack provider constraint (`~> 0.5` was unsatisfiable — provider ships 0.0.x only) and rewrite the 3.2 automation onto the current `orcasecurity_automation_v2` schema | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, RBAC, and integration security | Claude Code (Opus 4.5) |
 
 ---
 

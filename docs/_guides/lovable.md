@@ -1199,9 +1199,9 @@ Mappings in this guide therefore reference CIS Controls v8 (the general framewor
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 0.1.0 | 2026-08-15 | Initial guide: 25 controls across identity (SSO/SCIM/2FA/verified domains), workspace access governance (roles, invitations, project access, publishing, GitHub), AI-agent surfaces (connectors with the not-enforced-after-publishing boundary, MCP toggles, workspace knowledge), data protection (secrets, storage, DLP, data boundaries), published-app security (RLS/CVE-2025-48757, app auth, scan gates, custom domains/VibeScamming), privacy (training opt-out deadline 2026-09-09, passive channels, non-configurable floor), and monitoring (audit-log export cadence, Security Center). Honest automation story: no admin API/CLI exists; SCIM is the sole programmatic surface (one pack). Tier 2 negatives (no CIS/STIG/SCuBA) cited. Authored by Claude Code (Opus 5). |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2026-08-15 | 0.1.0 | ai-drafted | Initial guide: 25 controls across identity (SSO/SCIM/2FA/verified domains), workspace access governance (roles, invitations, project access, publishing, GitHub), AI-agent surfaces (connectors with the not-enforced-after-publishing boundary, MCP toggles, workspace knowledge), data protection (secrets, storage, DLP, data boundaries), published-app security (RLS/CVE-2025-48757, app auth, scan gates, custom domains/VibeScamming), privacy (training opt-out deadline 2026-09-09, passive channels, non-configurable floor), and monitoring (audit-log export cadence, Security Center). Honest automation story: no admin API/CLI exists; SCIM is the sole programmatic surface (one pack). Tier 2 negatives (no CIS/STIG/SCuBA) cited. Authored by Claude Code (Opus 5). | Claude Code (Opus 5) |
 
 ---
 

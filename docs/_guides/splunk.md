@@ -545,8 +545,8 @@ Monitor administrative and security events.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass (Tier 1 only): added 1.3 authentication-token governance (static/ephemeral/interactive lifetimes, token capabilities), 3.3 field filters for PII/PHI search-time redaction (flagged as a Splunk preview feature), and 3.4 private connectivity via the ACS API; corrected 1.1 to reflect self-service SAML configuration rather than a Splunk Support prerequisite; migrated rotted docs.splunk.com citations to the current help.splunk.com manuals. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and data security | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass (Tier 1 only): added 1.3 authentication-token governance (static/ephemeral/interactive lifetimes, token capabilities), 3.3 field filters for PII/PHI search-time redaction (flagged as a Splunk preview feature), and 3.4 private connectivity via the ACS API; corrected 1.1 to reflect self-service SAML configuration rather than a Splunk Support prerequisite; migrated rotted docs.splunk.com citations to the current help.splunk.com manuals. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, RBAC, and data security | Claude Code (Opus 4.5) |
 
 ---
 

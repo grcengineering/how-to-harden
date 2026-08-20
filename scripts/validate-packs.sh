@@ -80,10 +80,25 @@ if [ "${1:-}" = "--touched" ]; then
   echo "═══ --touched verdict ═══"
   # Split touched guides into body-changed vs frontmatter-only: only the former
   # inherits its vendor's pack findings (see the note in the filter below).
+  # Strip frontmatter AND the trailing "## Changelog" section before comparing.
+  # Neither can break a pack: frontmatter is metadata, and the changelog is
+  # bookkeeping ABOUT the guide, not content packs resolve against. A guide's
+  # control bodies, headings, and include tags are what a pack finding can
+  # legitimately be attributed to. Without the changelog cut, a corpus-wide
+  # bookkeeping sweep (a maturity-vocabulary rename, a date restamp) re-acquires
+  # every vendor as an attribution key and the branch inherits the entire
+  # corpus's pre-existing pack debt — the exact false-attribution this filter
+  # exists to prevent, seen twice on 2026-08-20.
+  strip_bookkeeping() {
+    awk 'BEGIN{n=0}
+         /^---[[:space:]]*$/{n++; if(n<=2) next}
+         n>=2 && /^## Changelog[[:space:]]*$/{stop=1}
+         n>=2 && !stop{print}'
+  }
   body_changed=""
   for g in $(echo "$touched" | grep '^docs/_guides/' || true); do
-    old_body="$(git -C "${REPO_ROOT}" show "$base:$g" 2>/dev/null | awk 'BEGIN{n=0} /^---[[:space:]]*$/{n++; if(n<=2) next} n>=2{print}' || true)"
-    new_body="$(awk 'BEGIN{n=0} /^---[[:space:]]*$/{n++; if(n<=2) next} n>=2{print}' "${REPO_ROOT}/$g" 2>/dev/null || true)"
+    old_body="$(git -C "${REPO_ROOT}" show "$base:$g" 2>/dev/null | strip_bookkeeping || true)"
+    new_body="$(strip_bookkeeping < "${REPO_ROOT}/$g" 2>/dev/null || true)"
     if [ "$old_body" != "$new_body" ]; then
       body_changed="${body_changed}${g}"$'\n'
     fi

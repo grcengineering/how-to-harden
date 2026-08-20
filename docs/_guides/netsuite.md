@@ -567,9 +567,9 @@ Configure NetSuite saved searches to alert on suspicious activity such as failed
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | 2026.1/2027.1 currency pass: TBA end-of-support callout in 2.1 and 2.2 promoted to L1 as the required path for new integrations; new controls 1.4 (Login Notification), 2.3 (PKCE), 2.4 (integration certificate limits and rotation endpoint), 2.5 (Dynamic Client Registration and redirect URIs); multiple-sessions 2FA callout in 1.1; fixed 2.1's Rationale so the control renders in the cheat sheet again; populated the empty 1.2 role-design and 5.1 detection steps; replaced the 404 Security Best Practices link with the Authentication book and removed Trust Center/marketing references. Tier 2: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline covers NetSuite — the scope of the CIS Oracle Cloud/SaaS Applications work relative to NetSuite remains unresolved and is worth re-checking next pass. Tier 3/4 not surveyed this pass. | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial NetSuite hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | 2026.1/2027.1 currency pass: TBA end-of-support callout in 2.1 and 2.2 promoted to L1 as the required path for new integrations; new controls 1.4 (Login Notification), 2.3 (PKCE), 2.4 (integration certificate limits and rotation endpoint), 2.5 (Dynamic Client Registration and redirect URIs); multiple-sessions 2FA callout in 1.1; fixed 2.1's Rationale so the control renders in the cheat sheet again; populated the empty 1.2 role-design and 5.1 detection steps; replaced the 404 Security Best Practices link with the Authentication book and removed Trust Center/marketing references. Tier 2: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline covers NetSuite — the scope of the CIS Oracle Cloud/SaaS Applications work relative to NetSuite remains unresolved and is worth re-checking next pass. Tier 3/4 not surveyed this pass. | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial NetSuite hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

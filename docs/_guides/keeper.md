@@ -899,10 +899,10 @@ Enable BreachWatch to detect compromised credentials.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.1 | draft | Add Keeper Commander CLI Code Packs: 2.2 (REQUIRE_TWO_FACTOR role enforcement), 2.5 (transfer-user offboarding + action-report bulk transfer), 5.1 (audit-log SIEM export + audit-report review), 5.2 (security-audit-report + user-report) — all commands verified against Commander enterprise-management and reporting command references | Claude Code (Fable 5) |
-| 2026-08-08 | 0.2.0 | draft | Add Account Transfer (2.5), Platform Restriction incl. Commander SDK (2.6), passkey biometric login (3.3), and session/offline/clipboard hardening (3.4); correct 3.2 — Keeper recommends DISABLING account recovery for SSO orgs; sharpen 1.1 to "ensure an administrator exists outside of SSO"; name the BreachWatch SIEM enforcement policy in 5.3; add browser built-in password manager disabling to 2.4; add missing Attack Prevented lines; drop Trust Center and marketing-page references | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with admin security, enforcement policies, and SSO | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.1 | ai-drafted | Add Keeper Commander CLI Code Packs: 2.2 (REQUIRE_TWO_FACTOR role enforcement), 2.5 (transfer-user offboarding + action-report bulk transfer), 5.1 (audit-log SIEM export + audit-report review), 5.2 (security-audit-report + user-report) — all commands verified against Commander enterprise-management and reporting command references | Claude Code (Fable 5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Add Account Transfer (2.5), Platform Restriction incl. Commander SDK (2.6), passkey biometric login (3.3), and session/offline/clipboard hardening (3.4); correct 3.2 — Keeper recommends DISABLING account recovery for SSO orgs; sharpen 1.1 to "ensure an administrator exists outside of SSO"; name the BreachWatch SIEM enforcement policy in 5.3; add browser built-in password manager disabling to 2.4; add missing Attack Prevented lines; drop Trust Center and marketing-page references | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with admin security, enforcement policies, and SSO | Claude Code (Opus 4.5) |
 
 **Source coverage note:** This revision is built on Keeper's Tier 1 enterprise documentation (recommended security settings, enforcement policies, two-factor authentication). **No Tier 2 benchmark coverage was confirmed** for Keeper (no CIS Benchmark, DISA STIG, or CISA SCuBA baseline located for this product). Tier 3/4 independent research was **not surveyed** for this revision.
 

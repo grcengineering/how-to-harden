@@ -1053,10 +1053,13 @@ The [SCuBA Gmail baseline](https://github.com/cisagov/ScubaGoggles/blob/main/scu
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 0.1.0 | 2026-08-03 | Authored the full Gmail control set: 18 controls across email authentication (SPF/DKIM/DMARC), Safety protections, mail-flow compliance, access & forwarding lockdown, and monitoring/encryption — each verified against Google's live admin documentation and mapped to CISA SCuBA GWS.GMAIL policy IDs. Replaces the placeholder. |
-| 0.0.1 | 2026-05-29 | Created Gmail product placeholder as part of the Google Workspace multi-product platform restructure. |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2026-08-03 | 0.1.0 | ai-drafted | Authored the full Gmail control set: 18 controls across email authentication (SPF/DKIM/DMARC), Safety protections, mail-flow compliance, access & forwarding lockdown, and monitoring/encryption — each verified against Google's live admin documentation and mapped to CISA SCuBA GWS.GMAIL policy IDs. Replaces the placeholder. | Claude Code (Sonnet 5) † |
+| 2026-05-29 | 0.0.1 | ai-drafted | Created Gmail product placeholder as part of the Google Workspace multi-product platform restructure. | Jai (PAI) |
+
+> † Author **inferred**, not recorded. This row predates the Author column, so the value comes from the authoring session's commit window (every other guide authored in that window names the same tool and model, with no dissenting entry). Undaggered rows are attributed from a sibling guide that recorded its author explicitly in the same commit, or from the row's own text.
+
 
 ## Contributing
 

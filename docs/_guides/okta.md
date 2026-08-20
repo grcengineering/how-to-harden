@@ -2866,12 +2866,12 @@ Use this checklist to verify controls are implemented for your compliance requir
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.4.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.3, §3.2, §4.1, §5.6, §7.2 (no content-facts changed) | Claude Code (Fable 5) |
-| 2026-08-03 | 0.4.0 | draft | Guidance-currency refresh. Added 4 new controls: Device Assurance Policies including Okta Verify Advanced Posture Checks (1.12), Help Desk Visual Identity Verification (1.13), Cross App Access for AI agents and MCP servers (3.5), Identity Security Posture Management (5.7). Expanded SOC 2 and NIST 800-53 mappings and the compliance checklist to cover the new controls. | Claude Code (Sonnet 5) |
-| 2026-06-29 | 0.3.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2026-02-10 | 0.3.0 | draft | Comprehensive audit against Okta SIC, DISA STIG v1.1, NIST 800-63-4, Obsidian/Nudge/AppOmni research. Added 15 new controls: Default Auth Policy Backstop (1.9), Self-Service Recovery (1.10), End-User Notifications (1.11), Dynamic Zones (2.3), OAuth Allowlisting (3.3), NHI Governance (3.4), Admin Session Security (4.3), ITP (5.3), Behavior Detection (5.4), Cross-Tenant Impersonation (5.5), HealthInsight (5.6), HAR Sanitization (7.1), Security Advisory Monitoring (7.2), Access Reviews (7.3), Change Management (7.4), Incident Response (7.5). Expanded compliance mappings with NIST 800-63-4 AAL mapping. | Claude Code (Opus 4.6) |
-| 2025-12-26 | 0.2.0 | draft | Integrated DISA STIG Okta IDaaS V1R1 controls into functional sections | Claude Code (Opus 4.5) |
-| 2025-12-14 | 0.1.0 | draft | Initial Okta hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.4.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.3, §3.2, §4.1, §5.6, §7.2 (no content-facts changed) | Claude Code (Fable 5) |
+| 2026-08-03 | 0.4.0 | ai-drafted | Guidance-currency refresh. Added 4 new controls: Device Assurance Policies including Okta Verify Advanced Posture Checks (1.12), Help Desk Visual Identity Verification (1.13), Cross App Access for AI agents and MCP servers (3.5), Identity Security Posture Management (5.7). Expanded SOC 2 and NIST 800-53 mappings and the compliance checklist to cover the new controls. | Claude Code (Sonnet 5) |
+| 2026-06-29 | 0.3.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-02-10 | 0.3.0 | ai-drafted | Comprehensive audit against Okta SIC, DISA STIG v1.1, NIST 800-63-4, Obsidian/Nudge/AppOmni research. Added 15 new controls: Default Auth Policy Backstop (1.9), Self-Service Recovery (1.10), End-User Notifications (1.11), Dynamic Zones (2.3), OAuth Allowlisting (3.3), NHI Governance (3.4), Admin Session Security (4.3), ITP (5.3), Behavior Detection (5.4), Cross-Tenant Impersonation (5.5), HealthInsight (5.6), HAR Sanitization (7.1), Security Advisory Monitoring (7.2), Access Reviews (7.3), Change Management (7.4), Incident Response (7.5). Expanded compliance mappings with NIST 800-63-4 AAL mapping. | Claude Code (Opus 4.6) |
+| 2025-12-26 | 0.2.0 | ai-drafted | Integrated DISA STIG Okta IDaaS V1R1 controls into functional sections | Claude Code (Opus 4.5) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial Okta hardening guide | Claude Code (Opus 4.5) |
 
 ---
 

@@ -555,9 +555,9 @@ Attestation reports and certificate scopes are distributed by DocuSign under NDA
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.1.2 | draft | Structural pass only — Tier 1 sources unreachable (DocuSign support/developer docs render as SPAs and could not be fetched or verified this pass), so no content refresh was possible. Removed Trust Center and marketing security pages from References per the hardening-source standard, added the missing Attack Prevented line to 1.1, and added an Overview verification note flagging console paths and the plan matrix for authenticated re-check. Tier 2 (CIS/DISA/CISA) and Tier 3/4 expert sources not surveyed this pass. | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, security settings, and admin controls | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.1.2 | ai-drafted | Structural pass only — Tier 1 sources unreachable (DocuSign support/developer docs render as SPAs and could not be fetched or verified this pass), so no content refresh was possible. Removed Trust Center and marketing security pages from References per the hardening-source standard, added the missing Attack Prevented line to 1.1, and added an Overview verification note flagging console paths and the plan matrix for authenticated re-check. Tier 2 (CIS/DISA/CISA) and Tier 3/4 expert sources not surveyed this pass. | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, security settings, and admin controls | Claude Code (Opus 4.5) |
 
 ---
 

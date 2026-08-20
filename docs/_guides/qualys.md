@@ -744,9 +744,9 @@ Configure approval workflows for automated remediation.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: Enterprise TruRisk Platform / Policy Audit naming; new 1.5 API External ID and 1.6 activity and change logging; On-Host Script Execution changed-default callout in 2.2; corrected credential-vault list in 2.1; removed unsourced claims and added Attack Prevented in 3.1, 1.2, 2.1; dropped compliance-badge reference. Tier 3/4 research sweep out of scope this pass | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with access controls, scanning, and policy compliance | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: Enterprise TruRisk Platform / Policy Audit naming; new 1.5 API External ID and 1.6 activity and change logging; On-Host Script Execution changed-default callout in 2.2; corrected credential-vault list in 2.1; removed unsourced claims and added Attack Prevented in 3.1, 1.2, 2.1; dropped compliance-badge reference. Tier 3/4 research sweep out of scope this pass | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with access controls, scanning, and policy compliance | Claude Code (Opus 4.5) |
 
 ---
 

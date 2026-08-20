@@ -428,13 +428,15 @@ HTH uses Extended SemVer with Maturity Qualifiers, aligned with [CIS Benchmarks]
   - Holding both agents at one stage (e.g. `ai-validated` **and** `ni-validated`) is the strongest claim available, and the version qualifier drops the agent prefix to say so: `v1.0.0-validated`
   - **As of now, no HTH guide holds any `ni-*` status** — every one is `ai-drafted`, two are also `ai-validated`. The NI row is an invitation, not a description
 
-- **Per-Requirement Status Badge:** when — and only when — a `validate-hth-guide` run returns `VERIFIED-LIVE` for a specific control, that control carries one badge line, placed **between** its `### N.N` heading and its `**Profile Level:**` line:
+- **Per-Surface Status Mark:** when — and only when — a `validate-hth-guide` run returns `VERIFIED-LIVE` for a specific **implementation surface**, that surface's heading carries a mark, appended on the same line:
 
   ```liquid
-  {% raw %}{% include status-badge.html status="ai-validated" evidence="what was actually exercised" date="YYYY-MM-DD" %}{% endraw %}
+  {% raw %}#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="what was actually exercised" date="YYYY-MM-DD" %}{% endraw %}
   ```
 
-  `status` takes any of the six statuses. Two badges on one control (a machine and a person both exercised it) go on consecutive lines in that same slot — they add, they do not replace. Placement is load-bearing — inside the heading it corrupts the anchor and the cheat-sheet control name; below `**Profile Level:**` or under `#### Description` it silently eats a cheat-sheet cell. See the comment block in `docs/_includes/status-badge.html`. Never hand-apply it, and never put it on a control that was skipped, blocked, or only drift-checked against documentation.
+  `status` takes any of the six statuses. The unit is the surface, not the control: mark `#### ClickOps Implementation` when the console path was walked live, and `#### Code Implementation` when the pack was actually executed. A control can carry one, both, or neither — buildkite `3.1` is Code-marked with no ClickOps mark because its Terraform was applied to a live organization and its console was never walked. **Absence is a statement**, so never add a mark to "balance" a control.
+
+  The mark is icon only and must render no text node — text inside an `h4` corrupts the kramdown anchor and blinds the cheat-sheet parser, both silently. See the comment block in `docs/_includes/status-mark.html`. Never hand-apply it, and never put it on a surface that was skipped, blocked, or only drift-checked against documentation.
 
 - **Changelog Entry:** Every version change requires a changelog entry with proper author attribution
 

@@ -383,9 +383,9 @@ The Audit Logs API supports filtering, and those filters are the query surface a
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: invert 2.1 to OAuth-first and mark API tokens deprecated, non-expiring, and impersonation-capable; add TLS 1.2 minimum and the Developer Terms credential-sharing prohibition to 2.1/2.2; expand 4.1 with the Enterprise-only Audit Logs API (endpoints, filters, export rate limit, indefinite retention) and populate the empty Detection Focus heading; remove the 404 account-security-best-practices link, annotate two sign-in-walled help articles, and re-source the compliance mapping honestly. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial Zendesk hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: invert 2.1 to OAuth-first and mark API tokens deprecated, non-expiring, and impersonation-capable; add TLS 1.2 minimum and the Developer Terms credential-sharing prohibition to 2.1/2.2; expand 4.1 with the Enterprise-only Audit Logs API (endpoints, filters, export rate limit, indefinite retention) and populate the empty Detection Focus heading; remove the 404 account-security-best-practices link, annotate two sign-in-walled help articles, and re-source the compliance mapping honestly. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial Zendesk hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

@@ -605,8 +605,8 @@ SCIM is documented as available on all plans and is configured in the identity p
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Correct base roles to the documented set (Global Admin, Restricted Access, Stakeholder tiers — "Admin" and "Limited User" do not exist); correct SCIM to all-plans and IdP-configured with a standard API key; correct plan names and Advanced Permissions/Observer availability to Professional+; add 1.4 session timeouts (API-only), 3.3 API access keys, 4.2 PagerDuty Advance AI governance; fix audit-doc link; add Attack Prevented to 1.1 and 1.2; drop the marketing security page. No native-MFA control added — PagerDuty documents none | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, user management, and access controls | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Correct base roles to the documented set (Global Admin, Restricted Access, Stakeholder tiers — "Admin" and "Limited User" do not exist); correct SCIM to all-plans and IdP-configured with a standard API key; correct plan names and Advanced Permissions/Observer availability to Professional+; add 1.4 session timeouts (API-only), 3.3 API access keys, 4.2 PagerDuty Advance AI governance; fix audit-doc link; add Attack Prevented to 1.1 and 1.2; drop the marketing security page. No native-MFA control added — PagerDuty documents none | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, user management, and access controls | Claude Code (Opus 4.5) |
 
 ---
 

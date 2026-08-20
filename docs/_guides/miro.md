@@ -539,9 +539,9 @@ Miro's help center returns HTTP 403 to non-browser fetchers. Every `help.miro.co
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: corrected SAML SSO to Business+Enterprise (multi-IdP Enterprise-only), corrected 2.2 to the real Copying Content control (no "Export restrictions" setting exists), corrected 3.1 app governance plan split (no allowlist below Enterprise), corrected plan tiers (no "Team" plan; domain control Enterprise-only); added 1.3 Idle Session Timeout, 1.4 SCIM, 2.3 classification + Intelligent Guardrails, 3.3 Miro AI admin controls; added 90-day audit-API window and Detection Focus content; added expiring-OAuth-token guidance and high-impact scope table; rebuilt Appendix A and removed Trust Center / marketing sources from Appendix B. help.miro.com articles 403 non-browser fetchers and were content-verified via Miro's first-party help-center API. Tier 2: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline exists for Miro (confirmed zero). Tier 3/4: not surveyed in this pass. | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial Miro hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: corrected SAML SSO to Business+Enterprise (multi-IdP Enterprise-only), corrected 2.2 to the real Copying Content control (no "Export restrictions" setting exists), corrected 3.1 app governance plan split (no allowlist below Enterprise), corrected plan tiers (no "Team" plan; domain control Enterprise-only); added 1.3 Idle Session Timeout, 1.4 SCIM, 2.3 classification + Intelligent Guardrails, 3.3 Miro AI admin controls; added 90-day audit-API window and Detection Focus content; added expiring-OAuth-token guidance and high-impact scope table; rebuilt Appendix A and removed Trust Center / marketing sources from Appendix B. help.miro.com articles 403 non-browser fetchers and were content-verified via Miro's first-party help-center API. Tier 2: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline exists for Miro (confirmed zero). Tier 3/4: not surveyed in this pass. | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial Miro hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

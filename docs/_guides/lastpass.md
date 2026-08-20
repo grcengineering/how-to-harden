@@ -674,9 +674,9 @@ Following the 2022 LastPass security incidents, consider:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.1.2 | draft | Document the vendor conflict in 2.3 (LastPass recommends allowing personal account linking; this guide keeps the stricter prohibition, with the risk delta and a compatibility path); name the literal "Prohibit Sharing Except for Shared Folders" policy in 2.2; add missing Attack Prevented line to 1.1; record the Tier 1 source-unreachability scope limitation in the Overview; annotate support.lastpass.com references as manually-verifiable-only; drop Trust Center, Compliance Center, and marketing references | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with MFA, policies, and security dashboard | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.1.2 | ai-drafted | Document the vendor conflict in 2.3 (LastPass recommends allowing personal account linking; this guide keeps the stricter prohibition, with the risk delta and a compatibility path); name the literal "Prohibit Sharing Except for Shared Folders" policy in 2.2; add missing Attack Prevented line to 1.1; record the Tier 1 source-unreachability scope limitation in the Overview; annotate support.lastpass.com references as manually-verifiable-only; drop Trust Center, Compliance Center, and marketing references | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with MFA, policies, and security dashboard | Claude Code (Opus 4.5) |
 
 **Source coverage note:** This revision is a **limited-scope** pass. LastPass's primary Tier 1 documentation host was unreachable to verification tooling (see the scope limitation in the Overview); only `blog.lastpass.com` was verified. **No Tier 2 benchmark coverage was confirmed** for LastPass (no CIS Benchmark, DISA STIG, or CISA SCuBA baseline located for this product). Tier 3/4 independent research was **not surveyed** for this revision.
 

@@ -55,8 +55,6 @@ This guide covers Ona organization administration: OIDC SSO and SCIM provisionin
 
 ### 1.1 Enforce SSO with Domain Verification
 
-{% include status-badge.html status="ai-validated" evidence="Console path observed live" date="2026-08-19" %}
-
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -81,7 +79,7 @@ Configure OIDC single sign-on (Ona supports OIDC only — no SAML is documented)
 - OIDC application registered in your IdP
 - DNS access to publish a domain-verification TXT record
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live" date="2026-08-19" %}
 
 **Step 1: Verify Your Email Domain**
 1. Publish the DNS TXT record Ona provides for your domain — "Sign in with SSO" does not appear on the login screen until the domain is verified.
@@ -115,8 +113,6 @@ Configure OIDC single sign-on (Ona supports OIDC only — no SAML is documented)
 
 ### 1.2 Enforce SCIM Provisioning and Restrict Account Creation
 
-{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -139,7 +135,7 @@ Enable SCIM provisioning against your IdP, then enable the **Restrict account cr
 #### Prerequisites
 - An active SSO provider (1.1) — the SCIM restriction toggle stays disabled until SCIM is configured and enabled
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
 
 **Step 1: Configure SCIM**
 1. Navigate to: **Settings** → **Login & Identity** → **SCIM** → **Configuration** → **Set up SCIM**
@@ -151,7 +147,7 @@ Enable SCIM provisioning against your IdP, then enable the **Restrict account cr
 
 **Time to Complete:** ~45 minutes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="1.2" %}
 
@@ -172,8 +168,6 @@ Enable SCIM provisioning against your IdP, then enable the **Restrict account cr
 
 ### 1.3 Apply Least-Privilege Organization Roles and Groups
 
-{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -193,7 +187,7 @@ Use Ona's delegated organization roles (Runners Admin, Projects Admin, Groups Ad
 
 **Attack Prevented:** Privilege sprawl enabling org-wide policy, secret, or runner tampering from any one account
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live" date="2026-08-19" %}
 
 **Step 1: Assign Delegated Roles**
 1. Navigate to: **Settings** → **Organization** → **Members** → **Groups** tab (delegated roles are Enterprise-tier)
@@ -205,7 +199,7 @@ Use Ona's delegated organization roles (Runners Admin, Projects Admin, Groups Ad
 
 **Time to Complete:** ~30 minutes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="1.3" %}
 
@@ -226,8 +220,6 @@ Use Ona's delegated organization roles (Runners Admin, Projects Admin, Groups Ad
 
 ### 1.4 Harden Service Accounts and Personal Access Tokens
 
-{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -247,7 +239,7 @@ Constrain machine credentials: never issue service-account tokens with **indefin
 
 **Attack Prevented:** Persistent access via leaked long-lived tokens, over-scoped credential abuse
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live" date="2026-08-19" %}
 
 **Step 1: Constrain Service Accounts**
 1. Navigate to: **Settings** → **Organization** → **Members** → **Service Accounts** tab (Core tier and above)
@@ -260,7 +252,7 @@ Constrain machine credentials: never issue service-account tokens with **indefin
 
 **Time to Complete:** ~30 minutes plus recurring review
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="1.4" %}
 
@@ -281,8 +273,6 @@ Constrain machine credentials: never issue service-account tokens with **indefin
 
 ### 1.5 Control Member Invitations and Remove Domain Auto-Admit
 
-{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
-
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -302,7 +292,7 @@ Review the organization's invitation surface: the shareable invite link, email i
 
 **Attack Prevented:** Unauthorized organization joins via domain matching or leaked invite links
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
 
 **Step 1: Remove Domain Auto-Admit**
 1. The domain allow-list is the organization's `inviteDomains` (API: `UpdateOrganization` with `inviteDomains: {domains: []}`; readable via `GetOrganization`). Where your tier exposes it in the console (**Settings** → **Organization** → **Members**), clear every entry so matching addresses no longer auto-join; the API pack below audits and clears it on any tier.
@@ -391,8 +381,6 @@ Use Veto — Ona's Linux Security Module that "runs as a Linux Security Module (
 
 ### 2.2 Configure the Agent Command Deny List
 
-{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -412,7 +400,7 @@ Block dangerous agent-issued bash commands with wildcard patterns (e.g., `shutdo
 
 **Attack Prevented:** Destructive or exfiltrating commands executed autonomously by a compromised or prompt-injected agent
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live" date="2026-08-19" %}
 
 **Step 1: Add Deny Patterns**
 1. Navigate to: **Settings** → **Agents** → **Policies** → **Command deny list**
@@ -421,7 +409,7 @@ Block dangerous agent-issued bash commands with wildcard patterns (e.g., `shutdo
 
 **Time to Complete:** ~20 minutes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="2.2" %}
 
@@ -442,8 +430,6 @@ Block dangerous agent-issued bash commands with wildcard patterns (e.g., `shutdo
 
 ### 2.3 Restrict MCP Server Access
 
-{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -462,7 +448,7 @@ Decide organization policy on Model Context Protocol (MCP) servers. Org owners c
 
 **Attack Prevented:** Prompt-injection-driven data movement through unvetted, repo-defined MCP connections
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
 
 **Step 1: Set the Org MCP Policy**
 1. Navigate to: **Settings** → **Agents** → **Policies** → **Agent capabilities** → **Model Context Protocol (MCP)**
@@ -471,7 +457,7 @@ Decide organization policy on Model Context Protocol (MCP) servers. Org owners c
 
 **Time to Complete:** ~15 minutes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="2.3" %}
 
@@ -491,8 +477,6 @@ Decide organization policy on Model Context Protocol (MCP) servers. Org owners c
 
 ### 2.4 Govern SCM Tools and LLM Provider Access
 
-{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -511,7 +495,7 @@ Scope what agents can do against source-control hosts and which model providers 
 
 **Attack Prevented:** Autonomous repository manipulation via SCM API tools; unintended code/prompt egress to an unassessed model backend
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live" date="2026-08-19" %}
 
 **Step 1: Scope SCM Tools**
 1. Navigate to: **Settings** → **Agents** → **Policies** → **Agent capabilities** → **Source Code Management Tools (SCM)** → **Restrict access to**
@@ -523,7 +507,7 @@ Scope what agents can do against source-control hosts and which model providers 
 
 **Time to Complete:** ~30 minutes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="2.4" %}
 
@@ -589,8 +573,6 @@ Set the automation guardrails that cap how much autonomous work members can run:
 
 ### 2.6 Deploy Runtime EDR to Agent Environments
 
-{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L3 (Run)
 
 | Framework | Control |
@@ -613,7 +595,7 @@ For regulated or high-sensitivity estates, enable the CrowdStrike Falcon integra
 - CrowdStrike Falcon subscription with a CID and a sensor image
 - Acceptance of a privileged sidecar in every environment (resource and trust implications)
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
 
 **Step 1: Enable Falcon**
 1. Navigate to: **Settings** → **Infrastructure** → **Security** → **Security agents** → **CrowdStrike Falcon** (Enterprise tier)
@@ -621,7 +603,7 @@ For regulated or high-sensitivity estates, enable the CrowdStrike Falcon integra
 
 **Time to Complete:** ~1 hour
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="2.6" %}
 
@@ -644,8 +626,6 @@ For regulated or high-sensitivity estates, enable the CrowdStrike Falcon integra
 
 ### 3.1 Restrict Port Admission Levels
 
-{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L1 (Crawl)
 
 | Framework | Control |
@@ -665,7 +645,7 @@ Cap how widely environment ports can be exposed. Admission levels run `creator_o
 
 **Attack Prevented:** Exposure of in-development services and subdomain-trust abuse via public port URLs
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
 
 **Step 1: Set the Maximum Admission Level**
 1. Navigate to: **Settings** → **Infrastructure** → **Policies** → **Environment access** → **Port sharing** / **Maximum port admission level** (Enterprise tier; the observed default is **Anyone (no login required)**, i.e. no cap)
@@ -675,7 +655,7 @@ Cap how widely environment ports can be exposed. Admission levels run `creator_o
 
 **Time to Complete:** ~15 minutes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="3.1" %}
 
@@ -696,8 +676,6 @@ Cap how widely environment ports can be exposed. Admission levels run `creator_o
 
 ### 3.2 Control the In-Environment Web Browser
 
-{% include status-badge.html status="ai-validated" evidence="Console path and toggle label corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -716,7 +694,7 @@ Govern the built-in environment web browser and the agent's browse-web skill, wh
 
 **Attack Prevented:** Prompt injection via agent web browsing and access to environment-local services
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path and toggle label corrected against the live console" date="2026-08-19" %}
 
 **Step 1: Review the Browser Policy**
 1. Navigate to: **Settings** → **Infrastructure** → **Policies** → **Environment access** → **Web browser** ("Allow members to open the built-in browser panel. VS Code Browser is not affected.")
@@ -724,7 +702,7 @@ Govern the built-in environment web browser and the agent's browse-web skill, wh
 
 **Time to Complete:** ~15 minutes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="3.2" %}
 
@@ -745,8 +723,6 @@ Govern the built-in environment web browser and the agent's browse-web skill, wh
 
 ### 3.3 Enforce Environment Lifetime, Timeout, and Retention
 
-{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -765,7 +741,7 @@ Bound how long environments live and linger: set a maximum environment lifetime 
 
 **Attack Prevented:** Long-lived stale environments retaining source and credentials as a standing target
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
 
 **Step 1: Enforce Maximum Lifetime**
 1. Navigate to: **Settings** → **Infrastructure** → **Policies** → **Environment lifecycle**
@@ -777,7 +753,7 @@ Bound how long environments live and linger: set a maximum environment lifetime 
 
 **Time to Complete:** ~20 minutes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="3.3" %}
 
@@ -798,8 +774,6 @@ Bound how long environments live and linger: set a maximum environment lifetime 
 
 ### 3.4 Restrict Environment Creation
 
-{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -818,7 +792,7 @@ Limit who can spin up blank environments with the **Only admins can start from s
 
 **Attack Prevented:** Unmanaged ad-hoc environments that sidestep project-level controls
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
 
 **Step 1: Restrict Blank Creation**
 1. Navigate to: **Settings** → **Infrastructure** → **Policies** → **Environment setup**
@@ -826,7 +800,7 @@ Limit who can spin up blank environments with the **Only admins can start from s
 
 **Time to Complete:** ~10 minutes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="3.4" %}
 
@@ -846,8 +820,6 @@ Limit who can spin up blank environments with the **Only admins can start from s
 
 ### 3.5 Mitigate Dotfiles Auto-Execution Supply-Chain Risk
 
-{% include status-badge.html status="ai-validated" evidence="Console path observed live; no organization-level control exists at the tenant's tier" date="2026-08-19" %}
-
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -866,7 +838,7 @@ Ona clones a user's configured dotfiles repository (user menu → **Account** �
 
 **Attack Prevented:** Environment-start code execution via a malicious or compromised dotfiles bootstrap script
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live; no organization-level control exists at the tenant's tier" date="2026-08-19" %}
 
 **Step 1: Enforce via Existing Guardrails (no direct admin toggle exists)**
 1. Use the **Veto executable policy** ([2.1](#21-enforce-an-executable-policy-with-veto)) to AUDIT then BLOCK high-risk binaries the bootstrap might invoke (network and package tooling)
@@ -896,8 +868,6 @@ Ona clones a user's configured dotfiles repository (user menu → **Account** �
 
 ### 4.1 Scope Secrets and Restrict Organization Secrets
 
-{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -917,7 +887,7 @@ Use the tightest secret scope (user > project > organization precedence) and tre
 
 **Attack Prevented:** Broad credential exposure via org-wide secrets reachable by every agent
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
 
 **Step 1: Prefer Narrow Scope**
 1. Define secrets at **user** (user menu → **Account** → **Secrets**) or **project** scope wherever possible rather than organization scope
@@ -926,7 +896,7 @@ Use the tightest secret scope (user > project > organization precedence) and tre
 
 **Time to Complete:** ~30 minutes plus inventory
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="4.1" %}
 
@@ -947,8 +917,6 @@ Use the tightest secret scope (user > project > organization precedence) and tre
 
 ### 4.2 Use OIDC Workload Identity for Keyless Cloud Access
 
-{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -967,7 +935,7 @@ Instead of storing long-lived cloud credentials as secrets, use Ona's OIDC workl
 
 **Attack Prevented:** Theft of long-lived cloud credentials stored as environment secrets
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live" date="2026-08-19" %}
 
 **Step 1: Configure Workload Identity**
 1. In your cloud IAM, register **`https://app.gitpod.io`** as the OIDC issuer (that is the `iss` claim even for an org that only ever sees `ona.com` branding) and constrain the trust policy using the sub claims you selected (`organization_id`, `project_id`, `runner_id`, `environment_id`, `creator_email`, …)
@@ -976,7 +944,7 @@ Instead of storing long-lived cloud credentials as secrets, use Ona's OIDC workl
 
 **Time to Complete:** ~1-2 hours with cloud IAM changes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="4.2" %}
 
@@ -997,8 +965,6 @@ Instead of storing long-lived cloud credentials as secrets, use Ona's OIDC workl
 
 ### 4.3 Scope Repository Access to Least Privilege
 
-{% include status-badge.html status="ai-validated" evidence="Console path corrected against the live console; API audit pack executed against a live tenant" date="2026-08-19" %}
-
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
@@ -1017,7 +983,7 @@ Configure per-runner repository access deliberately. The GitHub integration requ
 
 **Attack Prevented:** Whole-org source exposure via an over-broad SCM integration on a compromised runner
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
 
 **Step 1: Configure Repository Access Deliberately**
 1. Navigate to: **Settings** → **Infrastructure** → **Runners** → open the runner → **Configure repository access** → **New provider** (Ona Cloud runners ship github/gitlab/bitbucket via OAuth; private or self-hosted Git servers require Enterprise)
@@ -1026,7 +992,7 @@ Configure per-runner repository access deliberately. The GitHub integration requ
 
 **Time to Complete:** ~30 minutes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="4.3" %}
 
@@ -1048,8 +1014,6 @@ Configure per-runner repository access deliberately. The GitHub integration requ
 ## 5. Deployment Architecture
 
 ### 5.1 Run Self-Hosted Runners for Sensitive Source Code
-
-{% include status-badge.html status="ai-validated" evidence="Console path observed live; API audit pack executed against a live tenant" date="2026-08-19" %}
 
 **Profile Level:** L2 (Walk)
 
@@ -1074,7 +1038,7 @@ For sensitive codebases, run self-hosted runners in your own AWS/GCP VPC rather 
 - AWS or GCP account and VPC; capacity for Fargate-based runners
 - Network path for the runner's required egress (see below)
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live" date="2026-08-19" %}
 
 **Step 1: Provision a Self-Hosted Runner**
 1. Navigate to: **Settings** → **Infrastructure** → **Runners** → **Set up a new runner** → **AWS** or **GCP** (Enterprise tier; Azure is waitlisted) and deploy it in your VPC
@@ -1083,7 +1047,7 @@ For sensitive codebases, run self-hosted runners in your own AWS/GCP VPC rather 
 
 **Time to Complete:** ~half day including cloud networking
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
 
 {% include pack-code.html vendor="ona" section="5.1" %}
 
@@ -1273,11 +1237,14 @@ Source: [NVD keyword search "gitpod"](https://services.nvd.nist.gov/rest/json/cv
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 0.2.1 | 2026-08-20 | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated** — an AI agent exercised this guidance against a live Ona tenant and the guidance survived that contact; no human practitioner has reviewed or applied it, so the guide claims no **ni-** status, and an AI status never substitutes for one. **What was exercised:** all 22 controls walked on the live console (`app.gitpod.io`, a `free_ona` tenant) and 18 read-only `api/` audit packs executed against that tenant, exit codes and sanitized output captured per pack; the OCEAN `ona` source observed live against the same organization. 18 controls carry a per-requirement badge naming what was run for that control. **What was NOT exercised — the badges are absent on purpose:** every `terraform/` pack was only `terraform validate`d inside Docker and was never applied to any organization, so no Terraform path in this guide has been proven to run; the four `cli/` packs were never executed (the `ona` CLI was not installed on the run host); the three mutating packs (`api` 1.01 and 1.05, `cli` 2.01) were deliberately not run, so 1.1 and 1.5 rest on console observation alone; 2.5 and 6.2 are plan-gated to Core+/Enterprise on this tenant and 6.1 has no console surface at all with its API pack returning the Enterprise gate, so all three are unbadged; 2.1 came back PARTIAL because its executables section is Enterprise-gated, so it too is unbadged even though its audit pack ran. Enterprise-gated toggle behaviour throughout remains a documentation claim, not a live one. No control text, control number, or heading changed. |
-| 0.2.0 | 2026-08-19 | Live validation pass (validate-hth-guide): every console path re-read off the live console (`app.gitpod.io`; sidebar Organization / Infrastructure / Agents / Login & Identity) — 11 controls needed path corrections (1.2, 1.5, 2.3, 2.6, 3.1–3.4, 4.1, 4.3 wrong; 2.1 partial — its executables section is plan-gated on the tenant walked); 14 doc-drift corrections (`set-default` takes a policy id, MCP toggle lives under Agents → Policies, WatchEvents is not the audit trail, API base `app.gitpod.io`, LLM-provider posture, `ona idp token`, webhook direction, deprecated `OWNER_ONLY`, preview gating for automation limits and Veto audit entries, service-account "no expiry" wording); Code Packs landed for the first time — api (read-only audit scripts, executed against a live tenant), terraform (`gitpod-io/ona`), cli (`ona`), config (Veto policy YAML, MCP `toolDenyList`), and Sigma rules on the audit-log schema; controls with no write surface now carry an explicit Automation verdict (2.5, 3.5); Ona added to the CLI inventory. |
-| 0.1.0 | 2026-08-08 | Initial guide — 20 controls across identity, agent guardrails (Veto/command-deny/MCP), environment & network policy, secrets, self-hosted runners, and audit logging. Authored per the create-hth-guide playbook: every control traces to fetched Ona documentation; no product benchmark exists so mappings use NIST 800-53/AI RMF/SOC 2 catalogs; the Gitpod-era CVE history grounds the rationale. Automation surfaces stated honestly (Security Policy API/CLI for ports+executables, EventService for audit) — Code Packs deferred to a follow-up. Unverified "Ona joining OpenAI" claim deliberately excluded. |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2026-08-20 | 0.2.1 | ai-drafted · ai-validated | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated** — an AI agent exercised this guidance against a live Ona tenant and the guidance survived that contact; no human practitioner has reviewed or applied it, so the guide claims no **ni-** status, and an AI status never substitutes for one. **What was exercised:** all 22 controls walked on the live console (`app.gitpod.io`, a `free_ona` tenant) and 18 read-only `api/` audit packs executed against that tenant, exit codes and sanitized output captured per pack; the OCEAN `ona` source observed live against the same organization. 18 controls carry a per-requirement badge naming what was run for that control. **What was NOT exercised — the badges are absent on purpose:** every `terraform/` pack was only `terraform validate`d inside Docker and was never applied to any organization, so no Terraform path in this guide has been proven to run; the four `cli/` packs were never executed (the `ona` CLI was not installed on the run host); the three mutating packs (`api` 1.01 and 1.05, `cli` 2.01) were deliberately not run, so 1.1 and 1.5 rest on console observation alone; 2.5 and 6.2 are plan-gated to Core+/Enterprise on this tenant and 6.1 has no console surface at all with its API pack returning the Enterprise gate, so all three are unbadged; 2.1 came back PARTIAL because its executables section is Enterprise-gated, so it too is unbadged even though its audit pack ran. Enterprise-gated toggle behaviour throughout remains a documentation claim, not a live one. No control text, control number, or heading changed. | Claude Code (Opus 5) |
+| 2026-08-19 | 0.2.0 | ai-drafted | Live validation pass (validate-hth-guide): every console path re-read off the live console (`app.gitpod.io`; sidebar Organization / Infrastructure / Agents / Login & Identity) — 11 controls needed path corrections (1.2, 1.5, 2.3, 2.6, 3.1–3.4, 4.1, 4.3 wrong; 2.1 partial — its executables section is plan-gated on the tenant walked); 14 doc-drift corrections (`set-default` takes a policy id, MCP toggle lives under Agents → Policies, WatchEvents is not the audit trail, API base `app.gitpod.io`, LLM-provider posture, `ona idp token`, webhook direction, deprecated `OWNER_ONLY`, preview gating for automation limits and Veto audit entries, service-account "no expiry" wording); Code Packs landed for the first time — api (read-only audit scripts, executed against a live tenant), terraform (`gitpod-io/ona`), cli (`ona`), config (Veto policy YAML, MCP `toolDenyList`), and Sigma rules on the audit-log schema; controls with no write surface now carry an explicit Automation verdict (2.5, 3.5); Ona added to the CLI inventory. | Claude Code (Opus 5) † |
+| 2026-08-08 | 0.1.0 | ai-drafted | Initial guide — 20 controls across identity, agent guardrails (Veto/command-deny/MCP), environment & network policy, secrets, self-hosted runners, and audit logging. Authored per the create-hth-guide playbook: every control traces to fetched Ona documentation; no product benchmark exists so mappings use NIST 800-53/AI RMF/SOC 2 catalogs; the Gitpod-era CVE history grounds the rationale. Automation surfaces stated honestly (Security Policy API/CLI for ports+executables, EventService for audit) — Code Packs deferred to a follow-up. Unverified "Ona joining OpenAI" claim deliberately excluded. | Claude Code (Opus 4.8) † |
+
+> † Author **inferred**, not recorded. This row predates the Author column, so the value comes from the authoring session's commit window (every other guide authored in that window names the same tool and model, with no dissenting entry). Undaggered rows are attributed from a sibling guide that recorded its author explicitly in the same commit, or from the row's own text.
+
 
 ## Contributing
 

@@ -855,9 +855,9 @@ Configure Pro Pack for advanced security controls.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass against Cisco's secure-meeting best-practice articles: add 2.5 Personal Room CAPTCHA, 2.6 audio-callback country restriction, 2.7 meeting discoverability controls, and 3.4 account password/lockout/deactivation policy; document the auto-lock, lobby, and locked-meeting defaults and the three-way lobby participant classification in 2.2; extend 2.1 password enforcement to phone and video-system join paths; add the macOS third-party virtual camera default callout to 2.4; replace placeholder rationales in 2.1, 3.1, and 4.2 with real threat statements plus Attack Prevented lines; annotate 4.1 E2EE as undocumented in current articles; drop Trust Portal references and re-source the compliance mapping honestly. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, meeting security, and data protection | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass against Cisco's secure-meeting best-practice articles: add 2.5 Personal Room CAPTCHA, 2.6 audio-callback country restriction, 2.7 meeting discoverability controls, and 3.4 account password/lockout/deactivation policy; document the auto-lock, lobby, and locked-meeting defaults and the three-way lobby participant classification in 2.2; extend 2.1 password enforcement to phone and video-system join paths; add the macOS third-party virtual camera default callout to 2.4; replace placeholder rationales in 2.1, 3.1, and 4.2 with real threat statements plus Attack Prevented lines; annotate 4.1 E2EE as undocumented in current articles; drop Trust Portal references and re-source the compliance mapping honestly. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, meeting security, and data protection | Claude Code (Opus 4.5) |
 
 ---
 

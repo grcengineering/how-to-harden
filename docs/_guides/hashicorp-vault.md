@@ -946,10 +946,10 @@ Beyond the baseline, HashiCorp documents extended hardening for regulated and hi
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §2.1, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
-| 2026-08-03 | 0.2.0 | draft | Add 2025 Cyata CVE-class patching control (1.4), user lockout baseline (1.5), authenticated rekey and root-generation control (6.3), and new Host & Platform Hardening section (7.1, 7.2); update policy control for the Vault 2.0.0 templated-path change, rate limiting with concrete quota implementation, and audit logging for the CVE-2026-5051 `file_path` mandate | Claude Code (Sonnet 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial HashiCorp Vault hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §2.1, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
+| 2026-08-03 | 0.2.0 | ai-drafted | Add 2025 Cyata CVE-class patching control (1.4), user lockout baseline (1.5), authenticated rekey and root-generation control (6.3), and new Host & Platform Hardening section (7.1, 7.2); update policy control for the Vault 2.0.0 templated-path change, rate limiting with concrete quota implementation, and audit logging for the CVE-2026-5051 `file_path` mandate | Claude Code (Sonnet 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial HashiCorp Vault hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

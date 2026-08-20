@@ -474,9 +474,9 @@ Enable and monitor audit logs (Enterprise tier), and pull them programmatically.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass against the Clari External API specification (the only public first-party source — KB is login-gated, `support.clari.com` does not resolve): added 2.5 API token lifecycle, documented that user deactivation auto-revokes tokens in 2.3, expanded 3.1 with the audit/export API endpoints and a new `api` Code Pack, added a source-availability caveat to Scope, and moved `clari.com/security` out of Official Documentation to Compliance Frameworks. Tier 2 (CIS/DISA/CISA SCuBA) publishes no Clari baseline; Tier 3/4 research not surveyed this pass. | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass against the Clari External API specification (the only public first-party source — KB is login-gated, `support.clari.com` does not resolve): added 2.5 API token lifecycle, documented that user deactivation auto-revokes tokens in 2.3, expanded 3.1 with the audit/export API endpoints and a new `api` Code Pack, added a source-availability caveat to Scope, and moved `clari.com/security` out of Official Documentation to Compliance Frameworks. Tier 2 (CIS/DISA/CISA SCuBA) publishes no Clari baseline; Tier 3/4 research not surveyed this pass. | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
 
 ---
 

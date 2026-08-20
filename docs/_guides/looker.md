@@ -532,9 +532,9 @@ Point your System Activity reviews at the events the controls in this guide depe
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass. New controls: 1.3 Looker-native MFA (enabled by default from 26.12), 1.4 API credential and service-account hygiene (26.8 and 26.18 changes), 2.3 Public URLs, 2.4 delivery/egress hardening. Corrected 2.2 to real embed setting names and added the secret-reset breaking-change callout; added AI-surface roles to 1.2 and the JDBC parameter allowlist to 3.1; populated 2.1 folder structure and 4.1 Detection Focus; added CVE-2026-15810 to the incidents section; removed Trust Center and Compliance Reports Manager references and migrated all links to the canonical docs.cloud.google.com host. Tier 3/4 research not surveyed this pass. | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial Looker hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass. New controls: 1.3 Looker-native MFA (enabled by default from 26.12), 1.4 API credential and service-account hygiene (26.8 and 26.18 changes), 2.3 Public URLs, 2.4 delivery/egress hardening. Corrected 2.2 to real embed setting names and added the secret-reset breaking-change callout; added AI-surface roles to 1.2 and the JDBC parameter allowlist to 3.1; populated 2.1 folder structure and 4.1 Detection Focus; added CVE-2026-15810 to the incidents section; removed Trust Center and Compliance Reports Manager references and migrated all links to the canonical docs.cloud.google.com host. Tier 3/4 research not surveyed this pass. | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial Looker hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

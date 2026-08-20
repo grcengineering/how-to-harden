@@ -922,10 +922,13 @@ A `bogware/langsmith` Terraform provider also exists on the Terraform Registry, 
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 0.2.0 | 2026-08-08 | Currency pass: corrected CVE-2026-25750 attribution (LangSmith Helm chart <0.12.71 Studio URL-param injection, not an SDK flaw) and the nonexistent `@langchain/langsmith` npm package (real package: `langsmith`); added missing langsmith SDK, langchain-core, and LangGraph CVE batches; new control 3.6 (LangGraph checkpoint-store hardening); CVE-2026-41182 redaction-bypass callout in 5.1; 6.1 self-hosted audit-log enablement step, 400-day retention, endpoint/role specifics, OCSF Class 6003; corrected 7.2's Terraform note (first-party modules at langchain-ai/terraform); 1.1/1.3 access-model updates (Applications tier, org roles, SCIM/SSO Groups Sync, OIDC self-hosted SSO); fixed 3.4 cheat-parser miss; flagged unresolvable Swagger reference |
-| 0.1.0 | 2026-04-27 | Initial draft. Verified all Code Packs against live vendor docs (langchain-cli, langgraph-cli, langsmith-cli are first-party from langchain-ai org; LangSmith REST API at api.smith.langchain.com is documented; Helm charts are official; bogware/langsmith Terraform provider is third-party and explicitly excluded). Includes CVE-2026-25528 and CVE-2026-25750 patching guidance. |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: corrected CVE-2026-25750 attribution (LangSmith Helm chart <0.12.71 Studio URL-param injection, not an SDK flaw) and the nonexistent `@langchain/langsmith` npm package (real package: `langsmith`); added missing langsmith SDK, langchain-core, and LangGraph CVE batches; new control 3.6 (LangGraph checkpoint-store hardening); CVE-2026-41182 redaction-bypass callout in 5.1; 6.1 self-hosted audit-log enablement step, 400-day retention, endpoint/role specifics, OCSF Class 6003; corrected 7.2's Terraform note (first-party modules at langchain-ai/terraform); 1.1/1.3 access-model updates (Applications tier, org roles, SCIM/SSO Groups Sync, OIDC self-hosted SSO); fixed 3.4 cheat-parser miss; flagged unresolvable Swagger reference | Claude Code (Fable 5) |
+| 2026-04-27 | 0.1.0 | ai-drafted | Initial draft. Verified all Code Packs against live vendor docs (langchain-cli, langgraph-cli, langsmith-cli are first-party from langchain-ai org; LangSmith REST API at api.smith.langchain.com is documented; Helm charts are official; bogware/langsmith Terraform provider is third-party and explicitly excluded). Includes CVE-2026-25528 and CVE-2026-25750 patching guidance. | Claude Code (Opus 4.7) † |
+
+> † Author **inferred**, not recorded. This row predates the Author column, so the value comes from the authoring session's commit window (every other guide authored in that window names the same tool and model, with no dissenting entry). Undaggered rows are attributed from a sibling guide that recorded its author explicitly in the same commit, or from the row's own text.
+
 
 ---
 

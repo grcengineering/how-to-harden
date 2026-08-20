@@ -886,10 +886,10 @@ The NVD catalogs 22 CVEs affecting Netskope products, 19 of them in the **Netsko
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1, §2.1, §3.1, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
-| 2026-08-08 | 0.2.0 | draft | Correct 1.2 console paths to Settings > Administration (IP Allowlist, Admins > Settings); add 1.3 admin login hardening, 5.3 Client tamper protection, 5.4 hardened Client enrollment, and section 8 Private Access & Publisher hardening; replace the "no incidents" claim in Appendix B with the NVD Netskope Client CVE record | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with CASB, DLP, and threat protection | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1, §2.1, §3.1, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Correct 1.2 console paths to Settings > Administration (IP Allowlist, Admins > Settings); add 1.3 admin login hardening, 5.3 Client tamper protection, 5.4 hardened Client enrollment, and section 8 Private Access & Publisher hardening; replace the "no incidents" claim in Appendix B with the NVD Netskope Client CVE record | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with CASB, DLP, and threat protection | Claude Code (Opus 4.5) |
 
 ---
 

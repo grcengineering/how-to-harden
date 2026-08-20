@@ -1,0 +1,51 @@
+{%- comment -%}
+  Per-SURFACE validation mark — icon only.
+
+  Usage — appended to the implementation heading it makes a claim about, on the
+  SAME line, and nowhere else:
+
+      #### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live" date="2026-08-19" %}
+
+      #### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+
+  WHY THE MARK MOVED HERE (2026-08-20). It used to sit once at the top of the
+  requirement, above `**Profile Level:**`, where it asserted "this control was
+  validated" — averaging over two different acts and hiding which one happened.
+  buildkite is the proof that was lossy: 3.1 was validated by applying Terraform
+  to a live organization and was NEVER walked in the console, while 1.1 was
+  console-only with no executed code. Both wore the same badge. Anchored to the
+  heading, a mark makes exactly one claim about exactly one artifact.
+
+  Params:
+    status   — ai-drafted | ni-drafted | ai-reviewed | ni-reviewed |
+               ai-validated | ni-validated
+    evidence — what was exercised for THIS surface. Required in practice: the
+               mark asserts a specific act, and one without evidence is a mood.
+    date     — ISO date of the act.
+
+  NO SPACE between the heading text and the include — also load-bearing, and it
+  bites even though the mark itself renders no text. kramdown builds the anchor
+  from the heading's raw text, so a trailing space becomes a trailing hyphen:
+  `clickops-implementation-`, which then shifts every duplicate-numbered sibling
+  to `--1`, `--2`, and so on. Measured on a real build, 2026-08-20. The gap you
+  see beside the glyph is `margin-left` in the stylesheet, never a literal space.
+
+  NO TEXT NODE — load-bearing, not a style choice. This span renders an
+  aria-hidden <svg> and nothing else. A visible label here would land inside
+  `h4.textContent`, which (a) feeds kramdown's auto-generated heading anchor,
+  and (b) is what `cheat-sheet.html` compares against 'description'/'rationale'
+  to decide which section it is reading. A label would therefore silently break
+  in-guide links and blank out cheat-sheet cells. The accessible name lives on
+  the wrapper instead, where the parser never looks.
+
+  Absence is meaningful. An unmarked ClickOps heading beside a marked Code
+  heading is a true statement about what was tested, not an omission — which is
+  the whole reason to mark surfaces rather than controls.
+{%- endcomment -%}
+{%- assign mark_status = include.status | default: "ai-validated" -%}
+{%- assign mark_parts = mark_status | split: "-" -%}
+{%- assign mark_agent = mark_parts[0] -%}
+{%- assign mark_stage = mark_parts[1] -%}
+{%- capture mark_icon -%}{% include status-icon.html stage=mark_stage agent=mark_agent size=14 %}{%- endcapture -%}
+{%- capture mark_label %}{{ mark_agent | upcase }} {{ mark_stage | capitalize }}{% endcapture -%}
+<span class="status-mark status-mark-{{ mark_status }}" role="img" aria-label="{{ mark_label }}{% if include.evidence %}: {{ include.evidence | escape }}{% endif %}" title="{{ mark_label }}{% if include.evidence %} — {{ include.evidence | escape }}{% endif %}{% if include.date %} ({{ include.date }}){% endif %}">{{ mark_icon | strip }}</span>

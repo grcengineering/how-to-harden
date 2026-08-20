@@ -478,8 +478,8 @@ Set Outreach's retention durations for email, voice recordings, and meeting reco
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: repoint all help-center links to the new Freshdesk root (Zendesk `/hc/en-us/` URLs are dead); correct SSO, user-creation, and admin-permission console paths; soften the undocumented SSO-enforcement claim in 1.1; add 1.3 SCIM provisioning, 1.4 session logout timer, 3.2 GenAI/agentic feature disablement (incl. MCP Server), 3.3 data retention and prospect-data removal; add email safeguards and SPF/DKIM/DMARC to 2.2; remove Trust Center and marketing security pages from Appendix A. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: repoint all help-center links to the new Freshdesk root (Zendesk `/hc/en-us/` URLs are dead); correct SSO, user-creation, and admin-permission console paths; soften the undocumented SSO-enforcement claim in 1.1; add 1.3 SCIM provisioning, 1.4 session logout timer, 3.2 GenAI/agentic feature disablement (incl. MCP Server), 3.3 data retention and prospect-data removal; add email safeguards and SPF/DKIM/DMARC to 2.2; remove Trust Center and marketing security pages from Appendix A. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
 
 ---
 

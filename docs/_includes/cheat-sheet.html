@@ -108,25 +108,36 @@
       while (node && node.tagName !== 'H3') {
         var tag = node.tagName;
 
-        if (node.classList && node.classList.contains('status-mark')) {
-          // Must precede the generic P branch below: the mark IS a <p>, so a
-          // tag-first chain would swallow it and the cheat sheet would silently
-          // show no marks while the guide body showed them all.
-          var markIcon = node.querySelector('svg.status-icon');
-          if (markIcon) {
-            var statusClass = (node.className.match(/status-mark-([a-z-]+)/) || [null, ''])[1];
-            ctrl.statusMarks.push({
-              svg: markIcon.outerHTML,
-              status: statusClass,
-              label: node.getAttribute('aria-label') || 'Validated'
-            });
-          }
-          prevWasWhy = false;
-
-        } else if (tag === 'H4') {
+        if (tag === 'H4') {
+          // The mark renders no text node by contract, so h4t is unchanged by
+          // its presence — 'clickops implementation', never 'clickops
+          // implementation validated'. That is what keeps these two equality
+          // checks (and kramdown's anchor for this heading) intact.
           var h4t = node.textContent.trim().toLowerCase();
           inDescription = (h4t === 'description');
           inRationale = (h4t === 'rationale');
+
+          // Marks live INSIDE the implementation heading they describe, so the
+          // surface is simply the heading's own text. Harvesting here rather
+          // than from a sibling paragraph is the whole point of the 2026-08-20
+          // change: the cheat sheet can now say WHICH surface was exercised
+          // instead of averaging both into one per-control claim.
+          var headingMark = node.querySelector('span.status-mark');
+          if (headingMark) {
+            var markIcon = headingMark.querySelector('svg.status-icon');
+            if (markIcon) {
+              var statusClass = (headingMark.className.match(/status-mark-([a-z-]+)/) || [null, ''])[1];
+              var surface = h4t.indexOf('clickops') !== -1 ? 'ClickOps'
+                          : h4t.indexOf('code') !== -1 ? 'Code'
+                          : node.textContent.trim();
+              ctrl.statusMarks.push({
+                svg: markIcon.outerHTML,
+                status: statusClass,
+                surface: surface,
+                label: headingMark.getAttribute('aria-label') || 'Validated'
+              });
+            }
+          }
           prevWasWhy = false;
 
         } else if (tag === 'P') {
@@ -235,8 +246,12 @@
           + '</a>';
 
         c.statusMarks.forEach(function(sm) {
+          // Lead with the surface. In the condensed view the icon alone cannot
+          // say whether the console walk or the Code Pack was the thing that
+          // was exercised, and that distinction is the reason marks exist.
+          var smLabel = sm.surface ? sm.surface + ' — ' + sm.label : sm.label;
           reqCell += '<span class="cs-status-mark cs-status-mark-' + esc(sm.status)
-            + '" role="img" aria-label="' + esc(sm.label) + '" title="' + esc(sm.label) + '">'
+            + '" role="img" aria-label="' + esc(smLabel) + '" title="' + esc(smLabel) + '">'
             + sm.svg + '</span>';
         });
 

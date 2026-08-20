@@ -589,8 +589,8 @@ Enable comprehensive audit logging for Jamf Pro activities.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Rewrite 1.2 around API Roles and API Clients (OAuth client credentials), superseding user-account API auth; fix Jamf Compliance Editor repo URL (moved to Jamf-Concepts); update learn.jamf.com links to canonical /r/ form (host renders only to browsers, so a browser pass is still needed to re-verify page content); add Attack Prevented to 1.1, 2.2, 3.1; remove non-standard lang= from pack includes; drop Trust Center references. DDM / Managed Software Updates coverage and current CIS macOS Benchmark numbering remain unverified and are deferred | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with server security, device policies, and CIS implementation | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Rewrite 1.2 around API Roles and API Clients (OAuth client credentials), superseding user-account API auth; fix Jamf Compliance Editor repo URL (moved to Jamf-Concepts); update learn.jamf.com links to canonical /r/ form (host renders only to browsers, so a browser pass is still needed to re-verify page content); add Attack Prevented to 1.1, 2.2, 3.1; remove non-standard lang= from pack includes; drop Trust Center references. DDM / Managed Software Updates coverage and current CIS macOS Benchmark numbering remain unverified and are deferred | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with server security, device policies, and CIS implementation | Claude Code (Opus 4.5) |
 
 ---
 
