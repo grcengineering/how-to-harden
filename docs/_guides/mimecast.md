@@ -885,8 +885,8 @@ Actively monitor threat dashboard for emerging threats.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: correct 4.1 (default Admin Roles at Account \| Admin Roles and the Application/Protected/Security permission classes, replacing invented custom-role names), 4.2 (2-Step Authentication via Authentication Profiles bound to an Application Setting; SAML precedence), and 5.1 (Event Push replaces the unverifiable SIEM Integration path; API 1.0 end-of-life callout). Add 4.4 Admin Console IP restrictions with the 2025-09-16 changed default that IP lists no longer apply to public API endpoints, and 4.5 backup administrator account. Fix Appendix B link rot (docs.mimecast.com dead, community.mimecast.com articles moved to Zendesk) and purge Trust Center pages. Add missing Attack Prevented lines to 1.1, 2.3, 3.1. Tier 3/4 research sweep out of scope for this pass (search budget) | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with gateway, TTP, and impersonation protection | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: correct 4.1 (default Admin Roles at Account \| Admin Roles and the Application/Protected/Security permission classes, replacing invented custom-role names), 4.2 (2-Step Authentication via Authentication Profiles bound to an Application Setting; SAML precedence), and 5.1 (Event Push replaces the unverifiable SIEM Integration path; API 1.0 end-of-life callout). Add 4.4 Admin Console IP restrictions with the 2025-09-16 changed default that IP lists no longer apply to public API endpoints, and 4.5 backup administrator account. Fix Appendix B link rot (docs.mimecast.com dead, community.mimecast.com articles moved to Zendesk) and purge Trust Center pages. Add missing Attack Prevented lines to 1.1, 2.3, 3.1. Tier 3/4 research sweep out of scope for this pass (search budget) | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with gateway, TTP, and impersonation protection | Claude Code (Opus 4.5) |
 
 ---
 

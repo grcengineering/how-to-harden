@@ -871,10 +871,10 @@ Keep Jenkins and all plugins updated with security patches.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: add the 2026-08-05 advisory (CVE-2026-70426 Critical JEP-200 class-filter bypass plus three High core issues; fixed 2.576 / LTS 2.568.2) to Appendix B and 5.2, and the unfixed credentials-ID-enumeration plugin cluster to 4.2; reframe 3.1 as verify-and-never-disable because Agent → Controller Access Control has been always-enabled since 2.326; add 3.5 (WebSocket agent transport, 2.217+); correct 1.3 — its steps disabled self-registration rather than remember-me, so the control was retitled to match what it does and the remember-me mechanism left explicitly unverified rather than invented; add **Attack Prevented:** to 1.1, 2.1, 2.4, 3.1, 3.2, 4.3 so they render in the cheat sheet; fix "Manage Plugins" path drift in 5.2. Tier 2 not surveyed this pass (the CIS index was not checked); Tier 3/4 not surveyed. | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2026-02-19 | 0.1.1 | draft | Migrate inline code to SDK/CLI Code Packs (1.3, 3.3, 3.4, 4.3, 4.4); remove lang= from includes | Claude Code (Opus 4.6) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with authentication, authorization, and pipeline security | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: add the 2026-08-05 advisory (CVE-2026-70426 Critical JEP-200 class-filter bypass plus three High core issues; fixed 2.576 / LTS 2.568.2) to Appendix B and 5.2, and the unfixed credentials-ID-enumeration plugin cluster to 4.2; reframe 3.1 as verify-and-never-disable because Agent → Controller Access Control has been always-enabled since 2.326; add 3.5 (WebSocket agent transport, 2.217+); correct 1.3 — its steps disabled self-registration rather than remember-me, so the control was retitled to match what it does and the remember-me mechanism left explicitly unverified rather than invented; add **Attack Prevented:** to 1.1, 2.1, 2.4, 3.1, 3.2, 4.3 so they render in the cheat sheet; fix "Manage Plugins" path drift in 5.2. Tier 2 not surveyed this pass (the CIS index was not checked); Tier 3/4 not surveyed. | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-02-19 | 0.1.1 | ai-drafted | Migrate inline code to SDK/CLI Code Packs (1.3, 3.3, 3.4, 4.3, 4.4); remove lang= from includes | Claude Code (Opus 4.6) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with authentication, authorization, and pipeline security | Claude Code (Opus 4.5) |
 
 ---
 

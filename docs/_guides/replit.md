@@ -1002,9 +1002,9 @@ Mappings reference CIS Controls v8, NIST 800-53 Rev 5, and ISO 27001:2022.
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 0.1.0 | 2026-08-15 | Initial guide: 20 controls across identity (SAML SSO as the only MFA path — no native 2FA documented, SCIM with the legacy-member gap, admin tiering, guests/viewers), Enterprise governance toggles, Agent guardrails (dev/prod DB separation with the July 2025 SaaStr incident as motivating case, Plan mode + rollback-database-opt-in semantics, managed AI integrations/ZDR with untoggleable-Web-Search and no-Agent-off-switch negatives, budgets), deployment/app access (private deployments, public-by-default dev URLs, external access tokens as governed bypass credentials, ports/headers), data protection (secrets UI-masking caveat, DB credential rotation + plan-gated PITR, attachment-scoped object storage), privacy (Commercial Agreement §B.2.h vs no self-serve training toggle), and monitoring (audit logs with the single-workspace limitation, dual Security Centers + Package Firewall, Admin API key governance). Tier 2 negatives (no CIS/STIG/SCuBA) cited. Authored by Claude Code (Opus 5). |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2026-08-15 | 0.1.0 | ai-drafted | Initial guide: 20 controls across identity (SAML SSO as the only MFA path — no native 2FA documented, SCIM with the legacy-member gap, admin tiering, guests/viewers), Enterprise governance toggles, Agent guardrails (dev/prod DB separation with the July 2025 SaaStr incident as motivating case, Plan mode + rollback-database-opt-in semantics, managed AI integrations/ZDR with untoggleable-Web-Search and no-Agent-off-switch negatives, budgets), deployment/app access (private deployments, public-by-default dev URLs, external access tokens as governed bypass credentials, ports/headers), data protection (secrets UI-masking caveat, DB credential rotation + plan-gated PITR, attachment-scoped object storage), privacy (Commercial Agreement §B.2.h vs no self-serve training toggle), and monitoring (audit logs with the single-workspace limitation, dual Security Centers + Package Firewall, Admin API key governance). Tier 2 negatives (no CIS/STIG/SCuBA) cited. Authored by Claude Code (Opus 5). | Claude Code (Opus 5) |
 
 ---
 

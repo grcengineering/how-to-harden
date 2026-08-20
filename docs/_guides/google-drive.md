@@ -996,10 +996,13 @@ The [SCuBA Drive and Docs baseline](https://github.com/cisagov/ScubaGoggles/blob
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 0.2.0 | 2026-08-08 | First substantive currency pass: expanded from 1 control to 12 across six sections (sharing and access control, shared drives, DLP, third-party and client access, ransomware, monitoring). Corrected control 1.1's non-existent "Link sharing default" step to the real **General access default** setting and extended it with the inbound-sharing, warning, external-highlight, and Forms toggles; added trust rules, general access default, access checker, visitor sharing, offline access, shared drive lockdown, DLP for Drive, Drive SDK, Drive for desktop, ransomware detection, and Drive log events. Added the full CISA SCuBA `GWS.DRIVEDOCS` baseline mapping (16 of 17 policies) and removed the unverifiable "CIS Google Workspace 3.1" citation. |
-| 0.1.0 | 2026-05-29 | Initial Google Drive product guide — split from the Google Workspace guide (control 1.1 external sharing restrictions; DLP-for-Drive cross-references the platform DLP engine). Part of the multi-product platform restructure. |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2026-08-08 | 0.2.0 | ai-drafted | First substantive currency pass: expanded from 1 control to 12 across six sections (sharing and access control, shared drives, DLP, third-party and client access, ransomware, monitoring). Corrected control 1.1's non-existent "Link sharing default" step to the real **General access default** setting and extended it with the inbound-sharing, warning, external-highlight, and Forms toggles; added trust rules, general access default, access checker, visitor sharing, offline access, shared drive lockdown, DLP for Drive, Drive SDK, Drive for desktop, ransomware detection, and Drive log events. Added the full CISA SCuBA `GWS.DRIVEDOCS` baseline mapping (16 of 17 policies) and removed the unverifiable "CIS Google Workspace 3.1" citation. | Claude Code (Opus 4.8) † |
+| 2026-05-29 | 0.1.0 | ai-drafted | Initial Google Drive product guide — split from the Google Workspace guide (control 1.1 external sharing restrictions; DLP-for-Drive cross-references the platform DLP engine). Part of the multi-product platform restructure. | Jai (PAI) |
+
+> † Author **inferred**, not recorded. This row predates the Author column, so the value comes from the authoring session's commit window (every other guide authored in that window names the same tool and model, with no dissenting entry). Undaggered rows are attributed from a sibling guide that recorded its author explicitly in the same commit, or from the row's own text.
+
 
 ## Contributing
 

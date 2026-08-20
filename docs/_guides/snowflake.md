@@ -827,12 +827,12 @@ You do not have to map your account against it by hand. The **CIS Benchmarks sca
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.4.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §3.1 (no content-facts changed) | Claude Code (Fable 5) |
-| 2026-08-03 | 0.4.0 | draft | Replace 1.1 Snowsight MFA toggle with authentication policy enforcement; note mandatory MFA rollout Phase 3 and always-on leaked password protection; require TYPE = 'SERVICE' in 1.2; add 1.4 Programmatic Access Tokens, 1.5 Workload Identity Federation, 5.3 Trust Center scanner packages; reference CIS Snowflake Foundations Benchmark v2.0.0 | Claude Code (Sonnet 5) |
-| 2026-06-29 | 0.3.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2026-02-19 | 0.3.0 | draft | Migrate all remaining inline code to Code Packs (sections 1.1, 2.1, 2.2, 3.1, 4.3); zero inline code blocks remain | Claude Code (Opus 4.6) |
-| 2026-02-19 | 0.2.0 | draft | Migrate inline code to Code Packs (sections 1.2, 3.2, 4.2, 5.2, 6.2) | Claude Code (Opus 4.6) |
-| 2025-12-14 | 0.1.0 | draft | Initial Snowflake hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.4.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §3.1 (no content-facts changed) | Claude Code (Fable 5) |
+| 2026-08-03 | 0.4.0 | ai-drafted | Replace 1.1 Snowsight MFA toggle with authentication policy enforcement; note mandatory MFA rollout Phase 3 and always-on leaked password protection; require TYPE = 'SERVICE' in 1.2; add 1.4 Programmatic Access Tokens, 1.5 Workload Identity Federation, 5.3 Trust Center scanner packages; reference CIS Snowflake Foundations Benchmark v2.0.0 | Claude Code (Sonnet 5) |
+| 2026-06-29 | 0.3.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2026-02-19 | 0.3.0 | ai-drafted | Migrate all remaining inline code to Code Packs (sections 1.1, 2.1, 2.2, 3.1, 4.3); zero inline code blocks remain | Claude Code (Opus 4.6) |
+| 2026-02-19 | 0.2.0 | ai-drafted | Migrate inline code to Code Packs (sections 1.2, 3.2, 4.2, 5.2, 6.2) | Claude Code (Opus 4.6) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial Snowflake hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

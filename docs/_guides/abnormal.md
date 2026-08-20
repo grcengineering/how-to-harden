@@ -528,9 +528,9 @@ User-reported phishing flows into Abnormal's AI Security Mailbox. Monitor the un
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Renamed vendor to Abnormal AI (legacy name retained on first use); rewrote 3.1 as API token hardening (Bearer token storage, vendor-recommended IP allowlisting, EU regional host, `GET /soar/tokens` inventory); added automated access-review steps to 2.1/2.2; added new sections 4 (Monitoring & Logging — audit log export) and 5 (Posture Management — SPM drift, tenant security settings, compromised-vendor cases, AI Security Mailbox governance), renumbering Compliance Quick Reference to 6; softened unverified portal menu paths in 1.1/2.1/3.1; merged duplicate Appendix A/B, promoted the OpenAPI spec (v1.4.1 → current v1.4.3) as the Tier 1 anchor and demoted Trust Center/Security Hub to a compliance-artifacts note. Most additions map previously unmapped API surface rather than post-June product changes. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Renamed vendor to Abnormal AI (legacy name retained on first use); rewrote 3.1 as API token hardening (Bearer token storage, vendor-recommended IP allowlisting, EU regional host, `GET /soar/tokens` inventory); added automated access-review steps to 2.1/2.2; added new sections 4 (Monitoring & Logging — audit log export) and 5 (Posture Management — SPM drift, tenant security settings, compromised-vendor cases, AI Security Mailbox governance), renumbering Compliance Quick Reference to 6; softened unverified portal menu paths in 1.1/2.1/3.1; merged duplicate Appendix A/B, promoted the OpenAPI spec (v1.4.1 → current v1.4.3) as the Tier 1 anchor and demoted Trust Center/Security Hub to a compliance-artifacts note. Most additions map previously unmapped API surface rather than post-June product changes. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO and access controls | Claude Code (Opus 4.5) |
 
 ---
 

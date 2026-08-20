@@ -559,9 +559,9 @@ Source: [The Coupa Core API](https://compass.coupa.com/en-us/products/product-do
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: added section 5 (Integration & API Security) with control 5.1 on OIDC/OAuth client governance; added Supplier Portal MFA guidance to 1.2 and 3.2 (MFA enforced on all supplier logins and re-challenged on legal-entity/remit-to/bank changes); completed 3.1 rationale with **Attack Prevented:**; annotated the Core API citation as legacy per Coupa's own deprecation banner; noted that buyer-tenant product documentation is customer-gated (Okta) so sections 1–3 console paths reflect last verification; removed Trust Center and compliance-marketing citations and re-sourced compliance honestly. Tier 2 status: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline surfaced for Coupa — not an exhaustive sweep. Tier 3/4 product-specific research not surveyed this pass. | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and approval workflows | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: added section 5 (Integration & API Security) with control 5.1 on OIDC/OAuth client governance; added Supplier Portal MFA guidance to 1.2 and 3.2 (MFA enforced on all supplier logins and re-challenged on legal-entity/remit-to/bank changes); completed 3.1 rationale with **Attack Prevented:**; annotated the Core API citation as legacy per Coupa's own deprecation banner; noted that buyer-tenant product documentation is customer-gated (Okta) so sections 1–3 console paths reflect last verification; removed Trust Center and compliance-marketing citations and re-sourced compliance honestly. Tier 2 status: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline surfaced for Coupa — not an exhaustive sweep. Tier 3/4 product-specific research not surveyed this pass. | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, RBAC, and approval workflows | Claude Code (Opus 4.5) |
 
 ---
 

@@ -1040,11 +1040,11 @@ As of **August 17, 2025**, Slack's plan lineup is **Free, Pro, Business+, and En
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.3, §3.2, §4.1, §4.2, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
-| 2026-08-03 | 0.2.0 | draft | Add Information Barriers (1.5), MCP/AI agent governance (3.3), Slack AI feature access (4.4), and AI channel restriction (4.5); correct DLP plan prerequisite and file-scanning scope; note non-Marketplace app rate limits; update plan matrix to post-Aug 2025 lineup | Claude Code (Sonnet 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, DLP, retention, and app controls | Claude Code (Opus 4.5) |
-| 2026-02-19 | 0.1.1 | draft | Extract inline code to Code Packs (SDK, Terraform, API) | Claude Code (Opus 4.6) |
+| 2026-08-08 | 0.2.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.3, §3.2, §4.1, §4.2, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
+| 2026-08-03 | 0.2.0 | ai-drafted | Add Information Barriers (1.5), MCP/AI agent governance (3.3), Slack AI feature access (4.4), and AI channel restriction (4.5); correct DLP plan prerequisite and file-scanning scope; note non-Marketplace app rate limits; update plan matrix to post-Aug 2025 lineup | Claude Code (Sonnet 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, DLP, retention, and app controls | Claude Code (Opus 4.5) |
+| 2026-02-19 | 0.1.1 | ai-drafted | Extract inline code to Code Packs (SDK, Terraform, API) | Claude Code (Opus 4.6) |
 
 ---
 

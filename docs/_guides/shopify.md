@@ -512,8 +512,8 @@ Configure secure checkout settings.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: rewrite 2.1 around roles after the May 1 2025 retirement of custom permission groups (Legacy access badge) and add the 2026-07-07 payments/payouts/disputes/tax-document permissions; repoint SAML docs to the current canonical URL; document the three SAML enforcement levels and the verified-domain prerequisite; add 1.4 SCIM user management and 2.4 user groups; add passkeys, security keys, and recovery-code handling to 1.2; add the protected customer data Level 1/Level 2 requirements to 3.1; remove the Trust Center and compliance-reports marketing links from Appendix A. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and permissions | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: rewrite 2.1 around roles after the May 1 2025 retirement of custom permission groups (Legacy access badge) and add the 2026-07-07 payments/payouts/disputes/tax-document permissions; repoint SAML docs to the current canonical URL; document the three SAML enforcement levels and the verified-domain prerequisite; add 1.4 SCIM user management and 2.4 user groups; add passkeys, security keys, and recovery-code handling to 1.2; add the protected customer data Level 1/Level 2 requirements to 3.1; remove the Trust Center and compliance-reports marketing links from Appendix A. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO and permissions | Claude Code (Opus 4.5) |
 
 ---
 

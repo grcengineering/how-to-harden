@@ -1382,11 +1382,11 @@ Source: [CISA SCuBA M365 Secure Configuration Baselines and ScubaGear](https://g
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.3.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.4, §2.1, §3.2, §4.1, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
-| 2026-08-08 | 0.3.0 | draft | Platform breakout: this guide becomes the Microsoft **Common Controls hub** — platform frontmatter, Products in This Platform table, moved-controls callout. Merged in tenant-wide content the product guides carried: mandatory-MFA enforcement phases and enforcement-floor framing (1.1), break-glass exemption from mandatory MFA plus phishing-resistant credential registration and offline credential custody (1.4), blocking user app registration (3.1). Added cross-plane pointers for MFA strength authoring (1.1), PIM (1.3), and the three separate audit-log planes (5.1) | Claude Code (Opus 4.8) |
-| 2026-08-03 | 0.2.0 | draft | Add Exchange Online mail flow section (Reject Direct Send, block automatic external forwarding, SPF/DKIM/DMARC enforcement), Teams external access hardening, and SharePoint Restricted Content Discovery; add CISA SCuBA baseline and ScubaGear mapping; correct CIS benchmark citation from v3.1 to v7.0.0; add EWS and SMTP AUTH retirement timelines to legacy authentication control | Claude Code (Sonnet 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with authentication, OAuth, data security, and monitoring controls | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.3.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.4, §2.1, §3.2, §4.1, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
+| 2026-08-08 | 0.3.0 | ai-drafted | Platform breakout: this guide becomes the Microsoft **Common Controls hub** — platform frontmatter, Products in This Platform table, moved-controls callout. Merged in tenant-wide content the product guides carried: mandatory-MFA enforcement phases and enforcement-floor framing (1.1), break-glass exemption from mandatory MFA plus phishing-resistant credential registration and offline credential custody (1.4), blocking user app registration (3.1). Added cross-plane pointers for MFA strength authoring (1.1), PIM (1.3), and the three separate audit-log planes (5.1) | Claude Code (Opus 4.8) |
+| 2026-08-03 | 0.2.0 | ai-drafted | Add Exchange Online mail flow section (Reject Direct Send, block automatic external forwarding, SPF/DKIM/DMARC enforcement), Teams external access hardening, and SharePoint Restricted Content Discovery; add CISA SCuBA baseline and ScubaGear mapping; correct CIS benchmark citation from v3.1 to v7.0.0; add EWS and SMTP AUTH retirement timelines to legacy authentication control | Claude Code (Sonnet 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with authentication, OAuth, data security, and monitoring controls | Claude Code (Opus 4.5) |
 
 ---
 

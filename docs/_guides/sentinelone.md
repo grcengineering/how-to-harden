@@ -701,10 +701,10 @@ Current packaging bundles **Advanced EPP Controls (Device and Firewall Control, 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.1.3 | draft | Add missing Attack Prevented lines to 1.1, 2.1, 3.1, and 3.3 so every cheat-sheet cell is populated; remove Trust Center links from Appendix B | Claude Code (Opus 4.8) |
-| 2026-08-08 | 0.1.2 | draft | Corrections pass: Appendix A rebuilt around the five current Singularity editions with list pricing and the bundled Advanced EPP Controls line item; removed the generic 101 marketing page and the TLS-failing support portal link from Appendix B; deleted the orphan Example Rules heading in 3.2; added a source-availability note to the Overview. Tier 1 documentation was unreachable this pass, limiting changes to externally-verifiable items; Tier 3/4 research sweep out of scope | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with policy configuration and detection tuning | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.1.3 | ai-drafted | Add missing Attack Prevented lines to 1.1, 2.1, 3.1, and 3.3 so every cheat-sheet cell is populated; remove Trust Center links from Appendix B | Claude Code (Opus 4.8) |
+| 2026-08-08 | 0.1.2 | ai-drafted | Corrections pass: Appendix A rebuilt around the five current Singularity editions with list pricing and the bundled Advanced EPP Controls line item; removed the generic 101 marketing page and the TLS-failing support portal link from Appendix B; deleted the orphan Example Rules heading in 3.2; added a source-availability note to the Overview. Tier 1 documentation was unreachable this pass, limiting changes to externally-verifiable items; Tier 3/4 research sweep out of scope | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with policy configuration and detection tuning | Claude Code (Opus 4.5) |
 
 ---
 

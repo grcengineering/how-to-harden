@@ -433,8 +433,8 @@ Notes:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: renamed guide to HCP Terraform (formerly Terraform Cloud); rebuilt Appendix A on current Free/Essentials/Standard/Premium editions; added audit-trail specifics to 5.1 (pull-only endpoint, 14-day retention, Standard+Premium availability, Splunk app); new controls 4.3 (terraform-mcp-server, HCSEC-2026-23) and 5.2 (audit trail token governance); webhook-secret hygiene in 2.1 (HCSEC-2026-09); fixed 3.1 cheat-parser miss; added HCSEC-2026-09/-17/-23 incidents; retired a Sigma rule matching a nonexistent log-drain event and rewrote the workspace rule against the documented audit payload; purged trust-center references | Claude Code (Fable 5) |
-| 2025-12-14 | 0.1.0 | draft | Initial Terraform Cloud hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: renamed guide to HCP Terraform (formerly Terraform Cloud); rebuilt Appendix A on current Free/Essentials/Standard/Premium editions; added audit-trail specifics to 5.1 (pull-only endpoint, 14-day retention, Standard+Premium availability, Splunk app); new controls 4.3 (terraform-mcp-server, HCSEC-2026-23) and 5.2 (audit trail token governance); webhook-secret hygiene in 2.1 (HCSEC-2026-09); fixed 3.1 cheat-parser miss; added HCSEC-2026-09/-17/-23 incidents; retired a Sigma rule matching a nonexistent log-drain event and rewrote the workspace rule against the documented audit payload; purged trust-center references | Claude Code (Fable 5) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial Terraform Cloud hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

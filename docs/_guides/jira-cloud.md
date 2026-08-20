@@ -585,9 +585,9 @@ Jira automation rules run server-side on triggers and can call external systems.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Restructure as a product guide under the Atlassian platform hub: add `platform`/`platform_slug`/`product` frontmatter and a hub pointer. Remove duplicated organization-level controls — former 1.1 SAML SSO, 1.2 authentication policies, 1.3 two-step verification, 1.4 JIT provisioning, 2.1 Atlassian Guard, 2.2 domain verification, and 2.3 org admin roles now live in Atlassian §1.1 and §1.2; former 3.3 app access in Atlassian §2.1/§3.3; former 4.1 audit logging and 4.2 security alerts in Atlassian §5.1/§5.2. Rebuild around six Jira-specific controls: permission schemes, work item security schemes, public/anonymous space exposure, global permissions, guest access, and automation rule scope and outgoing web requests. Adopt Atlassian's current space/work item terminology and record the Free-plan permission-scheme limitation | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, organization security, and access controls | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Restructure as a product guide under the Atlassian platform hub: add `platform`/`platform_slug`/`product` frontmatter and a hub pointer. Remove duplicated organization-level controls — former 1.1 SAML SSO, 1.2 authentication policies, 1.3 two-step verification, 1.4 JIT provisioning, 2.1 Atlassian Guard, 2.2 domain verification, and 2.3 org admin roles now live in Atlassian §1.1 and §1.2; former 3.3 app access in Atlassian §2.1/§3.3; former 4.1 audit logging and 4.2 security alerts in Atlassian §5.1/§5.2. Rebuild around six Jira-specific controls: permission schemes, work item security schemes, public/anonymous space exposure, global permissions, guest access, and automation rule scope and outgoing web requests. Adopt Atlassian's current space/work item terminology and record the Free-plan permission-scheme limitation | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, organization security, and access controls | Claude Code (Opus 4.5) |
 
 ---
 

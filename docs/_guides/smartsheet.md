@@ -571,8 +571,8 @@ Verified against current Smartsheet documentation on 2026-08-08:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: add 1.3 Require MFA + exempt list, 1.4 user session expiration, 1.5 IdP-managed access and auto-provisioning, 2.3 data egress policy, 2.4 data retention policy, 2.5 AI management; add require-work-accounts-with-SSO to 1.1; rewrite 2.1 publishing controls and add the safe sharing list (disabled by default); rewrite 2.2 around the plan-wide form security floor and note that CAPTCHA/attachment controls are undocumented; add API access token expiration to 3.1 (unexpiring tokens live indefinitely); remove the empty Detection Focus heading and annotate the unconfirmed Activity Log path; rebuild Appendix A from verified plan requirements only; remove Trust Center and marketing security links from Appendix B. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
-| 2025-12-14 | 0.1.0 | draft | Initial Smartsheet hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: add 1.3 Require MFA + exempt list, 1.4 user session expiration, 1.5 IdP-managed access and auto-provisioning, 2.3 data egress policy, 2.4 data retention policy, 2.5 AI management; add require-work-accounts-with-SSO to 1.1; rewrite 2.1 publishing controls and add the safe sharing list (disabled by default); rewrite 2.2 around the plan-wide form security floor and note that CAPTCHA/attachment controls are undocumented; add API access token expiration to 3.1 (unexpiring tokens live indefinitely); remove the empty Detection Focus heading and annotate the unconfirmed Activity Log path; rebuild Appendix A from verified plan requirements only; remove Trust Center and marketing security links from Appendix B. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial Smartsheet hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

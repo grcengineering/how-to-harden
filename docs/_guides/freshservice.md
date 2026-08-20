@@ -357,8 +357,8 @@ Availability per the [Freshservice pricing page](https://www.freshworks.com/fres
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Correct security-settings console path to Admin → Account Settings → Service Desk Security; add control 1.3 (session timeout, IP restriction, password policy, SSL); add scoped OAuth 2.0 guidance to 2.1; correct Appendix A plan availability against the pricing page; replace Trust Center references with verified support and API docs | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial Freshservice hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Correct security-settings console path to Admin → Account Settings → Service Desk Security; add control 1.3 (session timeout, IP restriction, password policy, SSL); add scoped OAuth 2.0 guidance to 2.1; correct Appendix A plan availability against the pricing page; replace Trust Center references with verified support and API docs | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial Freshservice hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

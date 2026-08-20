@@ -1043,10 +1043,10 @@ Both affect components customers deploy and patch themselves rather than vendor-
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.1 | draft | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1, §2.1, §4.1 (no content-facts changed) | Claude Code (Fable 5) |
-| 2026-08-03 | 0.2.0 | draft | Correct false "no major incidents" claim (CVE-2025-20059, CVE-2025-22854); add controls 1.4 PingOne Protect risk-based auth, 1.5 PingFederate admin API hardening, 1.6 Advanced Identity Cloud tenant hardening, 5.2 patch currency, 5.3 advisory monitoring; expand Overview product scope | Claude Code (Sonnet 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial Ping Identity hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1, §2.1, §4.1 (no content-facts changed) | Claude Code (Fable 5) |
+| 2026-08-03 | 0.2.0 | ai-drafted | Correct false "no major incidents" claim (CVE-2025-20059, CVE-2025-22854); add controls 1.4 PingOne Protect risk-based auth, 1.5 PingFederate admin API hardening, 1.6 Advanced Identity Cloud tenant hardening, 5.2 patch currency, 5.3 advisory monitoring; expand Overview product scope | Claude Code (Sonnet 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial Ping Identity hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

@@ -816,8 +816,8 @@ Regularly monitor compliance dashboard for drift and issues.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: correct 1.1 (SSO is a WorkOS-brokered Connections-page connection requiring a prior IdP connection; enforcement is implicit), 1.2 (no local MFA toggle — non-SSO login is a passwordless email code, MFA lives at the IdP), 1.3 (New Experience additive role model replacing Owner/Admin/Compliance Manager/Viewer, plus IdP group mapping), and 4.1 (top-level Events page; export via per-event PDF/TXT or read-scoped public API — no native SIEM streaming). Add 1.5 support remote-access governance, 2.4 scoped OAuth applications, 2.5 MCP OAuth scope governance. Purge Trust Center and marketing security page from references. Tier 3/4 research sweep out of scope for this pass (search budget) | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with access controls, integrations, and monitoring | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: correct 1.1 (SSO is a WorkOS-brokered Connections-page connection requiring a prior IdP connection; enforcement is implicit), 1.2 (no local MFA toggle — non-SSO login is a passwordless email code, MFA lives at the IdP), 1.3 (New Experience additive role model replacing Owner/Admin/Compliance Manager/Viewer, plus IdP group mapping), and 4.1 (top-level Events page; export via per-event PDF/TXT or read-scoped public API — no native SIEM streaming). Add 1.5 support remote-access governance, 2.4 scoped OAuth applications, 2.5 MCP OAuth scope governance. Purge Trust Center and marketing security page from references. Tier 3/4 research sweep out of scope for this pass (search budget) | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with access controls, integrations, and monitoring | Claude Code (Opus 4.5) |
 
 ---
 

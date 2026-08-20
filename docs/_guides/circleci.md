@@ -613,9 +613,9 @@ If you suspect CircleCI compromise:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Correct 1.1 IP allowlisting (IP ranges is job **egress**, not inbound access control) and remove the non-existent session-timeout/step-up re-auth path; correct 5.1 (audit log requests are available to all plans — only streaming is Scale-only) and add native OIDC-authenticated S3 streaming; add 4.2 Config Policies; add context expression restrictions and secrets-masking caveat to 2.1; add job-level secrets hygiene to 2.2; add runner token-proxy guidance to 4.1; enrich 1.2 role model (org + project, not VCS-derived, highest role wins); add missing **Attack Prevented** to 1.1 and 2.1; repair rotted Appendix B links and remove Trust Center / marketing security references | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial CircleCI hardening guide with 2023 breach lessons | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Correct 1.1 IP allowlisting (IP ranges is job **egress**, not inbound access control) and remove the non-existent session-timeout/step-up re-auth path; correct 5.1 (audit log requests are available to all plans — only streaming is Scale-only) and add native OIDC-authenticated S3 streaming; add 4.2 Config Policies; add context expression restrictions and secrets-masking caveat to 2.1; add job-level secrets hygiene to 2.2; add runner token-proxy guidance to 4.1; enrich 1.2 role model (org + project, not VCS-derived, highest role wins); add missing **Attack Prevented** to 1.1 and 2.1; repair rotted Appendix B links and remove Trust Center / marketing security references | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial CircleCI hardening guide with 2023 breach lessons | Claude Code (Opus 4.5) |
 
 ## Contributing
 

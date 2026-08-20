@@ -816,9 +816,9 @@ Configure Trust Center for secure compliance documentation sharing.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass against Vanta's Tier 1 help center. Corrected the role model in 1.3 to Vanta's actual built-in roles (Admin, View-only Admin, Editor, Collaborator, Employee) plus the scoped roles, and added a role-selection table to 1.4; corrected stale console paths in 1.1/1.2/1.3 (**Settings → Login and security** for authentication, **Settings → Access** for roles); added a changed-default callout to 1.1 covering magic-link login. New controls: 1.5 disable magic-link login, 1.6 idle session timeout, 1.7 govern Vanta AI, 3.5 review the Event Log. Added **Attack Prevented** to 1.2, 2.1, and 3.1, and folded Vanta's "Secure Implementation Guidelines" into the 1.4/2.1/3.1 rationales. Appendix A: removed the vanta.com/security marketing redirect, fixed the API reference URL, and added the product-updates currency surface. Tier 3/4 research out of scope for this pass. | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with access controls, monitoring, and VRM | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass against Vanta's Tier 1 help center. Corrected the role model in 1.3 to Vanta's actual built-in roles (Admin, View-only Admin, Editor, Collaborator, Employee) plus the scoped roles, and added a role-selection table to 1.4; corrected stale console paths in 1.1/1.2/1.3 (**Settings → Login and security** for authentication, **Settings → Access** for roles); added a changed-default callout to 1.1 covering magic-link login. New controls: 1.5 disable magic-link login, 1.6 idle session timeout, 1.7 govern Vanta AI, 3.5 review the Event Log. Added **Attack Prevented** to 1.2, 2.1, and 3.1, and folded Vanta's "Secure Implementation Guidelines" into the 1.4/2.1/3.1 rationales. Appendix A: removed the vanta.com/security marketing redirect, fixed the API reference URL, and added the product-updates currency surface. Tier 3/4 research out of scope for this pass. | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with access controls, monitoring, and VRM | Claude Code (Opus 4.5) |
 
 ---
 

@@ -345,9 +345,9 @@ LaunchDarkly's public pricing page lists three plan tiers — **Developer**, **F
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: correct plan tiers to Developer/Foundation/Enterprise with a both-sources note on the "Guardian" naming conflict; update console paths to Organization settings (SSO, Roles, Authorization verified against current docs; audit-log path annotated as unverified); add SSO default-initial-role and single-IdP callouts; distinguish personal vs service tokens and replace the unsupported token-expiration step with a manual rotation cadence; replace Trust Center/security-program links with first-party configuration docs | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial LaunchDarkly hardening guide | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: correct plan tiers to Developer/Foundation/Enterprise with a both-sources note on the "Guardian" naming conflict; update console paths to Organization settings (SSO, Roles, Authorization verified against current docs; audit-log path annotated as unverified); add SSO default-initial-role and single-IdP callouts; distinguish personal vs service tokens and replace the unsupported token-expiration step with a manual rotation cadence; replace Trust Center/security-program links with first-party configuration docs | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial LaunchDarkly hardening guide | Claude Code (Opus 4.5) |
 
 ## Contributing
 

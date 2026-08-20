@@ -817,10 +817,10 @@ Monitor the security dashboard for insights and recommendations.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.1 | draft | Added cli Code Packs for §2.4 (privileged-group membership audit), §3.1 (vault permissions audit), §3.4 (scoped service-account creation) and an api Code Pack for §4.1 (Events API collection of auditevents, itemusages, and signinattempts), all verified against 1password.dev CLI and Events API references | Claude Code (Fable 5) |
-| 2026-08-08 | 0.2.0 | draft | Currency pass: corrected Policies console paths (2.1/2.3/3.2), rewrote 2.2 firewall rules (rule types, Allow/Report/Deny, first-match ordering, already-signed-in-device limitation), corrected 2.3 recovery model to the Recover Accounts permission, added Two-Person Rule to 2.4, named the three Events API classes in 4.1, added controls 1.3 (suspended-member auto-deletion), 2.5 (agentic autofill policy, early access), 2.6 (app access management + release channel), 3.3 (local plaintext-secret scanning, early access), 3.4 (service-account scoping); repointed developer docs to 1password.dev and removed the Trust Center reference. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, policies, and vault security | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.1 | ai-drafted | Added cli Code Packs for §2.4 (privileged-group membership audit), §3.1 (vault permissions audit), §3.4 (scoped service-account creation) and an api Code Pack for §4.1 (Events API collection of auditevents, itemusages, and signinattempts), all verified against 1password.dev CLI and Events API references | Claude Code (Fable 5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: corrected Policies console paths (2.1/2.3/3.2), rewrote 2.2 firewall rules (rule types, Allow/Report/Deny, first-match ordering, already-signed-in-device limitation), corrected 2.3 recovery model to the Recover Accounts permission, added Two-Person Rule to 2.4, named the three Events API classes in 4.1, added controls 1.3 (suspended-member auto-deletion), 2.5 (agentic autofill policy, early access), 2.6 (app access management + release channel), 3.3 (local plaintext-secret scanning, early access), 3.4 (service-account scoping); repointed developer docs to 1password.dev and removed the Trust Center reference. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, policies, and vault security | Claude Code (Opus 4.5) |
 
 ---
 

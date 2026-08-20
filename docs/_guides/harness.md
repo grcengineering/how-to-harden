@@ -604,9 +604,9 @@ Use the Harness Supply Chain Security (SCS) module to generate, store, and enfor
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: add 3.3 (OIDC for cloud connectors) and 4.3 (SBOM/SLSA provenance via the SCS module); correct 1.2 to the actual "Enforce Two Factor Authentication" toggle with the admin-self-enrollment prerequisite and the one-or-both challenge rule; add a Tier 1 callout to 3.1 that secrets in Run step output variables ARE exposed in logs, contradicting the guide's prior blanket masking claim; add a branch-protection/CODEOWNERS step to 4.1 because failed CI pipelines do not inherently block PR merges; repair the 404'd RBAC link and remove Trust Center / vendor security marketing links per the SOURCES.md bright line. Tier 2 not surveyed this pass (the CIS index was not checked); Tier 3/4 not surveyed. | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, RBAC, and secret management | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: add 3.3 (OIDC for cloud connectors) and 4.3 (SBOM/SLSA provenance via the SCS module); correct 1.2 to the actual "Enforce Two Factor Authentication" toggle with the admin-self-enrollment prerequisite and the one-or-both challenge rule; add a Tier 1 callout to 3.1 that secrets in Run step output variables ARE exposed in logs, contradicting the guide's prior blanket masking claim; add a branch-protection/CODEOWNERS step to 4.1 because failed CI pipelines do not inherently block PR merges; repair the 404'd RBAC link and remove Trust Center / vendor security marketing links per the SOURCES.md bright line. Tier 2 not surveyed this pass (the CIS index was not checked); Tier 3/4 not surveyed. | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, RBAC, and secret management | Claude Code (Opus 4.5) |
 
 ---
 

@@ -448,8 +448,8 @@ Use the KSAT Audit Log to review admin, agent, and Security Role changes, and ex
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: scope guide explicitly to the KSAT console (Egress-derived products noted out of scope); correct 1.1 (SAML needs no Platinum/Diamond tier; add real Account Integrations settings and the public bypass-URL warning), 1.2 (account-wide and per-user MFA paths, TOTP-only — no native FIDO2), 2.1 (admin is an all-or-nothing per-user toggle; least privilege comes from group-assigned Security Roles, tier-gated), and 3.2 (API now under Account Integrations; add ADI Sync and SCIM token rotation). Add section 4 Monitoring & Auditing with 4.1 KSAT Audit Log (180-day retention, 1,000-row CSV cap, no password/API-key coverage). Purge Trust Center and marketing security page from references. Tier 3/4 research sweep out of scope for this pass (search budget) | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and campaign security | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: scope guide explicitly to the KSAT console (Egress-derived products noted out of scope); correct 1.1 (SAML needs no Platinum/Diamond tier; add real Account Integrations settings and the public bypass-URL warning), 1.2 (account-wide and per-user MFA paths, TOTP-only — no native FIDO2), 2.1 (admin is an all-or-nothing per-user toggle; least privilege comes from group-assigned Security Roles, tier-gated), and 3.2 (API now under Account Integrations; add ADI Sync and SCIM token rotation). Add section 4 Monitoring & Auditing with 4.1 KSAT Audit Log (180-day retention, 1,000-row CSV cap, no password/API-key coverage). Purge Trust Center and marketing security page from references. Tier 3/4 research sweep out of scope for this pass (search budget) | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO and campaign security | Claude Code (Opus 4.5) |
 
 ---
 

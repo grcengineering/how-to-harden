@@ -1234,7 +1234,7 @@ All other controls in this guide (key scoping/rotation, projects, limits, secret
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-11 | 0.1.0 | draft | Initial guide: 19 controls across API key scoping, project isolation, credential/profile protection, browser execution hardening, and audit — all sourced from fetch-verified Kernel first-party documentation | Claude Code (Opus 5) |
+| 2026-08-11 | 0.1.0 | ai-drafted | Initial guide: 19 controls across API key scoping, project isolation, credential/profile protection, browser execution hardening, and audit — all sourced from fetch-verified Kernel first-party documentation | Claude Code (Opus 5) |
 
 ---
 

@@ -479,9 +479,9 @@ Configure data retention policies.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.1.2 | draft | Currency pass — **scope limited: braze.com refused all connections from this network path, so no Tier 1 doc could be re-verified**. Structural changes only: removed the Trust & Security marketing link from Appendix A (hardening-source standard), added a source-verification note to the Overview. No control content was changed, because no control claim could be confirmed or refuted this pass. Tier 2 survey found no CIS Benchmark, DISA STIG, or CISA SCuBA baseline for Braze; Tier 3/4 research not surveyed this pass | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, permissions, and API security | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.1.2 | ai-drafted | Currency pass — **scope limited: braze.com refused all connections from this network path, so no Tier 1 doc could be re-verified**. Structural changes only: removed the Trust & Security marketing link from Appendix A (hardening-source standard), added a source-verification note to the Overview. No control content was changed, because no control claim could be confirmed or refuted this pass. Tier 2 survey found no CIS Benchmark, DISA STIG, or CISA SCuBA baseline for Braze; Tier 3/4 research not surveyed this pass | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, permissions, and API security | Claude Code (Opus 4.5) |
 
 ---
 

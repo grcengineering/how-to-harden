@@ -433,9 +433,9 @@ Source: [Validate a webhook event notification](https://developer.squareup.com/d
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: add 3.3 webhook signature verification; document OAuth/PAT token lifetimes and unrestricted-PAT scope in 3.2; annotate 1.1 SSO as externally unverifiable; prune marketing and rotted help-center references from Appendix A. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and permissions | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: add 3.3 webhook signature verification; document OAuth/PAT token lifetimes and unrestricted-PAT scope in 3.2; annotate 1.1 SSO as externally unverifiable; prune marketing and rotted help-center references from Appendix A. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO and permissions | Claude Code (Opus 4.5) |
 
 ---
 

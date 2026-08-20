@@ -768,9 +768,9 @@ Record the date and channel of every IP list you receive, and treat any list old
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-03 | 0.2.0 | draft | Correct 2.1 (Trusted IP Ranges do not block API/OAuth; use profile Login IP Ranges and Connected App IP enforcement); update 1.1 for the 2026 phishing-resistant MFA requirement; add 3.3 API Access Control and 3.4 UNC6040 vishing defense; note External Client Apps superseding Connected Apps; replace dead vendor IP links with vendor-contact guidance | Claude Code (Sonnet 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-12 | 0.1.0 | draft | Initial Salesforce hardening guide with focus on integration security | Claude Code (Opus 4.5) |
+| 2026-08-03 | 0.2.0 | ai-drafted | Correct 2.1 (Trusted IP Ranges do not block API/OAuth; use profile Login IP Ranges and Connected App IP enforcement); update 1.1 for the 2026 phishing-resistant MFA requirement; add 3.3 API Access Control and 3.4 UNC6040 vishing defense; note External Client Apps superseding Connected Apps; replace dead vendor IP links with vendor-contact guidance | Claude Code (Sonnet 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-12-12 | 0.1.0 | ai-drafted | Initial Salesforce hardening guide with focus on integration security | Claude Code (Opus 4.5) |
 
 ---
 

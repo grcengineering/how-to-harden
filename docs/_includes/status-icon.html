@@ -1,4 +1,4 @@
-{% comment %}
+{%- comment -%}
   Maturity mark — THE single source of every status icon on the site.
 
   The ladder is a matrix, not a line: three STAGES (drafted → reviewed →
@@ -14,7 +14,8 @@
   its NI twin differ by the spark and nothing else, and the empty top-right
   corner on an NI mark is exactly where its AI twin's spark sits. That is what
   makes "AI Validated + NI Validated" read as one thing done twice rather than
-  two unrelated badges.
+  two unrelated badges. Colour is the second channel: the caller's stylesheet
+  paints AI in the LIGHTER shade and NI in the DARKER shade of the stage hue.
 
   Params:
     stage — drafted | reviewed | validated   (default: drafted)
@@ -22,11 +23,27 @@
     size  — px, default 16
     class — extra classes on the <svg>
 
+  WHITESPACE CONTROL IS LOAD-BEARING. Every tag in this file uses the hyphen
+  (whitespace-stripping) delimiter form, because the plain form leaves its
+  trailing newline behind in the output. The comment and the three assigns
+  emitted four leading newlines — a blank line — and when this include is called
+  INSIDE a markdown heading (which status-mark.html does), kramdown reads that
+  blank line as the end of the block: the heading closed early and the <svg> was
+  ejected from its own wrapping <span>. Rendered proof, 2026-08-20:
+  `<h4 id="clickops-implementation">ClickOps Implementation</h4>` followed by an
+  empty `<p><span class="status-mark"></span></p>` and then a naked, unstyled
+  `<svg>`. Do not restore the plain delimiter form.
+
+  Second trap, same day: Liquid tokenises tags even inside a comment block, so
+  writing an EMPTY tag here as an illustration is a build-breaking syntax error
+  ("Tag was not properly terminated"). Describe the delimiters in words; never
+  paste a bare one into this comment.
+
   Accessibility: decorative by contract — aria-hidden, no <title>, no text node.
   Callers supply the accessible name on the wrapping element. A text node here
-  would leak into h3.textContent, heading anchors and the cheat-sheet parser.
-{% endcomment %}
-{% assign icon_stage = include.stage | default: "drafted" %}
-{% assign icon_agent = include.agent | default: "ai" %}
-{% assign icon_size = include.size | default: 16 %}
+  would leak into h3/h4.textContent, heading anchors and the cheat-sheet parser.
+{%- endcomment -%}
+{%- assign icon_stage = include.stage | default: "drafted" -%}
+{%- assign icon_agent = include.agent | default: "ai" -%}
+{%- assign icon_size = include.size | default: 16 -%}
 <svg class="status-icon status-icon-{{ icon_agent }}-{{ icon_stage }} {{ include.class }}" width="{{ icon_size }}" height="{{ icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g transform="translate(-1.2 2.6) scale(0.8)">{% if icon_stage == "validated" %}<polyline points="20 6 9 17 4 12"></polyline>{% elsif icon_stage == "reviewed" %}<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>{% else %}<path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>{% endif %}</g>{% if icon_agent == "ai" %}<path d="M18.2 1.6 18.9 3.5 20.8 4.2 18.9 4.9 18.2 6.8 17.5 4.9 15.6 4.2 17.5 3.5 Z" fill="currentColor" stroke-width="1"></path>{% endif %}</svg>

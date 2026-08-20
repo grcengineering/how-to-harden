@@ -648,9 +648,9 @@ Source: [Security at Stripe](https://docs.stripe.com/security)
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass: add 1.4 SCIM provisioning, 3.4 API key access policies, and section 4 Logging & Monitoring (security history); make restricted keys baseline posture and correct Developers-menu navs to Workbench/apikeys; document key rotation mechanics, org keys, and sandboxes; expand webhook control with IP allowlist, replay tolerance, v1-scheme handling, and secret rotation; correct 2FA factor preference and role catalogue; annotate 1.3 session timeout as undocumented; retire the fabricated 3.2 Sigma pack and annotate the 3.1 Sigma pack's premise and delivery pipeline. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO and API security | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: add 1.4 SCIM provisioning, 3.4 API key access policies, and section 4 Logging & Monitoring (security history); make restricted keys baseline posture and correct Developers-menu navs to Workbench/apikeys; document key rotation mechanics, org keys, and sandboxes; expand webhook control with IP allowlist, replay tolerance, v1-scheme handling, and secret rotation; correct 2FA factor preference and role catalogue; annotate 1.3 session timeout as undocumented; retire the fabricated 3.2 Sigma pack and annotate the 3.1 Sigma pack's premise and delivery pipeline. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO and API security | Claude Code (Opus 4.5) |
 
 ---
 

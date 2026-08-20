@@ -1245,9 +1245,9 @@ Turn on the audit events that make an endpoint investigable — process creation
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 0.1.0 | 2026-08-15 | Initial Windows 11 hardening guide — the repo's first OS guide. 18 controls across identity/credential protection, OS/boot integrity, attack-surface reduction, data protection, privacy/telemetry, network/update hardening, and monitoring, each dual-tracked for consumer (Home/Pro) and enterprise (Pro/Enterprise/Education) with edition-gated automation surfaces. Privacy section gives an honest, edition-scoped answer to "zero Microsoft telemetry": policy-enforced zero diagnostic data on Enterprise/Education, Required floor plus connected-experience restriction on Home/Pro. Every technical string (GPO paths, Policy CSP URIs, cmdlets, registry keys) traced to fetch-verified Microsoft documentation; CIS (Enterprise v5.1.0 / Stand-alone v5.0.0) and DISA STIG (V2R8) versions verified; Tier 3/4 research (Windows Downdate, Recall extraction, bitpixie, CVE-2025-33073, EDR-Freeze) folded into rationale. Authored by Claude Code (Opus 5). |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2026-08-15 | 0.1.0 | ai-drafted | Initial Windows 11 hardening guide — the repo's first OS guide. 18 controls across identity/credential protection, OS/boot integrity, attack-surface reduction, data protection, privacy/telemetry, network/update hardening, and monitoring, each dual-tracked for consumer (Home/Pro) and enterprise (Pro/Enterprise/Education) with edition-gated automation surfaces. Privacy section gives an honest, edition-scoped answer to "zero Microsoft telemetry": policy-enforced zero diagnostic data on Enterprise/Education, Required floor plus connected-experience restriction on Home/Pro. Every technical string (GPO paths, Policy CSP URIs, cmdlets, registry keys) traced to fetch-verified Microsoft documentation; CIS (Enterprise v5.1.0 / Stand-alone v5.0.0) and DISA STIG (V2R8) versions verified; Tier 3/4 research (Windows Downdate, Recall extraction, bitpixie, CVE-2025-33073, EDR-Freeze) folded into rationale. Authored by Claude Code (Opus 5). | Claude Code (Opus 5) |
 
 ---
 

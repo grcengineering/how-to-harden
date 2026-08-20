@@ -51,7 +51,8 @@ This guide covers Databricks security configurations including authentication, U
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | IA-2(1) |
+| NIST 800-53 | IA-2(1)
+ |
 
 #### Description
 Require SAML SSO with MFA for all Databricks access.
@@ -93,7 +94,8 @@ Require SAML SSO with MFA for all Databricks access.
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | IA-5 |
+| NIST 800-53 | IA-5
+ |
 
 #### Description
 Secure the machine identities and API tokens used for automation and integrations. Authenticate service principals with OAuth rather than personal access tokens (PATs), and where a PAT is unavoidable, restrict it to the API scopes the workload actually needs.
@@ -166,7 +168,8 @@ Secure the machine identities and API tokens used for automation and integration
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | AC-3(7) |
+| NIST 800-53 | AC-3(7)
+ |
 
 #### Description
 Restrict Databricks access to known IP ranges.
@@ -202,7 +205,8 @@ Restrict Databricks access to known IP ranges.
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | AC-3 |
+| NIST 800-53 | AC-3
+ |
 
 #### Description
 Configure Unity Catalog for centralized data governance.
@@ -240,7 +244,8 @@ Create row filter functions to restrict data visibility by group membership and 
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | SC-28 |
+| NIST 800-53 | SC-28
+ |
 
 #### Description
 Implement dynamic data masking for sensitive columns. Create masking functions that return the full value for privileged roles and masked values for all others, then apply them to sensitive columns.
@@ -282,7 +287,8 @@ Unity Catalog **attribute-based access control (ABAC)** reached GA in April 2026
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | AU-2, AU-3 |
+| NIST 800-53 | AU-2, AU-3
+ |
 
 #### Description
 Enable comprehensive audit logging for data access.
@@ -324,7 +330,8 @@ Query the `system.access.audit` table to review data access events. See the DB Q
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | CM-7 |
+| NIST 800-53 | CM-7
+ |
 
 #### Description
 Implement cluster policies to enforce security configurations.
@@ -359,7 +366,8 @@ Implement cluster policies to enforce security configurations.
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | SC-7 |
+| NIST 800-53 | SC-7
+ |
 
 #### Description
 Deploy Databricks with network isolation.
@@ -583,7 +591,8 @@ Apply an account-level serverless network policy that sets internet access to `R
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | SC-28 |
+| NIST 800-53 | SC-28
+ |
 
 #### Description
 Store credentials in Databricks secret scopes rather than notebooks.
@@ -623,7 +632,8 @@ Access secrets via `dbutils.secrets.get()` in notebooks. Secret values are autom
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | SC-28 |
+| NIST 800-53 | SC-28
+ |
 
 #### Description
 Integrate with external secrets managers.
@@ -714,7 +724,8 @@ Supply your own cloud KMS keys for the two encryption scopes Databricks exposes:
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | SI-4 |
+| NIST 800-53 | SI-4
+ |
 
 #### Description
 Continuously monitor Databricks for security-relevant events — bulk data access, unusual exports, and service-principal anomalies — and alert on suspicious activity.
@@ -865,11 +876,11 @@ Deploy the Databricks **Security Analysis Tool (SAT)** as a scheduled job that c
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-03 | 0.3.0 | draft | Currency update: compliance security profile + enhanced security monitoring, disable-legacy-features toggles, serverless network policies, customer-managed keys, Unity Catalog ABAC, scoped PATs + OAuth-first token guidance, verbose audit logs, Security Analysis Tool baseline | Claude Code (Sonnet 5) |
-| 2026-06-29 | 0.2.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-12-14 | 0.1.0 | draft | Initial Databricks hardening guide | Claude Code (Opus 4.5) |
-| 2026-02-19 | 0.2.0 | draft | Migrate all remaining inline code to Code Packs (sections 2.1, 2.2, 2.3, 3.1, 3.2, 4.1, 5.1); zero inline code blocks remain | Claude Code (Opus 4.6) |
-| 2026-02-19 | 0.1.1 | draft | Migrate inline CLI code in sections 4.1, 4.2 to Code Pack files | Claude Code (Opus 4.6) |
+| 2026-08-03 | 0.3.0 | ai-drafted | Currency update: compliance security profile + enhanced security monitoring, disable-legacy-features toggles, serverless network policies, customer-managed keys, Unity Catalog ABAC, scoped PATs + OAuth-first token guidance, verbose audit logs, Security Analysis Tool baseline | Claude Code (Sonnet 5) |
+| 2026-06-29 | 0.2.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-12-14 | 0.1.0 | ai-drafted | Initial Databricks hardening guide | Claude Code (Opus 4.5) |
+| 2026-02-19 | 0.2.0 | ai-drafted | Migrate all remaining inline code to Code Packs (sections 2.1, 2.2, 2.3, 3.1, 3.2, 4.1, 5.1); zero inline code blocks remain | Claude Code (Opus 4.6) |
+| 2026-02-19 | 0.1.1 | ai-drafted | Migrate inline CLI code in sections 4.1, 4.2 to Code Pack files | Claude Code (Opus 4.6) |
 
 ## Contributing
 

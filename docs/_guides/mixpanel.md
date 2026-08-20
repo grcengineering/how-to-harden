@@ -428,9 +428,9 @@ Enable and monitor activity logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.1.2 | draft | Currency pass: removed vendor security-marketing page from all reference positions; annotated 1.1 plan gating as unverified. Mixpanel documentation hosts (docs.mixpanel.com, developer.mixpanel.com) were unreachable to automated tooling this pass, so no Tier 1 claim could be re-verified — no control content was changed on that basis. Tier 3/4 research not surveyed. | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, access controls, and data governance | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.1.2 | ai-drafted | Currency pass: removed vendor security-marketing page from all reference positions; annotated 1.1 plan gating as unverified. Mixpanel documentation hosts (docs.mixpanel.com, developer.mixpanel.com) were unreachable to automated tooling this pass, so no Tier 1 claim could be re-verified — no control content was changed on that basis. Tier 3/4 research not surveyed. | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, access controls, and data governance | Claude Code (Opus 4.5) |
 
 ---
 

@@ -1187,11 +1187,11 @@ See the [Anthropic platform hub references](/guides/anthropic-claude/#appendix-b
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0.2 | 2026-08-15 | §5.1 corrections from the Admin API currency pass: prerequisites fixed — the gate is an Admin API key on a Claude Console organization (free for every org with Admin API access, both `api` pay-as-you-go and `subscription` Pro/Team customer types), not a Team/Enterprise plan; Claude Enterprise (claude.ai) users' Claude Code activity reports through the separate Claude Enterprise Analytics API. Documented the cloud-provider monitoring blind spot (sessions via Bedrock, Foundry, Vertex AI, or Claude Platform on AWS are invisible to this API — close with OpenTelemetry or provider-side logging), added the detection dimensions (`terminal_type`, `customer_type`, `user_actor`/`api_actor`), and the operational facts (up to 1-hour data delay, single-day `starting_at` queries, `limit` max 1000). Console hosts canonicalized to platform.claude.com. |
-| 1.0.1 | 2026-08-08 | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §5.3 (no content-facts changed) |
-| 1.0.0 | 2026-08-03 | Split out of the monolithic Anthropic Claude guide as part of the multi-product platform restructure; carries the 11 Claude Code controls (formerly section 7) renumbered into five thematic sections. |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2026-08-15 | 1.0.2 | ai-drafted | §5.1 corrections from the Admin API currency pass: prerequisites fixed — the gate is an Admin API key on a Claude Console organization (free for every org with Admin API access, both `api` pay-as-you-go and `subscription` Pro/Team customer types), not a Team/Enterprise plan; Claude Enterprise (claude.ai) users' Claude Code activity reports through the separate Claude Enterprise Analytics API. Documented the cloud-provider monitoring blind spot (sessions via Bedrock, Foundry, Vertex AI, or Claude Platform on AWS are invisible to this API — close with OpenTelemetry or provider-side logging), added the detection dimensions (`terminal_type`, `customer_type`, `user_actor`/`api_actor`), and the operational facts (up to 1-hour data delay, single-day `starting_at` queries, `limit` max 1000). Console hosts canonicalized to platform.claude.com. | Claude Code (Opus 5) |
+| 2026-08-08 | 1.0.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §5.3 (no content-facts changed) | Claude Code (Fable 5) |
+| 2026-08-03 | 1.0.0 | ai-drafted | Split out of the monolithic Anthropic Claude guide as part of the multi-product platform restructure; carries the 11 Claude Code controls (formerly section 7) renumbered into five thematic sections. | Claude Code (Sonnet 5) |
 
 ## Contributing
 

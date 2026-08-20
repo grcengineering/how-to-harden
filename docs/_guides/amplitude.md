@@ -445,9 +445,9 @@ Enable and monitor activity logs.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.1.2 | draft | Currency pass — structural only. Amplitude's docs host blocked every automated fetch this pass (9 candidate Tier 1 paths returned empty), so no console path, role name, or plan gate could be re-verified; added an Overview verification note stating that scope. Repointed the rotted Analytics APIs link to its canonical `amplitude.com/docs` host and removed Trust Center / security-marketing references from Appendix A. Tier 2 (CIS, DISA STIG, CISA SCuBA) confirmed zero coverage for Amplitude; Tier 3/4 not surveyed this pass. | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, access controls, and data governance | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.1.2 | ai-drafted | Currency pass — structural only. Amplitude's docs host blocked every automated fetch this pass (9 candidate Tier 1 paths returned empty), so no console path, role name, or plan gate could be re-verified; added an Overview verification note stating that scope. Repointed the rotted Analytics APIs link to its canonical `amplitude.com/docs` host and removed Trust Center / security-marketing references from Appendix A. Tier 2 (CIS, DISA STIG, CISA SCuBA) confirmed zero coverage for Amplitude; Tier 3/4 not surveyed this pass. | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, access controls, and data governance | Claude Code (Opus 4.5) |
 
 ---
 

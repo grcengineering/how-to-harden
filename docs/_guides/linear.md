@@ -500,9 +500,9 @@ Source: [Security](https://linear.app/docs/security)
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
-| 2026-08-08 | 0.2.0 | draft | Currency pass, scope-limited: only three Linear documentation pages (security, security-and-access, audit-log) were publicly reachable this pass, so findings outside them soften rather than assert. Rewrote 4.1 audit log (Enterprise, workspace owners only, 90-day retention, GraphQL queryable, webhook streaming to SIEM, actor IP/country); added 4.2 data residency (US/EU, fixed at workspace creation); added passkeys to 1.2 and OAuth-grant/session review to 3.2; annotated 1.2 and 1.3 as unverifiable against current public docs; removed the 404 SAML SSO link and the Trust Center/security marketing links in favor of linear.app/docs/security | Claude Code (Opus 4.8) |
-| 2026-06-29 | 0.1.1 | draft | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | draft | Initial guide with SSO, teams, and integrations | Claude Code (Opus 4.5) |
+| 2026-08-08 | 0.2.0 | ai-drafted | Currency pass, scope-limited: only three Linear documentation pages (security, security-and-access, audit-log) were publicly reachable this pass, so findings outside them soften rather than assert. Rewrote 4.1 audit log (Enterprise, workspace owners only, 90-day retention, GraphQL queryable, webhook streaming to SIEM, actor IP/country); added 4.2 data residency (US/EU, fixed at workspace creation); added passkeys to 1.2 and OAuth-grant/session review to 3.2; annotated 1.2 and 1.3 as unverifiable against current public docs; removed the 404 SAML SSO link and the Trust Center/security marketing links in favor of linear.app/docs/security | Claude Code (Opus 4.8) |
+| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
+| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, teams, and integrations | Claude Code (Opus 4.5) |
 
 ---
 

@@ -734,6 +734,42 @@ body {
 .tier-4 { background: rgba(34, 197, 94, 0.15); color: var(--color-tier-4); }
 .tier-5 { background: rgba(59, 130, 246, 0.15); color: var(--color-tier-5); }
 
+/* ==========================================================================
+   Maturity matrix — the stage x agent palette (SINGLE SOURCE OF TRUTH)
+
+   Two axes, two visual channels, so a reader can decode a mark they have never
+   seen before:
+     STAGE = the HUE.   amber drafted, blue reviewed, green validated.
+     AGENT = the SHADE. AI is the LIGHTER shade, NI the DARKER shade of that
+             same hue — never a different colour, because AI and NI are the same
+             act performed by different agents, not different kinds of thing.
+
+   Every surface that shows a status (heading marks, cheat-sheet marks, home-page
+   card badges, banner chips) resolves through these tokens. Pairing hexes by
+   hand across four surfaces is how AI and NI ended up rendering IDENTICALLY
+   before 2026-08-20 — the distinction existed in the markup and was invisible
+   on screen.
+   ========================================================================== */
+:root {
+  --stage-drafted-ai:   #eab308;
+  --stage-drafted-ni:   #854d0e;
+  --stage-reviewed-ai:  #3b82f6;
+  --stage-reviewed-ni:  #1e3a8a;
+  --stage-validated-ai: #22c55e;
+  --stage-validated-ni: #14532d;
+}
+
+/* On a dark ground the pairing must survive without either end going invisible:
+   AI moves up the scale, NI moves down but stops well short of the background. */
+[data-theme="dark"] {
+  --stage-drafted-ai:   #fde047;
+  --stage-drafted-ni:   #ca8a04;
+  --stage-reviewed-ai:  #93c5fd;
+  --stage-reviewed-ni:  #2563eb;
+  --stage-validated-ai: #86efac;
+  --stage-validated-ni: #16a34a;
+}
+
 /* Status badges for review status */
 .status-badge {
   font-size: 0.6875rem;
@@ -762,7 +798,9 @@ body {
 }
 
 /* Card badges — one per status the guide holds, so both-agent guides visibly
-   carry more. Stage sets the hue; AI is a tint, NI is a solid. */
+   carry more. Stage sets the hue; AI is the light tint, NI the dark solid of
+   that same hue. Two channels agree (fill weight AND shade), so the pair is
+   still tellable apart in greyscale or with the icons suppressed. */
 .status-badge-set {
   display: inline-flex;
   align-items: center;
@@ -771,66 +809,51 @@ body {
   justify-content: flex-end;
 }
 
-.status-ai-drafted   { background: rgba(234, 179, 8, 0.15); color: #eab308; }
-.status-ai-reviewed  { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-.status-ai-validated { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
-.status-ni-drafted   { background: #eab308; color: #1a1a1a; }
-.status-ni-reviewed  { background: #3b82f6; color: #ffffff; }
-.status-ni-validated { background: #22c55e; color: #1a1a1a; }
+.status-ai-drafted   { background: rgba(234, 179, 8, 0.15); color: var(--stage-drafted-ai); }
+.status-ai-reviewed  { background: rgba(59, 130, 246, 0.15); color: var(--stage-reviewed-ai); }
+.status-ai-validated { background: rgba(34, 197, 94, 0.15); color: var(--stage-validated-ai); }
+.status-ni-drafted   { background: var(--stage-drafted-ni); color: #ffffff; }
+.status-ni-reviewed  { background: var(--stage-reviewed-ni); color: #ffffff; }
+.status-ni-validated { background: var(--stage-validated-ni); color: #ffffff; }
 
 
 /* ==========================================================================
-   Maturity matrix — per-requirement mark
-   Rendered by _includes/status-badge.html between a control's `### N.N` heading
-   and its `**Profile Level:**` line. It carries the same icon as the page
+   Maturity matrix — per-SURFACE mark
+   Rendered by _includes/status-mark.html INSIDE a `#### ClickOps Implementation`
+   or `#### Code Implementation` heading. It carries the same icon as the page
    status banner on purpose: the page-level claim is the sum of these, so the
    reader should recognise the mark in both places.
+
+   Icon only, by contract — the include renders no text node, because anything
+   textual here would land in the heading's anchor id and in the string the
+   cheat-sheet parser matches against 'description'/'rationale'. Sized and
+   coloured to read as an annotation ON the heading, never as a second heading.
    ========================================================================== */
 .status-mark {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin: 0 0 var(--space-sm);
-  padding: 3px 10px 3px 8px;
-  border: 1px solid currentColor;
-  border-radius: 999px;
-  background: transparent;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.01em;
+  margin-left: 8px;
+  vertical-align: middle;
+  line-height: 1;
 }
 
 .status-mark .status-icon { flex-shrink: 0; }
 
-.status-mark-label { white-space: nowrap; }
-
-/* The evidence phrase is what makes the badge falsifiable — it names what was
-   actually exercised. Muted so the mark stays scannable. */
-.status-mark-evidence {
-  color: var(--color-text-secondary);
-  opacity: 0.95;
-  font-weight: 400;
-  font-size: 0.7rem;
-}
-
-.status-mark-evidence::before { content: "— "; }
-
-/* Per-status colours for the requirement mark — stage hue again, so the mark
-   beside a requirement matches the chip in the banner above it. */
-/* Scoped through .guide-body on purpose. `.guide-body p` (line ~1404) sets a
-   colour at the SAME specificity as a bare `p.status-mark-*` and appears later
-   in the file, so it won on source order and the mark rendered body-grey inside
-   a guide — losing the stage hue that ties it to the banner chip above. Measured,
-   not guessed: computed colour was rgb(57,69,80) until this selector matched. */
-.guide-body p.status-mark-ai-drafted, .guide-body p.status-mark-ni-drafted     { color: #a16207; }
-.guide-body p.status-mark-ai-reviewed, .guide-body p.status-mark-ni-reviewed   { color: #1D4ED8; }
-.guide-body p.status-mark-ai-validated, .guide-body p.status-mark-ni-validated { color: #15803d; }
-
-[data-theme="dark"] .guide-body p.status-mark-ai-drafted, [data-theme="dark"] .guide-body p.status-mark-ni-drafted     { color: #eab308; }
-[data-theme="dark"] .guide-body p.status-mark-ai-reviewed, [data-theme="dark"] .guide-body p.status-mark-ni-reviewed   { color: #6FA8FF; }
-[data-theme="dark"] .guide-body p.status-mark-ai-validated, [data-theme="dark"] .guide-body p.status-mark-ni-validated { color: #4ade80; }
+/* Per-status colours — stage hue again, so the mark beside an implementation
+   heading matches the chip in the banner above it.
+   Scoped through `.guide-body h4` deliberately: the heading sets its own colour,
+   and a bare `.status-mark-*` would lose to it on specificity, rendering the
+   mark heading-coloured and destroying the AI/NI + stage signal. The earlier
+   block-badge form of this rule lost exactly that way to `.guide-body p`
+   (computed colour was rgb(57,69,80) until the selector was scoped). */
+/* AI and NI are separate selectors on purpose — they used to share one hex per
+   stage, which made the two agents pixel-identical everywhere the mark appeared. */
+.guide-body h4 .status-mark-ai-drafted   { color: var(--stage-drafted-ai); }
+.guide-body h4 .status-mark-ni-drafted   { color: var(--stage-drafted-ni); }
+.guide-body h4 .status-mark-ai-reviewed  { color: var(--stage-reviewed-ai); }
+.guide-body h4 .status-mark-ni-reviewed  { color: var(--stage-reviewed-ni); }
+.guide-body h4 .status-mark-ai-validated { color: var(--stage-validated-ai); }
+.guide-body h4 .status-mark-ni-validated { color: var(--stage-validated-ni); }
 
 /* Cheat-sheet row badge: same mark, icon only, so a scanning reader sees which
    requirements carry evidence without leaving the condensed view. */
@@ -842,10 +865,12 @@ body {
   vertical-align: middle;
 }
 
-.cs-status-mark-ai-validated, .cs-status-mark-ni-validated { color: #16a34a; }
-.cs-status-mark-ai-reviewed, .cs-status-mark-ni-reviewed { color: #3b82f6; }
-.cs-status-mark-ai-drafted, .cs-status-mark-ni-drafted { color: #a16207; }
-[data-theme="dark"] .cs-status-mark-ai-validated, [data-theme="dark"] .cs-status-mark-ni-validated { color: #4ade80; }
+.cs-status-mark-ai-drafted   { color: var(--stage-drafted-ai); }
+.cs-status-mark-ni-drafted   { color: var(--stage-drafted-ni); }
+.cs-status-mark-ai-reviewed  { color: var(--stage-reviewed-ai); }
+.cs-status-mark-ni-reviewed  { color: var(--stage-reviewed-ni); }
+.cs-status-mark-ai-validated { color: var(--stage-validated-ai); }
+.cs-status-mark-ni-validated { color: var(--stage-validated-ni); }
 .guide-card-description {
   color: var(--color-text-secondary);
   font-size: 0.875rem;
@@ -1007,9 +1032,11 @@ body {
   opacity: 0.9;
 }
 
-/* Banner chips. NI is a person's judgement and reads heavier by design: solid
-   fill. AI is machine work: outlined. Same glyph, same size — the spark and the
-   weight are the only differences, so the pair reads as one system. */
+/* Banner chips. Same rule as everywhere else: same hue, AI light / NI dark.
+   The bar is already the stage hue at full strength, so "lighter" here means a
+   near-white wash of it and "darker" means a deep solid of it. NI also reads
+   heavier by design — a person's judgement outweighs a machine's — but weight
+   is the second channel, not the first; the shade carries the distinction. */
 .status-chip {
   display: inline-flex;
   align-items: center;
@@ -1023,17 +1050,21 @@ body {
   white-space: nowrap;
 }
 
-.status-chip[class*="status-chip-ni-"] {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(255, 255, 255, 0.92);
-  color: #1a1a1a;
-}
-
 .status-chip[class*="status-chip-ai-"] {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(255, 255, 255, 0.82);
 }
 
-.stage-banner-reviewed .status-chip[class*="status-chip-ai-"] { color: #ffffff; }
+/* The AI chip's TEXT takes the dark token, not the light one: the pill itself is
+   already the light element against a saturated bar, and light-on-near-white
+   would be unreadable. Chip-as-an-object is what carries light-vs-dark here. */
+.status-chip-ai-drafted   { color: var(--stage-drafted-ni); }
+.status-chip-ai-reviewed  { color: var(--stage-reviewed-ni); }
+.status-chip-ai-validated { color: var(--stage-validated-ni); }
+
+.status-chip-ni-drafted   { background: var(--stage-drafted-ni);   border-color: var(--stage-drafted-ni);   color: #ffffff; }
+.status-chip-ni-reviewed  { background: var(--stage-reviewed-ni);  border-color: var(--stage-reviewed-ni);  color: #ffffff; }
+.status-chip-ni-validated { background: var(--stage-validated-ni); border-color: var(--stage-validated-ni); color: #ffffff; }
 
 
 /* Adjust guide content to account for status banner */
