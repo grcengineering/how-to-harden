@@ -829,12 +829,40 @@ body {
    cheat-sheet parser matches against 'description'/'rationale'. Sized and
    coloured to read as an annotation ON the heading, never as a second heading.
    ========================================================================== */
+/* The mark sits in a circular bubble so a bare glyph beside a bold heading reads
+   as a deliberate badge rather than stray punctuation. Both the fill and the ring
+   are derived from `currentColor` — which is already the stage hue at the agent's
+   shade — so the bubble is complementary BY CONSTRUCTION: it cannot drift from
+   the glyph it wraps, it needs no second token per status, and it follows the
+   dark-theme palette for free. Plain-colour fallbacks precede each color-mix
+   declaration for engines that do not support it. */
 .status-mark {
   display: inline-flex;
   align-items: center;
-  margin-left: 8px;
+  justify-content: center;
+  width: 1.55em;
+  height: 1.55em;
+  margin-left: 0.5em;
+  border-radius: 50%;
   vertical-align: middle;
   line-height: 1;
+  box-sizing: border-box;
+  background: rgba(125, 125, 125, 0.10);
+  background: color-mix(in srgb, currentColor 13%, transparent);
+  border: 1px solid rgba(125, 125, 125, 0.35);
+  border-color: color-mix(in srgb, currentColor 42%, transparent);
+}
+
+/* Optical centring. The svg BOX centres perfectly, but the visible ink does not:
+   the glyph group carries `translate(-1.2 2.6) scale(0.8)`, and the scale pulls
+   content toward the origin harder than the translate pushes it down, leaving
+   the ink 2.2px high in a 24.8px bubble (measured, not estimated). The shift is
+   expressed as a percentage of the icon's own height so it tracks any size the
+   include is called at, and it is scoped to the bubble so chips and card badges
+   — which have their own layouts — are untouched. */
+.status-mark .status-icon {
+  display: block;
+  transform: translateY(15.8%);
 }
 
 .status-mark .status-icon { flex-shrink: 0; }
@@ -860,9 +888,18 @@ body {
 .cs-status-mark {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
   margin-left: 6px;
   color: #8b5cf6;
   vertical-align: middle;
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: rgba(125, 125, 125, 0.10);
+  background: color-mix(in srgb, currentColor 13%, transparent);
+  border: 1px solid rgba(125, 125, 125, 0.35);
+  border-color: color-mix(in srgb, currentColor 42%, transparent);
 }
 
 .cs-status-mark-ai-drafted   { color: var(--stage-drafted-ai); }
