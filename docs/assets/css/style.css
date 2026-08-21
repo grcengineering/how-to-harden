@@ -858,12 +858,20 @@ body {
    (computed colour was rgb(57,69,80) until the selector was scoped). */
 /* AI and NI are separate selectors on purpose — they used to share one hex per
    stage, which made the two agents pixel-identical everywhere the mark appeared. */
-.guide-body h4 .status-mark-ai-drafted   { color: var(--stage-drafted-ai); }
-.guide-body h4 .status-mark-ni-drafted   { color: var(--stage-drafted-ni); }
-.guide-body h4 .status-mark-ai-reviewed  { color: var(--stage-reviewed-ai); }
-.guide-body h4 .status-mark-ni-reviewed  { color: var(--stage-reviewed-ni); }
-.guide-body h4 .status-mark-ai-validated { color: var(--stage-validated-ai); }
-.guide-body h4 .status-mark-ni-validated { color: var(--stage-validated-ni); }
+/* Two ancestor contexts, not one: a heading mark sits in `.guide-body h4`, a
+   per-pack mark sits in `.pack-summary` (a `<summary>`, which sets its own
+   muted `color: var(--color-text-secondary)` — that inheritance is exactly
+   what painted the pack-header mark grey instead of the stage hue, reported
+   live 2026-08-21). Both selectors needed, not just a broader one: pruning
+   `.guide-body h4` back to a bare `.status-mark-*` would just reintroduce the
+   original loss to `.guide-body p` this rule was scoped against in the first
+   place (computed colour rgb(57,69,80) until it was scoped, 2026-08-20). */
+.guide-body h4 .status-mark-ai-drafted,   .pack-summary .status-mark-ai-drafted   { color: var(--stage-drafted-ai); }
+.guide-body h4 .status-mark-ni-drafted,   .pack-summary .status-mark-ni-drafted   { color: var(--stage-drafted-ni); }
+.guide-body h4 .status-mark-ai-reviewed,  .pack-summary .status-mark-ai-reviewed  { color: var(--stage-reviewed-ai); }
+.guide-body h4 .status-mark-ni-reviewed,  .pack-summary .status-mark-ni-reviewed  { color: var(--stage-reviewed-ni); }
+.guide-body h4 .status-mark-ai-validated, .pack-summary .status-mark-ai-validated { color: var(--stage-validated-ai); }
+.guide-body h4 .status-mark-ni-validated, .pack-summary .status-mark-ni-validated { color: var(--stage-validated-ni); }
 
 /* Cheat-sheet row badge: same mark, icon only, so a scanning reader sees which
    requirements carry evidence without leaving the condensed view. */
