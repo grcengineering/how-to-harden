@@ -54,6 +54,12 @@
   // Matches control headings like "1.1 Name", "10.3 Name"
   var CTRL_RE = /^(\d+(?:\.\d+)+)\s+(.+)/;
   var built = false;
+  // pack-code.html's internal type keys -> the human label a per-pack mark's
+  // surface should read as in the condensed view.
+  var PACK_TYPE_LABELS = {
+    terraform: 'Terraform', config: 'Config', api: 'API', cli: 'CLI',
+    sdk: 'SDK', db: 'DB', siem: 'SIEM', sigma: 'Sigma'
+  };
 
   function parseLevel(str) {
     var m = str.match(/^(L\d+)\s*\(([^)]+)\)/i);
@@ -188,6 +194,26 @@
           // would otherwise render duplicate badges (e.g. CONFIG CONFIG).
           if (srcLink && !ctrl.packLinks.some(function(p) { return p.type === packType; })) {
             ctrl.packLinks.push({ type: packType, url: srcLink.href });
+          }
+
+          // Per-pack validation mark (2026-08-20). status-mark.html now renders
+          // INSIDE the pack's own <summary>, not on the shared H4 — so it lives
+          // here, one level down from the generic H4 branch above. Harvesting it
+          // from this exact spot is what lets the cheat sheet say WHICH pack
+          // (Terraform vs Sigma, say) was proven, instead of losing the
+          // distinction the heading-level mark was retired specifically to fix.
+          var packMark = node.querySelector('span.status-mark');
+          if (packMark) {
+            var packMarkIcon = packMark.querySelector('svg.status-icon');
+            if (packMarkIcon) {
+              var packStatusClass = (packMark.className.match(/status-mark-([a-z-]+)/) || [null, ''])[1];
+              ctrl.statusMarks.push({
+                svg: packMarkIcon.outerHTML,
+                status: packStatusClass,
+                surface: PACK_TYPE_LABELS[packType] || packType,
+                label: packMark.getAttribute('aria-label') || 'Validated'
+              });
+            }
           }
 
         } else {

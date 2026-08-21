@@ -4,12 +4,16 @@ layout: default
 {% assign version = page.version | default: "0.1.0" %}
 {% include status-set.html guide=page %}
 
-{% comment %} The banner paints with the furthest stage either agent reached, and
-then lists EVERY status the guide holds. Both chips showing is the point: a guide
-validated by a machine and by a person has done the thing twice, and the banner
-should say so rather than collapsing it to one word. {% endcomment %}
-<div class="status-banner stage-banner-{{ top_stage }}">
-  <span class="status-banner-version">v{{ version }}-{{ version_suffix }}</span>
+{% comment %} The banner lists EVERY status the guide holds, via the chips — both
+chips showing is the point: a guide validated by a machine and by a person has
+done the thing twice, and the banner should say so rather than collapsing it to
+one word. The bar itself carries no status colour (2026-08-20): the chips do
+that job now, so `top_stage` no longer picks a banner class, and the version
+string drops its `-{{ version_suffix }}` qualifier — that string still has a
+canonical meaning (VERSIONS.md, the changelog convention), it just doesn't
+belong duplicated onto the one line meant to be scannable at a glance. {% endcomment %}
+<div class="status-banner">
+  <span class="status-banner-version">v{{ version }}</span>
   {% for s in statuses %}
     {% assign p = s | split: "-" %}
     {% assign chip_agent = p[0] %}

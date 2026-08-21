@@ -147,9 +147,9 @@ Enable SCIM provisioning against your IdP, then enable the **Restrict account cr
 
 **Time to Complete:** ~45 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="1.2" %}
+{% include pack-code.html vendor="ona" section="1.2" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. Remove a test user from the IdP and confirm deprovisioning in Ona
@@ -199,9 +199,9 @@ Use Ona's delegated organization roles (Runners Admin, Projects Admin, Groups Ad
 
 **Time to Complete:** ~30 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="1.3" %}
+{% include pack-code.html vendor="ona" section="1.3" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. A Runners Admin cannot change identity or policy settings
@@ -252,9 +252,9 @@ Constrain machine credentials: never issue service-account tokens with **indefin
 
 **Time to Complete:** ~30 minutes plus recurring review
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="1.4" %}
+{% include pack-code.html vendor="ona" section="1.4" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. No service account carries an indefinite token
@@ -409,9 +409,9 @@ Block dangerous agent-issued bash commands with wildcard patterns (e.g., `shutdo
 
 **Time to Complete:** ~20 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="2.2" %}
+{% include pack-code.html vendor="ona" section="2.2" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. Start a new agent session and confirm a denied command is refused
@@ -457,9 +457,9 @@ Decide organization policy on Model Context Protocol (MCP) servers. Org owners c
 
 **Time to Complete:** ~15 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="2.3" %}
+{% include pack-code.html vendor="ona" section="2.3" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. With MCP disabled, an agent in a repo carrying `.ona/mcp-config.json` does not load the external server
@@ -507,9 +507,9 @@ Scope what agents can do against source-control hosts and which model providers 
 
 **Time to Complete:** ~30 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="2.4" %}
+{% include pack-code.html vendor="ona" section="2.4" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. With SCM tools disabled, an agent cannot open a PR via API
@@ -603,9 +603,9 @@ For regulated or high-sensitivity estates, enable the CrowdStrike Falcon integra
 
 **Time to Complete:** ~1 hour
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="2.6" %}
+{% include pack-code.html vendor="ona" section="2.6" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. Confirm the falcon-sensor is present in a newly created environment
@@ -655,9 +655,9 @@ Cap how widely environment ports can be exposed. Admission levels run `creator_o
 
 **Time to Complete:** ~15 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="3.1" %}
+{% include pack-code.html vendor="ona" section="3.1" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. A member attempting to expose a port above the cap sees "restricted by policy"
@@ -702,9 +702,9 @@ Govern the built-in environment web browser and the agent's browse-web skill, wh
 
 **Time to Complete:** ~15 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="3.2" %}
+{% include pack-code.html vendor="ona" section="3.2" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. With the browser disabled, the agent's browse-web skill is unavailable
@@ -753,9 +753,9 @@ Bound how long environments live and linger: set a maximum environment lifetime 
 
 **Time to Complete:** ~20 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="3.3" %}
+{% include pack-code.html vendor="ona" section="3.3" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. An expired environment cannot be restarted under strict enforcement
@@ -800,9 +800,9 @@ Limit who can spin up blank environments with the **Only admins can start from s
 
 **Time to Complete:** ~10 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="3.4" %}
+{% include pack-code.html vendor="ona" section="3.4" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. A non-admin member cannot create a from-scratch environment and must use a project
@@ -896,9 +896,9 @@ Use the tightest secret scope (user > project > organization precedence) and tre
 
 **Time to Complete:** ~30 minutes plus inventory
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="4.1" %}
+{% include pack-code.html vendor="ona" section="4.1" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. A project-scoped secret is not visible to environments outside that project
@@ -944,9 +944,9 @@ Instead of storing long-lived cloud credentials as secrets, use Ona's OIDC workl
 
 **Time to Complete:** ~1-2 hours with cloud IAM changes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="4.2" %}
+{% include pack-code.html vendor="ona" section="4.2" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. An agent obtains short-lived cloud credentials via token exchange with no stored long-lived key
@@ -992,9 +992,9 @@ Configure per-runner repository access deliberately. The GitHub integration requ
 
 **Time to Complete:** ~30 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="4.3" %}
+{% include pack-code.html vendor="ona" section="4.3" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. Deleting an unused integration removes its stored credentials (access no longer works)
@@ -1047,9 +1047,9 @@ For sensitive codebases, run self-hosted runners in your own AWS/GCP VPC rather 
 
 **Time to Complete:** ~half day including cloud networking
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="API audit pack executed against a live tenant" date="2026-08-19" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="ona" section="5.1" %}
+{% include pack-code.html vendor="ona" section="5.1" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
 
 #### Validation & Testing
 1. Confirm source code and SCM credentials remain in your VPC (never transit the management plane)
