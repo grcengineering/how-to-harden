@@ -191,9 +191,9 @@ Implement least privilege using Buildkite teams.
 2. Update access as needed
 3. Remove inactive members
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Terraform applied to a live organization (3 teams created, console-confirmed, destroyed)" date="2026-08-16" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="buildkite" section="2.1" %}
+{% include pack-code.html vendor="buildkite" section="2.1" validated_types="terraform" mark_status="ai-validated" mark_evidence="Terraform applied to a live organization (3 teams created, console-confirmed, destroyed)" mark_date="2026-08-16" %}
 
 ---
 
@@ -520,9 +520,9 @@ Securely manage agent registration tokens.
 
 Sources: [Buildkite agent tokens](https://buildkite.com/docs/agent/self-hosted/tokens) · [Manage clusters and queues](https://buildkite.com/docs/pipelines/security/clusters/manage)
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Terraform applied to a live organization (2 agent tokens created, console-confirmed, destroyed)" date="2026-08-16" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="buildkite" section="3.1" %}
+{% include pack-code.html vendor="buildkite" section="3.1" validated_types="terraform" mark_status="ai-validated" mark_evidence="Terraform applied to a live organization (2 agent tokens created, console-confirmed, destroyed)" mark_date="2026-08-16" %}
 
 ---
 
