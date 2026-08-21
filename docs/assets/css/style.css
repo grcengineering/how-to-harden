@@ -829,35 +829,25 @@ body {
    cheat-sheet parser matches against 'description'/'rationale'. Sized and
    coloured to read as an annotation ON the heading, never as a second heading.
    ========================================================================== */
-/* The mark sits in a circular bubble so a bare glyph beside a bold heading reads
-   as a deliberate badge rather than stray punctuation. Both the fill and the ring
-   are derived from `currentColor` — which is already the stage hue at the agent's
-   shade — so the bubble is complementary BY CONSTRUCTION: it cannot drift from
-   the glyph it wraps, it needs no second token per status, and it follows the
-   dark-theme palette for free. Plain-colour fallbacks precede each color-mix
-   declaration for engines that do not support it. */
+/* No wrapping bubble (removed 2026-08-21). A hand-drawn circle around a bare
+   checkmark was a worse copy of an icon Feather already ships — validated-stage
+   glyphs (check-circle for ai, award for ni; see status-icon.html) already draw
+   their own circle/ring, so the mark is now just that glyph, sized and coloured
+   in place. Drafted/reviewed glyphs (pencil/eye) render the same bare way; they
+   never had a badge shape to begin with, so nothing here special-cases them. */
 .status-mark {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 1.3em;
-  height: 1.3em;
-  margin-left: 0.5em;
-  border-radius: 50%;
+  margin-left: 0.35em;
   vertical-align: middle;
   line-height: 1;
   box-sizing: border-box;
-  background: rgba(125, 125, 125, 0.10);
-  background: color-mix(in srgb, currentColor 13%, transparent);
-  border: 1px solid rgba(125, 125, 125, 0.35);
-  border-color: color-mix(in srgb, currentColor 42%, transparent);
 }
 
 .status-mark .status-icon {
   display: block;
+  flex-shrink: 0;
 }
-
-.status-mark .status-icon { flex-shrink: 0; }
 
 /* Per-status colours — stage hue again, so the mark beside an implementation
    heading matches the chip in the banner above it.
@@ -877,21 +867,14 @@ body {
 
 /* Cheat-sheet row badge: same mark, icon only, so a scanning reader sees which
    requirements carry evidence without leaving the condensed view. */
+/* No wrapping bubble here either — same reasoning as .status-mark above. */
 .cs-status-mark {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 1.25em;
-  height: 1.25em;
   margin-left: 6px;
   color: #8b5cf6;
   vertical-align: middle;
-  border-radius: 50%;
   box-sizing: border-box;
-  background: rgba(125, 125, 125, 0.10);
-  background: color-mix(in srgb, currentColor 13%, transparent);
-  border: 1px solid rgba(125, 125, 125, 0.35);
-  border-color: color-mix(in srgb, currentColor 42%, transparent);
 }
 
 .cs-status-mark-ai-drafted   { color: var(--stage-drafted-ai); }
@@ -1171,7 +1154,18 @@ body {
   color: var(--color-text-secondary);
   background: var(--color-bg-tertiary);
   text-decoration: none;
-  transition: all 0.15s ease;
+  /* color/border-color only — NOT background or border-radius. Those two also
+     change when a dropdown button merges into its open menu
+     (.doc-link-group.expanded > .doc-link-btn below), and animating them let
+     the button's corners/background lag the menu's for ~150ms after every
+     open or close: measured live, at 16ms post-click the button's bottom
+     corners were still 5.7px rounded and its background not yet white while
+     the menu had already begun appearing square-cornered beneath it — the
+     mismatched corner + colour was exactly the seam reported live,
+     2026-08-21. Instant background/radius means the two shapes always match
+     from the first frame in both directions; only the menu's own
+     opacity/transform animate. */
+  transition: color 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
 }
 

@@ -46,6 +46,6 @@
 {%- assign mark_parts = mark_status | split: "-" -%}
 {%- assign mark_agent = mark_parts[0] -%}
 {%- assign mark_stage = mark_parts[1] -%}
-{%- capture mark_icon -%}{% include status-icon.html stage=mark_stage agent=mark_agent size=14 %}{%- endcapture -%}
+{%- capture mark_icon -%}{% include status-icon.html stage=mark_stage agent=mark_agent size=16 %}{%- endcapture -%}
 {%- capture mark_label %}{{ mark_agent | upcase }} {{ mark_stage | capitalize }}{% endcapture -%}
 <span class="status-mark status-mark-{{ mark_status }}" role="img" aria-label="{{ mark_label }}{% if include.evidence %}: {{ include.evidence | escape }}{% endif %}" title="{{ mark_label }}{% if include.evidence %} — {{ include.evidence | escape }}{% endif %}{% if include.date %} ({{ include.date }}){% endif %}">{{ mark_icon | strip }}</span>

@@ -43,7 +43,7 @@
 {% if control.terraform %}
 <div class="pack-code-section">
 <details class="pack-details">
-<summary class="pack-summary"><span class="pack-summary-text">Code Pack: Terraform</span>{% if marked_types contains "terraform" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</summary>
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: Terraform{% if marked_types contains "terraform" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</span></summary>
 <div class="pack-details-content">
 <div class="pack-file-header">
 <span class="pack-file-type pack-type-terraform">{{ control.terraform.filename }}</span>
@@ -60,7 +60,7 @@
 {% if control.config %}
 <div class="pack-code-section">
 <details class="pack-details">
-<summary class="pack-summary"><span class="pack-summary-text">Code Pack: Config</span>{% if marked_types contains "config" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</summary>
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: Config{% if marked_types contains "config" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</span></summary>
 <div class="pack-details-content">
 <div class="pack-file-header">
 <span class="pack-file-type pack-type-config">{{ control.config.filename }}</span>
@@ -77,7 +77,7 @@
 {% if control.api %}
 <div class="pack-code-section">
 <details class="pack-details">
-<summary class="pack-summary"><span class="pack-summary-text">Code Pack: API Script</span>{% if marked_types contains "api" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</summary>
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: API Script{% if marked_types contains "api" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</span></summary>
 <div class="pack-details-content">
 <div class="pack-file-header">
 <span class="pack-file-type pack-type-api">{{ control.api.filename }}</span>
@@ -94,7 +94,7 @@
 {% if control.cli %}
 <div class="pack-code-section">
 <details class="pack-details">
-<summary class="pack-summary"><span class="pack-summary-text">Code Pack: CLI Script</span>{% if marked_types contains "cli" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</summary>
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: CLI Script{% if marked_types contains "cli" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</span></summary>
 <div class="pack-details-content">
 <div class="pack-file-header">
 <span class="pack-file-type pack-type-cli">{{ control.cli.filename }}</span>
@@ -111,7 +111,7 @@
 {% if control.sdk %}
 <div class="pack-code-section">
 <details class="pack-details">
-<summary class="pack-summary"><span class="pack-summary-text">Code Pack: SDK Script</span>{% if marked_types contains "sdk" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</summary>
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: SDK Script{% if marked_types contains "sdk" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</span></summary>
 <div class="pack-details-content">
 <div class="pack-file-header">
 <span class="pack-file-type pack-type-sdk">{{ control.sdk.filename }}</span>
@@ -128,7 +128,7 @@
 {% if control.db %}
 <div class="pack-code-section">
 <details class="pack-details">
-<summary class="pack-summary"><span class="pack-summary-text">Code Pack: DB Query</span>{% if marked_types contains "db" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</summary>
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: DB Query{% if marked_types contains "db" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</span></summary>
 <div class="pack-details-content">
 <div class="pack-file-header">
 <span class="pack-file-type pack-type-db">{{ control.db.filename }}</span>
@@ -145,7 +145,7 @@
 {% if control.siem %}
 <div class="pack-code-section">
 <details class="pack-details">
-<summary class="pack-summary"><span class="pack-summary-text">Code Pack: SIEM Queries</span>{% if marked_types contains "siem" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</summary>
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: SIEM Queries{% if marked_types contains "siem" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</span></summary>
 <div class="pack-details-content">
 <div class="pack-file-header">
 <span class="pack-file-type pack-type-siem">{{ control.siem.filename }}</span>
@@ -162,7 +162,7 @@
 {% if control.sigma %}
 <div class="pack-code-section">
 <details class="pack-details">
-<summary class="pack-summary"><span class="pack-summary-text">Code Pack: Sigma Detection {% if control.sigma.size > 1 %}Rules ({{ control.sigma.size }}){% else %}Rule{% endif %}</span>{% if marked_types contains "sigma" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</summary>
+<summary class="pack-summary"><span class="pack-summary-text">Code Pack: Sigma Detection {% if control.sigma.size > 1 %}Rules ({{ control.sigma.size }}){% else %}Rule{% endif %}{% if marked_types contains "sigma" %}{% include status-mark.html status=include.mark_status evidence=include.mark_evidence date=include.mark_date %}{% endif %}</span></summary>
 <div class="pack-details-content">
 {% for rule in control.sigma %}
 <div class="pack-file-header">

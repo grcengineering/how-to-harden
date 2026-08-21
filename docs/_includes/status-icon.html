@@ -5,30 +5,33 @@
   validated) each done by either AGENT (ai = artificial intelligence,
   ni = natural intelligence, i.e. a person), and the two are not exclusive.
 
-  The mark encodes both axes so a reader can decode a badge they have never
-  seen:
-    STAGE  = the glyph.  draft mark (pencil) · eye (reviewed) · check (validated)
-    AGENT  = the spark.  A four-point spark in the top-right means a machine did
-             it. No spark means a person did it.
-  Both agents share the SAME glyph, undistorted, at its native Feather-icon
-  size — an AI mark and its NI twin differ by the spark and nothing else, and
-  the empty top-right corner on an NI mark is exactly where its AI twin's spark
-  sits. That is what makes "AI Validated + NI Validated" read as one thing done
-  twice rather than two unrelated badges. Colour is the second channel: the
-  caller's stylesheet paints AI in the LIGHTER shade and NI in the DARKER shade
-  of the stage hue.
+  STAGE picks the glyph family; AGENT picks the specific glyph within it:
+    drafted / reviewed — pencil / eye, shared by both agents, with a small
+      four-point spark added top-right for `ai` only. No spark means a
+      person did it. Colour is the other channel: AI paints in the LIGHTER
+      shade, NI the DARKER shade, of the stage hue (caller's stylesheet).
+    validated — the two agents get DIFFERENT, self-contained glyphs instead
+      of a shared one plus a spark: `ai` renders Feather's own `check-circle`
+      (circle and check drawn as one glyph, not built by wrapping a bare
+      checkmark in a hand-drawn circle — that approach is what caused the
+      off-centre-checkmark and sparkle-clash defects fixed earlier the same
+      day). `ni` renders Feather's `award` (a ribbon/medal), reflecting that
+      NI validation is a human's certification, not an act a spark could
+      denote. Neither carries a spark: the glyph itself is the agent signal
+      at this stage, so a second one would be redundant. (Changed 2026-08-21,
+      per live screenshots showing the circle-drawn-around-a-bare-checkmark
+      reading as a worse, hand-rolled copy of an icon Feather already ships.)
 
-  GLYPH GEOMETRY (corrected 2026-08-20). Each glyph is Feather Icons' stock
-  path data, drawn in its 24x24 viewBox with no group transform — Feather's own
-  glyphs are already centred on that grid, which is exactly why the checkmark's
-  raw bbox (x:[4,20] y:[6,17], centre (12, 11.5)) sits within half a pixel of
-  the viewBox centre on its own. A prior version wrapped the glyph in
-  `translate(-1.2 2.6) scale(0.8)` to shrink it and make room for the spark —
-  that shift is what put the checkmark visibly off-centre inside the circular
-  bubble it now renders in (reported live, 2026-08-20). The spark's own
-  coordinates were authored against this UNTRANSFORMED glyph in the first
-  place, so removing the transform is also what puts the spark back at the
-  checkmark's actual top-right end rather than floating disconnected above it.
+  GLYPH GEOMETRY. Every path below is Feather Icons' stock path data verified
+  against the upstream source (github.com/feathericons/feather, `icons/*.svg`),
+  drawn in its native 24x24 viewBox with no group transform — Feather's own
+  glyphs are already centred on that grid. A prior version wrapped the
+  drafted/reviewed glyphs in `translate(-1.2 2.6) scale(0.8)` to shrink them
+  and make room for the spark; that shift put the checkmark visibly
+  off-centre once it started rendering inside a circular badge (fixed
+  2026-08-20). The spark's own coordinates are authored against these
+  UNTRANSFORMED glyphs, which is what keeps it attached at the glyph's actual
+  top-right corner instead of floating disconnected above it.
 
   Params:
     stage — drafted | reviewed | validated   (default: drafted)
@@ -59,4 +62,4 @@
 {%- assign icon_stage = include.stage | default: "drafted" -%}
 {%- assign icon_agent = include.agent | default: "ai" -%}
 {%- assign icon_size = include.size | default: 16 -%}
-<svg class="status-icon status-icon-{{ icon_agent }}-{{ icon_stage }} {{ include.class }}" width="{{ icon_size }}" height="{{ icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g>{% if icon_stage == "validated" %}<polyline points="20 6 9 17 4 12"></polyline>{% elsif icon_stage == "reviewed" %}<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>{% else %}<path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>{% endif %}</g>{% if icon_agent == "ai" %}<path d="M20 0.5 20.5 1.7 21.7 2.2 20.5 2.7 20 3.9 19.5 2.7 18.3 2.2 19.5 1.7 Z" fill="currentColor" stroke-width="1"></path>{% endif %}</svg>
+<svg class="status-icon status-icon-{{ icon_agent }}-{{ icon_stage }} {{ include.class }}" width="{{ icon_size }}" height="{{ icon_size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g>{% if icon_stage == "validated" %}{% if icon_agent == "ai" %}<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>{% else %}<circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>{% endif %}{% elsif icon_stage == "reviewed" %}<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>{% else %}<path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>{% endif %}</g>{% if icon_stage != "validated" and icon_agent == "ai" %}<path d="M20 0.5 20.5 1.7 21.7 2.2 20.5 2.7 20 3.9 19.5 2.7 18.3 2.2 19.5 1.7 Z" fill="currentColor" stroke-width="1"></path>{% endif %}</svg>
