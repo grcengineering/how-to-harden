@@ -853,16 +853,8 @@ body {
   border-color: color-mix(in srgb, currentColor 42%, transparent);
 }
 
-/* Optical centring. The svg BOX centres perfectly, but the visible ink does not:
-   the glyph group carries `translate(-1.2 2.6) scale(0.8)`, and the scale pulls
-   content toward the origin harder than the translate pushes it down, leaving
-   the ink 2.2px high in a 24.8px bubble (measured, not estimated). The shift is
-   expressed as a percentage of the icon's own height so it tracks any size the
-   include is called at, and it is scoped to the bubble so chips and card badges
-   — which have their own layouts — are untouched. */
 .status-mark .status-icon {
   display: block;
-  transform: translateY(15.8%);
 }
 
 .status-mark .status-icon { flex-shrink: 0; }
@@ -1040,27 +1032,17 @@ body {
 
 /* ==========================================================================
    Maturity matrix — banner
-   Colour tracks the STAGE (how far the guide has come): amber drafted, blue
-   reviewed, green validated. The agent (AI vs NI) is carried by the chips
-   inside, not by the bar, because a guide can hold both agents at one stage and
-   the bar can only be one colour.
+   The bar carries NO status colour any more (2026-08-20). The chips below are
+   now the color-coded element, so a colored bar just competed with them for
+   attention and duplicated the signal. One neutral, fully OPAQUE surface for
+   every guide regardless of maturity — the design system's own "inset" token,
+   already theme-aware (light slate-100 / dark #1A2330), so this needs no new
+   hex and no per-theme override block of its own.
    ========================================================================== */
-.stage-banner-drafted {
-  background: rgba(234, 179, 8, 0.95);
-  border-bottom: 1px solid rgba(234, 179, 8, 0.5);
-  color: #1a1a1a;
-}
-
-.stage-banner-reviewed {
-  background: rgba(59, 130, 246, 0.95);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.5);
-  color: #ffffff;
-}
-
-.stage-banner-validated {
-  background: rgba(34, 197, 94, 0.95);
-  border-bottom: 1px solid rgba(34, 197, 94, 0.5);
-  color: #1a1a1a;
+.status-banner {
+  background: var(--color-bg-tertiary);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
 }
 
 .status-banner-version {
@@ -1069,39 +1051,39 @@ body {
   opacity: 0.9;
 }
 
-/* Banner chips. Same rule as everywhere else: same hue, AI light / NI dark.
-   The bar is already the stage hue at full strength, so "lighter" here means a
-   near-white wash of it and "darker" means a deep solid of it. NI also reads
-   heavier by design — a person's judgement outweighs a machine's — but weight
-   is the second channel, not the first; the shade carries the distinction. */
+/* Banner chips carry the FULL status signal now that the bar is neutral. Same
+   formula as the heading mark's bubble and the home-page card badges — a light
+   wash of the status hue behind, the hue at full strength for text and icon,
+   a stronger wash for the border — all derived from ONE currentColor per chip
+   via color-mix, so there is nothing to keep in sync across the three surfaces.
+   AI takes the lighter agent token, NI the darker one; both read as "a dark,
+   legible X" against the light fill, which is the readability the darker-token
+   choice was already buying (2026-08-20: "dark yellow border, light yellow
+   background, dark yellow font"). Plain rgba precedes color-mix for engines
+   that lack it — a neutral grey chip, still legible, never a colourless one. */
 .status-chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 2px 10px 2px 8px;
   border-radius: 999px;
-  border: 1.5px solid currentColor;
   font-size: 0.8125rem;
   font-weight: 600;
   line-height: 1.5;
   white-space: nowrap;
+  border: 1.5px solid currentColor;
+  background: rgba(125, 125, 125, 0.12);
+  background: color-mix(in srgb, currentColor 13%, transparent);
+  border-color: rgba(125, 125, 125, 0.45);
+  border-color: color-mix(in srgb, currentColor 42%, transparent);
 }
 
-.status-chip[class*="status-chip-ai-"] {
-  background: rgba(255, 255, 255, 0.82);
-  border-color: rgba(255, 255, 255, 0.82);
-}
-
-/* The AI chip's TEXT takes the dark token, not the light one: the pill itself is
-   already the light element against a saturated bar, and light-on-near-white
-   would be unreadable. Chip-as-an-object is what carries light-vs-dark here. */
-.status-chip-ai-drafted   { color: var(--stage-drafted-ni); }
-.status-chip-ai-reviewed  { color: var(--stage-reviewed-ni); }
-.status-chip-ai-validated { color: var(--stage-validated-ni); }
-
-.status-chip-ni-drafted   { background: var(--stage-drafted-ni);   border-color: var(--stage-drafted-ni);   color: #ffffff; }
-.status-chip-ni-reviewed  { background: var(--stage-reviewed-ni);  border-color: var(--stage-reviewed-ni);  color: #ffffff; }
-.status-chip-ni-validated { background: var(--stage-validated-ni); border-color: var(--stage-validated-ni); color: #ffffff; }
+.status-chip-ai-drafted   { color: var(--stage-drafted-ai); }
+.status-chip-ni-drafted   { color: var(--stage-drafted-ni); }
+.status-chip-ai-reviewed  { color: var(--stage-reviewed-ai); }
+.status-chip-ni-reviewed  { color: var(--stage-reviewed-ni); }
+.status-chip-ai-validated { color: var(--stage-validated-ai); }
+.status-chip-ni-validated { color: var(--stage-validated-ni); }
 
 
 /* Adjust guide content to account for status banner */
