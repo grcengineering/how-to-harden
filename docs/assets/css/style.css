@@ -1976,7 +1976,19 @@ body {
   border-bottom-color: var(--color-border);
 }
 
+/* display:flex + align-items:center, not vertical-align, centers the mark
+   against the text's actual box height rather than the font's baseline/
+   x-height metrics. vertical-align:middle (what a plain span would fall back
+   to) measured ~1.4px off between the mark's and the text's vertical centers
+   — small in real pixels, but visibly off once zoomed in (reported live,
+   2026-08-21). Flex-centering is what the rest of this file already uses for
+   every other icon+text pairing (.status-chip, .doc-link-btn, …), so this
+   keeps the pack header consistent with that instead of adding a one-off
+   magic-number offset that would drift with any future font/line-height
+   change. */
 .pack-summary-text {
+  display: flex;
+  align-items: center;
   flex-grow: 1;
 }
 
