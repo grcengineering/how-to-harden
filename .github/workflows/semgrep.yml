@@ -1,3 +1,12 @@
+# Semgrep Cloud scan (pre-existing, retained alongside the sscsb SAST lane).
+#
+# SAST engines in this repo, on purpose:
+#   - CodeQL          (.github/workflows/codeql.yml)      deep interprocedural
+#   - OpenGrep        (.github/workflows/sast-opengrep.yml) sscsb rule pack
+#   - Semgrep Cloud   (this file)                          org policy/registry
+#
+# Supply-chain posture (enforced by `sscsb verify`): SHA-pinned actions,
+# least-privilege permissions, no persisted credentials, harden-runner first.
 on:
   workflow_dispatch: {}
   pull_request: {}
@@ -11,6 +20,10 @@ on:
   # random HH:MM to avoid a load spike on GitHub Actions at 00:00
   - cron: 3 2 * * *
 name: Semgrep
+
+permissions:
+  contents: read
+
 jobs:
   semgrep:
     name: semgrep/ci
@@ -22,5 +35,11 @@ jobs:
     container:
       image: semgrep/semgrep
     steps:
-    - uses: actions/checkout@v4
+    - name: Harden runner
+      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      with:
+        egress-policy: audit
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      with:
+        persist-credentials: false
     - run: semgrep ci

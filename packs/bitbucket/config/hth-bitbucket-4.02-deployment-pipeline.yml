@@ -9,7 +9,14 @@ pipelines:
       - step:
           name: Build
           script:
-            - npm install
+            # Use `ci`, never the resolving installer: `ci` honours the lockfile
+            # exactly, while the resolving form can silently pick up a newer
+            # transitive version at build time.
+            # --ignore-scripts blocks pre/post-install hooks, the execution path
+            # used by the chalk/debug, solana-web3.js and Shai-Hulud npm
+            # compromises. Drop it only for a dependency that genuinely needs a
+            # build step, and say which one in review.
+            - npm ci --ignore-scripts
             - npm run build
       - step:
           name: Deploy to Production

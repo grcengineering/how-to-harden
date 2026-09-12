@@ -1,0 +1,24 @@
+# Code owners for How to Harden.
+#
+# Every pull request requires review from an owner listed here. This backs the
+# OpenSSF Scorecard Code-Review check and the `require_code_owner_reviews`
+# branch-protection rule verified by `sscsb verify branch-protection`.
+
+# Default owner for everything not matched below.
+*                       @p4gs
+
+# Supply-chain and repository security surface — changes here alter what CI is
+# allowed to do, so they always need an owner's eyes.
+/.github/               @p4gs
+/.github/workflows/     @p4gs
+/.sscsb/                @p4gs
+/scripts/               @p4gs
+/Makefile               @p4gs
+/requirements-ci.txt    @p4gs
+/SECURITY.md            @p4gs
+/security-insights.yml  @p4gs
+/renovate.json5         @p4gs
+
+# Published guidance readers apply to real systems.
+/packs/                 @p4gs
+/docs/_guides/          @p4gs
