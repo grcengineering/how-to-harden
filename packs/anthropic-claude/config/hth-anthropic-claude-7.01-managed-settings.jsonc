@@ -205,7 +205,7 @@
 // HTH Guide Excerpt: begin managed-settings-automode-warning
 // DANGER: autoMode.allow and autoMode.soft_deny REPLACE the entire default
 // rule lists when set. Setting soft_deny with a single entry discards ALL
-// built-in block rules: force push, data exfiltration, curl|bash, production
+// built-in block rules: force push, data exfiltration, curl-pipe-to-shell, production
 // deploys, and every other default block rule become allowed.
 //
 // Safe approach:

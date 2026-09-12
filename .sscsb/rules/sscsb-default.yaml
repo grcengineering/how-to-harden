@@ -1,0 +1,68 @@
+# LOCAL TUNING (how-to-harden) — read before regenerating.
+#
+# `sscsb init` would overwrite this file. Four rules here carry an added
+# `(?m)^[^#\n]*` prefix so they match only where the pattern appears on the
+# EXECUTABLE part of a line, not inside a `#` comment. This is a precision fix,
+# not a suppression: a shell comment is never executed, so a rule firing on one
+# reports a code path that does not exist.
+#
+# This corpus is 130 hardening guides and ~980 Code Packs that necessarily QUOTE
+# the attacks they defend against — Buildkite's own documented
+# `git://…` example value, an attack payload shown so a reader can recognise it.
+# Before this change, 10 of 14 findings were the documentation doing its job.
+# It is the same reasoning the SAST workflow already applies when it passes
+# `--exclude .sscsb/rules`: a file that quotes a pattern is not running it.
+#
+# `hardcoded-home-path` additionally ignores `/home/runner/` — the fixed
+# GitHub-hosted runner workspace, a platform constant rather than a user's home
+# directory — and skips lines containing `://`, where `/home/` is a URL path
+# segment and not a filesystem path.
+#
+# Every rule still fires on real executable code; verified by planting each
+# pattern as live code and watching it flag.
+#
+# sscsb default SAST ruleset (Semgrep-compatible - runs under OpenGrep and
+# Semgrep identically). Deliberately small: high-signal supply-chain patterns
+# that make sense for EVERY repo. Point `controls.sast.rules` at "auto" to use
+# the full Semgrep registry instead.
+rules:
+  - id: sscsb.curl-pipe-shell
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      Piping a remote script directly into a shell executes unverified code -
+      download, checksum/signature-verify, then execute.
+    patterns:
+      - pattern-either:
+          - pattern-regex: '(?m)^[^#\n]*curl[^|;\n]*\|\s*(sudo\s+)?(ba|z|da)?sh'
+          - pattern-regex: '(?m)^[^#\n]*wget[^|;\n]*\|\s*(sudo\s+)?(ba|z|da)?sh'
+    paths:
+      include: ["*.sh", "*.bash", "*.zsh", "Makefile", "*.yml", "*.yaml"]
+
+  - id: sscsb.git-protocol-insecure
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      Insecure git:// or http:// remote - use https:// or ssh:// so the
+      transport is authenticated.
+    pattern-regex: '(?m)^[^#\n]*(git|http)://[a-zA-Z0-9.-]+/[^\s"]+\.git'
+
+  - id: sscsb.npm-install-ignore-scripts-missing
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      CI npm installs should use `npm ci --ignore-scripts` unless install
+      scripts are specifically required (install-script malware vector).
+    pattern-regex: '(?m)^[^#\n]*npm install(?! .*--ignore-scripts)[^\n]*'
+    paths:
+      include: ["*.yml", "*.yaml"]
+
+  - id: sscsb.hardcoded-home-path
+    languages: [generic]
+    severity: WARNING
+    message: Hardcoded user home path reduces portability and can leak usernames.
+    patterns:
+      - pattern-regex: '(?m)^(?![^\n]*://)[^#\n]*/(Users|home)/[a-z0-9_-]+/'
+      - pattern-not-regex: '/home/runner/'
+    paths:
+      include: ["*.sh", "*.yml", "*.yaml", "*.toml"]

@@ -1,0 +1,82 @@
+# Gitleaks configuration — present ONLY to work around an upstream defect.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# THIS REPOSITORY DOES NOT USE GITLEAKS.
+#
+# .sscsb/config.toml sets [controls.secrets] gitleaks = false. Credential
+# detection here is TruffleHog only, because TruffleHog VERIFIES a candidate
+# against the issuing provider — a finding means a live credential, not a string
+# that looks like one. This corpus is 130 hardening guides and ~980 Code Packs
+# whose subject matter is credentials, so regex-shape matching produces almost
+# nothing but noise, and a noisy gate is a gate people learn to skip.
+#
+# sscsb 0.4.0's pre-push hook runs gitleaks anyway, ignoring that config, when a
+# branch has no upstream (a brand-new branch falls back to scanning the entire
+# history). Fixed upstream in p4gs/sscs-bootstrapper PR #77, not yet merged.
+# DELETE THIS FILE once the fixed sscsb is installed.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# EVIDENCE — the allowlist below is not an assertion, it is a measurement.
+#
+# The buggy path produced 23 findings over the full history. All 23 were
+# inspected. Every one is a regex match on the WORDS "key", "secret" or
+# "password" in published teaching content, or on a variable reference, and not
+# one is a literal credential. Representative examples:
+#
+#   packs/jamf/terraform/outputs.tf          password_policy = "enforced"
+#   packs/auth0/.../bot-detection.tf         challenge_password_policy = "when_risky"
+#   packs/stripe/api/common.sh               curl -u "${STRIPE_SECRET_KEY}:"   (env ref)
+#   docs/_guides/gusto.md                    prose containing "data protection"
+#   packs/windows-11/...ps1                  a comment about Credential Guard
+#   packs/cursor/cli/...api-key-env-setup.sh a file that no longer exists — the
+#                                            hit is in history, not in the tree
+#
+# Independently corroborated with the scanner this repo actually relies on.
+# TruffleHog over the FULL git history, 2026-09-12, v3.97.4:
+#
+#   trufflehog git file://. --results=verified
+#   -> chunks:16711  bytes:23532651  verified_secrets:0  unverified_secrets:0
+#
+# Zero secrets of any kind, verified or unverified. Re-run that command before
+# widening anything below.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# SCOPE — deliberately narrow.
+#
+# Only the three rules that actually misfired are exempted, and only inside
+# published content directories. Every other gitleaks rule stays live
+# everywhere, so a real cloud access key, GitHub PAT, asymmetric keypair file or
+# Slack token committed into packs/ or docs/ is still caught here — and by
+# TruffleHog, which is the gate that actually governs.
+
+title = "how-to-harden — gitleaks workaround config (see header)"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = """
+Credential-shaped prose and variable references in published hardening guidance.
+Scoped to three rule IDs in content paths only; all other rules remain active.
+"""
+targetRules = [
+  "generic-api-key",
+  "hashicorp-tf-password",
+  "curl-auth-user",
+]
+paths = [
+  '''^packs/.*''',
+  '''^docs/_guides/.*''',
+  '''^docs/_data/packs/.*''',
+  '''^content/.*''',
+]
+
+[[allowlists]]
+description = """
+Vendored third-party bundle: the Monaco editor distribution shipped with the
+site. Minified upstream code, not authored here; entropy hits in it are not this
+project's credentials. Upgrade the vendored bundle rather than editing it.
+"""
+paths = [
+  '''^docs/assets/monaco/.*''',
+]

@@ -17,3 +17,6 @@ docs/.bundle/
 # NEVER commit: a live-tenant validation run captures tokens, cookies, org
 # identifiers, and member emails that must not reach a public repo.
 .hth-validation/
+
+# sscsb: generated output (SBOMs, receipts, VEX), not policy
+.sscsb/out/
