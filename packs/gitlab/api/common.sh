@@ -26,10 +26,38 @@ AUTH_HEADER="PRIVATE-TOKEN: ${GITLAB_TOKEN}"
 # HTTP helpers -- thin wrappers around curl for GitLab API v4 calls
 # All return raw JSON; pipe to jq for formatting
 # ---------------------------------------------------------------------------
+
+# Say on stderr why a call failed, from its HTTP status. `curl -f` throws the
+# status away, and a pack that guesses the cause sends an operator with an
+# expired token off to check their plan tier.
+gl_explain_status() {  # <method> <path> <http status, 000 = no response>
+  local why
+  case "$3" in
+    000) why="no HTTP response (network, DNS or TLS failure) -- check GITLAB_URL" ;;
+    3??) why="redirected, and a redirect body is not API data -- check GITLAB_URL (https, exact host)" ;;
+    401) why="token invalid, expired or revoked" ;;
+    403) why="token scope, role or GitLab tier does not allow this call" ;;
+    404) why="not found, or not visible to this token -- check the id and the token's membership" ;;
+    429) why="rate limited -- retry later" ;;
+    5??) why="GitLab server error -- retry later" ;;
+    *)   why="unexpected HTTP status" ;;
+  esac
+  echo -e "${RED}[HTTP $3]${NC} $1 $2 -- ${why}" >&2
+}
+
+# GET: body on stdout for a 2xx; otherwise nothing on stdout, the reason on
+# stderr, and a non-zero return -- a failed call is never an empty result.
 gl_get() {
-  curl -sf -X GET "${GL_BASE}$1" \
+  local out code
+  out=$(curl -sS -X GET "${GL_BASE}$1" \
     -H "${AUTH_HEADER}" \
-    -H "Content-Type: application/json"
+    -H "Content-Type: application/json" \
+    -w '\n%{http_code}') || { gl_explain_status GET "$1" 000; return 1; }
+  code="${out##*$'\n'}"
+  case "${code}" in
+    2??) printf '%s' "${out%$'\n'*}" ;;
+    *)   gl_explain_status GET "$1" "${code}"; return 1 ;;
+  esac
 }
 
 gl_post() {
