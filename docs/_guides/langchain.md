@@ -6,9 +6,9 @@ slug: "langchain"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for the LangChain library, LangSmith observability platform, and LangGraph deployment platform — covering SSO/RBAC, SDK CVE patching, prompt injection defense (OWASP LLM Top 10), tracing redaction, audit logs, and self-hosted deployment"
-version: "0.2.0"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-09-25"
 ---
 
 ## Overview
@@ -82,39 +82,47 @@ Configure SAML 2.0 SSO between LangSmith and your corporate identity provider (O
 #### Prerequisites
 - LangSmith Enterprise Cloud plan (SSO is gated to Enterprise)
 - SAML 2.0 capable IdP
-- Organization Admin role in LangSmith
-- Domain ownership for verification
+- Organization Admin role in LangSmith (only Organization Admins can configure SAML SSO)
 
 #### ClickOps Implementation
 
-**Step 1: Configure SSO in LangSmith**
-1. Navigate to: **smith.langchain.com** → **Settings** → **Organization** → **SSO**
-2. Click **Configure SAML SSO**
-3. Note the **ACS URL** and **Entity ID** for your region:
-   - US: `auth.langchain.com`
-   - EU: `eu.auth.langchain.com`
+**Step 1: Create the IdP-Side SAML Application**
+1. In your IdP (Okta / Entra ID / Google), create a new SAML application using the URLs for the region your organization is in:
+   - GCP US — ACS URL `https://auth.langchain.com/auth/v1/sso/saml/acs`, Entity ID (Audience URI) `https://auth.langchain.com/auth/v1/sso/saml/metadata`
+   - GCP EU — ACS URL `https://eu.auth.langchain.com/auth/v1/sso/saml/acs`, Entity ID `https://eu.auth.langchain.com/auth/v1/sso/saml/metadata`
+   - GCP APAC — ACS URL `https://apac.auth.langchain.com/auth/v1/sso/saml/acs`, Entity ID `https://apac.auth.langchain.com/auth/v1/sso/saml/metadata`
+   - AWS US — ACS URL `https://aws.auth.langchain.com/auth/v1/sso/saml/acs`, Entity ID `https://aws.auth.langchain.com/auth/v1/sso/saml/metadata`
+2. Set Name ID format and application username to **email address**
+3. Send the required claims `sub` and `email`
+4. Copy the IdP's SAML metadata URL (or download the metadata XML)
 
-**Step 2: Configure the IdP-Side Application**
-1. In your IdP (Okta / Entra ID / Google), create a new SAML application
-2. Paste LangSmith's ACS URL and Entity ID into the IdP config
-3. Map required attributes: `email`, `firstName`, `lastName`
-4. Download the IdP's SAML metadata XML
+**Step 2: Configure SSO in LangSmith**
+1. Navigate to: **smith.langchain.com** → **Settings** → **Members and roles** → **SSO Configuration**
+2. Fill in the **SAML metadata URL** or **SAML metadata XML**
+3. Select the **Default workspace role** and **Default workspaces** that new SSO users receive (use a least-privilege role such as Viewer)
+4. Submit, assign the SAML app to a test user in your IdP, and confirm that user can sign in through SSO
 
-**Step 3: Complete the LangSmith Side**
-1. Upload the IdP metadata XML in LangSmith's SSO config
-2. Verify your domain via DNS TXT record
-3. Assign the SAML app to a test user and confirm login works
-4. Toggle **Enforce SSO** to require all users to authenticate via SAML
+**Step 3: Enforce SAML SSO Only**
+1. Sign in to LangSmith **through SAML SSO** — the vendor only lets you change this setting from an SSO session, so a broken SAML configuration cannot lock everyone out
+2. Set the organization's login methods to **Only SAML SSO**. Users signed in by any other method must then sign in again through SSO
+3. Note that user invites are not supported while Only SAML SSO is enforced; membership comes from JIT provisioning or SCIM
 
-**Multi-Region Note:** If you use both US and EU LangSmith regions, configure SSO **separately for each region** — endpoints differ.
+**Multi-Region Note:** If you run organizations in more than one LangSmith region, configure SSO **separately for each region** — the ACS and Entity ID URLs differ.
 
 **Time to Complete:** ~30–45 minutes
 
+#### Code Implementation
+
+{% include pack-code.html vendor="langchain" section="1.1" %}
+
+The pack is read-only on purpose. The API also accepts writes to SSO settings and login methods, but a scripted SSO change can lock every member out of the organization, so configure SSO in the console and use the pack to prove it stayed enforced.
+
 #### Validation & Testing
 1. Sign out of LangSmith
-2. Visit `smith.langchain.com` and click **Sign in with SSO**
+2. Visit `smith.langchain.com` and sign in with SSO
 3. Confirm redirect to your IdP and successful return to LangSmith
-4. Attempt password login with a service account — should be blocked once SSO is enforced
+4. Attempt a password or Google login for an organization member — it should be refused once Only SAML SSO is set
+5. Run the Code Pack above: it fails unless a SAML provider exists **and** `sso_only` is `true`
 
 #### Operational Impact
 
@@ -123,7 +131,7 @@ Configure SAML 2.0 SSO between LangSmith and your corporate identity provider (O
 | **User Experience** | Low | One-click SSO replaces password login |
 | **System Performance** | None | Auth happens at IdP, no LangSmith perf impact |
 | **Maintenance Burden** | Low | Reuses existing IdP lifecycle plumbing |
-| **Rollback Difficulty** | Easy | Toggle off SSO enforcement; password auth resumes |
+| **Rollback Difficulty** | Easy | From an SSO session, switch login methods back from Only SAML SSO; other login methods resume |
 
 #### Compliance Mappings
 
@@ -161,18 +169,21 @@ LangSmith offers two API key types: **Personal Access Tokens (PATs)** that inher
 - Secrets manager (1Password, Vault, AWS Secrets Manager) for storing the issued Service Key
 
 #### ClickOps Implementation
-1. Navigate to **smith.langchain.com** → **Settings** → **Workspaces** → *(select workspace)* → **API Keys**
-2. Click **Create Service Key**
-3. Name it after the consuming service (e.g., `ci-pipeline-prod`, `agent-runtime-staging`)
-4. Copy the `ls__sk_...` key into your secrets manager **immediately** — it is shown only once
+1. Navigate to **smith.langchain.com** → **Settings** → **API Keys**
+2. Choose **Service key**, then **Workspace-scoped**, and select the one workspace the workload needs (an organization-scoped key reaches every workspace)
+3. Set an expiration of 90 days or less — avoid **never**
+4. Click **Create API Key** and name it after the consuming service (e.g., `ci-pipeline-prod`, `agent-runtime-staging`)
+5. Copy the `lsv2_sk_...` key into your secrets manager **immediately** — it is shown only once. (Keys with the old `ls__` prefix stopped working on 2024-10-22.)
 
 #### Code Implementation
 
 {% include pack-code.html vendor="langchain" section="1.2" %}
 
+The API pack's default run is a read-only audit; its `create` and `revoke-stale --confirm` branches change organization state and run only when named. The audit reads organization-level routes, so it needs an organization-scoped key, and that key appears in the list it audits. Set `LANGSMITH_CALLER_KEY_ID` to that key's id: the audit then exempts it from the scope check, but it must still expire. `revoke-stale` refuses to run until you name the key it is running with, so it can never revoke itself. The Terraform provider stores the minted key in state, so use an encrypted remote backend.
+
 #### Validation & Testing
-- List API keys via the API and confirm `is_service_key: true` for production workloads
-- Run the stale-key revocation script weekly via cron / GitHub Actions
+- Run the API pack with no arguments and `LANGSMITH_CALLER_KEY_ID` set: it lists every active service key and fails if any key other than the caller is organization-scoped (`access_scope` is not `workspace`), or if any key, the caller included, has no `expires_at`
+- Run `revoke-stale` (dry run) weekly via cron / GitHub Actions, and add `--confirm` only after reviewing its list
 
 #### Compliance Mappings
 
@@ -207,23 +218,25 @@ LangSmith supports custom RBAC roles (Enterprise plan, GA in 2024) layered with 
 **Attack Prevented:** Insider data exfiltration, accidental leakage of customer traces to development teams, scope creep of contractor access
 
 #### Prerequisites
-- LangSmith Enterprise plan
-- Workspace Admin role
-- Tagging convention agreed across teams (e.g., `data-class:pii`, `env:prod`)
+- LangSmith Enterprise plan (custom roles and ABAC are Enterprise features)
+- Organization Admin role (only Organization Admins create custom roles and access policies)
+- Resource-tag convention agreed across teams (key/value tags, e.g., `data-class=pii`, `env=prod`)
 
 #### ClickOps Implementation
-1. Navigate to **Settings** → **Roles** → **Create Custom Role**
-2. Define the role's permissions across resources (`trace`, `run`, `dataset`, `prompt`, `audit_log`, `api_key`, `role`)
-3. Under **Attribute Policies**, add tag-scoped allow/deny rules
-4. Assign the role to users from **Members** → *(user)* → **Edit Role**
+1. Navigate to **smith.langchain.com** → **Settings** → **Members and roles** → **Roles** tab and click **Create Role** (the RBAC reference calls it **Create Custom Role**). Roles apply across every workspace in the organization.
+2. Select permissions from the vendor's permission list. They are `<resource>:<action>` names such as `projects:read`, `runs:read`, `datasets:read`, `prompts:read`; an `Auditor` role gets read permissions only. Custom roles take workspace-level permissions only.
+3. Tag resources in the UI (for example, tag PII-bearing tracing projects `data-class=pii`). ABAC **access policies** have no documented console: create them through the API (`POST /api/v1/platform/orgs/current/access-policies`) or the Terraform pack below, then attach them to roles.
+4. Assign the role under **Settings** → **Workspaces** → **Workspace members** using each member's **Role** dropdown.
 
 #### Code Implementation
 
 {% include pack-code.html vendor="langchain" section="1.3" %}
 
+The API pack's default run only reads (roles, members by role, and access policies); `create-auditor` writes. The Terraform pack checks every permission name against the provider's `langsmith_permissions` data source before it creates the role.
+
 #### Validation & Testing
 - As an `Auditor`, attempt to delete a project — should return 403
-- Confirm ABAC: a user without the `data-class:pii` tag cannot list traces in a PII-tagged project
+- Confirm ABAC: a member whose role carries a deny policy for `data-class=pii` cannot read a project tagged `data-class=pii`
 
 #### Compliance Mappings
 
@@ -276,6 +289,8 @@ There is no GUI for self-host deployment — operate via the official Helm chart
 
 {% include pack-code.html vendor="langchain" section="2.1" %}
 
+The chart publishes no values schema, so Helm silently ignores a key it does not recognize and a mistyped hardening key leaves the default in place (CORS `*`, a public `LoadBalancer` frontend). Every key in the values pack exists in the published chart, and the CLI pack renders the release with `helm template` and stops if a `LoadBalancer` Service or wildcard CORS is still present. Pin `LANGSMITH_VERSION` to a version that `helm search repo langchain/langsmith --versions` actually lists.
+
 #### Validation & Testing
 1. `kubectl get pods -n langsmith` — all pods Running, none privileged
 2. From an unapproved CIDR, browse to LangSmith — should be blocked at ingress
@@ -325,11 +340,11 @@ LangSmith Cloud routes all outbound traffic through a NAT gateway with a static 
 - Current LangSmith egress IP list (verified per region — confirm in [LangSmith Cloud docs](https://docs.langchain.com/langsmith/cloud))
 
 #### ClickOps Implementation
-1. Pull the LangSmith egress IP list from the official docs (refresh quarterly)
+1. Pull the LangSmith egress IP list from the official docs (refresh quarterly). Agents running on LangSmith Deployment egress from a **separate** NAT IP set ([cloud platform features](https://docs.langchain.com/langsmith/cloud-platform-features#allowlist-ip-addresses)); allowlist both if those agents call the provider
 2. In your model provider's console, add those CIDRs to the API key's IP allowlist
 3. Test with a known-bad IP — request should be denied
 
-There is no first-party LangChain CLI for this — the configuration happens at the model provider's API. Refer to that provider's hardening guide.
+**Automation:** ClickOps only — LangChain exposes no write interface for this setting; the allowlist is applied at the model provider, against the NAT egress IPs LangSmith publishes (https://docs.langchain.com/langsmith/cloud, 2026-09-24).
 
 ---
 
@@ -373,13 +388,15 @@ The LangChain ecosystem ships as a dozen related PyPI packages (`langchain`, `la
 #### Description
 Track and patch the CVE stream across the whole LangChain family — the `langsmith` SDK, `langchain`/`langchain-core`, and LangGraph (see [3.6](#36-patch-langgraph-and-harden-checkpoint-stores)). Key `langsmith` SDK advisories ([GitHub advisories](https://github.com/langchain-ai/langsmith-sdk/security/advisories)):
 
-- **CVE-2026-25528** — Server-Side Request Forgery via tracing-header injection. Attackers can supply crafted headers to inject arbitrary URLs into the SDK's replica configuration, exfiltrating trace data. Per GHSA-v34v-rq6j-cj6p, both patched ranges are **`langsmith` release lines** (the same package name on PyPI and npm): `>=0.4.10,<0.6.3` fixed in **0.6.3** and `>=0.3.41,<0.4.6` fixed in **0.4.6**. (An earlier revision of this guide named a JS package `@langchain/langsmith` — **that package does not exist**; the JS package is `langsmith`.)
-- **CVE-2026-40190** — prototype pollution via an incomplete `__proto__` guard (`langsmith` ≤0.5.17, fixed in 0.5.18).
-- **CVE-2026-45134** (high) — public prompt pull deserializes untrusted manifests without a trust-boundary warning. Fixed in `langsmith` 0.8.0/0.6.0, `langchain-classic` 1.0.7, `langchain` 0.3.30.
-- **CVE-2026-59152** — arbitrary server-side file read in `TracingMiddleware` (`langsmith` <0.8.18).
+- **CVE-2026-25528** — Server-Side Request Forgery via tracing-header injection. Attackers can supply crafted headers to inject arbitrary URLs into the SDK's replica configuration, exfiltrating trace data. Per GHSA-v34v-rq6j-cj6p the two ranges are **per ecosystem**: PyPI `langsmith` `>=0.4.10,<0.6.3` fixed in **0.6.3**; npm `langsmith` `>=0.3.41,<0.4.6` fixed in **0.4.6**. (An earlier revision of this guide named a JS package `@langchain/langsmith` — **that package does not exist**; the JS package is `langsmith`.)
+- **CVE-2026-40190** — prototype pollution via an incomplete `__proto__` guard (npm `langsmith` ≤0.5.17, fixed in 0.5.18).
+- **CVE-2026-45134** (high) — public prompt pull deserializes untrusted manifests without a trust-boundary warning. Fixed in PyPI `langsmith` 0.8.0, npm `langsmith` 0.6.0, `langchain-classic` 1.0.7, `langchain` 0.3.30.
+- **CVE-2026-59152** (critical) — arbitrary server-side file read in `TracingMiddleware` (PyPI `langsmith` <0.8.18).
 - **CVE-2026-41182** — streaming token events bypass output redaction; see the callout in [5.1](#51-redact-sensitive-data-from-langsmith-traces).
 
-> **Correction — CVE-2026-25750 is a Helm chart vulnerability, not an SDK flaw.** Per [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-25750), it is URL-parameter injection in **LangSmith Studio** shipped by the **LangChain Helm chart** (`langchain-ai/helm` < **0.12.71**): an authenticated user who clicks a crafted link transmits their **bearer token, user ID, and workspace ID** to an attacker-controlled server. It affects **LangSmith Cloud AND self-hosted**. Remediation is upgrading the Helm chart to **≥0.12.71** (see [2.1](#21-self-host-langsmith-for-sensitive-data)), not an SDK bump.
+**CI floor that clears every advisory above: PyPI `langsmith` ≥0.8.18, npm `langsmith` ≥0.6.0.** The Code Pack enforces both. It reads installed versions from the environment's own interpreter (`PYTHON`, default `python`), not from `pip`, because uv-managed and `--without-pip` virtualenvs have no `pip`. If it cannot inspect the environment, it exits 2 instead of passing.
+
+> **Correction — CVE-2026-25750 is a Helm chart vulnerability, not an SDK flaw.** Per [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-25750), it is URL-parameter injection in **LangSmith Studio** shipped by the **LangChain Helm chart** (`langchain-ai/helm` < **0.12.71**): an authenticated user who clicks a crafted link transmits their **bearer token, user ID, and workspace ID** to an attacker-controlled server. It affects **LangSmith Cloud AND self-hosted**. Remediation is upgrading the Helm chart (see [2.1](#21-self-host-langsmith-for-sensitive-data)), not an SDK bump. Note that **0.12.71 is not a published chart version** — the 0.12.x line in the official index ends at 0.12.37 — so upgrade to the latest stable chart that `helm search repo langchain/langsmith --versions` lists (0.16.34 as of 2026-09-24).
 
 The `langchain`/`langchain-core` family carries its own advisory stream — nine advisories as of this revision ([GitHub advisories](https://github.com/langchain-ai/langchain/security/advisories)). Highest impact:
 
@@ -422,7 +439,7 @@ Add a CVE-version check to your CI to fail any build that ships a vulnerable SDK
 | NIST 800-53 | SI-10, SC-39 |
 
 #### Description
-LangChain components that execute model-generated Python or shell — `PythonREPLTool`, `PythonAstREPLTool`, `create_pandas_dataframe_agent`, `create_python_agent` — gate execution behind `allow_dangerous_code=True`. **Do not set this flag in production.** If you genuinely need code execution, route through an infrastructure-isolated sandbox (Pyodide+Deno via `langchain-sandbox`, or a provider sandbox like Modal/Daytona/Runloop).
+LangChain components that execute model-generated Python or shell — `PythonREPLTool`, `PythonAstREPLTool`, `create_pandas_dataframe_agent`, `create_python_agent` — gate execution behind `allow_dangerous_code=True`. **Do not set this flag in production.** If you genuinely need code execution, route through an infrastructure-isolated sandbox (Pyodide+Deno via `langchain-sandbox`, or a provider sandbox — Modal, Daytona or Runloop through `langchain-modal`, `langchain-daytona` or `langchain-runloop`).
 
 #### Rationale
 **Why This Matters:**
@@ -460,7 +477,11 @@ For agents that must run model-generated code, use `langchain-sandbox` (Pyodide+
 
 **Attack Prevented:** Host compromise from model-generated code, data exfiltration from the execution environment, resource-exhaustion denial-of-service.
 
-See the code in [3.3](#33-disable-allow_dangerous_code-unless-explicitly-required) — the same pack covers both controls.
+#### Code Implementation
+
+{% include pack-code.html vendor="langchain" section="3.3" %}
+
+The same pack serves [3.3](#33-disable-allow_dangerous_code-unless-explicitly-required) and this control: the Pyodide sandbox runs with network, filesystem, subprocess, environment and FFI access all denied, and each call carries a hard `timeout_seconds` and `memory_limit_mb`. The Modal excerpt sets CPU, memory, timeout and `block_network` on the provider sandbox itself. `langchain-sandbox` 0.0.6 pins `langchain-core` 0.3.x, so run it in its own environment rather than beside `langchain-core` 1.x.
 
 ---
 
@@ -499,14 +520,15 @@ Wrap every LLM output that flows into business logic in a `PydanticOutputParser`
 | NIST 800-53 | SI-2, SC-28 |
 
 #### Description
-LangGraph's checkpoint stores **are agent memory** — they persist and later deserialize agent state, so deserialization flaws there execute inside your agent runtime. Eight LangGraph advisories exist as of this revision ([GitHub advisories](https://github.com/langchain-ai/langgraph/security/advisories)), and unsafe deserialization of checkpoint data is the family's highest-severity theme:
+LangGraph's checkpoint stores **are agent memory** — they persist and later deserialize agent state, so deserialization flaws there execute inside your agent runtime. Nine LangGraph advisories exist as of this revision ([GitHub advisories](https://github.com/langchain-ai/langgraph/security/advisories)), and unsafe deserialization of checkpoint data is the family's highest-severity theme:
 
 - **CVE-2025-64439** (high) — RCE in `JsonPlusSerializer` "json" mode
 - **CVE-2026-27794** — `BaseCache` deserialization RCE (ZDI-CAN-28385; `langgraph-checkpoint` <4.0.0)
 - **CVE-2026-28277** — unsafe msgpack deserialization (`langgraph` ≤1.0.9)
 - **CVE-2025-67644** and **CVE-2025-64104** — SQL injection in the SQLite checkpointer/store
-- **CVE-2026-71433** — namespace prefix matching crossing segment boundaries in the Postgres and SQLite stores
-- Plus CVE-2026-48775 and CVE-2026-48776
+- **CVE-2026-71433** — namespace prefix matching crossing segment boundaries in the Postgres and SQLite stores (`langgraph-checkpoint-postgres` / `langgraph-checkpoint-sqlite` <3.1.1)
+- **GHSA-fvww-7h3r-vfhp** (high, no CVE) — LangGraph SDK custom auth silently ignores `actions=` on resource decorators (`langgraph-sdk` 0.1.45–0.4.3, fixed in 0.4.4)
+- Plus CVE-2026-48775 (`langgraph-checkpoint` ≤4.1.0, fixed in 4.1.1) and CVE-2026-48776 (`langgraph-sdk` ≤0.3.14, fixed in 0.3.15)
 
 Pin and patch the `langgraph*` package family with the same rigor as Control 3.1, and treat checkpoint/store contents as untrusted input.
 
@@ -522,18 +544,22 @@ Pin and patch the `langgraph*` package family with the same rigor as Control 3.1
 #### ClickOps Implementation
 
 **Step 1: Inventory**
-1. List every deployed version of `langgraph`, `langgraph-checkpoint`, and the Postgres/SQLite checkpointer packages (`pip freeze | grep langgraph`)
+1. List every deployed version of `langgraph`, `langgraph-checkpoint`, and the Postgres/SQLite checkpointer packages. Use `python -m pip freeze | grep -i langgraph` with the deployment's own interpreter, or `uv pip freeze | grep -i langgraph` in a uv-managed environment. A bare `pip` can belong to a different environment and list versions that are not the ones deployed
 
 **Step 2: Patch and Pin**
-1. Upgrade past every fixed version above (`langgraph-checkpoint` ≥4.0.0, `langgraph` >1.0.9, current checkpointer releases), then hash-pin per Control 7.1
-2. Add the `langgraph*` family to the CI CVE gate from Control 3.2
+1. Upgrade to `langgraph` ≥1.0.10, `langgraph-checkpoint` ≥4.1.1, `langgraph-sdk` ≥0.4.4, and `langgraph-checkpoint-postgres` / `langgraph-checkpoint-sqlite` ≥3.1.1, then hash-pin per Control 7.1
+2. Add the `langgraph*` CI gate below next to the `langsmith` gate from Control 3.2
 
 **Step 3: Constrain the store**
 1. Restrict database credentials for checkpoint stores to the checkpoint schema only (least privilege per Control 4.1)
 2. Never point multiple trust domains at one checkpoint namespace
 
+#### Code Implementation
+
+{% include pack-code.html vendor="langchain" section="3.6" %}
+
 #### Validation & Testing
-1. CI fails when a `langgraph*` package below a fixed version is introduced
+1. CI fails when a `langgraph*` package below a fixed version is introduced (the Code Pack exits 1 and names the package, and exits 2 when it cannot inspect the environment, for example because `PYTHON` points to no interpreter)
 2. The checkpoint database role cannot read tables outside the checkpoint schema
 
 ---
@@ -619,7 +645,7 @@ Treat all model inputs that originate outside your trust boundary — user messa
 #### Description
 Cap the maximum number of tool calls per agent invocation, require human approval for high-impact actions (refunds over $100, account deletions, anything with `:write` scope on production data), and use LangGraph's `interrupt_after` and `interrupt_before` to inject checkpoints. Prefer explicit graph routing over open-ended ReAct loops for high-trust operations.
 
-The pattern lives inline within [4.1's tool definitions](#41-apply-tool-level-least-privilege) — the `issue_refund` tool's `if amount_cents > 10_000: raise PermissionError(...)` is the canonical example. Combine with LangGraph human-in-the-loop checkpoints (see the [LangGraph docs](https://docs.langchain.com/langgraph)).
+LangChain 1.x ships both mechanisms as agent middleware: `ToolCallLimitMiddleware` caps tool calls per run, and `HumanInTheLoopMiddleware` pauses the run before a named tool executes until a person approves it. The pause needs a checkpointer so the run can resume after the decision. Keep the in-tool guards from [4.1](#41-apply-tool-level-least-privilege) (such as the refund cap) as a second layer.
 
 #### Rationale
 **Why This Matters:**
@@ -628,6 +654,10 @@ The pattern lives inline within [4.1's tool definitions](#41-apply-tool-level-le
 - Explicit graph routing constrains the agent to an approved set of transitions, removing the open-ended autonomy that injection attacks exploit
 
 **Attack Prevented:** Excessive agency, prompt-injection-driven destructive actions, runaway-loop resource exhaustion, unauthorized high-impact operations
+
+#### Code Implementation
+
+{% include pack-code.html vendor="langchain" section="4.3" %}
 
 ---
 
@@ -642,7 +672,9 @@ The pattern lives inline within [4.1's tool definitions](#41-apply-tool-level-le
 #### Description
 Treat system prompts as **public knowledge once deployed** — never store secrets, customer-specific data, or business-rule details inside them. If your application logic depends on prompt content, that content can and will be extracted via injection attacks (LLM07: System Prompt Leakage). Move secrets to environment variables and tool-call boundaries; move business rules to deterministic Python.
 
-This is a design pattern, not a single code snippet — review your prompts in code review and treat any leak as low severity but expected.
+Review your prompts in code review and treat any leak as low severity but expected.
+
+**Automation:** ClickOps only — LangChain exposes no write interface for this setting; system-prompt hygiene is an application design practice enforced in code review (https://owasp.org/www-project-top-10-for-large-language-model-applications/, 2026-09-24).
 
 #### Rationale
 **Why This Matters:**
@@ -698,9 +730,9 @@ By default, LangSmith captures full input and output of every LLM and tool call.
 **Profile Level:** L1 (Crawl)
 
 #### Description
-For high-volume production agents, enable head-based sampling via `LANGCHAIN_TRACING_SAMPLE_RATE` (env var) or per-call `tags=["sampled"]` to send only a representative subset of traces. Reduces both LangSmith ingestion cost and the volume of sensitive data leaving the process.
+For high-volume production agents, enable head-based sampling via `LANGSMITH_TRACING_SAMPLING_RATE` (a float from 0 to 1) or per operation with `Client(tracing_sampling_rate=…)` inside `tracing_context(client=…)`, so only a representative subset of traces is sent. Reduces both LangSmith ingestion cost and the volume of sensitive data leaving the process. See [Sample traces](https://docs.langchain.com/langsmith/sample-traces).
 
-This is an environment-variable toggle — see the [LangSmith tracing docs](https://docs.langchain.com/langsmith/tracing). No dedicated CLI/API/SDK pack is warranted because it's a single env-var change documented at the source.
+The spelling matters: an earlier revision of this guide named `LANGCHAIN_TRACING_SAMPLE_RATE`, which the SDK does not read — setting it samples nothing and every trace keeps shipping. The SDK reads `TRACING_SAMPLING_RATE` with the `LANGSMITH_` (or legacy `LANGCHAIN_`) prefix. Tags such as `tags=["sampled"]` do not sample anything. For payloads that must never be traced, use [conditional tracing](https://docs.langchain.com/langsmith/conditional-tracing) or a rate-0 client rather than relying on probability.
 
 #### Rationale
 **Why This Matters:**
@@ -710,6 +742,10 @@ This is an environment-variable toggle — see the [LangSmith tracing docs](http
 
 **Attack Prevented:** PII over-collection in observability stores, oversized data-exfiltration surface, runaway tracing cost
 
+#### Code Implementation
+
+{% include pack-code.html vendor="langchain" section="5.2" %}
+
 ---
 
 ### 5.3 Restrict Trace Project Access
@@ -717,7 +753,7 @@ This is an environment-variable toggle — see the [LangSmith tracing docs](http
 **Profile Level:** L2 (Walk)
 
 #### Description
-Apply the [RBAC + ABAC controls in 1.3](#13-enforce-rbac-and-abac-for-project--dataset-access) to LangSmith projects — separate "PII-bearing" projects from general engineering and grant access only to those with a need-to-know. Use the same API endpoints as 1.3 to programmatically apply project-level tag policies.
+Apply the [RBAC + ABAC controls in 1.3](#13-enforce-rbac-and-abac-for-project--dataset-access) to LangSmith projects — separate "PII-bearing" projects from general engineering and grant access only to those with a need-to-know. Tag the PII-bearing tracing projects and attach an ABAC **deny** policy on that tag to every role that should not see them; deny always wins over allow, and run permissions are evaluated against the parent project's tags.
 
 #### Rationale
 **Why This Matters:**
@@ -726,6 +762,20 @@ Apply the [RBAC + ABAC controls in 1.3](#13-enforce-rbac-and-abac-for-project--d
 - Granular project-level access limits the blast radius if any single LangSmith account is compromised
 
 **Attack Prevented:** Insider data exfiltration, over-broad trace exposure, contractor scope creep
+
+#### Prerequisites
+- LangSmith Enterprise plan (ABAC is an Enterprise feature)
+- Organization Admin role, or an organization-scoped service key with Organization Admin permissions for the API and Terraform
+
+#### ClickOps Implementation
+1. In the workspace that holds the tracing project, tag the project `data-class=pii` (resource tags are managed in the UI or the API — see [Set up resource tags](https://docs.langchain.com/langsmith/set-up-resource-tags))
+2. Create the deny policy (`projects:read` and `runs:read` on `resource_type` `project` where `resource_tag_key` `data-class` equals `pii`) and attach it to the roles that must not see PII — the vendor documents ABAC policies as **API-only**, so use the Code Pack below rather than a console screen
+
+#### Code Implementation
+
+{% include pack-code.html vendor="langchain" section="5.3" %}
+
+The Terraform pack sets the tag, the tagging and the attached deny policy; the API pack is read-only and fails unless an attached deny policy covers the PII tag.
 
 ---
 
@@ -758,9 +808,13 @@ Consuming the logs via API requires an **Enterprise plan** and the **Organizatio
 
 #### Prerequisites
 - Self-hosted LangSmith on Helm chart 0.12.33+ (with the enablement step above) OR LangSmith Enterprise Cloud
-- Enterprise plan + Organization Admin/Operator role for API access
-- Log shipper (Fluent Bit, Vector, Datadog Agent) deployed alongside LangSmith
-- SIEM destination with an `langsmith:audit:ocsf` sourcetype configured
+- Enterprise plan + Organization Admin/Operator role to view logs in the UI or pull them from the API
+- For retention beyond 400 days, a SIEM destination fed by the export in [6.2](#62-export-audit-logs-to-siem-in-ocsf-format) (the vendor documents UI and API access to audit logs, not a log file for a shipper to tail)
+
+#### ClickOps Implementation
+1. Sign in as an Organization Admin or Organization Operator and open **smith.langchain.com** → **Organization Settings** → **Audit logs**
+2. Confirm recent administrative events appear (for example, the creation of an API key); filter by **Time range**, **Workspace**, **Operation**, **Actor** or **Resource ID**
+3. Click a row's timestamp to open the raw OCSF event and confirm the actor and operation are recorded
 
 #### Code Implementation
 
@@ -786,7 +840,7 @@ Consuming the logs via API requires an **Enterprise plan** and the **Organizatio
 | NIST 800-53 | AU-6, SI-4 |
 
 #### Description
-Pull audit logs from the LangSmith REST API on a schedule and forward to your SIEM. The endpoint is `GET /api/v1/audit-logs` on `api.smith.langchain.com`, authenticated with `X-API-Key` + `X-Organization-Id` headers and filterable by `start_time`/`end_time`/`operations`; events are OCSF v1.7.0 API Activity (Class UID 6003) and retained for 400 days platform-side ([Audit logs](https://docs.langchain.com/langsmith/audit-logs)). Tag high-risk events (`create_api_key`, `update_role_assignment`, `update_sso_config`, `delete_workspace`) for elevated alerting.
+Pull audit logs from the LangSmith REST API on a schedule and forward to your SIEM. The endpoint is `GET /api/v1/audit-logs` on `api.smith.langchain.com`, authenticated with `X-API-Key` + `X-Organization-Id` headers and filterable by `start_time`/`end_time`/`operations`; events are OCSF v1.7.0 API Activity (Class UID 6003) and retained for 400 days platform-side ([Audit logs](https://docs.langchain.com/langsmith/audit-logs)). Responses are paged: follow `cursor` until it is empty, and read events from `items`. The LangSmith operation name is in `api.operation` (the OCSF `activity_id` is only the integer Create/Read/Update/Delete class). Tag high-risk operations (`create_api_key`, `create_service_key`, `create_personal_access_token`, `update_role`, `update_workspace_member`, `update_org_member`, `create_sso_settings`, `update_sso_settings`, `delete_sso_settings`, `update_login_methods`, `delete_workspace`) for elevated alerting.
 
 #### Rationale
 **Why This Matters:**
@@ -796,9 +850,16 @@ Pull audit logs from the LangSmith REST API on a schedule and forward to your SI
 
 **Attack Prevented:** Undetected credential and role abuse, delayed incident detection, log tampering and evidence destruction
 
+#### ClickOps Implementation
+1. Open **smith.langchain.com** → **Organization Settings** → **Audit logs** (Organization Admin or Operator)
+2. Filter **Operation** to the high-risk operations above (for example `create_api_key` and `update_sso_settings`) to see exactly the events your SIEM rule should match
+3. Export itself is API-only: schedule the Code Pack below
+
 #### Code Implementation
 
 {% include pack-code.html vendor="langchain" section="6.2" %}
+
+The default run only reads LangSmith and writes local JSONL files; `forward-splunk` posts each event to your Splunk HEC endpoint and runs only when named.
 
 #### Validation & Testing
 - Trigger a test admin action (rotate an API key) and confirm the corresponding OCSF event arrives in your SIEM within 5 minutes
@@ -813,7 +874,7 @@ Pull audit logs from the LangSmith REST API on a schedule and forward to your SI
 #### Description
 Subscribe to GitHub Security Advisories for `langchain-ai/langchain`, `langchain-ai/langgraph`, and `langchain-ai/langsmith-sdk`. Watch the LangChain blog for changelog announcements. Configure Dependabot or Renovate to flag CVEs in the LangChain dependency family.
 
-This is an operational practice — see the supply-chain pack in [Section 7](#7-supply-chain-security) for the automation that ties this together.
+Read the advisories through the GitHub REST API rather than the web page: a plain fetch of the HTML advisory list returns only its first few rows. The high-severity LangGraph advisory GHSA-fvww-7h3r-vfhp was missing from this guide until a review through the API found it. The Code Pack below turns a new disclosure into a failing scheduled CI job.
 
 #### Rationale
 **Why This Matters:**
@@ -822,6 +883,12 @@ This is an operational practice — see the supply-chain pack in [Section 7](#7-
 - Watching the official sources catches a vulnerable transitive dependency that hash-pinning alone would otherwise freeze in place until you act
 
 **Attack Prevented:** Exploitation of known unpatched CVEs, prolonged exposure window, blind spots in transitive dependencies
+
+#### Code Implementation
+
+{% include pack-code.html vendor="langchain" section="6.3" %}
+
+Set `HTH_ADVISORY_WATERMARK` to the date of your last advisory review; the job fails while any advisory published after it is unreviewed, and passes again once you move the watermark forward.
 
 ---
 
@@ -865,10 +932,12 @@ Use `pip-compile --generate-hashes` to produce a fully-pinned `requirements.txt`
 LangChain publishes three official CLIs from the `langchain-ai` GitHub organization:
 
 - **`langchain-cli`** ([PyPI](https://pypi.org/project/langchain-cli/)) — scaffolding for LangChain apps and templates
-- **`langgraph-cli`** — local development and deployment of LangGraph applications
-- **`langsmith-cli`** ([repo](https://github.com/langchain-ai/langsmith-cli)) — coding-agent-first interactions with LangSmith
+- **`langgraph-cli`** ([PyPI](https://pypi.org/project/langgraph-cli/)) — local development, validation (`langgraph validate`) and image builds of LangGraph applications
+- **`langsmith-cli`** ([repo](https://github.com/langchain-ai/langsmith-cli)) — coding-agent-first interactions with LangSmith. It is a **Go binary** (the `langsmith` command), installed from the release tarball verified against its `checksums.txt`, the `langchain-ai/tap` Homebrew tap, or `go install`
 
 Use these for reproducible local dev, CI bootstrap, and deployment — never wrap untrusted community CLIs around LangChain operations when the official tools exist.
+
+> **Look-alike warning:** the **PyPI** project named `langsmith-cli` is **not** langchain-ai's; it is published from `github.com/gigaverse-app/langsmith-cli`, a third party. `pip install langsmith-cli` installs that package, which is exactly the look-alike risk this control exists to prevent. Keys for any of these tools are `lsv2_sk_` service keys (Control 1.2); the `ls__` prefix stopped working on 2024-10-22.
 
 #### Rationale
 **Why This Matters:**
@@ -886,7 +955,9 @@ Use these for reproducible local dev, CI bootstrap, and deployment — never wra
 
 > **Correction (2026-08):** LangChain now publishes **production-ready first-party Terraform modules** for AWS, Azure, and GCP at [github.com/langchain-ai/terraform](https://github.com/langchain-ai/terraform) — they provision network, cluster, database, cache, object storage, secrets, and DNS, and install the LangSmith Helm chart ([Self-host with Terraform](https://docs.langchain.com/langsmith/self-host-terraform)). Prefer these first-party modules for IaC provisioning of self-hosted LangSmith.
 
-A `bogware/langsmith` Terraform provider also exists on the Terraform Registry, but it is **community-maintained and not officially endorsed by langchain-ai**. Treat it with the same scrutiny as any other community dependency.
+For managing LangSmith itself (service keys, workspace roles, resource tags, ABAC access policies), langchain-ai publishes the official **[`langchain-ai/langsmith` Terraform provider](https://registry.terraform.io/providers/langchain-ai/langsmith)** (source: `github.com/langchain-ai/terraform-provider-langsmith`; documented at [Manage LangSmith with Terraform](https://docs.langchain.com/langsmith/manage-with-terraform)); the Terraform packs in Controls 1.2, 1.3 and 5.3 use it.
+
+A `bogware/langsmith` Terraform provider also exists on the Terraform Registry, but it is **community-maintained and not officially endorsed by langchain-ai**. Treat it with the same scrutiny as any other community dependency, and prefer the official provider.
 
 ---
 
@@ -924,6 +995,7 @@ A `bogware/langsmith` Terraform provider also exists on the Terraform Registry, 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.3.0 | ai-drafted | [SECURITY] validate-hth-guide run (Phases 4-6, no promotion): 0 of 46 surfaces VERIFIED-LIVE because the LangSmith console was signed out and no tenant was reachable, so `ai-validated` was not added; 26 FAILs fixed and re-run offline. 1.2's read-only audit no longer fails every org it runs against: the organization-scoped key it authenticates with is exempt from the scope check (never the expiry check) when named in `LANGSMITH_CALLER_KEY_ID`. 7.2 no longer installs the third-party PyPI `langsmith-cli` (official Go binary, checksum-verified); 3.2 and 3.6 CVE gates no longer fail open (PyPI floor 0.8.18, npm 0.6.0): they read versions through the environment's interpreter, not `pip`, which uv and `--without-pip` venvs lack, and exit 2 when they cannot inspect the environment or compare versions, and 3.6's inventory step no longer uses a bare `pip`, which can list a different environment; 2.1 Helm values use real chart keys (CORS and public LoadBalancer were silently left at defaults); 1.1/1.2/1.3 console paths corrected against the vendor docs; api packs moved to real endpoints with declared modes; new packs for 1.1, 3.6, 4.3, 5.2, 5.3, 6.3 plus official-provider Terraform for 1.2/1.3/5.3; 5.2 sampling variable corrected to `LANGSMITH_TRACING_SAMPLING_RATE`; 3.6 lists nine LangGraph advisories (adds GHSA-fvww-7h3r-vfhp); Automation verdicts for 2.2 and 4.4 | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: corrected CVE-2026-25750 attribution (LangSmith Helm chart <0.12.71 Studio URL-param injection, not an SDK flaw) and the nonexistent `@langchain/langsmith` npm package (real package: `langsmith`); added missing langsmith SDK, langchain-core, and LangGraph CVE batches; new control 3.6 (LangGraph checkpoint-store hardening); CVE-2026-41182 redaction-bypass callout in 5.1; 6.1 self-hosted audit-log enablement step, 400-day retention, endpoint/role specifics, OCSF Class 6003; corrected 7.2's Terraform note (first-party modules at langchain-ai/terraform); 1.1/1.3 access-model updates (Applications tier, org roles, SCIM/SSO Groups Sync, OIDC self-hosted SSO); fixed 3.4 cheat-parser miss; flagged unresolvable Swagger reference | Claude Code (Fable 5) |
 | 2026-04-27 | 0.1.0 | ai-drafted | Initial draft. Verified all Code Packs against live vendor docs (langchain-cli, langgraph-cli, langsmith-cli are first-party from langchain-ai org; LangSmith REST API at api.smith.langchain.com is documented; Helm charts are official; bogware/langsmith Terraform provider is third-party and explicitly excluded). Includes CVE-2026-25528 and CVE-2026-25750 patching guidance. | Claude Code (Opus 4.7) † |
 
@@ -935,7 +1007,11 @@ A `bogware/langsmith` Terraform provider also exists on the Terraform Registry, 
 ## References
 
 - [LangSmith documentation](https://docs.langchain.com/langsmith/home)
-- LangSmith REST API (Swagger) — the previously cited `api.smith.langchain.com/docs` URL **failed to resolve** as of 2026-08; use the [LangSmith documentation](https://docs.langchain.com/langsmith/home) API reference instead
+- [LangSmith REST API (Swagger UI)](https://api.smith.langchain.com/docs) and its [OpenAPI spec](https://api.smith.langchain.com/openapi.json)
+- [Manage an organization by API](https://docs.langchain.com/langsmith/manage-organization-by-api)
+- [LangSmith Terraform provider (official)](https://registry.terraform.io/providers/langchain-ai/langsmith) and [Manage LangSmith with Terraform](https://docs.langchain.com/langsmith/manage-with-terraform)
+- [LangSmith trace sampling](https://docs.langchain.com/langsmith/sample-traces)
+- [LangSmith attribute-based access control](https://docs.langchain.com/langsmith/abac)
 - [LangChain security policy](https://docs.langchain.com/oss/python/security-policy)
 - [LangSmith RBAC](https://docs.langchain.com/langsmith/rbac)
 - [LangSmith administration overview](https://docs.langchain.com/langsmith/administration-overview)

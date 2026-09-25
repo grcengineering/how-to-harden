@@ -1,6 +1,13 @@
+# HTH Pack Contract: v1
+#   control: langchain-4.1
+#   guide:   https://howtoharden.com/guides/langchain/#41-apply-tool-level-least-privilege
+#   profile: L1
+#   mode:    read-only
+#   requires: langchain-core, langgraph, a chat model; your own read-only DB client (read_only_db) and refund-scoped billing client (billing_client)
+# =============================================================================
 # HTH LangChain Control 4.1: Apply Tool-Level Least Privilege
 # Profile: L1 | NIST: AC-6, CM-7
-# https://howtoharden.com/guides/langchain/#41-tool-level-least-privilege
+# https://howtoharden.com/guides/langchain/#41-apply-tool-level-least-privilege
 
 # HTH Guide Excerpt: begin sdk-tool-allowlist
 from langchain_core.tools import tool

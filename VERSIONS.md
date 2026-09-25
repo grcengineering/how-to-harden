@@ -183,7 +183,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Google Workspace](docs/_guides/google-workspace.md) | v0.4.1 | ai-drafted | 2026-08-08 |
 | [HashiCorp Vault](docs/_guides/hashicorp-vault.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Idira (formerly CyberArk)](docs/_guides/cyberark.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [LangChain](docs/_guides/langchain.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [LangChain](docs/_guides/langchain.md) | v0.3.0 | ai-drafted | 2026-09-25 |
 | [Microsoft 365](docs/_guides/microsoft-365.md) | v0.3.1 | ai-drafted | 2026-08-08 |
 | [Microsoft Entra ID](docs/_guides/microsoft-entra-id.md) | v0.3.0 | ai-drafted | 2026-08-08 |
 | [Microsoft Intune](docs/_guides/microsoft-intune.md) | v0.3.0 | ai-drafted | 2026-08-08 |
