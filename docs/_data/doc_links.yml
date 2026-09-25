@@ -204,7 +204,7 @@ crowdstrike:
 
 cursor:
   product_docs: "https://cursor.com/docs"
-  api_docs: ""
+  api_docs: "https://cursor.com/docs/account/teams/admin-api"
   hardening_docs:
     - label: "LLM Safety & Controls (Enterprise)"
       url: "https://cursor.com/docs/enterprise/llm-safety-and-controls"

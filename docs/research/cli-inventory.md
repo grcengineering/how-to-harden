@@ -42,7 +42,7 @@
 | 22 | SAP Concur | None | — | — | REST API + Joule AI agents | https://help.sap.com/docs/SAP_CONCUR |
 | 23 | Coupa | None | — | — | REST API (OAuth2) + flat file integrations | https://compass.coupa.com/ |
 | 24 | CrowdStrike | Vendor-Published / Not Officially Supported (toolkit) + sensor-only (falconctl) | `falcon-toolkit` + `falconctl` (endpoint) | `pipx install caracara-cli`; falconctl ships with sensor | falconctl: sensor admin only. Falcon-Toolkit: tenant-wide scripting (NOT a formal product) | https://github.com/CrowdStrike/Falcon-Toolkit |
-| 25 | Cursor | GA-Official (Beta) | Cursor CLI / `cursor-agent` | `curl https://cursor.com/install -fsSL \| bash` | No — agent invocation; admin (SSO, audit, MCP allowlist) via dashboard | https://cursor.com/cli |
+| 25 | Cursor | GA-Official (Beta) | Cursor CLI / `cursor-agent` | `curl https://cursor.com/install -fsSL \| bash` | No — agent invocation; admin (SSO, MCP allowlist) via dashboard, and admin reads (members, audit logs, spend, model access) via the REST Admin API at `api.cursor.com` — use `api/` packs, not `cli/` | https://cursor.com/cli |
 | 26 | CyberArk Conjur | GA-Official (Conjur only) | `conjur` (`conjur-cli-go`) | `brew tap cyberark/tools && brew install conjur-cli` | Yes — for Conjur Secrets Manager. **NOT for PAS/Privilege Cloud** (which our HTH guide covers) — those use REST API + PowerShell SDK | https://github.com/cyberark/conjur-cli-go |
 | 27 | Databricks | GA-Official | `databricks` (Go-based, v0.205+) | `brew tap databricks/tap && brew install databricks` | Yes — workspace, IAM, Unity Catalog, secrets, cluster policies, audit log delivery | https://docs.databricks.com/aws/en/dev-tools/cli/ |
 | 28 | Datadog | GA-Official | `datadog-ci` | `npm i -g @datadog/datadog-ci` | Yes (CI hardening) — SBOM upload, SCA, sourcemap upload, secret scanning. Account/RBAC via `datadogpy` SDK | https://github.com/DataDog/datadog-ci |
@@ -149,7 +149,7 @@ The 22 vendor directories with existing `packs/{vendor}/cli/` directories, mappe
 | azure-devops | 7 | Yes (`az devops`) | ✅ Yes (uses `az`/PowerShell + pipeline YAML) | Leave as-is |
 | bitbucket | 3 | **No first-party CLI** | ❌ No — files are pipeline YAML + git-secrets | **Relocate to `pipelines/`; remove from `cli/`** |
 | circleci | 7 | Yes (`circleci`) | ⚠️ Partial — files are `.yml` configs (CircleCI uses YAML); CLI invokes them | Acceptable; consider renaming pack type to `config/` |
-| cursor | 12 | Yes (Cursor CLI exists, beta) but packs use bash/jq on local config files | ⚠️ Partial — admin scripts, not Cursor CLI | **Relocate to `scripts/` or `config/`** (no Cursor CLI command is invoked) |
+| cursor | 12 | Yes (Cursor CLI exists, beta) but packs use bash/jq on local config files | ⚠️ Partial — admin scripts, not Cursor CLI | ✅ Done — relocated to `config/`; Admin API packs live in `api/` (2026-09-24) |
 | cyberark | 4 | CyberArk Conjur CLI exists (Vault CLI doesn't) | ❌ No — `.ini` config snippets, NOT CLI invocations + violates extension rules | **Relocate to `config/` and rename extension** |
 | databricks | 2 | Yes (`databricks`) | ✅ Yes (uses `databricks` CLI) | Leave as-is |
 | dockerhub | 6 | Yes (`docker` + Scout/Buildx) | ✅ Yes (uses `docker scout`, `docker trust`, etc.) | Leave as-is |
@@ -179,7 +179,7 @@ The 22 vendor directories with existing `packs/{vendor}/cli/` directories, mappe
 
 ### Tier 2 — Non-CLI content in cli/ directory
 3. `packs/bitbucket/cli/*` (3 files) — Bitbucket has no first-party CLI; content is Pipelines YAML + git-secrets
-4. `packs/cursor/cli/*` (12 files) — bash scripts editing local Cursor config files; no Cursor CLI invocation
+4. ~~`packs/cursor/cli/*` (12 files) — bash scripts editing local Cursor config files; no Cursor CLI invocation~~ — done: relocated to `packs/cursor/config/`, with Admin API packs in `packs/cursor/api/` (2026-09-24)
 5. `packs/okta/cli/hth-okta-7.01-sanitize-har-files.sh` — pure jq script
 6. `packs/workato/cli/hth-workato-4.03-agent-config.sh` — comments only, no executable code
 7. `packs/workato/cli/hth-workato-4.03-deploy-opa.sh` — uses `docker`, not `workato`
@@ -194,5 +194,5 @@ The 22 vendor directories with existing `packs/{vendor}/cli/` directories, mappe
 - **`gws` adoption decision:** Should we accept Google's "not officially supported" CLI and add a header disclaimer, OR wait for the announced "official" Workspace CLI?
 - **Okta direction:** With the official `okta` CLI deprecated, future Okta hardening packs should target Terraform provider or REST API curl scripts.
 - **Bitbucket/Atlassian:** Atlassian's `acli` does not currently cover Bitbucket. Watch for future expansion.
-- **Cursor:** New `cursor-agent` CLI is in beta and primarily for agent invocation, not config admin. Existing scripts that touch `settings.json`/`mcp.json` directly remain the practical hardening surface.
+- **Cursor:** New `cursor-agent` CLI is in beta and primarily for agent invocation, not config admin. The hardening surfaces are local files (`permissions.json`, `sandbox.json`, `mcp.json`, `hooks.json`, MDM `policy.json`) and the REST Admin API (`api.cursor.com`, team Admin API key).
 - **CircleCI/GitLab/GitHub `.yml` files:** These represent CI configuration consumed *by* the platform — they are not invoked as CLI commands directly. Consider whether `cli/` is the right pack-type label, or if a `pipelines/` type would be more accurate.
