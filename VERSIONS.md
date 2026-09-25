@@ -281,7 +281,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [HCP Terraform (formerly Terraform Cloud)](docs/_guides/terraform-cloud.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Heap](docs/_guides/heap.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Kernel](docs/_guides/kernel.md) | v0.1.0 | ai-drafted | 2026-08-11 |
-| [Linear](docs/_guides/linear.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Linear](docs/_guides/linear.md) | v0.3.0 | ai-drafted | 2026-09-24 |
 | [Lovable](docs/_guides/lovable.md) | v0.1.0 | ai-drafted | 2026-08-15 |
 | [Oracle HCM Cloud](docs/_guides/oracle-hcm.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Pendo](docs/_guides/pendo.md) | v0.2.0 | ai-drafted | 2026-08-08 |

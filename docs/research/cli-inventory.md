@@ -75,7 +75,7 @@
 | 55 | KnowBe4 | None | — | — | REST API only | https://developer.knowbe4.com/ |
 | 56 | LastPass | GA-Official (consumer-vault scope) | `lpass` | `brew install lastpass-cli` | **No enterprise admin coverage** — consumer vault only; SSO/MFA/SIEM via Enterprise API | https://github.com/lastpass/lastpass-cli |
 | 57 | LaunchDarkly | GA-Official | `ldcli` | `brew install launchdarkly/tap/ldcli` | Yes — flag CRUD, project/env, member/team RBAC, API token mgmt, audit log queries | https://github.com/launchdarkly/ldcli |
-| 58 | Linear | None | — | — | GraphQL API only | https://developers.linear.app/ |
+| 58 | Linear | None | — | — | GraphQL API only | https://linear.app/developers |
 | 59 | Looker | Vendor-Published / Not Officially Supported | `gzr` | `gem install gzr` | Yes (limited) — users/groups/roles/content. Disclaimer: not officially supported | https://github.com/looker-open-source/gzr |
 | 60 | Mailchimp | None | — | — | REST API only | https://mailchimp.com/developer/ |
 | 61 | Marketo (Adobe) | None | — | — | REST API + Marketo MCP Server | https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/mcp-server |
