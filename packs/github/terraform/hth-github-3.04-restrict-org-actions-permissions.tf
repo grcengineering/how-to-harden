@@ -2,7 +2,7 @@
 # HTH GitHub Control 3.04: Restrict GitHub Actions at Organization Level
 # Profile Level: L2 (Walk)
 # Frameworks: NIST CM-7, SA-12
-# Source: https://howtoharden.com/guides/github/#34-restrict-actions-org-level
+# Source: https://howtoharden.com/guides/github/#314-evaluate-action-trust-before-adoption
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform

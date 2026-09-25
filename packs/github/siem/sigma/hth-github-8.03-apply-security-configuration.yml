@@ -6,7 +6,7 @@ description: |
     removed from repositories. Security configurations bundle multiple security
     features (secret scanning, Dependabot, code scanning). Unexpected changes
     may weaken the security posture across repositories.
-    This corresponds to HTH GitHub control hth-github-5.08-apply-security-configuration (section 5.8, L1).
+    This corresponds to HTH GitHub control hth-github-8.03-apply-security-configuration (section 8.3, L1).
 references:
     - https://howtoharden.com/guides/github/
     - https://docs.github.com/en/organizations/keeping-your-organization-secure
@@ -22,9 +22,9 @@ logsource:
 detection:
     selection:
         action:
-            - 'org.enable_security_configuration'
-            - 'org.disable_security_configuration'
-            - 'org.update_security_configuration'
+            - 'security_configuration.create'
+            - 'security_configuration.update'
+            - 'security_configuration.delete'
     condition: selection
 fields:
     - actor

@@ -4,7 +4,7 @@ title: "Apply GitHub-Recommended Security Configuration"
 section: "8.3"
 profile_level: 1
 severity: "high"
-guide_url: "https://howtoharden.com/guides/github/#38-enable-organization-level-code-security-configurations"
+guide_url: "https://howtoharden.com/guides/github/#83-apply-github-recommended-security-configuration"
 description: >
   Use GitHub code security configurations to define and enforce security feature
   settings at the organization level. Security configurations allow you to create

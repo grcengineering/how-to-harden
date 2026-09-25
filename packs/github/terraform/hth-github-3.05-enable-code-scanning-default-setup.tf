@@ -1,18 +1,65 @@
 # =============================================================================
-# HTH GitHub Control 3.05: Enable Code Scanning (Default Setup)
+# HTH GitHub Control 3.05: Enable GitHub Advanced Security on a Repository
 # Profile Level: L2 (Walk)
 # Frameworks: NIST SA-11, SI-7
-# Source: https://howtoharden.com/guides/github/#35-enable-code-scanning
+# Source: https://howtoharden.com/guides/github/#22-enable-security-features-dependabot-code-scanning-secret-scanning
+#
+# Turns on the Advanced Security licence for the repository. It does NOT
+# configure code scanning default setup: integrations/github 6.13 has no
+# resource for that. Use the API pack for this section (or a security
+# configuration) to enable default setup.
+#
+# github_repository manages the WHOLE repository. The import block adopts the
+# existing repository instead of creating a new one, and archive_on_destroy
+# archives rather than deletes it on destroy. ignore_changes keeps every other
+# repository setting as it is today (without it, undeclared settings revert to
+# provider defaults on the first apply).
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform
+import {
+  to = github_repository.how_to_harden_code_scanning
+  id = var.repository_name
+}
+
 resource "github_repository" "how_to_harden_code_scanning" {
-  name = var.repository_name
+  name               = var.repository_name
+  archive_on_destroy = true
 
   security_and_analysis {
     advanced_security {
       status = "enabled"
     }
+  }
+
+  # Manage only this control's setting; leave every other repository
+  # setting exactly as it is today.
+  lifecycle {
+    ignore_changes = [
+      allow_auto_merge,
+      allow_merge_commit,
+      allow_rebase_merge,
+      allow_squash_merge,
+      allow_update_branch,
+      archived,
+      auto_init,
+      delete_branch_on_merge,
+      description,
+      gitignore_template,
+      has_discussions,
+      has_issues,
+      has_projects,
+      has_wiki,
+      homepage_url,
+      is_template,
+      license_template,
+      merge_commit_message,
+      merge_commit_title,
+      squash_merge_commit_message,
+      squash_merge_commit_title,
+      pages,
+      template,
+    ]
   }
 }
 # HTH Guide Excerpt: end terraform

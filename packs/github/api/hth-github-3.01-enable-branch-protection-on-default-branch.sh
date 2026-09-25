@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 3.01: Enable Branch Protection on Default Branch
 # Profile: L1 | NIST: CM-3, CM-5
-# https://howtoharden.com/guides/github/#31-enable-branch-protection
+# https://howtoharden.com/guides/github/#21-enable-branch-protection-for-all-critical-branches
 source "$(dirname "$0")/common.sh"
 
 banner "3.01: Enable Branch Protection on Default Branch"
