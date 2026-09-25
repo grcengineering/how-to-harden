@@ -6,9 +6,9 @@ slug: "dropbox"
 tier: "3"
 category: "Data"
 description: "Cloud storage security for sharing policies, linked apps, and admin controls"
-version: "0.2.0"
-maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+version: "0.3.1"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-09-25"
 ---
 
 
@@ -31,6 +31,8 @@ Dropbox has **700+ million registered users** with enterprise file storage. The 
 
 ### Scope
 This guide covers Dropbox security configurations including authentication, access controls, and integration security.
+
+**Automation surface:** every Code Pack here is an `api` pack against the [Dropbox Business API](https://docs.dropboxapi.com/dropbox-api/api-reference/business-endpoints/overview), and that is the whole surface rather than a preference. The only Terraform provider for Dropbox is a 2021 community provider with no team-administration resources. `dbxcli` is vendor-published but not officially supported, and its team commands print neither the team policies nor the granular admin roles. The official SDKs wrap the same HTTP API the packs call directly. The API itself has no write endpoint for any of the policy toggles in this guide, so the packs are read-only audits that prove what the console set, and controls with no readable state carry an Automation line instead (census of the 103 business endpoints, 2026-09-24).
 
 ---
 
@@ -71,7 +73,7 @@ Configure SAML single sign-on for your Dropbox team and set it to **Required**, 
 - SSO is available on Dropbox Advanced, Business Plus, and Enterprise plans
 - A SAML 2.0 identity provider
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path and the SSO and two-factor options observed read-only on a live Dropbox Advanced trial team; nothing changed" date="2026-09-25" %}
 
 **Step 1: Configure SSO**
 1. Navigate to: **Admin console → Team → Settings → Security** tab → **Authentication**
@@ -93,6 +95,8 @@ Dropbox offers two SSO modes, and only one of them closes the password path:
 1. Enforce MFA at the identity provider so it applies on the SSO path
 2. For any account that can still authenticate against Dropbox directly, enable two-step verification in the same **Security** tab
 
+**Automation:** ClickOps only — Dropbox exposes no write interface for this setting ([Dropbox Business API](https://docs.dropboxapi.com/dropbox-api/api-reference/business-endpoints/overview), 2026-09-24). No endpoint reads the current SSO mode either. A change to it is recorded afterwards in the team event log as a `sso_change_policy` event, which the [4.1](#41-enable-audit-logging) export pack collects.
+
 #### Validation & Testing
 1. With SSO set to Required, attempt a member sign-in using a Dropbox password and confirm it is rejected
 2. Disable a test user in the IdP and confirm Dropbox access stops
@@ -105,22 +109,35 @@ Dropbox offers two SSO modes, and only one of them closes the password path:
 **NIST 800-53:** AC-3, AC-6
 
 #### Description
-Configure team folder permissions using least privilege so members can only reach the content their role requires, and restrict access to sensitive admin folders.
+Share each team folder only with the people and groups whose role requires it, give groups view-only access unless they need to edit, and keep top-level team folder creation with admins, so members can only reach the content their role requires.
 
 #### Rationale
 **Why This Matters:**
 - Default-open or overly broad folder permissions let any member browse content well beyond their role, widening the blast radius of a single compromised account
-- Least-privilege access on team and admin folders limits how much data an attacker or malicious insider can reach if they obtain a valid session
-- Restricting admin folder access protects the most sensitive governance and configuration content from lateral movement
+- Least-privilege access on team folders limits how much data an attacker or malicious insider can reach if they obtain a valid session
+- By default everyone on the team can create top-level team folders, so the folder structure, and who is granted access to each folder, grows member by member unless admins keep that permission
 
 **Attack Prevented:** Privilege escalation, lateral movement, insider data access, over-broad data exposure
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Content page, folder Manage access, Create team folder and Top-level folder management walked on the live console and the steps corrected; nothing saved" date="2026-09-25" %}
 
-**Step 1: Configure Team Folder Permissions**
-1. Navigate to: **Admin Console → Content → Team Folders**
-2. Set default permissions by team
-3. Restrict admin folder access
+**Step 1: Scope each team folder**
+1. Navigate to: **Admin console → Products → Dropbox** (the dropdown under Products) **→ Content** ([Dropbox: Team folder manager](https://help.dropbox.com/organize/team-folder-manager))
+2. For each team folder that holds role-scoped content, open its **More actions** menu → **Manage access**. Add the groups or people who need it in **Add people by name or email** (groups rather than individuals where you can), then set the **Everyone at [team name]** entry to **remove**. For a new folder, choose **Create team folder → Who will have access → Only specific people** instead
+3. Set each entry to **can view** unless it needs to edit
+
+**Step 2: Narrow one member's access**
+1. Navigate to: **Admin console → Members**, then **Manage access** next to the member
+2. Uncheck the team folders they should not reach, set **Can view** where editing is not required, and click **Apply**
+
+**Step 3: Keep top-level team folders with admins**
+1. Navigate to: **Admin console → Products → Dropbox** (the dropdown under Products) **→ Settings → Content** tab → **Top-level folder management**, and set it to **Admins only** (the default is **All members**). The **Change setting** link on the Content page's **Member access** line opens the same setting
+
+#### Code Implementation
+
+{% include pack-code.html vendor="dropbox" section="1.2" %}
+
+The pack is read-only. Changing folder membership through the API (`sharing/add_folder_member`, `sharing/update_folder_member`, `sharing/update_folder_policy` with the `Dropbox-API-Select-Admin` header) is a per-folder decision and is deliberately not scripted here.
 
 ---
 
@@ -130,33 +147,44 @@ Configure team folder permissions using least privilege so members can only reac
 **NIST 800-53:** AC-11, AC-12, AC-19, IA-3
 
 #### Description
-Require admin approval before a new device can link to a member's Dropbox account, cap how many devices each member may link, and bound how long a web session stays valid through fixed session duration and idle timeout settings.
+Cap how many computers and mobile devices each member can link to the Dropbox desktop and mobile apps, decide what happens when a member reaches the cap, and bound how long a web session stays valid through fixed session duration and idle timeout settings.
 
 #### Rationale
 **Why This Matters:**
-- Without device approvals, an attacker holding valid credentials silently links their own machine and gets a full local sync of everything the member can reach — the fastest available route from one credential to bulk exfiltration
+- Without a device cap, an attacker holding valid credentials can link their own machine and get a full local sync of everything the member can reach — the fastest available route from one credential to bulk exfiltration
 - Device caps make the appearance of an unexpected device an event someone notices, instead of one more entry in a list nobody reads
-- Fixed session duration and idle timeout bound how long a stolen browser session remains usable, which is the exposure that device approvals do not address
-- Deciding in advance what happens to a disconnected device — and whether its local copy is deleted — turns offboarding and device loss into a configured outcome rather than an improvised one
+- Fixed session duration and idle timeout bound how long a stolen browser session remains usable, which is the exposure that device limits do not address
+- Knowing in advance how to remote wipe a lost or offboarded member's device, which deletes the team's files from it the next time it connects, turns device loss into a practiced step rather than an improvised one
 
 **Attack Prevented:** Unauthorized device linking, bulk sync exfiltration from a stolen credential, session hijacking, stale-session abuse
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Security tab Devices section and the member Devices remove icon read on the live console and the steps corrected; remote wipe dialog not opened" date="2026-09-25" %}
 
-**Step 1: Enable device approvals**
-1. Navigate to: **Admin console → Settings → Security → Devices → Device approvals**
-2. Choose who approves new devices, and set the maximum number of devices a member may link — computer and mobile limits are configured separately ([Dropbox: Device approvals](https://help.dropbox.com/account-access/device-approvals))
-3. Set the over-limit action — what Dropbox does when a member tries to link beyond the cap
-4. Set the disconnected-device behavior, including whether the local copy is deleted when a device is disconnected
-5. Add per-member exceptions only where there is a documented reason
+**Step 1: Set device limits**
+1. Navigate to: **Admin console → Settings → Security** tab → **Devices** section. The settings sit in the section itself; there is no separate Device approvals page ([Dropbox: Device approvals](https://help.dropbox.com/account-access/device-approvals))
+2. **Computers** and **Mobile devices**: choose the maximum each member may connect (**Unlimited**, or 0 to 5). The two limits are set separately
+3. **Device limit reached**: choose what happens when a member reaches the limit — **Remove oldest**, **Remove all**, or **Make exception**
+4. **Disconnected devices**: **Remove** (a disconnected device no longer counts toward the limit) or **Keep** (it counts until an admin removes it). This setting only governs the device count; it does not delete anything from the device
+5. **Exceptions → Add exceptions** only where there is a documented reason
 
 **Step 2: Bound web sessions**
-1. In the same **Security** settings, set **Fixed web session duration** — a hard cap on session lifetime, configurable from 1 day to 1 year
-2. Set **Idle timeout** — configurable from None up to 48 hours. Leaving this at None means an abandoned browser session stays live until the fixed duration expires
+1. In the same **Security** settings, set **Fixed web session** — a hard cap on session lifetime, configurable from 1 day to 1 year ([Dropbox: Web session control](https://help.dropbox.com/security/web-session-control)). Reducing it logs out every team member, so schedule the change
+2. Set **Idle web sessions** — configurable from None up to 48 hours. Leaving this at None means an abandoned browser session stays live until the fixed duration expires
+
+**Step 3: Remote wipe a lost or offboarded device**
+1. Deleting team files from a device is a separate, per-device action called **Remote wipe**, available on Advanced, Business, Business Plus, and Enterprise ([Dropbox: Remote wipe a team member's device](https://help.dropbox.com/delete-restore/remote-wipe))
+2. Navigate to: **Admin console → Members**, click the member's name, then under **Devices** click the **Remove** (trash can) icon next to the device
+3. Check **Delete files from [Organization name] Dropbox the next time this computer comes online**, then click **Sign out**. A remote wipe cannot be undone
+
+#### Code Implementation
+
+{% include pack-code.html vendor="dropbox" section="1.3" %}
+
+The device caps, the limit-reached and disconnected-device actions and the web session lengths have no API: nothing sets them and nothing reads their current value. The pack reads the outcome instead, every linked device and web session, and measures it against the caps you set. Signing a session out, and remote wipe, is `team/devices/revoke_device_session` with `delete_on_unlink`; it is an incident action and is not scripted here.
 
 #### Scope Limitation
 
-Device approvals govern the Dropbox **desktop and mobile applications only**. They do not apply to browser access at dropbox.com — a credential that has been approved on no device at all can still sign in on the web. The web session settings in Step 2 are what bound that path, which is why both halves of this control matter.
+Device limits govern the Dropbox **desktop and mobile applications only**. They do not apply to browser access at dropbox.com — a credential with no linked device at all can still sign in on the web. The web session settings in Step 2 are what bound that path, which is why both halves of this control matter.
 
 ---
 
@@ -200,6 +228,12 @@ Replace uniform full-admin access with Dropbox's pre-built granular admin roles,
 1. Assign each administrator the narrowest role that covers their actual duties
 2. Keep the number of Team admins to the minimum needed for continuity, and review the admin roster on a fixed cadence
 
+#### Code Implementation
+
+{% include pack-code.html vendor="dropbox" section="1.4" %}
+
+The pack counts holders of each role and flags a Team admin population above your limit. Changing a role is `team/members/set_admin_permissions_v2`, which accepts at most one role per member; it is not scripted here, because a bulk demotion can remove the last Team admin or the admin whose token is running. `dbxcli team list-members` prints only the legacy admin tier, not these eight roles.
+
 ---
 
 ### 1.5 Restrict Dropbox Network Traffic
@@ -231,6 +265,8 @@ Use Dropbox network control to restrict Dropbox traffic on your corporate networ
 1. Navigate to: **Admin console → Settings → Security → Restricted Dropbox traffic**
 2. Configure your proxy or CASB to inject the custom HTTP header Dropbox specifies, so requests from your network are evaluated against the allowed teams
 
+**Automation:** ClickOps only — Dropbox exposes no write interface for this setting ([Dropbox Business API](https://docs.dropboxapi.com/dropbox-api/api-reference/business-endpoints/overview), 2026-09-24). Enablement itself is performed by your Dropbox account manager. A later change to the policy is recorded in the team event log as a `network_control_change_policy` event, which the [4.1](#41-enable-audit-logging) export pack collects.
+
 #### Validation & Testing
 1. From a managed device on the corporate network, attempt to sign in to a personal Dropbox account and confirm the attempt is blocked
 2. Confirm managed team accounts are unaffected
@@ -255,18 +291,26 @@ Restrict external sharing, default shared links to team members only, require pa
 
 **Attack Prevented:** Data leakage, unauthorized external access, link forwarding, accidental public exposure
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="External sharing settings and option lists read on the live console, link security settings revealed by an unsaved change then undone; steps corrected" date="2026-09-25" %}
 
-**Step 1: Configure Sharing Settings**
-1. Navigate to: **Admin Console → Settings → Sharing**
-2. Configure:
-   - **External sharing:** Restricted or disabled
-   - **Link permissions:** Team members only by default
-   - **Password on links:** Required
+**Step 1: Restrict who content can be shared with**
+1. Navigate to: **Admin console → Products → Dropbox** (the dropdown under Products) **→ Settings → External sharing** ([Dropbox: Manage team sharing](https://help.dropbox.com/share/manage-team-sharing))
+2. **Who can be added to files and folders:** **Members only**, or **Members + approved people** with a curated **Approved list**. The approved list does not apply to shared links
+3. **Sharing links to files and folders:** **Off** unless members need to send links outside the team. Off also stops existing member-created links from working for people outside the team
 
-**Step 2: Configure Link Expiration**
-1. Enable: **Default expiration for shared links**
-2. Set: Maximum 30 days (L2: 7 days)
+**Step 2: Set shared link defaults**
+1. **Who can access links by default:** **Team members only** (or **Only people added**). While this is **Anyone**, the console does not show the password and expiration settings below
+2. **What permissions recipients have by default:** **Can view**. With the default, **None**, a link grants **Can edit** unless the member has set their own default
+3. **Expiration for links:** 30 days (L2: 7 days). It applies to links a member explicitly sets to **Anyone**
+4. **Passwords for links:** **On**, which requires a password on links a member explicitly sets to **Anyone**
+5. **Universal link restriction for folders:** **On**, so only people added to a folder can open it through a link
+6. Click **Save**. Changes on this tab are staged until you save them
+
+#### Code Implementation
+
+{% include pack-code.html vendor="dropbox" section="2.1" %}
+
+The settings above are readable through `team/get_info` (the approved list through `team/sharing_allowlist/list`), and none of them is writable through the API; the pack proves the console configuration. **Sharing links to files and folders** has no field of its own: the API reference describes the `shared_link_create_policy` value `team_only` as "Only members of the same team can access all shared links", which matches **Off**, and the `default_*` values as defaults members can override, which matches **On**. That mapping comes from the documentation, not from a live team, so the pack reports it as information rather than a finding. The only related write surface, `team/sharing_allowlist/add` and `remove`, edits the approved list and is not scripted here.
 
 ---
 
@@ -301,6 +345,8 @@ Verify the domains your organization owns, then use invite enforcement — and, 
 1. Domain insights and account capture are Enterprise-only features. Domain insights surfaces existing accounts on your verified domains; account capture brings them into the managed team ([Dropbox: Domain insights and account capture](https://help.dropbox.com/account-access/domain-insights-account-capture))
 2. Account capture changes accounts people consider personal — communicate the change before enabling it
 
+**Automation:** ClickOps only — Dropbox exposes no write interface for this setting ([Dropbox Business API](https://docs.dropboxapi.com/dropbox-api/api-reference/business-endpoints/overview), 2026-09-24). No endpoint verifies a domain or reads invite enforcement or account capture. Changes appear afterwards in the team event log (`domain_verification_*`, `enabled_domain_invites`, `account_capture_change_policy`), which the [4.1](#41-enable-audit-logging) export pack collects. The DNS TXT record used for verification lives in your own DNS, not in Dropbox.
+
 ---
 
 ## 3. Third-Party App Security
@@ -311,7 +357,7 @@ Verify the domains your organization owns, then use invite enforcement — and, 
 **NIST 800-53:** CM-7
 
 #### Description
-Review, approve, and revoke third-party OAuth apps connected to your Dropbox tenant, and require admin approval before new apps can be linked.
+Block members from connecting third-party apps by default, allow only the apps you have approved, and review and revoke the app links that already exist, since blocking an app does not disconnect members already linked to it.
 
 #### Rationale
 **Why This Matters:**
@@ -322,18 +368,26 @@ Review, approve, and revoke third-party OAuth apps connected to your Dropbox ten
 
 **Attack Prevented:** OAuth token abuse, consent phishing, persistent access via forgotten app links, supply-chain compromise of an approved integration, data exfiltration bypassing user MFA
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Integrations defaults, app actions, the Add exception dialog and member Connected apps read on the live console and the steps corrected; nothing saved" date="2026-09-25" %}
 
-**Step 1: Review connected apps**
-1. Navigate to: **Admin Console → Settings → Apps**
-2. Review all connected apps and revoke any you cannot attribute to a current business need
-3. Treat revocation in Dropbox as the authoritative action — unlinking on the vendor's side is not a substitute
+**Step 1: Block by default, then allow what you approved**
+1. Navigate to: **Admin console → Products → Dropbox** (the dropdown under Products) **→ Settings → Integrations** tab ([Dropbox: Manage apps for your team](https://help.dropbox.com/integrations/app-integrations))
+2. Under **Default connection permissions**, set **Connecting registered integrations** to **Block**
+3. Set **Connecting unregistered integrations** to **Block** as well. It governs apps that are not registered in the Dropbox App Center, which the registered-integrations setting does not cover
+4. In the app list at the bottom of the tab, **Allow** only the apps you have approved, from each app's **More actions** menu. Filter by **In App Center** or **Not in App Center** to find them
+5. For custom apps that are not in the App Center, switch the list filter to **Not in App Center**, click **Add exceptions**, enter the app key or the app ID (prefix `dbaid:`), click **Next**, and choose **Allow** or **Block**
+6. Dropbox has no approval-request workflow for new apps; the block-by-default setting plus an allow list is the mechanism. Google Calendar and Outlook Calendar and Contacts are allowed by default and cannot be blocked
 
-> **Verification note:** Dropbox documents the member-facing app-management flow (Settings → Connected apps in a user's own account), but the admin-console path above could not be confirmed against current Dropbox documentation during the 2026-08 currency pass. Confirm the exact console location in your own tenant before writing it into a runbook.
+**Step 2: Revoke existing connections**
+1. Blocking does not disconnect members who are already connected to an app, so every link made before the block survives it
+2. Use the pack below to list every app still linked to a member, then revoke each one you cannot attribute to a current business need. Treat revocation in Dropbox as the authoritative action; unlinking on the vendor's side is not a substitute
+3. To revoke one member's link in the console, go to **Admin console → Members**, click the member's name, then under **Connected apps** click the **Disconnect app** (trash can) icon next to the app
 
-**Step 2: Restrict App Installation**
-1. Configure: **Who can link third-party apps**
-2. Require admin approval for new apps
+#### Code Implementation
+
+{% include pack-code.html vendor="dropbox" section="3.1" %}
+
+The block and allow settings have no API: nothing sets them and nothing reads them. The pack reads the links that exist, one row per app with how many members linked it and when, and judges each against your approved list. Revocation is `team/linked_apps/revoke_linked_app`; it is left to the reviewer, one app at a time.
 
 ---
 
@@ -355,7 +409,7 @@ Use the Dropbox Activity page to review team activity and produce CSV reports fo
 
 **Attack Prevented:** Undetected data exfiltration, delayed breach detection, insufficient forensic evidence, audit gaps
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Activity page filters and the Create report dialog read on the live console, then cancelled; no report generated, so the CSV destination folder is from Dropbox's help article" date="2026-09-25" %}
 
 **Step 1: Review activity**
 1. Navigate to: **Admin console → Activity**
@@ -363,15 +417,22 @@ Use the Dropbox Activity page to review team activity and produce CSV reports fo
 
 **Step 2: Produce a report**
 1. With filters applied, select **Create report**
-2. Dropbox generates a CSV and places it in a **Dropbox Business reports** folder in your own Dropbox account
+2. The **Generate member activity report** dialog builds the report from the filters you selected. Leave **Exclude file operations** unchecked when you need file-level events; checking it generates the report faster without them. Click **Generate**
+3. Dropbox saves the report as a CSV in a folder named **Dropbox Business reports** in your own Dropbox account and emails you when it is ready ([Dropbox: View team activity](https://help.dropbox.com/account-access/view-activity))
 
 #### Scope Limitations
 
 Three limits to plan around:
 
-- **No SIEM export and no alerting from this surface.** The Activity page produces manually generated CSV reports. It does not stream events to a SIEM and it does not raise alerts — alerting is a separate feature, covered in [4.2](#42-configure-security-alerts). If you need continuous log delivery, that is an integration to build against the Dropbox API, not a setting to switch on here
+- **No SIEM export and no alerting from this surface.** The Activity page produces manually generated CSV reports. It does not stream events to a SIEM and it does not raise alerts — alerting is a separate feature, covered in [4.2](#42-configure-security-alerts). If you need continuous log delivery, that is an integration to build against the Dropbox API, not a setting to switch on here; the pack below is that integration's core
 - **File-level activity is plan-gated.** Detailed file activity is available on Business Plus, Advanced, and Enterprise only. On lower plans the record is coarser than an investigation typically needs
 - **History has a floor.** Activity history begins in January 2017, or at your team's creation date if that is later
+
+#### Code Implementation
+
+{% include pack-code.html vendor="dropbox" section="4.1" %}
+
+The pack pulls one time window of the team event log through `team_log/get_events` and `team_log/get_events/continue` and writes one event per line to stdout, for a scheduler or log shipper to forward to your SIEM. There is nothing to enable or write: the log is always on, and no endpoint sets its retention or a destination. A window that returns no events exits non-zero, because an empty feed and a broken feed look the same downstream.
 
 ---
 
@@ -388,38 +449,40 @@ Enable Dropbox security alerts so the platform detects and notifies on high-risk
 - The Activity page ([4.1](#41-enable-audit-logging)) is a place you go and look; security alerts are what tells you to go look, and without them detection depends on somebody happening to review a report at the right moment
 - Ransomware and mass-deletion detections are time-critical — the value of catching them is measured in minutes, which no manual review cadence delivers
 - Built-in response actions let an administrator suspend the member and restore affected files from the alert itself, collapsing detection and containment into one step
-- Tunable sensitivity matters in practice: an alert class that fires constantly gets muted, and a muted alert is the same as no alert
+- Sensitivity tuning on the Mass deletion and Mass data move alerts matters in practice: an alert class that fires constantly gets muted, and a muted alert is the same as no alert
 
 **Attack Prevented:** Ransomware encryption spreading unchecked, insider mass deletion or exfiltration, account takeover from anomalous locations, malware distribution through shared content
 
 #### Prerequisites
 - Security alerts are available on Dropbox Standard and Business with the Security add-on, and on Advanced, Business Plus, and Enterprise
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Security alerts, the Alerts policies list and policy Edit pages read on the live console and the steps corrected; no policy saved" date="2026-09-25" %}
 
 **Step 1: Enable the detections**
-1. Navigate to: **Admin console → Products → Dropbox → Security → Security alerts**
-2. Dropbox provides eight detections ([Dropbox: Security alerts](https://help.dropbox.com/security/security-alerts)):
+1. Navigate to: **Admin console → Products → Dropbox → Security → Security alerts**, then click **Set alert policies**
+2. The **Alerts policies** page lists eight detections ([Dropbox: Security alerts](https://help.dropbox.com/security/security-alerts)):
 
 | Alert | Detects |
 |-------|---------|
-| Ransomware | File activity patterns consistent with ransomware encryption |
-| Mass deletion | A member deleting an unusually large number of files |
-| Mass move | A member moving an unusually large number of files |
-| Sensitive external sharing | Content classified as sensitive being shared outside the team |
-| External malware | Malware detected in content shared from outside the team |
-| Internal malware | Malware detected in content shared within the team |
-| Excessive logins | An unusual volume of login attempts on an account |
-| High-risk country logins | Sign-ins from countries you have designated high-risk |
+| Ransomware suspected | File activity patterns consistent with ransomware encryption |
+| Mass deletion | A member deleting an unusually large amount of data over a short period |
+| Mass data move | A member moving an unusually large number of files |
+| Sensitive content in team folders shared externally | Content classified as sensitive being shared outside the team |
+| Malware shared from outside your team | Malware detected in content shared from outside the team |
+| Malware shared by a team member | Malware detected in content a team member shares |
+| Too many sign-in attempts | An unusual volume of sign-in attempts on an account |
+| Sign-in from a high-risk country | Sign-ins from a Dropbox-defined list of high-risk countries (currently Afghanistan, China, Cuba, DPRK, Iran, Libya, Nigeria, Sudan, Syria, and Yemen); the list is not admin-configurable |
 
-3. Enable each detection your plan supports and tune its sensitivity — start permissive enough that the alerts stay credible, then tighten
+3. All eight are on by default. For each, open **Row actions → Edit** and confirm **Status** is on. **Alert sensitivity** (1 - Low to 5 - High) is offered only for **Mass deletion** and **Mass data move**: start those permissive enough that the alerts stay credible, then tighten
 
 **Step 2: Route the alerts**
-1. Send alerts to all administrators, or to named admin groups where you have divided responsibility by role (see [1.4](#14-assign-granular-admin-roles))
+1. On each policy's **Edit** page, under **Notifications**, choose **All team admins** or **Specific team admins / security admins / groups**, then click **Save**. Only active Team admins and Security admins can receive notifications, so route to named admins where you have divided responsibility by role (see [1.4](#14-assign-granular-admin-roles))
 
 **Step 3: Prepare the response**
 1. From an alert, an administrator can suspend the member, email the affected contact, and restore affected files
 2. Agree in advance who is authorized to suspend a member, so the decision is not being made for the first time during an incident
+
+**Automation:** ClickOps only — Dropbox exposes no write interface for this setting ([Dropbox Business API](https://docs.dropboxapi.com/dropbox-api/api-reference/business-endpoints/overview), 2026-09-24). No endpoint reads the current alert configuration either. Triggered alerts and configuration changes are recorded in the team event log under the `admin_alerting` category (`admin_alerting_triggered_alert`, `admin_alerting_changed_alert_config`); run the [4.1](#41-enable-audit-logging) export pack with `HTH_DROPBOX_EVENTS_CATEGORY=admin_alerting` to forward them.
 
 ---
 
@@ -443,36 +506,40 @@ Enable Dropbox data classification so the platform automatically identifies file
 - Availability is limited by region and by plan; confirm your team qualifies before designing around it
 - Dropbox documents that the feature is unavailable for very large teams — check this before planning a rollout at scale
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Classification labeling options and info types revealed by an unsaved change on the live console, then undone" date="2026-09-25" %}
 
 **Step 1: Enable classification**
-1. Enable data classification for your team ([Dropbox: Data classification](https://help.dropbox.com/teams-admins/admin/data-classification))
-2. Dropbox automatically scans for credit card numbers, passport numbers, bank account numbers, and social security numbers
+1. Navigate to: **Admin console → Products → Dropbox** (the dropdown under Products) **→ Classification** ([Dropbox: Data classification](https://help.dropbox.com/teams-admins/admin/data-classification))
+2. Next to **Personal information labeling**, select **Member and team content**. **Only scan team content** leaves member folders unscanned
+3. Uncheck only the **Info types** that cannot occur in your data, then click **Save**. Detection covers credit card, passport, bank account, and social security numbers; the console lists the full set
 
 **Step 2: Act on external-share alerts**
-1. Alerts fire when classified content is shared externally and include the filename, its location, the data types detected, and the recipient
+1. Alerts fire when classified content in a team folder is shared externally and include the filename, its location, the data types detected, and the recipient
 2. Route these to the same responders handling [4.2](#42-configure-security-alerts)
+
+**Automation:** ClickOps only — Dropbox exposes no write interface for this setting ([Dropbox Business API](https://docs.dropboxapi.com/dropbox-api/api-reference/business-endpoints/overview), 2026-09-24). No endpoint reads whether classification is on. A change to it is recorded in the team event log as a `classification_change_policy` event, which the [4.1](#41-enable-audit-logging) export pack collects.
 
 #### Scope Limitation
 
-Classification scans **team folders only**. Content in individual member folders and in shared folders outside the team folder structure is not scanned. A team that stores regulated data outside team folders gets no coverage from this control, so treat team-folder placement as a prerequisite for the classification program rather than an implementation detail.
+What gets scanned depends on the **Personal information labeling** choice in Step 1. Dropbox documents classification as covering team folders, team member folders, and shared folders, but **Only scan team content** leaves member folders out of the scan, so select **Member and team content** for that coverage. The **external-sharing alert**, not the underlying scan, fires only for content in team folders: a file in a member folder, or in a shared folder outside the team folder structure, can be classified but raises no alert when it is shared externally. A team that stores regulated data outside team folders therefore gets detection without alerting, so treat team-folder placement as a prerequisite for the alerting half of this control.
 
 ---
 
 ## Appendix A: Edition Compatibility
 
-| Control | Standard | Advanced | Business Plus | Enterprise |
-|---------|----------|----------|---------------|------------|
-| SSO (SAML) | ❌ | ✅ | ✅ | ✅ |
-| Audit Log | Basic | ✅ | ✅ | ✅ |
-| File-level activity | ❌ | ✅ | ✅ | ✅ |
-| Device approvals | ✅ | ✅ | ✅ | ✅ |
-| Granular admin roles | ❌ | ✅ | ✅ | ✅ |
-| Invite enforcement | ❌ | ✅ | ✅ | ✅ |
-| Domain insights / account capture | ❌ | ❌ | ❌ | ✅ |
-| Security alerts | Security add-on | ✅ | ✅ | ✅ |
-| Data classification | Security add-on | ✅ | ✅ | ✅ |
-| Network control | ❌ | ❌ | ❌ | ✅ |
+| Control | Standard | Business | Advanced | Business Plus | Enterprise |
+|---------|----------|----------|----------|---------------|------------|
+| SSO (SAML) | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Audit Log | Basic | Basic | ✅ | ✅ | ✅ |
+| File-level activity | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Device approvals | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Remote wipe | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Granular admin roles | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Invite enforcement | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Domain insights / account capture | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Security alerts | Security add-on | Security add-on | ✅ | ✅ | ✅ |
+| Data classification | Security add-on | ✅ | ✅ | ✅ | ✅ |
+| Network control | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 Data classification and security alerts are additionally gated by region and, for data classification, by team size — see [4.2](#42-configure-security-alerts) and [4.3](#43-enable-data-classification).
 
@@ -483,7 +550,12 @@ Data classification and security alerts are additionally gated by region and, fo
 **Official Dropbox Documentation:**
 - [Help Center](https://help.dropbox.com/)
 - [Single sign-on for admins](https://help.dropbox.com/security/sso-admin)
+- [Team folder manager](https://help.dropbox.com/organize/team-folder-manager)
 - [Device approvals](https://help.dropbox.com/account-access/device-approvals)
+- [Web session control](https://help.dropbox.com/security/web-session-control)
+- [Remote wipe a team member's device](https://help.dropbox.com/delete-restore/remote-wipe)
+- [Manage team sharing](https://help.dropbox.com/share/manage-team-sharing)
+- [Manage apps for your team](https://help.dropbox.com/integrations/app-integrations)
 - [Change admin rights](https://help.dropbox.com/security/change-admin-rights)
 - [Domain verification and invite enforcement](https://help.dropbox.com/account-access/domain-verification-invite-enforcement)
 - [Domain insights and account capture](https://help.dropbox.com/account-access/domain-insights-account-capture)
@@ -494,6 +566,7 @@ Data classification and security alerts are additionally gated by region and, fo
 
 **API & Developer Documentation:**
 - [Dropbox HTTP API Overview](https://www.dropbox.com/developers/documentation/http/overview)
+- [Dropbox Business API](https://docs.dropboxapi.com/dropbox-api/api-reference/business-endpoints/overview)
 - [Dropbox Developer Center](https://www.dropbox.com/developers)
 
 **Compliance Frameworks:**
@@ -514,6 +587,8 @@ Request current attestation reports directly from Dropbox rather than relying on
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.3.1 | ai-drafted · ai-validated | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated**. A `validate-hth-guide` run walked the live Admin console of a Dropbox Advanced trial team, read-only, and **8 of 22 implementation surfaces came back VERIFIED-LIVE, all of them ClickOps**: 1.1, 1.2, 1.3, 2.1, 3.1, 4.1, 4.2, and 4.3, each marked on its heading. Nothing was saved in the tenant; the two settings changed to reveal hidden options were undone before saving. No Code surface ran live, because no team API token was stored, and 1.4 (needs a second member), 1.5 (Enterprise only), and 2.2 (needs a verifiable domain) could not be exercised. Corrected against the console: 1.2 (change an existing folder's access through **More actions → Manage access**; **Only specific people** exists only when creating a folder; top-level folder creation is **Settings → Content → Top-level folder management**), 1.3 (the device settings sit in the **Devices** section of the Security tab, and there is no device-approver choice; the per-device remove control is a trash-can icon), 2.1 (the console's setting names, **Passwords for links** and **Expiration for links** appear only when default access is not **Anyone**, and the tab needs **Save**; the 2.1 audit pack now prints the same names), 3.1 (**Connecting unregistered integrations** must be blocked too; **Add exceptions** sits behind the **Not in App Center** filter; revoke a member's app from the member's **Connected apps**), 4.1 (**Create report** opens a **Generate member activity report** dialog with an **Exclude file operations** option and a separate **Generate** click; where the CSV lands is Dropbox's documented behavior and was not observed, because no report was generated), and 4.2 (open **Set alert policies**; the console's eight alert names; sensitivity and notification routing live on each policy's **Edit** page). The six API packs' headers now say that a token generated in the Dropbox App Console also carries `team_data.governance.write`: the console would not save team scopes without `team_data.member`, and ticking `team_data.member` locks that scope on. These read-only packs therefore run with a write-capable token. An AI agent did this; no human practitioner has reviewed or applied this guide, so it claims no **ni-** status. | Claude Code (Opus 5.5) |
+| 2026-09-25 | 0.3.0 | ai-drafted | `validate-hth-guide` fix pass against current Dropbox Help Center and Business API documentation. The live console stayed behind a sign-in wall, so 0 of 22 implementation surfaces were exercised live and the maturity set is unchanged. Corrected 1.2 (console path under Products → Dropbox → Content; replaced the undocumented "default permissions by team" and "admin folder" steps with per-folder sharing, Manage Access, and top-level folder creation), 1.3 (the Disconnected devices setting governs the device count only; remote wipe is a separate per-device action; console labels Fixed web session and Idle web sessions), 2.1 (console path under Products → Dropbox → Settings → External sharing and the current setting names, including the rule that expiration and passwords need default access other than Anyone; Share links to files and folders maps to the documented `team_only` value rather than being console-only), 3.1 (Settings → Integrations block-by-default with per-app Allow and Add exception; Dropbox has no approval workflow, and blocking does not disconnect existing links), 4.2 (the high-risk country list is Dropbox-defined; sensitivity tuning applies to Mass deletion and Mass move only), and 4.3 (added the console path and the Personal information labeling choice, where Only scan team content leaves member folders unscanned; only the external-sharing alert is limited to team folders). Appendix A gains a Business column and a Remote wipe row. Rule 4: six read-only API audit packs (1.2, 1.3, 1.4, 2.1, 3.1, 4.1), which exit 2 rather than report a result when a list is not read to the end or admin roles are missing, and evidenced `**Automation:**` lines for 1.1, 1.5, 2.2, 4.2, and 4.3, which have no write or current-state read endpoint. | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Thin-guide expansion and currency pass against Dropbox Help Center documentation — control count 5 → 11. Added 1.3 device approvals and web session limits, 1.4 granular admin roles, 1.5 network control, 2.2 domain verification and invite enforcement, 4.2 security alerts, and 4.3 data classification. Corrected 1.1 (SSO console path; Optional-vs-Required modes, where Optional leaves a password bypass; plan gating), 3.1 (softened the perpetual-refresh-token claim and annotated the unverified admin app path), and 4.1 (the Activity page produces manual CSV reports, not SIEM export or alerting; file-level activity is plan-gated; history starts January 2017). Repaired the cheat-parser contract on 1.1 and 3.1, which were missing **Attack Prevented:**. Reconciled the 2022 GitHub breach figure at 130 repositories across Overview and Appendix B. Rebuilt Appendix A with a Business Plus column and corrected device-approval and data-classification plan coverage; removed Trust Center, certifications, and whitepaper references from Appendix B. Tier 2 (CIS, DISA STIG, CISA SCuBA) confirmed zero coverage for Dropbox; Tier 3/4 not surveyed this pass. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | ai-drafted | Initial Dropbox hardening guide | Claude Code (Opus 4.5) |
