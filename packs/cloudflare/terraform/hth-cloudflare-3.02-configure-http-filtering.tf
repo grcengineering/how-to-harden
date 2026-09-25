@@ -15,7 +15,7 @@
 # That resource manages the WHOLE configuration object, so declaring it with
 # only these two fields would reset every other Gateway setting on apply. This
 # pack therefore verifies them with a `check` block (Terraform >= 1.5) instead
-# of writing them; turn them on under Traffic policies > Traffic settings, or
+# of writing them; turn them on under Traffic controls > Traffic settings, or
 # import the existing configuration before managing it here.
 # =============================================================================
 
