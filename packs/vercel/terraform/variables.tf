@@ -84,22 +84,9 @@ variable "project_id" {
   type        = string
 }
 
-variable "production_branch" {
-  description = "Git branch used for production deployments"
+variable "project_name" {
+  description = "Current name of the EXISTING project identified by project_id. hth-vercel-2.01 imports that project (it never creates one) and stops if the name and id do not match. The project's Git connection, framework and build settings are left as they are."
   type        = string
-  default     = "main"
-}
-
-variable "git_repository" {
-  description = "Git repository in owner/repo format (e.g., org/my-app)"
-  type        = string
-  default     = ""
-}
-
-variable "git_provider" {
-  description = "Git provider type: github, gitlab, or bitbucket"
-  type        = string
-  default     = "github"
 }
 
 variable "preview_password" {
@@ -155,7 +142,13 @@ variable "require_verified_commits" {
 # -----------------------------------------------------------------------------
 
 variable "firewall_enabled" {
-  description = "Whether to enable the Vercel Web Application Firewall"
+  description = "Manage the project firewall with this pack and turn it on. Setting this, blocked_ip_addresses or rate_limit_rules creates vercel_firewall_config, which REPLACES the whole existing firewall configuration (see firewall_replace_existing_config)."
+  type        = bool
+  default     = false
+}
+
+variable "firewall_replace_existing_config" {
+  description = "Acknowledge that vercel_firewall_config PUTs the whole firewall configuration: custom rules and IP blocks made in the dashboard or by the 3.3/9.1 API packs are replaced unless declared here. Required when the firewall is managed."
   type        = bool
   default     = false
 }
@@ -182,6 +175,12 @@ variable "blocked_ip_addresses" {
     note  = optional(string, "")
   }))
   default = []
+}
+
+variable "firewall_hostname" {
+  description = "Hostname the IP-block rules apply to (ip_rules.rule.hostname is required when blocked_ip_addresses is set)"
+  type        = string
+  default     = ""
 }
 
 variable "rate_limit_rules" {
@@ -218,14 +217,26 @@ variable "secure_compute_region" {
   default     = "us-east-1"
 }
 
+variable "secure_compute_cidr" {
+  description = "CIDR range for the Secure Compute network (required by vercel_network)"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
 # -----------------------------------------------------------------------------
 # Section 4.2: Attack Challenge Mode
 # -----------------------------------------------------------------------------
 
 variable "attack_challenge_mode_enabled" {
-  description = "Whether Attack Challenge Mode is active (enable during attacks)"
+  description = "Turn Attack Challenge Mode on (during an attack). False leaves the mode unmanaged; switching true -> false turns it off."
   type        = bool
   default     = false
+}
+
+variable "attack_mode_active_until" {
+  description = "Unix time in MILLISECONDS until which Attack Challenge Mode stays active (required by vercel_attack_challenge_mode; Vercel turns the mode off when it passes)"
+  type        = number
+  default     = 0
 }
 
 # -----------------------------------------------------------------------------
@@ -247,34 +258,48 @@ variable "environment_variables" {
 # Section 6.2: Deployment Retention Policy
 # -----------------------------------------------------------------------------
 
-variable "deployments_to_keep" {
-  description = "Number of deployments to keep (L2+)"
-  type        = number
-  default     = 10
+variable "retention_preview" {
+  description = "Retention for preview deployments (L2+): one of 1d, 1w, 1m, 2m, 3m, 6m, 1y"
+  type        = string
+  default     = "1m"
+
+  validation {
+    condition     = contains(["1d", "1w", "1m", "2m", "3m", "6m", "1y"], var.retention_preview)
+    error_message = "Use one of 1d, 1w, 1m, 2m, 3m, 6m, 1y."
+  }
 }
 
-variable "deployment_expiration_days" {
-  description = "Days before preview deployments expire (L2+)"
-  type        = number
-  default     = 30
+variable "retention_production" {
+  description = "Retention for production deployments (L2+): one of 1d, 1w, 1m, 2m, 3m, 6m, 1y"
+  type        = string
+  default     = "1y"
+
+  validation {
+    condition     = contains(["1d", "1w", "1m", "2m", "3m", "6m", "1y"], var.retention_production)
+    error_message = "Use one of 1d, 1w, 1m, 2m, 3m, 6m, 1y."
+  }
 }
 
-variable "deployment_expiration_days_canceled" {
-  description = "Days before canceled deployments expire (L2+)"
-  type        = number
-  default     = 7
+variable "retention_canceled" {
+  description = "Retention for canceled deployments (L2+): one of 1d, 1w, 1m, 2m, 3m, 6m, 1y"
+  type        = string
+  default     = "1w"
+
+  validation {
+    condition     = contains(["1d", "1w", "1m", "2m", "3m", "6m", "1y"], var.retention_canceled)
+    error_message = "Use one of 1d, 1w, 1m, 2m, 3m, 6m, 1y."
+  }
 }
 
-variable "deployment_expiration_days_errored" {
-  description = "Days before errored deployments expire (L2+)"
-  type        = number
-  default     = 7
-}
+variable "retention_errored" {
+  description = "Retention for errored deployments (L2+): one of 1d, 1w, 1m, 2m, 3m, 6m, 1y"
+  type        = string
+  default     = "1w"
 
-variable "deployment_expiration_days_production" {
-  description = "Days before production deployments expire (L2+)"
-  type        = number
-  default     = 365
+  validation {
+    condition     = contains(["1d", "1w", "1m", "2m", "3m", "6m", "1y"], var.retention_errored)
+    error_message = "Use one of 1d, 1w, 1m, 2m, 3m, 6m, 1y."
+  }
 }
 
 # -----------------------------------------------------------------------------
@@ -304,4 +329,14 @@ variable "log_drain_environments" {
   description = "Environments to collect logs from: production, preview, development"
   type        = set(string)
   default     = ["production", "preview"]
+}
+
+# -----------------------------------------------------------------------------
+# Section 10.4: Container Registry Public Access
+# -----------------------------------------------------------------------------
+
+variable "vcr_repositories" {
+  description = "Vercel Container Registry repository names in project_id to manage as PRIVATE. Import existing ones first: terraform import 'vercel_vcr_repository.private[\"<name>\"]' <team_id>/<project_id>/<name>"
+  type        = set(string)
+  default     = []
 }
