@@ -46,8 +46,9 @@
 #   reference describes shared_link_create_policy=team_only as "Only members of
 #   the same team can access all shared links" (no per-link override), which
 #   matches the console's Off, and the default_* values as defaults members can
-#   override, which matches On. That mapping comes from the documentation and
-#   has not been observed on a live team, so the pack prints it as info only.
+#   override, which matches On. The On half was observed on a live Advanced
+#   team on 2026-09-25 (switch On, default_public). The Off half (team_only)
+#   comes from the documentation only, so the pack prints the switch as info.
 # TRAP 2: expiration and passwords only apply when default access is not
 #   Anyone (the console hides both settings while it is Anyone). A team on default_public passes the password check on paper and
 #   gets no protection from it, so this pack reports that combination.
