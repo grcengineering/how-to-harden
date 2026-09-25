@@ -12,8 +12,14 @@ resource "cloudflare_zero_trust_access_application" "warp_enrollment" {
   type             = "warp"
   session_duration = "24h"
 
-  allowed_idps              = [cloudflare_zero_trust_access_identity_provider.corporate_idp.id]
+  allowed_idps              = var.allowed_idp_ids
   auto_redirect_to_identity = true
+
+  # Enrollment is governed by the policies attached here
+  policies = [{
+    id         = cloudflare_zero_trust_access_policy.device_enrollment_policy.id
+    precedence = 1
+  }]
 }
 
 resource "cloudflare_zero_trust_access_policy" "device_enrollment_policy" {
@@ -27,6 +33,7 @@ resource "cloudflare_zero_trust_access_policy" "device_enrollment_policy" {
     }
   }]
 
+  # Device posture checks are not supported in enrollment policies
   require = [{
     auth_method = {
       auth_method = "mfa"

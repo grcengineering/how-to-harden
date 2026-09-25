@@ -20,12 +20,18 @@ resource "cloudflare_zero_trust_access_group" "employees" {
 resource "cloudflare_zero_trust_access_application" "internal_app" {
   zone_id          = var.cloudflare_zone_id
   name             = "Internal Application"
-  domain           = var.app_domain
+  domain           = var.internal_app_domain
   type             = "self_hosted"
   session_duration = "8h"
 
-  allowed_idps              = [cloudflare_zero_trust_access_identity_provider.corporate_idp.id]
+  allowed_idps              = var.allowed_idp_ids
   auto_redirect_to_identity = true
+
+  # In provider v5 the application carries the policy binding
+  policies = [{
+    id         = cloudflare_zero_trust_access_policy.allow_employees.id
+    precedence = 1
+  }]
 }
 
 resource "cloudflare_zero_trust_access_policy" "allow_employees" {

@@ -6,9 +6,9 @@ slug: "cloudflare"
 tier: "1"
 category: "Security"
 description: "Security hardening for Cloudflare Zero Trust, Access, Gateway, and WARP deployment"
-version: "0.2.1"
+version: "0.2.2"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-09-25"
 ---
 
 ## Overview
@@ -74,8 +74,8 @@ Integrate Cloudflare Zero Trust with your corporate identity provider to enable 
 #### ClickOps Implementation
 
 **Step 1: Add Identity Provider**
-1. Navigate to: **Zero Trust Dashboard** → **Settings** → **Authentication**
-2. Click **Add new**
+1. Navigate to: **Zero Trust** → **Integrations** → **Identity providers**
+2. Under **Your identity providers**, select **Add new identity provider**
 3. Select your IdP type:
    - **Okta, Azure AD, OneLogin:** Use preconfigured templates
    - **Generic OIDC/SAML:** Manual configuration
@@ -83,6 +83,8 @@ Integrate Cloudflare Zero Trust with your corporate identity provider to enable 
    - **Client ID/Secret:** From IdP application
    - **Authorization URL:** IdP OAuth endpoint
    - **Token URL:** IdP token endpoint
+   - **Certificate URL:** The IdP's `jwks_uri` endpoint, used to verify token signatures
+   - (Optional) Enable **PKCE** if your IdP supports it
 
 **Step 2: Configure IdP (Example: Okta)**
 1. In Okta Admin: **Applications** → **Create App Integration**
@@ -94,9 +96,9 @@ Integrate Cloudflare Zero Trust with your corporate identity provider to enable 
 5. Copy Client ID and Secret to Cloudflare
 
 **Step 3: Test Authentication**
-1. In Cloudflare, click **Test** on IdP configuration
+1. Go to **Integrations** → **Identity providers** and select **Test** next to the IdP
 2. Verify successful authentication
-3. Enable the IdP for production use
+3. Select the IdP under **Login methods** for each Access application and for device enrollment (see 1.3)
 
 **Time to Complete:** ~45 minutes
 
@@ -134,11 +136,17 @@ Ensure MFA is enforced for all Access application authentications through IdP po
 3. All Access authentications will require MFA
 
 **Option B: Cloudflare Access Policy Requirement**
-1. In Access application policy, add requirement:
+1. Navigate to: **Zero Trust** → **Access controls** → **Policies** and edit the policy
+2. Add a rule:
    - **Rule type:** Require
-   - **Selector:** Login Methods
-   - **Value:** Select IdPs with MFA configured
-2. Optionally add additional authentication factor via policy
+   - **Selector:** Authentication method
+   - **Value:** mfa - multiple-factor authentication
+3. Save the policy; Access rejects a user who does not present the required MFA method, even after a successful IdP login (the IdP must report the authentication method it used)
+
+**Option C: Cloudflare Independent MFA**
+1. Navigate to: **Zero Trust** → **Access controls** → **Access settings**
+2. Under **Allow multi-factor authentication (MFA)**, select the MFA methods to allow
+3. For each application, leave MFA set to **Respect global enforcement setting**, or require it per application or policy
 
 ---
 
@@ -168,19 +176,18 @@ Configure device enrollment policies to control which devices can enroll in WARP
 #### ClickOps Implementation
 
 **Step 1: Configure Enrollment Policies**
-1. Navigate to: **Settings** → **WARP Client** → **Device enrollment permissions**
-2. Click **Manage** → **Add a rule**
-3. Configure enrollment restrictions:
+1. Navigate to: **Zero Trust** → **Team & Resources** → **Devices** → **Device profiles** → **Management**
+2. In **Device enrollment** → **Device enrollment permissions**, select **Manage**
+3. In the **Policies** tab, add an Access policy that restricts who can enroll:
    - **Emails ending in:** @yourdomain.com
    - **Identity provider groups:** Specific groups only
    - **Country:** Allowed countries only
+4. Device posture checks are not supported in enrollment policies; the client can only run posture checks after the device is enrolled
 
 **Step 2: Require IdP Authentication**
-1. In enrollment rule, require authentication via IdP
-2. Add additional conditions:
-   - Specific IdP login method (e.g., Okta with MFA)
-   - Geographic restrictions
-3. Save rule
+1. In the **Login methods** tab, select only your corporate IdP
+2. (Optional) If users sign in through a single IdP, turn on **Apply instant authentication** to send them straight to your SSO login
+3. Save
 
 **Time to Complete:** ~20 minutes
 
@@ -205,7 +212,7 @@ Configure granular admin roles in Cloudflare to limit dashboard access based on 
 **Why This Matters:**
 - Super Administrator access grants full control over Zero Trust policies, DNS, and account settings — a compromised admin account can disable every protection at once
 - Assigning least-privilege roles limits the blast radius if any single admin credential is phished or stolen
-- Scoped roles such as Zero Trust Admin and Audit Log Viewer let teams do their jobs without holding billing or account-wide change rights
+- Scoped roles such as Cloudflare Zero Trust and Audit Logs Viewer let teams do their jobs without holding billing or account-wide change rights
 - Fewer privileged accounts means a smaller, more defensible attack surface for adversaries to target
 
 **Attack Prevented:** Privilege escalation, insider misuse, account takeover, unauthorized configuration change
@@ -219,10 +226,10 @@ Configure granular admin roles in Cloudflare to limit dashboard access based on 
 
 **Step 2: Implement Least Privilege**
 1. Available roles:
-   - **Super Administrator:** Full access (limit to 2-3)
-   - **Administrator:** Most settings, no billing
-   - **Zero Trust Admin:** Zero Trust only
-   - **Audit Log Viewer:** Read-only logs
+   - **Super Administrator - All Privileges:** Full access (limit to 2-3)
+   - **Administrator:** Full account access and subscriptions; cannot manage members or the billing profile
+   - **Cloudflare Zero Trust:** Administrator access to Zero Trust products only (**Cloudflare Zero Trust Read Only** for read access)
+   - **Audit Logs Viewer:** Read-only access to Audit Logs
 2. Assign appropriate roles per responsibility
 3. Remove unnecessary Super Administrator access
 
@@ -269,7 +276,7 @@ Eliminate use of the Global API Key — a single credential with full account-wi
 7. Click **Continue to summary** → **Create Token** and store the value in a secrets manager immediately (it is displayed only once)
 
 **Step 3: Create Account-Owned Tokens for Automation (L2)**
-1. Navigate to: **Manage Account** → **API Tokens** (account scope, not profile scope)
+1. Navigate to: **Manage Account** → **Account API Tokens** (account scope, not profile scope)
 2. Click **Create Token** and configure permissions, resources, IP filtering, and TTL as above
 3. Use these tokens for Terraform, CI/CD pipelines, and any integration that must outlive an individual employee
 4. Restrict who can create and view account-owned tokens to Super Administrators
@@ -300,6 +307,9 @@ Eliminate use of the Global API Key — a single credential with full account-wi
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="1.5" %}
+
 ### 1.6 Enforce Two-Factor Authentication for Account Members
 
 **Profile Level:** L1 (Crawl)
@@ -310,7 +320,7 @@ Eliminate use of the Global API Key — a single credential with full account-wi
 | NIST 800-53 | IA-2(1) |
 
 #### Description
-Turn on account-level 2FA Enforcement so that every Cloudflare account member must have two-factor authentication enabled before they can accept an invitation or continue using the account. This control protects the administrators of the platform itself and is distinct from the MFA you require of end users through Access policies (section 1.2) ([Cloudflare two-factor authentication documentation](https://developers.cloudflare.com/fundamentals/account/account-security/2fa/)).
+Turn on account-level 2FA Enforcement so that every Cloudflare account member must have two-factor authentication enabled before they can accept an invitation or continue using the account. This control protects the administrators of the platform itself and is distinct from the MFA you require of end users through Access policies (section 1.2) ([Cloudflare two-factor authentication documentation](https://developers.cloudflare.com/fundamentals/user-profiles/2fa/)).
 
 #### Rationale
 **Why This Matters:**
@@ -364,6 +374,9 @@ Turn on account-level 2FA Enforcement so that every Cloudflare account member mu
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="1.6" %}
+
 ## 2. Access Application Policies
 
 ### 2.1 Create Secure Application Policies
@@ -390,12 +403,12 @@ Create Access policies that protect applications with identity-based, context-aw
 #### ClickOps Implementation
 
 **Step 1: Add Application**
-1. Navigate to: **Access** → **Applications**
+1. Navigate to: **Zero Trust** → **Access controls** → **Applications**
 2. Click **Add an application**
 3. Select application type:
-   - **Self-hosted:** Applications behind Cloudflare Tunnel
-   - **SaaS:** Third-party SaaS applications
-   - **Private network:** Internal IP ranges
+   - **Self-hosted application:** Public hostnames and private IPs or hostnames, including applications behind Cloudflare Tunnel
+   - **SaaS application:** Third-party SaaS applications
+   - **Infrastructure application:** SSH and RDP targets (see 2.4)
 
 **Step 2: Configure Application Settings**
 1. Enter application details:
@@ -410,10 +423,10 @@ Create Access policies that protect applications with identity-based, context-aw
    - **Action:** Allow
    - **Include rules:**
      - **Emails ending in:** @yourdomain.com
-     - **IdP Groups:** Engineering
+     - **Identity provider group:** Engineering
    - **Require rules:**
      - **Login methods:** Your IdP
-     - **Device posture:** WARP running
+     - **WARP:** Requires the WARP posture check from 2.2
 
 **Step 4: Harden Policy (L2)**
 1. Add additional require rules:
@@ -453,11 +466,11 @@ Configure Access policies to require WARP client for application access, enablin
 #### ClickOps Implementation
 
 **Step 1: Enable WARP Requirement in Policy**
-1. Edit Access application policy
-2. Add **Require** rule:
-   - **Selector:** Require WARP
-   - **Value:** Enabled
-3. Save policy
+1. Navigate to: **Zero Trust** → **Traffic policies** → **Traffic settings** and confirm **Allow Secure Web Gateway to proxy traffic** is on
+2. Navigate to: **Zero Trust** → **Reusable components** → **Posture checks**
+3. Under **Cloudflare One Client checks**, select **Add a check** → **WARP** → **Save**
+4. Navigate to: **Zero Trust** → **Access controls** → **Applications**, select the application → **Configure** → **Policies**
+5. Add a **Require** rule with the **WARP** selector and save the policy
 
 **Step 2: Configure WARP-Only Access**
 1. For sensitive applications, block non-WARP access
@@ -483,7 +496,7 @@ Define device posture checks to verify endpoint security status before granting 
 #### Rationale
 **Why This Matters:**
 - Verified identity alone does not prove the device is safe — a legitimate user on a compromised or non-compliant laptop is still a threat
-- Posture checks for disk encryption, firewall, screen lock, and OS version enforce a minimum security baseline before access is granted
+- Posture checks for disk encryption, firewall, and OS version enforce a minimum security baseline before access is granted
 - Service-provider checks confirm endpoint security tools such as EDR and anti-malware are actually running, not merely installed
 - Blocking access on posture failure prevents malware-infected or out-of-date endpoints from reaching internal applications and data
 
@@ -492,19 +505,18 @@ Define device posture checks to verify endpoint security status before granting 
 #### ClickOps Implementation
 
 **Step 1: Create Device Posture Rules**
-1. Navigate to: **Settings** → **WARP Client** → **Device posture**
-2. Click **Add new**
+1. Navigate to: **Zero Trust** → **Reusable components** → **Posture checks**
+2. Under **Cloudflare One Client checks**, select **Add a check**
 3. Configure posture checks:
    - **OS version:** Minimum required version
    - **Disk encryption:** Required (FileVault/BitLocker)
-   - **Firewall:** Enabled
-   - **Screen lock:** Enabled
+   - **Firewall:** Enabled (macOS and Windows only)
 
-**Step 2: Create Service Provider Check (Optional)**
-1. Add checks for security tools:
-   - **CrowdStrike running**
-   - **Carbon Black installed**
-   - **Custom certificate present**
+**Step 2: Check Endpoint Security Tools (Optional)**
+1. Client checks (added the same way as Step 1):
+   - **Carbon Black:** agent running
+   - **Client certificate:** a device certificate is present
+2. Service-provider integrations such as CrowdStrike connect through the provider's API; add the provider integration first, then create its posture check
 
 **Step 3: Apply to Access Policy**
 1. Edit application Access policy
@@ -546,12 +558,12 @@ Use Cloudflare Access for Infrastructure to broker SSH sessions with short-lived
 #### ClickOps Implementation
 
 **Step 1: Route the Target Network Through a Tunnel**
-1. Navigate to: **Zero Trust** → **Networks** → **Tunnels**
+1. Navigate to: **Networking** → **Tunnels**
 2. Select or create the tunnel serving the environment that hosts the SSH servers
-3. Under **Private Network**, add the CIDR range containing the target hosts
+3. Navigate to: **Networking** → **Routes**, select **Create route** → **Tunnel CIDR**, choose the tunnel, and enter the CIDR range containing the target hosts
 
 **Step 2: Register Infrastructure Targets**
-1. Navigate to: **Zero Trust** → **Networks** → **Targets**
+1. Navigate to: **Zero Trust** → **Access controls** → **Targets**
 2. Click **Add a target**
 3. Enter the target hostname, IP address, and the virtual network it belongs to
 4. Repeat for each server that should be reachable over SSH
@@ -564,14 +576,14 @@ Use Cloudflare Access for Infrastructure to broker SSH sessions with short-lived
 5. Under the policy's connection context, specify the exact Unix usernames the group may assume — avoid granting `root` where a named account will do
 
 **Step 4: Configure the Server to Trust the Cloudflare SSH CA**
-1. In the application configuration, download the Cloudflare SSH CA public key for your account
+1. Navigate to: **Zero Trust** → **Access controls** → **Service credentials** → **SSH**, generate the SSH CA if none exists, and copy its **CA public key**
 2. On each target host, install the CA public key and point `TrustedUserCAKeys` at it in the SSH daemon configuration
 3. Restart the SSH daemon and confirm certificate-based authentication succeeds
 4. Once verified, disable password authentication and remove distributed `authorized_keys` entries that are no longer needed
 
 **Step 5: Enable SSH Command Logging (L3)**
-1. In the Infrastructure application settings, enable SSH command logging
-2. Provide the public key used to encrypt session logs and store the corresponding private key in your secrets manager
+1. Generate an HPKE key pair with Cloudflare's `ssh-log-cli` utility
+2. Navigate to: **Zero Trust** → **Traffic policies** → **Traffic settings** → **SSH log encryption public key**, paste the public key, and select **Save**; keep the matching decryption key in your secrets manager
 3. Configure a Logpush job to deliver the encrypted session logs to your SIEM or object storage
 
 **Time to Complete:** ~90 minutes for the first target, ~15 minutes per additional target
@@ -596,6 +608,9 @@ Use Cloudflare Access for Infrastructure to broker SSH sessions with short-lived
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="2.4" %}
+
 ### 2.5 Gate Access Policies on User Risk Score
 
 **Profile Level:** L3 (Run)
@@ -606,13 +621,13 @@ Use Cloudflare Access for Infrastructure to broker SSH sessions with short-lived
 | NIST 800-53 | AC-2(12) |
 
 #### Description
-Enable Cloudflare's behavioural risk scoring and use the resulting Low, Medium, or High score as a condition in Access policies, so that users exhibiting suspicious behaviour are blocked or forced to reauthenticate rather than continuing with the access their group membership would normally grant ([Cloudflare user risk score documentation](https://developers.cloudflare.com/cloudflare-one/team-and-resources/users/risk-score/)).
+Enable Cloudflare's behavioural risk scoring and use the resulting Low, Medium, or High score as a condition in Access policies, so that users exhibiting suspicious behaviour are blocked rather than continuing with the access their group membership would normally grant ([Cloudflare user risk score documentation](https://developers.cloudflare.com/cloudflare-one/team-and-resources/users/risk-score/)).
 
 #### Rationale
 **Why This Matters:**
 - Static policies evaluate identity and device at the moment of login, so an account that is compromised after enrolment keeps its access until someone notices and intervenes manually
 - Risk behaviours such as impossible travel, repeated DLP policy violations, and contact with known malware infrastructure are strong signals that an account or endpoint is under adversary control
-- Binding a High risk score to a Block or reauthentication action turns detection into enforcement automatically, closing the gap between an alert firing and an analyst responding
+- Excluding High-risk users from Allow policies turns detection into enforcement automatically, closing the gap between an alert firing and an analyst responding
 - Every risk behaviour is disabled by default, so an organisation that assumes risk scoring is on out of the box is operating with no behavioural signal at all — the behaviours must be explicitly enabled to produce scores
 - Scores are per-user and visible in the dashboard, giving investigators a prioritised queue rather than an undifferentiated stream of Gateway and Access logs
 
@@ -626,19 +641,18 @@ Enable Cloudflare's behavioural risk scoring and use the resulting Low, Medium, 
 #### ClickOps Implementation
 
 **Step 1: Enable Risk Behaviours**
-1. Navigate to: **Zero Trust** → **Teams & Resources** → **Users** → **Risk score**
+1. Navigate to: **Zero Trust** → **Team & Resources** → **Users** → **Risk score** → **Risk behaviors**
 2. Review the available behaviours — all are disabled by default
 3. Enable the behaviours relevant to your environment, such as impossible travel, high number of DLP policy violations, and contact with known malware or command-and-control destinations
 4. Set the risk level each behaviour contributes (Low, Medium, or High) to match your tolerance
 
 **Step 2: Reference Risk Score in Access Policies**
-1. Navigate to: **Zero Trust** → **Access controls** → **Applications** and edit a sensitive application
-2. Add a policy with **Action** set to Block and an include rule using the **User Risk Score** selector set to High
-3. Order the block policy above the allow policies so it is evaluated first
-4. For lower-sensitivity applications, use a Medium score to trigger reauthentication rather than an outright block
+1. Navigate to: **Zero Trust** → **Access controls** → **Policies** and edit the Allow policy of a sensitive application
+2. Add an **Exclude** rule with the **User risk score** selector set to High, so High-risk users no longer match the Allow policy
+3. Alternatively, add a separate Block policy with an Include rule on **User risk score** High and order it above the Allow policies
 
 **Step 3: Extend Risk Gating to Gateway (L3)**
-1. Navigate to: **Gateway** → **Firewall Policies** and add policies matching on user risk score
+1. Navigate to: **Zero Trust** → **Traffic policies** → **Firewall policies** and add policies matching on user risk score
 2. Restrict high-risk users from reaching sensitive SaaS destinations or from uploading data
 
 **Step 4: Define the Response Runbook**
@@ -651,7 +665,7 @@ Enable Cloudflare's behavioural risk scoring and use the resulting Low, Medium, 
 #### Validation & Testing
 1. Confirm the behaviours you intended to enable show as enabled on the risk score page — verify rather than assume, since the default is off
 2. Trigger a test behaviour in a controlled way (for example, a deliberate DLP policy violation by a test account) and confirm the user's score changes
-3. Attempt to reach a protected application as the elevated-risk test user and confirm the block or reauthentication policy fires
+3. Attempt to reach a protected application as the elevated-risk test user and confirm access is denied
 4. Confirm the block appears in Access logs with the risk score as the reason
 5. Clear the test user's risk score and confirm normal access is restored
 
@@ -665,6 +679,9 @@ Enable Cloudflare's behavioural risk scoring and use the resulting Low, Medium, 
 | SOC 2 | CC7.2 | Anomalies are detected and evaluated |
 
 ---
+
+
+{% include pack-code.html vendor="cloudflare" section="2.5" %}
 
 ## 3. Gateway Security Policies
 
@@ -692,7 +709,7 @@ Configure Gateway DNS policies to block access to malicious and policy-violating
 #### ClickOps Implementation
 
 **Step 1: Create DNS Policy**
-1. Navigate to: **Gateway** → **Firewall Policies** → **DNS**
+1. Navigate to: **Zero Trust** → **Traffic policies** → **Firewall policies** → **DNS**
 2. Click **Add a policy**
 3. Configure blocking rules:
 
@@ -701,16 +718,16 @@ Configure Gateway DNS policies to block access to malicious and policy-violating
 2. Configure:
    - **Selector:** Security Categories
    - **Operator:** in
-   - **Value:** Malware, Phishing, Spyware, Botnet, Cryptomining, Command and Control
+   - **Value:** Malware, Phishing, Spyware, Command and Control & Botnet, Cryptomining, DNS Tunneling, Domain Generation Algorithm, Brand Embedding
    - **Action:** Block
 3. Save
 
 **Step 3: Block Content Categories (Policy)**
-1. Create additional rules for policy enforcement:
-   - Adult Content
+1. Create additional rules with the **Content Categories** selector for policy enforcement:
+   - Adult Themes
    - Gambling
-   - Illegal Activities
-2. Configure action: Block or Override (with warning)
+   - Questionable Content (as appropriate)
+2. Configure action: Block
 
 **Time to Complete:** ~30 minutes
 
@@ -742,22 +759,24 @@ Configure Gateway HTTP policies for deeper inspection and control of web traffic
 
 #### ClickOps Implementation
 
+**Prerequisite:** TLS decryption must be on for HTTP policies to inspect HTTPS traffic (see 3.5, Step 1).
+
 **Step 1: Create HTTP Policy**
-1. Navigate to: **Gateway** → **Firewall Policies** → **HTTP**
+1. Navigate to: **Zero Trust** → **Traffic policies** → **Firewall policies** → **HTTP**
 2. Click **Add a policy**
 
 **Step 2: Block Malicious Content**
 1. Create rule: "Block Malware Downloads"
 2. Configure:
-   - **Selector:** Content Categories
+   - **Selector:** Security Categories
    - **Operator:** in
-   - **Value:** Malware, Botnet
+   - **Value:** Malware, Command and Control & Botnet, Phishing, Spyware
    - **Action:** Block
 
-**Step 3: Inspect File Downloads (L2)**
-1. Create rule for file inspection
-2. Configure AV scanning for downloads
-3. Block or quarantine detected threats
+**Step 3: Scan File Transfers for Malware (L2)**
+1. Navigate to: **Zero Trust** → **Traffic policies** → **Traffic settings**
+2. Under **Policy settings**, turn on **Scan files for malware** for downloads and uploads
+3. Optionally block non-scannable files (for example, encrypted archives) instead of allowing them through unscanned
 
 ---
 
@@ -788,7 +807,7 @@ Configure Gateway network policies to control non-HTTP traffic based on IP, port
 #### ClickOps Implementation
 
 **Step 1: Create Network Policy**
-1. Navigate to: **Gateway** → **Firewall Policies** → **Network**
+1. Navigate to: **Zero Trust** → **Traffic policies** → **Firewall policies** → **Network**
 2. Click **Add a policy**
 
 **Step 2: Block Risky Protocols**
@@ -796,7 +815,8 @@ Configure Gateway network policies to control non-HTTP traffic based on IP, port
    - Known malicious ports
    - Tunneling protocols (if not allowed)
    - P2P protocols
-2. Configure action: Block
+2. Use the **Detected Protocol** selector to match protocols regardless of port
+3. Configure action: Block
 
 **Step 3: Control Private Network Access**
 1. If using WARP-to-WARP (private network):
@@ -836,19 +856,20 @@ Enable Cloudflare Browser Isolation to execute web sessions in a secure cloud en
 #### ClickOps Implementation
 
 **Step 1: Create Isolation Policy**
-1. Navigate to: **Gateway** → **Firewall Policies** → **HTTP**
+1. Navigate to: **Zero Trust** → **Traffic policies** → **Firewall policies** → **HTTP**
 2. Create rule with **Action:** Isolate
 3. Configure targets:
-   - Uncategorized domains
-   - Newly registered domains
-   - High-risk categories
+   - **Content Categories** in *Security Risks* (new, newly seen, and parked domains)
+   - **Security Categories** for high-risk threat categories
+   - Uncategorized content, where your policy allows
 
 **Step 2: Configure Isolation Settings**
-1. In Settings → Browser Isolation
-2. Configure:
-   - **Disable copy/paste:** For sensitive sites
-   - **Disable printing:** For sensitive sites
-   - **Disable uploads/downloads:** Based on policy
+1. In the same Isolate policy, open the policy settings (they are set per policy)
+2. Configure for sensitive sites:
+   - **Copy (from remote to client):** Allow only within isolated browser
+   - **Paste (from client to remote):** Do not allow
+   - **File downloads** and **File uploads:** Do not allow
+   - **Printing:** Do not allow
 
 ---
 
@@ -865,7 +886,7 @@ Enable Cloudflare Browser Isolation to execute web sessions in a secure cloud en
 | NIST 800-53 | AC-4, SC-7(10) |
 
 #### Description
-Use Gateway DLP profiles to inspect HTTP and SaaS traffic for sensitive data and block or log transfers that match. Two predefined profiles — Financial Information, and Social Security, Insurance, and Tax Identification Numbers — are available even on Free and Pay-as-you-go plans; custom profiles and additional detection entries require the Enterprise DLP add-on ([Cloudflare data loss prevention documentation](https://developers.cloudflare.com/cloudflare-one/policies/data-loss-prevention/)).
+Use Gateway DLP profiles to inspect HTTP and SaaS traffic for sensitive data and block or log transfers that match. Two predefined profiles — Financial Information, and Social Security, Insurance, Tax, and Identifier Numbers — are available even on Free and Pay-as-you-go plans; custom profiles and additional detection entries require the Enterprise DLP add-on ([Cloudflare data loss prevention documentation](https://developers.cloudflare.com/cloudflare-one/policies/data-loss-prevention/)).
 
 #### Rationale
 **Why This Matters:**
@@ -884,18 +905,18 @@ Use Gateway DLP profiles to inspect HTTP and SaaS traffic for sensitive data and
 #### ClickOps Implementation
 
 **Step 1: Enable TLS Inspection**
-1. Navigate to: **Zero Trust** → **Settings** → **Network**
-2. Enable **TLS decryption** — DLP cannot inspect payloads inside encrypted sessions without it
+1. Navigate to: **Zero Trust** → **Traffic policies** → **Traffic settings**
+2. In **Proxy and inspection**, turn on **Inspect HTTPS requests with TLS decryption** — DLP cannot inspect payloads inside encrypted sessions without it
 3. Confirm the Cloudflare root certificate is deployed to managed devices, and document any inspection bypasses required for banking or healthcare sites
 
 **Step 2: Review the Predefined Profiles**
-1. Navigate to: **Zero Trust** → **DLP** → **DLP profiles**
+1. Navigate to: **Zero Trust** → **Data loss prevention** → **Profiles**
 2. Open **Financial Information** and review its detection entries (payment card numbers and similar)
-3. Open **Social Security, Insurance, and Tax Identification Numbers** and review its entries
+3. Open **Social Security, Insurance, Tax, and Identifier Numbers** and review its entries
 4. Set the confidence threshold and minimum match count on each entry to reduce false positives
 
 **Step 3: Create a Log-Only HTTP Policy**
-1. Navigate to: **Gateway** → **Firewall Policies** → **HTTP**
+1. Navigate to: **Zero Trust** → **Traffic policies** → **Firewall policies** → **HTTP**
 2. Add a policy with the **DLP Profile** selector set to the profiles enabled above
 3. Set **Action** to Allow with logging so matches are recorded without blocking
 4. Run for one to two weeks and review matches in Gateway HTTP logs
@@ -906,7 +927,7 @@ Use Gateway DLP profiles to inspect HTTP and SaaS traffic for sensitive data and
 3. Configure a custom block page explaining why the upload was stopped and how to request an exception
 
 **Step 5: Add Custom Profiles (L3, Enterprise DLP add-on)**
-1. Navigate to: **DLP** → **DLP profiles** → **Create profile**
+1. Navigate to: **Zero Trust** → **Data loss prevention** → **Profiles** → **Create profile**
 2. Define custom detection entries for organisation-specific identifiers such as customer account number formats or internal project codenames
 3. Apply the same log-then-enforce progression before blocking
 
@@ -931,6 +952,9 @@ Use Gateway DLP profiles to inspect HTTP and SaaS traffic for sensitive data and
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="3.5" %}
+
 ## 4. WARP Client Hardening
 
 ### 4.1 Configure WARP Client Settings
@@ -950,25 +974,28 @@ Configure WARP client settings to ensure consistent security posture across all 
 - Consistent global settings ensure every enrolled device enforces the same Zero Trust protections rather than relying on per-user configuration
 - Auto-connect and captive-portal detection keep WARP active across reboots and untrusted WiFi, closing windows where traffic would bypass inspection
 - Locking the WARP switch prevents users from disabling protection to evade filtering or reach blocked content
-- A defined default service mode (Gateway with WARP) guarantees traffic is routed through inspection by default, not left to user choice
+- A defined default service mode (Traffic and DNS mode) guarantees traffic is routed through inspection by default, not left to user choice
 
 **Attack Prevented:** Protection bypass, unfiltered traffic on untrusted networks, inconsistent endpoint posture
 
 #### ClickOps Implementation
 
-**Step 1: Access WARP Settings**
-1. Navigate to: **Settings** → **WARP Client**
-2. Click **Manage** under Global settings
+The WARP client is now called the Cloudflare One Client (formerly WARP); its settings are configured per device profile.
 
-**Step 2: Configure Global Settings**
-1. **Auto connect:** Enable (reconnect after disconnection)
-2. **Captive portal detection:** Enable (for WiFi networks)
-3. **Mode switch:** Configure default mode (Gateway with WARP)
+**Step 1: Open the Device Profile**
+1. Navigate to: **Zero Trust** → **Team & Resources** → **Devices** → **Device profiles** → **General profiles**
+2. Select the profile (start with the default profile) and select **Configure**
+
+**Step 2: Configure Profile Settings**
+1. **Auto connect:** Enabled, with a **Timeout** of 1-15 minutes — never 0, which lets a switched-off client stay off indefinitely
+2. **Captive portal detection:** Enabled (for WiFi networks)
+3. **Service mode:** Traffic and DNS mode
+4. **Mode switch:** Disabled, so users cannot drop to DNS only mode
 
 **Step 3: Configure Lock Settings (L2)**
-1. **Lock WARP switch:** Enable (prevent user disable)
-2. **Allow admin override:** Enable with codes (for troubleshooting)
-3. **Disable for WiFi:** Configure trusted network exception
+1. **Lock device client switch:** Enabled (prevent user disable)
+2. **Allow admin override codes:** a global device client setting, available once the switch is locked (for troubleshooting)
+3. For trusted office networks, configure managed networks rather than letting users turn the client off
 
 ---
 
@@ -992,24 +1019,24 @@ Lock WARP client to prevent users from disabling Zero Trust protection.
 - If users can freely disable WARP, all Gateway filtering and Access posture checks can be bypassed at will, defeating the Zero Trust model
 - Locking the switch keeps every device continuously inspected, including when malware or a user actively tries to evade controls
 - Admin override codes preserve a controlled, time-limited path for legitimate troubleshooting without leaving the switch open to everyone
-- Enforcing Gateway with WARP service mode ensures all traffic remains filtered rather than silently falling back to an unprotected path
+- Enforcing Traffic and DNS mode ensures all traffic remains filtered rather than silently falling back to an unprotected path
 
 **Attack Prevented:** Security-control evasion, unfiltered malicious traffic, posture-check bypass
 
 #### ClickOps Implementation
 
 **Step 1: Enable Lock Settings**
-1. Navigate to: **Settings** → **WARP Client** → **Device settings**
-2. Create or edit device profile
-3. Enable **Lock WARP switch**
+1. Navigate to: **Zero Trust** → **Team & Resources** → **Devices** → **Device profiles** → **General profiles**
+2. Select the device profile and select **Configure**
+3. Enable **Lock device client switch**
 
 **Step 2: Configure Override Codes (Optional)**
-1. Enable **Allow admin override codes**
+1. Enable **Allow admin override codes** (a global device client setting; it requires **Lock device client switch**)
 2. Admins can generate temporary disable codes
 3. Codes can be time-limited
 
 **Step 3: Configure Service Mode**
-1. Set **Service mode:** Gateway with WARP
+1. Set **Service mode:** Traffic and DNS mode
 2. This ensures all traffic is filtered
 3. Alternative modes available for specific needs
 
@@ -1032,7 +1059,7 @@ Configure split tunnel settings to control which traffic passes through WARP and
 
 #### Rationale
 **Why This Matters:**
-- By default, all traffic goes through WARP (full tunnel)
+- By default, the client runs in Exclude mode: all traffic goes to Gateway except a small default exclusion list
 - Split tunnel can improve performance for specific apps
 - Excessive split tunnel reduces security visibility
 - Document all exceptions with business justification
@@ -1042,21 +1069,21 @@ Configure split tunnel settings to control which traffic passes through WARP and
 #### ClickOps Implementation
 
 **Step 1: Access Split Tunnel Settings**
-1. Navigate to: **Settings** → **WARP Client** → **Device settings**
-2. Select device profile
-3. Click **Configure** under Split Tunnels
+1. Navigate to: **Zero Trust** → **Team & Resources** → **Devices** → **Device profiles** → **General profiles**
+2. Select the device profile and select **Configure**
+3. Scroll to **Split Tunnels** and select **Manage**
 
 **Step 2: Configure Minimum Exceptions**
-1. **Mode:** Exclude IPs and domains (default is include all)
+1. **Mode:** Exclude IPs and domains (the default)
 2. Add only necessary exceptions:
    - Video conferencing (Zoom, Teams IPs)
    - Local network access (RFC1918)
 3. Document each exception
 
-**Step 3: Prefer Include Mode (L3)**
-1. For maximum security, use **Include** mode
-2. Only specified traffic goes through WARP
-3. Everything else uses local network
+**Step 3: Avoid Include Mode for General Users (L3)**
+1. Include mode sends only the listed destinations to Gateway
+2. All other traffic bypasses Gateway and is no longer filtered by your DNS, HTTP, or network policies
+3. Keep Exclude mode and minimize exclusions; reserve Include mode for narrow use cases such as private-network-only access
 
 ---
 
@@ -1089,17 +1116,17 @@ Configure Cloudflare Tunnel (formerly Argo Tunnel) securely to expose internal a
 #### ClickOps Implementation
 
 **Step 1: Create Tunnel**
-1. Navigate to: **Access** → **Tunnels**
+1. Navigate to: **Networking** → **Tunnels**
 2. Click **Create a tunnel**
 3. Name the tunnel descriptively
 4. Install cloudflared on origin server
 
-**Step 2: Configure Public Hostname**
-1. Add public hostname routing
+**Step 2: Publish the Application Route**
+1. Select the tunnel → **Routes** → **Add route** → **Published application**
 2. Configure:
-   - **Subdomain:** app.yourdomain.com
+   - **Subdomain and domain:** app.yourdomain.com
    - **Service:** http://localhost:8080
-3. **Always create Access policy before exposing**
+3. **Create the Access application first (5.2)**
 
 **Step 3: Secure Tunnel Credentials**
 1. Tunnel token should be treated as secret
@@ -1135,12 +1162,12 @@ Always protect tunnel endpoints with Access policies before exposing them public
 #### ClickOps Implementation
 
 **Step 1: Create Access Application First**
-1. Before configuring tunnel hostname, create Access application
+1. Navigate to: **Zero Trust** → **Access controls** → **Applications** → **Add an application** → **Self-hosted application** for the hostname
 2. Configure appropriate access policy
 3. Test policy with test users
 
 **Step 2: Then Configure Tunnel**
-1. Add public hostname to tunnel
+1. Navigate to: **Networking** → **Tunnels**, select the tunnel → **Routes** → **Add route** → **Published application** with the same hostname
 2. Point to internal service
 3. Access policy automatically protects endpoint
 
@@ -1176,7 +1203,7 @@ TryCloudflare quick tunnels create an ephemeral `*.trycloudflare.com` hostname w
 #### ClickOps Implementation
 
 **Step 1: Block the Quick Tunnel Domain in Gateway DNS**
-1. Navigate to: **Gateway** → **Firewall Policies** → **DNS**
+1. Navigate to: **Zero Trust** → **Traffic policies** → **Firewall policies** → **DNS**
 2. Click **Add a policy** and name it "Block TryCloudflare Quick Tunnels"
 3. Configure the rule:
    - **Selector:** Domain
@@ -1186,8 +1213,8 @@ TryCloudflare quick tunnels create an ephemeral `*.trycloudflare.com` hostname w
 5. Confirm the policy is ordered so no broader allow rule precedes it
 
 **Step 2: Add an HTTP Policy for Defence in Depth**
-1. Navigate to: **Gateway** → **Firewall Policies** → **HTTP**
-2. Add a policy matching the **Host** selector against `trycloudflare.com` and any subdomain
+1. Navigate to: **Zero Trust** → **Traffic policies** → **Firewall policies** → **HTTP**
+2. Add a policy with the **Domain** selector set to `trycloudflare.com` (the Domain selector matches the domain and all of its subdomains; the Host selector matches one exact hostname only)
 3. Set **Action** to Block so requests that bypass DNS resolution are still stopped
 
 **Step 3: Restrict cloudflared Execution on Endpoints**
@@ -1225,6 +1252,9 @@ TryCloudflare quick tunnels create an ephemeral `*.trycloudflare.com` hostname w
 
 ---
 
+
+{% include pack-code.html vendor="cloudflare" section="5.3" %}
+
 ## 6. Monitoring & Detection
 
 ### 6.1 Configure Logging
@@ -1251,16 +1281,16 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 #### ClickOps Implementation
 
 **Step 1: Review Default Logs**
-1. Navigate to: **Logs** → **Access**
+1. Navigate to: **Zero Trust** → **Insights** → **Logs**
 2. Review available log types:
    - Access requests
    - Gateway DNS
    - Gateway HTTP
    - Gateway Network
 
-**Step 2: Configure Log Export**
-1. Navigate to: **Settings** → **Logpush**
-2. Click **Create Logpush job**
+**Step 2: Configure Log Export (Enterprise/Contract plans only)**
+1. In **Insights** → **Logs**, select **Manage Logpush**
+2. Select **Create a Logpush job**
 3. Select destination:
    - Splunk
    - Azure Blob Storage
@@ -1269,7 +1299,7 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 4. Configure log fields and filters
 
 **Step 3: Enable Real-Time Logs**
-1. Navigate to: **Logs** → **Gateway**
+1. Navigate to: **Zero Trust** → **Insights** → **Logs** and open the Gateway logs
 2. Review real-time activity
 3. Configure dashboards for monitoring
 
@@ -1335,16 +1365,19 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 
 ## Appendix A: Plan Compatibility
 
-| Feature | Free | Teams | Enterprise |
-|---------|------|-------|------------|
-| Access (50 users) | ✅ | ✅ | ✅ |
-| Gateway DNS filtering | ✅ | ✅ | ✅ |
-| Gateway HTTP filtering | ❌ | ✅ | ✅ |
-| Device posture | ❌ | ✅ | ✅ |
-| Browser Isolation | ❌ | Add-on | ✅ |
-| CASB | ❌ | Add-on | ✅ |
-| Logpush | ❌ | ✅ | ✅ |
-| Support | Community | Standard | Enterprise |
+Source: [Cloudflare Zero Trust plans](https://www.cloudflare.com/plans/zero-trust-services/), checked 2026-09-24.
+
+| Feature | Free | Pay-as-you-go | Contract |
+|---------|------|---------------|----------|
+| Access / ZTNA | ✅ (teams under 50 users) | ✅ | ✅ |
+| Gateway DNS + HTTP filtering (SWG) | ✅ | ✅ | ✅ |
+| Device client + posture checks | ✅ | ✅ | ✅ |
+| Browser Isolation | ❌ | Add-on | Add-on |
+| CASB | 2 read-only integrations | 2 read-only integrations | Unlimited (add-on) |
+| DLP | Limited predefined profiles | Limited predefined profiles | Full-featured (add-on) |
+| Logpush | ❌ | ❌ | ✅ |
+| Log retention | 24 hours | 30 days | 6 months |
+| Support | Community forums | Chat and ticket | Phone, chat and ticket |
 
 ---
 
@@ -1377,6 +1410,7 @@ Configure comprehensive logging for Zero Trust activities and integrate with SIE
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.2.2 | ai-drafted | validate-hth-guide run (Phases 4-6): 0 surfaces exercised live (dashboard signed out, no API credential), so maturity is unchanged; every console path re-checked against current Cloudflare docs and corrected (Zero Trust nav, Cloudflare One Client naming, role names, MFA selector, category selectors, Split Tunnels Include-mode guidance, no Screen lock posture check, and a 2.5 Step 1 path that uses the same Team & Resources label as 1.3 and 4.1–4.3 and ends at the Risk behaviors tab); Appendix A rebuilt from the Free / Pay-as-you-go / Contract plans page; Code Packs for 1.5, 1.6, 2.4, 2.5, 3.5, 5.3 and a cloudflared CLI pack for 5.1; fail-open audits and invalid Terraform fixed, writes gated behind HTH_APPLY=1; after an independent audit, the MFA audit checks every Allow and Bypass policy with Policy > Application > Organization precedence, every paginated list is read in full, the posture and Logpush audits fail on gaps, negated Gateway expressions no longer count, and API packs exit 1 on any failure; after a second independent audit, the identity provider audit counts only corporate IdP types (not One-time PIN, social providers, or the Cloudflare IdP), the WARP lock check reads `allowed_to_leave: false` correctly, the WARP settings audit accepts the guide's 1–15 minute Timeout and never writes a looser value, an API response that is not valid JSON fails the audit instead of reading as an empty list, the tunnel Access audit follows Access's wildcard and most-specific-match rules and requires an application that enforces a policy, the risk score audit requires an Access policy acting on High risk, the isolation audit checks the Step 2 settings, and the cloudflared pack reports an empty account as skipped and idle tunnels as a failure | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1, §1.3, §2.1, §3.1, §4.3, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.2.0 | ai-drafted | Add API token/Global API Key retirement (1.5), account 2FA enforcement (1.6), Access for Infrastructure SSH (2.4), user risk score gating (2.5), Gateway DLP (3.5), TryCloudflare quick tunnel abuse detection (5.3); correct the Salesloft Drift incident entry to the August 2025 Salesforce compromise with Cloudflare's own disclosure | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
