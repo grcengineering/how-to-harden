@@ -4,7 +4,7 @@ title: "Harden Actions OIDC Subject Claims"
 section: "3.6"
 profile_level: 2
 severity: "high"
-guide_url: "https://howtoharden.com/guides/github/#36-harden-actions-oidc-claims"
+guide_url: "https://howtoharden.com/guides/github/#36-harden-actions-oidc-subject-claims"
 description: >
   Customize GitHub Actions OIDC subject claims to include repository, environment,
   and job_workflow_ref for fine-grained cloud provider trust policies. This prevents

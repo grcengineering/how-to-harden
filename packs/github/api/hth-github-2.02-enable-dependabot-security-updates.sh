@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 2.02: Enable Dependabot Security Updates
 # Profile: L1 | NIST: RA-5, SI-2
-# https://howtoharden.com/guides/github/#22-enable-dependabot-security-updates
+# https://howtoharden.com/guides/github/#22-enable-security-features-dependabot-code-scanning-secret-scanning
 source "$(dirname "$0")/common.sh"
 
 banner "2.02: Enable Dependabot Security Updates"

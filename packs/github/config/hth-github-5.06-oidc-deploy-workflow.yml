@@ -1,6 +1,6 @@
 # HTH GitHub Control 5.06: OIDC Deployment Workflow (AWS Example)
 # Profile: L2 | NIST: IA-2, IA-5(2)
-# https://howtoharden.com/guides/github/#52-use-oidc-instead-of-long-lived-credentials
+# https://howtoharden.com/guides/github/#52-use-openid-connect-oidc-instead-of-long-lived-credentials
 #
 # Deploy: Copy to .github/workflows/deploy-aws.yml
 
@@ -19,10 +19,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
+        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a  # v4.0.1
         with:
           role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsRole
           aws-region: us-east-1

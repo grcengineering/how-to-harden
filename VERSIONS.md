@@ -96,7 +96,7 @@ A guide can be `ai-drafted` and `ni-drafted` at once. Holding both `ai-validated
 
 **Both agents at the same stage is the strongest thing this vocabulary can express.** `ai-validated` + `ni-validated` means the guidance survived contact with a real system twice, once under machine rigour and once under human judgement, and the two failure modes those catch barely overlap. There is no seventh status above it; combining is how the matrix expresses "better".
 
-**Where the corpus actually stands: no guide holds any `ni-*` status.** All 130 guides are `ai-drafted`; two of them (Buildkite, Ona) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
+**Where the corpus actually stands: no guide holds any `ni-*` status.** All 130 guides are `ai-drafted`; three of them (Buildkite, GitHub, Ona) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
 
 #### The version qualifier
 
@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-08-20 — 130 guides. Every one is `ai-drafted`; two (Buildkite, Ona) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-09-24 — 130 guides. Every one is `ai-drafted`; three (Buildkite, GitHub, Ona) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -176,7 +176,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [CrowdStrike Falcon](docs/_guides/crowdstrike.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Cursor](docs/_guides/cursor.md) | v0.4.0 | ai-drafted | 2026-08-08 |
 | [Datadog](docs/_guides/datadog.md) | v0.2.1 | ai-drafted | 2026-08-08 |
-| [GitHub](docs/_guides/github.md) | v0.7.1 | ai-drafted | 2026-08-08 |
+| [GitHub](docs/_guides/github.md) | v0.7.2 | ai-drafted · ai-validated | 2026-09-24 |
 | [Gmail](docs/_guides/gmail.md) | v0.1.0 | ai-drafted | 2026-08-03 |
 | [Google Chat](docs/_guides/google-chat.md) | v0.3.0 | ai-drafted | 2026-08-12 |
 | [Google Drive](docs/_guides/google-drive.md) | v0.2.0 | ai-drafted | 2026-08-08 |
