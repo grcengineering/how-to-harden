@@ -136,9 +136,7 @@
           "*.npmjs.org",
           "registry.npmjs.org",
           "github.com"
-        ],
-        "httpProxyPort": null,
-        "socksProxyPort": null
+        ]
       },
       "enableWeakerNestedSandbox": false
     }

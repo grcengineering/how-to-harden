@@ -42,11 +42,11 @@ anthropic-api:
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
 
 anthropic-claude:
-  product_docs: "https://docs.anthropic.com/"
-  api_docs: "https://docs.anthropic.com/en/api/"
+  product_docs: "https://platform.claude.com/docs/en/home"
+  api_docs: "https://platform.claude.com/docs/en/api/overview"
   hardening_docs:
     - label: "Claude Enterprise Administrator Guide"
-      url: "https://claude.com/resources/tutorials/claude-enterprise-administrator-guide"
+      url: "https://academy.claude.com/tutorials/claude-enterprise-administrator-guide"
     - label: "Tenant Restrictions (Network Control)"
       url: "https://support.claude.com/en/articles/13198485-enforce-network-level-access-control-with-tenant-restrictions"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"

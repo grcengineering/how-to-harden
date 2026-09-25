@@ -170,7 +170,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [BeyondTrust](docs/_guides/beyondtrust.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [ChatGPT Enterprise](docs/_guides/chatgpt-enterprise.md) | v0.3.0 | ai-drafted | 2026-08-08 |
 | [Claude API & Console](docs/_guides/anthropic-api.md) | v1.1.0 | ai-drafted | 2026-08-15 |
-| [Claude Code](docs/_guides/claude-code.md) | v1.0.2 | ai-drafted | 2026-08-15 |
+| [Claude Code](docs/_guides/claude-code.md) | v1.1.0 | ai-drafted | 2026-09-24 |
 | [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.2.0 | ai-drafted | 2026-08-15 |
 | [Cloudflare Zero Trust](docs/_guides/cloudflare.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [CrowdStrike Falcon](docs/_guides/crowdstrike.md) | v0.2.0 | ai-drafted | 2026-08-08 |
