@@ -568,7 +568,7 @@ launchdarkly:
 
 linear:
   product_docs: "https://linear.app/docs"
-  api_docs: "https://developers.linear.app/docs"
+  api_docs: "https://linear.app/developers"
   hardening_docs:
     - label: "Login Methods (Admin)"
       url: "https://linear.app/docs/login-methods"
