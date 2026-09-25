@@ -2,19 +2,20 @@ title: Stripe Account Configuration Changed
 id: c7816d13-aa1f-4567-8dd9-5012677ab978
 status: test
 description: |
-    Detects account.updated webhook events from Stripe indicating
-    changes to account configuration. This may include security
-    settings, team changes, or API key modifications.
-    Stripe DOES retain administrative records — logins and bank
-    account changes appear in the Dashboard security history at
-    dashboard.stripe.com/security_history, and that history is
-    user-exportable. What Stripe does not provide is a streamable
-    or API-exportable administrative audit log, and there are no
-    granular api_key.* event types on the Events API. So for a
-    SIEM-resident detection, account.updated is the closest
-    machine-consumable signal for configuration change; the
-    security history remains a manual review surface (HTH Stripe
-    control 4.1).
+    Detects account.updated events from Stripe, which record changes to
+    the Account object's configuration (business details, capabilities,
+    settings). It does NOT see API key lifecycle, team membership, or
+    role changes: the v1 Events API carries no api_key.* or team event
+    types.
+    Those events are recorded elsewhere. The Dashboard security history
+    (dashboard.stripe.com/security_history) lists logins, bank account
+    changes and API key creation and expiry, and is user-exportable.
+    The Activity Logs API (GET /v2/iam/activity_logs, public preview,
+    https://docs.stripe.com/activity-logs) returns api_key_created,
+    api_key_deleted, api_key_updated, api_key_viewed, user_invite_* and
+    user_roles_* records for 6 months. It is polled, not delivered
+    through event destinations, so a SIEM that wants key lifecycle must
+    poll that API rather than rely on this rule.
     Delivery pipeline: this rule is written against Stripe Events
     delivered through a Workbench event destination to Amazon
     EventBridge (or Azure Event Grid), then forwarded to the SIEM.
@@ -27,9 +28,11 @@ description: |
 references:
     - https://howtoharden.com/guides/stripe/
     - https://docs.stripe.com/api/events/types
+    - https://docs.stripe.com/activity-logs
     - https://docs.stripe.com/security
 author: How to Harden
 date: 2026/02/16
+modified: 2026/09/24
 tags:
     - attack.defense_evasion
     - attack.t1562.001
