@@ -87,7 +87,7 @@ Two-layer design:
 **Layer 1 -- Controls (`controls/`).**
 Machine-readable YAML definitions with audit checks (jq assertions against API responses), remediation steps (API calls and Terraform resources), and compliance mappings (SOC 2, NIST 800-53, ISO 27001, PCI DSS, DISA STIG). Designed for the `hth` CLI tool (`hth scan`, `hth harden`).
 
-**Layer 2 -- Automation (`terraform/`, `api/`, `cli/`, `sdk/`, `db/`, `siem/`, `scripts/`).**
+**Layer 2 -- Automation (`terraform/`, `api/`, `cli/`, `sdk/`, `db/`, `siem/`).**
 Immediately usable code organized by language type. Each file maps to a single control, so you can selectively implement one control at a time, several, or all of them at once.
 
 ```
@@ -105,7 +105,6 @@ packs/
       hth-{vendor}-{section}-{name}.tf               # One file per control
     api/                                             # API scripts (Enforcement + Verification)
       common.sh                                      # Shared utilities
-      hth-{vendor}-validate.sh                       # Read-only audit (Verification)
       hth-{vendor}-{section}-{name}.sh               # One script per control (Enforcement)
     cli/                                             # CLI scripts (Enforcement + Verification)
       hth-{vendor}-{section}-{name}.sh               # Vendor-native CLI commands
@@ -116,11 +115,15 @@ packs/
       hth-{vendor}-{section}-{name}.sql              # SQL/NoSQL queries
     siem/sigma/                                      # Detection rules (Drift + Threat Detection)
       hth-{vendor}-{section}-{name}.yml              # One rule per control
-    scripts/                                         # Operational utilities and IR runbooks
-      hth-{vendor}-{utility}.sh
-      incident-response/
-        hth-{vendor}-ir-{scenario}.sh
+tools/
+  {vendor}/                                          # Repo-only tooling: never published by the sync
+    hth-{vendor}-validate.sh                         # Read-only audit (Verification)
+    hth-{vendor}-{utility}.sh                        # Operational utilities
+    incident-response/
+      hth-{vendor}-ir-{scenario}.sh                  # IR runbooks
 ```
+
+Everything under `packs/{vendor}/` must map to a guide section, because the sync publishes files by `hth-{vendor}-{N.NN}-` section key and `scripts/validate-packs.sh` check 10 fails any `hth-` file it cannot reach. Tooling that spans sections, such as tenant-wide validators, IR runbooks, and utilities, lives in `tools/{vendor}/` instead.
 
 ## Naming Convention
 
@@ -135,7 +138,7 @@ All files follow: `hth-{vendor}-{section}-{control-title}.{ext}`
 | SDK Script | `sdk/` | `hth-entra-1.01-enforce-phishing-resistant-mfa.ps1` |
 | DB Query | `db/` | `hth-snowflake-2.01-enforce-network-policy.sql` |
 | Sigma Rule | `siem/sigma/` | `hth-okta-1.01-enforce-phishing-resistant-mfa.yml` |
-| IR Runbook | `scripts/incident-response/` | `hth-okta-ir-compromised-admin.sh` |
+| IR Runbook | `tools/{vendor}/incident-response/` | `hth-okta-ir-compromised-admin.sh` |
 
 Multi-rule controls use letter suffixes: `-b`, `-c`, `-d`, `-e`.
 
@@ -143,7 +146,7 @@ Multi-rule controls use letter suffixes: `-b`, `-c`, `-d`, `-e`.
 
 | Vendor | Controls | Terraform | API Scripts | Sigma Rules | IR Runbooks |
 |--------|----------|-----------|-------------|-------------|-------------|
-| [Okta](okta/) | 34 | 11 files | 22 scripts | 24 rules | 3 runbooks |
+| [Okta](okta/) | 34 | 11 files | 22 scripts | 24 rules | 3 runbooks ([tools/okta/](../tools/okta/)) |
 | [GitHub](github/) | 25 | -- | -- | -- | -- |
 
 ## Quick Start
@@ -163,7 +166,7 @@ export OKTA_API_TOKEN="your-api-token"
 export HTH_PROFILE_LEVEL=1  # 1=Crawl, 2=Walk, 3=Run
 
 # Audit your tenant (read-only)
-bash packs/okta/api/hth-okta-validate.sh
+bash tools/okta/hth-okta-validate.sh
 
 # Apply a single control
 bash packs/okta/api/hth-okta-1.01-enforce-phishing-resistant-mfa.sh

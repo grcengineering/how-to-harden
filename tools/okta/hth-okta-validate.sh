@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-# HTH Okta Code Pack -- Validation Script (Read-Only Audit)
+# HTH Okta -- Validation Script (Read-Only Audit)
 # Checks all controls without making changes (GET requests only)
-# Usage: HTH_PROFILE_LEVEL=2 ./validate.sh
+# Usage: HTH_PROFILE_LEVEL=2 bash tools/okta/hth-okta-validate.sh
 # https://howtoharden.com/guides/okta/
-source "$(dirname "$0")/common.sh"
+#
+# Repo-only tooling: it lives outside packs/ because it maps to no single
+# guide section, so the pack sync can never publish it. It reuses the API
+# packs' shared helpers.
+source "$(dirname "$0")/../../packs/okta/api/common.sh"
 
 banner "Validation Audit (Read-Only)"
 
