@@ -1,3 +1,9 @@
+# HTH Pack Contract: v1
+#   control: aws-iam-identity-center-3.2
+#   guide:   https://howtoharden.com/guides/aws-iam-identity-center/#32-configure-account-assignments
+#   profile: L1
+#   mode:    read-only
+#   requires: CloudTrail management events from the IAM Identity Center home Region delivered to the SIEM
 title: AWS IAM Identity Center Account Assignment Changed
 id: hth-aws-iic-3.02-account-assignment-changed
 status: test
