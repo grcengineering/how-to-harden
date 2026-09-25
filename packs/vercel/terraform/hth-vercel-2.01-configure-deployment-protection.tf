@@ -34,14 +34,16 @@ resource "vercel_project" "hardened" {
   team_id = var.vercel_team_id
 
   # L1: Standard Protection + Vercel Authentication (all plans).
-  # "standard_protection_new" is the current Standard Protection;
-  # "standard_protection" is the (Legacy) scope, which leaves production
-  # deployment URLs public. "all_deployments" is the paid 2.4 scope.
+  # "standard_protection_new" is the current Standard Protection (API:
+  # all_except_custom_domains), which leaves every production domain public,
+  # including the auto-assigned <project>.vercel.app; "standard_protection" is
+  # the (Legacy) scope, which leaves production deployment URLs public.
+  # "all_deployments" is the 2.4 scope (included on every plan).
   vercel_authentication = {
     deployment_type = local.vercel_authentication_scope
   }
 
-  # L2: Password Protection (Enterprise or Pro add-on) -- previews, or all
+  # L2: Password Protection (Enterprise, or Pro at $20/mo per project) -- previews, or all
   # deployments when 2.4 is enabled
   password_protection = var.profile_level >= 2 && var.preview_password != "" ? {
     deployment_type = local.password_protection_scope

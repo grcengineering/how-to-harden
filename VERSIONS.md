@@ -314,7 +314,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Rippling](docs/_guides/rippling.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Smartsheet](docs/_guides/smartsheet.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Snyk](docs/_guides/snyk.md) | v0.2.1 | ai-drafted | 2026-08-08 |
-| [Vercel](docs/_guides/vercel.md) | v1.2.1 | ai-drafted | 2026-08-08 |
+| [Vercel](docs/_guides/vercel.md) | v1.3.1 | ai-drafted · ai-validated | 2026-09-25 |
 
 ---
 

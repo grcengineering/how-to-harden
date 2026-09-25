@@ -12,7 +12,8 @@
 # audit reads that one file statically. When remotePatterns (or images) comes
 # from a variable, an import, a spread or a function call, it cannot see the
 # entries, so it says so and exits 2 rather than reporting the config clean.
-# Exit: 0 restrictive, 1 finding, 2 the audit could not read every entry.
+# Exit: 0 restrictive, 1 finding, 2 the audit could not read every entry or did
+# not run at all (node missing or crashed, or no temp file for the here-document).
 # =============================================================================
 
 set -euo pipefail
@@ -40,6 +41,10 @@ const fs = require('node:fs');
 const src = fs.readFileSync(process.argv[2], 'utf8')
   .replace(/\/\*[\s\S]*?\*\//g, '')          // block comments
   .replace(/(^|[^:'"])\/\/.*$/gm, '$1');     // line comments (not inside URLs)
+// A finding exits 20, a code node never uses on its own, so a crash (node's
+// exit 1) or a here-document bash could not create (bash's exit 1) is never
+// read as a finding. The shell below maps 20 back to 1.
+const FINDING = 20;
 let findings = 0, unread = 0;
 const report = (level, msg) => { console.log(`${level}: ${msg}`); findings++; };
 const cannot = (msg) => { console.log(`WARN: ${msg} — cannot statically parse; review by hand.`); unread++; };
@@ -121,17 +126,25 @@ for (const m of src.matchAll(/\bremotePatterns\b/g)) {
 if (unread) process.exit(2);
 if (arrays === 0) {
   if (!findings) console.log('OK: no remotePatterns declared (remote images disabled).');
-  process.exit(findings ? 1 : 0);
+  process.exit(findings ? FINDING : 0);
 }
 if (!findings) console.log(`OK: ${total} remotePatterns entr${total === 1 ? 'y' : 'ies'}, all restrictive.`);
-process.exit(findings ? 1 : 0);
+process.exit(findings ? FINDING : 0);
 JS
 
-if [ "${rc}" -eq 1 ] || [ "${rc}" -eq 2 ]; then
-  echo ""
-  echo "Recommended shape (a literal array; hostname and pathname on EVERY entry):"
-  echo "  { protocol: 'https', hostname: 'cdn.example.com', pathname: '/images/**' }"
-fi
+case "${rc}" in
+  0) ;;
+  20|2)
+    if [ "${rc}" -eq 20 ]; then rc=1; fi
+    echo ""
+    echo "Recommended shape (a literal array; hostname and pathname on EVERY entry):"
+    echo "  { protocol: 'https', hostname: 'cdn.example.com', pathname: '/images/**' }"
+    ;;
+  *)
+    echo "ERROR: the audit did not run to a verdict (exit ${rc}: node missing or crashed, or no temp file for the here-document); nothing was checked (exit 2)." >&2
+    rc=2
+    ;;
+esac
 exit "${rc}"
 
 # HTH Guide Excerpt: end config

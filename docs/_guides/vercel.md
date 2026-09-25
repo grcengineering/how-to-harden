@@ -6,8 +6,8 @@ slug: "vercel"
 tier: "5"
 category: "DevOps"
 description: "Comprehensive platform security for authentication, WAF, deployment protection, secrets, network isolation, security headers, and monitoring"
-version: "1.3.0"
-maturity: ["ai-drafted"]
+version: "1.3.1"
+maturity: ["ai-drafted", "ai-validated"]
 last_updated: "2026-09-25"
 ---
 
@@ -470,7 +470,7 @@ Vercel documents four protection **methods** and four protection **scopes**. Cho
 | Method | Plans | Notes |
 |--------|-------|-------|
 | Vercel Authentication | Hobby, Pro, Enterprise | Requires team login; covers Routing Middleware |
-| Password Protection | Enterprise, or **Pro + $150/mo Advanced Deployment Protection add-on** | 30-day minimum commitment on Pro add-on |
+| Password Protection | Pro (**$20/month per protected project**) or Enterprise (included for every project at the team level); not available on Hobby | Pro teams that bought the legacy Advanced Deployment Protection package keep team-level Password Protection on that billing ([Vercel: Deployment Protection pricing](https://vercel.com/docs/deployment-protection/usage-and-pricing)) |
 | Trusted IPs | Enterprise only | IPv4 CIDR allowlist |
 | Passport | Enterprise only (account-team pricing) | Restricts deployment access to visitors authenticated against **your own IdP** (Entra ID, Okta, any OIDC provider) — see below |
 
@@ -480,12 +480,12 @@ Vercel documents four protection **methods** and four protection **scopes**. Cho
 
 | Scope | Plans | What it covers |
 |-------|-------|----------------|
-| Standard Protection | All | Preview + generated URLs; production custom domain remains public |
-| All Deployments | Pro, Enterprise | Preview + production + generated URLs |
+| Standard Protection | All | Preview URLs and generated deployment URLs. **Every production domain stays public**: custom domains **and** the project's auto-assigned `<project>.vercel.app` domain ([Vercel: Standard Protection](https://vercel.com/docs/deployment-protection#standard-protection)) |
+| All Deployments | All (included on Hobby, Pro, and Enterprise) | Preview + production + generated URLs |
 | Only Production Deployments (via Trusted IPs) | Enterprise only | Production domain only; preview stays public |
 | (Legacy) Standard / Pre-Production | All | Retained for backwards compatibility — migrate to current scopes |
 
-**Hobby-plan caveat:** Vercel Authentication + Standard Protection on Hobby protects preview and generated URLs but production custom domains remain public.
+**Hobby-plan caveat:** Vercel Authentication + Standard Protection on Hobby protects preview and generated deployment URLs, but every production domain, including the auto-assigned `<project>.vercel.app`, remains public. To gate production as well, select **All Deployments**, which Vercel now includes on every plan, Hobby included (see 2.4).
 
 #### ClickOps Implementation
 
@@ -499,13 +499,14 @@ Vercel documents four protection **methods** and four protection **scopes**. Cho
 
 1. Navigate to: **Project Settings → Deployment Protection**
 2. Select scope **Standard Protection** and method **Vercel Authentication**
+   - The API reports this scope as `ssoProtection.deploymentType = all_except_custom_domains` (Terraform: `standard_protection_new`). In that name, "custom domains" includes the auto-assigned `<project>.vercel.app`: it stays public too.
 3. Note: Deployment Protection applies to **Routing Middleware** requests as well — automation that depends on reaching middleware without auth will need a bypass token
 
-**Step 3: Add Password Protection (L2 — Enterprise or Pro Add-on)**
+**Step 3: Add Password Protection (L2 — Pro at $20/month per project, or Enterprise)**
 
-1. Enable **Password Protection** for the appropriate scope
+1. Enable **Password Protection** for the appropriate scope (on Pro, enabling it adds the per-project charge; disabling it stops future charges)
 2. Set a strong password and rotate quarterly; distribute via secrets manager, never in docs
-3. For shareable-link scenarios use **Deployment Protection Exceptions** (Advanced DP) rather than disabling protection
+3. For shareable-link scenarios use **Deployment Protection Exceptions** (included on every plan) rather than disabling protection
 
 **Step 4: Configure Trusted IPs (L3 — Enterprise)**
 
@@ -697,7 +698,7 @@ Enable progressive deployment rollouts to limit blast radius of production chang
 
 #### Description
 
-Restrict access to production domains — not just preview URLs — to authenticated users, corporate IP ranges, or password-holders. Available to Enterprise plans and to Pro teams that opt into the Advanced Deployment Protection add-on ($150/month, 30-day minimum commitment).
+Restrict access to production domains — not just preview URLs — to authenticated users, corporate IP ranges, or password-holders. Vercel Authentication on the **All Deployments** scope is included on every plan, Hobby included; Password Protection costs $20/month per protected project on Pro and is included on Enterprise; production-only Trusted IPs are Enterprise-only. Private production used to require the $150/month Advanced Deployment Protection add-on, which Vercel now lists as a legacy package ([Vercel: Deployment Protection pricing](https://vercel.com/docs/deployment-protection/usage-and-pricing)).
 
 #### Rationale
 
@@ -705,23 +706,25 @@ Restrict access to production domains — not just preview URLs — to authentic
 
 - Internal tools, admin consoles, and staging-adjacent production workloads often have no business being indexed by search engines or reachable by anonymous traffic
 - "Private production" reduces attack surface for applications that only serve authenticated users anyway
-- The Advanced DP add-on unlocks Password Protection and Deployment Protection Exceptions on Pro without requiring an Enterprise contract
+- Vercel Authentication on All Deployments and Deployment Protection Exceptions are included on every plan, so gating production no longer needs an add-on or an Enterprise contract ([Vercel changelog](https://vercel.com/changelog/protect-production-deployments-for-free-on-every-plan))
 
 **Attack Prevented:** Anonymous reconnaissance of production admin surfaces, credential-stuffing at public login pages, automated scanning of production endpoints.
 
 #### Prerequisites
 
-- Vercel Pro plan + **Advanced Deployment Protection** add-on ($150/month, minimum 30 days before disabling), **or** Enterprise plan
+- **Vercel Authentication on All Deployments:** any plan (Hobby, Pro, Enterprise), no additional charge
+- **Password Protection:** Pro ($20/month per protected project) or Enterprise (included); Pro teams on the legacy Advanced Deployment Protection package ($150/month per team) keep team-level Password Protection on that billing
+- **Trusted IPs:** Enterprise plan
 - Trusted IP list (if using Trusted IPs) or IdP for Vercel Authentication or password distribution channel
 
 #### ClickOps Implementation
 
-**Step 1: Enable Advanced Deployment Protection (Pro only)**
+**Step 1: Open Deployment Protection and Confirm Plan Coverage**
 
 1. Navigate to: **Project Settings → Deployment Protection**
-2. Choose one of **Password Protection**, **Private Production Deployments (All Deployments)**, or **Deployment Protection Exceptions**
-3. Click **Enable and Pay** when prompted
-4. Add-on activates immediately; all Advanced DP features unlock
+2. **Vercel Authentication** with the **All Deployments** scope needs no purchase on any plan
+3. **Password Protection** on Pro adds a $20/month charge for this project when you enable it; disabling it stops future charges ([Vercel: Password Protection pricing](https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/password-protection#password-protection-pricing))
+4. **Trusted IPs** requires Enterprise
 
 **Step 2: Choose a Scope**
 
@@ -734,12 +737,12 @@ Restrict access to production domains — not just preview URLs — to authentic
 1. Select **Vercel Authentication** (team members only), **Password Protection** (strong password distributed via secrets manager), or **Trusted IPs** (Enterprise)
 2. For production-only Trusted IPs, set `protection_mode = trusted_ip_required` and `deployment_type = production`
 
-**Step 4: Plan 30-Day Minimum Commitment (Pro Add-on)**
+**Step 4: Review Scope and Cost Quarterly**
 
-1. Note the add-on bills for a minimum 30 days before it can be disabled
-2. Review the use-case quarterly to decide whether to keep, downgrade to Standard Protection, or upgrade to Enterprise
+1. On Pro, Password Protection bills each protected project monthly; confirm every charged project still needs it
+2. Review the use-case quarterly to decide whether to keep private production, return to Standard Protection, or move to Enterprise for Trusted IPs
 
-**Time to Complete:** ~20 minutes (including billing approval)
+**Time to Complete:** ~20 minutes (plus billing approval if Password Protection is enabled on Pro)
 
 #### Code Implementation
 
@@ -750,7 +753,7 @@ Restrict access to production domains — not just preview URLs — to authentic
 1. Unauthenticated request to production domain returns the Vercel auth/password gate
 2. Non-trusted-IP request to production is blocked at the edge (Enterprise Trusted IPs scope)
 3. Deployment Protection Exceptions work for the specific named paths/services only
-4. Billing reflects the $150/month Pro add-on line item (Pro teams)
+4. Billing shows a $20/month Password Protection charge for each protected Pro project and no charge for Vercel Authentication on All Deployments (teams on the legacy package see Team Level Password Protection instead)
 
 **Expected result:** Production domains enforce the chosen protection method end-to-end.
 
@@ -761,7 +764,7 @@ Restrict access to production domains — not just preview URLs — to authentic
 | **User Experience** | Medium-High | End users outside the team/trusted IPs cannot reach production |
 | **System Performance** | None | Enforced at the edge |
 | **Maintenance Burden** | Low | Password rotation + Trusted IP list maintenance |
-| **Rollback Difficulty** | Moderate | Must wait 30 days before disabling Pro add-on |
+| **Rollback Difficulty** | Low | Switch the scope back to Standard Protection; disabling Password Protection stops future charges |
 
 **Potential Issues:**
 
@@ -1508,7 +1511,7 @@ Configure security headers (CSP, X-Frame-Options, Referrer-Policy, etc.) to prot
 **Real-World Incidents:**
 - **Vercel XSS in Clone URL** (2024): Reflected XSS found in Vercel's own clone functionality -- reinforces need for CSP even on trusted platforms
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Observed on a live Vercel project: the vercel.json headers block is served on every route, 404s included, and SecurityHeaders.com run in a real browser graded it A" date="2026-09-25" %}
 
 **Step 1: Configure via vercel.json**
 1. Add a `headers` configuration block to your `vercel.json`
@@ -1528,7 +1531,7 @@ Configure security headers (CSP, X-Frame-Options, Referrer-Policy, etc.) to prot
 
 **Time to Complete:** ~20 minutes
 
-#### Code Implementation
+#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Header-check config pack executed against a live Vercel production domain; its present and MISSING report matched an independent curl -I" date="2026-09-25" %}
 
 {% include pack-code.html vendor="vercel" section="5.1" %}
 
@@ -1948,7 +1951,7 @@ Verify TLS configuration and optionally deploy custom certificates for domains r
 
 **Attack Prevented:** Man-in-the-middle attacks, protocol downgrade attacks, certificate impersonation
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Step 1 walked against a live Vercel production domain: HTTP 308 to HTTPS, SSL Labs in a real browser showed TLS 1.3 and 1.2 only with forward secrecy; Steps 2 and 3 not exercised" date="2026-09-25" %}
 
 **Step 1: Verify TLS Configuration**
 1. Confirm HTTPS enforced (automatic -- HTTP 308 redirects to HTTPS)
@@ -2722,7 +2725,7 @@ Since 2026-08-07, a Vercel Container Registry repository can be flipped from pri
 | Security Role | 1.3 | ❌ | ❌ | ✅ |
 | OIDC Federation | 1.4 | ✅ | ✅ | ✅ |
 | Deployment Protection (Standard) | 2.1 | ✅ | ✅ | ✅ |
-| Password Protection | 2.1 | ❌ | Add-on ($150/mo) | ✅ |
+| Password Protection | 2.1 | ❌ | $20/mo per protected project | ✅ |
 | Trusted IPs | 2.1 | ❌ | ❌ | ✅ |
 | Passport (IdP-backed deployment access) | 2.1 | ❌ | ❌ | ✅ (account-team pricing) |
 | Protected Source Maps | 2.5 | ✅ | ✅ | ✅ |
@@ -2745,7 +2748,7 @@ Since 2026-08-07, a Vercel Container Registry repository can be flipped from pri
 | Sensitive Env Var Policy | 6.1 | ❌ | ✅ | ✅ |
 | Deployment Retention | 6.2 | ✅ | ✅ | ✅ |
 | Third-Party Integration Audit | 1.5 | ✅ | ✅ | ✅ |
-| Private Production Deployments | 2.4 | ❌ | Add-on ($150/mo) | ✅ |
+| Private Production Deployments | 2.4 | ✅ (Vercel Authentication) | ✅ (+ Password Protection at $20/mo per project) | ✅ |
 | Firewall Persistent Actions | 3.3 | ❌ | ✅ | ✅ |
 | AI Bots Managed Ruleset | 3.4 | ❌ | ❌ | ✅ |
 | Rotate Deploy Hooks | 6.3 | ✅ | ✅ | ✅ |
@@ -2921,6 +2924,7 @@ This playbook is applicable to any Vercel customer whose projects existed prior 
 | 2026-08-08 | 1.2.0 | ai-drafted | [SECURITY] Currency pass: added Section 2.5 (Protected Source Maps — default-on for new projects, opt-in for existing), 3.5 (Vercel BotID Basic/Deep Analysis), and 10.4 (Container Registry public repositories as a change-controlled action). Added Passport as the fourth Deployment Protection method in 2.1 with the bypass-secret ordering caveat, and its `passport-access-granted` detection event in 8.2. Rewrote 8.2 for Audit Log Drains — Custom SIEM Log Streaming deprecated 2026-08-07, destinations now S3/Splunk/Datadog/Panther/custom HTTPS, drain signature verification (8.4) now applies to audit logs. Updated 9.1 for the Next.js preannounced monthly security-release program and LTS channels (minimum 16.2.11 Active LTS / 15.5.21 Maintenance LTS, up from 15.5.15 / 16.2.3), reframed MTTP to start at pre-announcement, and added the nine July 2026 CVEs (CVE-2026-64641 through CVE-2026-64649) including the CVE-2026-64642 middleware bypass corroborating 10.2. Corrected 3.2 IP blocking limits (project Hobby 3 / Pro 100 / Enterprise 1,000; account-level Enterprise-only with /16 IPv4 and /48 IPv6 CIDR ceilings) and noted JA3 (Legacy) as Enterprise-only. Documented the 32-character build-log redaction floor for sensitive environment variables in 6.1. Updated Appendix A and the moved Vercel WAF docs URL in Appendix B. | Claude Code (Opus 4.8) |
 | 2026-08-08 | 1.2.1 | ai-drafted | Add Code Pack for 3.5 Vercel BotID (`hth-vercel-3.05`, sdk type): `withBotId()` next.config wrap, `initBotId()` client route declarations, and `checkBotId()` server-side handler gate, all fetch-verified against vercel.com/docs/botid/get-started; wired the 3.5 pack include | Claude Code (Fable 5) |
 | 2026-09-25 | 1.3.0 | ai-drafted | [SECURITY] Offline fix loop of a `validate-hth-guide` run (Vercel console signed out, so 0 surfaces were exercised live and no `ai-validated` status is claimed). **Console paths corrected against current Vercel docs:** 1.1 and 1.2 (Security & Privacy → Authentication and User Provisioning → Configure), 1.4 OIDC (a project setting: Project Settings → Security), 1.5 deploy hooks (Project Settings → Git), 4.1 (Team Settings → Networking; projects attach under Project Settings → Networking), 8.2 (Security & Privacy → Audit Log), Appendix C (Activity Log). 3.3 now describes persistence as the rule's **for** timeframe (`actionDuration`); `persistentAction` is not a real field. 8.2 alert names now use the documented Activity Log event names. 8.4 uses `POST /v1/drains/test`. 10.2 covers Next.js 16 `proxy.ts`. The 6.3 leak-search pattern now matches the documented hook URL shape (`/v1/integrations/deploy/`). **Terraform:** provider `~> 2.0` → `~> 5.17` (validated on 5.17.1, Terraform ≥ 1.6), since the 2.x module failed `terraform validate`. There is now one adopted `vercel_project` (import block, new `project_name` variable), one `vercel_firewall_config`, and one `vercel_team_config`, with the other controls feeding them through locals. Adopting the project changes only the hardening settings the pack declares: its Git link, framework, build commands and other settings are left as they are (`lifecycle.ignore_changes`; without it the import planned them to null, and a null `git_repository` unlinks the repository). A precondition stops the apply rather than remove Password Protection or Trusted IPs, narrow All Deployments protection, or rename the project, and below L2 the current skew protection, disabled previews and verified commits are kept. L1 now uses the current Standard Protection (`standard_protection_new`), not the Legacy scope. The firewall config is created only when the firewall is managed, and replacing an existing one needs `firewall_replace_existing_config = true` because the provider PUTs the whole config; Attack Challenge Mode is managed only while enabled. At the defaults the pack therefore no longer switches off an existing firewall or Attack Challenge Mode. The nonexistent `vercel_network_project_link` is removed. Added `vercel_network.cidr`, `attack_mode_active_until`, and `vercel_project_deployment_retention`; `create_deployments` is a bool in 5.x. New packs: 2.5 (`protected_sourcemaps`) and 10.4 (`vercel_vcr_repository`, private). 10.3 now states its automation verdict. **API/CLI/config packs:** firewall writes use `PATCH` rather than the full-config `PUT`, and `managedRules` replaces `managedRulesets`. Every read uses `curl -f`, so an auth failure aborts instead of printing empty findings. Fail-open audits fixed in 1.2 (every page of team members and access groups is read; a walk that cannot finish exits 2 rather than under-reporting owners), 1.4 (OIDC from the project; the token list is requested with `limit=100` and a second page exits 2 instead of being silently skipped), 1.5 (array response, deploy hooks from `link.deployHooks`, `ssoProtection`, and every page of `/v10/projects`; a walk that cannot finish exits 2 instead of auditing only the first 100 projects), 2.3, 6.4 (hidden and ignored files; a `.next` bundle scan that cannot read a file exits 2), 7.1 (JSON on stdout, the team `--scope`, and exit 2 when `dig` is missing or a lookup fails; a probe that cannot connect is now a finding, and zone names removed from Vercel can be passed as arguments), 10.1 (per-entry check, quoted keys, and exit 2 when `remotePatterns` or `images` comes from a variable, an import or a spread it cannot read), and 10.2 (string matcher, missing-`rg` fallback, and file paths with spaces or `[id]`-style segments are read verbatim instead of being split or glob-expanded). 7.2 now tests Validation 2 (TLS 1.0 and 1.1 must be refused; verdicts are read from the handshake transcript so LibreSSL and OpenSSL 3 clients both work), requires HSTS `max-age` of at least one year (plus `includeSubDomains` and `preload` with `HTH_HSTS_PRELOAD=1`), lists the team's certificates with `--scope` across every page, and exits 0, 1 or 2 for clean, finding or unchecked. 3.3 and 9.1 update an existing `hth-*` rule in place (`rules.update`) instead of inserting a duplicate on every re-run, and warn that a Terraform-managed firewall config replaces their rules; 9.1 exits 2 when there is no `node_modules/next` for its patch gate to check. 5.1 now sets `X-XSS-Protection: 0`: the guide had recommended `1; mode=block`, which OWASP warns can introduce XSS, and the pack now flags any other deployed value. 6.3 now uses `vercel deploy-hooks`, creates the replacement before removing the old hook, and never prints the hook URL; 8.3 never prints `CRON_SECRET`, names the env-write target explicitly (`VERCEL_ORG_ID` with `VERCEL_PROJECT_ID`, without which `vercel env add` refuses or writes to whichever project the directory is linked to), and reports an unreachable endpoint as `000`, not `000000`. Seven misfiled `cli/` packs fixed: 1.04 and 8.04 moved to `api/`; 5.01, 6.04, 10.01, and 10.02 moved to `config/`; and 6.03 was rewritten onto the `vercel` CLI, so it stays in `cli/`. `#### Code Implementation` headings were added to match the template | Claude Code (Opus 5.5) |
+| 2026-09-25 | 1.3.1 | ai-drafted · ai-validated | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated**: a `validate-hth-guide` run exercised part of this guidance against a live Vercel team and it survived that contact. An AI agent did the exercising; no human practitioner has reviewed or applied this guide, so it claims no **ni-** status. **What was exercised (3 surfaces across 2 controls, each marked):** 5.1 ClickOps (a live project's `vercel.json` headers observed on every route, and SecurityHeaders.com run in a real browser), 5.1 Code (the `config/` header-check pack run against a live production domain, its report matched an independent `curl -I`), and 7.2 ClickOps Step 1 (HTTP 308 to HTTPS, SSL Labs and `openssl` protocol probes). **What was NOT exercised, so it carries no mark:** every other console path, because the Vercel dashboard stayed behind its sign-in wall for the whole run; every credentialed read-only pack, because no Vercel token could be minted; every mutating Terraform/API pack; 7.2 Steps 2 and 3. **Corrected from live behaviour:** 2.1's Standard Protection scope now says every production domain stays public, including the auto-assigned `<project>.vercel.app` (unauthenticated probes of a live project: the production `vercel.app` domain answered 200 while its generated deployment URL redirected to Vercel's sign-in). **Corrected from current Vercel docs (pricing changed):** Password Protection is $20/month per protected project on Pro, and Vercel Authentication on **All Deployments** plus Deployment Protection Exceptions are included on every plan; the $150/month Advanced Deployment Protection add-on, its 30-day minimum, and "Enable and Pay" are gone from 2.1, 2.4 and Appendix A (Vercel now lists that package as legacy). Pack comments in 2.01, 2.04 and `variables.tf` follow suit (comments and one variable description only; `terraform validate` and `terraform test` 20/20 re-run). **The 5.1 and 10.1 checks now exit 2, not 1, when they could not run:** in 5.1 a failed temp file, `jq` step or request to the domain (and a header-name read that fails, which had passed as "all present" with nothing checked); in 10.1 a missing or crashed `node` or a here-document bash cannot create, which had been reported as a finding. 5.1 was re-run against the live production domain after the change and gave the same report and exit 1 | Claude Code (Opus 5.5) |
 
 ## Contributing
 

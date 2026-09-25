@@ -7,11 +7,18 @@
 # Type: config -- emits the vercel.json "headers" block, then checks a deployed
 #       domain for each header. Does not call the vercel CLI or any Vercel API.
 # Usage: ./hth-vercel-5.01-security-response-headers.sh [your-domain.com]
+# Exit: 0 every header present with X-XSS-Protection 0 (or no domain given: the
+#       config was only emitted); 1 a header missing or X-XSS-Protection set to
+#       anything but 0; 2 the check did not run -- the temp file, jq, or the
+#       request to the domain failed -- so nothing was checked.
 # =============================================================================
 
 set -euo pipefail
 
 # HTH Guide Excerpt: begin config
+
+# Any failed step (temp file, jq, curl) exits 2, never 1: 1 means "finding".
+trap 'echo "ERROR: the header check stopped before a verdict; nothing was checked (exit 2)." >&2; exit 2' ERR
 
 # --- Emit the vercel.json headers block to a private temp file ---
 HEADERS_FILE="${HTH_HEADERS_OUT:-$(mktemp "${TMPDIR:-/tmp}/hth-vercel-headers.XXXXXX")}"
@@ -70,7 +77,9 @@ echo ""
 echo "=== Validating Security Headers for ${DOMAIN} ==="
 RESPONSE_HEADERS="$(curl -fsSI "https://${DOMAIN}" | tr -d '\r')"
 PROBLEMS=0
+CHECKED=0
 for header in $(jq -r '.headers[0].headers[].key' "${HEADERS_FILE}"); do
+  CHECKED=$((CHECKED + 1))
   if printf '%s\n' "${RESPONSE_HEADERS}" | grep -qi "^${header}:"; then
     echo "  present: ${header}"
   else
@@ -78,6 +87,12 @@ for header in $(jq -r '.headers[0].headers[].key' "${HEADERS_FILE}"); do
     PROBLEMS=1
   fi
 done
+# A failed jq inside the for-list is invisible to set -e: zero names read must
+# not pass as "all present".
+if [ "${CHECKED}" -eq 0 ]; then
+  echo "ERROR: no header names read from ${HEADERS_FILE}; nothing was checked (exit 2)." >&2
+  exit 2
+fi
 
 # --- X-XSS-Protection must switch the legacy XSS auditor OFF: "1; mode=block"
 #     can itself introduce XSS in otherwise safe pages (OWASP HTTP Headers

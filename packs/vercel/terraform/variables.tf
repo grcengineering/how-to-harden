@@ -110,7 +110,7 @@ variable "trusted_ip_addresses" {
 # -----------------------------------------------------------------------------
 
 variable "private_production_deployments_enabled" {
-  description = "Enable All-Deployments scope (includes production domains) — Enterprise or Pro Advanced DP add-on (L2+)"
+  description = "Enable All-Deployments scope (includes production domains) — included on every plan with Vercel Authentication; Password Protection on it is $20/mo per project on Pro (L2+)"
   type        = bool
   default     = false
 }
