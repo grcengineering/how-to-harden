@@ -256,7 +256,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Segment](docs/_guides/segment.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [SendGrid](docs/_guides/sendgrid.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Sentry](docs/_guides/sentry.md) | v0.2.1 | ai-drafted | 2026-08-08 |
-| [Shopify Plus](docs/_guides/shopify.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Shopify Plus](docs/_guides/shopify.md) | v0.3.0 | ai-drafted | 2026-09-24 |
 | [Square](docs/_guides/square.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Tenable](docs/_guides/tenable.md) | v0.2.2 | ai-drafted | 2026-08-08 |
 | [Twilio](docs/_guides/twilio.md) | v0.2.1 | ai-drafted | 2026-08-08 |
