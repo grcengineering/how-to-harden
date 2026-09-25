@@ -9,9 +9,9 @@ product: "Jira Cloud"
 tier: "2"
 category: "Productivity"
 description: "Jira Cloud hardening for in-product authorization — permission schemes, work item security schemes, public space exposure, global permissions, guest access, and automation rule egress."
-version: "0.2.0"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-09-25"
 ---
 
 ## Overview
@@ -38,7 +38,7 @@ That distinction matters because the two layers fail independently. Organization
 ### Scope
 This guide covers Jira Cloud in-product authorization and extensibility: permission schemes, work item security schemes, public and anonymous space exposure, global permissions, guest access, and Jira automation. Organization authentication, app governance, and audit logging are in the [Atlassian Common Controls guide](/guides/atlassian/). Bitbucket is covered in the [Bitbucket guide](/guides/bitbucket/).
 
-**Automation surface:** Jira Cloud exposes permission schemes, work item security schemes, and global permissions through the Jira Cloud REST API v3, but the practical hardening workflow for all of them is ClickOps — the API is most useful for *auditing* current state rather than setting it. Controls below state their real automation surface honestly.
+**Automation surface:** the Jira Cloud REST API v3 reads and writes permission schemes and work item security schemes. The Automation REST API reads automation rules and can enable, disable, or re-scope them. The Organization REST API reads and assigns the Guest role. Global permission grants and automation's **Global configuration** settings have no documented write interface and are ClickOps only. Each control below carries its own read-only audit pack or an evidenced **Automation:** line. The packs report current state and change nothing; make changes in the console, where you can see which spaces a shared scheme affects. Every pack is a REST API pack because no other surface reaches these settings: Atlassian's only first-party Terraform provider covers Jira Service Management and Compass operations, and the [Atlassian CLI](https://developer.atlassian.com/cloud/acli/reference/commands/jira/) (`acli jira`) has no permission, scheme, guest, or automation-rule commands.
 
 **Plan limitation:** permission schemes, space roles, and work item security schemes **are not available on Free Jira sites**. A Free site cannot implement §1.1 or §1.2 at all. Source: [Permissions limitations in Free Jira sites](https://support.atlassian.com/jira-cloud-administration/docs/permissions-limitations-in-free-jira-sites/)
 
@@ -66,14 +66,14 @@ This guide covers Jira Cloud in-product authorization and extensibility: permiss
 | ISO 27001:2022 | A.5.15, A.8.3 |
 
 #### Description
-A permission scheme is the reusable set of grants that decides who can browse, create, edit, comment on, transition, and administer the work in a Jira space (project). Schemes are managed at **Settings (gear icon) → Work items → Permission schemes**, and each grant can be assigned to a space role, an application-access group, a specific group, a single user, the space lead, the current assignee or reporter, a user or group picker custom field value, **Any logged in user**, or **Public**. Assigning through space roles and IdP-synced groups — rather than to individuals — is what keeps the model auditable as people change teams. Source: [Grant or revoke permissions in a scheme](https://support.atlassian.com/jira-cloud-administration/docs/grant-or-revoke-permissions-in-a-scheme/)
+A permission scheme is the reusable set of grants that decides who can browse, create, edit, comment on, transition, and administer the work in a Jira space (project). Schemes are managed at **Settings (gear icon) → Work items → Permission schemes**, and each grant can be assigned to a space role, an application-access group, a specific group, a single user, the space lead, the current assignee or reporter, a user or group picker custom field value, **Any logged in user**, or **Public**. Assigning through space roles and IdP-synced groups — rather than to individuals — is what keeps the model auditable as people change teams. Sources: [Grant or revoke permissions in a scheme](https://support.atlassian.com/jira-cloud-administration/docs/grant-or-revoke-permissions-in-a-scheme/) (console path and grant targets) · [Space access and configuration permissions](https://support.atlassian.com/jira-cloud-administration/docs/space-access-and-configuration-permissions/) (**Browse spaces**, **Administer spaces**) · [Work item permissions](https://support.atlassian.com/jira-cloud-administration/docs/work-item-permissions/) (**Delete work items**, **Delete all comments**)
 
 #### Rationale
 **Why This Matters:**
 - The default scheme in most tenants grants **Browse spaces** to *Any logged in user*, which means every licensed person in the company can read every space — including the security space where vulnerabilities are tracked before they are fixed
 - Permission grants are the boundary that determines blast radius after a single account is phished; an attacker inherits exactly the scheme grants their victim held, and a default-open scheme hands them the whole tenant
 - Granting to individuals instead of roles and groups produces access that never gets revoked, because there is no joiner/mover/leaver process that reaches individual grants inside a permission scheme
-- The **Make bulk changes** and **Delete work items** grants are destructive at scale — an account holding them can silently move or delete thousands of items, which is both a data-loss and an evidence-destruction risk
+- The **Delete work items** and **Delete all comments** grants are destructive at scale; combined with the **Make bulk changes** *global* permission (§2.1), an account holding them can silently move or delete thousands of items, which is both a data-loss and an evidence-destruction risk
 - Schemes are shared across spaces, so a single careless edit made for one space silently widens access to every other space using that scheme
 
 **Attack Prevented:** Lateral movement after account compromise, insider data harvesting, privilege creep, mass deletion or bulk modification, unauthorized workflow transitions
@@ -110,6 +110,10 @@ A permission scheme is the reusable set of grants that decides who can browse, c
 1. Re-review scheme grants quarterly, and immediately after any reorganization
 2. Verify that newly created spaces picked up a restrictive scheme rather than the permissive default
 3. Confirm no scheme drifted back to **Any logged in user** on the browse grant
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jira-cloud" section="1.1" %}
 
 #### Validation & Testing
 
@@ -151,7 +155,7 @@ A work item security scheme (issue security scheme) controls visibility of **ind
 - Security levels are the only mechanism that keeps an embargoed vulnerability, an HR investigation, or a security incident ticket invisible to the wider team that shares the space — the alternative, a separate space per sensitivity tier, fragments workflow and gets abandoned
 - Setting a **default** security level on the scheme means new work items are protected on creation rather than depending on someone remembering to classify them, which is the difference between a control and an aspiration
 - Without a default level, the failure mode is silent: an item created without classification is fully visible, and nobody receives a signal that protection was skipped
-- Security levels degrade safely under movement between spaces — but only if the destination space has a scheme. Atlassian documents that a work item moved into a space with **no** security scheme becomes "visible to anyone with access to the space," which is a real and easily-missed exposure path
+- Security levels degrade safely under movement between spaces — but only if the destination space has a scheme. [Atlassian documents](https://support.atlassian.com/jira-cloud-administration/docs/what-are-work-item-security-schemes/) that a work item moved into a space with **no** security scheme becomes "visible to anyone with access to the space," which is a real and easily-missed exposure path
 
 **Attack Prevented:** Insider reading of embargoed vulnerability and incident tickets, over-broad exposure of HR and legal matters, information disclosure through space-wide search and JQL, exposure via cross-space work item movement
 
@@ -187,6 +191,10 @@ A work item security scheme (issue security scheme) controls visibility of **ind
 1. Identify every space that restricted work items might be moved into
 2. Associate a security scheme with those spaces too, so a move cannot strip protection
 3. Where a destination space genuinely has no scheme, document the risk and alert on move events for restricted items
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jira-cloud" section="1.2" %}
 
 #### Validation & Testing
 
@@ -255,6 +263,10 @@ Jira spaces (projects) can be exposed to unauthenticated visitors by granting th
 1. Alert on permission scheme changes in the organization audit log ([Atlassian Common Controls guide](/guides/atlassian/) §5.1)
 2. Re-audit Public grants on the same cadence as §1.1, and specifically after any plan upgrade
 3. Where the organization uses Atlassian data security policies, scope a policy over sensitive spaces to restrict anonymous and external access as a second, org-enforced layer that a space admin cannot override ([Atlassian Common Controls guide](/guides/atlassian/) §4.3)
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jira-cloud" section="1.3" %}
 
 #### Validation & Testing
 
@@ -329,6 +341,8 @@ Global permissions apply across the whole Jira site rather than to one space, an
 2. After every change, re-open the page and confirm the resulting grant list matches your intended state
 3. Alert on global permission changes in the organization audit log ([Atlassian Common Controls guide](/guides/atlassian/) §5.1)
 
+**Automation:** ClickOps only — the Jira Cloud REST API v3 has no endpoint that grants or revokes a global permission ([Jira Cloud REST API v3 OpenAPI specification](https://developer.atlassian.com/cloud/jira/platform/swagger-v3.v3.json), 2026-09-24). The API can only list the permission definitions and check one account at a time. Changing the membership of a group that holds a grant, such as jira-administrators, changes who inherits the grant, not the grant itself.
+
 #### Validation & Testing
 
 1. Sign in as an ordinary user and confirm the **Settings → System** administration area is unavailable
@@ -362,12 +376,12 @@ Global permissions apply across the whole Jira site rather than to one space, an
 | ISO 27001:2022 | A.5.19, A.5.20 |
 
 #### Description
-Guests are external collaborators granted narrow access to specific Jira spaces rather than to the whole site. A site admin invites them at **Settings (gear icon) → User management → Users** by selecting **Invite users**, entering the email, and assigning the **Guest** role in the Apps tab. A space admin then adds a guest to a specific space via the space's **More actions (•••) → Space settings → People → Add people**, assigning the **Guest - Collaborator** role. Guest allocation is capped at five guests per paid user, and Atlassian states that current or former paid users may not be converted to guests. Source: [Manage guest access in Jira](https://support.atlassian.com/jira-cloud-administration/docs/manage-guest-access-in-jira/)
+Guests are external collaborators granted narrow access to one Jira space rather than to the whole site; Atlassian states that guests "can only be added to a single Jira space per site." A site admin invites them at **Settings (gear icon) → User management → Users** by selecting **Invite users**, entering the email, and assigning the **Guest** role in the Apps tab. A space admin then adds a guest to a specific space via the space's **More actions (•••) → Space settings → People → Add people**, assigning the **Guest - Collaborator** role. Guest allocation is capped at five guests per paid user, and Atlassian states that current or former paid users may not be converted to guests. Source: [Manage guest access in Jira](https://support.atlassian.com/jira-cloud-administration/docs/manage-guest-access-in-jira/)
 
 #### Rationale
 **Why This Matters:**
 - Guests are identities your organization does not control: you cannot enforce your device posture on them, you do not see their authentication events end to end, and you learn nothing when their employer offboards them
-- Guest access is granted per space by *space* admins, not only by site admins, which distributes the decision to people who may not know what else lives in the space — the site admin who approved the guest may never see which spaces they end up in
+- Guest access to a space is granted by *space* admins, not only by site admins, so the decision sits with people who may not know what else lives in that space
 - External collaborator access is durable in a way project engagements are not: contracts end, but nobody receives a ticket to remove the guest, so guest rosters only ever grow without a scheduled review
 - A guest in a space with no work item security scheme reads every work item in that space, including anything an internal colleague filed there assuming an internal audience
 - The five-guests-per-paid-user allocation means guest count can grow substantially before any billing signal prompts a review
@@ -383,12 +397,12 @@ Guests are external collaborators granted narrow access to specific Jira spaces 
 **Step 1: Inventory Existing Guests**
 1. Navigate to: **Settings (gear icon) → User management → Users**
 2. Filter for accounts holding the **Guest** role and record, for each, the sponsoring internal owner, the business justification, and the expected end date
-3. For each guest, identify every space they can reach — the site-level list tells you who is a guest, not what they can see
+3. For each guest, record the single space they belong to — Atlassian limits a guest to one Jira software or business space per site, and the site-level list tells you who is a guest, not which space they are in
 
 **Step 2: Apply Least Privilege Per Space**
 1. For each space with guests, open **More actions (•••) → Space settings → People**
 2. Confirm each guest holds **Guest - Collaborator** and nothing broader
-3. Remove guests from any space that is not directly required by their engagement
+3. Remove a guest whose engagement no longer needs their space; moving a guest to another space requires removing them from the current one first
 4. Where a space mixes external-appropriate and internal-only work, apply a work item security scheme (§1.2) so guests see only what is classified for them, rather than relying on people to file sensitive items elsewhere
 
 **Step 3: Establish a Lifecycle**
@@ -401,10 +415,16 @@ Guests are external collaborators granted narrow access to specific Jira spaces 
 1. Alert on guest invitations and space additions in the organization audit log ([Atlassian Common Controls guide](/guides/atlassian/) §5.1)
 2. Compare the guest roster against active contracts at each review and treat any guest with no matching contract as an incident, not as cleanup
 
+#### Code Implementation
+
+{% include pack-code.html vendor="jira-cloud" section="2.2" %}
+
+The Organization REST API can also assign and revoke the Guest role (`atlassian/guest`) for a site; this pack only reads it. Adding a guest to a space as **Guest - Collaborator** happens in that space's **People** settings.
+
 #### Validation & Testing
 
-1. Sign in as a test guest and confirm only the intended spaces are visible, and that no other space is reachable by direct URL
-2. As the test guest, run a JQL search across all work items and confirm results are confined to the intended spaces
+1. Sign in as a test guest and confirm only the intended space is visible, and that no other space is reachable by direct URL
+2. As the test guest, run a JQL search across all work items and confirm results are confined to the intended space
 3. Where a work item security scheme applies, confirm the guest cannot see restricted items in a space they can otherwise browse
 4. Confirm the guest cannot reach administration areas or user pickers beyond their space membership
 5. Remove the test guest and confirm access is revoked immediately at both the space and site level
@@ -477,6 +497,14 @@ Jira automation rules run server-side on triggers and can call external systems.
 1. Use the automation audit log to review rule executions; note the **90-day** retention limit and export beyond it if you need a longer window
 2. Alert on rule creation and modification, and treat any new rule with an external destination as requiring review
 3. Re-inventory rules on the same cadence as your permission reviews, since a rule added between reviews runs unnoticed for the whole interval
+
+#### Code Implementation
+
+{% include pack-code.html vendor="jira-cloud" section="3.1" %}
+
+Atlassian does not publish the identifiers of automation actions ("To get a component's type, export a rule containing the component"), so the pack lists every action type in use and you name the ones that send data out. A name that no rule on the site uses stops the run instead of passing it, so a misspelling cannot hide the rules it was meant to catch. It fetches rules with sensitive fields redacted, so hidden header values never leave Jira.
+
+**Automation:** ClickOps only for the two **Global configuration** settings in Step 2 — the Automation REST API documents reading, creating, updating, enabling, disabling and re-scoping rules, but no endpoint for Global configuration ([Automation REST API: rule management](https://developer.atlassian.com/cloud/automation/rest/api-group-rule-management/), 2026-09-24).
 
 #### Validation & Testing
 
@@ -567,7 +595,10 @@ Jira automation rules run server-side on triggers and can call external systems.
 - [Atlassian Security Advisories](https://www.atlassian.com/trust/security/advisories)
 
 **API & Developer Resources:**
-- [Jira Cloud REST API v3](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/) (permission scheme, issue security scheme, and permissions endpoints — useful for auditing current state)
+- [Jira Cloud REST API v3](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/) (permission scheme, issue security scheme, and permissions endpoints; used by the §1.1–§1.3 audit packs)
+- [Automation REST API](https://developer.atlassian.com/cloud/automation/rest/intro/) (rule inventory and rule state; used by the §3.1 audit pack)
+- [Organization REST API: users](https://developer.atlassian.com/cloud/admin/organization/rest/api-group-users/) (Guest role inventory and assignment; used by the §2.2 audit pack)
+- [Manage API tokens for your Atlassian account](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) (API tokens with scopes, used by the Jira and Automation audit packs)
 - [Security Overview (Developer)](https://developer.atlassian.com/cloud/jira/platform/security-overview/)
 - [Atlassian Developer Documentation](https://developer.atlassian.com/)
 
@@ -585,6 +616,7 @@ Jira automation rules run server-side on triggers and can call external systems.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.3.0 | ai-drafted | `validate-hth-guide` run (Phases 4–6): no live tenant was reachable because the Atlassian identity was signed out in the test browser profile, so 0 of 6 controls were exercised live and `ai-validated` was not earned. Add five read-only audit packs (`api`), each transcribed from the vendor's OpenAPI and tested offline against spec-shaped responses, none yet run against a live site: 1.1 permission-scheme grants, 1.2 work item security schemes, 1.3 Public grants, 2.2 Guest-role accounts (Organization REST API), 3.1 automation rule egress. Add evidenced **Automation:** lines for 2.1 (no global-permission write endpoint) and 3.1's Global configuration settings. Correct 2.2 for Atlassian's limit of one space per guest per site. Rewrite the guide-level automation-surface note. In 1.1's Rationale, separate the **Make bulk changes** global permission from the scheme grants, and cite the permission catalogue pages. Cite the source of 1.2's cross-space move quote | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Restructure as a product guide under the Atlassian platform hub: add `platform`/`platform_slug`/`product` frontmatter and a hub pointer. Remove duplicated organization-level controls — former 1.1 SAML SSO, 1.2 authentication policies, 1.3 two-step verification, 1.4 JIT provisioning, 2.1 Atlassian Guard, 2.2 domain verification, and 2.3 org admin roles now live in Atlassian §1.1 and §1.2; former 3.3 app access in Atlassian §2.1/§3.3; former 4.1 audit logging and 4.2 security alerts in Atlassian §5.1/§5.2. Rebuild around six Jira-specific controls: permission schemes, work item security schemes, public/anonymous space exposure, global permissions, guest access, and automation rule scope and outgoing web requests. Adopt Atlassian's current space/work item terminology and record the Free-plan permission-scheme limitation | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, organization security, and access controls | Claude Code (Opus 4.5) |
