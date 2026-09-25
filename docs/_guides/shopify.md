@@ -6,9 +6,9 @@ slug: "shopify"
 tier: "2"
 category: "Productivity"
 description: "E-commerce platform hardening for Shopify Plus including SAML SSO, staff permissions, and store security"
-version: "0.2.0"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-09-25"
 ---
 
 ## Overview
@@ -28,6 +28,8 @@ Shopify is a leading e-commerce platform powering **millions of businesses** wor
 
 ### Scope
 This guide covers Shopify Plus security including SAML SSO, organization management, staff permissions, and store security.
+
+Shopify's automation surfaces are the Admin GraphQL API and the Shopify CLI, whose `shopify store execute` runs the same Admin API operations. Shopify publishes no Terraform provider. Most settings in this guide have no write interface on either surface, so every control states its automation verdict, and the Code Packs here are read-only audits.
 
 ---
 
@@ -67,7 +69,7 @@ Configure SAML SSO for Shopify Plus organization users.
 - Shopify Plus plan
 - Organization owner access
 - SAML 2.0 compatible IdP
-- **A verified domain.** Shopify requires domain verification before SAML enforcement can be applied, and domain verification also gates the other organization-level user security features ([User security](https://help.shopify.com/en/manual/organization-settings/users/security))
+- **A verified domain.** Shopify requires domain verification before SAML enforcement can be applied, and domain verification also gates the other organization-level user security features ([Managing additional user security features](https://help.shopify.com/en/manual/your-account/users/security/advanced-security-features))
 
 #### ClickOps Implementation
 
@@ -86,7 +88,7 @@ Configure SAML SSO for Shopify Plus organization users.
 
 **Step 3: Test and Choose an Enforcement Level**
 1. Test SSO authentication before enforcing
-2. Set the SAML enforcement level. Shopify documents **three discrete levels** ([SAML](https://help.shopify.com/en/manual/organization-settings/users/security/saml)):
+2. Set the SAML enforcement level. Shopify documents **three discrete levels** ([SAML authentication](https://help.shopify.com/en/manual/your-account/users/security/advanced-security-features/saml)):
 
    | Level | Who must use SAML |
    |-------|-------------------|
@@ -98,6 +100,12 @@ Configure SAML SSO for Shopify Plus organization users.
 4. Configure and document admin fallback before enforcing, since **Required** captures store owners too
 
 **Time to Complete:** ~1-2 hours
+
+#### Code Implementation
+
+{% include pack-code.html vendor="shopify" section="1.1" %}
+
+**Automation:** Configuring and enforcing SAML is **ClickOps only**. Shopify exposes no write interface for this setting ([SAML authentication](https://help.shopify.com/en/manual/your-account/users/security/advanced-security-features/saml), 2026-09-24). None of the 470 mutations in Admin GraphQL API version 2026-07 configures SAML, and the Shopify CLI runs only those same Admin API operations. The pack above is the read side. It lists each active staff account's `accountType` and names the active accounts that still sign in with Shopify credentials instead of SAML. Put your documented admin fallback account in its exception list. The pack needs the `read_users` scope, which Shopify limits to Plus and Advanced stores and enables for an app only through Shopify Support.
 
 ---
 
@@ -142,6 +150,8 @@ Require 2FA for all Shopify staff accounts.
 1. Enable MFA in the identity provider for SSO-brokered logins
 2. Use phishing-resistant methods for admins
 
+**Automation:** ClickOps only — Shopify exposes no write interface for this setting ([Managing additional user security features](https://help.shopify.com/en/manual/your-account/users/security/advanced-security-features), 2026-09-24). The Admin GraphQL `StaffMember` object has no two-step or MFA field, and none of the 470 mutations in API version 2026-07 sets the requirement. The Shopify CLI adds nothing, because it runs those same Admin API operations. Confirm the requirement and each user's enrollment in the console.
+
 ---
 
 ### 1.3 Configure Login Services
@@ -171,6 +181,8 @@ Control allowed login methods.
 1. Configure allowed login services
 2. Restrict to SSO only if possible
 3. Disable unnecessary auth methods
+
+**Automation:** ClickOps only — Shopify exposes no write interface for this setting ([GraphQL Admin API](https://shopify.dev/docs/api/admin-graphql/latest), 2026-09-24). No query or mutation in API version 2026-07 reads or sets which login methods staff may use, and the Shopify CLI runs only those same Admin API operations.
 
 ---
 
@@ -204,7 +216,7 @@ Enable SCIM user management on the Shopify Plus organization and generate the SC
 
 **Step 1: Enable SCIM**
 1. Navigate to: **Shopify admin** → **Settings** → **Users** → **Security**
-2. Enable SCIM user management and generate the SCIM API token ([User security](https://help.shopify.com/en/manual/organization-settings/users/security))
+2. Enable SCIM user management and generate the SCIM API token ([Managing additional user security features](https://help.shopify.com/en/manual/your-account/users/security/advanced-security-features))
 3. Copy the token once — treat it as a secret with organization-wide user-management power
 
 **Step 2: Connect the IdP**
@@ -216,6 +228,8 @@ Enable SCIM user management on the Shopify Plus organization and generate the SC
 1. Store the token in your secrets manager, never in a shared doc or ticket
 2. Rotate it on a defined schedule and immediately on any suspected exposure
 3. Verify with a test user that IdP deactivation removes Shopify access
+
+**Automation:** ClickOps only — Shopify exposes no write interface for this setting ([Managing additional user security features](https://help.shopify.com/en/manual/your-account/users/security/advanced-security-features), 2026-09-24). You generate the SCIM token in the console, and your identity provider consumes it. Shopify documents no SCIM endpoint for direct use, and no Admin GraphQL mutation in API version 2026-07 enables SCIM or issues the token. Once SCIM is connected, provisioning itself runs from the IdP.
 
 ---
 
@@ -272,6 +286,8 @@ Implement least privilege for staff accounts using Shopify **roles** — predefi
 2. These are exactly the money-movement and financial-record surfaces least-privilege reviews exist to constrain — audit who holds them rather than inheriting a default
 3. Add a changelog check to your periodic access review so newly introduced permissions do not accumulate unreviewed
 
+**Automation:** ClickOps only — Shopify exposes no write interface for this setting ([Migrate to roles](https://help.shopify.com/en/manual/your-account/users/roles/migrate-to-roles), 2026-09-24). The Admin GraphQL API in version 2026-07 has no staff role object and no mutation that assigns a staff role. The `companyContact…Role` mutations govern B2B customer roles, not staff. The only staff permissions field, `StaffMemberPrivateData.permissions`, is deprecated. Review roles and Legacy access badges in the console.
+
 ---
 
 ### 2.2 Configure Store Access
@@ -301,6 +317,8 @@ Control access to individual stores.
 1. Limit staff to required stores only
 2. Separate production and development
 3. Audit cross-store access
+
+**Automation:** ClickOps only — Shopify exposes no write interface for this setting ([GraphQL Admin API](https://shopify.dev/docs/api/admin-graphql/latest), 2026-09-24). The Admin API works on one store at a time and cannot see which other stores in the organization a user can reach. Its only staff-assignment mutations, `companyLocationAssignStaffMembers` and `companyLocationRemoveStaffMembers`, scope B2B company locations, not store access.
 
 ---
 
@@ -336,6 +354,12 @@ Minimize and protect organization owner accounts.
 1. Limit owners to 2-3 users
 2. Require 2FA for owners
 3. Monitor owner activity
+
+#### Code Implementation
+
+{% include pack-code.html vendor="shopify" section="2.3" %}
+
+**Automation:** Both packs above are read-only inventories of the store owner (`shop.accountOwner`) and every staff account's type, one through the Admin API and one through the Shopify CLI. They flag an inconsistent owner and a pending store-owner invitation, and list partner collaborator accounts for review. Limiting organization owners and requiring owner 2FA are **ClickOps only**. Shopify exposes no write interface for this setting ([StaffMember](https://shopify.dev/docs/api/admin-graphql/latest/objects/StaffMember), 2026-09-24). Organization owners are invisible to the store-scoped Admin API, per-staff permissions are deprecated there, and no mutation changes a staff account. Both packs need the `read_users` scope, which Shopify limits to Plus and Advanced stores and enables for an app only through Shopify Support.
 
 ---
 
@@ -378,6 +402,8 @@ On Shopify Plus, use **user groups** to grant roles by membership rather than as
 **Step 3: Review**
 1. Review group membership and group-attached roles on the same cadence as your staff access review
 2. Prefer moving direct assignments into groups so future reviews cover them automatically
+
+**Automation:** ClickOps only — Shopify exposes no write interface for this setting ([User groups](https://help.shopify.com/en/manual/your-account/users/groups), 2026-09-24). No Admin GraphQL object or mutation in API version 2026-07 manages staff user groups, and the Shopify CLI runs only those same Admin API operations.
 
 ---
 
@@ -427,6 +453,12 @@ Secure API apps and access tokens.
 2. Before installing an app that requests protected customer fields, ask the vendor which level it operates at and how it satisfies the Level 2 items — most breaches of Shopify merchant data have come through third-party apps, not Shopify itself
 3. For in-house apps, treat this list as the minimum control set, not as guidance
 
+#### Code Implementation
+
+{% include pack-code.html vendor="shopify" section="3.1" %}
+
+**Automation:** Reviewing and removing third-party apps is **ClickOps only**. Shopify exposes no write interface for this setting ([appUninstall](https://shopify.dev/docs/api/admin-graphql/latest/mutations/appUninstall), 2026-09-24). `appUninstall` and `appRevokeAccessScopes` act only on the app making the call. Shopify documents the `appInstallations` query as listing installations "across multiple stores where your app is installed", not as an inventory of the other apps on your store. For apps you build, the scope surface is real. Declare the minimum in the `[access_scopes]` section of the app configuration and release it with `shopify app deploy` ([App configuration](https://shopify.dev/docs/apps/build/cli-for-apps/app-configuration)). The pack above then reads the scopes a token actually holds and flags any beyond your expected list. It needs no extra scope. Shopify also documents mutations for two kinds of token an app issues itself. `delegateAccessTokenCreate` mints a token carrying a subset of the calling app's scopes, with an optional `expiresIn`, and `delegateAccessTokenDestroy` revokes it ([delegateAccessTokenCreate](https://shopify.dev/docs/api/admin-graphql/latest/mutations/delegateAccessTokenCreate), 2026-09-24). `storefrontAccessTokenCreate` and `storefrontAccessTokenDelete` do the same for Storefront API tokens ([storefrontAccessTokenDelete](https://shopify.dev/docs/api/admin-graphql/latest/mutations/storefrontAccessTokenDelete), 2026-09-24). No pack wraps them here, because each call mints or revokes a live credential.
+
 ---
 
 ### 3.2 Configure Checkout Security
@@ -457,6 +489,8 @@ Configure secure checkout settings.
 2. Configure fraud analysis
 3. Enable reCAPTCHA
 
+**Automation:** ClickOps only — Shopify exposes no write interface for this setting ([GraphQL Admin API](https://shopify.dev/docs/api/admin-graphql/latest), 2026-09-24). The only checkout configuration mutation in API version 2026-07, `checkoutAndAccountsConfigurationUpdate`, carries branding settings only. The `Shop` object has no fraud-analysis or CAPTCHA setting.
+
 ---
 
 ## 4. Compliance Quick Reference
@@ -483,20 +517,25 @@ Configure secure checkout settings.
 **Official Shopify Documentation:**
 - [Help Center](https://help.shopify.com/en/)
 - [Account Security Best Practices](https://help.shopify.com/en/manual/privacy-and-security/account-security/account-security-best-practices)
-- [SAML Configuration](https://help.shopify.com/en/manual/organization-settings/users/security/saml)
-- [User Security (domain verification, SCIM)](https://help.shopify.com/en/manual/organization-settings/users/security)
+- [SAML Configuration](https://help.shopify.com/en/manual/your-account/users/security/advanced-security-features/saml)
+- [User Security (domain verification, two-step authentication, SCIM)](https://help.shopify.com/en/manual/your-account/users/security/advanced-security-features)
 - [Migrate to Roles](https://help.shopify.com/en/manual/your-account/users/roles/migrate-to-roles)
 - [User Groups](https://help.shopify.com/en/manual/your-account/users/groups)
 - [Protected Customer Data Requirements](https://shopify.dev/docs/apps/launch/protected-customer-data)
 - [Shopify Changelog](https://changelog.shopify.com/)
 
 > **Link note (2026-08-08):** the SAML documentation moved from `/manual/shopify-plus/saml` to `/manual/organization-settings/users/security/saml`; the old path now renders a generic page rather than the SAML article.
+>
+> **Link note (2026-09-24):** it moved again. Both `/manual/organization-settings/users/security` and its `/saml` child now answer 307 and redirect to `/manual/your-account/users/security/advanced-security-features` and `.../advanced-security-features/saml`. The links above point at the new paths.
 
 **API & Developer Tools:**
 - [Shopify Dev Docs](https://shopify.dev/docs)
 - [Admin API Reference](https://shopify.dev/docs/api)
 - [Shopify CLI](https://shopify.dev/docs/api/shopify-cli)
-- [App Developer Tools & SDKs](https://shopify.dev/docs/apps/tools)
+- [Shopify CLI `store execute`](https://shopify.dev/docs/api/shopify-cli/store/store-execute)
+- [Admin GraphQL `staffMembers` query](https://shopify.dev/docs/api/admin-graphql/latest/queries/staffMembers)
+- [Admin GraphQL `AccountType` enum](https://shopify.dev/docs/api/admin-graphql/latest/enums/AccountType)
+- [Access Scopes](https://shopify.dev/docs/api/usage/access-scopes)
 
 **Compliance Frameworks:**
 - PCI DSS Level 1 (Service Provider), SOC 2 Type II, SOC 3 — merchants retrieve current attestations through the admin per [Viewing Shopify's Compliance Reports](https://help.shopify.com/en/manual/privacy-and-security/account-security/compliance-reports). Compliance reports describe Shopify's own posture; they are not merchant configuration guidance.
@@ -512,6 +551,7 @@ Configure secure checkout settings.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.3.0 | ai-drafted | Fix pass from a validate-hth-guide run (Phase 5). **Code Packs landed for the first time**, all read-only: `api/` 1.1 (staff sign-in type: SAML vs Shopify credentials), `api/` 2.3 and `cli/` 2.3 (store owner and staff-access inventory, the CLI one via `shopify store execute`), and `api/` 3.1 (a token's granted scopes compared with an expected list). Each was transcribed from the Admin GraphQL 2026-07 reference and the Shopify CLI command reference. None was executed against a store. **Every control now carries an automation verdict.** A census of all 470 Admin GraphQL 2026-07 mutations, the Shopify CLI, and the Terraform Registry (no Shopify provider) found no write interface for SAML, two-step authentication, login methods, SCIM, staff roles, store access, user groups, third-party app removal, or checkout fraud/CAPTCHA settings. 1.2, 1.3, 1.4, 2.1, 2.2, 2.4 and 3.2 state that as `**Automation:** ClickOps only`, and 1.1, 2.3 and 3.1 pair it with their read packs. 3.1 also names the delegate and Storefront access-token mutations, which the first census missed. The three `api/` packs treat an `errors` member of any shape as a failure and exit 2. **Citations:** the SAML and user-security help pages moved a second time, and 1.1, 1.4 and Appendix A now point at `/manual/your-account/users/security/advanced-security-features`. Appendix A drops "App Developer Tools & SDKs", which now redirects to the Admin API Reference already listed. **No live exercise:** Shopify sign-in was not available to the run, so no console path was walked, no pack was run, and the maturity set is unchanged. | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: rewrite 2.1 around roles after the May 1 2025 retirement of custom permission groups (Legacy access badge) and add the 2026-07-07 payments/payouts/disputes/tax-document permissions; repoint SAML docs to the current canonical URL; document the three SAML enforcement levels and the verified-domain prerequisite; add 1.4 SCIM user management and 2.4 user groups; add passkeys, security keys, and recovery-code handling to 1.2; add the protected customer data Level 1/Level 2 requirements to 3.1; remove the Trust Center and compliance-reports marketing links from Appendix A. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
 | 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO and permissions | Claude Code (Opus 4.5) |
 
