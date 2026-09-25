@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-08-20 — 130 guides. Every one is `ai-drafted`; two (Buildkite, Ona) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-09-24 — 130 guides. Every one is `ai-drafted`; two (Buildkite, Ona) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -194,7 +194,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Ping Identity](docs/_guides/ping-identity.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [SentinelOne](docs/_guides/sentinelone.md) | v0.1.3 | ai-drafted | 2026-08-08 |
 | [ServiceNow](docs/_guides/servicenow.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Slack](docs/_guides/slack.md) | v0.2.1 | ai-drafted | 2026-08-08 |
+| [Slack](docs/_guides/slack.md) | v0.3.0 | ai-drafted | 2026-09-24 |
 | [Snowflake](docs/_guides/snowflake.md) | v0.4.1 | ai-drafted | 2026-08-08 |
 | [Splunk Cloud](docs/_guides/splunk.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Stripe](docs/_guides/stripe.md) | v0.2.0 | ai-drafted | 2026-08-08 |
