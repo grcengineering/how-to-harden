@@ -43,6 +43,11 @@
 // Use this when you want guardrails without exclusive MCP control.
 // Deny rules always take precedence over allow rules.
 // undefined = no restrictions; empty array [] = complete lockdown.
+// allowManagedMcpServersOnly: true makes this allowlist authoritative. Without
+// it, allowlists from every settings scope merge (including a user's own
+// ~/.claude/settings.json), so a user can broaden what this list permits.
+// Denylists merge from every scope regardless.
+// Reference: code.claude.com/docs/en/managed-mcp
   {
     "allowedMcpServers": [
       {"serverName": "github"},
@@ -54,6 +59,7 @@
       {"serverName": "shell"},
       {"serverName": "puppeteer"}
     ],
+    "allowManagedMcpServersOnly": true,
     "enableAllProjectMcpServers": false
   }
 // HTH Guide Excerpt: end mcp-allowlist-denylist
@@ -65,18 +71,12 @@
 // enableAllProjectMcpServers: true auto-approves all project MCP servers.
 // For fine-grained control, use enabledMcpjsonServers / disabledMcpjsonServers
 // to pre-approve or block specific server names from .mcp.json files.
+// Both lists take plain server-name strings (not {"serverName": ...} objects,
+// which fail validation and are dropped from a managed file).
   {
     "enableAllProjectMcpServers": false,
-    "enabledMcpjsonServers": [
-      {"serverName": "github"},
-      {"serverName": "memory"}
-    ],
-    "disabledMcpjsonServers": [
-      {"serverName": "filesystem"},
-      {"serverName": "shell"},
-      {"serverName": "puppeteer"},
-      {"serverName": "everything"}
-    ],
+    "enabledMcpjsonServers": ["github", "memory"],
+    "disabledMcpjsonServers": ["filesystem", "shell", "puppeteer", "everything"],
     "allowManagedMcpServersOnly": true
   }
 // HTH Guide Excerpt: end mcp-project-server-control
