@@ -141,8 +141,8 @@ output "session_timeout_policy_id" {
 # -----------------------------------------------------------------------------
 
 output "threatinsight_action" {
-  description = "ThreatInsight action mode (block/log)"
-  value       = okta_threat_policy.threatinsight.action
+  description = "ThreatInsight action mode (none/audit/block)"
+  value       = okta_threat_insight_settings.threatinsight.action
 }
 
 
@@ -152,12 +152,12 @@ output "threatinsight_action" {
 
 output "behavior_new_location_id" {
   description = "ID of the new location behavior detection rule (L2+ only)"
-  value       = var.profile_level >= 2 ? okta_behaviour.new_location[0].id : null
+  value       = var.profile_level >= 2 ? okta_behavior.new_location[0].id : null
 }
 
 output "behavior_new_device_id" {
   description = "ID of the new device behavior detection rule (L2+ only)"
-  value       = var.profile_level >= 2 ? okta_behaviour.new_device[0].id : null
+  value       = var.profile_level >= 2 ? okta_behavior.new_device[0].id : null
 }
 
 
