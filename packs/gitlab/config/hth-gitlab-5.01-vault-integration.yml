@@ -1,17 +1,28 @@
 # =============================================================================
 # HTH GitLab Control 5.1: HashiCorp Vault CI/CD Integration
-# Profile: L2 | NIST: SC-28
+# Profile: L2 | NIST: SC-28 | Tier: Premium, Ultimate
+#
+# GitLab authenticates to Vault with an ID token (OIDC JWT) declared on the
+# job; the secrets keyword uses it. Set VAULT_SERVER_URL (and optionally
+# VAULT_AUTH_ROLE, VAULT_AUTH_PATH, VAULT_NAMESPACE) as CI/CD variables, and
+# bind the Vault JWT role to this project and a protected ref.
+# Reference: docs.gitlab.com/ci/secrets/hashicorp_vault
 # =============================================================================
 
 # HTH Guide Excerpt: begin cli-vault-integration
 # .gitlab-ci.yml
 deploy:
   stage: deploy
+  id_tokens:
+    VAULT_ID_TOKEN:
+      aud: https://vault.example.com
   secrets:
     DATABASE_PASSWORD:
       vault: production/db/password@secret
+      token: $VAULT_ID_TOKEN
     API_KEY:
       vault: production/api/key@secret
+      token: $VAULT_ID_TOKEN
   script:
     - echo "Using secrets from Vault"
     - ./deploy.sh
