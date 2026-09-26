@@ -8,15 +8,18 @@
 # x-vercel-signature. Receivers MUST verify the signature with a constant-time
 # comparison to prevent timing attacks and accept only authentic deliveries.
 # Reference: https://vercel.com/docs/drains/security
+# API: POST /v1/drains/test (testDrain: "Validate the delivery configuration of
+#      a Drain using sample events" -- sends sample events, creates no drain),
+#      GET /v2/teams/{teamId} (hideIpAddresses*). Uses curl only, hence api/.
 # =============================================================================
 
 set -euo pipefail
 
-# HTH Guide Excerpt: begin cli
+# HTH Guide Excerpt: begin api
 
 # --- Reference receiver (Node.js): verifies x-vercel-signature in constant time ---
-# Run: node hth-drain-receiver.js  (expects VERCEL_DRAIN_SECRET in env)
-cat > /tmp/hth-drain-receiver.js <<'JS'
+RECEIVER="$(mktemp "${TMPDIR:-/tmp}/hth-drain-receiver.XXXXXX")"
+cat > "${RECEIVER}" <<'JS'
 // HTH reference Drain receiver with signature verification.
 // See: https://vercel.com/docs/drains/security
 const http = require('node:http');
@@ -63,20 +66,20 @@ server.listen(process.env.PORT || 8787, () => {
 });
 JS
 
-echo "Reference receiver written to /tmp/hth-drain-receiver.js"
-echo "Run: VERCEL_DRAIN_SECRET=<drain-secret> node /tmp/hth-drain-receiver.js"
+echo "Reference receiver written to ${RECEIVER}"
+echo "Run: VERCEL_DRAIN_SECRET=<drain-secret> node ${RECEIVER}"
 
-# --- Validate an existing drain's delivery config before going live ---
+# --- Validate the intended delivery config with sample events before going live ---
 if [ -n "${VERCEL_TOKEN:-}" ] && [ -n "${VERCEL_TEAM_ID:-}" ] && [ -n "${VERCEL_DRAIN_URL:-}" ]; then
   echo ""
-  echo "=== Validating drain delivery to ${VERCEL_DRAIN_URL} ==="
-  curl -s -X POST \
+  echo "=== Testing drain delivery to ${VERCEL_DRAIN_URL} ==="
+  curl -fsS -X POST \
     -H "Authorization: Bearer ${VERCEL_TOKEN}" \
     -H "Content-Type: application/json" \
-    "https://api.vercel.com/v1/drains/validate?teamId=${VERCEL_TEAM_ID}" \
+    "https://api.vercel.com/v1/drains/test?teamId=${VERCEL_TEAM_ID}" \
     -d "$(jq -n --arg url "${VERCEL_DRAIN_URL}" '{
       schemas: { log: { version: "v1" } },
-      delivery: { url: $url }
+      delivery: { type: "http", endpoint: $url, encoding: "json", headers: {} }
     }')" | jq '.'
 fi
 
@@ -84,12 +87,9 @@ fi
 if [ -n "${VERCEL_TOKEN:-}" ] && [ -n "${VERCEL_TEAM_ID:-}" ]; then
   echo ""
   echo "=== Current team-level IP visibility settings ==="
-  curl -s -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+  curl -fsS -H "Authorization: Bearer ${VERCEL_TOKEN}" \
     "https://api.vercel.com/v2/teams/${VERCEL_TEAM_ID}" | \
-    jq '{
-      hideIpAddresses: .hideIpAddresses,
-      hideIpAddressesInLogDrains: .hideIpAddressesInLogDrains
-    }'
+    jq '{hideIpAddresses, hideIpAddressesInLogDrains}'
 fi
 
-# HTH Guide Excerpt: end cli
+# HTH Guide Excerpt: end api

@@ -9,11 +9,13 @@
 # in 0.45% of public Vercel deployments via this vector.
 # Use: run in pre-commit hook and CI to fail builds that introduce the pattern.
 # Reference: https://www.cremit.io/blog/vercel-secret-exposure-case-study
+# Type: config -- a repository audit; it does not call the vercel CLI.
+# Exit: 0 clean, 1 finding, 2 the scan itself failed.
 # =============================================================================
 
 set -euo pipefail
 
-# HTH Guide Excerpt: begin cli
+# HTH Guide Excerpt: begin config
 
 # Names that commonly hold secrets. If any are prefixed NEXT_PUBLIC_, fail.
 # Patterns match variable NAMES (pre-equals or pre-colon), not values.
@@ -46,52 +48,62 @@ SECRET_NAME_PATTERNS=(
 )
 
 # Build a single case-insensitive alternation
-IFS='|' PATTERN="$(printf '%s|' "${SECRET_NAME_PATTERNS[@]}")"
+PATTERN="$(printf '%s|' "${SECRET_NAME_PATTERNS[@]}")"
 PATTERN="${PATTERN%|}"
-
-# Search files that typically declare env vars
-TARGETS=(
-  '.env*'
-  '*.env'
-  'next.config.*'
-  'vercel.json'
-  'turbo.json'
-  '*.tf'
-  '.github/workflows/*.yml'
-  '.github/workflows/*.yaml'
-)
+REGEX="NEXT_PUBLIC_[A-Z0-9_]*(${PATTERN})"
 
 EXIT_CODE=0
 
 echo "=== Scanning for NEXT_PUBLIC_ prefix on secret-shaped names ==="
-# Ripgrep if available (faster); fall back to grep
+# The files that declare env vars are mostly HIDDEN or git-ignored (.env*,
+# .github/workflows/), so both scanners are told to include them explicitly.
 if command -v rg >/dev/null 2>&1; then
-  SEARCH_CMD=(rg --no-heading --line-number -i -e "NEXT_PUBLIC_[A-Z0-9_]*(${PATTERN})")
+  SEARCH_CMD=(rg --hidden --no-ignore --no-heading --line-number -i
+    --glob '!.git/**' --glob '!node_modules/**' --glob '!.next/**' -e "${REGEX}" .)
 else
-  SEARCH_CMD=(grep -rn -iE "NEXT_PUBLIC_[A-Z0-9_]*(${PATTERN})")
+  SEARCH_CMD=(grep -rn -iE --exclude-dir=.git --exclude-dir=node_modules
+    --exclude-dir=.next "${REGEX}" .)
 fi
 
-# Run against working-tree; in CI, also consider the diff.
-if matches="$("${SEARCH_CMD[@]}" . 2>/dev/null)"; then
-  if [ -n "${matches}" ]; then
+rc=0
+matches="$("${SEARCH_CMD[@]}")" || rc=$?
+case "${rc}" in
+  0)
     echo "BLOCK: NEXT_PUBLIC_<secret-name> pattern detected — these values ship to the browser:"
     echo "${matches}"
     EXIT_CODE=1
-  fi
-fi
+    ;;
+  1) ;;
+  *)
+    echo "ERROR: ${SEARCH_CMD[0]} exited ${rc}; the scan did not complete." >&2
+    exit 2
+    ;;
+esac
 
 # --- Audit the current build output for any NEXT_PUBLIC_* that resembles a secret ---
 if [ -d ".next" ]; then
   echo ""
   echo "=== Scanning compiled .next bundle for secret-shaped NEXT_PUBLIC_ values ==="
-  if bundle_matches="$(grep -rho "NEXT_PUBLIC_[A-Z0-9_]*" .next 2>/dev/null | sort -u)"; then
-    echo "NEXT_PUBLIC_ variables found in client bundle:"
-    echo "${bundle_matches}"
-    if echo "${bundle_matches}" | grep -qiE "(${PATTERN})"; then
-      echo "BLOCK: secret-shaped NEXT_PUBLIC_ variable present in built bundle."
-      EXIT_CODE=1
-    fi
-  fi
+  # grep exits 1 for "no match" and 2 when it could not read the bundle; only
+  # the first means clean.
+  brc=0
+  bundle_matches="$(grep -rho "NEXT_PUBLIC_[A-Z0-9_]*" .next)" || brc=$?
+  case "${brc}" in
+    0)
+      bundle_matches="$(printf '%s\n' "${bundle_matches}" | sort -u)"
+      echo "NEXT_PUBLIC_ variables found in client bundle:"
+      echo "${bundle_matches}"
+      if echo "${bundle_matches}" | grep -qiE "(${PATTERN})"; then
+        echo "BLOCK: secret-shaped NEXT_PUBLIC_ variable present in built bundle."
+        EXIT_CODE=1
+      fi
+      ;;
+    1) ;;
+    *)
+      echo "ERROR: grep exited ${brc} reading .next; the bundle scan did not complete." >&2
+      exit 2
+      ;;
+  esac
 fi
 
 if [ "${EXIT_CODE}" -eq 0 ]; then
@@ -100,4 +112,4 @@ fi
 
 exit "${EXIT_CODE}"
 
-# HTH Guide Excerpt: end cli
+# HTH Guide Excerpt: end config

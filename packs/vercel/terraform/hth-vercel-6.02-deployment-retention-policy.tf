@@ -7,19 +7,16 @@
 
 # HTH Guide Excerpt: begin terraform
 
-# --- L2: Configure deployment retention to limit exposure of old deployments ---
-resource "vercel_project" "deployment_retention" {
+# --- L2: Limit how long old deployments stay reachable ---
+resource "vercel_project_deployment_retention" "policy" {
   count = var.profile_level >= 2 ? 1 : 0
 
-  name = data.vercel_project.current.name
-
-  deployment_expiration = {
-    deploymentsToKeep           = var.deployments_to_keep
-    expirationDays              = var.deployment_expiration_days
-    expirationDaysCanceled      = var.deployment_expiration_days_canceled
-    expirationDaysErrored       = var.deployment_expiration_days_errored
-    expirationDaysProduction    = var.deployment_expiration_days_production
-  }
+  project_id            = var.project_id
+  team_id               = var.vercel_team_id
+  expiration_preview    = var.retention_preview
+  expiration_production = var.retention_production
+  expiration_canceled   = var.retention_canceled
+  expiration_errored    = var.retention_errored
 }
 
 # HTH Guide Excerpt: end terraform
