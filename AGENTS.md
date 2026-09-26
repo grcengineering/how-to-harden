@@ -184,7 +184,7 @@ The operational rule is who may write each status:
 
 **Statuses combine; that is how "better" is expressed.** There is no seventh status above `ai-validated`. A guide that a machine *and* a person validated holds both, and the version qualifier drops the agent prefix to say so — `v1.0.0-validated` is the strongest string in the system. The qualifier is derived by `docs/_includes/status-set.html`, never typed: furthest stage reached, agent-prefixed unless both agents reached it.
 
-**Right now the entire NI row is empty.** All 130 guides are `ai-drafted`; three (Buildkite, GitHub, Ona) are additionally `ai-validated`. No guide has ever held `ni-drafted`, `ni-reviewed`, or `ni-validated`. When writing about the corpus, say that plainly — the NI half of the matrix is a standing invitation to reviewers, not a description of anything that has happened.
+**Right now the entire NI row is empty.** All 130 guides are `ai-drafted`; eight (Buildkite, Cloudflare, Dropbox, GitHub, Okta, Ona, Stripe, Vercel) are additionally `ai-validated`. No guide has ever held `ni-drafted`, `ni-reviewed`, or `ni-validated`. When writing about the corpus, say that plainly — the NI half of the matrix is a standing invitation to reviewers, not a description of anything that has happened.
 
 **The per-surface mark.** Any status can also mark an individual **implementation surface**, via `{% include status-mark.html status="…" evidence="…" date="…" %}` appended to a `#### ClickOps Implementation` or `#### Code Implementation` heading, on that same line. In practice `ai-validated` is what gets stamped, and only where that surface came back `VERIFIED-LIVE`; `SKIPPED`, `BLOCKED`, and `DRIFT-CHECKED-ONLY` may not carry it.
 
