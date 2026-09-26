@@ -584,7 +584,7 @@ looker:
 
 lovable:
   product_docs: "https://docs.lovable.dev"
-  api_docs: "https://docs.lovable.dev/features/business/scim"
+  api_docs: "https://docs.lovable.dev/api-reference/introduction"
   hardening_docs:
     - label: "Privacy & Security Settings"
       url: "https://docs.lovable.dev/features/privacy-and-security-settings"
