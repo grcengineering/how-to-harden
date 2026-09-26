@@ -285,7 +285,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Lovable](docs/_guides/lovable.md) | v0.1.0 | ai-drafted | 2026-08-15 |
 | [Oracle HCM Cloud](docs/_guides/oracle-hcm.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Pendo](docs/_guides/pendo.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Replit](docs/_guides/replit.md) | v0.1.0 | ai-drafted | 2026-08-15 |
+| [Replit](docs/_guides/replit.md) | v0.2.0 | ai-drafted | 2026-09-25 |
 | [SailPoint](docs/_guides/sailpoint.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [SAP SuccessFactors](docs/_guides/sap-successfactors.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Windows 11](docs/_guides/windows-11.md) | v0.1.0 | ai-drafted | 2026-08-15 |
