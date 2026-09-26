@@ -243,7 +243,7 @@ The statuses **combine**: a guide can be AI Drafted and NI Drafted at once, and 
 **An `ai-*` status is a claim about a machine's act, and asserts nothing about human judgement.** An agent can prove a console path is where the guide says it is; it cannot decide whether that control is the right control for your organization. So an AI status never discharges the need for its NI twin -- a guide sitting at AI Validated is a guide still waiting for its human reviewer, however long it sits there.
 
 **Current coverage:**
-- 130 hardening guides across 10 categories --- **all 130 `ai-drafted`**, of which **2 also hold `ai-validated`** (Buildkite, Ona)
+- 130 hardening guides across 10 categories --- **all 130 `ai-drafted`**, of which **3 also hold `ai-validated`** (Buildkite, GitHub, Ona)
 - **No guide holds any `ni-*` status.** Nothing here has been drafted, reviewed, or validated by a person -- the entire NI row of the matrix is empty, and it is the half that matters most
 - 76 vendor Code Packs with Terraform, API, CLI, SDK, config, DB, and Sigma implementations
 - Full Jekyll site with search, six-status filtering, and dark/light themes

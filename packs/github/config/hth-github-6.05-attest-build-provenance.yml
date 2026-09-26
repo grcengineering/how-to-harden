@@ -19,7 +19,9 @@ jobs:
   build-and-attest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Build artifact
         run: |
@@ -28,7 +30,7 @@ jobs:
           tar -czf dist/release.tar.gz src/
 
       - name: Generate SLSA provenance
-        uses: actions/attest-build-provenance@520d128f165991a6c774bcb264f323e3d70747f4
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
         with:
           subject-path: "dist/release.tar.gz"
 # HTH Guide Excerpt: end cli-attest-build-provenance

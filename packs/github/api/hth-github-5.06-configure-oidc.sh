@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 5.06: Configure OIDC for Credential-Free Deployments
 # Profile: L2 | NIST: IA-2, IA-5(2)
-# https://howtoharden.com/guides/github/#52-use-oidc-instead-of-long-lived-credentials
-source "$(dirname "$0")/common.sh"
-
-banner "5.06: Configure OIDC"
-should_apply 2 || { increment_skipped; summary; exit 0; }
+# https://howtoharden.com/guides/github/#52-use-openid-connect-oidc-instead-of-long-lived-credentials
+#
+# Emits the AWS IAM trust policy for a GitHub Actions OIDC deployment role.
+# Needs no GitHub credentials: it makes no API call. Replace the account id,
+# organization, repository, and branch before creating the role.
+set -euo pipefail
 
 # HTH Guide Excerpt: begin api-configure-oidc-trust-policy
 # AWS IAM OIDC Trust Policy

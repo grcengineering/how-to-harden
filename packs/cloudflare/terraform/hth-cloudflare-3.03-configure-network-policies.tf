@@ -11,7 +11,7 @@ resource "cloudflare_zero_trust_gateway_policy" "block_risky_protocols" {
   name       = "Block SSH to external hosts"
   action     = "block"
   filters    = ["l4"]
-  traffic    = "net.dst.port == 22 and net.dst.ip !in {10.0.0.0/8 172.16.0.0/12 192.168.0.0/16}"
+  traffic    = "net.dst.port == 22 and not(net.dst.ip in {10.0.0.0/8 172.16.0.0/12 192.168.0.0/16})"
   enabled    = true
   precedence = 10
 }

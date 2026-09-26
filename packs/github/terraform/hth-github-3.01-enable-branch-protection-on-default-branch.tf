@@ -2,7 +2,7 @@
 # HTH GitHub Control 3.01: Enable Branch Protection on Default Branch
 # Profile Level: L1 (Crawl)
 # Frameworks: NIST CM-3, CM-5
-# Source: https://howtoharden.com/guides/github/#31-enable-branch-protection
+# Source: https://howtoharden.com/guides/github/#21-enable-branch-protection-for-all-critical-branches
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform

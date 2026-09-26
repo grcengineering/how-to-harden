@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 3.06: Require CODEOWNERS File
 # Profile: L2 | NIST: CM-3, CM-5
-# https://howtoharden.com/guides/github/#36-require-codeowners-file
+# https://howtoharden.com/guides/github/#311-require-codeowners-approval-for-workflow-changes
 source "$(dirname "$0")/common.sh"
 
 banner "3.06: Require CODEOWNERS File (Audit Only)"

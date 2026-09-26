@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 3.05: Enable Code Scanning Default Setup
 # Profile: L2 | NIST: SA-11, SI-7
-# https://howtoharden.com/guides/github/#35-enable-code-scanning-default-setup
+# https://howtoharden.com/guides/github/#22-enable-security-features-dependabot-code-scanning-secret-scanning
 source "$(dirname "$0")/common.sh"
 
 banner "3.05: Enable Code Scanning Default Setup"

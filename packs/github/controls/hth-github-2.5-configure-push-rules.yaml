@@ -4,7 +4,7 @@ title: "Configure Push Rules in Repository Rulesets"
 section: "2.5"
 profile_level: 2
 severity: "high"
-guide_url: "https://howtoharden.com/guides/github/#25-configure-push-rules-in-rulesets"
+guide_url: "https://howtoharden.com/guides/github/#25-configure-push-rules-in-repository-rulesets"
 description: >
   Configure push rules within repository rulesets to restrict file types, file sizes,
   and file paths across the organization. Push rules apply to the entire fork network,

@@ -4,14 +4,23 @@
 set -euo pipefail
 
 # ── Required environment ──────────────────────────────────
-: "${STRIPE_SECRET_KEY:?Set STRIPE_SECRET_KEY to a Stripe API secret key}"
+# Any Stripe API key that Basic-auths against api.stripe.com works here. Prefer a
+# restricted key (rk_…) scoped to exactly the resources the pack reads; each pack
+# header's `requires:` line names the permissions it needs.
+: "${STRIPE_SECRET_KEY:?Set STRIPE_SECRET_KEY to a Stripe API key (a restricted key is recommended)}"
 
 STRIPE_BASE="https://api.stripe.com/v1"
 
 # ── HTTP helpers ──────────────────────────────────────────
-stripe_get()    { curl -sf -u "${STRIPE_SECRET_KEY}:" "${STRIPE_BASE}$1"; }
-stripe_post()   { curl -sf -X POST   -u "${STRIPE_SECRET_KEY}:" -d "$2" "${STRIPE_BASE}$1"; }
-stripe_delete() { curl -sf -X DELETE -u "${STRIPE_SECRET_KEY}:" "${STRIPE_BASE}$1"; }
+# The key reaches curl through a config file on a process-substitution descriptor,
+# never as a command-line argument, so it does not appear in the process list.
+# printf is a shell builtin, so the key is not an argv value there either.
+# (Process substitution rather than a here-string: a here-string needs a temp file
+# and fails silently where one cannot be created.)
+stripe_auth()   { printf 'user = "%s:"\n' "${STRIPE_SECRET_KEY}"; }
+stripe_get()    { curl -sf -K <(stripe_auth) "${STRIPE_BASE}$1"; }
+# Prints only the HTTP status code of a GET (000 when the request never completed).
+stripe_status() { curl -s -o /dev/null -w '%{http_code}' -K <(stripe_auth) "${STRIPE_BASE}$1" || true; }
 
 # ── Profile-level gate ────────────────────────────────────
 HTH_PROFILE="${HTH_PROFILE:-1}"
@@ -33,3 +42,6 @@ increment_applied() { ((_applied++)) || true; }
 increment_failed()  { ((_failed++))  || true; }
 increment_skipped() { ((_skipped++)) || true; }
 summary() { printf '\n  Applied: %d  Failed: %d  Skipped: %d\n' "$_applied" "$_failed" "$_skipped"; }
+# Print the summary and exit non-zero when any check failed, so a caller (CI, a
+# wrapper, `&&`) never reads a failed audit as success.
+finish() { summary; if [ "${_failed}" -gt 0 ]; then exit 1; fi; exit 0; }

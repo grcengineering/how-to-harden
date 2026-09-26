@@ -4,7 +4,7 @@ title: "Enable Audit Log Streaming to SIEM"
 section: "8.1"
 profile_level: 2
 severity: "high"
-guide_url: "https://howtoharden.com/guides/github/#71-enable-audit-log-streaming-to-siem"
+guide_url: "https://howtoharden.com/guides/github/#81-enable-audit-log-streaming-to-siem"
 description: >
   Stream GitHub audit logs to your SIEM (Splunk, Datadog, AWS Security Lake) for
   centralized monitoring and alerting. Enables detection of unusual authentication

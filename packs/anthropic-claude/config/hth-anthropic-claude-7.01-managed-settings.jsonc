@@ -7,13 +7,20 @@
 //   2. MDM/OS-level policies:
 //      macOS:   com.anthropic.claudecode managed preferences domain (Jamf/Kandji)
 //      Windows: HKLM\SOFTWARE\Policies\ClaudeCode registry key (GPO/Intune)
-//   3. File-based deployment to system paths:
+//   3. File-based deployment to system paths (managed-settings.json plus an
+//      optional managed-settings.d/*.json drop-in directory, merged together):
 //      macOS:   /Library/Application Support/ClaudeCode/managed-settings.json
 //      Linux:   /etc/claude-code/managed-settings.json
 //      Windows: C:\Program Files\ClaudeCode\managed-settings.json
-//   4. Drop-in directory (managed-settings.d/*.json) for modular policy fragments
-//      Files are sorted alphabetically and deep-merged on top of base config.
+//      Drop-ins are merged after the base file in alphabetical order.
 //      Use numeric prefixes: 10-telemetry.json, 20-security.json
+//   4. HKCU registry (Windows/WSL): per-user fallback, read only when no
+//      other managed source delivers a policy key
+// Sources are first-wins by default: Claude Code uses the highest-ranked
+// source that carries any policy key and skips the rest without a warning
+// (/status names the skipped ones). Reference: code.claude.com/docs/en/managed-settings
+// sandbox.network.httpProxyPort / socksProxyPort must be integers when set;
+// omit them to use the built-in proxy (a null value fails schema validation).
 
 // HTH Guide Excerpt: begin managed-settings-baseline
 // Anthropic official example: settings-lax.json (L1 Crawl)
@@ -53,9 +60,7 @@
         "allowUnixSockets": [],
         "allowAllUnixSockets": false,
         "allowLocalBinding": false,
-        "allowedDomains": [],
-        "httpProxyPort": null,
-        "socksProxyPort": null
+        "allowedDomains": []
       },
       "enableWeakerNestedSandbox": false
     }
@@ -78,9 +83,7 @@
         "allowUnixSockets": [],
         "allowAllUnixSockets": false,
         "allowLocalBinding": false,
-        "allowedDomains": [],
-        "httpProxyPort": null,
-        "socksProxyPort": null
+        "allowedDomains": []
       },
       "enableWeakerNestedSandbox": false
     }
@@ -178,9 +181,7 @@
           "*.npmjs.org",
           "registry.yarnpkg.com"
         ],
-        "allowManagedDomainsOnly": true,
-        "httpProxyPort": null,
-        "socksProxyPort": null
+        "allowManagedDomainsOnly": true
       },
       "enableWeakerNestedSandbox": false
     }
