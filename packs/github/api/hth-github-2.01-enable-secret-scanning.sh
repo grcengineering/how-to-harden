@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 2.01: Enable Secret Scanning
 # Profile: L1 | NIST: IA-5(7), SC-28
-# https://howtoharden.com/guides/github/#21-enable-secret-scanning
+# https://howtoharden.com/guides/github/#22-enable-security-features-dependabot-code-scanning-secret-scanning
 source "$(dirname "$0")/common.sh"
 
 banner "2.01: Enable Secret Scanning"

@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "AI/ML Platform"
 description: "Platform-wide security hardening for Anthropic — the Common Controls hub (SSO, organization roles, admin API keys, integration governance) shared by the Claude Enterprise, Claude Code, and Claude API & Console product guides."
-version: "1.1.0"
+version: "1.2.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-15"
+last_updated: "2026-09-25"
 ---
 
 ## Overview
@@ -169,7 +169,7 @@ Configure SAML 2.0 or OIDC-based SSO to authenticate Claude users through your c
 | SOC 2 | CC6.1, CC6.3 |
 
 #### Description
-Assign the minimum necessary organization role to each user. The role model differs by organization type, and the Admin API's `role` enum is wider than either product's assignable set — audit scripts must handle every value. **Claude Console / API organizations** assign `user`, `claude_code_user`, `developer`, `billing`, and `admin` (the Console UI additionally offers a **Limited Developer** tier between `user` and `developer`); above `admin` sit `owner` and `primary_owner`, which hold all admin permissions and additionally manage admins. **Claude Enterprise (claude.ai) organizations** manage members with `user` and `managed` via the API, and the enum also carries `membership_admin`. Limit the `admin` role (and its owner tiers) to a small number of trusted operators.
+Assign the minimum necessary organization role to each user. The role model differs by organization type, and the Admin API's `role` enum is wider than either product's assignable set — audit scripts must handle every value. **Claude Console / API organizations** assign `user`, `claude_code_user`, `developer`, `billing`, and `admin` (the Console's **Limited Developer** role is a *workspace* role, not an organization role — see [Manage Workspace Membership](/guides/anthropic-api/#22-manage-workspace-membership)); above `admin` sit `owner` and `primary_owner`, which hold all admin permissions and additionally manage admins. **Claude Enterprise (claude.ai) organizations** manage members with `user` and `managed` via the API, and the enum also carries `membership_admin`. Limit the `admin` role (and its owner tiers) to a small number of trusted operators.
 
 #### Rationale
 **Why This Matters:**
@@ -328,12 +328,18 @@ Configure your egress proxy to inject the `anthropic-allowed-org-ids` header on 
 
 #### ClickOps Implementation
 
-1. Collect your organization IDs (claude.ai org and Console org)
-2. Configure the egress proxy/SWG to inject `anthropic-allowed-org-ids: <org-id>[,<org-id>]` on requests to Anthropic domains
+1. Collect your organization IDs (claude.ai org and Console org): Console organizations show the ID at **Settings** → **Organization**; Enterprise organizations show it at **Organization settings** → **Organization** (bottom of the page) or **Settings** → **Account**
+2. Configure the egress proxy/SWG to inject `anthropic-allowed-org-ids: <org-id>[,<org-id>]` on requests to Anthropic domains, and to **overwrite** the header on every request rather than add it only when absent
 3. Roll out in monitor mode first, then enforce
 4. Pair with [Claude Code login pinning](/guides/claude-code/) (`forceLoginOrgUUID`) for the client-side half
 
 **Time to Complete:** ~2 hours with proxy change control
+
+#### Code Implementation
+
+Anthropic exposes no API that sets tenant restrictions; the proxy does. This pack verifies enforcement from inside the managed network: a key from an organization that is not allowlisted must get HTTP 403 with `tenant_restriction_violation`, and an allowlisted key must still be served.
+
+{% include pack-code.html vendor="anthropic-claude" section="1.4" %}
 
 #### Validation & Testing
 1. From a corporate network, sign-in to a personal Claude account is refused
@@ -346,7 +352,7 @@ Configure your egress proxy to inject the `anthropic-allowed-org-ids` header on 
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.7 | Restrict transmission of information |
-| **NIST 800-53** | SC-7 | Boundary protection |
+| **NIST 800-53** | SC-7, AC-4 | Boundary protection; information flow enforcement |
 
 ---
 
@@ -445,6 +451,29 @@ Assess the security posture of applications and services that consume your Claud
 - **6-10 points:** Enhanced controls (dedicated workspace, low spend limits, key rotation)
 - **11-15 points:** Reject or isolate (dedicated workspace with minimum limits, frequent rotation, monitoring)
 
+#### ClickOps Implementation
+
+**Step 1: Inventory the Keys and Their Consumers**
+1. Navigate to: **platform.claude.com** → **Settings** → **API keys**
+2. For each active key, record the application that holds it, the owner, and the key's workspace
+
+**Step 2: Score Each Integration**
+1. Score every integration against the risk matrix above
+2. Record the rating and owner next to the key in your inventory
+
+**Step 3: Apply Controls by Score**
+1. For integrations scoring 6 or more, navigate to: **platform.claude.com** → **Settings** → **Workspaces** and create a dedicated workspace for that consumer
+2. On the workspace's **Spend limits** and **Rate limits** tabs, set limits below the organization's (a workspace limit can be lower than, but not higher than, the organization's; the Default Workspace cannot carry limits at all)
+3. Issue the consumer a new key scoped to that workspace, then disable the old key on the **API keys** page
+
+**Time to Complete:** ~1 hour per 10 integrations
+
+#### Code Implementation
+
+The scoring stays a human judgement. This read-only pack supplies the matrix's **Key Scope** factor: every active key, labelled by the workspace it belongs to, the Default Workspace, or the organization (a principal-bound key with no workspace).
+
+{% include pack-code.html vendor="anthropic-claude" section="6.2" %}
+
 #### Validation & Testing
 1. Maintain inventory of all applications using Claude API keys
 2. Verify each application's key is in an appropriately scoped workspace
@@ -464,141 +493,74 @@ Assess the security posture of applications and services that consume your Claud
 
 ## 3. Compliance Quick Reference
 
+These tables cover this hub's six controls only. The SOC 2, NIST 800-53 and ISO 27001 IDs are taken from the controls' own mapping tables. The NIST CSF 2.0 and AI RMF tables map the same controls at category level only, and no control's own table repeats those categories. Each product guide ([Claude Enterprise](/guides/claude-enterprise/), [Claude Code](/guides/claude-code/), [Claude API & Console](/guides/anthropic-api/)) carries the mappings for its own controls.
+
 ### SOC 2 Trust Services Criteria Mapping
 
 | Control ID | Anthropic Claude Control | Guide Section |
 |-----------|--------------------------|---------------|
-| CC6.1 | Enforce SSO, Least-Privilege Roles, API Key Scoping, Managed Settings, Sandbox, Hooks/Plugins, Prompt Injection Defense, Cowork Governance | 1.1, 1.2, 1.3, 2.1, 2.2, 7.1, 7.2, 7.5, 7.6, 7.7, 7.10 |
-| CC6.2 | Invite Management, Workspace Membership | 3.2, 6.1 |
-| CC6.3 | Role-Based Access, Workspace Scoping | 1.2, 2.1, 3.2 |
-| CC6.6 | Workspace Segmentation, Data Residency | 1.3, 3.1, 4.1 |
-| CC6.8 | Spend Limits, Sandbox Boundaries, External Sandbox | 5.2, 7.5, 7.9 |
-| CC7.1 | CI/CD Pipeline Security | 7.8 |
-| CC7.2 | Usage Monitoring, Cost Monitoring, Prompt Injection Detection, Cowork Audit | 5.1, 5.2, 7.7, 7.10 |
-| CC8.1 | Managed Settings, Change Management, Hook/Plugin Governance, CI/CD Hardening | 7.1, 7.6, 7.8 |
-| CC7.3 | Incident Detection and Response | 7.11 |
-| CC7.4 | Incident Recovery | 7.11 |
-| CC9.2 | Integration Risk Assessment, MCP Server Control | 6.2, 7.3 |
+| CC3.2 | Integration Risk Assessment | 2.2 |
+| CC6.1 | Enforce SSO, Least-Privilege Roles, Admin API Key Protection | 1.1, 1.2, 1.3 |
+| CC6.2 | Pending Invite Audit | 2.1 |
+| CC6.3 | Least-Privilege Roles | 1.2 |
+| CC6.6 | Admin API Key Protection | 1.3 |
+| CC6.7 | Tenant Restrictions | 1.4 |
+| CC9.2 | Integration Risk Assessment | 2.2 |
 
 ### NIST 800-53 Rev 5 Mapping
 
 | Control | Anthropic Claude Control | Guide Section |
 |---------|--------------------------|---------------|
-| AC-2 | Account Management, Workspace Membership | 3.2, 6.1 |
-| AC-3 | API Key Scoping, Workspace Isolation | 2.1 |
-| AC-4 | Workspace Segmentation | 3.1 |
-| AC-6 | Least-Privilege Roles | 1.2, 2.1, 3.2 |
-| AU-6 | Usage Monitoring | 5.1 |
+| AC-2(3) | Pending Invite Audit | 2.1 |
+| AC-4 | Tenant Restrictions (information flow) | 1.4 |
+| AC-6, AC-6(1) | Least-Privilege Roles | 1.2 |
 | IA-2 | SSO Enforcement | 1.1 |
-| IA-5 | Admin Key Protection, Key Rotation | 1.3, 2.2 |
+| IA-5 | Admin API Key Protection | 1.3 |
 | IA-8 | Non-Organization User Authentication | 1.1 |
-| RA-3 | Integration Risk Assessment | 6.2 |
-| SA-9 | External Service Controls, Spend Limits | 5.2, 6.2 |
-| SC-7 | Workspace Boundaries, Data Residency | 3.1, 4.1 |
-| SI-4 | System Monitoring | 5.1, 5.2 |
-| CM-6 | Managed Configuration Settings | 7.1 |
-| CM-7 | Least Functionality, Tool Restrictions, MCP Control, Sandbox, Hooks/Plugins | 7.1, 7.2, 7.3, 7.5, 7.6 |
-| SA-11 | Developer Security Testing, CI/CD Hardening | 7.8 |
-| SA-15 | Development Process Security | 7.8 |
-| SC-7 | Boundary Protection, External Sandbox | 3.1, 4.1, 7.9 |
-| SC-39 | Process Isolation, Sandbox Enforcement | 7.5, 7.9 |
-| SI-7 | Software Integrity, Hook/Plugin Validation | 7.6, 7.7 |
-| IR-4 | Incident Handling | 7.11 |
-| IR-5 | Incident Monitoring | 7.11 |
-| IR-8 | Incident Response Plan | 7.11 |
-| SI-10 | Information Input Validation, Prompt Injection Defense | 7.7 |
-| SI-12 | Data Retention | 4.2 |
+| RA-3 | Integration Risk Assessment | 2.2 |
+| SA-9 | External System Services | 2.2 |
+| SC-7 | Boundary Protection (Tenant Restrictions) | 1.4 |
+| SC-12 | Cryptographic Key Management | 1.3 |
 
-### ISO 27001:2022 Mapping
+### ISO 27001 Mapping
+
+Control IDs use the ISO/IEC 27001:2013 Annex A numbering, as in each control's own table.
 
 | Control | Anthropic Claude Control | Guide Section |
 |---------|--------------------------|---------------|
-| A.8.10 | Data Retention and Deletion | 4.2 |
-| A.9.2.1 | User Registration | 1.1, 6.1 |
+| A.9.2.1 | User Registration and De-registration | 1.1, 2.1 |
 | A.9.2.3 | Privileged Access Management | 1.2 |
-| A.9.2.5 | User Access Review | 3.2 |
-| A.9.3.1 | Secret Authentication Information | 2.2 |
-| A.9.4.1 | Information Access Restriction | 2.1 |
 | A.9.4.3 | Password/Key Management | 1.3 |
-| A.12.1.3 | Capacity Management | 5.2 |
-| A.12.4.1 | Event Logging | 5.1 |
-| A.12.2.1 | Controls Against Malware | 7.7 |
-| A.12.5.1 | Software Installation Controls | 7.6 |
-| A.12.6.1 | Technical Vulnerability Management | 7.6 |
-| A.13.1.1 | Network Controls | 7.9 |
-| A.13.1.3 | Network Segregation | 3.1, 7.5, 7.9 |
-| A.14.2.1 | Secure Development Policy | 7.8 |
-| A.14.2.8 | System Security Testing | 7.7, 7.8 |
-| A.15.1.2 | Supplier Security | 6.2 |
-| A.16.1.1 | Information Security Incident Management | 7.11 |
-| A.16.1.5 | Response to Information Security Incidents | 7.11 |
-| A.18.1.4 | Privacy Protection | 4.1 |
+| A.15.1.2 | Supplier Security | 2.2 |
 
 ### NIST Cybersecurity Framework (CSF) 2.0 Mapping
 
 | Function.Category | Anthropic Claude Control | Guide Section |
 |-------------------|--------------------------|---------------|
-| **GV.PO** (Govern: Policy) | Acceptable use policy, scheduled task governance, regulated workload restrictions | 7.10, 7.11 |
-| **GV.SC** (Govern: Supply Chain) | Vendor risk register, plugin/MCP supply chain review, audit gap tracking | 7.3, 7.6, 7.7, 7.10 |
-| **ID.AM** (Identify: Asset Management) | Plugin inventory, connector registry, MCP server registry, scheduled task inventory | 7.3, 7.6, 7.10 |
-| **ID.RA** (Identify: Risk Assessment) | Plugin risk tiers, MCP blast radius analysis, CVE tracking | 7.6, 7.7 |
-| **PR.AC** (Protect: Access Control) | SSO/SCIM, tenant restrictions, RBAC, Chrome allowlists, connector controls, folder scoping | 1.1, 7.2, 7.10 |
-| **PR.AT** (Protect: Training) | Prompt injection awareness, safety guide distribution, AUP training, folder hygiene | 7.7, 7.10 |
-| **PR.DS** (Protect: Data Security) | File access controls, cross-app data flow, local history handling, ZDR, disk encryption | 4.1, 4.2, 7.5, 7.10 |
-| **PR.PS** (Protect: Platform Security) | Managed settings, global instructions, plugin install preferences, network egress, sandbox | 7.1, 7.5, 7.6, 7.10 |
-| **DE.CM** (Detect: Monitoring) | OpenTelemetry, SIEM integration, scheduled task review, anomaly alerting, cost monitoring | 5.1, 7.4, 7.10 |
-| **DE.AE** (Detect: Analysis) | Prompt injection detection, scope creep monitoring, exfiltration pattern detection | 7.7, 7.10 |
-| **RS.RP** (Respond: Planning) | IR playbook with AI agent scenarios, kill-switch authority, tabletop exercises | 7.11 |
-| **RS.CO** (Respond: Communications) | Anthropic reporting (HackerOne), in-app feedback, security team escalation | 7.11 |
-| **RS.AN** (Respond: Analysis) | Local forensic collection, OTel log correlation, Compliance API (non-Cowork) | 7.11 |
+| **PR.AA** (Protect: Identity Management, Authentication, and Access Control) | SSO, least-privilege roles, admin key protection, tenant restrictions | 1.1, 1.2, 1.3, 1.4 |
+| **GV.SC** (Govern: Cybersecurity Supply Chain Risk Management) | Risk rating of third-party applications that hold API keys | 2.2 |
 
 ### NIST AI Risk Management Framework (AI RMF) Mapping
 
 | Function | Anthropic Claude Control | Guide Section |
 |----------|--------------------------|---------------|
-| **GOVERN 1** (Policies & Legal) | Acceptable use policy, regulated workload restrictions, AI usage policy | 7.10, 7.11 |
-| **GOVERN 2** (Accountability) | SSO/SCIM, tenant restrictions, RBAC, defined admin roles | 1.1, 1.2, 7.10 |
-| **GOVERN 4** (Culture & Training) | Prompt injection awareness, safety guides, folder hygiene training | 7.7, 7.10 |
-| **GOVERN 6** (Supply Chain) | Vendor risk register, plugin/MCP review, audit gap tracking | 7.3, 7.6, 7.7 |
-| **MAP 1** (Context & Scope) | Deployment posture selection, plan-tier analysis, plugin/connector inventories | 7.1, 7.10 |
-| **MAP 3** (Risk Identification) | Prompt injection threat model, MCP blast radius, CVE tracking | 7.7, 7.10 |
-| **MEASURE 1** (Monitoring) | OpenTelemetry, SIEM, alerting, cost monitoring, task review | 5.1, 7.4, 7.10 |
-| **MANAGE 1** (Risk Treatment) | ZDR, disk encryption, managed settings, Chrome controls, connector controls | 4.2, 7.1, 7.5, 7.10 |
-| **MANAGE 2** (Response) | IR playbook with AI agent scenarios, kill-switch, tabletop exercises | 7.11 |
-| **MANAGE 4** (Residual Risk) | Audit log gap documented, regulated workload prohibition, OTel as compensating control | 7.10, 7.11 |
+| **GOVERN 2** (Accountability) | SSO, defined admin roles, tenant restrictions | 1.1, 1.2, 1.4 |
+| **GOVERN 6** (Third-Party & Supply Chain) | Risk rating of third-party applications that hold API keys | 2.2 |
 
 ---
 
 ## Appendix A: Edition/Tier Compatibility
+
+This table covers this hub's controls. Product-specific availability is in each product guide.
 
 | Control | API (All Tiers) | Team | Enterprise |
 |---------|----------------|------|------------|
 | 1.1 Enforce SSO | N/A (API-only) | ✅ | ✅ |
 | 1.2 Least-Privilege Roles | ✅ | ✅ | ✅ |
 | 1.3 Admin Key Protection | ✅ | ✅ | ✅ |
-| 2.1 API Key Scoping | ✅ | ✅ | ✅ |
-| 2.2 API Key Rotation | ✅ | ✅ | ✅ |
-| 3.1 Workspace Segmentation | ✅ | ✅ | ✅ |
-| 3.2 Workspace Membership | ✅ | ✅ | ✅ |
-| 4.1 Data Residency | ✅ | ✅ | ✅ |
-| 4.2 Custom Data Retention | ❌ | ❌ | ✅ |
-| 4.2 Zero Data Retention | ❌ | ❌ | ✅ (by arrangement) |
-| 5.1 Usage Monitoring | ✅ | ✅ | ✅ |
-| 5.2 Spend Limits | ✅ | ✅ | ✅ |
-| 6.1 Invite Auditing | ✅ | ✅ | ✅ |
-| 6.2 Integration Risk | ✅ | ✅ | ✅ |
-| 7.1 Managed Settings (MDM) | ✅ (MDM only) | ✅ | ✅ |
-| 7.1 Server-Managed Settings | ❌ | ✅ (v2.1.38+) | ✅ (v2.1.30+) |
-| 7.2 Permission Restrictions | ✅ (MDM only) | ✅ | ✅ |
-| 7.3 MCP Server Control | ✅ (MDM only) | ✅ | ✅ |
-| 7.4 Claude Code Analytics | ✅ | ✅ | ✅ |
-| 7.5 Bash Sandbox Isolation | ✅ (MDM only) | ✅ | ✅ |
-| 7.6 Hooks & Plugin Lockdown | ✅ (MDM only) | ✅ | ✅ |
-| 7.7 Prompt Injection Defense | ✅ (open-source tools) | ✅ | ✅ |
-| 7.8 CI/CD Pipeline Hardening | ✅ (GitHub Actions) | ✅ | ✅ |
-| 7.9 External Sandbox (nono/OpenShell) | ✅ (open-source tools) | ✅ | ✅ |
-| 7.10 Cowork Governance | ❌ | ✅ | ✅ |
-| 7.11 Incident Response | ✅ (procedural) | ✅ | ✅ |
+| 1.4 Tenant Restrictions | ✅ (Console org IDs can be allowlisted) | Not documented | ✅ |
+| 2.1 Invite Auditing | ✅ | ✅ | ✅ |
+| 2.2 Integration Risk | ✅ | ✅ | ✅ |
 | SCIM Provisioning | ❌ | ❌ | ✅ |
 | Audit Logs | ❌ | ❌ | ✅ |
 
@@ -669,7 +631,7 @@ Assess the security posture of applications and services that consume your Claud
 - [Claude Cowork Security — MintMCP](https://www.mintmcp.com/blog/claude-cowork-security)
 
 **Security and Compliance:**
-- [Anthropic Usage Policy](https://www.anthropic.com/policies/usage-policy)
+- [Anthropic Usage Policy](https://www.anthropic.com/legal/aup)
 - [Anthropic Trust Center](https://trust.anthropic.com)
 - [Custom Data Retention (Enterprise)](https://support.anthropic.com/en/articles/10440198-custom-data-retention-controls-for-claude-enterprise)
 
@@ -679,6 +641,7 @@ Assess the security posture of applications and services that consume your Claud
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 1.2.0 | ai-drafted | validate-hth-guide run (Phases 4-6, including an independent audit). The live Console stayed behind its sign-in wall and no Admin API key could be minted, so 0 surfaces were exercised live and no status was added; packs were exercised offline against a mock of the documented Admin API. Fixes: the shared POST helper appended a stray `}` to every request body, so 1.02's role change could never send valid JSON (now fixed, and 1.02 keeps the API's response, a member record, off stdout); packs 1.01, 1.02, 1.03 and 6.01 now exit 1 when an API call fails (they printed `[FAIL]` and exited 0) and page through `has_more`/`last_id` with `limit=1000` (the shared helper read a `next_page` field the API never returns, so every list stopped at 20 entries); the admin key reaches curl as a header file instead of a command-line argument; 1.01 drops the Linux-only `column -N`; 6.01 prints `invited_at` (invites have no `created_at`); 1.02 matches undocumented roles exactly; 1.02 and 6.01 now declare `mode: mutating` for their opt-in write branches, which also validate their inputs. New read-only packs: 1.04 verifies tenant restrictions from inside the network against the documented HTTP 403 `tenant_restriction_violation`; 6.02 inventories active API keys by scope (workspace, Default Workspace, organization) for 2.2. §2.2 gains ClickOps steps (Settings → API keys, workspace limits under Settings → Workspaces). §1.4 names where each organization type shows its organization ID and says to overwrite the header. §1.2: Limited Developer is a workspace role, not an organization role. §3 and Appendix A rebuilt around this hub's six controls (they cited sections 3.1-7.11, which now live in the product guides); CSF 2.0 `PR.AC` corrected to `PR.AA`; ISO IDs labelled as 2013 Annex A numbering; §3 now says its CSF 2.0 and AI RMF rows are category-level mappings that no control table carries; §1.4's Compliance Mappings table gains `AC-4`, which its header table already listed. Usage Policy link moved to anthropic.com/legal/aup; doc_links.yml points at platform.claude.com and academy.claude.com directly. Correction to the 1.1.0 row: Anthropic documents the OAuth access-token prefix quoted there for tokens issued by `POST /v1/oauth/token` (WIF reference); the prefix of interactive `ant auth login --scope "org:admin"` tokens is not documented and was not verified. | `Claude Code (Opus 5.5)` |
 | 2026-08-15 | 1.1.0 | ai-drafted | Admin API currency pass against platform.claude.com. §1.2 role model corrected to the two-org-type picture: five Console/API roles plus the Console UI's Limited Developer tier, `owner`/`primary_owner` above admin, `managed`/`membership_admin` on the Enterprise side, and the full nine-value API role enum documented so audit scripts stop silently miscounting; the admin-assignment and admin-removal API blocks are now quoted from the current references. §1.3 rebuilt on the two-track credential model — Console admin keys (`sk-ant-admin01-`, no selectable scopes) vs Claude Enterprise scoped keys (`sk-ant-api01-`, 12-scope table, primary-owner/org-owner creation split) — plus key expiration at creation, the organization maximum-expiration policy, the `org:admin` OAuth bearer path via the `ant` CLI (dedicated admin profile, `sk-ant-oat01-` prefix added for secret-scanning coverage), and the WIF-endpoints carve-out (service-account/federation endpoints reject admin keys). References moved to canonical platform.claude.com URLs — two of the old docs.anthropic.com links were dead 404s. Roles pack rewritten to count the full enum and the elevated tier; rotation pack now audits `expires_at`. | `Claude Code (Opus 5)` |
 | 2026-02-21 | 0.1.0 | ai-drafted | Initial guide: 12 controls across 6 categories, API pack scripts for Admin API | `Claude Code (Opus 4.6)` |
 | 2026-02-21 | 0.2.0 | ai-drafted | Added Section 7: Claude Code Enterprise Controls — MDM managed settings, permission restrictions, MCP server control, developer analytics | `Claude Code (Opus 4.6)` |

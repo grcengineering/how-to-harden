@@ -2,7 +2,7 @@
 # HTH GitHub Control 3.03: Pin Actions to Full-Length SHA
 # Profile Level: L2 (Walk)
 # Frameworks: NIST SA-12, SI-7
-# Source: https://howtoharden.com/guides/github/#33-pin-actions-to-sha
+# Source: https://howtoharden.com/guides/github/#31-restrict-third-party-github-actions-to-verified-creators-only
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform

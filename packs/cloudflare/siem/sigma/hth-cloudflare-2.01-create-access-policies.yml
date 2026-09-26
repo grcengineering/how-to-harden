@@ -1,5 +1,5 @@
 title: Cloudflare Access Application Policy Deleted
-id: cf-zt-2001-access-policy-deleted
+id: 53494767-bba5-5b49-a9db-d806b8bf1d3e
 status: test
 description: |
     Detects when an Access application policy is deleted in Cloudflare Zero Trust.

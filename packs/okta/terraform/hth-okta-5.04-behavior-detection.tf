@@ -3,27 +3,31 @@
 # Profile Level: L2 (Walk)
 # Frameworks: NIST SI-4, AC-7
 # Source: https://howtoharden.com/guides/okta/#54-configure-behavior-detection-rules
+#
+# Behaviors only define what "new" or "anomalous" means. The response
+# (challenge or deny) is set in Global Session Policy rules ("Behavior is") and
+# app sign-in policy rules ("Risk is"), not on the behavior itself.
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform
 # Behavior detection rule for new location sign-on
-resource "okta_behaviour" "new_location" {
+resource "okta_behavior" "new_location" {
   count = var.profile_level >= 2 ? 1 : 0
 
   name                      = "New Location Sign-On"
   type                      = "ANOMALOUS_LOCATION"
   status                    = "ACTIVE"
-  number_of_authentications  = 3
-  location_granularity_type  = "CITY"
+  number_of_authentications = 3
+  location_granularity_type = "CITY"
 }
 
 # Behavior detection rule for new device
-resource "okta_behaviour" "new_device" {
+resource "okta_behavior" "new_device" {
   count = var.profile_level >= 2 ? 1 : 0
 
   name                      = "New Device Sign-On"
   type                      = "ANOMALOUS_DEVICE"
   status                    = "ACTIVE"
-  number_of_authentications  = 3
+  number_of_authentications = 3
 }
 # HTH Guide Excerpt: end terraform

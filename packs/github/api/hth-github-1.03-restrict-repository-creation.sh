@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 1.03: Restrict Public Repository Creation
 # Profile: L1 | NIST: AC-4, AC-22
-# https://howtoharden.com/guides/github/#13-restrict-public-repository-creation
+# https://howtoharden.com/guides/github/#12-restrict-base-permissions-for-organization-members
 source "$(dirname "$0")/common.sh"
 
 banner "1.03: Restrict Public Repository Creation"

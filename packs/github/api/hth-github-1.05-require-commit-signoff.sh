@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 1.05: Require Web Commit Sign-Off
 # Profile: L2 | NIST: AU-10, CM-5
-# https://howtoharden.com/guides/github/#15-require-commit-sign-off
+# https://howtoharden.com/guides/github/#24-enforce-commit-signing
 source "$(dirname "$0")/common.sh"
 
 banner "1.05: Require Web Commit Sign-Off"

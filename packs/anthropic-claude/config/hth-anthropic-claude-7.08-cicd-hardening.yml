@@ -48,11 +48,14 @@ jobs:
       # Claude Code security review analyzes PR diffs for vulnerabilities.
       # Source: github.com/anthropics/claude-code-security-review (MIT)
       # WARNING: Only use on trusted PRs — not hardened against prompt injection.
+      # The repo publishes no release tags; pin to a reviewed commit on main.
+      # Inputs are kebab-case: claude-api-key (required), claude-model, comment-pr.
       - name: Claude Security Review
-        uses: anthropics/claude-code-security-review@4c30e5b23b045e24fc98a810f318f8ad4aad1539  # v1
+        uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda  # main @ 2026-02-11
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          model: claude-sonnet-4-6
+          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude-model: claude-sonnet-4-6
+          comment-pr: true
 # HTH Guide Excerpt: end cicd-hardened-workflow
 
 # HTH Guide Excerpt: begin cicd-claude-code-action
@@ -77,13 +80,16 @@ jobs:
 
       # Claude Code Action runs Claude as a CI agent.
       # Source: github.com/anthropics/claude-code-action (MIT)
-      # Use allowed_tools and disallowed_tools to restrict capabilities.
+      # v1 has no model/allowed_tools/disallowed_tools/max_turns inputs (GitHub
+      # ignores undeclared inputs with only a warning). Pass model, tool scoping
+      # and the turn limit as Claude CLI flags through claude_args instead.
       - name: Claude Code
-        uses: anthropics/claude-code-action@3e460685e1084c53f5a6ddd25eab3a0d3fa4b9a6  # v1
+        uses: anthropics/claude-code-action@9171db3e57d6a3140a37ddc2ba92788584e0ead6  # v1 (tag target on 2026-09-24)
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          model: claude-sonnet-4-6
-          allowed_tools: "Read,Glob,Grep,Agent"
-          disallowed_tools: "Bash,WebFetch,WebSearch"
-          max_turns: "10"
+          claude_args: >-
+            --model claude-sonnet-4-6
+            --allowedTools "Read,Glob,Grep,Agent"
+            --disallowedTools "Bash,WebFetch,WebSearch"
+            --max-turns 10
 # HTH Guide Excerpt: end cicd-claude-code-action

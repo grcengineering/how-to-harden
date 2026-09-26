@@ -72,14 +72,10 @@ access_group_projects = {
 # -----------------------------------------------------------------------------
 project_id = "prj_..."
 
-# Git repository in owner/repo format
-git_repository = ""
-
-# Git provider: github, gitlab, or bitbucket
-git_provider = "github"
-
-# Production branch name
-production_branch = "main"
+# Current name of that EXISTING project. hth-vercel-2.01 imports it (nothing new
+# is created) and stops if the name does not match project_id. Its Git
+# connection, framework and build settings are left as they are.
+project_name = "my-app"
 
 # Preview deployment password (L2+ only)
 # WARNING: Sensitive value. Use environment variables in production:
@@ -103,9 +99,14 @@ require_verified_commits    = false
 # -----------------------------------------------------------------------------
 # Section 3.1: Enable WAF with Managed Rulesets
 # Start with "log" action to monitor, then switch to "deny" after tuning.
+# Managing the firewall (firewall_enabled, blocked_ip_addresses or
+# rate_limit_rules) REPLACES the project's whole firewall configuration,
+# including rules from the dashboard and the 3.3/9.1 API packs. Export the
+# active config first, declare what to keep, then acknowledge it below.
 # -----------------------------------------------------------------------------
-firewall_enabled = false
-waf_owasp_action = "log"
+firewall_enabled                 = false
+firewall_replace_existing_config = false
+waf_owasp_action                 = "log"
 
 
 # -----------------------------------------------------------------------------
@@ -114,6 +115,9 @@ waf_owasp_action = "log"
 blocked_ip_addresses = [
   # { value = "192.0.2.0/24", note = "Known malicious range" },
 ]
+
+# Hostname the IP-block rules apply to (required when blocked_ip_addresses is set)
+firewall_hostname = ""
 
 # Rate limiting rules (L2+ only)
 rate_limit_rules = [
@@ -140,13 +144,18 @@ rate_limit_rules = [
 secure_compute_enabled = false
 secure_compute_name    = "hth-secure-network"
 secure_compute_region  = "us-east-1"
+secure_compute_cidr    = "10.0.0.0/16"
 
 
 # -----------------------------------------------------------------------------
 # Section 4.2: Attack Challenge Mode
-# Enable during active attacks -- challenges ALL visitors with JS check
+# Enable during active attacks -- challenges ALL visitors with JS check.
+# false leaves the mode unmanaged (an apply never switches it off).
 # -----------------------------------------------------------------------------
 attack_challenge_mode_enabled = false
+
+# Unix time in MILLISECONDS when the mode switches off (required when enabled)
+attack_mode_active_until = 0
 
 
 # -----------------------------------------------------------------------------
@@ -169,11 +178,11 @@ environment_variables = {
 # -----------------------------------------------------------------------------
 # Section 6.2: Deployment Retention Policy (L2+)
 # -----------------------------------------------------------------------------
-deployments_to_keep                   = 10
-deployment_expiration_days            = 30
-deployment_expiration_days_canceled   = 7
-deployment_expiration_days_errored    = 7
-deployment_expiration_days_production = 365
+# One of 1d, 1w, 1m, 2m, 3m, 6m, 1y
+retention_preview    = "1m"
+retention_production = "1y"
+retention_canceled   = "1w"
+retention_errored    = "1w"
 
 
 # -----------------------------------------------------------------------------
@@ -193,3 +202,10 @@ log_drain_sources = ["static", "edge", "external", "build", "lambda"]
 
 # Environments to collect logs from
 log_drain_environments = ["production", "preview"]
+
+
+# -----------------------------------------------------------------------------
+# Section 10.4: Container Registry repositories to keep private
+# Import existing ones first (see hth-vercel-10.04-vcr-repository-private.tf)
+# -----------------------------------------------------------------------------
+vcr_repositories = []

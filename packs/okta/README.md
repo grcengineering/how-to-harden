@@ -8,10 +8,10 @@ Runnable security hardening artifacts for [Okta](https://howtoharden.com/guides/
 |-----------|-------|-------------|
 | YAML Controls | 34 | Machine-readable definitions with audit checks, remediation, and compliance mappings |
 | Terraform | 11 | Per-control `.tf` files for controls 1.1, 1.9, 1.10, 1.11, 2.1, 2.3, 3.4, 4.1, 4.2, 5.2, 5.4 |
-| API Scripts | 22 | Per-control hardening scripts + read-only validator |
+| API Scripts | 22 | Per-control hardening scripts |
 | Sigma Rules | 24 | Platform-agnostic SIEM detection rules (Splunk, Elastic, Microsoft 365 Defender) |
-| IR Runbooks | 3 | Incident response scripts for compromised admin, malicious IdP, unauthorized MFA |
-| Utilities | 1 | HAR file sanitizer for safe support ticket submission |
+
+Repo-only tooling lives in [`tools/okta/`](../../tools/okta/), outside `packs/`, because it maps to no single guide section and the pack sync cannot publish it: a read-only tenant validator, 3 incident response runbooks (compromised admin, malicious IdP, unauthorized MFA), and a HAR file sanitizer for safe support ticket submission.
 
 ## Prerequisites
 
@@ -32,7 +32,7 @@ export OKTA_API_TOKEN="your-ssws-token"
 export HTH_PROFILE_LEVEL=1  # 1=Crawl, 2=Walk, 3=Run
 
 # Audit first — read-only, changes nothing
-bash hth-okta-validate.sh
+bash ../../../tools/okta/hth-okta-validate.sh
 
 # Apply individual controls
 bash hth-okta-1.01-enforce-phishing-resistant-mfa.sh
@@ -40,7 +40,7 @@ bash hth-okta-1.04-configure-password-policy.sh
 bash hth-okta-2.01-configure-network-zones.sh
 
 # Apply all controls at once
-for f in hth-okta-*.sh; do [ "$f" != "hth-okta-validate.sh" ] && bash "$f"; done
+for f in hth-okta-[0-9]*.sh; do bash "$f"; done
 ```
 
 ### 2. Terraform (Declarative)
@@ -74,22 +74,24 @@ sigma convert -t splunk siem/sigma/hth-okta-1.01-enforce-phishing-resistant-mfa.
 
 ### 4. Incident Response
 
+Run from the repository root:
+
 ```bash
 # Respond to a compromised admin account
-bash scripts/incident-response/hth-okta-ir-compromised-admin.sh
+bash tools/okta/incident-response/hth-okta-ir-compromised-admin.sh
 
 # Respond to a malicious IdP configuration
-bash scripts/incident-response/hth-okta-ir-malicious-idp.sh
+bash tools/okta/incident-response/hth-okta-ir-malicious-idp.sh
 
 # Respond to unauthorized MFA enrollment
-bash scripts/incident-response/hth-okta-ir-unauthorized-mfa.sh
+bash tools/okta/incident-response/hth-okta-ir-unauthorized-mfa.sh
 ```
 
 ### 5. HAR File Sanitizer
 
 ```bash
 # Strip credentials from HAR files before sharing with support
-bash scripts/hth-okta-har-sanitize.sh recording.har > recording-sanitized.har
+bash tools/okta/hth-okta-har-sanitize.sh recording.har > recording-sanitized.har
 ```
 
 ## Profile Levels
@@ -125,22 +127,23 @@ okta/
 │   └── hth-okta-5.04-behavior-detection.tf
 ├── api/                                               # Per-control API scripts
 │   ├── common.sh                                      # Shared utilities
-│   ├── hth-okta-validate.sh                           # Read-only audit
 │   ├── hth-okta-1.01-enforce-phishing-resistant-mfa.sh
 │   ├── hth-okta-1.02-admin-role-separation.sh
 │   ├── ...
 │   └── hth-okta-7.03-access-reviews.sh
-├── siem/sigma/                                        # Sigma detection rules
-│   ├── hth-okta-1.01-enforce-phishing-resistant-mfa.yml
-│   ├── hth-okta-1.09-audit-default-auth-policy.yml
-│   ├── ...
-│   └── hth-okta-7.04-implement-change-management-e.yml
-└── scripts/                                           # Operational utilities
-    ├── hth-okta-har-sanitize.sh
-    └── incident-response/
-        ├── hth-okta-ir-compromised-admin.sh
-        ├── hth-okta-ir-malicious-idp.sh
-        └── hth-okta-ir-unauthorized-mfa.sh
+└── siem/sigma/                                        # Sigma detection rules
+    ├── hth-okta-1.01-enforce-phishing-resistant-mfa.yml
+    ├── hth-okta-1.09-audit-default-auth-policy.yml
+    ├── ...
+    └── hth-okta-7.04-implement-change-management-e.yml
+
+tools/okta/                                            # Repo-only tooling (not published)
+├── hth-okta-validate.sh                               # Read-only tenant audit
+├── hth-okta-har-sanitize.sh
+└── incident-response/
+    ├── hth-okta-ir-compromised-admin.sh
+    ├── hth-okta-ir-malicious-idp.sh
+    └── hth-okta-ir-unauthorized-mfa.sh
 ```
 
 ## Naming Convention

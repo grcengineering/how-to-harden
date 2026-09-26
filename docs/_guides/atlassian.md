@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "2"
 category: "Productivity"
 description: "Platform-wide security hardening for Atlassian Cloud — the Common Controls hub (organization authentication, Atlassian Guard, Marketplace app governance, data security policies, org audit logging) shared by the Jira Cloud and Bitbucket product guides."
-version: "0.4.0"
+version: "0.5.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-09-25"
 ---
 
 
@@ -39,7 +39,7 @@ Confluence has no separate product guide yet, so Confluence-specific settings (s
 
 Many of the controls below are delivered by **Atlassian Guard**, the identity and data-security add-on that was previously named **Atlassian Access**. The product was renamed and split into two subscription levels, so older documentation and console screenshots referring to "Access" describe what is now Guard:
 
-- **Guard Standard** — SSO enforcement, SCIM user provisioning and deprovisioning, mobile app policies, API token controls, and the organization-wide audit log.
+- **Guard Standard** — SSO enforcement, SCIM user provisioning and deprovisioning, Mobile application management (MAM) policies, API token controls, and the organization-wide audit log.
 - **Guard Premium** — everything in Standard plus data classification, anomalous activity detection, content scanning, and SIEM webhook forwarding.
 
 Guard is licensed per unique billable user across the organization and is independent of the Jira or Confluence product edition, so a Premium product plan alone does not grant these capabilities. Source: [Atlassian Guard pricing](https://www.atlassian.com/software/access/pricing)
@@ -143,6 +143,12 @@ Require SAML SSO with MFA for all Atlassian Cloud access, eliminating local pass
 
 > **JIT is not deprovisioning.** JIT provisioning only creates accounts at login; it never removes them. An organization relying on JIT alone accumulates active accounts for departed employees. Use SCIM where the IdP supports it, and where it does not, pair JIT with a scheduled manual deactivation review.
 
+#### Code Implementation
+
+SAML configuration and authentication policy settings have no resource in any of Atlassian's cloud admin REST APIs ([Cloud admin REST APIs](https://developer.atlassian.com/cloud/admin/rest-apis/), 2026-09-24). The Admin Control API can only add users to an existing authentication policy and report which policy each managed user is on, so Steps 2 and 3 stay ClickOps. The pack below reads what the Organizations API does expose: whether every domain is verified, which active managed accounts have no two-step verification, and how many active unmanaged accounts remain. Accounts under an SSO-enforced authentication policy get MFA from the IdP and can legitimately show no Atlassian two-step verification, so reconcile that list against the policy's members.
+
+{% include pack-code.html vendor="atlassian" section="1.1" %}
+
 #### Validation & Testing
 
 1. From a browser with no existing session, sign in as a managed user and confirm you are redirected to the IdP and cannot reach a local Atlassian password prompt
@@ -203,6 +209,12 @@ Configure who receives access to each Atlassian product at the organization leve
 
 > **Within-product authorization lives in the product guides.** Jira permission schemes, work item security schemes, and global permissions are covered in the [Jira Cloud guide](/guides/jira-cloud/). Bitbucket workspace membership, project permissions, and branch restrictions are covered in the [Bitbucket guide](/guides/bitbucket/). Grant product access here first; scope it inside the product there.
 
+#### Code Implementation
+
+The pack counts active organization admins against a limit you set (Step 2). When a Confluence site is supplied, it also lists spaces where anonymous users hold a role (Step 3). Atlassian documents that space role-assignment endpoint only for sites with role-based access control, and the pack stops with an error rather than report a space as closed when the endpoint is unavailable.
+
+{% include pack-code.html vendor="atlassian" section="1.2" %}
+
 ---
 
 ### 1.3 Configure API Token Policies
@@ -211,7 +223,7 @@ Configure who receives access to each Atlassian product at the organization leve
 **NIST 800-53:** IA-5
 
 #### Description
-Control API token creation and set an organization expiration policy that is shorter than the platform ceiling. Since **15 December 2024**, every newly created Atlassian account API token must carry an expiry date between **1 day and 1 year**, and tokens created before that date without an expiry were force-expired in batches between **March and May 2026**. The platform therefore guarantees only a one-year maximum lifetime — a shorter organizational standard is a policy decision you still have to make and enforce. Source: [Manage API tokens for your Atlassian account](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
+Control API token creation and set an organization expiration policy that is shorter than the platform ceiling. Since **15 December 2024**, every newly created Atlassian account API token must carry an expiry date between **1 day and 1 year**. From **13 March 2025**, Atlassian assigned a one-year expiry to tokens created before 15 December 2024, so those legacy tokens expired between **14 March and 12 May 2026**. The platform therefore guarantees only a one-year maximum lifetime — a shorter organizational standard is a policy decision you still have to make and enforce. Source: [Manage API tokens for your Atlassian account](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
 
 #### Rationale
 **Why This Matters:**
@@ -243,6 +255,12 @@ Control API token creation and set an organization expiration policy that is sho
 2. Assign each an owner responsible for rotation ahead of the expiry date
 3. Alert on authentication failures from service integrations so an expired token surfaces as a tracked incident rather than a silent outage
 
+#### Code Implementation
+
+The **Allow users to create API tokens** setting has no REST resource ([Cloud admin REST APIs](https://developer.atlassian.com/cloud/admin/rest-apis/), 2026-09-24), so Step 1 stays ClickOps. The pack audits Step 2 through the API Access REST API: it lists every user API token in the organization and flags any allowed token with no expiry, or with an expiry beyond your organizational standard.
+
+{% include pack-code.html vendor="atlassian" section="1.3" %}
+
 ---
 
 ### 1.4 Restrict Product Access with IP Allowlisting
@@ -265,7 +283,7 @@ Restrict browser and REST API access to Jira, Jira Service Management, and Confl
 - Network-level filtering runs independently of the identity provider, giving a second, non-credential control that survives an IdP compromise or an MFA-fatigue attack
 - Bulk exfiltration campaigns typically run from cloud hosting or residential proxy ranges that never appear in a corporate egress allowlist, so the restriction cuts off the exfiltration path even after account takeover
 
-**Important scope limitation:** the product IP allowlist does **not** cover `admin.atlassian.com`. Organization administration — user management, authentication policies, product access grants, and billing — remains reachable from any IP address. Treat administrator accounts as still fully internet-exposed and protect them with phishing-resistant MFA and dedicated authentication policies rather than assuming the allowlist covers them. The allowlist also does not filter mobile app traffic in the same way as browser traffic, so validate mobile access before enforcing.
+**Important scope limitation:** the product IP allowlist does **not** cover `admin.atlassian.com`. Organization administration — user management, authentication policies, product access grants, and billing — remains reachable from any IP address. Treat administrator accounts as still fully internet-exposed and protect them with phishing-resistant MFA and dedicated authentication policies rather than assuming the allowlist covers them.
 
 **Attack Prevented:** Credential-stuffing from attacker infrastructure, session hijacking replayed off-network, API-token-driven bulk export, unmanaged-device access
 
@@ -286,6 +304,12 @@ Restrict browser and REST API access to Jira, Jira Service Management, and Confl
 1. Apply a dedicated authentication policy to organization administrators requiring phishing-resistant MFA
 2. Keep the count of organization admins minimal and review it on a fixed cadence
 3. Alert on any administrative action in the audit log originating from an IP outside the allowlist, since the console itself will not block it
+
+#### Code Implementation
+
+The Admin Control REST API models IP allowlists as organization policies. The pack reads them and flags a missing, failed, or allow-everything policy, and lists any policy that lets mobile apps bypass the allowlist for review. It never creates or edits an allowlist, because an allowlist change can lock administrators out.
+
+{% include pack-code.html vendor="atlassian" section="1.4" %}
 
 #### Validation & Testing
 
@@ -357,6 +381,8 @@ Before approving any app:
 - Confirm which framework the app is built on — prefer Forge, and treat Connect as legacy (see below)
 - Document business justification
 
+**Automation:** ClickOps only — Atlassian exposes no write interface for this setting ([Cloud admin REST APIs](https://developer.atlassian.com/cloud/admin/rest-apis/), 2026-09-24). None of the six cloud admin REST APIs has a resource for the app installation policy, user install requests, or the app block list. App access to covered content is restricted through data security policies instead (§4.3).
+
 #### Connect Framework Sunset — Prefer Forge
 
 Atlassian has published an end-of-support timeline for the Connect app framework, and it changes how new app approvals should be evaluated:
@@ -365,7 +391,7 @@ Atlassian has published an end-of-support timeline for the Connect app framework
 |-----------|------|--------|
 | No new Connect listings | September 2025 | New Connect apps can no longer be published to the Marketplace |
 | Descriptor updates stop | March 2026 | Existing Connect apps can no longer change their descriptor, freezing scopes and endpoints |
-| End of support | 31 January 2027 | Connect apps cease to be supported on the platform |
+| End of support | Q4 2026 | Connect apps enter an end-of-support state (enforcement begins Q4 CY2026) |
 
 Source: [Announcing Connect end of support timeline and next steps](https://www.atlassian.com/blog/development/announcing-connect-end-of-support-timeline-and-next-steps)
 
@@ -374,7 +400,7 @@ Source: [Announcing Connect end of support timeline and next steps](https://www.
 - Treat any Connect-based app as a legacy dependency with a hard expiry, not a durable integration, and require a documented migration or replacement plan before approving it
 - Prefer Forge apps, which run on Atlassian-hosted infrastructure with declared, granular permission scopes and no vendor-operated servers holding your data in transit
 - Because Connect descriptors freeze in March 2026, a Connect app cannot narrow its own scopes or repoint its endpoints after that date — any scope concern you have with it becomes permanent
-- Inventory your installed Connect apps now and track vendor migration commitments; apps whose vendors have not announced a Forge migration path should be scheduled for removal rather than carried toward the 2027 deadline
+- Inventory your installed Connect apps now and track vendor migration commitments; apps whose vendors have not announced a Forge migration path should be scheduled for removal rather than carried toward the end-of-support deadline
 - Frozen, unmaintained apps still holding live tokens against your instance are an attractive supply-chain target, so shrink that inventory ahead of end-of-support rather than at it
 
 #### Marketplace App Risk Assessment
@@ -407,7 +433,16 @@ Monitor Marketplace app API calls and data access.
 
 **Attack Prevented:** Malicious app data exfiltration, supply-chain abuse, undetected bulk export
 
+#### ClickOps Implementation
+
+1. Navigate to: **admin.atlassian.com → Security → Audit log** (the organization audit log; requires Atlassian Guard — the same surface as §5.1)
+2. Filter the activity to app-related events — app installs, updates, removals, and app access changes — for the last 30 days
+3. Investigate any install or scope change without a matching approval from §2.1, and any app whose data-access volume departs from its baseline
+4. Cross-check the installed-app inventory at **admin.atlassian.com → Apps**
+
 #### Code Implementation
+
+The pack discovers the app-related actions from the audit log's own action catalogue, then prints the matching events for the look-back window. Any response other than HTTP 200 stops it rather than reading as "no activity". A look-back window with no audit events of any kind is reported as inconclusive, because an empty log shows nothing about apps and Atlassian's reference does not say what these endpoints return to an organization without Atlassian Guard.
 
 {% include pack-code.html vendor="atlassian" section="2.2" %}
 
@@ -448,6 +483,12 @@ Harden AppLinks between Atlassian products to prevent impersonation attacks.
 - Limit AppLinks creation to administrators only
 - Document approved integration patterns
 
+#### Code Implementation (Data Center)
+
+The pack inventories every application link and flags any link that no longer works, which is standing trust to a system that no longer answers. It deliberately does not read a link's authentication configuration: Atlassian notes that endpoint returns the stored username and password of a Basic Auth link ([Application Links configuration summary](https://support.atlassian.com/atlassian-knowledge-base/kb/how-to-generate-an-application-links-configuration-summary/), 2026-09-24). Confirm the OAuth 2.0 authentication type in the console (Step 2).
+
+{% include pack-code.html vendor="atlassian" section="3.1" %}
+
 ---
 
 ### 3.2 Configure Webhook Security
@@ -470,16 +511,20 @@ Secure webhook configurations to prevent data leakage.
 #### ClickOps Implementation
 
 **Step 1: Audit Webhooks**
-1. Navigate to: **System → Webhooks** (Jira)
+1. Navigate to: **Settings (⚙) → System → Advanced → WebHooks** (Jira; requires the Administer Jira global permission)
 2. Review all configured webhooks:
    - Destination URLs (should be internal or verified services)
    - Events subscribed
    - JQL filters (limit scope)
 
 **Step 2: Secure Webhook Endpoints**
-- Require HTTPS for all webhook URLs
+- Confirm every webhook has a secret set. Jira accepts only HTTPS destinations for admin webhooks, so the remaining risk is an unsigned delivery
 - Implement webhook signature validation
 - Limit events to necessary minimum
+
+#### Code Implementation
+
+The API pack audits Step 1 and the secret half of Step 2: it lists every admin webhook and flags one with no secret or a non-HTTPS destination. The SDK pack is the receiving side of Step 2: it verifies the `X-Hub-Signature` HMAC and rejects an unsigned delivery.
 
 {% include pack-code.html vendor="atlassian" section="3.2" %}
 
@@ -515,6 +560,8 @@ Manage OAuth tokens for third-party integrations.
    - **App approval:** Required for new apps
    - **Scope review:** Admin approval for sensitive scopes
 
+**Automation:** ClickOps only — Atlassian exposes no write interface for this setting ([Cloud admin REST APIs](https://developer.atlassian.com/cloud/admin/rest-apis/), 2026-09-24). None of the six cloud admin REST APIs has a resource for the apps users have authorized; the API Access REST API covers OAuth clients for service accounts, not connected apps. Authorized applications can be reviewed and revoked only in the console.
+
 ---
 
 ## 4. Data Security
@@ -536,7 +583,7 @@ Configure data residency for compliance with data localization requirements.
 
 **Attack Prevented:** Compliance violations, unauthorized cross-border data transfer, jurisdictional overreach
 
-#### ClickOps Implementation (Enterprise)
+#### ClickOps Implementation (Standard, Premium and Enterprise plans)
 
 **Step 1: Configure Data Residency**
 1. Navigate to: **admin.atlassian.com → Data residency**
@@ -545,6 +592,12 @@ Configure data residency for compliance with data localization requirements.
    - EU
    - Australia
 3. Apply to products
+
+#### Code Implementation
+
+The Admin Control REST API exposes data residency as an organization policy. The pack reads those policies, flags a failed realm move, and, when you give it your required realm, flags a product pinned anywhere else. Moving a product between realms is a scheduled migration, so the pack never creates or edits a policy.
+
+{% include pack-code.html vendor="atlassian" section="4.1" %}
 
 ---
 
@@ -580,6 +633,12 @@ Use data classification to restrict access to sensitive content.
 2. Classify Jira projects
 3. Configure access based on classification
 
+#### Code Implementation
+
+Classification levels (Step 1) are defined for the organization, in the console or through the Data Loss Prevention REST API, which Atlassian marks experimental ([Data Loss Prevention REST API](https://developer.atlassian.com/cloud/admin/dlp/rest/), 2026-09-24). This guide ships no write pack for it. The pack audits Step 2 for Confluence through the Confluence REST API: it confirms the site has a published level and flags every current space with no default classification level. It does not cover Jira projects.
+
+{% include pack-code.html vendor="atlassian" section="4.2" %}
+
 ---
 
 ### 4.3 Enforce Data Security Policies
@@ -593,7 +652,7 @@ Use data classification to restrict access to sensitive content.
 | **ISO 27001:2022** | A.5.14, A.8.12 |
 
 #### Description
-Data security policies are organization-level rules that constrain what can be done with content in covered Jira projects and Confluence spaces, regardless of the permissions individual users hold. A policy can block content export, block Confluence public link sharing, restrict anonymous and external access, and restrict which apps may reach covered content. Policies are configured at **admin.atlassian.com → Security → Data security policies** and scope to specific spaces and projects or to a data classification level. Source: [What is a data security policy?](https://support.atlassian.com/security-and-access-policies/docs/what-is-a-data-security-policy/)
+Data security policies are organization-level rules that constrain what can be done with content in covered Jira projects and Confluence spaces, regardless of the permissions individual users hold. The organization's policy holds one control per action: block content export, block attachment downloads, block Confluence public link sharing, restrict anonymous and external access, restrict which apps may reach covered content (the same Marketplace and custom app access control also manages third-party spreadsheet app permissions for project data), and block the Atlassian MCP server from reading covered content on behalf of AI agents. Each control has a default configuration of Blocked or Allowed for the whole organization, plus overrides for specific spaces and projects, apps, or (with Guard Premium) a data classification level; the attachment download and Atlassian MCP server controls need Atlassian Guard Standard or higher. Controls are configured at **admin.atlassian.com → Security → Data protection → Data security policy**. Sources: [What is a data security policy?](https://support.atlassian.com/security-and-access-policies/docs/what-is-a-data-security-policy/), [Apply a default configuration to a policy control](https://support.atlassian.com/security-and-access-policies/docs/apply-a-default-configuration-to-a-policy-control/)
 
 #### Rationale
 **Why This Matters:**
@@ -603,42 +662,56 @@ Data security policies are organization-level rules that constrain what can be d
 - Restricting app access by space, project, or classification means a compromised or over-scoped Marketplace app cannot reach your most sensitive content even though it holds an org-wide grant, which directly limits Marketplace supply-chain blast radius
 - Binding policies to classification levels rather than to individual spaces makes the control scale: newly created content inherits protection from its label instead of waiting for an admin to remember to add it
 - Policies are enforced organization-wide and cannot be overridden by a space or project administrator, so they hold even when local permissions drift
+- An AI agent reading through the Atlassian MCP server sees everything the connecting user can see; the MCP server control is what keeps covered content out of that agent's reach while the user keeps direct access
 
-**Attack Prevented:** Bulk data exfiltration via export, unauthenticated disclosure through public links, third-party app data harvesting, insider mass download, over-sharing with external collaborators
+**Attack Prevented:** Bulk data exfiltration via export, unauthenticated disclosure through public links, third-party app data harvesting, AI-agent data harvesting through the Atlassian MCP server, insider mass download, over-sharing with external collaborators
 
 #### ClickOps Implementation
 
-**Step 1: Create a Baseline Policy**
-1. Navigate to: **admin.atlassian.com → Security → Data security policies**
-2. Select **Create policy** and give it a name that states its intent, such as "Restricted Content — No Export, No Public Links"
-3. Choose coverage: specific Confluence spaces and Jira projects, or — if data classification is in use — a classification level so coverage follows the label
+**Step 1: Open the Organization's Data Security Policy**
+1. Navigate to: **admin.atlassian.com → Security → Data protection → Data security policy** (select your organization first if you have more than one)
+2. Read the control table: each control shows its **Default configuration** (Blocked or Allowed), the apps it **Applies to**, and its **Overrides**. Every control starts as Allowed for the whole organization
+3. To change a control, select it, select **Edit** to open a draft, then set the **Blocked/Allowed** dropdown or add overrides for specific spaces and projects, apps, or (with Guard Premium) a classification level so coverage follows the label. Review the draft and activate it
+4. Record a control's overrides before changing its default configuration: changing the default removes the existing overrides
 
 **Step 2: Select the Rules**
 1. **Block export:** prevents downloading covered content as PDF, Word, CSV, XML, or via bulk space export
 2. **Block public links:** prevents Confluence pages in scope from being shared through anonymous, unauthenticated URLs
 3. **Restrict anonymous and external access:** blocks anonymous viewing and limits guest or external collaborator reach into covered spaces
 4. **Restrict app access:** choose whether covered content is reachable by all apps, by an approved subset, or by none — this is the control that contains a compromised Marketplace app
+5. **Manage third-party spreadsheet app permissions:** control whether third-party spreadsheet apps can access project data in covered Jira projects. This is set through the app access control in item 4, because Block export does not govern third-party apps such as Google Sheets and Microsoft Excel ([Manage third-party spreadsheet app permissions for project data](https://support.atlassian.com/security-and-access-policies/docs/manage-third-party-spreadsheet-app-permissions-for-project-data/))
+6. **Prevent attachment downloads** (Guard Standard and up; classification-level overrides need Guard Premium): blocks the download buttons for Jira and Confluence attachments and attachment downloads through the APIs. Users can still view attachments, and the control does not stop browser print, save, or extension-driven downloads ([Prevent attachment downloads](https://support.atlassian.com/security-and-access-policies/docs/prevent-attachment-downloads/))
+7. **Prevent Atlassian MCP server access** (Guard Standard and up; classification-level overrides need Guard Premium): stops AI agents from reading covered Jira work items and Confluence content through the Atlassian MCP server, even when the connecting user can view that content directly. It covers only the Atlassian MCP server, not custom MCP servers, and data security policies are enforced only for OAuth connections, not for API token authentication ([Prevent Atlassian MCP server access](https://support.atlassian.com/security-and-access-policies/docs/prevent-atlassian-mcp-server-access/))
 
 **Step 3: Stage the Rollout**
 1. Start with the highest-sensitivity spaces and projects — security, legal, HR, finance, and anything holding regulated data
 2. Communicate the change before enforcing; export blocking will visibly break existing reporting and offboarding workflows
 3. Identify legitimate export use cases and route them to an approved alternative such as a scoped API integration rather than granting broad exemptions
-4. Extend coverage outward once the first policy is stable, and prefer classification-based scoping so new content is covered automatically
+4. Extend coverage outward once the first overrides are stable, and prefer classification-level overrides so new content is covered automatically
 
 **Step 4: Review on a Cadence**
-1. Re-review policy coverage quarterly against the current space and project inventory
-2. Confirm no high-sensitivity area was created outside every policy's scope
+1. Re-review each control's default configuration and overrides quarterly against the current space and project inventory
+2. Confirm no high-sensitivity area was created outside every blocking override
 3. Re-verify the app allowance list after each new app approval
+
+#### Code Implementation
+
+The Admin Control REST API can create, update and publish data security policies ([Admin Control REST API](https://developer.atlassian.com/cloud/admin/control/rest/), 2026-09-24); this guide ships only the read side. The pack flags an organization with no active data security policy, an active policy that covers nothing, and any covered resource where the policy failed to apply. The API documents only the export rule, so confirm the other rules of Step 2 in the console.
+
+{% include pack-code.html vendor="atlassian" section="4.3" %}
 
 #### Validation & Testing
 
 1. As a user with full view permission on a covered space, attempt a PDF and a space export and confirm both are refused
-2. Attempt to create a public link on a covered Confluence page and confirm the option is unavailable or blocked
-3. Attempt to access a covered space anonymously in a logged-out browser session and confirm access is refused
-4. Using an app that is not on the allowance list, attempt to read covered content through its integration and confirm the request fails
-5. Repeat the export test on an *uncovered* space to confirm the policy is scoped as intended and has not silently blocked more than planned
-6. If policies are scoped by classification, apply the classification label to a new test space and confirm the restrictions take effect without any further admin action
-7. Review the audit log to confirm policy creation and modification events are recorded and attributable
+2. As the same user, attempt to download an attachment on a covered page or work item from the file preview, from the attachments list, and through the REST API; confirm each download is refused while the attachment still displays
+3. Attempt to create a public link on a covered Confluence page and confirm the option is unavailable or blocked
+4. Attempt to access a covered space anonymously in a logged-out browser session and confirm access is refused
+5. Using an app that is not on the allowance list, attempt to read covered content through its integration and confirm the request fails
+6. Open a covered Jira project's issues in a third-party spreadsheet app such as Google Sheets or Microsoft Excel and confirm no issues from that project are returned (the "Open in" menu option still appears; that is expected)
+7. Connect an AI tool to the Atlassian MCP server with OAuth as a user who can view a covered page and work item, ask it for both, and confirm the agent gets a "does not exist or you don't have permission" response and that covered work items are absent from its JQL search results
+8. Repeat the export test on an *uncovered* space to confirm the policy is scoped as intended and has not silently blocked more than planned
+9. If overrides are set by classification level, apply the classification label to a new test space and confirm the restrictions take effect without any further admin action
+10. Review the audit log to confirm policy creation and modification events are recorded and attributable
 
 #### Compliance Mappings
 
@@ -695,6 +768,12 @@ Configure and monitor Atlassian audit logs.
 2. Individual products keep their own narrower logs (the Bitbucket workspace audit log, the Jira automation audit log) that record activity the organization log does not. Forward those alongside the organization log rather than in place of it — see the [Bitbucket guide](/guides/bitbucket/) §5.1 and the [Jira Cloud guide](/guides/jira-cloud/) §3.1
 3. Confirm your SIEM retention exceeds each source's native retention, since product-level logs expire far sooner than an investigation timeline
 
+#### Code Implementation
+
+Audit log streaming configuration has no REST resource ([Cloud admin REST APIs](https://developer.atlassian.com/cloud/admin/rest-apis/), 2026-09-24), so Step 2 stays ClickOps. The pack is the pull alternative: it exports organization audit events as one JSON object per line for a SIEM collector, and prints a cursor to resume from on the next run.
+
+{% include pack-code.html vendor="atlassian" section="5.1" %}
+
 ---
 
 ### 5.2 Configure Anomaly Detection
@@ -721,6 +800,12 @@ Enable anomalous activity detection, which is delivered by **Atlassian Guard Pre
    - Bulk data access
    - Permission changes
 3. Configure alert recipients
+
+#### Code Implementation
+
+Turning detections on has no REST resource ([Cloud admin REST APIs](https://developer.atlassian.com/cloud/admin/rest-apis/), 2026-09-24), so the steps above stay ClickOps. Detection output is readable: the pack counts Guard Detect events in the look-back window and fails on any, so each one gets triaged. Atlassian's reference does not say whether an organization without Guard Premium detections gets an error or an empty list, so a window with no events is reported as inconclusive. The pack reports "no alerts" only after you confirm on the Anomaly detection page above that detection is on, and re-run it with `GUARD_PREMIUM=confirmed`.
+
+{% include pack-code.html vendor="atlassian" section="5.2" %}
 
 ---
 
@@ -751,6 +836,16 @@ Recent critical vulnerabilities require immediate attention.
 | CVE-2022-26134 | 9.8 | Confluence Server/DC | OGNL injection RCE |
 | CVE-2021-26084 | 9.8 | Confluence Server/DC | OGNL injection RCE |
 
+#### ClickOps Implementation
+
+**For Atlassian Cloud (Atlassian patches the platform):**
+1. Watch [Atlassian security advisories](https://www.atlassian.com/trust/security/advisories). Atlassian notifies customers whenever a critical security vulnerability is discovered and resolved
+2. When an advisory lands, navigate to: **admin.atlassian.com → Security → Audit log** (the §5.1 path) and review permission changes and app installations for the advisory window
+
+**For Data Center/Server:**
+1. Apply the fixed version named in the advisory, or its interim mitigation until you can upgrade (for CVE-2023-22515, block access to the `/setup/*` endpoints)
+2. Check for the advisory's evidence of compromise. For [CVE-2023-22515](https://confluence.atlassian.com/security/cve-2023-22515-privilege-escalation-vulnerability-in-confluence-data-center-and-server-1295682276.html) that is: unexpected members of the `confluence-administrators` group, unexpected newly created user accounts, installed unknown plugins, requests to `/setup/*.action` in network access logs, and `/setup/setupadministrator.action` in an exception message in `atlassian-confluence-security.log` in the Confluence home directory
+
 #### Response Actions
 
 **For Data Center/Server:**
@@ -763,6 +858,8 @@ Recent critical vulnerabilities require immediate attention.
 - Atlassian manages patching
 - Monitor Atlassian security advisories
 - Review audit logs for suspicious activity
+
+**Automation:** ClickOps only — Atlassian Cloud patching is vendor-operated and Data Center patching is a product upgrade; Atlassian exposes no write interface for this setting ([Security advisories](https://www.atlassian.com/trust/security/advisories), 2026-09-24).
 
 ---
 
@@ -804,7 +901,7 @@ Atlassian licensing splits across two independent axes, and conflating them is a
 | Project/space permission schemes | ✅ | ✅ | ✅ | ✅ |
 | Basic product audit log | Basic | Basic | ✅ | ✅ |
 | IP allowlisting (1.4) | ❌ | ❌ | ✅ | ✅ |
-| Data residency (4.1) | ❌ | ❌ | ✅ | ✅ |
+| Data residency (4.1) | ❌ | ✅ | ✅ | ✅ |
 
 ### Atlassian Guard Capabilities
 
@@ -813,16 +910,16 @@ Atlassian licensing splits across two independent axes, and conflating them is a
 | SAML SSO enforcement (1.1) | ❌ | ✅ | ✅ |
 | Enforced authentication policies (1.1) | ❌ | ✅ | ✅ |
 | SCIM user provisioning and deprovisioning | ❌ | ✅ | ✅ |
-| Mobile app policies | ❌ | ✅ | ✅ |
+| Mobile application management (MAM) policies | ❌ | ✅ | ✅ |
 | API token controls (1.3) | ❌ | ✅ | ✅ |
 | Organization audit log (5.1) | ❌ | ✅ | ✅ |
 | Data classification (4.2) | ❌ | ❌ | ✅ |
-| Data security policies (4.3) | ❌ | Limited | ✅ |
+| Data security policies (4.3) | App access control only | All controls, no classification-level overrides | ✅ |
 | Anomalous activity detection (5.2) | ❌ | ❌ | ✅ |
 | Content scanning | ❌ | ❌ | ✅ |
 | SIEM webhook forwarding (5.1) | ❌ | ❌ | ✅ |
 
-Source: [Atlassian Guard pricing](https://www.atlassian.com/software/access/pricing)
+Source: [Atlassian Guard pricing](https://www.atlassian.com/software/access/pricing); data security policy row: the availability table in [What is a data security policy?](https://support.atlassian.com/security-and-access-policies/docs/what-is-a-data-security-policy/)
 
 ---
 
@@ -831,7 +928,7 @@ Source: [Atlassian Guard pricing](https://www.atlassian.com/software/access/pric
 **Official Atlassian Documentation:**
 - [Trust Center](https://www.atlassian.com/trust) | [Customer Trust Center](https://customertrust.atlassian.com/) (powered by Conveyor)
 - [Atlassian Support](https://support.atlassian.com/)
-- [Security Best Practices](https://support.atlassian.com/security-and-access-policies/)
+- [Security Best Practices](https://support.atlassian.com/security-and-access-policies/resources/)
 - [Security Practices](https://www.atlassian.com/trust/security/security-practices)
 - [Security Measures](https://www.atlassian.com/legal/security-measures)
 - [Vulnerability Disclosure](https://www.atlassian.com/trust/data-protection/vulnerabilities)
@@ -846,8 +943,12 @@ Source: [Atlassian Guard pricing](https://www.atlassian.com/software/access/pric
 - [Jira Cloud REST API](https://developer.atlassian.com/cloud/jira/platform/rest/)
 - [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/)
 - [Forge App Framework](https://developer.atlassian.com/platform/forge/) (SOC 2 and ISO 27001 compliant; preferred over Connect)
-- [Connect End-of-Support Timeline](https://www.atlassian.com/blog/development/announcing-connect-end-of-support-timeline-and-next-steps) (descriptor freeze March 2026, end of support 31 January 2027)
-- [API Security Guide](https://developer.atlassian.com/cloud/jira/platform/security/)
+- [Connect End-of-Support Timeline](https://www.atlassian.com/blog/development/announcing-connect-end-of-support-timeline-and-next-steps) (descriptor freeze March 2026, end-of-support enforcement Q4 2026)
+- [Security for Connect Apps](https://developer.atlassian.com/cloud/jira/platform/security-for-connect-apps/)
+- [Cloud Admin REST APIs](https://developer.atlassian.com/cloud/admin/rest-apis/) (index of the six admin APIs used by this guide's packs and automation verdicts)
+- [Organizations REST API](https://developer.atlassian.com/cloud/admin/organization/rest/) (domains, directory users, audit log events)
+- [Admin Control REST API](https://developer.atlassian.com/cloud/admin/control/rest/) (IP allowlist, data residency and data security policies)
+- [API Access REST API](https://developer.atlassian.com/cloud/admin/api-access/rest/) (organization-wide API token inventory)
 - [GitHub Organization](https://github.com/atlassian)
 
 **Compliance Frameworks:**
@@ -866,6 +967,7 @@ Source: [Atlassian Guard pricing](https://www.atlassian.com/software/access/pric
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.5.0 | ai-drafted | validate-hth-guide fix loop, offline: the Atlassian console was behind a sign-in wall, so 0 surfaces were exercised live and maturity is unchanged. Add read-only API packs for 1.1, 1.2, 1.3, 1.4, 3.1, 3.2, 4.1, 4.2, 4.3, 5.1 and 5.2; replace the 2.2 pack, which called an undocumented `audit-events` resource and exited 0 on HTTP 401. Add `**Automation:** ClickOps only` verdicts to 2.1, 3.3 and 6.1, and ClickOps sections to 2.2 and 6.1 (6.1: the advisories page, the Cloud audit-log path, and CVE-2023-22515's interim mitigation and evidence-of-compromise checks for Data Center). Correct the legacy API-token expiry sequence (1.3), the Connect end-of-support date to Q4 2026 (2.1), the data residency plan gate to Standard and up (4.1), and the Jira webhooks path (3.2). Bring 4.3 in line with Atlassian's current data security policy docs: the console path (Security → Data protection → Data security policy), per-control default configurations with overrides, and the three rules the guide lacked (third-party spreadsheet app permissions, attachment downloads and Atlassian MCP server access, the last two Guard Standard and up), each with a validation test; correct the Appendix A data security policy row, since the app access control needs no Guard. Remove an unsourced mobile-traffic claim (1.4), rename mobile app policies to Mobile application management (MAM), and repoint two dead Appendix B links | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.4.0 | ai-drafted | Convert to the Atlassian platform Common Controls hub: add `platform`/`platform_slug`/`product` frontmatter, add "Products in This Platform" section and moved-controls callout. Merge org-level controls in from the product guides — domain verification, SSO enforcement policy with break-glass, and SCIM/JIT provisioning into §1.1; organization admin role limitation into §1.2. Point Jira project permissions at the Jira Cloud guide and note product-level log correlation in §5.1; remove empty Detection Queries heading | Claude Code (Opus 5) |
 | 2026-08-03 | 0.3.0 | ai-drafted | Rename Atlassian Access to Atlassian Guard and split edition table into product vs Guard tiers; correct API token expiry to the 1-day-to-1-year platform ceiling with forced expiry of legacy tokens; add 1.4 IP allowlisting; add 4.3 data security policies; flag Connect framework end-of-support and prefer Forge | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.2.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
