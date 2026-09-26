@@ -469,10 +469,14 @@ for ypath in sorted(glob.glob(os.path.join(data_dir, "*.yml"))):
     if unused:
         orphan_keys.append(f"{vendor}: {len(unused)} yml section(s) referenced by no include: {', '.join(sorted(unused)[:6])}")
 
+# Print EVERY item. This used to cap at 25, which made the count and the list
+# disagree ("40 files violate the type table", 25 printed) and hid whichever
+# findings sorted past the cap — including a vendor's own when it was asked for
+# by name, and from --touched, whose attribution only sees printed lines.
 def emit(name, items):
     print(f"==={name}===")
     print(len(items))
-    for i in items[:25]:
+    for i in items:
         print(f"    {i}")
 
 emit("COLLISION", collisions)
@@ -496,7 +500,10 @@ PYEOF
 section_of() {
   echo "$results" | sed -n "/===$1===/,/^===/p" | sed '$d' | tail -n +2
 }
-count_of() { section_of "$1" | head -1; }
+# `sed -n 1p` rather than `head -1`: head exits after one line, and under
+# `set -o pipefail` the SIGPIPE it leaves upstream (exit 141) kills the script
+# as soon as a section is longer than the pipe buffer (CONTRACT is ~1000 lines).
+count_of() { section_of "$1" | sed -n 1p; }
 body_of()  { section_of "$1" | tail -n +2; }
 
 report() { # report <SECTION> <label> <fail|warn>

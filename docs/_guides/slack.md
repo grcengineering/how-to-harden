@@ -6,9 +6,9 @@ slug: "slack"
 tier: "1"
 category: "Productivity"
 description: "Enterprise security hardening for Slack workspaces, SSO, DLP, and data governance"
-version: "0.2.1"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-09-25"
 ---
 
 ## Overview
@@ -67,15 +67,16 @@ Configure SAML-based SSO to authenticate Slack users through your corporate iden
 **Attack Prevented:** Credential theft, password reuse, orphaned accounts
 
 #### Prerequisites
-- Slack Business+ or Enterprise Grid plan
+- Slack Business+ or Enterprise plan (also Free and Pro when a Salesforce org is connected to Slack)
 - SAML 2.0 compatible identity provider
-- Workspace Owner or Org Admin access
+- Workspace Owner (Business+) or Org Owner (Enterprise) access -- Org Admins can only manage SSO exclusions
 
 #### ClickOps Implementation
 
 **Step 1: Access SSO Settings**
-1. Navigate to: **Slack Admin** → **Settings** → **Authentication**
-2. Click **Configure** next to SAML authentication
+1. **Business+:** click **Admin** in the sidebar → **Workspace settings** → **Security** → **SSO & authentication**, then next to **An identity provider or custom SAML** click **Configure SAML**
+2. **Enterprise:** click your **organization name** in the sidebar → hover **Tools & settings** → **Organization settings** → **Security** → **SSO Settings**
+3. See [Manage single sign-on settings](https://slack.com/help/articles/220403548-Manage-single-sign-on-settings)
 
 **Step 2: Configure SAML Provider**
 1. Enter your Identity Provider details:
@@ -93,9 +94,9 @@ Configure SAML-based SSO to authenticate Slack users through your corporate iden
 4. Enable SCIM provisioning for automatic user management
 
 **Step 4: Enforce SSO**
-1. Return to Slack Authentication settings
-2. Under **SSO settings**, select **SAML SSO Required**
-3. This prevents password-based sign-in
+1. **Business+:** return to **SSO & authentication** and click **Edit** next to **Require SSO authentication**
+2. **Enterprise:** in **SSO Settings**, keep **SSO member exclusions** and **SSO guest exclusions** to documented break-glass accounts only
+3. Required SSO prevents password-based sign-in for everyone it covers
 
 **Time to Complete:** ~1 hour (depending on IdP complexity)
 
@@ -145,22 +146,21 @@ Enable SCIM (System for Cross-domain Identity Management) to automatically provi
 **Attack Prevented:** Orphaned account abuse, unauthorized access after termination
 
 #### Prerequisites
-- Slack Enterprise Grid
-- SCIM-compatible identity provider
-- Org Admin access
+- Slack Business+ or Enterprise plan (also Free and Pro when a Salesforce org is connected to Slack) -- see [Manage members with SCIM provisioning](https://slack.com/help/articles/212572638-Manage-members-with-SCIM-provisioning)
+- SCIM-compatible identity provider with a Slack provisioning connector (Okta, Microsoft Entra, OneLogin, PingFederate, PingOne, or Google Workspace)
+- Org Owner/Admin (Enterprise) or Workspace Owner/Admin (Business+) access
 
 #### ClickOps Implementation
 
-**Step 1: Enable SCIM Provisioning**
-1. Navigate to: **Enterprise Grid Admin** → **Settings** → **Authentication**
-2. Click **Configure** next to SCIM provisioning
-3. Generate SCIM API token
-4. Copy the SCIM endpoint URL
+**Step 1: Authorize the IdP's SCIM Connector**
+1. In your IdP, add Slack's SCIM provisioning connector app
+2. Authorize it with a Slack Owner or Admin account -- during setup the IdP obtains the SCIM API token through Slack's OAuth 2.0 flow, so the setup is driven from the IdP side rather than from a Slack settings page
+3. Use a dedicated administrative identity for that authorization so the token is not tied to a person who may leave
 
 **Step 2: Configure IdP**
-1. In your IdP, configure SCIM integration with:
+1. Confirm the connector's SCIM settings:
    - Base URL: `https://api.slack.com/scim/v1`
-   - Authentication: Bearer token (from Step 1)
+   - Authentication: the OAuth token from Step 1 (connector apps store it for you)
 2. Enable provisioning features:
    - Create users
    - Update user attributes
@@ -191,7 +191,7 @@ Enable SCIM (System for Cross-domain Identity Management) to automatically provi
 | NIST 800-53 | AC-6(1) |
 
 #### Description
-Limit Primary Owner and Admin roles to essential personnel. Use granular roles like Workspace Admins and User Groups Admins for delegated administration.
+Limit Primary Owner, Owner, and Admin roles to essential personnel. Use Workspace Admins and, where the plan offers them, narrowly-scoped system roles (such as Users Admin or Channels Admin) for delegated administration.
 
 #### Rationale
 **Why This Matters:**
@@ -209,15 +209,20 @@ Limit Primary Owner and Admin roles to essential personnel. Use granular roles l
 3. Document current assignments
 
 **Step 2: Implement Least Privilege**
-1. Remove unnecessary Admin/Owner assignments
-2. Use specific roles for delegated tasks:
-   - **Workspace Admin:** Manage workspace settings
-   - **User Groups Admin:** Manage user groups only
-   - **Billing Admin:** Manage billing only
+1. Remove unnecessary Owner and Admin assignments -- Workspace Owners hold the Primary Owner's permissions except deleting or transferring the workspace, while Workspace Admins manage members but cannot access billing
+2. Delegate narrow tasks with system roles instead of Owner or Admin. On Enterprise plans that includes, for example, **Users Admin**, **Channels Admin**, **Security Admin**, **DLP Admin**, and **Integrations Admin**; Business+ offers only a few system roles and Pro only **Skills Manager**
+3. Assign a system role: click **Admin** in the sidebar → **Workspace settings** → **Roles & permissions** → **Roles**, then the three dots next to the role → **Assign people** (Enterprise: **organization name** → **Tools & settings** → **Organization settings** → **Roles & permissions** → **Roles**). See [Types of roles in Slack](https://slack.com/help/articles/360018112273-Types-of-roles-in-Slack) and [Assign members to system roles](https://slack.com/help/articles/1500004132581-Assign-members-to-system-roles)
 
-**Step 3: Enable Admin Approval for Role Changes**
-1. Navigate to: **Settings** → **Permissions**
-2. Configure approval workflow for admin role assignments
+**Step 3: Restrict Who Can Assign Roles**
+1. Keep the **Roles Admin** system role to a minimum -- it manages who is assigned every other system role
+2. On Enterprise plans, assign system roles to IdP groups rather than individuals, so a role is revoked by changing the IdP group
+3. Re-review role assignments quarterly and revoke any that are no longer needed
+
+#### Code Implementation
+
+Read-only audit of every Owner and Admin via `users.list` (any plan; a token with `users:read`).
+
+{% include pack-code.html vendor="slack" section="1.3" %}
 
 ---
 
@@ -231,13 +236,13 @@ Limit Primary Owner and Admin roles to essential personnel. Use granular roles l
 | NIST 800-53 | AC-11, AC-12 |
 
 #### Description
-Configure session duration controls to automatically log out inactive users and limit session lifetime.
+Configure session duration controls to limit how long members stay signed in to Slack on desktop and mobile, or to sign them out whenever they close Slack.
 
 #### Rationale
 **Why This Matters:**
 - Long-lived or never-expiring sessions let a stolen device, browser token, or unattended workstation retain authenticated Slack access indefinitely
-- Forced logout after inactivity and a bounded session lifetime shrink the window an attacker can ride a hijacked session
-- Shorter web-session durations force re-validation against the IdP and its MFA / conditional-access policies on a regular cadence
+- Signing members out when they close Slack, or after a bounded session lifetime, shrinks the window an attacker can ride a hijacked session
+- Shorter session durations force re-validation against the IdP and its MFA / conditional-access policies on a regular cadence
 - Mobile devices are easily lost or stolen, so capping mobile session length contains exposure of corporate conversations and files
 
 **Attack Prevented:** Session hijacking, stolen-token reuse, unattended-device access, lost or stolen mobile device access
@@ -245,16 +250,23 @@ Configure session duration controls to automatically log out inactive users and 
 #### ClickOps Implementation
 
 **Step 1: Configure Session Duration**
-1. Navigate to: **Enterprise Grid Admin** → **Settings** → **Authentication**
-2. Under **Session duration**, configure:
-   - **Web sessions:** 24 hours (or less for sensitive environments)
-   - **Mobile sessions:** 30 days (balance security/usability)
-3. Enable **Force logout after duration**
+1. **Free, Pro, and Business+:** click **Admin** in the sidebar → **Workspace settings** → **Security**, then click **Edit** next to **Desktop session duration** or **Mobile session duration**
+2. **Enterprise:** click your **organization name** in the sidebar → hover **Tools & settings** → **Organization settings** → **Security** → **Security settings**, then click **Edit** next to **Desktop session duration** or **Mobile session duration**
+3. Choose to sign members out whenever they close Slack, or after a set period -- for example 24 hours or less on desktop in sensitive environments, and a bounded period on mobile
+4. For desktop sessions, optionally notify members when they need to sign back in, then click **Save**. See [Manage session duration](https://slack.com/help/articles/115005223763-Manage-session-duration)
 
-**Step 2: Enable Forced Logout**
-1. In Authentication settings
-2. Enable **Sign out users from all devices after inactivity**
-3. Configure inactivity timeout (e.g., 4 hours)
+**Step 2: Plan the Rollout**
+1. A new duration takes effect the day you save it and ends existing sessions gradually over the period you selected, so expect sign-outs to spread across that window
+2. Members are warned two hours before their session expires and get a final reminder 15 minutes before sign-out
+3. On Enterprise plans, use the session duration API to give a subset of members (for example, admins) a shorter duration than the org default
+
+#### Code Implementation
+
+Read-only audit of per-user session overrides via `admin.users.session.getSettings` (Enterprise; a user token with `admin.users:read`).
+
+{% include pack-code.html vendor="slack" section="1.4" %}
+
+**Automation:** the workspace or org default session duration is ClickOps only — Slack exposes no write interface for it; `admin.users.session.setSettings` overrides the duration for individual users, not the default ([admin.users.session.setSettings](https://docs.slack.dev/reference/methods/admin.users.session.setSettings), 2026-09-24).
 
 ---
 
@@ -304,6 +316,12 @@ Configure Slack Information Barriers to block direct messages and huddles betwee
 
 **Time to Complete:** ~45 minutes (excluding IdP group preparation)
 
+#### Code Implementation
+
+Read-only inventory of every barrier via `admin.barriers.list` (Enterprise; a user token with `admin.barriers:read`).
+
+{% include pack-code.html vendor="slack" section="1.5" %}
+
 #### Validation & Testing
 **How to verify the control is working:**
 1. As a member of Group A, attempt to open a direct message with a member of Group B -- the user should not be selectable or the DM should be blocked
@@ -348,20 +366,23 @@ Restrict Slack access to approved IP ranges (corporate network, VPN) to prevent 
 **Attack Prevented:** Credential-stuffing from unknown locations, stolen-token reuse off-network, account takeover from untrusted networks
 
 #### Prerequisites
-- Slack Enterprise Grid
-- Known corporate egress IP ranges
+- Slack Enterprise plan
+- Org Owner or Org Admin access
+- Known corporate egress IP ranges, including the one the admin making the change is using
 
 #### ClickOps Implementation
 
 **Step 1: Configure IP Allowlist**
-1. Navigate to: **Enterprise Grid Admin** → **Settings** → **Authentication**
-2. Click **IP allowlist**
-3. Add approved IP ranges (CIDR notation)
-4. Enable **Require sign-in from approved IPs only**
+1. Click your **organization name** in the sidebar → **Tools & settings** → **Organization settings** → **Security** → **Security Settings**
+2. Next to **IP allowlist**, click **Edit**
+3. Add your own current egress range first -- enabling the allowlist immediately signs out anyone using Slack from an IP address outside it, including the admin making the change
+4. Check **Enable IP allowlist for this organization**, enter the approved ranges or click **Upload CSV** to add them in bulk, then click **Save**. See [Manage access to Slack with IP allowlists](https://slack.com/help/articles/55052468755347-Manage-access-to-Slack-with-IP-allowlists)
 
-**Step 2: Configure Exceptions**
-1. Optionally allow specific users (executives, remote workers) bypass
-2. Document business justification for exceptions
+**Step 2: Document the Approved Ranges**
+1. Record each range with its owner (office egress, VPN concentrator) and a review cadence
+2. Remove a range when the office or VPN endpoint behind it is retired
+
+**Automation:** ClickOps only — Slack exposes no write interface for this setting ([Manage access to Slack with IP allowlists](https://slack.com/help/articles/55052468755347-Manage-access-to-Slack-with-IP-allowlists); no IP-allowlist method among the [Web API methods](https://docs.slack.dev/reference/methods), 2026-09-24).
 
 ---
 
@@ -384,38 +405,38 @@ Control which Slack apps and integrations can be installed. Require admin approv
 - Slack apps can access messages, files, and user data
 - Malicious apps can exfiltrate sensitive information
 - OAuth tokens provide persistent access
-- Slack now enforces a platform-level throttle that favors vetted apps: since **May 29, 2025**, non-Marketplace apps are limited to **1 request per minute** and **15 objects per call** on `conversations.history` and `conversations.replies` (existing non-Marketplace installs inherit the limit from **March 3, 2026**). Slack introduced this explicitly to curb bulk conversation-history exfiltration, so preferring Marketplace-listed apps both raises the vetting bar and preserves usable API throughput -- see [Rate limit changes for non-Marketplace apps](https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps/)
+- Slack now enforces a platform-level throttle that favors vetted apps: since **May 29, 2025**, newly created commercially distributed apps that are not approved for the Slack Marketplace -- and new installations of existing ones -- are limited to **1 request per minute** and **15 objects per call** on `conversations.history` and `conversations.replies` (existing installations of those apps, and internal customer-built apps, are not subject to the new limits). Slack introduced this explicitly to curb bulk conversation-history exfiltration by unvetted apps, so preferring Marketplace-listed apps both raises the vetting bar and preserves usable API throughput -- see [Rate limit changes for non-Marketplace apps](https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps/) and [Rate limits](https://docs.slack.dev/apis/web-api/rate-limits)
 
 **Attack Prevented:** Malicious app installation, bulk conversation-history exfiltration, unauthorized integrations
 
 #### Prerequisites
-- Slack Business+ or Enterprise Grid
-- Workspace Owner or Admin access
+- Any Slack plan (app approval is available on all plans) -- see [Manage app approval for your workspace](https://slack.com/help/articles/222386767-Manage-app-approval-for-your-workspace)
+- Workspace Owner access (only Workspace Owners can enable app approval)
 - App approval workflow defined
+- For the API audit below: an Enterprise org and an app holding `admin.apps:read`, installed org-wide
 
 #### ClickOps Implementation
 
-**Step 1: Configure App Management**
-1. Navigate to: **Slack Admin** → **Manage apps**
-2. Click **App Management Settings**
-3. Configure:
-   - **Who can install apps:** Only Admins
-   - **App approval:** Require admin approval for all new apps
-   - **Pre-approved apps:** Define list of vetted apps
+**Step 1: Require App Approval**
+1. Click **Admin** in the sidebar → **Apps and workflows** (opens the Slack Marketplace) → **App Management Settings**
+2. Click **Edit** next to **Require approved apps**
+3. Check **Only allow pre-approved apps**, then click **Save**
+4. Pre-approve vetted apps: **Admin** → **Apps and workflows** → **Browse** → select the app → **Approve**; use **Restrict** for apps that must never be installed
 
 **Step 2: Review Existing Apps**
-1. In **Manage apps**, review all installed apps
+1. From **Admin** → **Apps and workflows**, review the apps already installed to the workspace
 2. For each app, review:
    - Requested permissions/scopes
    - Data access level
    - Last used date
-3. Remove unused or risky apps
+3. Uninstall unused or risky apps -- restricting an app does not remove an existing installation, so members keep using it until it is uninstalled
 
-**Step 3: Configure App Approval Workflow**
-1. Under **App approval settings**
-2. Configure reviewers (Security team)
-3. Enable notification for new requests
-4. Set up app review criteria -- include a preference for Slack Marketplace-listed apps, which pass Slack's review process and are exempt from the non-Marketplace conversation-history rate limits
+**Step 3: Configure the App Request Workflow**
+1. In **App Management Settings**, click **Edit** next to **Require approved apps**
+2. Check **Allow members to request apps for approval** (optionally require a comment with each request)
+3. Below **Select App Managers**, choose **Workspace Owners and selected members or groups** and add your security reviewers
+4. Optionally configure automation rules that approve, restrict, dismiss, or flag requests for human review
+5. Set up app review criteria -- include a preference for Slack Marketplace-listed apps, which pass Slack's review process and are exempt from the non-Marketplace conversation-history rate limits
 
 **Time to Complete:** ~45 minutes
 
@@ -451,23 +472,37 @@ Control Slack Connect channels that enable collaboration with external organizat
 
 **Attack Prevented:** Data leakage to unauthorized external organizations via unapproved Slack Connect channels
 
+#### Prerequisites
+- A paid Slack plan (Pro, Business+, or Enterprise)
+- Workspace Owner (Pro and Business+) or Org Owner / Org Admin (Enterprise) access
+
 #### ClickOps Implementation
 
-**Step 1: Configure Slack Connect Permissions**
-1. Navigate to: **Slack Admin** → **Settings** → **Slack Connect**
-2. Configure:
-   - **Who can create Slack Connect channels:** Only Admins
-   - **Require approval for:** All external connections
-   - **Allowed organizations:** Whitelist approved partners
+**Step 1: Restrict Who Can Send Slack Connect Invitations**
+1. **Pro and Business+:** click **Admin** in the sidebar → **Workspace settings** → **Permissions** tab → next to **Slack Connect Channels** click **Expand**; below **Inviting people from outside [your organization]**, turn each invitation type on or off and choose who can send it, then click **Save**
+2. **Enterprise:** click your **organization name** in the sidebar → **Tools & settings** → **Organization settings** → **Slack Connect** → **Settings** → **Channels** tab → next to **Sending channel invitations** click **Edit**; set each invitation type and who may send it, then click **Save Setting**
+3. Prefer **Permission only to post** over **Permission to post, invite, and more** for external people. See [Manage Slack Connect channel invitation settings and permissions](https://slack.com/help/articles/1500012572621-Manage-Slack-Connect-channel-invitation-settings-and-permissions)
 
-**Step 2: Configure Data Loss Prevention for Connect**
+**Step 2: Require Approval for External Connections**
+1. **Pro and Business+:** in the same **Slack Connect Channels** section, choose who can approve requests, when approval is required, and where requests are sent
+2. **Enterprise:** **Slack Connect** → **Settings** → **Channels** tab → under **Approvals**, choose a setting and click **Edit**
+3. Customize per partner organization on Enterprise: **Slack Connect** → **Connections** → three dots next to the organization → **Channels** → **Customize for [organization name]**
+4. Review pending requests from **Tools & settings** → **Manage Slack Connect Invitations** → **Open requests**. See [Manage Slack Connect channel approval settings and invitation requests](https://slack.com/help/articles/115005912706-Manage-Slack-Connect-channel-approval-settings-and-invitation-requests)
+
+**Step 3: Configure Data Loss Prevention for Connect**
 1. Apply DLP rules to Slack Connect channels
 2. Block sensitive data sharing to external channels
 
-**Step 3: Configure Guest Access**
+**Step 4: Configure Guest Access**
 1. Navigate to: **Settings** → **Guest access**
 2. Configure guest account restrictions
 3. Limit guest access to specific channels
+
+#### Code Implementation
+
+Read-only inventory of connected external organizations via `team.externalTeams.list` (Enterprise; a bot token with `conversations.connect:manage` and `team:read`).
+
+{% include pack-code.html vendor="slack" section="3.2" %}
 
 ---
 
@@ -501,9 +536,10 @@ Treat AI agents that reach Slack through Slack's official remote MCP (Model Cont
 #### ClickOps Implementation
 
 **Step 1: Inventory Existing AI and MCP Connections**
-1. Navigate to: **Slack Admin** → **Manage apps**
+1. Click **Admin** in the sidebar → **Apps and workflows** (the Slack Marketplace) and review the apps installed to the workspace
 2. Identify apps that are AI assistants, agent platforms, or MCP clients
 3. For each, record the vendor, the OAuth scopes granted, and which users authorized it
+4. On Enterprise plans, also review the third-party app MCP servers approved for the organization -- the list is derived from the org's MCP server allowlist and still includes servers of apps that were uninstalled but not deleted (see the Code Pack below)
 
 **Step 2: Set the Approval Standard**
 1. Require every MCP-connected agent to go through the same admin approval workflow as any other app
@@ -511,7 +547,7 @@ Treat AI agents that reach Slack through Slack's official remote MCP (Model Cont
 3. Reject or restrict agents that cannot answer those questions in writing
 
 **Step 3: Constrain Who Can Authorize Agents**
-1. Under **App Management Settings**, keep installation restricted to admins so individual users cannot connect an agent unilaterally
+1. In **Apps and workflows** → **App Management Settings**, keep **Only allow pre-approved apps** enabled (see [3.1](#31-restrict-app-installation-and-approval)) so individual users cannot connect an agent unilaterally
 2. Prefer authorizing agents under a purpose-built service account with deliberately narrow channel membership rather than a broadly-permissioned admin
 3. Pair with Information Barriers (see [1.5](#15-create-information-barriers-between-groups)) and AI channel restrictions (see [4.5](#45-restrict-slack-ai-access-to-sensitive-channels-canvases-and-lists)) so sensitive spaces stay out of reach regardless of the authorizing identity
 
@@ -521,6 +557,12 @@ Treat AI agents that reach Slack through Slack's official remote MCP (Model Cont
 3. Re-review every AI agent authorization quarterly and revoke unused ones
 
 **Time to Complete:** ~1 hour for initial inventory and standard
+
+#### Code Implementation
+
+Read-only audit of the org's approved MCP servers via `admin.apps.mcp.servers.list` (Enterprise; a user token with `admin.apps:read`).
+
+{% include pack-code.html vendor="slack" section="3.3" %}
 
 #### Validation & Testing
 **How to verify the control is working:**
@@ -572,28 +614,28 @@ Configure Slack's native DLP to detect and prevent sharing of sensitive informat
 
 #### Prerequisites
 - Slack Enterprise plan (native DLP is available on Enterprise plans; no GovSlack or separate Compliance add-on is required) -- see [Slack data loss prevention](https://slack.com/help/articles/12914005852819-Slack-data-loss-prevention)
-- DLP Admin role
+- DLP Admin system role (assigned by the Org Primary Owner or a Roles Admin)
 
 #### ClickOps Implementation
 
 **Step 1: Access DLP Settings**
-1. Navigate to: **Enterprise Grid Admin** → **Security** → **Data Loss Prevention**
-2. Click **Create rule**
+1. Click your **organization name** in the sidebar → hover **Tools & settings** → **Organization settings** → **Security** → **Data loss prevention**
+2. Click **Create Rule** in the top-right corner
 
 **Step 2: Create DLP Rule**
-1. Configure rule:
-   - **Name:** Block credit card sharing
-   - **Detection:** Use regex or predefined patterns
-   - **Scope:** All workspaces or specific channels
-   - **Actions:** Warn user, tombstone message, alert admin
-2. Save rule
+1. Configure the rule:
+   - **Rule name:** Block credit card sharing
+   - **Detection:** choose a preconfigured rule from the drop-down, or click **Use custom regular expression** and enter a PCRE (PHP) regex
+   - **Action to take:** **Display DLP dashboard alert only**, **Show a warning** to the member, or **Hide** ("tombstone") the message or file until it is reviewed
+   - **Scope:** whether the rule applies to Slack Connect conversations, specific workspaces, and specific conversation types
+2. Click **Next**, then **Save Rule**
 
-**Step 3: Configure Predefined Rules**
-1. Enable predefined rules for:
-   - Credit card numbers
-   - Social Security numbers
-   - Bank account numbers
-   - Custom patterns (API keys, internal project names)
+**Step 3: Enable Preconfigured Rules**
+1. Add rules from Slack's preconfigured library:
+   - Credit card numbers (each match is validated against the card network's number format)
+   - National identifiers (several common government-issued IDs, check-digit validated where the ID has one)
+   - Secrets -- API keys and tokens for major cloud and SaaS providers (AWS, GitHub, Stripe, and more)
+2. Add custom-regex rules for organization-specific patterns (internal project names, token formats the library does not cover) -- see the Code Pack below
 
 **Time to Complete:** ~1 hour
 
@@ -604,7 +646,7 @@ Configure Slack's native DLP to detect and prevent sharing of sensitive informat
 #### Validation & Testing
 1. Send test message with fake credit card number
 2. Verify DLP rule triggers
-3. Confirm admin receives alert
+3. Confirm the violation appears under the **Alerts** tab of the DLP dashboard (DLP Admins also receive a daily summary of violations)
 4. Test that legitimate content is not blocked
 
 ---
@@ -630,32 +672,41 @@ Configure message and file retention policies to balance compliance requirements
 **Attack Prevented:** Breach impact amplification from retained historical data, destruction of evidence under legal hold
 
 #### Prerequisites
-- Slack Business+ or Enterprise Grid
+- Any Slack plan for workspace retention settings (the options differ by plan: paid plans keep data for the lifetime of the workspace by default, the Free plan offers 90 days or one year) -- see [Customize data retention in Slack](https://slack.com/help/articles/203457187-Customize-message-and-file-retention-policies)
+- Legal holds require an Enterprise plan and the Legal Holds Admin system role
 - Defined retention requirements per regulation
 
 #### ClickOps Implementation
 
 **Step 1: Configure Default Retention**
-1. Navigate to: **Slack Admin** → **Settings** → **Retention & Exports**
-2. Configure workspace-wide defaults:
-   - **Messages:** Keep all, or delete after X days
-   - **Files:** Keep all, or delete after X days
-3. Consider compliance requirements:
+1. Click **Admin** in the sidebar → **Workspace settings** → next to **Data retention** click **Expand**, choose the message retention setting, click **Save**, then **Save** again to confirm
+2. Next to **File history**, click **Expand**, choose the file retention setting, click **Save**, then **Confirm Settings**
+3. On paid plans, choose between never deleting (with or without saving edits) and a custom timeline
+4. **Enterprise:** org-level retention policies are set by contacting Slack Support; review them at **organization name** → **Tools & settings** → **Organization settings** → **Settings** → **History**
+5. Consider compliance requirements:
    - **FINRA:** 3-6 years
    - **HIPAA:** 6 years
    - **SOX:** 7 years
 
 **Step 2: Configure Per-Channel Retention**
-1. Override retention for specific channels
+1. On Business+ and Enterprise plans, admins can edit message retention for individual channels with channel management tools; only check **Let workspace members override these settings** if members may set their own retention for private channels and DMs -- see [Edit message retention settings for specific conversations](https://slack.com/help/articles/115005393586-Edit-message-retention-settings-for-specific-conversations)
 2. Shorter retention for informal channels
 3. Longer retention for compliance-relevant channels
 
-**Step 3: Enable Legal Holds**
-1. Navigate to: **Security** → **Legal holds**
-2. Create hold for specific users, channels, or date ranges
-3. Legal holds override retention policies
+**Step 3: Enable Legal Holds (Enterprise)**
+1. Click your **organization name** in the sidebar → hover **Tools & settings** → **Organization settings** → **Security** → **Legal Holds** → **Create Legal Hold**
+2. Name the hold, select which conversations to include and an optional date range, click **Add Custodians**, select the members, then click **Save**
+3. A hold preserves messages and files regardless of retention settings or member edits and deletions; Slack Connect conversations are not included. See [Create and manage legal holds](https://slack.com/help/articles/4401830811795-Create-and-manage-legal-holds)
 
 **Time to Complete:** ~30 minutes
+
+#### Code Implementation
+
+Read-only check of per-conversation retention via `admin.conversations.getCustomRetention` (Enterprise; a user token with `admin.conversations:read`).
+
+{% include pack-code.html vendor="slack" section="4.2" %}
+
+**Automation:** the workspace and org default retention settings are ClickOps only — Slack exposes no write interface for them; the Admin API sets retention per conversation (`admin.conversations.setCustomRetention`, `admin.conversations.removeCustomRetention`), and legal holds have their own Legal Holds API ([admin.conversations.setCustomRetention](https://docs.slack.dev/reference/methods/admin.conversations.setCustomRetention), [Legal Holds API](https://docs.slack.dev/admins/legal-holds-api), 2026-09-24).
 
 ---
 
@@ -681,9 +732,9 @@ Deploy Slack Enterprise Key Management to use your own AWS KMS keys for encrypti
 **Attack Prevented:** Provider-side data exposure, insider misuse, inability to revoke access during an incident, compliance gaps for regulated data
 
 #### Prerequisites
-- Slack Enterprise Grid
+- Slack Enterprise plan with the EKM security add-on (Enterprise Grid and Enterprise+; included on GovSlack) -- see [Slack Enterprise Key Management](https://slack.com/help/articles/360019110974-Slack-Enterprise-Key-Management)
 - AWS account with KMS
-- Additional licensing for EKM
+- Org Owner or Org Admin access
 
 #### ClickOps Implementation
 
@@ -692,11 +743,12 @@ Deploy Slack Enterprise Key Management to use your own AWS KMS keys for encrypti
 2. Configure key policy for Slack access
 3. Note key ARN
 
-**Step 2: Configure EKM in Slack**
-1. Navigate to: **Enterprise Grid Admin** → **Security** → **Encryption**
-2. Click **Configure Enterprise Key Management**
-3. Enter AWS KMS key ARN
-4. Complete verification process
+**Step 2: Enable EKM with Slack**
+1. Contact Slack's Sales team to add the EKM security add-on -- Slack's EKM article routes onboarding through Sales and documents no self-serve console path for enrolling
+2. On enrollment, existing data is encrypted with your customer-controlled keys
+3. Confirm what EKM covers before relying on it: messages, canvases, snippets, files, and the search index use your keys, while member profiles, channel names, and file names stay under Slack-controlled keys
+
+**Automation:** ClickOps only — Slack exposes no write interface for EKM configuration; its only EKM Web API method, `admin.conversations.ekm.listOriginalConnectedChannelInfo`, is read-only ([Slack Enterprise Key Management](https://slack.com/help/articles/360019110974-Slack-Enterprise-Key-Management), [admin.conversations.ekm.listOriginalConnectedChannelInfo](https://docs.slack.dev/reference/methods/admin.conversations.ekm.listOriginalConnectedChannelInfo), 2026-09-24).
 
 ---
 
@@ -747,6 +799,8 @@ Decide deliberately which Slack AI features are available in your workspace rath
 1. Re-check this page after every major Slack release, since new AI features arrive with their own defaults
 2. Assign an owner responsible for evaluating new AI capabilities before they are left enabled
 3. Pair with channel-level restrictions (see [4.5](#45-restrict-slack-ai-access-to-sensitive-channels-canvases-and-lists)) where the plan supports it
+
+**Automation:** ClickOps only — Slack exposes no write interface for this setting ([Manage access to AI features in Slack](https://slack.com/help/articles/28244420881555-Manage-access-to-AI-features-in-Slack); no AI feature-access method among the [Web API methods](https://docs.slack.dev/reference/methods), 2026-09-24).
 
 **Time to Complete:** ~30 minutes
 
@@ -823,6 +877,12 @@ On Enterprise+ plans, exclude specific channels, canvases, and lists from Slack 
 
 **Time to Complete:** ~1 hour for initial inventory and application
 
+#### Code Implementation
+
+Channels can be excluded from Slack AI in bulk through the Admin API (up to 100 per call). This pack **changes** the channels' AI setting; revert it by re-running with `EXCLUDE=false`.
+
+{% include pack-code.html vendor="slack" section="4.5" %}
+
 #### Validation & Testing
 **How to verify the control is working:**
 1. In a restricted channel, attempt to generate a summary or recap and confirm the AI feature is unavailable or returns nothing
@@ -867,29 +927,23 @@ Enable and export Slack audit logs for security monitoring, incident investigati
 **Attack Prevented:** Undetected compromise — admin actions, authentication events, and data access invisible without audit logs
 
 #### Prerequisites
-- Slack Enterprise Grid
+- Slack Enterprise plan -- see [Audit logs in Slack](https://slack.com/help/articles/360000394286-Audit-logs-in-Slack)
+- Org Owner access or the Audit Logs Admin system role
 - SIEM or log management platform
 
 #### ClickOps Implementation
 
 **Step 1: Access Audit Logs**
-1. Navigate to: **Enterprise Grid Admin** → **Security** → **Audit logs**
-2. Review available log categories:
-   - User actions
-   - Workspace settings
-   - App installations
-   - File access
-   - Channel management
+1. Click your **organization name** in the sidebar → **Tools & settings** → **Organization settings** → **Security** → **Audit logs**
+2. Click **Filter** to narrow entries by date range, acting user, what the event affects (user, workspace, or organization), or event type
+3. Review the **Security Detections** tab for anomaly events
 
-**Step 2: Configure Log Export**
-1. Click **Export logs**
-2. Configure export destination:
-   - Amazon S3 bucket
-   - Direct API integration with SIEM
-3. Set export frequency (real-time or scheduled)
+**Step 2: Export Logs**
+1. Click **Export** in the top-right corner and select **Export CSV** or **Export JSON** for an on-demand export
+2. For continuous delivery to a SIEM, use the Audit Logs API (Step 3) -- the console offers on-demand exports, not a scheduled feed
 
 **Step 3: Integrate with SIEM**
-1. Use Slack Audit Logs API for real-time streaming
+1. Have your SIEM poll the Audit Logs API (`https://api.slack.com/audit/v1/logs`) with an app holding `auditlogs:read` on the Enterprise org -- see [Using the Audit Logs API](https://docs.slack.dev/admins/audit-logs-api)
 2. Configure alerts for critical events
 
 **Time to Complete:** ~1 hour
@@ -906,7 +960,7 @@ Enable and export Slack audit logs for security monitoring, incident investigati
 | `role_change_to_admin` | Admin role assigned | Privilege escalation |
 | `app_installed` | New app installed | Malicious app detection |
 | `file_downloaded` | File downloaded | Data exfiltration |
-| `channel_created` | New channel created | Shadow IT detection |
+| `public_channel_created` / `private_channel_created` | New channel created | Shadow IT detection |
 | `message_tombstoned` | Message deleted by DLP | Policy violations |
 
 ---
@@ -993,11 +1047,11 @@ As of **August 17, 2025**, Slack's plan lineup is **Free, Pro, Business+, and En
 |---------|------|-----|-----------|-------------|
 | 2FA (local) | ✅ | ✅ | ✅ | ✅ |
 | SAML SSO | ❌ | ❌ | ✅ | ✅ |
-| SCIM Provisioning | ❌ | ❌ | ❌ | ✅ |
+| SCIM Provisioning | ❌ | ❌ | ✅ | ✅ |
 | App Management | Basic | Basic | ✅ | ✅ |
 | Data Loss Prevention | ❌ | ❌ | ❌ | ✅ |
 | Enterprise Key Management | ❌ | ❌ | ❌ | ✅ |
-| Custom Retention | ❌ | ❌ | ✅ | ✅ |
+| Custom Retention | ❌ | ✅ | ✅ | ✅ |
 | Audit Logs API | ❌ | ❌ | ❌ | ✅ |
 | Information Barriers | ❌ | ❌ | ❌ | ✅ |
 | AI features (search, recaps, translations, file summaries) | ❌ | ❌ | ✅ | ✅ |
@@ -1014,18 +1068,17 @@ As of **August 17, 2025**, Slack's plan lineup is **Free, Pro, Business+, and En
 - [Security Tips to Protect Your Workspace](https://slack.com/help/articles/115004155306-Security-tips-to-protect-your-workspace)
 - [Security Practices](https://slack.com/security-practices)
 - [Manage Single Sign-On Settings](https://slack.com/help/articles/220403548-Manage-single-sign-on-settings)
-- [Introduction to Enterprise Grid](https://slack.com/resources/why-use-slack/slack-enterprise-grid)
-- [Enterprise Grid Admin Guide](https://slack.com/help/articles/360004150931)
+- [Workspace administration (Help Center)](https://slack.com/help/categories/200122103-Workspace-administration)
 
 **API & Developer Tools:**
 - [Slack API Documentation](https://docs.slack.dev/apis/)
 - [Legacy API Reference](https://api.slack.com/)
-- [Audit Logs API](https://api.slack.com/admins/audit-logs)
+- [Audit Logs API](https://docs.slack.dev/admins/audit-logs-api)
+- [Web API methods](https://docs.slack.dev/reference/methods)
 
 **Compliance Frameworks:**
 - SOC 2 Type II, SOC 3, ISO 27001, ISO 27017, ISO 27018, APEC PRP, APEC CBPR -- via [Trust Center / Compliance](https://slack.com/trust/compliance)
-- [HIPAA Compliance on Slack](https://slack.com/trust/compliance/hipaa)
-- [FedRAMP Moderate (Slack), FedRAMP High JAB (GovSlack)](https://slack.com/trust/compliance/fedramp)
+- HIPAA (Slack can be configured for e-PHI), FedRAMP Moderate (Slack, Enterprise and Enterprise+ plans configured per Slack's Secure Configuration Guide), and FedRAMP JAB High (GovSlack) -- via [Trust Center / Compliance](https://slack.com/trust/compliance)
 - GDPR, CCPA/CPRA, FINRA compliant -- via [Compliance Resources](https://slack.com/trust/compliance)
 
 **Security Incidents:**
@@ -1040,11 +1093,12 @@ As of **August 17, 2025**, Slack's plan lineup is **Free, Pro, Business+, and En
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.3.0 | ai-drafted | validate-hth-guide run (doc drift + pack execution; no live Slack session, so 0 surfaces VERIFIED-LIVE and the maturity set is unchanged): console paths in 1.1-1.4, 2.1, 3.1-3.3, 4.1-4.3 and 5.1 corrected against Slack's current help articles (retired "Enterprise Grid Admin" breadcrumb; undocumented settings removed from 1.3, 1.4, 2.1, 4.3, 5.1); new read-only API packs for 1.3, 1.4, 1.5, 3.2, 3.3, 4.2 and a mutating one for 4.5; 1.2, 3.1 and 5.1 packs read their token from the environment, paginate and fail closed (3.1 moved api/ to sdk/); every cursor-paginated pack exits non-zero on a repeated cursor instead of looping, and the 3.3 pack no longer reports a response with no data fields as an empty MCP allowlist; 1.1 Terraform declares okta/okta; 4.1 DLP patterns cover Mastercard 2-series and no longer match commit SHAs; Automation lines for 1.4, 2.1, 4.2, 4.3, 4.4; SCIM and custom retention plan gates corrected; 3.1 rate-limit carve-out corrected; dead Appendix B links replaced; changelog re-sorted (2026-06-29 entry renumbered 0.1.1 to 0.1.2: the page's frontmatter first read 0.1.1 at that commit, but the changelog had already given 0.1.1 to the 2026-02-19 entry, so keeping versions unique and ascending makes it the next free number, 0.1.2; initial entry dated to its 2026-02-05 commit) | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.3, §3.2, §4.1, §4.2, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.2.0 | ai-drafted | Add Information Barriers (1.5), MCP/AI agent governance (3.3), Slack AI feature access (4.4), and AI channel restriction (4.5); correct DLP plan prerequisite and file-scanning scope; note non-Marketplace app rate limits; update plan matrix to post-Aug 2025 lineup | Claude Code (Sonnet 5) |
-| 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
-| 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, DLP, retention, and app controls | Claude Code (Opus 4.5) |
+| 2026-06-29 | 0.1.2 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2026-02-19 | 0.1.1 | ai-drafted | Extract inline code to Code Packs (SDK, Terraform, API) | Claude Code (Opus 4.6) |
+| 2026-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, DLP, retention, and app controls | Claude Code (Opus 4.5) |
 
 ---
 
