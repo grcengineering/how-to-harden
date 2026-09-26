@@ -1,22 +1,31 @@
 #!/usr/bin/env bash
+# HTH Pack Contract: v1
+#   control: aws-iam-identity-center-4.1
+#   guide:   https://howtoharden.com/guides/aws-iam-identity-center/#41-configure-cloudtrail-logging
+#   profile: L1
+#   mode:    read-only
+#   requires: AWS_REGION; AWS credentials with sso:ListInstances, cloudtrail:DescribeTrails, cloudtrail:GetTrailStatus, cloudtrail:GetEventSelectors, cloudtrail:LookupEvents
+# =============================================================================
 # HTH AWS IAM Identity Center Control 4.1: Configure CloudTrail Logging
 # Profile: L1 | NIST: AU-2 | Frameworks: SOC 2 CC7.2, ISO 27001 A.12.4.1
 # https://howtoharden.com/guides/aws-iam-identity-center/#41-configure-cloudtrail-logging
+# Dependencies: aws (CLI v2), jq
+# Exit code comes from common.sh summary(): a trail that cannot be proven to
+# log management events is a FAIL, and the pack exits 1 -- never 0 after [FAIL].
 source "$(dirname "$0")/common.sh"
 
 banner "4.1: Configure CloudTrail Logging"
 
-should_apply 1 || { increment_skipped; summary; exit 0; }
+should_apply 1 || { increment_skipped; summary; }
 info "4.1 Verifying CloudTrail captures SSO events..."
 
-# HTH Guide Excerpt: begin api-check-cloudtrail
+# HTH Guide Excerpt: begin cli-check-cloudtrail
 # Verify at least one CloudTrail trail is logging management events
 info "4.1 Listing CloudTrail trails..."
 TRAILS=$(aws_json cloudtrail describe-trails) || {
-  fail "4.1 Failed to describe CloudTrail trails"
+  fail "4.1 Failed to describe CloudTrail trails (cloudtrail:DescribeTrails)"
   increment_failed
   summary
-  exit 0
 }
 
 TRAIL_COUNT=$(echo "${TRAILS}" | jq '.trailList | length' 2>/dev/null || echo "0")
@@ -25,7 +34,6 @@ if [ "${TRAIL_COUNT}" -eq 0 ]; then
   fail "4.1 No CloudTrail trails found -- SSO events will not be logged (AU-2)"
   increment_failed
   summary
-  exit 0
 fi
 
 LOGGING_TRAIL_COUNT=0
@@ -35,7 +43,10 @@ for TRAIL_ARN in $(echo "${TRAILS}" | jq -r '.trailList[].TrailARN' 2>/dev/null)
   TRAIL_NAME=$(echo "${TRAILS}" | jq -r --arg arn "${TRAIL_ARN}" '.trailList[] | select(.TrailARN == $arn) | .Name')
 
   # Check if trail is actually logging
-  STATUS=$(aws_json cloudtrail get-trail-status --name "${TRAIL_ARN}" 2>/dev/null) || continue
+  STATUS=$(aws_json cloudtrail get-trail-status --name "${TRAIL_ARN}") || {
+    warn "4.1 Cannot read status of trail '${TRAIL_NAME}' (cloudtrail:GetTrailStatus) -- not counted"
+    continue
+  }
   IS_LOGGING=$(echo "${STATUS}" | jq -r '.IsLogging' 2>/dev/null || echo "false")
 
   if [ "${IS_LOGGING}" = "true" ]; then
@@ -46,7 +57,10 @@ for TRAIL_ARN in $(echo "${TRAILS}" | jq -r '.trailList[].TrailARN' 2>/dev/null)
   fi
 
   # Check if trail captures management events (which include SSO events)
-  EVENT_SELECTORS=$(aws_json cloudtrail get-event-selectors --trail-name "${TRAIL_ARN}" 2>/dev/null) || continue
+  EVENT_SELECTORS=$(aws_json cloudtrail get-event-selectors --trail-name "${TRAIL_ARN}") || {
+    warn "4.1 Cannot read event selectors of trail '${TRAIL_NAME}' (cloudtrail:GetEventSelectors) -- not counted"
+    continue
+  }
 
   # Check both basic and advanced event selectors
   HAS_MGMT=$(echo "${EVENT_SELECTORS}" | jq '
@@ -62,7 +76,7 @@ for TRAIL_ARN in $(echo "${TRAILS}" | jq -r '.trailList[].TrailARN' 2>/dev/null)
     warn "4.1 Trail '${TRAIL_NAME}' does not capture management events"
   fi
 done
-# HTH Guide Excerpt: end api-check-cloudtrail
+# HTH Guide Excerpt: end cli-check-cloudtrail
 
 if [ "${MGMT_EVENT_TRAIL_COUNT}" -eq 0 ]; then
   fail "4.1 No trails are capturing management events -- SSO events are not logged (AU-2)"
@@ -72,7 +86,7 @@ else
   increment_applied
 fi
 
-# HTH Guide Excerpt: begin api-verify-sso-events
+# HTH Guide Excerpt: begin cli-verify-sso-events
 # Verify recent SSO events are present in CloudTrail
 info "4.1 Checking for recent SSO events in CloudTrail..."
 SSO_EVENTS=$(aws_json cloudtrail lookup-events \
@@ -80,7 +94,6 @@ SSO_EVENTS=$(aws_json cloudtrail lookup-events \
   --max-results 5 2>/dev/null) || {
   warn "4.1 Cannot query CloudTrail events -- verify cloudtrail:LookupEvents permission"
   summary
-  exit 0
 }
 
 EVENT_COUNT=$(echo "${SSO_EVENTS}" | jq '.Events | length' 2>/dev/null || echo "0")
@@ -91,6 +104,6 @@ if [ "${EVENT_COUNT}" -gt 0 ]; then
 else
   warn "4.1 No recent SSO events found -- this may indicate a new deployment or logging gap"
 fi
-# HTH Guide Excerpt: end api-verify-sso-events
+# HTH Guide Excerpt: end cli-verify-sso-events
 
 summary

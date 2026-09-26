@@ -97,7 +97,7 @@ auth0:
 
 aws-iam-identity-center:
   product_docs: "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html"
-  api_docs: "https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html"
+  api_docs: "https://docs.aws.amazon.com/singlesignon/latest/APIReference/Welcome.html"
   hardening_docs:
     - label: "IAM Identity Center Security"
       url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/security.html"
