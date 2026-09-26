@@ -885,7 +885,7 @@ snyk:
     - label: "Authentication & Access (Enterprise)"
       url: "https://docs.snyk.io/implementation-guides/enterprise-implementation-guide/configure-group-settings-and-policies/authentication-and-access"
     - label: "Service Accounts"
-      url: "https://docs.snyk.io/snyk-platform-administration/service-accounts"
+      url: "https://docs.snyk.io/platform-administration/service-accounts/service-accounts"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/snyk"
 
 splunk:
