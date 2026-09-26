@@ -6,9 +6,9 @@ slug: "lovable"
 tier: "3"
 category: "AI/ML Platform"
 description: "Security and privacy hardening for Lovable workspaces and the apps they publish — SSO/SCIM, workspace access governance, AI-agent and MCP surface controls, Lovable Cloud data protection (RLS, secrets, storage), security scanning gates, AI training opt-out, and audit logging."
-version: "0.1.0"
+version: "0.2.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-15"
+last_updated: "2026-09-25"
 ---
 
 **Plans Covered:** Free, Pro, Business, Enterprise (settings are heavily plan-gated; each control notes its gate)
@@ -21,7 +21,7 @@ Lovable is an AI app builder: prompts in, published full-stack applications out,
 
 First, **the workspace is an AI-agent governance problem**. Prompts, uploaded files, and generated code flow through Lovable's AI gateway to third-party model providers; MCP clients and connectors can reach into the workspace; and on Free/Pro plans, **customer content is used for AI model training by default starting September 9, 2026** — with only a per-member opt-out. Second, **the published apps are a data-exposure problem the platform formally leaves to you**: CVE-2025-48757 (CVSS 9.3) documented Lovable-generated apps whose missing Row-Level Security let unauthenticated attackers read *and write* arbitrary tables, and Lovable's response placed responsibility for data protection on each customer. The controls exist — RLS review, security scans, a publish-blocking gate — but most ship disabled.
 
-There is **no admin API and no CLI**: apart from SCIM provisioning (Enterprise), every control in this guide is console-only, and that honest constraint shapes the automation story throughout.
+Lovable has **no CLI**. Since 2026-09-11 it has a versioned public REST API (`https://api.lovable.dev/v1`; Business and Enterprise; workspace-scoped keys with a **Read only** preset) that reads workspace policy, members and groups, publishing, and security scans, and writes project sharing and publish audience; SCIM (Enterprise) covers provisioning. Most settings in this guide remain console-only, so every control states its automation verdict: a read-only audit pack where the API exposes the setting, and an evidenced **Automation:** line where it does not.
 
 ### Intended Audience
 
@@ -89,6 +89,8 @@ Domain verification (DNS TXT record) is the prerequisite for every serious ident
 
 **Time to Complete:** ~30 minutes plus DNS propagation
 
+**Automation:** ClickOps only — Lovable exposes no write interface for this setting, and its REST API has no verified-domain endpoint ([Lovable API](https://docs.lovable.dev/integrations/lovable-api), 2026-09-24).
+
 #### Validation & Testing
 1. The domain shows **Verified** under Settings → Access → Identity
 2. Test that a new same-domain sign-up receives the role you intended (not an unreviewed editor default)
@@ -119,7 +121,7 @@ Configure OIDC (Lovable's recommended protocol) or SAML 2.0 against Okta, Auth0,
 #### Rationale
 **Why This Matters:**
 
-- Lovable has **no workspace-wide 2FA enforcement** (2FA is per-account, see 1.4) — Enforce SSO with IdP-side MFA is the *only* way to guarantee MFA for all members
+- Below Enterprise, Lovable has **no workspace-wide 2FA enforcement** (2FA is per-account, see 1.4) — Enforce SSO with IdP-side MFA is the only way to guarantee MFA for all members; Enterprise's **Require two-factor authentication** and Enforce SSO are mutually exclusive, so with SSO enforced, MFA is your IdP's job
 - When SSO is enforced, external collaborators and invite links become unavailable — collapsing the unmanaged-access surface in one move
 - JIT provisioning with IdP group→role mappings (plus optional Group restriction) keeps role assignment in your directory, not in ad-hoc invites
 
@@ -134,6 +136,12 @@ Configure OIDC (Lovable's recommended protocol) or SAML 2.0 against Okta, Auth0,
 3. Enable **Enforce SSO**; set **Session duration** to 8h (L2+) or 24h (L1)
 
 **Time to Complete:** ~1–2 hours
+
+#### Code Implementation
+
+The API reads the Enforce SSO state only; the IdP protocol, group mappings and session duration stay console-only.
+
+{% include pack-code.html vendor="lovable" section="1.2" %}
 
 #### Validation & Testing
 1. A member signing in with email/password is redirected to the IdP
@@ -160,7 +168,7 @@ Configure OIDC (Lovable's recommended protocol) or SAML 2.0 against Okta, Auth0,
 | NIST 800-53 | AC-2, AC-2(3) |
 
 #### Description
-SCIM provisioning (Enterprise) syncs users and groups from Okta, Microsoft Entra ID, or any SCIM 2.0 IdP to Lovable, and — critically — **deprovisions on IdP deactivation**: the user is removed from the workspace and blocked from logging in. The SCIM API at `https://api.lovable.dev/scim/v2` is Lovable's only documented programmatic admin surface.
+SCIM provisioning (Enterprise) syncs users and groups from Okta, Microsoft Entra ID, or any SCIM 2.0 IdP to Lovable, and — critically — **deprovisions on IdP deactivation**: the user is removed from the workspace and blocked from logging in. The SCIM API at `https://api.lovable.dev/scim/v2` is Lovable's only programmatic surface for provisioning users and groups; the REST API can list members but not create or remove them.
 
 #### Rationale
 **Why This Matters:**
@@ -208,7 +216,7 @@ SCIM provisioning (Enterprise) syncs users and groups from Okta, Microsoft Entra
 | NIST 800-53 | IA-2(1) |
 
 #### Description
-Lovable 2FA is **per-account, not per-workspace** — there is no admin toggle to require it. Every member (all plans) should enable it themselves, preferring the authenticator app (TOTP) over SMS. On Free/Pro workspaces, where Enforce SSO is unavailable, this is the only MFA you can get.
+Lovable 2FA enrollment is **per-account**. Only Enterprise workspaces can require it (**Require two-factor authentication**, default disabled; everyone accessing the workspace, external collaborators included, must then enroll before using it). It is mutually exclusive with Enforce SSO, which hands MFA to your IdP. On Free, Pro, and Business there is no admin toggle: every member should enable 2FA themselves, preferring the authenticator app (TOTP) over SMS. On Free/Pro workspaces, where Enforce SSO is unavailable, this is the only MFA you can get.
 
 #### Rationale
 **Why This Matters:**
@@ -221,7 +229,10 @@ Lovable 2FA is **per-account, not per-workspace** — there is no admin toggle t
 
 #### ClickOps Implementation
 1. Each member: **Settings → Your account → Two-factor authentication** → enable **Authenticator app (recommended)**; optionally add **Phone (SMS)** as the second method
-2. Admins: track enrollment manually (there is no enforcement dashboard) — make it a joiner-checklist item; on Business/Enterprise prefer Enforce SSO (1.2) with IdP MFA instead
+2. Enterprise without Enforce SSO: **Settings → Security → Privacy & security → Require two-factor authentication** → enable. On Business/Enterprise prefer Enforce SSO (1.2) with IdP MFA
+3. Free, Pro, and Business without SSO: track enrollment manually (there is no enforcement setting) — make it a joiner-checklist item
+
+**Automation:** ClickOps only — Lovable exposes no write interface for this setting, and its members API reports no 2FA status ([List workspace members](https://docs.lovable.dev/api-reference/members-access/list-workspace-members), 2026-09-24).
 
 #### Validation & Testing
 1. Sign-in on a fresh session prompts for the TOTP code
@@ -264,7 +275,13 @@ Lovable has five workspace roles — Owner, Admin, Editor, Viewer, and (external
 #### ClickOps Implementation
 1. **Settings → Access → People** → audit each member's role; demote to the least role that works (viewer for read-only stakeholders)
 2. Cancel stale pending invites; on paid plans use viewer/admin tiers deliberately
-3. On Business/Enterprise, use **Settings → Access → Groups** to grant project/folder access by group (SCIM-syncable), and set **Default monthly member credit limit** (Settings → General) as a resource-abuse cap
+3. On Business/Enterprise, use **Settings → Access → Groups** to grant project/folder access by group (SCIM-syncable), and set **Default monthly member credit limit** (Settings → Workspace) as a resource-abuse cap
+
+#### Code Implementation
+
+The members API returns accepted members only, so pending invitations stay a console review.
+
+{% include pack-code.html vendor="lovable" section="2.1" %}
 
 #### Validation & Testing
 1. The People list shows no unexplained admins/owners and no expired-but-pending invites
@@ -306,6 +323,8 @@ Three settings govern how people get in: **Restrict workspace invitations** (Ent
 1. **Settings → Security → Privacy & security → Restrict workspace invitations** → enable (Enterprise)
 2. Same page → **Invite links** → disable (or accept the 5-day/one-per-role limits knowingly)
 3. Same page → **Workspace discovery** → disable; also review **Public member profiles** (Enterprise, default disabled — keep it off)
+
+**Automation:** ClickOps only — Lovable exposes no write interface for these settings, and none of the four is in the workspace read model ([Get workspace](https://docs.lovable.dev/api-reference/workspaces/get-workspace), 2026-09-24).
 
 #### Validation & Testing
 1. A non-admin editor cannot generate an email invite or an invite link
@@ -351,6 +370,12 @@ Set **Default project access** from Workspace (every member can view/remix/edit 
 2. Same page → **External project collaborators** → **Allow viewers** or **None allowed** (L3: None)
 3. Per-project overrides stay available via the project **Share** dialog — audit them, including project-level Admin grants (paid plans)
 
+#### Code Implementation
+
+The API reads the default project access setting and each project's visibility; **External project collaborators** is not exposed and stays console-only.
+
+{% include pack-code.html vendor="lovable" section="2.3" %}
+
 #### Validation & Testing
 1. A new project is visible only to its owner and explicit invitees
 2. An editor attempting to add an external collaborator hits the policy
@@ -395,6 +420,12 @@ Publishing is the moment a project becomes an internet-facing app. Constrain **W
 2. Same page → **Default website access** → **Workspace**; review **External invites** (disable at L3)
 3. Per project: Publish dialog → visibility row → **Who can view your site?** → the narrowest audience; unpublish stale apps (**Project settings → Unpublish project**)
 
+#### Code Implementation
+
+The API reads the workspace publishing policy and every published app's audience, and can narrow an audience (`PATCH /v1/projects/{project_id}/publish`, `projects:write`); **Who can publish externally** is not exposed and stays console-only.
+
+{% include pack-code.html vendor="lovable" section="2.4" %}
+
 #### Validation & Testing
 1. An editor's Publish attempt on an external target is blocked by policy
 2. A published internal app demands workspace sign-in from an incognito session
@@ -435,6 +466,8 @@ The Lovable GitHub App requests **Contents (write), Metadata (read), Pull reques
 1. **Workspace settings → Git → GitHub → Add connection** (owners/admins) → during the GitHub install choose **Only select repositories**
 2. Review the granted permissions against the documented list; re-scope any legacy all-repositories install
 3. GHES/GHEC-DR (Enterprise): add Lovable's setup-wizard IP ranges to **GitHub organization → Settings → Security → IP allow list**
+
+**Automation:** ClickOps only — Lovable exposes no write interface for this setting; its REST API has no Git-connection endpoint ([Lovable API](https://docs.lovable.dev/integrations/lovable-api), 2026-09-24). The repository scope itself lives on the GitHub side, in the Lovable GitHub App installation.
 
 #### Validation & Testing
 1. The GitHub App's installation page lists only the intended repositories
@@ -479,8 +512,10 @@ Connectors wire projects (and the AI agent) to external services. On Business/En
 
 #### ClickOps Implementation
 1. **Connectors → Admin settings** → for each connector on both tabs, set **Who can create connections and clients** to **No one** (enable per-request) or **Admins**
-2. Review existing connections' usage scope (Only you | Invite specific people | Invite entire workspace) — narrow the workspace-wide ones
+2. Review existing connections' sharing (**Private** | **Share with others** | **Invite entire workspace**) — narrow the workspace-wide ones
 3. To revoke a published app's external access: delete the connection itself, not just the admin setting
+
+**Automation:** ClickOps only — Lovable exposes no write interface for this setting. The REST API has no connector endpoint ([Lovable API](https://docs.lovable.dev/integrations/lovable-api), 2026-09-24), and the OAuth-only MCP server can list connectors and remove an MCP connector but states that connectors "are always added through the Lovable UI, never programmatically" ([MCP server](https://docs.lovable.dev/integrations/lovable-mcp-server), 2026-09-24).
 
 #### Validation & Testing
 1. An editor's attempt to create a new connection is blocked by the policy
@@ -519,12 +554,15 @@ Three Privacy & security toggles govern Model Context Protocol reach into the wo
 **Attack Prevented:** Workspace data egress and project manipulation through external AI clients and unvetted MCP servers
 
 #### Prerequisites
-- Business or Enterprise (toggles are not configurable below that)
+- **Third-party MCP clients:** Business or Enterprise (always on, and not configurable, on Free/Pro)
+- **Remote MCP connectors** and **Local desktop MCP servers:** configurable on all plans (local servers need remote connectors enabled to work)
 
 #### ClickOps Implementation
 1. **Settings → Security → Privacy & security → Third-party MCP clients** → disable (enable narrowly if a sanctioned client workflow exists)
 2. Same page → **Remote MCP connectors** → disable
 3. Same page → **Local desktop MCP servers** → disable
+
+**Automation:** ClickOps only — Lovable exposes no write interface for these toggles, and none is in the workspace read model ([Get workspace](https://docs.lovable.dev/api-reference/workspaces/get-workspace), 2026-09-24).
 
 #### Validation & Testing
 1. An external MCP client's OAuth connection attempt fails while the toggle is off
@@ -551,7 +589,7 @@ Three Privacy & security toggles govern Model Context Protocol reach into the wo
 | NIST 800-53 | CM-5, AC-3 |
 
 #### Description
-Workspace Knowledge/Skills (Settings → Customization, owner/admin-managed) inject instructions into **every project's** AI context — they steer the agent workspace-wide. **Cross-project sharing** (all plans, default enabled) lets members reference and reuse implementations from other projects. For segregated teams or regulated work, disable cross-project sharing and change-control the knowledge base.
+Workspace knowledge (**Settings → Knowledge**) is included in **every project's** AI context, and workspace skills (**Settings → Skills**) are available to every project and applied automatically when a request matches — both owner/admin-managed, and both steer the agent workspace-wide. **Cross-project sharing** (all plans, default enabled) lets members reference and reuse implementations from other projects. For segregated teams or regulated work, disable cross-project sharing and change-control the knowledge base.
 
 #### Rationale
 **Why This Matters:**
@@ -564,7 +602,9 @@ Workspace Knowledge/Skills (Settings → Customization, owner/admin-managed) inj
 
 #### ClickOps Implementation
 1. **Settings → Security → Privacy & security → Cross-project sharing** → disable for segregated environments
-2. **Settings → Customization** → review Workspace Knowledge/Skills; restrict editing to owners/admins and log changes through your change process (audit-log Projects/workspace-management events cover this on Enterprise)
+2. **Settings → Knowledge** → review workspace knowledge; **Settings → Skills** → review workspace skills and which have **Automatic use** enabled. Editing both is owner/admin-only by design — log changes through your change process (audit-log Projects/workspace-management events cover this on Enterprise)
+
+**Automation:** ClickOps only for scripted packs — the Lovable REST API exposes no knowledge or skills endpoint ([Lovable API](https://docs.lovable.dev/integrations/lovable-api), 2026-09-24); the Lovable MCP server can read and write workspace knowledge and skills but accepts interactive OAuth only ([MCP server](https://docs.lovable.dev/integrations/lovable-mcp-server), 2026-09-24). Cross-project sharing has no programmatic surface.
 
 #### Validation & Testing
 1. A member cannot pull implementation context from a sibling project while sharing is off
@@ -593,7 +633,7 @@ Workspace Knowledge/Skills (Settings → Customization, owner/admin-managed) inj
 | NIST 800-53 | SC-12, SC-28, IA-5 |
 
 #### Description
-Project secrets live at **Cloud tab → Secrets**: encrypted, injected into Edge Functions automatically, never reaching the browser, and **write-only after save** (view shows name + creation date only). The reserved `SUPABASE_`/`LOVABLE_` prefixes are platform-managed; the project's `LOVABLE_API_KEY` is rotatable in place. The sharp edge: **`VITE_`-prefixed variables are build-time and browser-exposed — never put secrets there.** Enterprise adds workspace-level **Build secrets** (Settings → Build & deploy) for private-registry/CI-type credentials.
+Project secrets live at **More → Cloud → Secrets** (project toolbar): encrypted, injected into Edge Functions automatically, never reaching the browser, and **write-only after save** (view shows name + creation date only). The reserved `SUPABASE_`/`LOVABLE_` prefixes are platform-managed; the project's `LOVABLE_API_KEY` is rotatable in place. The sharp edge: **`VITE_`-prefixed variables are build-time and browser-exposed — never put secrets there.** Enterprise adds workspace-level **Build secrets** (Settings → Build & deploy) for private-registry/CI-type credentials.
 
 #### Rationale
 **Why This Matters:**
@@ -605,9 +645,11 @@ Project secrets live at **Cloud tab → Secrets**: encrypted, injected into Edge
 **Attack Prevented:** Secret exposure via client bundles; stale compromised credentials
 
 #### ClickOps Implementation
-1. **Cloud tab → Secrets** → keep every credential here; audit for anything mirrored into `VITE_` variables or source
+1. **More → Cloud → Secrets** → keep every credential here; audit for anything mirrored into `VITE_` variables or source
 2. On suspected exposure: **Rotate** (`LOVABLE_API_KEY`) or replace the secret value (replace-only by design)
 3. Enterprise: **Settings → Build & deploy → Build secrets** for `.npmrc`-style `${SECRET_NAME}` injection during builds
+
+**Automation:** ClickOps only — Lovable exposes no write interface for this setting; its REST API has no secrets endpoint ([Lovable API](https://docs.lovable.dev/integrations/lovable-api), 2026-09-24).
 
 #### Validation & Testing
 1. The published app's browser bundle contains no secret values (search the served JS)
@@ -647,7 +689,9 @@ Project secrets live at **Cloud tab → Secrets**: encrypted, injected into Edge
 
 #### ClickOps Implementation
 1. **Settings → Security → Privacy & security → Block public storage buckets** → confirm **enabled**
-2. **Cloud tab → Storage** → inventory buckets; any public bucket needs a documented owner and reason (bucket names are immutable; deletion requires an empty bucket and is irreversible)
+2. **More → Cloud → Storage** → inventory buckets; any public bucket needs a documented owner and reason (bucket names are immutable; deletion requires an empty bucket and is irreversible)
+
+**Automation:** ClickOps only — Lovable exposes no write interface for this setting, and **Block public storage buckets** is not in the workspace read model ([Get workspace](https://docs.lovable.dev/api-reference/workspaces/get-workspace), 2026-09-24).
 
 #### Validation & Testing
 1. Creating a public bucket as a non-admin fails while the block is on
@@ -693,6 +737,12 @@ Enterprise workspaces get a DLP layer, **disabled by default**: **Sensitive data
 2. Same page → **Chat send protection** → **Ask before sending** (L3) or **Block original** (L4)
 3. Same page → **Block publishing with PII** → enable; editors triage findings (false-positive, redact, delete) per project
 
+#### Code Implementation
+
+The API reads whether PII scanning is enabled and each project's personal-data findings; **Chat send protection** and **Block publishing with PII** are not exposed and stay console-only.
+
+{% include pack-code.html vendor="lovable" section="4.3" %}
+
 #### Validation & Testing
 1. Sending a test credit-card-formatted string in chat triggers the configured mode
 2. A project with an unresolved finding cannot publish while the gate is on
@@ -732,7 +782,9 @@ Four Enterprise/Business boundary settings finish the data story: **Code downloa
 #### ClickOps Implementation
 1. **Settings → Security → Privacy & security** → **Code downloads** → disable; **Editor project transfers** → keep disabled; consider **Require workspace editor role** for modify rights
 2. Same page → **Default hosting region** → set to your jurisdiction before onboarding builders
-3. Same page → **Abandoned projects** → enable marking; enable auto-delete with a grace period only after your export runbook exists (**Cloud tab → Advanced settings → Export project data**)
+3. Same page → **Abandoned projects** → enable marking; enable auto-delete with a grace period only after your export runbook exists (**More → Cloud → Overview → Advanced settings → Export project data**)
+
+**Automation:** ClickOps only — Lovable exposes no write interface for these settings, and none of the four is in the workspace read model ([Get workspace](https://docs.lovable.dev/api-reference/workspaces/get-workspace), 2026-09-24).
 
 #### Validation & Testing
 1. An editor cannot download a source zip or transfer a project out
@@ -761,13 +813,13 @@ Four Enterprise/Business boundary settings finish the data story: **Code downloa
 | NIST 800-53 | AC-3, AC-6 |
 
 #### Description
-Lovable-built apps call the database from the client, so **RLS policies are the authorization layer** — the vendor's own doc is blunt: "Before going live, make sure every table has Row Level Security policies that restrict who can read and write each row… Missing RLS policies are the most common way app data gets exposed." Review policies at **Cloud tab → Database → RLS policies** (read-only viewer: policy name, command, applies-to, rule expression; changes go through chat requests). For connected-Supabase projects, verify in the Supabase dashboard — auth settings live there, not in Lovable.
+Lovable-built apps call the database from the client, so **RLS policies are the authorization layer** — the vendor's own doc is blunt: "Before going live, make sure every table has Row Level Security policies that restrict who can read and write each row… Missing RLS policies are the most common way app data gets exposed." Review policies at **More → Cloud → Database → RLS policies** (read-only viewer: policy name, command, applies-to, rule expression; changes go through chat requests). For connected-Supabase projects, verify in the Supabase dashboard — auth settings live there, not in Lovable.
 
 #### Rationale
 **Why This Matters:**
 
 - **CVE-2025-48757** (CVSS 9.3, researcher Matt Palmer): Lovable-generated apps with missing/weak RLS were readable **and writable** by unauthenticated attackers — reported scope ~10% of scanned projects. Lovable disputed the CVE, stating each customer "accepts a responsibility over protecting the data of their application" — which makes RLS review *your* control, formally
-- The Basic scan lints RLS ("overly permissive rules or missing access checks"); the Deep scan additionally detects **database functions that bypass RLS** — run both before any launch (5.3)
+- The Quick scan checks database access rules ("tables without per-record access control (row-level security), access rules that let everyone through"); the Deep scan additionally flags **"server code that bypasses the rules your database enforces"** — run both before any launch (5.3)
 - Client-side auth state is UI, not enforcement: "All authentication decisions must happen server-side" — RLS plus Edge-Function checks are that server side
 
 **Real-World Incidents:**
@@ -777,13 +829,19 @@ Lovable-built apps call the database from the client, so **RLS policies are the 
 **Attack Prevented:** Unauthenticated database read/write on published apps
 
 #### ClickOps Implementation
-1. **Cloud tab → Database → RLS policies** → verify every table (filter by Tables/Storage/Realtime) has policies restricting each command to the right principals
+1. **More → Cloud → Database → RLS policies** → verify every table (filter by Tables/Storage/Realtime) has policies restricting each command to the right principals
 2. Ask the agent to review ("Make sure users can only see and edit their own data") — then **verify yourself**; for connected Supabase, confirm in the Supabase dashboard
 3. Follow Lovable's pre-launch checklist: no secrets in frontend, validation and critical logic in Edge Functions, auth enforced server-side, external API calls server-side
 
+#### Code Implementation
+
+Run in the project's SQL editor (**More → Cloud → SQL editor**); both queries only read the Postgres catalogs, and any row returned is a finding.
+
+{% include pack-code.html vendor="lovable" section="5.1" %}
+
 #### Validation & Testing
 1. As an unauthenticated client, table reads/writes fail; as user A, user B's rows are invisible
-2. Basic + Deep scans report no RLS/access-control errors
+2. Quick + Deep scans report no RLS/access-control errors, and both SQL audit queries return zero rows
 
 **Expected result:** Every table's access is policy-enforced; scans agree.
 
@@ -806,7 +864,7 @@ Lovable-built apps call the database from the client, so **RLS policies are the 
 | NIST 800-53 | IA-2, IA-5, SC-23 |
 
 #### Description
-For apps on Lovable Cloud, end-user authentication is configured at **Cloud tab → Users → Auth settings**. Harden email auth (disable auto-confirm, secure email change, minimum password length ≥8 with required character classes, **Password HIBP check** against breached passwords, re-authentication before password change, tight OTP expiry/length), restrict enabled providers, lock down **Redirect URLs** (up to 50), and use **Disable sign-up** for closed apps. Workspace policy can restrict **App login methods** across all workspace apps (Business/Enterprise — e.g., SAML SSO only for internal tools).
+For apps on Lovable Cloud, end-user authentication is configured at **More → Cloud → Users → Auth settings**. Harden email auth (disable auto-confirm, secure email change, minimum password length ≥8 with required character classes, **Password HIBP check** against breached passwords, re-authentication before password change, tight OTP expiry/length), restrict enabled providers, lock down **Redirect URLs** (up to 50), and use **Disable sign-up** for closed apps. Workspace policy can restrict **App login methods** across all workspace apps (Business/Enterprise — e.g., SAML SSO only for internal tools).
 
 #### Rationale
 **Why This Matters:**
@@ -818,9 +876,11 @@ For apps on Lovable Cloud, end-user authentication is configured at **Cloud tab 
 **Attack Prevented:** End-user account takeover; OAuth redirect abuse; unwanted self-registration
 
 #### ClickOps Implementation
-1. **Cloud tab → Users → Auth settings → Email** → disable auto-confirm; enable secure email change, HIBP check, re-auth for password change; set min length ≥8 + character classes; tighten OTP expiry
+1. **More → Cloud → Users → Auth settings → Email** → disable auto-confirm; enable secure email change, HIBP check, re-auth for password change; set min length ≥8 + character classes; tighten OTP expiry
 2. **Auth settings** → disable unused providers; **Advanced** → set Site URL + explicit Redirect URLs; **Disable sign-up** for closed apps; review email sending limits
 3. Workspace: **Settings → Security → Privacy & security → App login methods** → restrict to approved methods
+
+**Automation:** ClickOps only — Lovable exposes no write interface for these settings; Cloud auth settings and **App login methods** are not in the REST API ([Lovable API](https://docs.lovable.dev/integrations/lovable-api), 2026-09-24).
 
 #### Validation & Testing
 1. A breached-list password is rejected at sign-up; unverified emails cannot sign in
@@ -847,21 +907,27 @@ For apps on Lovable Cloud, end-user authentication is configured at **Cloud tab 
 | NIST 800-53 | RA-5, SA-11 |
 
 #### Description
-Lovable ships two free scanners: **Basic scan** (10–15s; RLS policy linting, schema/access review, npm dependency audit — runs automatically in the publish dialog) and **Deep scan** (~4 min; agentic review adding access-control analysis, unauthenticated-endpoint detection, exposed secrets, unsafe input handling). Two workspace settings convert them from advice into control: **Block publishing with critical findings** (all plans, default **disabled**) and **Auto-fix security issues** (scope up to All projects; auto-remediates error-level Basic findings). Wiz (SCA/SAST) and Aikido (DAST) integrations can feed the same findings view.
+Lovable ships two free scanners: **Quick scan** (a fixed set of checks that completes in seconds and runs automatically every time you publish — database access rules including missing row-level security, an npm dependency audit, and unauthenticated MCP servers your app exposes) and **Deep scan** (reviews all application code, adding access control, unauthenticated and abusable endpoints, unsafe input, leaked secrets, payments, authentication, and exposed personal data). Two workspace settings convert them from advice into control: **Block publishing with critical issues** (all plans, default **disabled**) and **Auto-fix security issues** (scope up to All projects; during build requests it attempts to fix the latest critical database and dependency findings from the Quick scan, consuming credits). Wiz (SCA/SAST) and Aikido (DAST) integrations can feed the same findings view.
 
 #### Rationale
 **Why This Matters:**
 
-- The publish-time Basic scan is the platform's answer to CVE-2025-48757-class exposure — but without the blocking toggle, a builder can ship past red findings
+- The publish-time Quick scan is the platform's answer to CVE-2025-48757-class exposure — but without the blocking toggle, a builder can ship past red findings
 - Deep scan catches what config linting can't: edge functions lacking auth, RLS-bypassing database functions, injected secrets
 - "Try to fix all" and auto-fix lower the cost of remediation to near zero (shared pool of 10 free fixes, then credits) — there is no economic excuse for shipping criticals
 
 **Attack Prevented:** Publishing apps with known-critical exposure (missing RLS, open endpoints, leaked secrets)
 
 #### ClickOps Implementation
-1. **Settings → Security → Privacy & security → Block publishing with critical findings** → **enable** (all plans — do this on day one)
+1. **Settings → Security → Privacy & security → Block publishing with critical issues** → **enable** (all plans — do this on day one)
 2. Same page → **Auto-fix security issues** → scope to **All published projects** (L2) after piloting
-3. Per project: **More → Security** → run Deep scan before launch; resolve Errors; use **Edit security memory** to document accepted risks
+3. Per project: **More → Security** → run Deep scan before launch; resolve Critical findings; document an accepted risk with the finding's **… → Ignore finding** and the reason **I accept this risk** (ignored findings stay reviewable under **Ignored findings**)
+
+#### Code Implementation
+
+The API reads every project's scans and findings, so the gate can be proven across the fleet; the **Block publishing with critical issues** toggle itself is not exposed and stays console-only.
+
+{% include pack-code.html vendor="lovable" section="5.3" %}
 
 #### Validation & Testing
 1. A project with an error-level finding is refused publication
@@ -904,6 +970,8 @@ Production apps should serve from a custom domain (**Project → Settings → Do
 2. Confirm certificate issuance and that TLS 1.0/1.1 clients are rejected (platform-enforced)
 3. Add `*.lovable.app` lookalike patterns to your brand-monitoring/anti-phishing watchlist
 
+**Automation:** ClickOps only — Lovable exposes no write interface for this setting; the API's deploy group covers publish, unpublish, publish settings, and publish status, with no domain endpoint ([Lovable API](https://docs.lovable.dev/integrations/lovable-api), 2026-09-24).
+
 #### Validation & Testing
 1. The app serves on the custom domain with a valid certificate; TLS 1.1 handshakes fail
 2. Brand-monitoring alerts cover lovable.app lookalikes
@@ -931,24 +999,26 @@ Production apps should serve from a custom domain (**Project → Settings → Do
 | NIST 800-53 | SI-12, PL-4 |
 
 #### Description
-From **September 9, 2026**, Free and Pro customer content — "prompts (including images and files you attach), code, project files, generated outputs, and usage data" — may be used to train Lovable's models, **opted in by default**. The opt-out is **per-member only** (Account settings → AI model training → disable "Use my Lovable content for model training"); an admin cannot opt a Free/Pro workspace out — every member must flip their own toggle, and opting out is **forward-only** (it does not retract prior training data). Business/Enterprise workspace data is excluded by default under DPA; verify the workspace toggle regardless.
+From **September 9, 2026**, Free and Pro customer content — "prompts (including images and files you attach), code, project files, generated outputs, and usage data" — may be used to train Lovable's models, **opted in by default**. The opt-out is **per-member only** (Account settings → AI model training → disable "Use my Lovable content for model training"); an admin cannot opt a Free/Pro workspace out — every member must flip their own toggle, and opting out is **forward-only** (it does not retract prior training data). Business/Enterprise workspace data is excluded from training by default under the DPA, with no workspace toggle to set: members' account toggles show disabled and locked when every workspace they belong to is Business or Enterprise.
 
 #### Rationale
 **Why This Matters:**
 
-- Opting out **before** September 9, 2026 prevents any training use; after that date, whatever was collected stays in assembled datasets/models — the deadline is the control
+- Opting out **before** September 9, 2026 prevented any training use; the opt-out is forward-only, so content collected into datasets or models before a member opts out stays there — every day without the opt-out widens the exposure
 - Because the toggle is per-member on Free/Pro, one un-flipped account leaks the whole team's shared-project content — verify every member or upgrade to a plan with the workspace-level guarantee
 - End-user data inside your apps is excluded from training scope — the exposure is your *build* content: prompts, code, uploads
 
 **Attack Prevented (privacy):** Proprietary prompts, code, and files entering third-party model training
 
 #### ClickOps Implementation
-1. Every member (Free/Pro): **Account settings → AI model training** → disable **Use my Lovable content for model training** — before 2026-09-09
-2. Business/Enterprise admins: **Settings → Security → Privacy & security → Use workspace content for model training** → confirm **disabled** (docs state Business defaults have been inconsistent — verify the toggle, don't trust the default)
+1. Every member (Free/Pro): **Account settings → AI model training** → disable **Use my Lovable content for model training** — now: training use began 2026-09-09 and the opt-out only applies going forward
+2. Business/Enterprise: no workspace setting exists — confirm the training exclusion in your DPA, and spot-check that members' account toggles show disabled and locked
 3. Make the opt-out a joiner-checklist item on Free/Pro teams
 
+**Automation:** ClickOps only — Lovable exposes no write interface for this setting; the training opt-out is in neither the workspace nor the member read model ([Get workspace](https://docs.lovable.dev/api-reference/workspaces/get-workspace), 2026-09-24).
+
 #### Validation & Testing
-1. Each member's account toggle reads disabled; the workspace toggle (Business/Enterprise) reads disabled
+1. Each member's account toggle reads disabled (on Business/Enterprise it is disabled and locked)
 2. New-member onboarding includes the check
 
 **Expected result:** No workspace content flows into model training.
@@ -972,24 +1042,26 @@ From **September 9, 2026**, Free and Pro customer content — "prompts (includin
 | NIST 800-53 | AC-3, SI-12 |
 
 #### Description
-Three low-visibility channels expose project content or user data: **public preview links** (view-only URLs valid 7 days, guest comments on by default; Enterprise can disable workspace-wide via "Allow public preview links sharing"), **Public remixing** (project-level; when on, anyone with the link copies the latest version *including source code* — off by default, unavailable on Enterprise), and **Visitor analytics** on published apps (auto-collected; disable per project under Project settings → General → Publishing if your privacy posture requires).
+Three low-visibility channels expose project content or user data: **public preview links** (view-only URLs anyone can open without a Lovable account, with guest comments allowed or not per link; they expire after 7 days on Free/Pro, while Business/Enterprise links can add a password and expire after 24 hours, 7 days, 30 days, or never; the **Preview link sharing** setting exists on all plans, defaults to enabled, and only Enterprise can disable it), **Public remixing** (project-level; when on, anyone with the link copies the latest version *including source code* — off by default, unavailable on Enterprise), and **Visitor analytics** on published apps (auto-collected; disable per project under Project settings → General → Publishing if your privacy posture requires).
 
 #### Rationale
 **Why This Matters:**
 
-- Preview links are unauthenticated bearer URLs to your work-in-progress — 7-day validity limits but does not remove the leak window
+- Preview links are unauthenticated bearer URLs to your work-in-progress, and they bypass **Default website access** — expiry limits the leak window (unless a Business/Enterprise link is set to never expire) but does not remove it
 - A remix copies code and database **schema** (not records) plus optionally chat history — enabling it on a proprietary project is a source-code disclosure decision
 - Analytics is privacy-positive as shipped (aggregate, no visitor profiles per the docs) but is still a data-collection surface to declare in your app's privacy notice — or switch off
 
 **Attack Prevented (privacy):** Unintended source/context disclosure via shareable artifacts
 
 #### ClickOps Implementation
-1. Enterprise: **Settings → Privacy & security → Allow public preview links sharing** → disable; otherwise train builders to treat preview links as ephemeral secrets
+1. Enterprise: **Settings → Security → Privacy & security → Preview link sharing** → disable; otherwise train builders to treat preview links as ephemeral secrets (on Business, require a password and a short expiry per link)
 2. Per project: **Project settings → Sharing → Public remixing** → confirm **off** for anything proprietary
 3. Per published app: **Project settings → General → Publishing → Visitor analytics** → align with your privacy notice
 
+**Automation:** ClickOps only — Lovable exposes no write interface for these settings; `PATCH /v1/projects/{project_id}` only "Updates project sharing or the human-readable name", and preview links, public remixing, and visitor analytics are not exposed ([Update project](https://docs.lovable.dev/api-reference/projects/update-project), 2026-09-24).
+
 #### Validation & Testing
-1. Preview-link creation fails (Enterprise, disabled) or links expire at 7 days
+1. The **Share preview** button is gone (Enterprise, disabled), or every active link carries the expiry (and, on Business/Enterprise, the password) your policy requires
 2. A non-collaborator cannot remix a proprietary project
 
 **Expected result:** No passive disclosure channel is open unknowingly.
@@ -1013,21 +1085,24 @@ Three low-visibility channels expose project content or user data: **public prev
 | NIST 800-53 | SI-12, SA-9 |
 
 #### Description
-Some privacy realities have **no console toggle** and belong in your risk register instead: prompts and related content transit Lovable's AI Gateway to third-party providers (the privacy policy names OpenAI, Google Gemini, and models via OpenRouter — pass-through, "we do not store the raw prompts… unless you explicitly save them"); there is **no admin control over which LLM subprocessor processes prompts and no zero-data-retention option** documented; Lovable's own product telemetry (PostHog; prompts-submitted/build/deploy events) has **no in-app off-switch** — only cookie consent, browser controls, and Global Privacy Control. Retention commitments: log data ≤90 days, customer data ≤90 days post-deletion, account deletion within 30 days of request (30-day grace), workspace deletion 60-day grace then permanent removal including integration keys/tokens.
+Most of Lovable's privacy floor has **no console toggle** and belongs in your risk register instead. Prompts and related content go to third-party AI providers: the privacy policy (effective 2026-09-15) lists AI infrastructure providers only as a category of sub-processor, points to an external sub-processor list, makes **no prompt pass-through or no-storage commitment**, and states that trained Lovable staff "may review this content to check model quality and diagnose failures". The one configurable exception is Enterprise's **Extended-retention models** setting (default disabled): while it is off, the workspace uses only zero-data-retention models; turning it on admits models whose provider retains prompts and outputs for at least 30 days (flagged content up to 2 years). Below Enterprise there is no documented control over provider retention. Lovable's cookies and advertising measurement are governed by cookie choices, the Do Not Sell or Share link or your privacy settings, and Global Privacy Control, which the policy honors as an opt-out. Retention: the policy commits only to keeping personal data "as long as needed"; account deletion has a 30-day grace period, and workspace deletion a 60-day grace period after which the workspace is permanently removed, including connected integrations' keys and tokens.
 
 #### Rationale
 **Why This Matters:**
 
-- What you cannot configure you must contract: Enterprise buyers should route model-provider constraints and ZDR requirements through the DPA — the console will not do it
-- The pass-through claim is a policy commitment, not a setting — treat prompts as data shared with the named providers and govern *what goes into them* (4.3 is your enforcement layer)
-- Deletion timelines (30/60/90-day) belong in your records-retention and offboarding docs verbatim
+- What you cannot configure you must contract: route model-provider and sub-processor terms through the DPA; on Enterprise, keep **Extended-retention models** off so only zero-data-retention models see your prompts
+- With no pass-through or no-storage commitment in the policy, treat prompts as data shared with the listed sub-processors (and open to quality review by Lovable staff), and govern *what goes into them* (4.3 is your enforcement layer)
+- Deletion timelines (30/60-day) belong in your records-retention and offboarding docs verbatim
 
 **Attack Prevented (privacy):** Compliance surprises — undisclosed processor flows and retention mismatches
 
 #### ClickOps Implementation
-1. Record the AI Gateway provider list and retention terms in your vendor-risk file; for Enterprise, negotiate provider/ZDR terms in the DPA
-2. Enable Global Privacy Control in managed browsers if honoring CPRA opt-outs matters to your users
-3. Pair with 4.3 (DLP) and 6.1 (training opt-out) — the configurable layers over this floor
+1. Record the current sub-processor list and the policy's retention terms in your vendor-risk file (re-check whenever the policy's effective date changes); for Enterprise, negotiate provider terms in the DPA
+2. Enterprise: **Settings → Security → Privacy & security → Extended-retention models** → keep **disabled** so the workspace uses only zero-data-retention models (enabling it is recorded in the audit log)
+3. Enable Global Privacy Control in managed browsers if honoring CPRA opt-outs matters to your users
+4. Pair with 4.3 (DLP) and 6.1 (training opt-out) — the configurable layers over this floor
+
+**Automation:** ClickOps only — Lovable exposes no write interface for this setting; **Extended-retention models** is not in the workspace read model, and the rest of this control is policy, not configuration ([Get workspace](https://docs.lovable.dev/api-reference/workspaces/get-workspace), 2026-09-24).
 
 #### Validation & Testing
 1. Vendor-risk documentation reflects the current privacy policy (re-verify on policy updates)
@@ -1075,6 +1150,8 @@ Enterprise audit logs (**Settings → Security → Audit logs**) capture members
 2. Review high-signal categories on a cadence: identity/access changes, secrets and integrations, Cloud storage/auth changes
 3. If you need streaming, raise SIEM integration with your account team — do not build against undocumented endpoints
 
+**Automation:** ClickOps only — Lovable exposes no write interface for this setting and no audit-log endpoint; export is a manual JSONL download ([Lovable API](https://docs.lovable.dev/integrations/lovable-api), [Audit logs](https://docs.lovable.dev/features/audit-logs), 2026-09-24). Events triggered through the API carry the calling key's `api_key_id`.
+
 #### Validation & Testing
 1. Exported JSONL files land in your store on schedule and parse cleanly
 2. A test setting change appears in the log with correct actor attribution
@@ -1100,7 +1177,7 @@ Enterprise audit logs (**Settings → Security → Audit logs**) capture members
 | NIST 800-53 | RA-5, CA-7 |
 
 #### Description
-The workspace **Security center** (Settings → Security → Security center; Business/Enterprise, admins/owners) aggregates Code analysis (Basic/Deep findings across all projects, central Deep-scan triggering), Supply chain security (dependency vulnerabilities by severity), Secrets overview (secret **names** by project — never values), and Workspace insights (Enterprise; risk portfolio including PII detection). Enterprise adds **scheduled scans** (weekly Monday or monthly 1st, 08:00 workspace time; 1 credit per project per run). Only the latest results are retained — export CSV if you need history.
+The workspace **Security center** (Settings → Security → Security center; Business/Enterprise, admins/owners) aggregates Security insights (a portfolio view that gives each project a review priority from findings, ownership, lifecycle, and publish status; PII columns Enterprise-only), Code analysis (Quick/Deep findings across all projects, central Deep-scan triggering), Supply chain security (dependency vulnerabilities by severity), and Secrets overview (secret **names** by project — never values). Enterprise adds **scheduled scans** (weekly Monday or monthly 1st, 08:00 workspace time; 1 credit per project per run). Only the latest results are retained — export CSV if you need history.
 
 #### Rationale
 **Why This Matters:**
@@ -1118,6 +1195,12 @@ The workspace **Security center** (Settings → Security → Security center; Bu
 1. **Settings → Security → Security center** → review all four tabs; clear error-level findings fleet-wide
 2. Enterprise: configure the recurring scan (scope: all projects or published-only; weekly at L3)
 3. Export CSV per review cycle into your evidence store
+
+#### Code Implementation
+
+The API returns the Security insights finding types and their project counts, so the posture check can run on a schedule and its output kept as history; scheduled scans themselves are configured in the console.
+
+{% include pack-code.html vendor="lovable" section="7.2" %}
 
 #### Validation & Testing
 1. Scheduled scans run on cadence and consume expected credits
@@ -1165,29 +1248,34 @@ Mappings in this guide therefore reference CIS Controls v8 (the general framewor
 | Control surface | Free | Pro | Business | Enterprise |
 |-----------------|------|-----|----------|------------|
 | 2FA (per-account) | ✅ | ✅ | ✅ | ✅ |
+| Require 2FA for the workspace | ❌ | ❌ | ❌ | ✅ |
 | SSO + Enforce SSO | ❌ | ❌ | ✅ | ✅ |
 | SCIM provisioning | ❌ | ❌ | ❌ | ✅ |
 | Restricted default project access | ❌ | ❌ | ✅ | ✅ |
 | Non-public published apps | ❌ | ❌ | ✅ | ✅ |
 | Publish-permission restriction | ❌ | ❌ | ❌ | ✅ |
-| Block publishing w/ critical findings | ✅ | ✅ | ✅ | ✅ |
+| Block publishing w/ critical issues | ✅ | ✅ | ✅ | ✅ |
 | Sensitive data scanning / DLP | ❌ | ❌ | ❌ | ✅ |
 | Security center | ❌ | ❌ | ✅ | ✅ (＋scheduled scans) |
 | Audit logs | ❌ | ❌ | ❌ | ✅ |
-| Workspace training-data toggle | ❌ (per-member) | ❌ (per-member) | ✅ | ✅ |
-| MCP surface toggles | ❌ (always on) | ❌ (always on) | ✅ | ✅ |
+| Training-data exclusion | ❌ (per-member opt-out) | ❌ (per-member opt-out) | ✅ (default; no toggle) | ✅ (default; no toggle) |
+| Extended-retention models (off = zero-data-retention models only) | ❌ | ❌ | ❌ | ✅ |
+| Third-party MCP clients toggle | ❌ (always on) | ❌ (always on) | ✅ | ✅ |
+| Remote / local MCP connector toggles | ✅ | ✅ | ✅ | ✅ |
+| Public REST API (the audit packs in this guide) | ❌ | ❌ | ✅ | ✅ |
 
 ---
 
 ## Appendix B: References
 
-**Tier 1 — Lovable documentation (all fetch-verified 2026-08-15):**
+**Tier 1 — Lovable documentation (all fetch-verified 2026-08-15; re-fetched 2026-09-24):**
 
 - [Privacy & security settings](https://docs.lovable.dev/features/privacy-and-security-settings) · [SSO](https://docs.lovable.dev/features/business/sso) · [SCIM](https://docs.lovable.dev/features/business/scim) · [Verified domains](https://docs.lovable.dev/features/verified-domains) · [2FA](https://docs.lovable.dev/introduction/two-factor-authentication-2-fa) · [People & roles](https://docs.lovable.dev/features/people)
 - [Security features & scans](https://docs.lovable.dev/features/security) · [Security view](https://docs.lovable.dev/features/security-view) · [Security center](https://docs.lovable.dev/features/security-center) · [Security best practices](https://docs.lovable.dev/tips-tricks/security-best-practices) · [Sensitive data scanning](https://docs.lovable.dev/features/sensitive-data-scanning) · [Audit logs](https://docs.lovable.dev/features/audit-logs)
 - [Secrets](https://docs.lovable.dev/features/secrets) · [Build secrets](https://docs.lovable.dev/features/build-secrets) · [Storage](https://docs.lovable.dev/features/storage) · [Database & RLS](https://docs.lovable.dev/features/database) · [Authentication](https://docs.lovable.dev/features/authentication) · [Email auth](https://docs.lovable.dev/features/email-auth) · [Advanced settings](https://docs.lovable.dev/features/advanced-settings)
 - [Publish & visibility](https://docs.lovable.dev/features/publish) · [Project visibility](https://docs.lovable.dev/features/project-visibility) · [Share & preview links](https://docs.lovable.dev/features/share-project) · [Remix](https://docs.lovable.dev/features/projects/remix) · [Custom domains](https://docs.lovable.dev/features/custom-domain) · [Analytics](https://docs.lovable.dev/features/analytics)
-- [Connector admin controls](https://docs.lovable.dev/integrations/admin-controls) · [Integration security](https://docs.lovable.dev/integrations/security) · [GitHub integration](https://docs.lovable.dev/integrations/github) · [Supabase integration](https://docs.lovable.dev/integrations/supabase) · [MCP server](https://docs.lovable.dev/integrations/lovable-mcp-server) · [Lovable API (scope)](https://docs.lovable.dev/integrations/lovable-api)
+- [Connector admin controls](https://docs.lovable.dev/integrations/admin-controls) · [Integration security](https://docs.lovable.dev/integrations/security) · [GitHub integration](https://docs.lovable.dev/integrations/github) · [Supabase integration](https://docs.lovable.dev/integrations/supabase) · [MCP server](https://docs.lovable.dev/integrations/lovable-mcp-server) · [Knowledge](https://docs.lovable.dev/features/knowledge) · [Skills](https://docs.lovable.dev/features/skills)
+- [Lovable API](https://docs.lovable.dev/integrations/lovable-api) · [API reference](https://docs.lovable.dev/api-reference/introduction) · [API changelog](https://docs.lovable.dev/api-reference/changelog) · [API keys](https://docs.lovable.dev/features/api-keys)
 - [AI training opt-out](https://docs.lovable.dev/features/business/data-opt-out) · [Account settings](https://docs.lovable.dev/introduction/lovable-account-settings) · [Delete account](https://docs.lovable.dev/introduction/delete-account) · [Delete workspace](https://docs.lovable.dev/introduction/delete-workspace) · [Privacy policy](https://lovable.dev/privacy)
 
 **Tier 3/4 — research and incidents:**
@@ -1201,6 +1289,7 @@ Mappings in this guide therefore reference CIS Controls v8 (the general framewor
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.2.0 | ai-drafted | `validate-hth-guide` run, Phases 4–5. The console was signed out, so no surface came back VERIFIED-LIVE and the guide stays `ai-drafted`. Automation story corrected for Lovable's public REST API (GA 2026-09-11): seven read-only audit packs (1.2, 2.1, 2.3, 2.4, 4.3, 5.3, 7.2) plus a SQL-editor RLS audit (5.1), each exercised offline against documented response shapes, and an evidenced **Automation:** line on the other 16 controls; the SCIM pack (1.3) now fails closed. Doc-drift fixes: Enterprise's Require two-factor authentication (1.2, 1.4); Settings → Workspace for the default member credit limit (2.1); connector sharing labels (3.1); MCP toggle plan gates (3.2); Settings → Knowledge and Settings → Skills (3.3); More → Cloud paths (4.1, 4.2, 4.4, 5.1, 5.2); Quick scan and "Block publishing with critical issues" naming (5.1, 5.3, 7.2); no workspace training toggle on Business/Enterprise (6.1); preview-link settings (6.2); privacy floor re-derived from the 2026-09-15 policy plus Extended-retention models (6.3). | Claude Code (Opus 5.5) |
 | 2026-08-15 | 0.1.0 | ai-drafted | Initial guide: 25 controls across identity (SSO/SCIM/2FA/verified domains), workspace access governance (roles, invitations, project access, publishing, GitHub), AI-agent surfaces (connectors with the not-enforced-after-publishing boundary, MCP toggles, workspace knowledge), data protection (secrets, storage, DLP, data boundaries), published-app security (RLS/CVE-2025-48757, app auth, scan gates, custom domains/VibeScamming), privacy (training opt-out deadline 2026-09-09, passive channels, non-configurable floor), and monitoring (audit-log export cadence, Security Center). Honest automation story: no admin API/CLI exists; SCIM is the sole programmatic surface (one pack). Tier 2 negatives (no CIS/STIG/SCuBA) cited. Authored by Claude Code (Opus 5). | Claude Code (Opus 5) |
 
 ---

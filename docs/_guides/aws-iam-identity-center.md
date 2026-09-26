@@ -6,9 +6,9 @@ slug: "aws-iam-identity-center"
 tier: "1"
 category: "Identity"
 description: "AWS identity management hardening for IAM Identity Center including MFA, permission sets, and account access"
-version: "0.2.0"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-09-25"
 ---
 
 ## Overview
@@ -78,25 +78,27 @@ Require MFA for all IAM Identity Center users — enforced natively when the ide
 2. If the source is **Identity Center directory**, **AWS Managed Microsoft AD**, or **AD Connector**, continue with Steps 1-3 below
 3. If the source is an **external identity provider**, stop here — configure MFA in that IdP instead, and record the IdP's enforcement policy as the evidence for this control
 
-**Step 1: Access MFA Settings**
-1. Navigate to: **IAM Identity Center** → **Settings** → **Authentication**
-2. Find MFA configuration — note that MFA is **on by default** for directory users, so the task is usually verification and tightening rather than initial enablement
+**Step 1: Open the MFA Configuration**
+1. Navigate to: **IAM Identity Center** → **Settings** → **Authentication** tab → **Multi-factor authentication** → **Configure**
+2. Note that MFA is **on by default** for directory users, so the task is usually verification and tightening rather than initial enablement
 
-**Step 2: Configure MFA Requirement**
-1. Select **Require MFA**
-2. Configure enforcement:
-   - Every sign-in (recommended)
-   - Context-aware
-3. Save changes
+**Step 2: Configure Prompting and Enforcement**
+1. Under **Prompt users for MFA**, select **Every time they sign in (always-on)** — the default and the most secure mode. **Only when their sign-in context changes (context-aware)** lets a user mark a device as trusted and skip MFA on it; **Never (disabled)** turns MFA off
+2. Under **If a user does not yet have a registered MFA device**, select **Require them to register an MFA device at sign in** or **Block their sign-in**. Avoid **Require them to provide a one-time password sent by email to sign in** — AWS notes it does not meet the bar for industry-standard MFA — and **Allow them to sign in**
+3. Keep always-on prompting if every sign-in must be challenged: under context-aware prompting, a user who ticks **This is a trusted device** is not prompted even when **Block their sign-in** is selected
+4. Choose **Save changes**
 
-**Step 3: Configure MFA Types**
-1. Enable authenticator apps
-2. Enable hardware TOTP devices
-3. Enable FIDO2 security keys (recommended)
-4. Disable SMS if possible
-5. Note the per-user registration ceiling: a user may register a **maximum of 8 MFA devices**
+**Step 3: Choose MFA Types**
+1. Under **Users can authenticate with these MFA types**, enable **Security keys and built-in authenticators** (FIDO2, phishing-resistant — recommended)
+2. Enable **Authenticator apps** (TOTP) only if users need a fallback to a security key
+3. IAM Identity Center offers no SMS option and no hardware-TOTP option, so there is nothing to disable
+4. Note the per-user registration ceiling: a user may register a **maximum of 8 MFA devices** — up to 2 authenticator apps and 6 FIDO authenticators
+
+Sources: [Prompt users for MFA](https://docs.aws.amazon.com/singlesignon/latest/userguide/mfa-getting-started.html) · [Configure MFA device enforcement](https://docs.aws.amazon.com/singlesignon/latest/userguide/how-to-configure-mfa-device-enforcement.html) · [Available MFA types](https://docs.aws.amazon.com/singlesignon/latest/userguide/mfa-types.html)
 
 **Time to Complete:** ~30 minutes
+
+**Automation:** ClickOps only — IAM Identity Center exposes no public API for MFA settings ([IAM Identity Center API operations](https://docs.aws.amazon.com/singlesignon/latest/APIReference/API_Operations.html), 2026-09-24). Changes are still observable: the 4.1 Sigma rule watches `PutMfaDeviceManagementForDirectory` (the console action that writes the directory's MFA device-management settings) and MFA device registration and removal.
 
 ---
 
@@ -129,7 +131,7 @@ Configure session duration limits across the three distinct session types IAM Id
 | **Permission-set role session (AWS account access)** | Up to **12 hours** | **Not affected** — revoking, disabling, or deleting the user does **not** end an existing account session |
 | **Application session** | Refreshed automatically about every **1 hour**; ends roughly **30 minutes** after the interactive session ends | Ends shortly after the interactive session |
 
-> **The 12-hour exposure window.** AWS documents that removing a user's access — including disabling or deleting the user — does **not** terminate permission-set role sessions already in flight. Those sessions run to their configured duration, which can be as long as 12 hours. Offboarding and incident response therefore require an explicit step beyond user deletion: shorten permission-set session durations in advance, and on suspected compromise revoke the active sessions and/or apply a deny policy to the assumed role rather than assuming user deletion is sufficient.
+> **The 12-hour exposure window.** AWS documents that removing a user's access — including disabling or deleting the user — does **not** terminate permission-set role sessions already in flight. Those sessions run to their configured duration, which can be as long as 12 hours. Offboarding and incident response therefore require an explicit step beyond user deletion: shorten permission-set session durations in advance, and on suspected compromise add the user to a pre-staged **Deny policy** keyed on `identitystore:userId`. Ending the user's active sessions is not enough on its own — AWS states that it "doesn't end any active IAM role sessions in the AWS Management Console or AWS CLI." Sources: [Use a Deny policy to revoke active user permissions](https://docs.aws.amazon.com/singlesignon/latest/userguide/prereqs-revoking-user-permissions.html) · [View and end active sessions](https://docs.aws.amazon.com/singlesignon/latest/userguide/end-active-sessions.html)
 
 > **Kiro and long interactive sessions.** AWS documents that Kiro sessions extend the interactive session duration to **90 days**, and that depending on when your organization enabled the relevant capability this may be **enabled by default**. Verify the current interactive session setting rather than assuming a short default.
 
@@ -140,19 +142,25 @@ Source: [IAM Identity Center — Authentication concepts](https://docs.aws.amazo
 #### ClickOps Implementation
 
 **Step 1: Configure the Interactive (Portal) Session**
-1. Navigate to: **Settings** → **Authentication**
-2. Read the current **session duration** value before changing it — it may already be set to a long duration
+1. Navigate to: **Settings** → **Authentication** tab → **Session duration** → **Configure**
+2. Under **User interactive sessions**, read the current value before changing it — the default is 8 hours, the allowed range is 15 minutes to 90 days, and it may already be set to a long duration
 3. Reduce it to the shortest duration your workforce can tolerate; a 90-day interactive session is rarely defensible outside of specific tooling requirements
 
 **Step 2: Configure Permission Set Sessions**
 1. Edit each permission set
-2. Set session duration — the maximum is 12 hours
-3. Apply materially shorter durations (1 hour or less) to administrative and other high-blast-radius permission sets, since these sessions survive user deletion
+2. Set session duration — the range is 1 to 12 hours
+3. Set administrative and other high-blast-radius permission sets to **1 hour** — the minimum AWS allows — since these sessions survive user deletion
 
 **Step 3: Document the Revocation Procedure**
 1. Record that user deletion alone leaves account sessions live for up to their configured duration
-2. Define the incident step that actually cuts access — terminating the active sessions and/or attaching a deny policy to the affected role
+2. Pre-stage a Deny policy keyed on `identitystore:userId` in each permission set (or as an SCP), and on offboarding or suspected compromise add the user's ID to it — this is the step that cuts off in-flight account sessions. Ending the user's sessions under **Users** → *user* → **Active sessions** → **End sessions** stops the portal session only
 3. Test the procedure so responders are not discovering the gap during an incident
+
+#### Code Implementation
+
+{% include pack-code.html vendor="aws-iam-identity-center" section="1.2" %}
+
+**Automation:** Permission-set session duration is manageable as code — `aws sso-admin update-permission-set --session-duration` or `aws_ssoadmin_permission_set.session_duration` (see the 3.1 and 3.3 Terraform packs); the pack above audits it. The interactive (portal) session duration is **ClickOps only** — IAM Identity Center exposes no public API for it ([IAM Identity Center API operations](https://docs.aws.amazon.com/singlesignon/latest/APIReference/API_Operations.html), 2026-09-24).
 
 ---
 
@@ -179,19 +187,20 @@ Enable ABAC for fine-grained access control.
 #### ClickOps Implementation
 
 **Step 1: Enable ABAC**
-1. Navigate to: **Settings** → **Attributes for access control**
-2. Enable attributes
-3. Configure attribute mappings
+1. Navigate to: **Settings** → in the **Attributes for access control** information box, choose **Enable**
+2. Open the **Attributes for access control** tab → **Manage attributes** → **Add attribute**
+3. Enter a **Key** (the session-tag name your policies reference) and a **Value** that points at the identity-source attribute, such as `${path:enterprise.department}`. With an external IdP, attributes can arrive in the SAML assertion instead
 
 **Step 2: Use in Permission Sets**
 1. Create ABAC-aware policies
 2. Reference user attributes
 3. Implement tag-based access
 
----
-
+#### Code Implementation
 
 {% include pack-code.html vendor="aws-iam-identity-center" section="1.3" %}
+
+---
 
 ## 2. Identity Source Configuration
 
@@ -221,8 +230,8 @@ Connect to external IdP for centralized identity.
 #### ClickOps Implementation
 
 **Step 1: Change Identity Source**
-1. Navigate to: **Settings** → **Identity source**
-2. Click **Change identity source**
+1. Navigate to: **Settings** → **Identity source** tab
+2. Click **Actions** → **Change identity source**
 3. Select external identity provider
 
 **Step 2: Configure SAML/SCIM**
@@ -234,6 +243,8 @@ Connect to external IdP for centralized identity.
 1. Test authentication
 2. Migrate users from Identity Center directory
 3. Verify access preserved
+
+**Automation:** ClickOps only — IAM Identity Center has no public API to change the identity source or configure SAML federation ([IAM Identity Center API operations](https://docs.aws.amazon.com/singlesignon/latest/APIReference/API_Operations.html), 2026-09-24). Changes are still observable: the 4.1 Sigma rule alerts on the `sso-directory.amazonaws.com` external-IdP configuration events.
 
 ---
 
@@ -269,6 +280,8 @@ Enable SCIM for automatic user provisioning.
 2. Map user attributes
 3. Enable group sync
 
+**Automation:** ClickOps only — enabling automatic provisioning and issuing the SCIM access token is console-only; the public API has no SCIM-enablement operation ([Automatic provisioning](https://docs.aws.amazon.com/singlesignon/latest/userguide/how-to-with-scim.html), 2026-09-24).
+
 ---
 
 ### 2.3 Restrict Account Instances of IAM Identity Center
@@ -288,7 +301,7 @@ Prevent member accounts in your AWS Organization from standing up their own *acc
 > **Changed enablement options (August 2026).** New IAM Identity Center enablement now offers **Single-Region**, **Multi-Region**, and **Custom** configurations. Two consequences worth deciding deliberately rather than accepting:
 >
 > - Choosing **Multi-Region** automatically creates a **multi-Region customer managed KMS key**, and **AWS KMS charges apply** — this interacts directly with [4.3](#43-use-a-customer-managed-kms-key-for-identity-center-data), including its lockout risk
-> - **Multi-account permissions** is now an **optional capability that is enabled by default**. If your deployment uses IAM Identity Center only for application authentication and never for AWS account access, **disable it** — leaving it on keeps an unused account-access surface live
+> - **Multi-account permissions** is now an **optional capability that is enabled by default**, and the choice is made **at enablement**: if the deployment will use IAM Identity Center only for application authentication and never for AWS account access, turn off **Enable multi-account permissions** when creating the instance. It cannot be turned off afterwards — the `UpdateInstance` API accepts only `PermissionSetsEnabled: true` ("After permission sets are enabled, they cannot be disabled")
 >
 > Sources: [Enable IAM Identity Center](https://docs.aws.amazon.com/singlesignon/latest/userguide/enable-identity-center.html) · [IAM Identity Center document history](https://docs.aws.amazon.com/singlesignon/latest/userguide/doc-history.html)
 
@@ -314,13 +327,19 @@ Prevent member accounts in your AWS Organization from standing up their own *acc
 3. Plan migration of any legitimate use onto the organization instance before restricting creation
 
 **Step 2: Restrict Creation via Service Control Policy**
-1. In the management account, navigate to: **AWS Organizations** → **Policies** → **Service control policies**
-2. Create or edit an SCP that denies the Identity Center instance-creation action for member accounts
+1. In the management account, open **IAM Identity Center** → **Dashboard** → **Central management** → **Prevent account instances**, copy the SCP AWS provides, and choose **Go to SCP dashboard** — or navigate directly to: **AWS Organizations** → **Policies** → **Service control policies**
+2. Create or edit an SCP that denies `sso:CreateInstance` for member accounts (AWS's example allow-lists specific accounts with a `StringNotEquals` condition on `aws:PrincipalAccount`)
 3. Attach the SCP to the organizational units that should never host their own instance (in most estates, all of them)
 
 **Step 3: Confirm the Restriction**
 1. From a member account, attempt to create an account instance and confirm it is denied
 2. Record the SCP as the compensating control in your access-management documentation
+
+Source: [Use Service Control Policies to control account instance creation](https://docs.aws.amazon.com/singlesignon/latest/userguide/control-account-instance.html)
+
+#### Code Implementation
+
+{% include pack-code.html vendor="aws-iam-identity-center" section="2.3" %}
 
 #### Validation & Testing
 1. Re-run the account-instance inventory and confirm no new instances appear
@@ -377,10 +396,11 @@ Create least-privilege permission sets.
 2. Limit maximum permissions
 3. Prevent privilege escalation
 
----
-
+#### Code Implementation
 
 {% include pack-code.html vendor="aws-iam-identity-center" section="3.1" %}
+
+---
 
 ### 3.2 Configure Account Assignments
 
@@ -414,10 +434,11 @@ Assign access to AWS accounts.
 2. Use groups for assignments
 3. Regular access reviews
 
----
-
+#### Code Implementation
 
 {% include pack-code.html vendor="aws-iam-identity-center" section="3.2" %}
+
+---
 
 ### 3.3 Protect Privileged Access
 
@@ -443,13 +464,17 @@ Additional controls for privileged access.
 
 **Step 1: Create Privileged Permission Sets**
 1. Create separate admin permission sets
-2. Apply shorter session duration
-3. Require MFA for every session
+2. Apply shorter session duration (minimum 1 hour)
+3. Rely on the instance-wide MFA setting — **Settings** → **Authentication** → **Multi-factor authentication** → **Every time they sign in (always-on)** (see [1.1](#11-enforce-multi-factor-authentication)); permission sets carry no MFA setting of their own
 
 **Step 2: Limit Admin Assignments**
 1. Restrict admin access to required users
 2. Use groups for admin access
 3. Regular privileged access reviews
+
+#### Code Implementation
+
+{% include pack-code.html vendor="aws-iam-identity-center" section="3.3" %}
 
 ---
 
@@ -495,6 +520,10 @@ Treat the `sso:account:access` scope — added for customer managed applications
 2. Never write tokens to application logs, error messages, or telemetry
 3. Pass the token in the **`x-amz-sso_bearer_token`** header, never as a URL query parameter (URLs land in proxy logs, referrer headers, and browser history)
 4. Monitor CloudTrail for the associated authorization and account-access events (see [4.1](#41-configure-cloudtrail-logging))
+
+#### Code Implementation
+
+{% include pack-code.html vendor="aws-iam-identity-center" section="3.4" %}
 
 #### Validation & Testing
 1. Confirm the application inventory lists a reviewed justification for every holder of the scope
@@ -550,10 +579,11 @@ Enable CloudTrail for IAM Identity Center events.
 2. Permission changes
 3. Account assignments
 
----
-
+#### Code Implementation
 
 {% include pack-code.html vendor="aws-iam-identity-center" section="4.1" %}
+
+---
 
 ### 4.2 Configure Access Analyzer
 
@@ -582,10 +612,11 @@ Use IAM Access Analyzer for policy validation.
 2. Review findings
 3. Remediate external access
 
----
-
+#### Code Implementation
 
 {% include pack-code.html vendor="aws-iam-identity-center" section="4.2" %}
+
+---
 
 ### 4.3 Use a Customer Managed KMS Key for Identity Center Data
 
@@ -635,9 +666,15 @@ Encrypt IAM Identity Center data with a customer managed AWS KMS key (CMK) inste
 3. Test that path before enabling the CMK, not after
 
 **Step 4: Enable the Key on Identity Center**
-1. Navigate to: **IAM Identity Center** → **Settings**
-2. Configure the encryption setting to use your customer managed key
+1. Navigate to: **IAM Identity Center** → **Settings** → **Additional settings** tab → **Manage encryption**
+2. Choose **Customer managed key**, select or enter your key's ARN, and save
 3. Validate that managed applications in use still authenticate correctly — compatibility is not universal
+
+#### Code Implementation
+
+{% include pack-code.html vendor="aws-iam-identity-center" section="4.3" %}
+
+**Automation:** The pack above audits the key in use. The write — `aws sso-admin update-instance --encryption-configuration` — is deliberately not packaged: it carries the lockout risk above, so complete Steps 1–3 before running it by hand.
 
 #### Validation & Testing
 1. Confirm CloudTrail shows Identity Center decrypt operations against your key, proving the CMK is in use
@@ -697,13 +734,13 @@ Source: [Customer managed keys for IAM Identity Center](https://docs.aws.amazon.
 - [Customer managed keys for IAM Identity Center](https://docs.aws.amazon.com/singlesignon/latest/userguide/identity-center-customer-managed-keys.html)
 - [IAM Identity Center document history](https://docs.aws.amazon.com/singlesignon/latest/userguide/doc-history.html)
 - [Security Best Practices in IAM](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html)
-- [Security Reference Architecture - IAM Identity Center](https://docs.aws.amazon.com/prescriptive-guidance/latest/security-reference-architecture/workplace-iam-identity-center.html)
+- [Security Reference Architecture - IAM Identity Center](https://docs.aws.amazon.com/prescriptive-guidance/latest/security-reference-architecture/org-management.html#mgmt-sso)
 - [AWS IAM Best Practices](https://aws.amazon.com/iam/resources/best-practices/)
 
 **API & Developer Tools:**
-- [IAM Identity Center API Reference](https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html)
+- [IAM Identity Center API Reference](https://docs.aws.amazon.com/singlesignon/latest/APIReference/Welcome.html)
 - [AWS CLI - SSO Admin Commands](https://docs.aws.amazon.com/cli/latest/reference/sso-admin/)
-- [AWS SDKs](https://aws.amazon.com/tools/) (Boto3, JavaScript, Go, Java, .NET, etc.)
+- [AWS SDKs](https://builder.aws.com/build/tools) (Boto3, JavaScript, Go, Java, .NET, etc.)
 - [AWS CloudFormation IAM Identity Center Resources](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/AWS_SSO.html)
 - [GitHub Organization (aws)](https://github.com/aws)
 
@@ -725,6 +762,7 @@ Source: [Customer managed keys for IAM Identity Center](https://docs.aws.amazon.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.3.0 | ai-drafted | Validation run (`validate-hth-guide`, offline fix loop: no AWS console session or credential was available, so 0 surfaces were exercised live and maturity is unchanged). Corrections: 1.1 Steps 1–3 now name the options AWS actually offers — always-on vs context-aware prompting, the "if a user does not yet have a registered MFA device" enforcement setting, and the two MFA types (security keys/built-in authenticators, authenticator apps); the non-existent "Require MFA", hardware-TOTP and SMS options are gone. 1.2 sets admin permission sets to 1 hour (the AWS minimum, not "1 hour or less"), and the revocation step and 12-hour callout now use a pre-staged `identitystore:userId` Deny policy, since ending a user's sessions does not end role sessions in flight. 2.3 states that multi-account permissions can only be declined at enablement (`UpdateInstance` accepts only `PermissionSetsEnabled: true`) and names the Dashboard → Prevent account instances path and the `sso:CreateInstance` action. 3.3 no longer asks for a per-permission-set MFA setting that does not exist. Console-path precision for 1.3, 2.1 and 4.3. Every control now carries a Code Implementation or a sourced `**Automation:**` verdict (1.1, 2.1, 2.2 ClickOps only; 1.2 and 4.3 partial). Code Packs: the AWS-CLI scripts moved from `api/` to `cli/`; new read-only CLI audits for 1.2, 2.3, 3.4 and 4.3 and Terraform for 2.3 (SCP) and 3.3; the 3.1 and 3.2 audits no longer report PASS when their reads fail (3.2 also reads `Account.State`, as `Status` is being retired), every audit exits non-zero after a failure, the 1.2 and 3.2 audits also exit 1 on the violation they audit (a privileged permission set over 1 hour; a direct user assignment), and the 4.2 audit creates an analyzer only with `--apply` and counts only external-access analyzers. Terraform fixes: 1.3 ABAC sources use `$${path:...}` and per-action S3 tag keys, 4.1 orders the trail after its bucket policy and scopes it with `aws:SourceArn`, and 4.2 alerts through EventBridge (Access Analyzer publishes no CloudWatch metric) and archives only findings for named trusted accounts. Sigma: corrected `DetachCustomerManagedPolicyReferenceFromPermissionSet` and replaced three MFA event names that do not exist with the real `sso-directory` events. Links: API reference `Welcome.html`, the Security Reference Architecture IAM Identity Center section, and the AWS Builder Center tools page. | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass. Corrections: 1.1 now states that native MFA configuration is not supported for external identity providers, resolving the contradiction between 1.1 and 2.1 — with an external IdP, MFA must be enforced at the IdP; added the MFA-on-by-default note for directory users and the 8-device registration ceiling; 2.1 gained the matching cross-reference. Rewrote 1.2 around the real three-session model (interactive up to 90 days, permission-set role sessions up to 12 hours and independent of user revocation, application sessions ~1h refresh ending ~30min after the interactive session), including the 12-hour post-deletion exposure window, the Kiro 90-day extension, and the absence of SAML Single Logout in either direction. New controls: 2.3 restrict member-account instances of IAM Identity Center via SCP (enabled by default for orgs enabled after 2023-11-15) with the August 2026 enablement-option changes (Single/Multi-Region/Custom; Multi-Region auto-creates a multi-Region CMK with KMS charges; multi-account permissions now an optional capability enabled by default); 3.4 govern the `sso:account:access` scope on customer managed applications (2026-06-19, grants all accounts and roles of the authenticated user, non-restrictable, management/delegated-admin only) with token-handling requirements; 4.3 customer managed KMS key (2025-09-17) with its requirements, the administrator/user lockout warning, and break-glass planning. Removed the CIS AWS Foundations Benchmark from this vendor's `hardening_docs` — v5.0.0 covers IAM users, root, and access keys, not IAM Identity Center. Tier 3/4 not surveyed this pass. | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with MFA, permission sets, and monitoring | Claude Code (Opus 4.5) |

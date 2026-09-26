@@ -1,0 +1,25 @@
+# HTH GitHub Control 3.31 Extension: Least-Privilege Workflow Template
+# Profile: L2 | NIST: AC-6, AC-6(1)
+# https://howtoharden.com/guides/github/#32-use-least-privilege-workflow-permissions
+#
+# Deploy: Use as a template for new workflows
+
+# HTH Guide Excerpt: begin cli-workflow-permissions-template
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read       # Read code
+  pull-requests: write # Comment on PRs (if needed)
+  # Omit permissions not needed
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - run: npm test
+# HTH Guide Excerpt: end cli-workflow-permissions-template

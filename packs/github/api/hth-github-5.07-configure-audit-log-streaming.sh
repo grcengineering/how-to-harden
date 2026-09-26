@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 5.07: Configure Audit Log Streaming
 # Profile: L2 | NIST: AU-2, AU-6
-# https://howtoharden.com/guides/github/#71-enable-audit-log-streaming-to-siem
+# https://howtoharden.com/guides/github/#81-enable-audit-log-streaming-to-siem
 source "$(dirname "$0")/common.sh"
 
 banner "5.07: Configure Audit Log Streaming"

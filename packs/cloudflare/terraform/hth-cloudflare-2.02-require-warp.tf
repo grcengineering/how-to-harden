@@ -38,4 +38,18 @@ resource "cloudflare_zero_trust_access_policy" "require_warp" {
     }
   }]
 }
+
+# The policy enforces only where an application references it
+resource "cloudflare_zero_trust_access_application" "warp_required_app" {
+  account_id       = var.cloudflare_account_id
+  name             = "WARP-Required Application"
+  domain           = var.sensitive_app_domain
+  type             = "self_hosted"
+  session_duration = "8h"
+
+  policies = [{
+    id         = cloudflare_zero_trust_access_policy.require_warp.id
+    precedence = 1
+  }]
+}
 # HTH Guide Excerpt: end terraform

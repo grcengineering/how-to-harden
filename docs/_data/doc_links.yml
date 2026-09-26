@@ -42,11 +42,11 @@ anthropic-api:
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
 
 anthropic-claude:
-  product_docs: "https://docs.anthropic.com/"
-  api_docs: "https://docs.anthropic.com/en/api/"
+  product_docs: "https://platform.claude.com/docs/en/home"
+  api_docs: "https://platform.claude.com/docs/en/api/overview"
   hardening_docs:
     - label: "Claude Enterprise Administrator Guide"
-      url: "https://claude.com/resources/tutorials/claude-enterprise-administrator-guide"
+      url: "https://academy.claude.com/tutorials/claude-enterprise-administrator-guide"
     - label: "Tenant Restrictions (Network Control)"
       url: "https://support.claude.com/en/articles/13198485-enforce-network-level-access-control-with-tenant-restrictions"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
@@ -97,7 +97,7 @@ auth0:
 
 aws-iam-identity-center:
   product_docs: "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html"
-  api_docs: "https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html"
+  api_docs: "https://docs.aws.amazon.com/singlesignon/latest/APIReference/Welcome.html"
   hardening_docs:
     - label: "IAM Identity Center Security"
       url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/security.html"
@@ -204,7 +204,7 @@ crowdstrike:
 
 cursor:
   product_docs: "https://cursor.com/docs"
-  api_docs: ""
+  api_docs: "https://cursor.com/docs/account/teams/admin-api"
   hardening_docs:
     - label: "LLM Safety & Controls (Enterprise)"
       url: "https://cursor.com/docs/enterprise/llm-safety-and-controls"
@@ -568,7 +568,7 @@ launchdarkly:
 
 linear:
   product_docs: "https://linear.app/docs"
-  api_docs: "https://developers.linear.app/docs"
+  api_docs: "https://linear.app/developers"
   hardening_docs:
     - label: "Login Methods (Admin)"
       url: "https://linear.app/docs/login-methods"
@@ -584,7 +584,7 @@ looker:
 
 lovable:
   product_docs: "https://docs.lovable.dev"
-  api_docs: "https://docs.lovable.dev/features/business/scim"
+  api_docs: "https://docs.lovable.dev/api-reference/introduction"
   hardening_docs:
     - label: "Privacy & Security Settings"
       url: "https://docs.lovable.dev/features/privacy-and-security-settings"

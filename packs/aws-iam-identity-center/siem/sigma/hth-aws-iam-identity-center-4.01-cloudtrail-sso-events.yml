@@ -1,3 +1,9 @@
+# HTH Pack Contract: v1
+#   control: aws-iam-identity-center-4.1
+#   guide:   https://howtoharden.com/guides/aws-iam-identity-center/#41-configure-cloudtrail-logging
+#   profile: L1
+#   mode:    read-only
+#   requires: CloudTrail management events from the IAM Identity Center home Region delivered to the SIEM
 title: AWS IAM Identity Center Sensitive Admin Actions
 id: hth-aws-iic-4.01-cloudtrail-sso-events
 status: test
@@ -32,19 +38,38 @@ detection:
             - 'CreateInstanceAccessControlAttributeConfiguration'
             - 'UpdateInstanceAccessControlAttributeConfiguration'
             - 'DeleteInstanceAccessControlAttributeConfiguration'
+    # External IdP (SAML) configuration changes are console APIs on the
+    # sso-directory.amazonaws.com event source, not sso.amazonaws.com.
+    selection_idp_config_changes:
+        eventSource: sso-directory.amazonaws.com
+        eventName:
+            - 'CreateExternalIdPConfigurationForDirectory'
+            - 'UpdateExternalIdPConfigurationForDirectory'
+            - 'DeleteExternalIdPConfigurationForDirectory'
+            - 'DisableExternalIdPConfigurationForDirectory'
+    # MFA device registration and removal are sso-directory console APIs too.
     selection_mfa_changes:
+        eventSource: sso-directory.amazonaws.com
+        eventName:
+            - 'StartVirtualMfaDeviceRegistration'
+            - 'CompleteVirtualMfaDeviceRegistration'
+            - 'StartWebAuthnDeviceRegistration'
+            - 'CompleteWebAuthnDeviceRegistration'
+            - 'DeleteMfaDeviceForUser'
+            - 'UpdateMfaDeviceForUser'
+    # The directory's MFA device-management settings (control 1.1) are written by
+    # this sso console action.
+    selection_mfa_settings_changes:
         eventSource: sso.amazonaws.com
         eventName:
-            - 'RegisterMfaDevice'
-            - 'DeregisterMfaDevice'
-            - 'UpdateMfaDevice'
+            - 'PutMfaDeviceManagementForDirectory'
     selection_instance_changes:
         eventSource: sso.amazonaws.com
         eventName:
             - 'CreateInstance'
             - 'DeleteInstance'
             - 'UpdateInstance'
-    condition: selection_idp_changes or selection_mfa_changes or selection_instance_changes
+    condition: 1 of selection_*
 fields:
     - eventTime
     - eventName

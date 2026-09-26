@@ -2,7 +2,7 @@
 # HTH GitHub Control 1.06: Restrict Org Member Repository Deletion
 # Profile Level: L3 (Run)
 # Frameworks: NIST AC-6, MP-6
-# Source: https://howtoharden.com/guides/github/#16-restrict-repo-deletion
+# Source: https://howtoharden.com/guides/github/#12-restrict-base-permissions-for-organization-members
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 5.02: Enable Delete Branch on Merge
 # Profile: L2 | NIST: CM-3
-# https://howtoharden.com/guides/github/#52-enable-delete-branch-on-merge
+# https://howtoharden.com/guides/github/#21-enable-branch-protection-for-all-critical-branches
 source "$(dirname "$0")/common.sh"
 
 banner "5.02: Enable Delete Branch on Merge"
