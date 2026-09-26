@@ -13,13 +13,14 @@ resource "okta_authenticator" "security_question" {
   status = "INACTIVE"
 }
 
-# Configure phone authenticator -- remove recovery usage, keep for auth only
+# Configure phone authenticator -- remove recovery usage, keep for sign-in only.
+# Okta's allowedFor values are "any", "none", "recovery", and "sso" (sign-in).
 resource "okta_authenticator" "phone" {
   name   = "Phone"
   key    = "phone_number"
   status = "ACTIVE"
   settings = jsonencode({
-    allowedFor = "authentication"
+    allowedFor = "sso"
   })
 }
 

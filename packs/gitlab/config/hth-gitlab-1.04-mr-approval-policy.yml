@@ -1,0 +1,40 @@
+# =============================================================================
+# HTH GitLab Control 1.4: Enforce Approvals with Merge Request Approval Policies
+# Profile: L2 | NIST: CM-3, AU-10 | Tier: Ultimate
+# https://howtoharden.com/guides/gitlab/#14-enforce-approvals-with-merge-request-approval-policies
+#
+# Vendor-native policy file. Commit it as .gitlab/security-policies/policy.yml
+# in the security policy project linked at Group > Secure > Policies (merge it
+# with any policies already in that file). Schema: GitLab's
+# security_orchestration_policy.json; reference:
+# docs.gitlab.com/user/application_security/policies/merge_request_approval_policies
+# Replace your-group/security-approvers with the group whose members approve.
+# =============================================================================
+# HTH Guide Excerpt: begin config-mr-approval-policy
+approval_policy:
+  - name: Require security approval for unsigned commits
+    description: >-
+      Any merge request into a protected branch that contains an unsigned
+      commit needs an approval from outside the project's own Maintainers.
+    enabled: true
+    policy_scope:
+      projects:
+        excluding: []
+    rules:
+      - type: any_merge_request
+        branch_type: protected
+        commits: unsigned
+    actions:
+      - type: require_approval
+        approvals_required: 1
+        group_approvers:
+          - your-group/security-approvers
+    approval_settings:
+      block_branch_modification: true
+      prevent_pushing_and_force_pushing: true
+      prevent_approval_by_author: true
+      prevent_approval_by_commit_author: true
+      remove_approvals_with_new_commit: true
+    fallback_behavior:
+      fail: closed
+# HTH Guide Excerpt: end config-mr-approval-policy

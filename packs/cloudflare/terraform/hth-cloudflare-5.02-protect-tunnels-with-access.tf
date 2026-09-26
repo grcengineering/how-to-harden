@@ -13,8 +13,13 @@ resource "cloudflare_zero_trust_access_application" "tunnel_app" {
   type             = "self_hosted"
   session_duration = "8h"
 
-  allowed_idps              = [cloudflare_zero_trust_access_identity_provider.corporate_idp.id]
+  allowed_idps              = var.allowed_idp_ids
   auto_redirect_to_identity = true
+
+  policies = [{
+    id         = cloudflare_zero_trust_access_policy.tunnel_app_policy.id
+    precedence = 1
+  }]
 }
 
 resource "cloudflare_zero_trust_access_policy" "tunnel_app_policy" {
@@ -24,7 +29,7 @@ resource "cloudflare_zero_trust_access_policy" "tunnel_app_policy" {
 
   include = [{
     group = {
-      id = cloudflare_zero_trust_access_group.employees.id
+      id = var.employees_group_id
     }
   }]
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 3.08: Audit Unapproved Workflow Actions
 # Profile: L2 | NIST: SA-12
-# https://howtoharden.com/guides/github/#31-restrict-third-party-github-actions
+# https://howtoharden.com/guides/github/#31-restrict-third-party-github-actions-to-verified-creators-only
 source "$(dirname "$0")/common.sh"
 
 banner "3.08: Audit Workflow Actions"

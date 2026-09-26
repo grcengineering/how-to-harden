@@ -50,14 +50,19 @@
 
 // HTH Guide Excerpt: begin cowork-maximum
 // L3 Run Cowork configuration.
-// Zero session retention, channels disabled, auto-mode disabled,
+// Minimum (1-day) transcript retention, channels disabled, auto-mode disabled,
 // org-locked login, and full managed-only lockdown.
+// cleanupPeriodDays minimum is 1: a value of 0 fails validation, and an
+// invalid key in a managed file is dropped, leaving the 30-day default.
+// A managed cleanupPeriodDays also applies to Claude Desktop and Cowork
+// transcripts (desktopSessionCleanupPeriodDays is ignored when it is set).
+// Reference: code.claude.com/docs/en/settings-reference#cleanupperioddays
   {
     "channelsEnabled": false,
     "allowedChannelPlugins": [],
     "forceLoginMethod": "claudeai",
     "forceLoginOrgUUID": "REPLACE-WITH-YOUR-ORG-UUID",
-    "cleanupPeriodDays": 0,
+    "cleanupPeriodDays": 1,
     "disableAutoMode": "disable",
     "allowManagedPermissionRulesOnly": true,
     "allowManagedHooksOnly": true,
@@ -68,7 +73,7 @@
       "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
     },
     "companyAnnouncements": [
-      "This environment operates under maximum security policy. Session transcripts are not retained. All extensions are disabled."
+      "This environment operates under maximum security policy. Session transcripts older than one day are deleted. All extensions are disabled."
     ]
   }
 // HTH Guide Excerpt: end cowork-maximum

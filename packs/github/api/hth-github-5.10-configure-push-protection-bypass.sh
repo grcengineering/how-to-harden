@@ -1,63 +1,47 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 5.10: Configure Push Protection Delegated Bypass
 # Profile: L2 | NIST: IA-5, CM-3
-# https://howtoharden.com/guides/github/#53-configure-push-protection-delegated-bypass
+# https://howtoharden.com/guides/github/#53-configure-push-protection-with-delegated-bypass
+#
+# Usage: bash <pack>                      -> list bypass requests (read-only)
+#        SECURITY_TEAM_ID=<id> bash <pack> -> also create a security configuration with
+#                                            push protection + delegated bypass
 source "$(dirname "$0")/common.sh"
 
 banner "5.10: Configure Push Protection Delegated Bypass"
 should_apply 2 || { increment_skipped; summary; exit 0; }
-info "5.10 Configuring push protection delegated bypass for ${GITHUB_ORG}..."
+info "5.10 Reviewing push protection bypass requests for ${GITHUB_ORG}..."
 
 # HTH Guide Excerpt: begin api-list-bypass-requests
 # List push protection bypass requests for the organization
-info "5.10 Listing push protection bypass requests..."
-REPOS=$(gh_get "/orgs/${GITHUB_ORG}/repos?per_page=100&type=all") || {
-  fail "5.10 Unable to list repositories"
+gh_get "/orgs/${GITHUB_ORG}/bypass-requests/secret-scanning?per_page=100" \
+  | jq '.[] | {repository: .repository.full_name, requester: .requester.actor_name, status, created_at}' || {
+  fail "5.10 Unable to list bypass requests (requires delegated bypass and the bypass-requests read permission)"
   increment_failed
-  summary
-  exit 0
 }
-
-echo "${REPOS}" | jq -r '.[].name' | while read -r REPO; do
-  BYPASSES=$(gh_get "/repos/${GITHUB_ORG}/${REPO}/secret-scanning/push-protection-bypasses?per_page=10" 2>/dev/null) || continue
-  COUNT=$(echo "${BYPASSES}" | jq 'length' 2>/dev/null || echo "0")
-  if [ "${COUNT}" -gt 0 ]; then
-    warn "5.10 ${REPO}: ${COUNT} push protection bypass(es) found"
-    echo "${BYPASSES}" | jq '.[] | {placeholder_id: .placeholder_id, reason: .reason, actor: .actor.login, created_at: .created_at}'
-  fi
-done
 # HTH Guide Excerpt: end api-list-bypass-requests
 
 # HTH Guide Excerpt: begin api-configure-delegated-bypass
-# Configure delegated bypass via organization ruleset
-# This requires the push protection bypass to be routed to designated reviewers
-info "5.10 Creating ruleset with delegated bypass configuration..."
-RESPONSE=$(gh_post "/orgs/${GITHUB_ORG}/rulesets" '{
-  "name": "Secret Scanning Push Protection",
-  "enforcement": "active",
-  "target": "branch",
-  "conditions": {
-    "ref_name": {
-      "include": ["~ALL"],
-      "exclude": []
-    }
-  },
-  "bypass_actors": [
-    {
-      "actor_id": 1,
-      "actor_type": "OrganizationAdmin",
-      "bypass_mode": "always"
-    }
-  ],
-  "rules": [
-    {
-      "type": "secret_scanning"
-    }
-  ]
-}') || {
-  warn "5.10 Unable to create push protection ruleset (may already exist)"
-}
+# Push protection whose bypasses must be approved by the security team
+if [ -n "${SECURITY_TEAM_ID:-}" ]; then
+  BODY=$(jq -n --argjson team "${SECURITY_TEAM_ID}" '{
+    name: "HTH push protection with delegated bypass",
+    description: "Push protection; bypass requires security-team review",
+    secret_scanning: "enabled",
+    secret_scanning_push_protection: "enabled",
+    secret_scanning_delegated_bypass: "enabled",
+    secret_scanning_delegated_bypass_options: {reviewers: [{reviewer_id: $team, reviewer_type: "TEAM"}]}
+  }')
+  if gh_post "/orgs/${GITHUB_ORG}/code-security/configurations" "${BODY}" >/dev/null; then
+    pass "5.10 Security configuration with delegated bypass created (attach it to repositories next)"
+  else
+    fail "5.10 Unable to create the security configuration"
+    increment_failed
+  fi
+fi
 # HTH Guide Excerpt: end api-configure-delegated-bypass
 
-increment_applied
+if [ "${CONTROLS_FAILED}" -eq 0 ]; then
+  increment_applied
+fi
 summary

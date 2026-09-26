@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 2.10: Configure Secret Scanning Delegated Bypass
 # Profile: L2 | NIST: AC-3, AC-6, IA-5(7)
-# https://howtoharden.com/guides/github/#26-configure-secret-scanning-delegated-bypass
+# https://howtoharden.com/guides/github/#26-enable-secret-scanning-delegated-bypass
 source "$(dirname "$0")/common.sh"
 
 banner "2.10: Configure Secret Scanning Delegated Bypass"

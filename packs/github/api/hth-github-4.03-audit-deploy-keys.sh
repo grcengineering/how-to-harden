@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 4.03: Audit Deploy Keys
-# Profile: L2 | NIST: AC-6, IA-5
-# https://howtoharden.com/guides/github/#43-audit-deploy-keys
+# Profile: L1 | NIST: AC-6, IA-5
+# https://howtoharden.com/guides/github/#41-audit-and-restrict-oauth-app-access
 source "$(dirname "$0")/common.sh"
 
 banner "4.03: Audit Deploy Keys (Audit Only)"
-should_apply 2 || { increment_skipped; summary; exit 0; }
+should_apply 1 || { increment_skipped; summary; exit 0; }
 
-REPO="${GITHUB_REPO:-how-to-harden}"
+REPO="${GITHUB_REPO:?Set GITHUB_REPO (repository to audit)}"
 info "4.03 Auditing deploy keys on ${GITHUB_ORG}/${REPO}..."
 
 # HTH Guide Excerpt: begin api-audit-deploy-keys

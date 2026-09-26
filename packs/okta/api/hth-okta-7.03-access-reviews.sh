@@ -2,6 +2,11 @@
 # HTH Okta Control 7.3: Conduct Regular Access Reviews
 # Profile: L1 | NIST: AC-2(3) | SOC 2: CC6.1, CC6.2
 # https://howtoharden.com/guides/okta/#73-conduct-regular-access-reviews
+#
+# Read-only audit. A token owned by a Read-Only Administrator is sufficient.
+# GET /api/v1/iam/assignees/users returns {"value": [{"id": ...}], "_links": ...}
+# (Okta Management API, RoleAssignedUsers); each user's roles come from
+# GET /api/v1/users/{userId}/roles.
 source "$(dirname "$0")/common.sh"
 
 banner "7.3: Conduct Regular Access Reviews"
@@ -14,91 +19,56 @@ info "7.3 Conducting access review..."
 # -----------------------------------------------------------------------
 # HTH Guide Excerpt: begin api-list-active-users
 info "7.3 Finding inactive users (no login in 90+ days)..."
-ACTIVE_USERS=$(okta_get "/api/v1/users?filter=status+eq+%22ACTIVE%22&limit=200" 2>/dev/null || echo "[]")
-TOTAL_ACTIVE=$(echo "${ACTIVE_USERS}" | jq 'length' 2>/dev/null || echo "0")
+ACTIVE_USERS=$(okta_get "/api/v1/users?filter=status+eq+%22ACTIVE%22&limit=200")  # a failed read stops the pack
+TOTAL_ACTIVE=$(printf '%s' "${ACTIVE_USERS}" | jq 'length')
 # HTH Guide Excerpt: end api-list-active-users
 
-INACTIVE_COUNT=$(echo "${ACTIVE_USERS}" | jq \
-  '[.[] | select(.lastLogin != null) | select((.lastLogin | fromdateiso8601) < (now - 7776000))] | length' \
-  2>/dev/null || echo "0")
+INACTIVE_COUNT=$(printf '%s' "${ACTIVE_USERS}" | jq \
+  '[.[] | select(.lastLogin != null) | select((.lastLogin | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601) < (now - 7776000))] | length')
 
 info "7.3 Total active users (first page): ${TOTAL_ACTIVE}"
 
 if [ "${INACTIVE_COUNT}" -gt 0 ]; then
   warn "7.3 Found ${INACTIVE_COUNT} user(s) with no login in 90+ days:"
-  echo "${ACTIVE_USERS}" | jq -r \
-    '[.[] | select(.lastLogin != null) | select((.lastLogin | fromdateiso8601) < (now - 7776000))] | .[] | "  - \(.profile.login) (last login: \(.lastLogin))"' \
-    2>/dev/null || true
+  printf '%s' "${ACTIVE_USERS}" | jq -r \
+    '[.[] | select(.lastLogin != null) | select((.lastLogin | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601) < (now - 7776000))] | .[] | "  - \(.profile.login) (last login: \(.lastLogin))"'
 else
-  pass "7.3 No inactive users detected (within first 200 users)"
+  pass "7.3 No active user has gone 90+ days without a login (first ${TOTAL_ACTIVE} users read)"
 fi
 
 # -----------------------------------------------------------------------
-# 7.3b: Count Super Admin assignments
+# 7.3b: Admin role assignments and Super Admin count
 # -----------------------------------------------------------------------
-info "7.3 Counting Super Admin role assignments..."
-
 # HTH Guide Excerpt: begin api-check-super-admins
-# Try the IAM assignees endpoint first
-SUPER_ADMIN_COUNT=$(okta_get "/api/v1/iam/assignees/users?roleType=SUPER_ADMIN" 2>/dev/null \
-  | jq 'length' 2>/dev/null || echo "unknown")
+info "7.3 Listing users with admin role assignments..."
+ADMIN_USER_IDS=$(okta_get "/api/v1/iam/assignees/users?limit=200" | jq -r '.value[].id')
+ADMIN_COUNT=0
+SUPER_ADMIN_COUNT=0
+for USER_ID in ${ADMIN_USER_IDS}; do
+  ADMIN_COUNT=$((ADMIN_COUNT + 1))
+  ROLE_TYPES=$(okta_get "/api/v1/users/${USER_ID}/roles" | jq -r '[.[].type] | join(",")')
+  info "7.3   Admin user ${USER_ID}: ${ROLE_TYPES}"
+  case ",${ROLE_TYPES}," in
+    *,SUPER_ADMIN,*) SUPER_ADMIN_COUNT=$((SUPER_ADMIN_COUNT + 1)) ;;
+  esac
+done
 
-if [ "${SUPER_ADMIN_COUNT}" != "unknown" ] && [ "${SUPER_ADMIN_COUNT}" -ge 0 ] 2>/dev/null; then
-  if [ "${SUPER_ADMIN_COUNT}" -gt 5 ]; then
-    warn "7.3 Super Admin count: ${SUPER_ADMIN_COUNT} (should be fewer than 5)"
-  else
-    pass "7.3 Super Admin count: ${SUPER_ADMIN_COUNT} (within recommended limit of < 5)"
-  fi
+if [ "${SUPER_ADMIN_COUNT}" -ge 5 ]; then
+  warn "7.3 Super Admin count: ${SUPER_ADMIN_COUNT} of ${ADMIN_COUNT} admin(s) (should be fewer than 5)"
 else
-  warn "7.3 Unable to count Super Admin assignments via IAM API"
-
-  # Fallback: enumerate users and check roles individually
-  info "7.3 Attempting fallback Super Admin enumeration (checking first 50 users)..."
-  super_count=0
-  for USER_ID in $(echo "${ACTIVE_USERS}" | jq -r '.[].id' 2>/dev/null | head -50); do
-    ROLES=$(okta_get "/api/v1/users/${USER_ID}/roles" 2>/dev/null || echo "[]")
-    IS_SUPER=$(echo "${ROLES}" | jq '[.[] | select(.type == "SUPER_ADMIN")] | length' 2>/dev/null || echo "0")
-    if [ "${IS_SUPER}" -gt 0 ]; then
-      USER_LOGIN=$(echo "${ACTIVE_USERS}" | jq -r ".[] | select(.id == \"${USER_ID}\") | .profile.login" 2>/dev/null || echo "unknown")
-      warn "7.3   Super Admin: ${USER_LOGIN}"
-      super_count=$((super_count + 1))
-    fi
-  done
-
-  SUPER_ADMIN_COUNT="${super_count}"
-  if [ "${super_count}" -gt 5 ]; then
-    warn "7.3 Found ${super_count} Super Admin(s) in first 50 users (should be < 5)"
-  else
-    pass "7.3 Found ${super_count} Super Admin(s) in first 50 users"
-  fi
+  pass "7.3 Super Admin count: ${SUPER_ADMIN_COUNT} of ${ADMIN_COUNT} admin(s) (within the fewer-than-5 limit)"
 fi
 # HTH Guide Excerpt: end api-check-super-admins
 
 # -----------------------------------------------------------------------
-# 7.3c: List admin role assignments
-# -----------------------------------------------------------------------
-# HTH Guide Excerpt: begin api-list-admin-roles
-info "7.3 Listing admin role assignments..."
-ADMIN_ROLES=$(okta_get "/api/v1/iam/assignees/users" 2>/dev/null || echo "[]")
-ADMIN_COUNT=$(echo "${ADMIN_ROLES}" | jq 'length' 2>/dev/null || echo "0")
-
-if [ "${ADMIN_COUNT}" -gt 0 ]; then
-  info "7.3 Found ${ADMIN_COUNT} admin role assignment(s)"
-  echo "${ADMIN_ROLES}" | jq -r \
-    '.[] | "  - User: \(.userId), Role: \(.role // .type // "unknown")"' \
-    2>/dev/null || true
-fi
-# HTH Guide Excerpt: end api-list-admin-roles
-
-# -----------------------------------------------------------------------
-# 7.3d: Summary and recommendations
+# 7.3c: Summary and recommendations
 # -----------------------------------------------------------------------
 echo ""
 info "7.3 Access Review Summary:"
 info "  Active users checked: ${TOTAL_ACTIVE} (first page)"
 info "  Inactive 90+ days: ${INACTIVE_COUNT}"
+info "  Users with admin roles: ${ADMIN_COUNT}"
 info "  Super Admin count: ${SUPER_ADMIN_COUNT}"
-info "  Admin role assignments: ${ADMIN_COUNT}"
 echo ""
 info "7.3 Quarterly Access Review Checklist:"
 info "  [ ] All admin accounts verified against current employee list"

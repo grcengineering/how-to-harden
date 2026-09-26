@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 2.09: Configure Push Rules in Repository Rulesets
 # Profile: L2 | NIST: CM-3, SI-7
-# https://howtoharden.com/guides/github/#25-configure-push-rules-in-rulesets
+# https://howtoharden.com/guides/github/#25-configure-push-rules-in-repository-rulesets
 source "$(dirname "$0")/common.sh"
 
 banner "2.09: Configure Push Rules in Rulesets"

@@ -1,4 +1,11 @@
 # =============================================================================
+# HTH Pack Contract: v1
+#   control: aws-iam-identity-center-3.1
+#   guide:   https://howtoharden.com/guides/aws-iam-identity-center/#31-configure-permission-sets
+#   profile: L1
+#   mode:    mutating
+#   requires: AWS credentials in the IAM Identity Center management account (sso:CreatePermissionSet, sso:AttachManagedPolicyToPermissionSet, sso:PutInlinePolicyToPermissionSet)
+#
 # HTH AWS IAM Identity Center Control 3.1: Configure Permission Sets
 # Profile Level: L1 (Crawl)
 # Frameworks: NIST AC-6, SOC 2 CC6.3, ISO 27001 A.9.2.3
@@ -52,7 +59,10 @@ resource "aws_ssoadmin_managed_policy_attachment" "developer_poweruser" {
   managed_policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
 }
 
-# Admin permission set with short session and boundary
+# Admin permission set with a 1-hour session (the AWS minimum) and deny guardrails.
+# This set carries no permissions boundary; to add one, use
+# aws_ssoadmin_permissions_boundary_attachment with a policy that exists in every
+# target account.
 resource "aws_ssoadmin_permission_set" "admin" {
   instance_arn     = local.sso_instance_arn
   name             = "HTH-AdminAccess"

@@ -7,50 +7,31 @@
 
 # HTH Guide Excerpt: begin terraform
 
-# --- L1: Configure firewall with IP blocking rules ---
-resource "vercel_firewall_config" "ip_blocking" {
-  project_id = var.project_id
-  team_id    = var.vercel_team_id
-  enabled    = true
+# Applied through vercel_firewall_config.project (hth-vercel-3.01).
+locals {
+  # L1: block known-bad IPs/ranges (ip_rules.rule requires a hostname)
+  firewall_ip_rules = [for ip in var.blocked_ip_addresses : {
+    action   = "deny"
+    hostname = var.firewall_hostname
+    ip       = ip.value
+    notes    = ip.note != "" ? ip.note : "Block ${ip.value}"
+  }]
 
-  # IP blocking rules
-  dynamic "rules" {
-    for_each = var.blocked_ip_addresses
-    content {
-      name      = rules.value.note != "" ? rules.value.note : "Block ${rules.value.value}"
-      action    = "deny"
-      active    = true
-      condition_group = [{
-        conditions = [{
-          type  = "ip_address"
-          op    = "eq"
-          value = rules.value.value
-        }]
-      }]
-    }
-  }
-
-  # L2: Rate limiting rules for sensitive endpoints
-  dynamic "rules" {
-    for_each = var.profile_level >= 2 ? var.rate_limit_rules : []
-    content {
-      name      = rules.value.name
-      action    = "rate_limit"
-      active    = true
+  # L2: rate-limit sensitive paths (algo and keys are required)
+  firewall_rate_limit_rules = var.profile_level >= 2 ? [for r in var.rate_limit_rules : {
+    name = r.name
+    action = {
+      action = "rate_limit"
       rate_limit = {
-        limit  = rules.value.limit
-        window = rules.value.window
-        action = rules.value.follow_up_action
+        algo   = "fixed_window"
+        keys   = ["ip"]
+        limit  = r.limit
+        window = r.window
+        action = r.follow_up_action
       }
-      condition_group = [{
-        conditions = [{
-          type  = "path"
-          op    = "pre"
-          value = rules.value.path
-        }]
-      }]
     }
-  }
+    condition_group = [{ conditions = [{ type = "path", op = "pre", value = r.path }] }]
+  }] : []
 }
 
 # HTH Guide Excerpt: end terraform

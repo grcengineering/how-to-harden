@@ -6,9 +6,9 @@ slug: "square"
 tier: "2"
 category: "Productivity"
 description: "Commerce platform hardening for Square including SSO configuration, team permissions, and API security"
-version: "0.2.0"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-09-25"
 ---
 
 ## Overview
@@ -86,6 +86,8 @@ Configure SSO for Square Dashboard access (Square for Enterprise).
 2. Configure exceptions
 3. Document fallback procedures
 
+**Automation:** ClickOps only — Square exposes no write interface for this setting ([OAuth permissions reference](https://developer.squareup.com/docs/oauth-api/square-permissions), 2026-09-24). None of the API's permission scopes covers Dashboard sign-in or SSO, the Terraform Registry carries no Square provider, and Square publishes no first-party CLI.
+
 **Time to Complete:** ~1-2 hours
 
 ---
@@ -113,15 +115,18 @@ Require 2FA for all Square accounts.
 
 #### ClickOps Implementation
 
-**Step 1: Enable 2FA**
-1. Navigate to: **Account & Settings** → **Security**
-2. Enable two-step verification
-3. Configure verification method
+**Step 1: Enable 2FA on Your Own Sign-In**
+1. Navigate to: **Settings** → **Account & Settings** → **Personal information** → **Sign in & security**
+2. Under **Two-step verification**, select **Enable**
+3. Choose a verification method — **Text message**, **Voice call**, or **Authentication app** — and complete verification, then add a backup method from **Manage two-step verification**
 
 **Step 2: Require for Team**
-1. Require 2FA for all team members
-2. Verify compliance
-3. Monitor enrollment
+1. Navigate to: **Settings** → **Account & Settings** → **My business** → **Security**
+2. Under **Business two-step verification**, toggle on **Two-step verification for team members**
+3. Existing team members receive setup instructions by email and are required to enroll the next time they sign in; new team members enroll when they create their account ([Set up two-step verification](https://squareup.com/help/us/en/article/5593-2-step-verification))
+4. Verify enrollment and follow up with any team member who has not completed setup
+
+**Automation:** ClickOps only — Square exposes no write interface for this setting ([OAuth permissions reference](https://developer.squareup.com/docs/oauth-api/square-permissions), 2026-09-24). No API permission scope covers account sign-in security.
 
 ---
 
@@ -151,9 +156,11 @@ Implement least privilege using Square permissions.
 #### ClickOps Implementation
 
 **Step 1: Review Permission Sets**
-1. Navigate to: **Team** → **Permissions**
-2. Review available permissions
-3. Create custom permission sets
+1. Navigate to: **Staff** → **Team** → **Permissions**
+2. Review the existing permission sets and the team members assigned to each
+3. Select **Create permission set**, choose a permission level (**Standard**, **Enhanced**, or **Full**), then select **Customize** to set individual permissions
+
+**Plan note:** how many custom permission sets you can create depends on your subscription — Square Shifts Free and Square for Restaurants Free allow one, Square Shifts Plus and Square for Retail Plus allow two, and Square Advanced Access, Square for Retail Premium, Square Appointments Premium, Square Plus and Square Premium allow unlimited sets ([Create and edit permission sets](https://squareup.com/help/us/en/article/5822-employee-permissions)).
 
 **Step 2: Assign Minimum Access**
 1. Assign minimum necessary permissions
@@ -162,7 +169,10 @@ Implement least privilege using Square permissions.
    - Reports access
    - Customer data access
    - Settings access
-3. Regular access reviews
+3. Reserve the **Full access** toggle for the few people who need it — it grants every permission except managing bank accounts and automatically makes the holder an authorized representative (see [2.3](#23-limit-admin-access))
+4. Regular access reviews
+
+**Automation:** ClickOps only — Square exposes no write interface for this setting ([Team API overview](https://developer.squareup.com/docs/team/overview), 2026-09-24). Square lists "get or set permissions for team members" among the operations its APIs cannot perform.
 
 ---
 
@@ -189,10 +199,17 @@ Control team access to specific locations.
 
 #### ClickOps Implementation
 
-**Step 1: Configure Access**
-1. Limit team members to required locations
-2. Separate production locations
-3. Audit cross-location access
+**Step 1: Assign Locations per Team Member**
+1. Navigate to: **Staff** → **Team** → **Team members**, then select a team member
+2. Next to **Permissions**, select **Edit** and assign only the locations this person needs — the assigned locations determine which data, menus, and features they can reach ([Add and manage team members](https://squareup.com/help/us/en/article/8356-add-and-manage-team-members))
+3. Keep production locations separate from test or pilot locations
+4. Audit cross-location assignments during every access review
+
+#### Code Implementation
+
+The Team API returns each team member's `assigned_locations`. On an account with two or more active locations, the pack flags every non-owner team member whose assignment type is not `EXPLICIT_LOCATIONS` — the alternative, `ALL_CURRENT_AND_FUTURE_LOCATIONS`, also reaches every location created later. With exactly one active location there is nothing to separate yet, so the pack reports the control as not applicable and lists those same members for review instead, because a second location would reach them automatically. It treats an empty team list, or an account with no active locations, as a failed scan rather than a clean one, because every seller has at least an owner and a main location ([Locations API](https://developer.squareup.com/docs/locations-api), [SearchTeamMembers](https://developer.squareup.com/reference/square/team-api/search-team-members), [TeamMemberAssignedLocationsAssignmentType](https://developer.squareup.com/reference/square/enums/TeamMemberAssignedLocationsAssignmentType)). A response that carries an error, on any page, also stops the scan without a verdict. It only reads; remediation through the API is `UpdateTeamMember` with the `EMPLOYEES_WRITE` permission ([UpdateTeamMember](https://developer.squareup.com/reference/square/team-api/update-team-member)).
+
+{% include pack-code.html vendor="square" section="2.2" %}
 
 ---
 
@@ -206,12 +223,13 @@ Control team access to specific locations.
 | NIST 800-53 | AC-6(1) |
 
 #### Description
-Minimize and protect owner accounts.
+Protect the account owner and minimize the team members who hold Full access.
 
 #### Rationale
 **Why This Matters:**
-- Account owners hold the highest privilege in Square (billing, banking, team management, and full data access), so their number must be tightly limited
-- Every additional owner account expands the attack surface and the chance of a single compromised credential controlling the whole account
+- The account owner holds the highest privilege in Square (billing, banking, team management, and full data access), and a team member with **Full access** holds every permission except managing bank accounts, so the number of Full-access holders must be tightly limited
+- Every additional Full-access holder expands the attack surface and the chance of a single compromised credential controlling the whole account
+- Full access also makes the holder an authorized representative, who can discuss account-specific details with Square Support and ask it to update business information, so every representative is also a route to account changes through Square Support
 - Requiring 2FA and monitoring activity on owner accounts detects misuse before it escalates
 - Tight owner control reduces the risk of standing access lingering after a privileged employee departs
 
@@ -219,14 +237,18 @@ Minimize and protect owner accounts.
 
 #### ClickOps Implementation
 
-**Step 1: Inventory Admins**
-1. Review account owners
-2. Document admin access
+**Step 1: Inventory Privileged Access**
+1. Navigate to: **Staff** → **Team** → **Permissions**
+2. List every permission set at the **Full** level or with **Full access** toggled on, and the team members assigned to each ([Create and edit permission sets](https://squareup.com/help/us/en/article/5822-employee-permissions))
+3. Navigate to: **Settings** → **Account & Settings** → **My business** → **Security** and select **Edit authorized representatives** to review who holds that status ([Add and manage authorized representatives](https://squareup.com/help/us/en/article/6316-add-an-administrator-or-authorized-representative))
 
 **Step 2: Apply Restrictions**
-1. Limit owners to 2-3 users
-2. Require 2FA
-3. Monitor activity
+1. Limit Full access to 2-3 trusted individuals; the account owner is a separate identity — Square's Team API models it as the single team member with `is_owner` set ([TeamMember](https://developer.squareup.com/reference/square/objects/TeamMember))
+2. Remove authorized-representative status from anyone who does not need to deal with Square Support on the business's behalf (removing Full access removes it automatically)
+3. Require two-step verification for the owner and every Full-access holder ([1.2](#12-enforce-two-factor-authentication))
+4. Monitor activity
+
+**Automation:** ClickOps only — Square exposes no write interface for this setting ([Team API overview](https://developer.squareup.com/docs/team/overview), 2026-09-24). Permission sets cannot be read or set through the API, and the team member that represents the account owner cannot be updated through it; the API reports only which team member is the owner, which says nothing about Full-access reach.
 
 ---
 
@@ -256,14 +278,20 @@ Manage Square devices and terminals.
 #### ClickOps Implementation
 
 **Step 1: Inventory Devices**
-1. Navigate to: **Devices**
-2. Review all registered devices
-3. Document device purposes
+1. Navigate to: **Settings** → **Device Management** → **Devices**
+2. Review all registered devices, filtering by **Status**, **Location**, **Device type**, **Installed apps**, or **Mode** ([Set up device codes](https://squareup.com/help/us/en/article/8339-set-up-device-codes))
+3. Document each device's purpose, and remove devices you no longer use: select the three dots (•••) next to the device, then **Forget**
 
 **Step 2: Configure Security**
-1. Enable device passcodes
-2. Configure automatic logout
+1. Enable passcodes on each point of sale: in the Square POS app, open **≡ More** → **Settings** → **Security** and toggle on **Passcodes**; prefer personal passcodes over a shared team passcode so sales and actions stay attributable to one person ([Require passcodes at point of sale](https://squareup.com/help/us/en/article/8357-require-passcodes-at-point-of-sale))
+2. Configure automatic logout with a passcode timeout: in the Dashboard, **Settings** → **Device Management** → **Modes**, select a location, select **Manage**, then set **Security** → **Timeout** (or, on the device, **≡ More** → **Security** → **After timeout**)
 3. Monitor device activity
+
+#### Code Implementation
+
+The Devices API inventories **Terminal API devices only** — hardware not paired through the Terminal API does not appear — so an empty result means "no Terminal API devices", never "no devices". The pack lists what the API returns and flags every device whose status category is not `AVAILABLE` — `OFFLINE`, `NEEDS_ATTENTION`, or missing ([ListDevices](https://developer.squareup.com/reference/square/devices-api/list-devices), [DeviceStatusCategory](https://developer.squareup.com/reference/square/enums/DeviceStatusCategory)). It also lists devices whose information has not been updated within a configurable window, or whose update time is missing or unreadable, for review only: `updated_at` records the most recent change to any device field, not device activity, so it cannot show whether a device is in service ([DeviceAttributes](https://developer.squareup.com/reference/square/objects/DeviceAttributes)). Device passcodes are ClickOps only: Square lists setting a passcode among the operations its APIs cannot perform ([Team API overview](https://developer.squareup.com/docs/team/overview), 2026-09-24).
+
+{% include pack-code.html vendor="square" section="3.1" %}
 
 ---
 
@@ -292,9 +320,9 @@ Secure Square API access — personal access tokens, OAuth access and refresh to
 #### ClickOps Implementation
 
 **Step 1: Review Applications**
-1. Navigate to: **Developer Dashboard**
-2. Review connected applications
-3. Remove unnecessary apps
+1. Navigate to: **Developer Console** ([developer.squareup.com/apps](https://developer.squareup.com/apps)) and review every application your account owns — each application's **Credentials** page holds an access token with permission to update all Square account data ([Developer Console](https://developer.squareup.com/docs/devtools/developer-dashboard))
+2. Review the third-party applications authorized on the seller account: in the Square Dashboard, navigate to **Settings** → **App integrations**
+3. Disconnect apps you no longer use — select the three dots next to the app, then **Disconnect App** ([Integrate third-party applications](https://squareup.com/help/us/en/article/5437-manage-your-square-app-marketplace-subscriptions)); disconnecting an application revokes all of its OAuth tokens for the seller ([OAuth best practices](https://developer.squareup.com/docs/oauth-api/best-practices))
 
 **Step 2: Secure Credentials**
 1. Store personal access tokens in a secrets manager — treat one as equivalent to full account credentials, because Square grants it unrestricted API access to the issuing account
@@ -316,6 +344,12 @@ Square documents these lifetimes for OAuth credentials ([OAuth API overview](htt
 2. Treat authorization-code refresh tokens as long-lived secrets — they remain valid indefinitely until revoked, so revocation (not expiry) is the only way to end access
 3. For PKCE integrations, persist the newly returned refresh token on every exchange; the previous one is consumed
 4. Subscribe to the `oauth.authorization.revoked` webhook so your integration learns immediately when a merchant or Square revokes an authorization, instead of discovering it through failed API calls
+
+#### Code Implementation
+
+`RetrieveTokenStatus` (`POST /oauth2/token/status`) introspects the token it is called with — an OAuth access token or an application's access token — and returns its scopes and `expires_at`, which is empty when the token never expires ([RetrieveTokenStatus](https://developer.squareup.com/reference/square/o-auth-api/retrieve-token-status)). The pack flags a never-expiring token and a token close to expiry, and lists any write scopes for review. A successful response that describes no token (no scopes and no `client_id`) is treated as a failed call, never as a token that does not expire. It sees only the token it is given, so it cannot enumerate other tokens or connected applications; Step 1 stays in the console.
+
+{% include pack-code.html vendor="square" section="3.2" %}
 
 ---
 
@@ -341,14 +375,14 @@ Validate the `x-square-hmacsha256-signature` header on every Square webhook noti
 **Attack Prevented:** Webhook forgery, fraudulent event injection, replay of attacker-crafted payment notifications, timing-analysis recovery of the signature
 
 #### Prerequisites
-- A webhook subscription created in the Square Developer Dashboard
+- A webhook subscription created in the Square Developer Console
 - The subscription's webhook signature key, stored in a secrets manager
 
 #### ClickOps Implementation
 
 **Step 1: Retrieve the Signature Key**
-1. Navigate to: **Developer Dashboard** → your application → **Webhooks** → **Subscriptions**
-2. Open the subscription and copy its **Signature Key**
+1. Navigate to: **Developer Console** → **Open** your application → **Webhooks** → **Subscriptions**
+2. Select the subscription's name to open **Endpoint Details**, then select **Show** in the **Signature Key** box and copy the key ([Subscribe to event notifications](https://developer.squareup.com/docs/webhooks/step2subscribe))
 3. Store the key in your secrets manager — never in source control
 
 **Step 2: Record the Exact Notification URL**
@@ -365,8 +399,15 @@ Validate the `x-square-hmacsha256-signature` header on every Square webhook noti
 **Step 4: Rotate and Contain**
 1. Use a distinct signature key per environment so a sandbox leak cannot forge production events
 2. Rotate the key if it is ever exposed, and re-verify that the endpoint rejects unsigned traffic afterward
+3. To rotate on a schedule, call `UpdateWebhookSubscriptionSignatureKey` (`POST /v2/webhooks/subscriptions/{subscription_id}/signature-key`), which issues a new key for all future notifications — Square's own example rotates every 90 days ([Webhook Subscriptions API](https://developer.squareup.com/docs/webhooks/webhook-subscriptions-api))
 
 Source: [Validate a webhook event notification](https://developer.squareup.com/docs/webhooks/step3validate)
+
+#### Code Implementation
+
+Two surfaces. The API pack inventories the application's webhook subscriptions, including disabled ones, and flags any notification URL that is not HTTPS; it never prints a signature key. Because subscriptions belong to the application rather than to a seller, the Webhook Subscriptions API requires the application's personal access token and rejects OAuth access tokens ([Webhook Subscriptions API](https://developer.squareup.com/docs/webhooks/webhook-subscriptions-api)). The SDK pack is a receiver that checks every notification with the Square Node.js SDK's `WebhooksHelper.verifySignature` (SDK 40.0.0 or later) over the raw request body and answers HTTP 403 when verification fails ([Validate a webhook event notification](https://developer.squareup.com/docs/webhooks/step3validate)).
+
+{% include pack-code.html vendor="square" section="3.3" %}
 
 #### Validation & Testing
 1. Send a request to the endpoint with no signature header — it must be rejected
@@ -433,6 +474,7 @@ Source: [Validate a webhook event notification](https://developer.squareup.com/d
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.3.0 | ai-drafted | validate-hth-guide run (Phases 4–5, doc-level only): add four read-only API audit packs (2.2, 3.1, 3.2, 3.3) and an SDK webhook-verification pack (3.3), tested offline against fixtures and a fail-closed Sandbox run but not executed against a live Square account. An independent audit then corrected three packs: 3.1 now judges devices by their status category instead of `updated_at`, 2.2 treats zero active locations as a failed scan, and 3.2 treats a response that describes no token as a failed call. Also: add evidenced ClickOps-only Automation verdicts to 1.1, 1.2, 2.1 and 2.3; correct console paths in 1.2, 2.1, 3.1 and 3.3 and the Developer Console naming in 3.2/3.3 against current Square docs; add navigation to 2.2 and 2.3 and replace 2.3's multi-owner guidance with Full-access limits; list every subscription tier in 2.1's plan note; add the Full-access caveat to 2.1, the third-party App integrations review to 3.2, and Square's documented signature-key rotation call to 3.3. A second independent audit then made 2.2, 3.1 and 3.3 fail closed on an HTTP 200 that carries an error on any page, made 2.2 list broad non-owners for review on single-location accounts, and made the API packs time out stalled requests, fail closed at their page cap, and read RFC 3339 offsets in 3.1 and 3.2 timestamps. No console was walked live (Square sign-in wall), so 0 surfaces are verified live and maturity is unchanged. | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: add 3.3 webhook signature verification; document OAuth/PAT token lifetimes and unrestricted-PAT scope in 3.2; annotate 1.1 SSO as externally unverifiable; prune marketing and rotted help-center references from Appendix A. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO and permissions | Claude Code (Opus 4.5) |

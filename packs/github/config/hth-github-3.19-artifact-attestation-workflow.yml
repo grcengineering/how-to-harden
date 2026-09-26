@@ -16,16 +16,20 @@ on:
   release:
     types: [published]
 
-permissions:
-  id-token: write
-  contents: read
-  attestations: write
+# Nothing at the workflow level; each job asks for exactly what it needs
+permissions: {}
 
 jobs:
   build-and-attest:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Build artifact
         run: |
@@ -34,7 +38,7 @@ jobs:
           echo "ARTIFACT_PATH=dist/my-app" >> "$GITHUB_ENV"
 
       - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be  # v2.4.0
         with:
           subject-path: ${{ env.ARTIFACT_PATH }}
 # HTH Guide Excerpt: end workflow-artifact-attestation
@@ -48,10 +52,12 @@ jobs:
       attestations: write
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -59,13 +65,13 @@ jobs:
 
       - name: Build and push image
         id: build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8  # v6.19.2
         with:
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
 
       - name: Generate container attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be  # v2.4.0
         with:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.build.outputs.digest }}

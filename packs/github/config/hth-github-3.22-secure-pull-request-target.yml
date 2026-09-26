@@ -1,6 +1,6 @@
 # HTH GitHub Control 3.22: Secure pull_request_target Workflow Patterns
 # Profile: L1 | NIST: AC-3, SI-7
-# https://howtoharden.com/guides/github/#38-secure-pull_request_target-workflows-against-pwn-requests
+# https://howtoharden.com/guides/github/#38-secure-pullrequesttarget-workflows-against-pwn-requests
 
 # HTH Guide Excerpt: begin cli-secure-pull-request-target
 # PATTERN 1: SAFE — Untrusted build in pull_request (no secrets)
@@ -17,7 +17,9 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
       - run: npm ci
       - run: npm test
       - run: npm run build

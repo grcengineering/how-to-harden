@@ -6,9 +6,9 @@ slug: "gitlab"
 tier: "2"
 category: "DevOps"
 description: "DevOps platform security for CI/CD pipelines, repository access, and runners"
-version: "0.2.1"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-09-25"
 ---
 
 
@@ -66,27 +66,28 @@ Require SAML/OIDC SSO with MFA for all GitLab authentication, eliminating passwo
 
 **Attack Scenario:** Malicious .gitlab-ci.yml injects backdoor during build; stolen runner token enables unauthorized deployments.
 
-#### ClickOps Implementation (GitLab.com Premium/Ultimate)
+#### ClickOps Implementation (Premium/Ultimate)
 
 **Step 1: Configure SAML SSO**
 1. Navigate to: **Group → Settings → SAML SSO**
 2. Configure:
-   - **Identity provider SSO URL:** Your IdP endpoint
+   - **Identity provider single sign-on URL:** Your IdP endpoint
    - **Certificate fingerprint:** From IdP
-   - **Enforce SSO:** Enable
-3. Click **Save changes**
+3. Select **Enable SAML authentication for this group**
+4. Click **Save changes**
 
-**Step 2: Enforce Group-Managed Accounts**
+**Step 2: Enforce SSO-Only Authentication**
 1. Navigate to: **Group → Settings → SAML SSO**
-2. Enable: **Enforce SSO-only authentication for web activity**
-3. Enable: **Enforce SSO-only authentication for Git and Dependency Proxy activity**
+2. Enable: **Enforce SSO-only authentication for web activity for this group**
+3. Enable: **Enforce SSO-only authentication for Git and Dependency Proxy activity for this group**
 
 **Step 3: Disable Password Authentication**
-1. Navigate to: **Admin → Settings → General → Sign-in restrictions**
-2. Disable: **Password authentication enabled for web interface**
-3. Disable: **Password authentication enabled for Git over HTTP(S)**
+- **GitLab.com:** In **Group → Settings → SAML SSO**, select **Disable password and passkey authentication for enterprise users** (GitLab 17.4 and later)
+- **GitLab Self-Managed:** Navigate to **Admin → Settings → General → Sign-in restrictions** and clear **Allow password and passkey authentication for the web interface** and **Allow password authentication for Git over HTTP(S)**. Confirm an administrator can sign in through SAML first; turning off password sign-in before that is a lockout risk.
 
-#### Code Implementation
+#### Code Implementation (Self-Managed)
+
+The Code Pack prints an Omnibus `gitlab.rb` SAML block to merge into `/etc/gitlab/gitlab.rb`. It does not apply to GitLab.com, where SAML is configured per group in the console as above.
 
 {% include pack-code.html vendor="gitlab" section="1.1" %}
 
@@ -138,8 +139,14 @@ Configure project-level access controls using GitLab's role-based permissions.
 1. Navigate to: **Project → Settings → Merge requests**
 2. Configure:
    - **Approvals required:** 2 (minimum)
-   - **Prevent approval by author:** Enable
-   - **Prevent editing approval rules:** Enable
+   - **Prevent approval by merge request creator:** Enable
+   - **Prevent editing approval rules in merge requests:** Enable
+
+#### Code Implementation
+
+The Code Pack is a read-only audit: it confirms the default branch is protected, that nobody pushes directly or force-pushes to a protected branch, that Developers cannot merge, and (Premium/Ultimate) that authors cannot approve their own merge requests and at least one approval rule requires two approvals.
+
+{% include pack-code.html vendor="gitlab" section="1.2" %}
 
 ---
 
@@ -163,22 +170,30 @@ Restrict personal access token (PAT) creation and enforce expiration policies.
 
 **Step 1: Set Token Expiration Limits**
 
-Expiration is no longer optional on current GitLab. Every new personal, group, and project access token must have an expiration date; if the creator does not set one, GitLab applies a default of 365 days, and the platform ceiling is 400 days (GitLab 17.6 and later). Non-expiring tokens are deprecated — on upgrade, existing tokens without an expiration date have one applied automatically. Treat any shorter figure as an organizational policy choice made *within* that 400-day ceiling, not as a platform default.
+Expiration is no longer optional on current GitLab. Every new personal, group, and project access token must have an expiration date; if the creator does not set one, GitLab applies a default of 365 days, and by default an expiry cannot be more than 365 days out. GitLab 17.6 added an extended 400-day maximum behind a feature flag that is disabled by default. Non-expiring tokens are deprecated — on upgrade, existing tokens without an expiration date have one applied automatically. Treat any shorter figure as an organizational policy choice made *within* that ceiling, not as a platform default.
 
+**Self-Managed and Dedicated (Ultimate):**
 1. Navigate to: **Admin → Settings → General → Account and limit**
 2. Configure:
-   - **Maximum allowable lifetime for access tokens:** 90 days (recommended organizational policy; the platform hard ceiling is 400 days)
-   - **Limit project access token creation:** Enable
+   - **Maximum allowable lifetime for access tokens (days):** 90 (recommended organizational policy)
 3. Keep the service account token expiration settings enabled — do not use the allowance for non-expiring service account credentials, which reintroduces the exact persistence problem the mandatory expiry removed.
 
-**Step 2: Disable API Scope for Non-Essential Tokens**
+**GitLab.com:** There is no customer-settable instance lifetime (the Admin area is Self-Managed and Dedicated only). Owners of a top-level group with Premium or Ultimate can instead turn off personal access tokens for the group's enterprise users: **Group → Settings → General → Permissions and group features → Enterprise users → Disable personal access tokens**.
+
+**Step 2: Restrict Group and Project Access Token Creation**
+1. Navigate to: **Top-level group → Settings → General → Permissions and group features** (Owner role; on GitLab.com the group needs Premium or Ultimate)
+2. Clear: **Users can create group access tokens and project access tokens in this group**
+3. Existing tokens stay valid until they expire or are revoked
+
+**Step 3: Disable API Scope for Non-Essential Tokens**
 - Audit tokens with `api` scope
 - Replace with minimal scopes (read_repository, write_repository)
 
 **Source:** [Personal access tokens](https://docs.gitlab.com/user/profile/personal_access_tokens/)
 
----
+#### Code Implementation
 
+The API Code Pack is a read-only audit of active personal access tokens that flags tokens with `api` or `write_repository` scope or no expiration date. An administrator token lists every user's tokens; any other token lists only its own, so on GitLab.com, where customers have no administrator role, it audits only the calling user's tokens.
 
 {% include pack-code.html vendor="gitlab" section="1.3" %}
 
@@ -219,11 +234,17 @@ Move approval enforcement out of per-project approval rules and into merge reque
 3. Add a rule of type **Any merge request** targeting protected branches
 4. Set the commit attribute to **unsigned commits** so the rule triggers when any commit in the merge request is unsigned
 5. Set **Approvals required** to at least 1 and assign an approver group outside the project's own Maintainers
-6. Set the policy status to **Enabled** and save
+6. Set the policy status to **Enabled**, select **Configure with a merge request**, then review and merge the merge request GitLab opens in the security policy project; the policy takes effect only once that merge request is merged
 
 **Step 3: Keep Project Rules as Defense in Depth**
 1. Leave the project-level approval rules from control 1.2 in place
 2. Treat them as a convenience layer, not the enforcement layer — the policy is what survives a Maintainer with bad intent
+
+#### Code Implementation
+
+The Code Pack is the policy itself, in GitLab's policy format: commit it as `.gitlab/security-policies/policy.yml` in the linked security policy project, merged with any policies already there. It requires an approval from a named group whenever a merge request into a protected branch contains an unsigned commit, and locks the related approval settings.
+
+{% include pack-code.html vendor="gitlab" section="1.4" %}
 
 #### Validation & Testing
 1. Sign in as a user with the Maintainer role on a covered project and confirm the policy cannot be edited or removed from **Secure → Policies**
@@ -294,28 +315,35 @@ Restrict pipeline execution and prevent unauthorized CI/CD modifications.
 
 #### Rationale
 **Why This Matters:**
-- Fork-based merge requests run attacker-authored pipeline code, so requiring approval before they execute stops poisoned-pipeline attacks
-- Limiting the CI/CD job token scope to only the projects a pipeline truly needs prevents lateral movement between repositories if a job is compromised
-- Requiring pipelines to succeed and discussions to resolve before merge enforces that security and quality checks actually gate the codebase
+- Merge requests from forks carry attacker-authored pipeline code, so keeping those pipelines out of the parent project, or running them there only after a reviewer has read the change, stops poisoned-pipeline attacks on the parent's variables and runners
+- Limiting the CI/CD job token allowlist to only the projects a pipeline truly needs prevents lateral movement between repositories if a job is compromised
+- Requiring pipelines to succeed and threads to be resolved before merge enforces that security and quality checks actually gate the codebase
 
 **Attack Prevented:** Poisoned pipeline execution, lateral movement via job tokens, bypass of security gates
 
 #### ClickOps Implementation
 
-**Step 1: Require Pipeline Approval for Forks**
-1. Navigate to: **Project → Settings → CI/CD → General pipelines**
-2. Enable: **Protect CI/CD variables in pipeline subscriptions**
-3. Enable: **CI/CD job token scope:** Limit access to necessary projects
+**Step 1: Limit CI/CD Job Token Access**
+1. Navigate to: **Project → Settings → CI/CD → Job token permissions**
+2. Confirm **This project and any groups and projects in the allowlist** is selected, so jobs in other projects cannot use their job token against this one (opening access to **All groups and projects** is possible only on Self-Managed and Dedicated)
+3. Keep the **CI/CD job token allowlist** to groups and projects with a working pipeline dependency; control 2.4 scopes each entry
 
-**Step 2: Configure Merge Request Pipelines**
+**Step 2: Configure Merge Checks**
 1. Navigate to: **Project → Settings → Merge requests**
-2. Enable: **Pipelines must succeed before merge**
-3. Enable: **All discussions must be resolved**
+2. Under **Merge checks**, select **Pipelines must succeed** and leave **Skipped pipelines are considered successful** cleared
+3. Select **All threads must be resolved**
+4. Select **Save changes**
 
-**Step 3: Limit Who Can Run Pipelines**
-1. Navigate to: **Project → Settings → CI/CD**
-2. Configure: **Who can run pipelines on protected branches**
-3. Restrict manual job triggers
+**Step 3: Control Who Can Run Pipelines**
+1. On a protected branch, only users allowed to merge or push to it can run manual or scheduled pipelines, run manual jobs, or retry and cancel jobs, so restrict **Allowed to merge** and **Allowed to push** on your protected branches (control 1.2)
+2. Navigate to: **Project → Settings → CI/CD → Variables** and set **Minimum role to use pipeline variables** to `no_one_allowed`, or to `maintainer` if a pipeline genuinely needs them
+3. Merge requests from forks run their pipelines in the fork by default. A parent-project member can run one in the parent project, with the parent's variables and runners, from the merge request's **Pipelines** tab after accepting a warning, so read the fork's changes first. To stop this entirely, set `ci_allow_fork_pipelines_to_run_in_parent_project` to `false` through the projects API; there is no console setting for it
+
+#### Code Implementation
+
+The Code Pack is a read-only audit of the merge gates (pipelines must succeed, skipped pipelines do not count, threads must be resolved), of whether the CI/CD job token allowlist is enforced, of the minimum role for pipeline variables, and (with the Owner role, which the API requires to return it) of whether fork pipelines can run in the parent project.
+
+{% include pack-code.html vendor="gitlab" section="2.2" %}
 
 ---
 
@@ -325,7 +353,7 @@ Restrict pipeline execution and prevent unauthorized CI/CD modifications.
 **NIST 800-53:** CM-7
 
 #### Description
-Implement secure CI/CD configuration practices. See the CLI Code Pack below for a security-hardened .gitlab-ci.yml example.
+Implement secure CI/CD configuration practices. See the Code Pack below for a security-hardened .gitlab-ci.yml example.
 
 #### Rationale
 **Why This Matters:**
@@ -334,6 +362,16 @@ Implement secure CI/CD configuration practices. See the CLI Code Pack below for 
 - A hardened pipeline definition limits what a compromised job can reach, containing damage to a single stage rather than the whole environment
 
 **Attack Prevented:** CI/CD supply-chain injection, malicious build steps, privileged container escape, untrusted include abuse
+
+#### ClickOps Implementation
+
+**Step 1: Edit and Validate in the Pipeline Editor**
+1. Navigate to: **Project → Build → Pipeline editor**
+2. Apply the hardened configuration from the Code Pack below to the project's `.gitlab-ci.yml`
+3. Select the **Validate** tab, then **Validate pipeline**, and fix any errors before committing
+4. Commit the change through a merge request so the approval rules from control 1.2 apply to it
+
+#### Code Implementation
 
 {% include pack-code.html vendor="gitlab" section="2.3" %}
 
@@ -364,19 +402,25 @@ Replace blanket job token inheritance with per-allowlist-entry endpoint scopes, 
 
 **Step 1: Confirm the Allowlist Is Active**
 1. Navigate to: **Project → Settings → CI/CD → Job token permissions**
-2. Confirm inbound access is limited to an explicit list of authorized groups and projects rather than open access
+2. Confirm inbound access is limited to the **CI/CD job token allowlist** rather than open access
 3. Remove allowlist entries that no longer have a working pipeline dependency
 
 **Step 2: Scope Each Allowlist Entry**
-1. For each entry in the authorized groups and projects list, open its permissions
+1. For each entry in the **CI/CD job token allowlist**, open its permissions
 2. Select only the endpoint scopes the consuming pipeline actually calls — for example a read scope for packages or jobs
 3. Avoid granting any `ADMIN_*` scope unless a pipeline provably needs to write; document the justification for every one you keep
 4. Save and re-run the dependent pipeline to confirm nothing broke
 
-**Step 3 (Self-Managed): Enforce the Allowlist Instance-Wide**
+**Step 3 (Self-Managed and Dedicated only): Enforce the Allowlist Instance-Wide**
 1. Navigate to: **Admin → Settings → CI/CD → Job token permissions**
 2. Enable: **Enable and enforce job token allowlist for all projects**
 3. Communicate the change ahead of time — projects relying on unscoped token access will fail until their allowlist entries are configured
+
+#### Code Implementation
+
+The Code Pack is a read-only audit: it fails when the allowlist is off and lists every allowlisted project and group for review. The REST API does not return each entry's permission scopes, so review those on the **Job token permissions** page (Step 2).
+
+{% include pack-code.html vendor="gitlab" section="2.4" %}
 
 #### Validation & Testing
 1. From a pipeline job in an authorized inbound project, call an API endpoint outside the granted scope using the job token and confirm the request is rejected with a 401 or 403
@@ -430,12 +474,18 @@ Inject mandatory CI/CD jobs into every targeted project from a security policy p
 **Step 3: Scope and Cap**
 1. Set the policy scope to the projects or compliance-framework-labeled projects that must carry the mandatory jobs
 2. Keep the total at or below the limit of five pipeline execution policies per project
-3. Enable the policy and save
+3. Enable the policy, select **Configure with a merge request**, then review and merge the merge request GitLab opens in the security policy project
 
 **Step 4: Migrate Off Compliance Pipelines**
 1. Identify compliance frameworks that still specify a pipeline configuration file
 2. Recreate the equivalent jobs as a pipeline execution policy
 3. Clear the pipeline configuration from the compliance framework once the policy is verified, so a single mechanism owns enforcement
+
+#### Code Implementation
+
+The Code Pack is the policy in GitLab's policy format, for `.gitlab/security-policies/policy.yml` in the security policy project. It uses `inject_policy`, and it stops projects from overriding the policy's variables or skipping its jobs with `[skip ci]`. The included CI file holds the mandatory jobs.
+
+{% include pack-code.html vendor="gitlab" section="2.5" %}
 
 #### Validation & Testing
 1. Create a scratch project in scope with a minimal `.gitlab-ci.yml`, run a pipeline, and confirm the policy-injected jobs appear and execute
@@ -477,7 +527,7 @@ Treat CI/CD catalog components as third-party dependencies: pin every reference 
 #### ClickOps Implementation
 
 **Step 1: Review Before Adoption**
-1. Navigate to the CI/CD Catalog and open the component you intend to use
+1. Navigate to: **Search or go to → Explore → CI/CD Catalog** and open the component you intend to use
 2. Record its badge — GitLab-Maintained, GitLab Partner (as-is, unsupported by GitLab), or verified creator on self-managed — and treat a partner or unbadged component as requiring deeper review
 3. Open the component's source project and read its templates: check whether it reads CI/CD variables it does not need, makes outbound network calls, or executes downloaded scripts
 4. Reject or fork any component whose behavior you cannot explain from its source
@@ -491,6 +541,12 @@ Treat CI/CD catalog components as third-party dependencies: pin every reference 
 1. Treat a version bump as a code change: review the upstream diff between the pinned SHA and the new one before merging
 2. Route component upgrades through the merge request approval policy from control 1.4 so a second person sees the change
 3. Re-review the component's source at upgrade time, not only at first adoption
+
+#### Code Implementation
+
+The Code Pack is a read-only audit of the project's CI configuration file and every `include: local` file it reaches, at the same ref: it passes commit-SHA references, warns on release tags, and fails on `~latest`, partial versions, branch names, and references with no version. It cannot follow a `project:`, `remote:` or `template:` include, a wildcard or variable path, or a child pipeline's `trigger: include:`, so it names each one and reports the run as unknown rather than clean.
+
+{% include pack-code.html vendor="gitlab" section="2.6" %}
 
 #### Validation & Testing
 1. Use group-level code search for component include statements and confirm no result resolves to `latest` or a branch name
@@ -526,13 +582,31 @@ Deploy isolated runners for different trust levels and environments.
 
 **Attack Prevented:** Runner-based lateral movement, cross-job contamination, production network pivot, persistent runner compromise
 
-#### Implementation
+#### ClickOps Implementation
 
-**Step 1: Create Runner Tiers**
+**Step 1: Plan Runner Tiers**
 1. **shared-runners** -- general use, Docker executor, ephemeral containers
 2. **group-runners** -- team-specific, isolated per business unit
 3. **project-runners** -- sensitive projects, dedicated to single project
 4. **production-runners** -- deployment only, network access to production, limited users
+
+**Step 2: Create Scoped Runners**
+1. Instance runners (Self-Managed and Dedicated): **Admin → CI/CD → Runners → Create instance runner**
+2. Group runners: **Group → Build → Runners → Create group runner**
+3. Project runners: **Project → Settings → CI/CD → Runners → Create project runner**
+4. In the creation form, enter the job **Tags** the runner serves and leave **Run untagged** cleared, so only jobs that ask for this tier land on it
+5. Register the host with the runner authentication token the page shows (see the Code Pack)
+
+**Step 3: Keep Instance Runners Off Sensitive Projects**
+1. Navigate to: **Project → Settings → CI/CD → Runners**
+2. Turn off **Turn on instance runners for this project** on projects that must run only on their own runners
+
+**Step 4: Restrict Sensitive Runners to Protected Refs**
+1. Open the runner's **Edit** page and select the **Protected** checkbox, so it runs jobs only on protected branches and tags
+
+#### Code Implementation
+
+The Code Pack uses the runner creation workflow: it creates a tagged, locked, protected-refs-only project runner through the API, then registers the host with the runner authentication token. Registration tokens are legacy and not recommended.
 
 {% include pack-code.html vendor="gitlab" section="3.1" %}
 
@@ -556,10 +630,21 @@ Implement regular runner token rotation to limit exposure from compromised token
 
 #### ClickOps Implementation
 
-**Step 1: Reset Runner Token**
-1. Navigate to: **Admin → CI/CD → Runners → [Runner]**
-2. Click **Reset registration token**
-3. Update runner configuration with new token
+**Step 1: Rotate Runner Authentication Tokens Automatically (Self-Managed and Dedicated)**
+1. Navigate to: **Admin → Settings → CI/CD → Continuous Integration and Deployment**
+2. Set a **Runners expiration** interval and click **Save changes**
+3. Before the interval expires, each runner requests a new runner authentication token on its own
+
+**Step 2: Replace a Runner Whose Token Was Exposed**
+1. Delete the runner: **Admin → CI/CD → Runners** for instance runners, **Build → Runners** for group runners, or **Settings → CI/CD → Runners** for project runners
+2. Create a new runner (control 3.1, Step 2) so it is issued a new runner authentication token, and register the host with it
+3. Optionally confirm through the Runners API that the old token was revoked
+
+Legacy runner registration tokens, and their **Reset registration token** action, only matter while the legacy registration workflow is still enabled. Move off it rather than rotating it.
+
+#### Code Implementation
+
+The Code Pack rotates one runner's authentication token in place with `gitlab-runner reset-token`, then checks that the runner still verifies. Use it for scheduled rotation; for an exposed token, follow Step 2.
 
 {% include pack-code.html vendor="gitlab" section="3.2" %}
 
@@ -583,18 +668,22 @@ Configure push rules to prevent accidental secret commits and enforce commit hyg
 
 **Attack Prevented:** Secret leakage in commits, credential harvesting, commit author spoofing
 
-#### ClickOps Implementation
+#### ClickOps Implementation (Premium/Ultimate)
+
+Push rules are a Premium and Ultimate feature, in both the UI and the API.
 
 **Step 1: Configure Project Push Rules**
 1. Navigate to: **Project → Settings → Repository → Push rules**
 2. Enable:
    - **Prevent pushing secret files:** Enable
    - **Reject unsigned commits:** Enable (L2)
-   - **Check author email against verified:** Enable
+   - **Reject unverified users:** Enable (the committer email must match one of the user's verified email addresses)
 
 **Step 2: Configure Secret Detection**
 
-See the CLI Code Pack below for the .gitlab-ci.yml secret detection configuration.
+See the Code Pack below for the .gitlab-ci.yml secret detection configuration.
+
+#### Code Implementation
 
 {% include pack-code.html vendor="gitlab" section="4.1" %}
 
@@ -614,7 +703,7 @@ Require GPG or SSH signed commits to verify commit authorship.
 
 **Attack Prevented:** Commit spoofing, author impersonation, unauthorized code attribution, repository history forgery
 
-#### ClickOps Implementation
+#### ClickOps Implementation (Push Rules: Premium/Ultimate)
 
 **Step 1: Configure Signature Requirements**
 1. Navigate to: **Project → Settings → Repository → Push rules**
@@ -622,9 +711,11 @@ Require GPG or SSH signed commits to verify commit authorship.
 3. Enable: **Reject unverified users**
 
 **Step 2: User Setup**
-1. Navigate to: **User Settings → GPG Keys**
+1. Navigate to: **Avatar → Edit profile → Access → GPG keys**
 2. Add GPG public key
 3. Configure git client (see CLI Code Pack below)
+
+#### Code Implementation
 
 {% include pack-code.html vendor="gitlab" section="4.2" %}
 
@@ -668,6 +759,12 @@ Block pushes that contain detected secrets at the pre-receive hook, so credentia
 2. Document the remediation path: remove the secret from the commit, rotate the exposed credential regardless, and re-push
 3. Document the skip mechanism (`secret_push_protection.skip_all` as a push option) and treat every use of it as an event to review, not a routine workaround
 
+#### Code Implementation
+
+The Code Pack is a read-only audit of the project security settings API (Ultimate): for one project, or every active project in a group and its subgroups, it reports which have secret push protection off. A project whose setting cannot be read is reported as unknown, never as enabled.
+
+{% include pack-code.html vendor="gitlab" section="4.3" %}
+
 #### Validation & Testing
 1. In a scratch project with the feature enabled, commit a test value in a recognized credential format (for example a `glpat-` prefixed token) and push; confirm the push is rejected and the message identifies the detected secret
 2. Confirm the remote history contains no trace of the rejected commit
@@ -702,14 +799,23 @@ Integrate with external secrets managers instead of storing secrets in GitLab.
 
 **Attack Prevented:** Static secret theft, credential reuse, broad exposure from a platform compromise, unaudited secret access
 
-#### HashiCorp Vault Integration
+#### ClickOps Implementation (Premium/Ultimate)
+
+**Step 1: Configure Vault**
+1. On the Vault server, enable a JWT authentication method bound to your GitLab instance, and create roles restricted to the projects (and protected refs) that may read each secret path
+
+**Step 2: Point GitLab at Vault**
+1. Navigate to: **Project → Settings → CI/CD → Variables** (or the group's)
+2. Add **VAULT_SERVER_URL** with your Vault server's URL
+3. Optionally add **VAULT_AUTH_ROLE**, **VAULT_AUTH_PATH**, and **VAULT_NAMESPACE**
+
+**Step 3: Request Secrets in the Pipeline**
+1. In `.gitlab-ci.yml`, declare an ID token with `id_tokens` and read each secret with `secrets:` — see the Code Pack below
+2. GitLab authenticates to Vault with that ID token; no Vault token is stored in GitLab
+
+#### Code Implementation
 
 {% include pack-code.html vendor="gitlab" section="5.1" %}
-
-**Step 1: Configure Vault Integration**
-1. Navigate to: **Project → Settings → CI/CD → Secure Files**
-2. Configure JWT authentication with Vault
-3. Map CI/CD variables to Vault paths
 
 ---
 
@@ -733,20 +839,24 @@ Configure comprehensive audit logging for GitLab operations.
 
 #### ClickOps Implementation
 
-**Step 1: Configure Audit Event Streaming**
-1. Navigate to: **Group → Security & Compliance → Audit events**
-2. Enable streaming to SIEM
-3. Configure: All event types
+**Step 1: Review Group Audit Events (Premium/Ultimate)**
+1. Navigate to: **Group → Secure → Audit events**
+2. You need the Owner role on the group to see every user's events
 
-**Step 2: Alert on Critical Events**
+**Step 2: Stream Audit Events to Your SIEM (Ultimate, top-level group)**
+1. Navigate to: **Group → Secure → Audit events** and select the **Streams** tab
+2. Select **Add streaming destination** and choose **HTTP endpoint**, **Google Cloud Logging**, or **AWS S3**
+3. Leave event type filters empty so the destination receives every audit event
+
+**Step 3: Alert on Critical Events**
 - Repository deletion
 - Protected branch modification
 - Runner registration
 - Admin privilege changes
 
-#### Detection Queries
+#### Code Implementation
 
-See the DB Code Pack below for SQL queries that detect unusual repository cloning and pipeline variable modifications.
+The API Code Pack reads the group's recent audit events and, at L2, lists its audit event streaming destinations (HTTP, Google Cloud Logging, and AWS S3). The Sigma rule alerts when an audit streaming destination or one of its headers is removed.
 
 {% include pack-code.html vendor="gitlab" section="6.1" %}
 
@@ -778,7 +888,7 @@ Make an explicit decision about where GitLab Duo may operate, using the instance
 #### ClickOps Implementation
 
 **Step 1: Set the Instance Posture**
-1. Navigate to: **Admin → GitLab Duo → Change configuration**
+1. Navigate to: **Admin → GitLab Duo → Change configuration** (Self-Managed). On GitLab.com, where there is no Admin area, use **Top-level group → Settings → GitLab Duo → Change configuration**
 2. Set availability to the state your organization has actually decided on: **Always on**, **Off by default**, or **Always off**
 3. Prefer **Off by default** where you intend to allow Duo only in specific groups — it makes enablement an explicit, attributable act
 4. Review the **Duo Core** checkbox in the same configuration and set it deliberately rather than leaving it at its shipped value
@@ -793,6 +903,12 @@ Make an explicit decision about where GitLab Duo may operate, using the instance
 2. Enable Duo only for groups whose repositories you are comfortable exposing to AI processing
 3. Confirm the setting at project level for any project that handles regulated or customer-sensitive code
 4. Keep public and fork-accepting projects out of scope by default — see control 7.2 for why
+
+#### Code Implementation
+
+The Code Pack is a read-only audit of a group's GitLab Duo availability and experiment-features setting through the Groups API, which returns them to Premium and Ultimate groups. It warns when Duo is on by default, fails when experiment and beta features are on, and reports the result as unknown, never as off, when the API does not return the experiment setting.
+
+{% include pack-code.html vendor="gitlab" section="7.1" %}
 
 #### Validation & Testing
 1. Sign in as a standard user in a project where Duo should be unavailable and confirm Duo Chat and code suggestions do not appear
@@ -853,6 +969,12 @@ Assume anything Duo reads from a repository may contain instructions written by 
 2. Instruct reviewers to be suspicious when a Duo answer contains links or images they did not expect, and to report rather than click
 3. Add "check for hidden instructions in contributed text" to the review checklist for projects that accept outside contributions
 
+#### Code Implementation
+
+The Code Pack is a read-only audit: it fails when Duo is on by default for a group that holds public projects, and lists those projects so you can confirm Duo is off in each one's **Settings → General → GitLab Duo** (the REST API does not expose that project toggle). It also reports the group's prompt injection protection level where GitLab returns it (GitLab 18.8 and later).
+
+{% include pack-code.html vendor="gitlab" section="7.2" %}
+
 #### Validation & Testing
 1. In a scratch project, place text containing hidden instructions in a merge request description, ask Duo to summarize the merge request, and confirm the response neither follows the instructions nor emits external image or link markup
 2. Confirm the instance version in **Admin → Overview** includes the fix for unsafe external HTML rendering
@@ -909,7 +1031,7 @@ Assume anything Duo reads from a repository may contain instructions written by 
 | Control | Free | Premium | Ultimate |
 |---------|------|---------|----------|
 | SAML SSO | ❌ | ✅ | ✅ |
-| Push Rules | Basic | ✅ | ✅ |
+| Push Rules | ❌ | ✅ | ✅ |
 | Audit Events | ❌ | ✅ | ✅ |
 | SAST/DAST | ❌ | ❌ | ✅ |
 | Compliance Dashboard | ❌ | ❌ | ✅ |
@@ -942,7 +1064,7 @@ Assume anything Duo reads from a repository may contain instructions written by 
 - **Red Hat Consulting GitLab Instance Breach (Sep 2025):** Attacker accessed Red Hat's self-managed GitLab CE instance, exposing consulting data for organizations such as Bank of America, T-Mobile, and U.S. government agencies. GitLab confirmed no breach of its managed SaaS infrastructure.
 
 **Community Resources:**
-- [CIS Software Supply Chain Security Benchmark](https://www.cisecurity.org/benchmark/software_supply_chain_security)
+- [CIS Software Supply Chain Security Benchmark](https://www.cisecurity.org/benchmark/software-supply-chain-security)
 
 ---
 
@@ -950,6 +1072,7 @@ Assume anything Duo reads from a repository may contain instructions written by 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.3.0 | ai-drafted | validate-hth-guide run (offline fix loop; console signed out, 0 surfaces exercised live, maturity unchanged): corrected ClickOps against current GitLab docs in 1.1 (SAML labels, GitLab.com vs Self-Managed password sign-in), 1.2 (current approval setting names), 1.3 (365-day default ceiling, group token-creation restriction, GitLab.com enterprise-user token switch), 1.4 and 2.5 (a policy takes effect only once the merge request from Configure with a merge request is merged), 2.2 (replaced two settings that do not exist with job token permissions, merge checks, the pipeline-variable role and fork-pipeline guidance), 2.4 (CI/CD job token allowlist), 2.6 (Explore → CI/CD Catalog path), 3.2 (runner authentication token rotation), 4.1/4.2 (push rules are Premium/Ultimate; Appendix A; current GPG keys path), 5.1 (Vault via ID tokens and CI/CD variables, not Secure Files), 6.1 (Secure → Audit events, Streams tab) and 7.1 (GitLab.com top-level group path); added ClickOps to 2.3 and 3.1; added read-only API audit packs for 1.2, 2.2, 2.4, 2.6, 4.3, 7.1 and 7.2 and policy-file packs for 1.4 and 2.5; moved 3.1/3.2 packs to runner authentication tokens; fixed the 1.1 pack (config emitter, dropped an obsolete sign-in key), 2.1 (inverted raw check), 3.1 (unknown config.toml key), 5.1 (missing id_tokens) and 6.1 (missed AWS S3 streaming destinations); the 2.6 pack now follows `include: local` files and reports any include it cannot follow as unknown, and the 7.1 pack reports a missing experiment setting as unknown, with the 2.6 and 7.1 descriptions updated to match; the API packs now name the HTTP status behind a failed call (a 401 as an invalid or expired token rather than a role or tier gate) and treat a redirect as a failed call, not as content; removed a 2.2 reference to a Terraform pack that does not exist and 2.3/4.1 references to a CLI pack that does not exist; the 1.3 description now says that on GitLab.com the pack sees only the calling user's tokens; the 3.2 pack prints the runner's verify output when verify fails; fixed the CIS benchmark URL | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.2.0 | ai-drafted | Add fine-grained job token permissions (2.4), pipeline execution policies (2.5), CI/CD catalog component trust (2.6), merge request approval policies (1.4), secret push protection (4.3), and new AI Assistant Governance section (7.1 Duo availability, 7.2 Duo prompt injection); correct 1.3 token expiry to mandatory-expiry model (365-day default, 400-day ceiling); renumber Compliance Quick Reference to 8 | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |

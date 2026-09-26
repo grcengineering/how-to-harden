@@ -9,7 +9,7 @@ set -euo pipefail
 # Usage: ./hth-github-6.07-supply-chain-compromise-response.sh <action> [org]
 # Example: ./hth-github-6.07-supply-chain-compromise-response.sh aquasecurity/trivy-action myorg
 COMPROMISED_ACTION="${1:-aquasecurity/trivy-action}"
-ORG="${2:-$(gh api user --jq '.login')}"
+ORG="${2:-${GITHUB_ORG:?Pass an org or set GITHUB_ORG}}"
 
 echo "=== Supply Chain Compromise Response ==="
 echo "Scanning org '$ORG' for: $COMPROMISED_ACTION"
@@ -42,7 +42,7 @@ echo "Check each affected repo: gh api /repos/OWNER/REPO/actions/secrets"
 # Step 3: TeamPCP-specific indicators
 echo ""
 echo "--- TeamPCP Exfiltration Indicators ---"
-gh api "/orgs/$ORG/repos" --jq '.[].name' 2>/dev/null | \
+gh api --paginate "/orgs/$ORG/repos" --jq '.[].name' 2>/dev/null | \
   grep -i "tpcp" && echo "  ALERT: Found tpcp exfil repo!" || \
   echo "  OK: No tpcp-docs repos found"
 echo ""
@@ -62,7 +62,7 @@ echo "  - Container images: check builds using trivy during compromise window"
 # Step 4: Containment actions
 echo ""
 echo "--- Immediate Containment ---"
-echo "1. Pin to known-good SHA: npx pin-github-action .github/workflows/*.yml"
+echo "1. Pin to known-good SHA: npx pin-github-action@3.5.2 .github/workflows/*.yml"
 echo "2. Disable workflows: gh workflow disable WORKFLOW --repo OWNER/REPO"
 echo "3. Rotate ALL secrets (org + repo + environment)"
 echo "4. Revoke OIDC cloud sessions (AWS STS, Azure, GCP)"

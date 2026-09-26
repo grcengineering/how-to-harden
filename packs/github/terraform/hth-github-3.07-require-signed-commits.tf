@@ -2,7 +2,7 @@
 # HTH GitHub Control 3.07: Require Signed Commits
 # Profile Level: L3 (Run)
 # Frameworks: NIST AU-10, SC-13
-# Source: https://howtoharden.com/guides/github/#37-require-signed-commits
+# Source: https://howtoharden.com/guides/github/#24-enforce-commit-signing
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform
