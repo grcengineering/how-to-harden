@@ -208,7 +208,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Abnormal AI](docs/_guides/abnormal.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Airtable](docs/_guides/airtable.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Amplitude](docs/_guides/amplitude.md) | v0.1.2 | ai-drafted | 2026-08-08 |
-| [Asana](docs/_guides/asana.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Asana](docs/_guides/asana.md) | v0.3.0 | ai-drafted | 2026-09-25 |
 | [Atlassian Cloud](docs/_guides/atlassian.md) | v0.4.0 | ai-drafted | 2026-08-08 |
 | [Auth0](docs/_guides/auth0.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Azure DevOps](docs/_guides/azure-devops.md) | v0.2.0 | ai-drafted | 2026-08-08 |
