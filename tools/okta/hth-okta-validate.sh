@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-# HTH Okta Code Pack -- Validation Script (Read-Only Audit)
+# HTH Okta -- Validation Script (Read-Only Audit)
 # Checks all controls without making changes (GET requests only)
-# Usage: HTH_PROFILE_LEVEL=2 ./validate.sh
+# Usage: HTH_PROFILE_LEVEL=2 bash tools/okta/hth-okta-validate.sh
 # https://howtoharden.com/guides/okta/
-source "$(dirname "$0")/common.sh"
+#
+# Repo-only tooling: it lives outside packs/ because it maps to no single
+# guide section, so the pack sync can never publish it. It reuses the API
+# packs' shared helpers.
+source "$(dirname "$0")/../../packs/okta/api/common.sh"
 
 banner "Validation Audit (Read-Only)"
 
@@ -119,8 +123,10 @@ fi
 
 # 1.9 Default Authentication Policy -- zero apps assigned
 info "  Checking Default Authentication Policy app assignments..."
+# The default app sign-in policy is the one with system=true; its name varies
+# by org ("Default Policy" in older orgs, "Any two factors" in newer ones).
 DEFAULT_POLICY_ID=$(okta_get "/api/v1/policies?type=ACCESS_POLICY" 2>/dev/null \
-  | jq -r '.[] | select(.system == true and .name == "Default Policy") | .id' 2>/dev/null || echo "")
+  | jq -r '[.[] | select(.system == true)][0].id // empty' 2>/dev/null || echo "")
 
 if [ -n "${DEFAULT_POLICY_ID}" ] && [ "${DEFAULT_POLICY_ID}" != "null" ]; then
   check "1.9" "Default Policy has zero apps assigned" \
@@ -147,31 +153,11 @@ check "1.10" "Security Question authenticator is inactive" \
   "/api/v1/authenticators" \
   '[.[] | select(.key == "security_question" and .status == "ACTIVE")] | length == 0'
 
-# 1.11 End-user notifications -- all five enabled
-check "1.11" "New sign-on notification enabled" \
-  "/api/v1/org/settings" \
-  '.endUserNotifications.newSignOnNotification.enabled == true'
-
-check "1.11" "Authenticator enrolled notification enabled" \
-  "/api/v1/org/settings" \
-  '.endUserNotifications.authenticatorEnrolledNotification.enabled == true'
-
-check "1.11" "Authenticator reset notification enabled" \
-  "/api/v1/org/settings" \
-  '.endUserNotifications.authenticatorResetNotification.enabled == true'
-
-check "1.11" "Password changed notification enabled" \
-  "/api/v1/org/settings" \
-  '.endUserNotifications.passwordChangedNotification.enabled == true'
-
-check "1.11" "Factor reset notification enabled" \
-  "/api/v1/org/settings" \
-  '.endUserNotifications.factorResetNotification.enabled == true'
-
-# 1.11 Suspicious Activity Reporting
-check "1.11" "Suspicious Activity Reporting enabled" \
-  "/api/v1/org/privacy/suspicious-activity-reporting" \
-  '.enabled == true'
+# 1.11 Security notification emails and suspicious activity reporting: the Okta
+# Management API documents no endpoint for these settings (the okta/okta
+# Terraform resource okta_security_notification_emails uses an internal one),
+# so verify them in the console: Security > General > Security notification emails.
+check_skip "1.11 Security notification emails -- no public API; verify in Security > General"
 
 # ===========================================================================
 # Section 2: Network Access Controls
@@ -221,15 +207,13 @@ check "4.1" "Global session policies are configured" \
   "/api/v1/policies?type=OKTA_SIGN_ON" \
   'length > 0'
 
-# 4.3 Admin session ASN binding enabled
-check "4.3" "Admin session ASN binding is enabled" \
-  "/api/v1/org/settings" \
-  '.adminSessionASNBinding == "ENABLED"'
+# 4.1 Okta Admin Console session idle time is at most 15 minutes
+check "4.1" "Admin Console session idle time is 15 minutes or less" \
+  "/api/v1/first-party-app-settings/admin-console" \
+  '.sessionIdleTimeoutMinutes <= 15'
 
-# 4.3 Admin session IP binding enabled (L2+)
-check_level 2 "4.3" "Admin session IP binding is enabled (L2+)" \
-  "/api/v1/org/settings" \
-  '.adminSessionIPBinding == "ENABLED"'
+# 4.3 Admin console IP binding and Protected Actions have no public API
+check_skip "4.3 IP binding for admin console / Protected Actions -- no public API; verify in the console"
 
 # ===========================================================================
 # Section 5: Monitoring & Detection
@@ -265,8 +249,21 @@ info "--- Section 7: Operational Security ---"
 
 # 7.3 Super Admin count < 5
 info "  Checking Super Admin count..."
-SUPER_ADMIN_COUNT=$(okta_get "/api/v1/iam/assignees/users?roleType=SUPER_ADMIN" 2>/dev/null \
-  | jq 'length' 2>/dev/null || echo "unknown")
+# /api/v1/iam/assignees/users returns {"value": [{"id": ...}]}; each user's
+# role types come from /api/v1/users/{id}/roles.
+SUPER_ADMIN_COUNT="unknown"
+if ADMIN_USER_IDS=$(okta_get "/api/v1/iam/assignees/users?limit=200" 2>/dev/null | jq -r '.value[].id' 2>/dev/null); then
+  SUPER_ADMIN_COUNT=0
+  for ADMIN_USER_ID in ${ADMIN_USER_IDS}; do
+    if IS_SUPER=$(okta_get "/api/v1/users/${ADMIN_USER_ID}/roles" 2>/dev/null \
+        | jq '[.[] | select(.type == "SUPER_ADMIN")] | length' 2>/dev/null); then
+      SUPER_ADMIN_COUNT=$((SUPER_ADMIN_COUNT + IS_SUPER))
+    else
+      SUPER_ADMIN_COUNT="unknown"
+      break
+    fi
+  done
+fi
 
 if [ "${SUPER_ADMIN_COUNT}" != "unknown" ] && [ "${SUPER_ADMIN_COUNT}" -ge 0 ] 2>/dev/null; then
   if [ "${SUPER_ADMIN_COUNT}" -lt 5 ]; then
@@ -281,7 +278,7 @@ fi
 # 7.3 Stale accounts check
 info "  Checking for stale accounts (90+ days inactive)..."
 STALE_COUNT=$(okta_get "/api/v1/users?filter=status+eq+%22ACTIVE%22&limit=200" 2>/dev/null \
-  | jq '[.[] | select(.lastLogin != null) | select((.lastLogin | fromdateiso8601) < (now - 7776000))] | length' \
+  | jq '[.[] | select(.lastLogin != null) | select((.lastLogin | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601) < (now - 7776000))] | length' \
   2>/dev/null || echo "unknown")
 
 if [ "${STALE_COUNT}" != "unknown" ] && [ "${STALE_COUNT}" -ge 0 ] 2>/dev/null; then
@@ -311,6 +308,9 @@ echo -e "${BLUE}  TOTAL: ${TOTAL_COUNT}${NC}"
 echo ""
 echo -e "${BLUE}  ${PASS_COUNT}/${CHECKED} controls passing at L${HTH_PROFILE_LEVEL}${NC}"
 echo -e "${BLUE}================================================================${NC}"
+
+# This script prints its own summary; tell common.sh's exit handler so.
+HTH_SUMMARY_DONE=1
 
 # Exit with non-zero if any checks failed
 if [ "${FAIL_COUNT}" -gt 0 ]; then
