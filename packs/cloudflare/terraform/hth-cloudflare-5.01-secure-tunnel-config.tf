@@ -42,5 +42,6 @@ resource "cloudflare_dns_record" "tunnel_cname" {
   type    = "CNAME"
   content = "${cloudflare_zero_trust_tunnel_cloudflared.app_tunnel.id}.cfargotunnel.com"
   proxied = true
+  ttl     = 1 # automatic
 }
 # HTH Guide Excerpt: end terraform

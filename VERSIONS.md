@@ -172,7 +172,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Claude API & Console](docs/_guides/anthropic-api.md) | v1.1.0 | ai-drafted | 2026-08-15 |
 | [Claude Code](docs/_guides/claude-code.md) | v1.1.0 | ai-drafted | 2026-09-24 |
 | [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.2.0 | ai-drafted | 2026-08-15 |
-| [Cloudflare Zero Trust](docs/_guides/cloudflare.md) | v0.2.1 | ai-drafted | 2026-08-08 |
+| [Cloudflare Zero Trust](docs/_guides/cloudflare.md) | v0.2.3 | ai-drafted · ai-validated | 2026-09-25 |
 | [CrowdStrike Falcon](docs/_guides/crowdstrike.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Cursor](docs/_guides/cursor.md) | v0.4.0 | ai-drafted | 2026-08-08 |
 | [Datadog](docs/_guides/datadog.md) | v0.2.1 | ai-drafted | 2026-08-08 |
