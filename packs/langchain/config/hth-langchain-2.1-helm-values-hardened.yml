@@ -1,72 +1,84 @@
+# HTH Pack Contract: v1
+#   control: langchain-2.1
+#   guide:   https://howtoharden.com/guides/langchain/#21-self-host-langsmith-for-sensitive-data
+#   profile: L3
+#   mode:    mutating
+#   requires: applied by packs/langchain/cli/hth-langchain-2.1-helm-deploy-self-hosted.sh (helm + cluster access); OIDC client registered at your IdP
+# =============================================================================
 # HTH LangChain Control 2.1: Self-Host LangSmith — Hardened Helm Values
-# Profile: L3 | NIST: SC-7, SC-28, AC-4
-# https://howtoharden.com/guides/langchain/#21-self-host-langsmith
+# Profile Level: L3 (Run)
+# Frameworks: CIS Controls 13.6 | NIST 800-53 SC-7, SC-28, AC-4
 #
-# Apply with:
-#   helm upgrade --install langsmith langchain/langsmith \
-#     --values langsmith-values.hardened.yaml --version <pinned>
-# Reference: github.com/langchain-ai/helm/blob/main/charts/langsmith
+# Every key below exists in the published chart values
+# (https://github.com/langchain-ai/helm/blob/main/charts/langsmith/values.yaml, chart
+# 0.17.0-rc.42 checked 2026-09-24). The chart ships NO values.schema.json, so Helm
+# silently ignores a key it does not know — a misspelled hardening key fails OPEN.
+# Render with `helm template` and check the output (the cli pack for 2.1 does this).
+#
+# Self-hosted SSO is OAuth 2.0 / OIDC, not SAML:
+#   https://docs.langchain.com/langsmith/self-host-sso
+# Keep secrets (license key, API key salt, JWT secret, OIDC client secret if used)
+# in the Secret named by config.existingSecretName, never in this file.
 
 # HTH Guide Excerpt: begin config-helm-hardened-values
 config:
-  # Restrict CORS — default is permissive, MUST be locked down in prod
-  corsAllowedOrigins:
-    - https://langsmith.internal.example.com
-
-  # Enable audit logging (v0.12.33+)
-  auditLogs:
+  existingSecretName: langsmith-config-secrets     # license key + salts, sourced from your KMS
+  hostname: https://langsmith.internal.example.com
+  # OAuth 2.0 / OIDC with PKCE (authType "oauth"); no client secret to store
+  authType: oauth
+  oauth:
     enabled: true
-    # Keep audit logs separate from app logs and ship to SIEM
-    destination: stdout
+    oauthClientId: "<IdP client id>"
+    oauthIssuerUrl: https://idp.example.com/oauth2/default
+  security:
+    cors:
+      # Chart default is "*". Comma-separated list of allowed origins.
+      allowedOrigins: "https://langsmith.internal.example.com"
 
-  # Force HTTPS / HSTS at the ingress
-  forceHttps: true
-  hstsMaxAge: 63072000  # 2 years
+# Audit logs stay off on self-hosted until this org feature flag is set (chart 0.12.33+)
+commonEnv:
+  - name: DEFAULT_ORG_FEATURE_CAN_USE_AUDIT_LOGS
+    value: "true"
 
-# Self-hosted SAML SSO (Enterprise add-on required)
-sso:
-  enabled: true
-  provider: saml
-  saml:
-    metadataUrl: https://idp.example.com/app/langsmith/sso/saml/metadata
-
-# Database encryption at rest
-postgresql:
-  primary:
-    persistence:
-      storageClass: encrypted-gp3   # Use a CMK-encrypted storage class
-  auth:
-    existingSecret: langsmith-postgres-credentials  # Sourced from KMS
-
-# Kubernetes pod security
-podSecurityContext:
+# Pod-level security context for every LangSmith pod
+commonPodSecurityContext:
   runAsNonRoot: true
   runAsUser: 1000
   fsGroup: 1000
   seccompProfile:
     type: RuntimeDefault
 
-containerSecurityContext:
-  allowPrivilegeEscalation: false
-  readOnlyRootFilesystem: true
-  capabilities:
-    drop: ["ALL"]
+# Container-level hardening is per component: <component>.deployment.securityContext.
+# Repeat for platformBackend, playground, queue, aceBackend and hostBackend.
+backend:
+  deployment:
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+frontend:
+  deployment:
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+  service:
+    type: ClusterIP            # chart default is LoadBalancer (public)
 
-# Resource limits (DoS protection)
-resources:
-  limits:
-    cpu: "2"
-    memory: "4Gi"
-  requests:
-    cpu: "500m"
-    memory: "1Gi"
+# External, encrypted Postgres; credentials come from an existing Secret
+postgres:
+  external:
+    enabled: true
+    existingSecretName: langsmith-postgres-credentials
 
-# Disallow public LoadBalancer; expose via internal ingress only
-service:
-  type: ClusterIP
+# Internal-only ingress with a source-range allowlist
 ingress:
   enabled: true
-  className: internal-nginx
+  ingressClassName: internal-nginx
   annotations:
     nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8"
+  tls:
+    - secretName: langsmith-tls
+      hosts:
+        - langsmith.internal.example.com
 # HTH Guide Excerpt: end config-helm-hardened-values

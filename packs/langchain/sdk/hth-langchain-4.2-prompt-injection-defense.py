@@ -1,6 +1,13 @@
+# HTH Pack Contract: v1
+#   control: langchain-4.2
+#   guide:   https://howtoharden.com/guides/langchain/#42-defend-against-prompt-injection-owasp-llm01
+#   profile: L1
+#   mode:    read-only
+#   requires: langchain-core, a chat model
+# =============================================================================
 # HTH LangChain Control 4.2: Defend Against Prompt Injection (OWASP LLM01)
 # Profile: L1 | NIST: SI-10, SC-39
-# https://howtoharden.com/guides/langchain/#42-prompt-injection-defense
+# https://howtoharden.com/guides/langchain/#42-defend-against-prompt-injection-owasp-llm01
 
 # HTH Guide Excerpt: begin sdk-trust-boundary-pattern
 from langchain_core.prompts import ChatPromptTemplate
