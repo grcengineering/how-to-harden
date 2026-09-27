@@ -263,23 +263,46 @@
             + '</td></tr>';
 
       g.controls.forEach(function(c) {
-        // Requirement cell
+        // ONE mark per status, however many surfaces earned it. A control whose
+        // ClickOps walk and Code Pack were both exercised used to render two
+        // identical icons side by side; the icon says "validated", and WHICH
+        // surfaces were exercised belongs in its label, not in a repeated glyph.
+        var markGroups = Object.create(null);
+        var markOrder = [];
+        c.statusMarks.forEach(function(sm) {
+          var grp = markGroups[sm.status];
+          if (!grp) {
+            // The harvested aria-label is "<Status>: <evidence>"; keep the status.
+            grp = markGroups[sm.status] = {
+              svg: sm.svg,
+              status: sm.status,
+              name: String(sm.label || 'Validated').split(':')[0],
+              surfaces: []
+            };
+            markOrder.push(sm.status);
+          }
+          if (sm.surface && grp.surfaces.indexOf(sm.surface) === -1) grp.surfaces.push(sm.surface);
+        });
+        var marksHtml = '';
+        markOrder.forEach(function(status) {
+          var grp = markGroups[status];
+          var smLabel = grp.surfaces.length ? grp.name + ' — ' + grp.surfaces.join(', ') : grp.name;
+          marksHtml += '<span class="cs-status-mark cs-status-mark-' + esc(grp.status)
+            + '" role="img" aria-label="' + esc(smLabel) + '" title="' + esc(smLabel) + '">'
+            + grp.svg + '</span>';
+        });
+
+        // Requirement cell. The mark sits directly right of the requirement
+        // number. The jump is wired by a delegated listener (see bindJumpLinks),
+        // never an inline onclick: building one by string concatenation put
+        // JSON.stringify's double quotes inside a double-quoted attribute, which
+        // truncated it to `jumpToControl(` and threw a SyntaxError on every row.
         var reqCell = '<td class="col-req">'
           + '<a href="#' + esc(c.anchorId) + '" class="ctrl-link"'
-          + ' onclick="jumpToControl(' + JSON.stringify(c.num) + ');return false;">'
-          + '<span class="ctrl-num">' + esc(c.num) + '</span>'
+          + ' data-ctrl-num="' + esc(c.num) + '" data-ctrl-anchor="' + esc(c.anchorId) + '">'
+          + '<span class="ctrl-num">' + esc(c.num) + marksHtml + '</span>'
           + esc(c.name)
           + '</a>';
-
-        c.statusMarks.forEach(function(sm) {
-          // Lead with the surface. In the condensed view the icon alone cannot
-          // say whether the console walk or the Code Pack was the thing that
-          // was exercised, and that distinction is the reason marks exist.
-          var smLabel = sm.surface ? sm.surface + ' — ' + sm.label : sm.label;
-          reqCell += '<span class="cs-status-mark cs-status-mark-' + esc(sm.status)
-            + '" role="img" aria-label="' + esc(smLabel) + '" title="' + esc(smLabel) + '">'
-            + sm.svg + '</span>';
-        });
 
         if (c.packLinks.length) {
           reqCell += '<div class="cs-pack-links">';
@@ -313,6 +336,22 @@
     });
 
     tbody.innerHTML = html;
+    bindJumpLinks(tbody);
+  }
+
+  // One delegated listener for every requirement link: switch to the Full
+  // Guide view and scroll to that requirement. Plain left-clicks only, so
+  // Cmd/Ctrl/middle-click still open the #anchor in a new tab.
+  function bindJumpLinks(tbody) {
+    if (tbody.dataset.jumpBound) return;
+    tbody.dataset.jumpBound = '1';
+    tbody.addEventListener('click', function(e) {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var link = e.target.closest ? e.target.closest('a.ctrl-link') : null;
+      if (!link) return;
+      e.preventDefault();
+      jumpToControl(link.getAttribute('data-ctrl-num'), link.getAttribute('data-ctrl-anchor'));
+    });
   }
 
   function ensureBuilt() {
@@ -374,17 +413,54 @@
     } catch (e) {}
   }
 
-  function jumpToControl(num) {
+  // Height of the fixed chrome pinned to the top of the viewport (site header,
+  // status banner), measured at jump time so the target lands just below it on
+  // any screen width instead of scrolling underneath it.
+  function fixedTopOffset() {
+    // The chrome is STACKED (header at 0, banner just below it), so collect the
+    // pinned boxes top-down and extend the offset while each one starts at or
+    // above the current bottom. Filtering on top <= 1 alone dropped the banner
+    // and parked the target 44px underneath it.
+    var boxes = [];
+    var els = document.querySelectorAll('.site-header, .status-banner');
+    for (var i = 0; i < els.length; i++) {
+      var pos = window.getComputedStyle(els[i]).position;
+      if (pos !== 'fixed' && pos !== 'sticky') continue;
+      var r = els[i].getBoundingClientRect();
+      if (r.height > 0) boxes.push(r);
+    }
+    boxes.sort(function(a, b) { return a.top - b.top; });
+    var bottom = 0;
+    for (var j = 0; j < boxes.length; j++) {
+      if (boxes[j].top > bottom + 1) break;
+      bottom = Math.max(bottom, boxes[j].bottom);
+    }
+    return bottom;
+  }
+
+  function findControlHeading(num, anchorId) {
+    var el = anchorId ? document.getElementById(anchorId) : null;
+    if (el) return el;
+    var hs = document.querySelectorAll('.guide-body h3');
+    for (var i = 0; i < hs.length; i++) {
+      if (hs[i].textContent.trim().indexOf(num + ' ') === 0) return hs[i];
+    }
+    return null;
+  }
+
+  function jumpToControl(num, anchorId) {
     setGuideView('full');
-    setTimeout(function() {
-      var hs = document.querySelectorAll('.guide-body h3');
-      for (var i = 0; i < hs.length; i++) {
-        if (hs[i].textContent.trim().indexOf(num + ' ') === 0) {
-          hs[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
-          return;
-        }
-      }
-    }, 80);
+    // No frame wait: un-hiding the guide is a class change, and the
+    // getBoundingClientRect() below forces a synchronous layout, so the
+    // target's position is already correct here. (Waiting on
+    // requestAnimationFrame also silently never fires in a background tab.)
+    var target = findControlHeading(num, anchorId);
+    if (!target) return;
+    var y = target.getBoundingClientRect().top + window.pageYOffset - fixedTopOffset() - 16;
+    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    if (target.id) {
+      try { window.history.replaceState(null, '', '#' + target.id); } catch (e) {}
+    }
   }
 
   window.setGuideView = setGuideView;
