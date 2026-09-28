@@ -1531,9 +1531,9 @@ Configure security headers (CSP, X-Frame-Options, Referrer-Policy, etc.) to prot
 
 **Time to Complete:** ~20 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Header-check config pack executed against a live Vercel production domain; its present and MISSING report matched an independent curl -I" date="2026-09-25" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="vercel" section="5.1" %}
+{% include pack-code.html vendor="vercel" section="5.1" validated_types="config" mark_status="ai-validated" mark_evidence="Header-check config pack executed against a live Vercel production domain; its present and MISSING report matched an independent curl -I" mark_date="2026-09-25" %}
 
 #### Validation & Testing
 

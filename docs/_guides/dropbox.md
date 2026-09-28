@@ -133,9 +133,9 @@ Share each team folder only with the people and groups whose role requires it, g
 **Step 3: Keep top-level team folders with admins**
 1. Navigate to: **Admin console → Products → Dropbox** (the dropdown under Products) **→ Settings → Content** tab → **Top-level folder management**, and set it to **Admins only** (the default is **All members**). The **Change setting** link on the Content page's **Member access** line opens the same setting
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Read-only API audit pack run live against a Dropbox Advanced trial team: the top-level folder policy and the one team folder membership read, both matching the console" date="2026-09-25" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="dropbox" section="1.2" %}
+{% include pack-code.html vendor="dropbox" section="1.2" validated_types="api" mark_status="ai-validated" mark_evidence="Read-only API audit pack run live against a Dropbox Advanced trial team: the top-level folder policy and the one team folder membership read, both matching the console" mark_date="2026-09-25" %}
 
 The pack is read-only. Changing folder membership through the API (`sharing/add_folder_member`, `sharing/update_folder_member`, `sharing/update_folder_policy` with the `Dropbox-API-Select-Admin` header) is a per-folder decision and is deliberately not scripted here.
 
@@ -176,9 +176,9 @@ Cap how many computers and mobile devices each member can link to the Dropbox de
 2. Navigate to: **Admin console → Members**, click the member's name, then under **Devices** click the **Remove** (trash can) icon next to the device
 3. Check **Delete files from [Organization name] Dropbox the next time this computer comes online**, then click **Sign out**. A remote wipe cannot be undone
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Read-only API audit pack run live against a Dropbox Advanced trial team: every linked device and web session read to the end of the list and counted against the pack's default device caps" date="2026-09-25" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="dropbox" section="1.3" %}
+{% include pack-code.html vendor="dropbox" section="1.3" validated_types="api" mark_status="ai-validated" mark_evidence="Read-only API audit pack run live against a Dropbox Advanced trial team: every linked device and web session read to the end of the list and counted against the pack's default device caps" mark_date="2026-09-25" %}
 
 The device caps, the limit-reached and disconnected-device actions and the web session lengths have no API: nothing sets them and nothing reads their current value. The pack reads the outcome instead, every linked device and web session, and measures it against the caps you set. Signing a session out, and remote wipe, is `team/devices/revoke_device_session` with `delete_on_unlink`; it is an incident action and is not scripted here.
 
@@ -228,9 +228,9 @@ Replace uniform full-admin access with Dropbox's pre-built granular admin roles,
 1. Assign each administrator the narrowest role that covers their actual duties
 2. Keep the number of Team admins to the minimum needed for continuity, and review the admin roster on a fixed cadence
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Read-only API audit pack run live against a Dropbox Advanced trial team: the assignable roles and every member role read, one Team admin as the console shows" date="2026-09-25" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="dropbox" section="1.4" %}
+{% include pack-code.html vendor="dropbox" section="1.4" validated_types="api" mark_status="ai-validated" mark_evidence="Read-only API audit pack run live against a Dropbox Advanced trial team: the assignable roles and every member role read, one Team admin as the console shows" mark_date="2026-09-25" %}
 
 The pack counts holders of each role and flags a Team admin population above your limit. Changing a role is `team/members/set_admin_permissions_v2`, which accepts at most one role per member; it is not scripted here, because a bulk demotion can remove the last Team admin or the admin whose token is running. `dbxcli team list-members` prints only the legacy admin tier, not these eight roles.
 
@@ -306,9 +306,9 @@ Restrict external sharing, default shared links to team members only, require pa
 5. **Universal link restriction for folders:** **On**, so only people added to a folder can open it through a link
 6. Click **Save**. Changes on this tab are staged until you save them
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Read-only API audit pack run live against a Dropbox Advanced trial team: the sharing policies and approved list read, six settings matching the External sharing tab" date="2026-09-25" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="dropbox" section="2.1" %}
+{% include pack-code.html vendor="dropbox" section="2.1" validated_types="api" mark_status="ai-validated" mark_evidence="Read-only API audit pack run live against a Dropbox Advanced trial team: the sharing policies and approved list read, six settings matching the External sharing tab" mark_date="2026-09-25" %}
 
 The settings above are readable through `team/get_info` (the approved list through `team/sharing_allowlist/list`), and none of them is writable through the API; the pack proves the console configuration. **Sharing links to files and folders** has no field of its own: the API reference describes the `shared_link_create_policy` value `team_only` as "Only members of the same team can access all shared links", which matches **Off**, and the `default_*` values as defaults members can override, which matches **On**. The **On** half of that mapping has been observed on a live team (switch **On**, field `default_public`); the **Off** half (`team_only`) comes from the documentation only, so the pack reports the switch as information rather than a finding. The only related write surface, `team/sharing_allowlist/add` and `remove`, edits the approved list and is not scripted here.
 
@@ -383,9 +383,9 @@ Block members from connecting third-party apps by default, allow only the apps y
 2. Use the pack below to list every app still linked to a member, then revoke each one you cannot attribute to a current business need. Treat revocation in Dropbox as the authoritative action; unlinking on the vendor's side is not a substitute
 3. To revoke one member's link in the console, go to **Admin console → Members**, click the member's name, then under **Connected apps** click the **Disconnect app** (trash can) icon next to the app
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Read-only API audit pack run live against a Dropbox Advanced trial team: every member linked app read to the end of the list" date="2026-09-25" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="dropbox" section="3.1" %}
+{% include pack-code.html vendor="dropbox" section="3.1" validated_types="api" mark_status="ai-validated" mark_evidence="Read-only API audit pack run live against a Dropbox Advanced trial team: every member linked app read to the end of the list" mark_date="2026-09-25" %}
 
 The block and allow settings have no API: nothing sets them and nothing reads them. The pack reads the links that exist, one row per app with how many members linked it and when, and judges each against your approved list. Revocation is `team/linked_apps/revoke_linked_app`; it is left to the reviewer, one app at a time.
 
@@ -428,9 +428,9 @@ Three limits to plan around:
 - **File-level activity is plan-gated.** Detailed file activity is available on Business Plus, Advanced, and Enterprise only. On lower plans the record is coarser than an investigation typically needs
 - **History has a floor.** Activity history begins in January 2017, or at your team's creation date if that is later
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Read-only event export pack run live against a Dropbox Advanced trial team: one 24-hour window exported, its app-link event matched on the Activity page and no event contradicting it" date="2026-09-25" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="dropbox" section="4.1" %}
+{% include pack-code.html vendor="dropbox" section="4.1" validated_types="api" mark_status="ai-validated" mark_evidence="Read-only event export pack run live against a Dropbox Advanced trial team: one 24-hour window exported, its app-link event matched on the Activity page and no event contradicting it" mark_date="2026-09-25" %}
 
 The pack pulls one time window of the team event log through `team_log/get_events` and `team_log/get_events/continue` and writes one event per line to stdout, for a scheduler or log shipper to forward to your SIEM. There is nothing to enable or write: the log is always on, and no endpoint sets its retention or a destination. A window that returns no events exits non-zero, because an empty feed and a broken feed look the same downstream.
 

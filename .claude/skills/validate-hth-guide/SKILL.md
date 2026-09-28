@@ -71,7 +71,11 @@ bash scripts/validate-packs.sh   # or: make validate-packs
 
    `#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="{what was actually exercised}" date="{YYYY-MM-DD}" %}`
 
-   `#### Code Implementation{% include status-mark.html status="ai-validated" evidence="{what was actually exercised}" date="{YYYY-MM-DD}" %}`
+   A **Code** mark does not go on the `#### Code Implementation` heading. It goes on the pack that actually ran, via the `pack-code.html` include, so it renders in that pack's own collapsible header (a control's Terraform can be proven while its Sigma rule never ran):
+
+   `{% include pack-code.html vendor="{vendor}" section="{N.N}" validated_types="{type}" mark_status="ai-validated" mark_evidence="{what was actually run}" mark_date="{YYYY-MM-DD}" %}`
+
+   `validated_types` lists only the pack types that were run (comma-separated, e.g. `terraform,api`); every other pack on the control keeps no mark.
 
    **Decompose the ledger per surface before stamping.** Walking a console and executing a pack are two different acts producing two different claims, and a single per-control badge averaged them into one — which is how buildkite `3.1` (Terraform applied to a live org, console never walked) and `1.1` (console-only, no code run) ended up wearing the same badge. Mark ClickOps when the console path was observed or corrected against the live UI; mark Code when the pack was actually **run**. A pack that only `validate`d, or that ran and hit a plan gate without applying, is not a Code mark — buildkite `1.2` is the worked example: its Terraform apply surfaced the plan gate, so it carries a ClickOps mark and no Code mark.
 
@@ -90,7 +94,8 @@ bash scripts/validate-packs.sh   # or: make validate-packs
 
 ```bash
 grep -E '^maturity:' docs/_guides/{slug}.md                  # a LIST containing BOTH *-drafted and ai-validated
-grep -c 'include status-mark.html' docs/_guides/{slug}.md   # == per-surface VERIFIED-LIVE count in the ledger
+# ClickOps heading marks + one per pack type named in validated_types  == per-surface VERIFIED-LIVE count in the ledger
+echo $(( $(grep -c 'include status-mark.html' docs/_guides/{slug}.md) + $(grep -o 'validated_types="[^"]*"' docs/_guides/{slug}.md | sed 's/validated_types="//;s/"$//' | tr ',' '\n' | grep -c .) ))
 grep -cE '^ *```' docs/_guides/{slug}.md                    # still 0 (AGENTS.md Rule 2)
 bash scripts/validate-guides.sh                             # ALL TESTS PASSED
 ```

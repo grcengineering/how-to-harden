@@ -96,7 +96,7 @@ A guide can be `ai-drafted` and `ni-drafted` at once. Holding both `ai-validated
 
 **Both agents at the same stage is the strongest thing this vocabulary can express.** `ai-validated` + `ni-validated` means the guidance survived contact with a real system twice, once under machine rigour and once under human judgement, and the two failure modes those catch barely overlap. There is no seventh status above it; combining is how the matrix expresses "better".
 
-**Where the corpus actually stands: no guide holds any `ni-*` status.** All 130 guides are `ai-drafted`; three of them (Buildkite, GitHub, Ona) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
+**Where the corpus actually stands: no guide holds any `ni-*` status.** All 130 guides are `ai-drafted`; eight of them (Buildkite, Cloudflare, Dropbox, GitHub, Okta, Ona, Stripe, Vercel) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
 
 #### The version qualifier
 
@@ -120,7 +120,7 @@ The qualifier appended to a guide's version names the **furthest stage reached**
 #### How the statuses are enforced
 
 - **Allowlist (machine-checked).** `scripts/validate-guides.sh` Test 5b requires `maturity` to be a **list** — a bare scalar is rejected outright — with every member drawn from the six statuses, at least one member present, and any `*-reviewed` or `*-validated` claim resting on a `*-drafted` claim in the same set, because nothing can be reviewed or validated before it exists. This test exists because an unrecognised value fails nowhere else: `docs/_includes/status-set.html` falls through to a bare `{% else %}` that resolves to `ai-drafted`, silently publishing a guide whose banner contradicts its own frontmatter with zero red anywhere.
-- **Per-surface mark.** Any status can also mark an individual **implementation surface**, via `{% include status-mark.html status="…" evidence="…" date="…" %}` appended to a `#### ClickOps Implementation` or `#### Code Implementation` heading, on the same line. In practice `ai-validated` is the one that gets stamped, and only where a run returned `VERIFIED-LIVE` for that surface — never `SKIPPED`, `BLOCKED`, or `DRIFT-CHECKED-ONLY`. The mark is **icon only**: it renders no text node, because anything textual inside a heading lands in the kramdown anchor and in the string the cheat-sheet parser matches on. The page-level status is the sum of these marks, which is why the mark and the banner deliberately render the same glyph.
+- **Per-surface mark.** Any status can also mark an individual **implementation surface**, via `{% include status-mark.html status="…" evidence="…" date="…" %}` appended to a `#### ClickOps Implementation` heading on the same line, or, for a Code surface, carried by the `pack-code.html` include of the specific pack that ran (`validated_types`), which renders the mark in that pack's collapsible header. In practice `ai-validated` is the one that gets stamped, and only where a run returned `VERIFIED-LIVE` for that surface — never `SKIPPED`, `BLOCKED`, or `DRIFT-CHECKED-ONLY`. The mark is **icon only**: it renders no text node, because anything textual inside a heading lands in the kramdown anchor and in the string the cheat-sheet parser matches on. The page-level status is the sum of these marks, which is why the mark and the banner deliberately render the same glyph.
 
   **Why surfaces and not controls (2026-08-20).** The mark used to sit once at the top of each requirement, where it asserted "this control was validated" and averaged over two different acts. Buildkite proves that was lossy: control `3.1` was validated by applying Terraform to a live organization and was never walked in the console, while `1.1` was console-only with no executed code — and both wore the same badge. Anchored to a heading, a mark makes exactly one claim about exactly one artifact, and **absence stays meaningful**: an unmarked ClickOps heading beside a marked Code heading is a true statement about what was tested, not a gap.
 - **Provenance.** The changelog row that adds a status names the act that earned it — which run, against what, how many controls came back live — so the claim is auditable rather than asserted.
@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-09-24 — 130 guides. Every one is `ai-drafted`; three (Buildkite, GitHub, Ona) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-09-26 — 130 guides. Every one is `ai-drafted`; eight (Buildkite, Cloudflare, Dropbox, GitHub, Okta, Ona, Stripe, Vercel) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -189,15 +189,15 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Microsoft Intune](docs/_guides/microsoft-intune.md) | v0.3.0 | ai-drafted | 2026-08-08 |
 | [MongoDB Atlas](docs/_guides/mongodb-atlas.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Netskope](docs/_guides/netskope.md) | v0.2.1 | ai-drafted | 2026-08-08 |
-| [Okta](docs/_guides/okta.md) | v0.4.1 | ai-drafted | 2026-08-08 |
+| [Okta](docs/_guides/okta.md) | v0.5.0 | ai-drafted · ai-validated | 2026-09-24 |
 | [OneLogin](docs/_guides/onelogin.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Ping Identity](docs/_guides/ping-identity.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [SentinelOne](docs/_guides/sentinelone.md) | v0.1.3 | ai-drafted | 2026-08-08 |
 | [ServiceNow](docs/_guides/servicenow.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Slack](docs/_guides/slack.md) | v0.2.1 | ai-drafted | 2026-08-08 |
+| [Slack](docs/_guides/slack.md) | v0.3.0 | ai-drafted | 2026-09-24 |
 | [Snowflake](docs/_guides/snowflake.md) | v0.4.1 | ai-drafted | 2026-08-08 |
 | [Splunk Cloud](docs/_guides/splunk.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Stripe](docs/_guides/stripe.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Stripe](docs/_guides/stripe.md) | v0.3.0 | ai-drafted · ai-validated | 2026-09-24 |
 | [Zscaler](docs/_guides/zscaler.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 
 ### Tier 2
@@ -276,7 +276,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [ADP](docs/_guides/adp.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Box](docs/_guides/box.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Docker Hub](docs/_guides/dockerhub.md) | v0.3.0 | ai-drafted | 2026-08-08 |
-| [Dropbox](docs/_guides/dropbox.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Dropbox](docs/_guides/dropbox.md) | v0.3.1 | ai-drafted · ai-validated | 2026-09-25 |
 | [Fullstory](docs/_guides/fullstory.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [HCP Terraform (formerly Terraform Cloud)](docs/_guides/terraform-cloud.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Heap](docs/_guides/heap.md) | v0.2.0 | ai-drafted | 2026-08-08 |
@@ -285,7 +285,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Lovable](docs/_guides/lovable.md) | v0.1.0 | ai-drafted | 2026-08-15 |
 | [Oracle HCM Cloud](docs/_guides/oracle-hcm.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Pendo](docs/_guides/pendo.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Replit](docs/_guides/replit.md) | v0.1.0 | ai-drafted | 2026-08-15 |
+| [Replit](docs/_guides/replit.md) | v0.2.0 | ai-drafted | 2026-09-25 |
 | [SailPoint](docs/_guides/sailpoint.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [SAP SuccessFactors](docs/_guides/sap-successfactors.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Windows 11](docs/_guides/windows-11.md) | v0.1.0 | ai-drafted | 2026-08-15 |
@@ -313,7 +313,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Power BI](docs/_guides/power-bi.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Rippling](docs/_guides/rippling.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Smartsheet](docs/_guides/smartsheet.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Snyk](docs/_guides/snyk.md) | v0.2.1 | ai-drafted | 2026-08-08 |
+| [Snyk](docs/_guides/snyk.md) | v0.3.0 | ai-drafted | 2026-09-25 |
 | [Vercel](docs/_guides/vercel.md) | v1.3.1 | ai-drafted · ai-validated | 2026-09-25 |
 
 ---

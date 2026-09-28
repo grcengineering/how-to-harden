@@ -6,9 +6,9 @@ slug: "snyk"
 tier: "5"
 category: "Security"
 description: "AppSec platform security for service accounts, SCM integrations, and Broker configs"
-version: "0.2.1"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-09-25"
 ---
 
 
@@ -56,7 +56,7 @@ Require SAML SSO through your corporate identity provider and enforce multi-fact
 #### Rationale
 **Why This Matters:**
 - Centralizes Snyk authentication in your IdP so MFA, conditional access, and session policies apply to every login
-- Local or password-only logins bypass corporate identity controls and are prime targets for credential stuffing and phishing
+- Snyk has no native password: users sign in with a GitHub, Google, Bitbucket, Entra ID, or Docker ID account or with company SSO, and accounts that bypass company SSO sit outside your IdP's MFA, conditional-access, and deprovisioning controls
 - SSO with automated deprovisioning removes departed users' access immediately, preventing orphaned accounts from reaching vulnerability data
 - Snyk holds your organization's known-vulnerability inventory and SCM connections, so a single compromised login can reveal exactly where you are exploitable
 
@@ -64,14 +64,19 @@ Require SAML SSO through your corporate identity provider and enforce multi-fact
 
 #### ClickOps Implementation
 
-**Step 1: Configure SAML SSO (Business/Enterprise)**
-1. Navigate to: **Settings → SSO**
-2. Configure SAML IdP
-3. Enable: **Require SSO**
+**Step 1: Configure SAML SSO (Enterprise)**
+1. Navigate to: **Group → Settings → SSO** (classic navigation) · **Settings → Security and access → SSO** at Group scope (new navigation)
+2. Copy the **Entity ID**, **ACS URL**, and Snyk **signing certificate URL** into your IdP's SAML application; then enter the IdP sign-in URL, the IdP signing certificate, and your email domains in Snyk and select **Create Connection**
+3. Choose how new users join: **Require an invite** rather than **Open to all**
+4. Verify the connection with the direct login URL shown at the top of **Step 3** before rolling it out
 
-**Step 2: Enable MFA (Non-SSO)**
-1. Configure MFA through account settings
-2. Enforce for all users
+**Step 2: Remove Non-SSO Access and Enforce MFA at the Identity Provider**
+1. In **Group → Members**, remove users who previously signed in with a social login and any personal accounts used during a pilot, so every remaining account is governed by your IdP
+2. Enforce MFA in your IdP for the Snyk application. Snyk has no Snyk-side MFA setting; on Free and Team plans (no SSO), MFA can only be enforced on the GitHub, Google, Bitbucket, Entra ID, or Docker ID account used to sign in
+
+#### Code Implementation
+
+{% include pack-code.html vendor="snyk" section="1.1" %}
 
 ---
 
@@ -87,26 +92,35 @@ Assign Snyk group and organization members the least-privileged role required fo
 **Why This Matters:**
 - Least-privilege roles limit how much a single compromised or insider account can change, export, or expose
 - Group Admin and Org Admin can alter integrations, ignore policies, and member access, so these rights should be tightly held
-- Scoping collaborators to view-and-test prevents accidental or malicious changes to scanning configuration and findings
+- The pre-defined Org Collaborator role can add and remove Projects and create, edit, and remove ignores, so developers who only need to view and test belong in a narrower custom role
 - Clear role separation makes access reviews and audit attribution far easier across many organizations
 
 **Attack Prevented:** Privilege escalation, insider misuse, unauthorized configuration changes, lateral movement
 
 #### ClickOps Implementation
 
-**Step 1: Define Roles**
+**Step 1: Know the Roles**
 
-| Role | Permissions |
-|------|-------------|
-| Group Admin | Full organization access |
-| Org Admin | Organization management |
-| Org Collaborator | View and test projects |
-| Org Custom | Custom permissions |
+| Role | Scope | Key permissions |
+|------|-------|-----------------|
+| Group Admin | Group | Every permission in every Organization of the Group, including SSO, service accounts, and Group audit logs |
+| Group Viewer | Group | Read-only access to the Group and to every Organization in it |
+| Group Member | Group | Sees the Group's list of Organizations only, until an Organization role is granted |
+| Org Admin | Organization | Manage members, integrations, and service accounts; approve ignores |
+| Org Collaborator | Organization | Add, test, and remove Projects; **create, edit, and remove ignores**; view Organization audit logs |
+| Custom role (Enterprise) | Tenant, Group, or Organization | Built under **Group → Settings → Member roles** |
+
+Tenant-level roles (Tenant Admin, Tenant Viewer, Tenant Member) do not grant Group or Organization access. Pre-defined role permissions cannot be edited; use a custom role to narrow them. See [Pre-defined roles](https://docs.snyk.io/platform-administration/user-management/pre-defined-roles).
 
 **Step 2: Configure Organization Access**
-1. Navigate to: **Settings → Members**
-2. Assign appropriate roles
-3. Use least privilege
+1. Navigate to: **Organization → Members** (classic navigation) · **Settings → Security and access → Members** (new navigation)
+2. Click a member's **Role** entry and select the least-privileged role the person needs
+3. Keep Group Admin and Org Admin to named owners, and review the member list on a fixed cadence
+4. Org Collaborator can ignore issues by default — restrict ignores to admins with control 3.2
+
+#### Code Implementation
+
+{% include pack-code.html vendor="snyk" section="1.2" %}
 
 ---
 
@@ -132,6 +146,9 @@ Choose the right service-account credential type for every non-interactive Snyk 
 
 **Attack Scenario:** Exposed API token enables vulnerability data export; attackers gain insight into exploitable vulnerabilities before patches.
 
+#### Prerequisites
+- **Enterprise plan** — Snyk documents service accounts as available only on Enterprise plans; Free and Team organizations have personal user tokens only
+
 #### ClickOps Implementation
 
 **Step 1: Choose the Credential Type**
@@ -145,7 +162,7 @@ Choose the right service-account credential type for every non-interactive Snyk 
 Default to OAuth 2.0. Never create API-key service accounts for new integrations, and treat any existing API-key service account as a standing credential to be migrated. See [Choose a service account type](https://docs.snyk.io/platform-administration/service-accounts/choose-a-service-account-type-to-use-with-snyk-apis).
 
 **Step 2: Audit Service Accounts**
-1. Navigate to: **Settings → Service accounts**
+1. Navigate to: **Settings → Service accounts** at Group or Organization level (classic navigation) · Group scope **Settings → Security and access → Service accounts**, Organization scope **Settings → Organization settings → Service accounts** (new navigation)
 2. Review all service accounts and record the credential type of each
 3. Remove unused accounts
 4. Flag every API-key service account for migration to OAuth 2.0
@@ -175,7 +192,7 @@ Review and restrict Snyk's source-code-management integrations so each connectio
 - SCM integrations grant Snyk read access to source repositories, so an over-scoped or stale connection widens what a platform compromise can reach
 - The Snyk Broker keeps private repositories behind your perimeter and brokers only approved requests instead of exposing direct SCM credentials — Snyk documents that with Broker, "credentials remain within your network and are never stored by or transmitted to Snyk"
 - Universal Broker consolidates many connection types (GitHub, GitLab, Artifactory, Jira, container registry) behind a single client or set of replicas, so there is one hardened egress path to govern instead of one Broker deployment per integration
-- Classic Broker uses per-integration deployments with `accept.json` request filters that constrain which endpoints and operations the Broker permits, enforcing least privilege at the integration layer
+- Classic Broker uses per-integration deployments that pass only requests on a default approved-data list (tuned with ACCEPT rule flags); a custom `accept.json` replaces that list and disables the ACCEPT flags, so keeping it minimal becomes your job
 - Limiting repository scope contains the impact if a token or integration is abused, preventing access to unrelated codebases
 
 **Attack Prevented:** Source code exposure, over-scoped integration abuse, supply chain reconnaissance, credential leakage
@@ -185,7 +202,7 @@ Review and restrict Snyk's source-code-management integrations so each connectio
 #### ClickOps Implementation
 
 **Step 1: Review Integrations**
-1. Navigate to: **Settings → Integrations**
+1. Navigate to: **Settings → Integrations** (classic and new navigation; Broker connections are under **Settings → Integrations → Snyk Broker** in the new navigation)
 2. Review SCM connections
 3. Limit repository access
 
@@ -194,13 +211,17 @@ Review and restrict Snyk's source-code-management integrations so each connectio
 | Model | Shape | Use it for |
 |-------|-------|------------|
 | [Universal Broker](https://docs.snyk.io/platform-administration/snyk-broker/universal-broker) | One Broker client (or replica set) serving many connection types — GitHub, GitLab, Artifactory, Jira, container registry | **New deployments.** Fewer moving parts, one egress path, centrally managed connections |
-| [Classic Broker](https://docs.snyk.io/platform-administration/snyk-broker/classic-broker) | One Broker deployment per integration type, each with its own `accept.json` filter file | Existing estates already running per-integration Brokers |
+| [Classic Broker](https://docs.snyk.io/platform-administration/snyk-broker/classic-broker) | One Broker deployment per integration type, each with its own approved-data list | Existing estates already running per-integration Brokers |
 
 **Step 3: Harden the Broker Deployment**
 1. Deploy the Broker inside your network so SCM credentials never leave your perimeter
-2. Restrict the permitted request set — `accept.json` filters in Classic Broker, per-connection configuration in Universal Broker
+2. Restrict the permitted request set — in Classic Broker, the default approved-data list tuned with ACCEPT rule flags, or a custom `accept.json` that replaces it (and disables those flags); in Universal Broker, per-connection configuration
 3. Limit exposed endpoints to the minimum the Snyk integration requires
 4. Verify high-availability replica count matches your availability requirement
+
+#### Code Implementation
+
+{% include pack-code.html vendor="snyk" section="2.2" %}
 
 ---
 
@@ -212,7 +233,7 @@ Review and restrict Snyk's source-code-management integrations so each connectio
 **NIST 800-53:** AC-21
 
 #### Description
-Configure project visibility, vulnerability-detail access, and report/export permissions so only authorized users can view sensitive findings.
+Limit who can see vulnerability findings, Project history, and reports by controlling Organization membership and, on Enterprise plans, the view permissions in custom roles. Snyk documents no per-Project visibility setting, so the Organization is the visibility boundary.
 
 #### Rationale
 **Why This Matters:**
@@ -225,15 +246,21 @@ Configure project visibility, vulnerability-detail access, and report/export per
 
 #### ClickOps Implementation
 
-**Step 1: Configure Project Settings**
-1. Set appropriate project visibility
-2. Limit who can view vulnerability details
-3. Control issue sharing
+**Step 1: Scope Visibility with Organizations**
+1. Every pre-defined Organization role can view the Organization's Projects, ignores, and reports. Put sensitive repositories in a dedicated Organization and invite only the people who need them
+2. Navigate to: **Organization → Members** (classic navigation) · **Settings → Security and access → Members** (new navigation), and remove anyone who no longer needs access
 
-**Step 2: Report Access**
-1. Limit report generation
-2. Control export permissions
-3. Audit report access
+**Step 2: Narrow Read Rights with Custom Roles (Enterprise)**
+1. Navigate to: **Group → Settings → Member roles** (classic navigation) · **Settings → Security and access → Member roles** at Group scope (new navigation)
+2. Create a role without **View Organization reports** and **View Project History** for members who only need to run tests, and assign it in place of Org Collaborator
+
+**Step 3: Report Access**
+1. Keep **Edit Organization reports** with Org Admins (Org Collaborators cannot edit reports by default), and add report permissions to custom roles only where a person needs them
+2. Review who holds report permissions in every access review (control 1.2)
+
+#### Code Implementation
+
+{% include pack-code.html vendor="snyk" section="3.1" %}
 
 ---
 
@@ -254,12 +281,20 @@ Govern how vulnerabilities are ignored by requiring a documented reason, an expi
 
 **Attack Prevented:** Risk-acceptance abuse, suppressed-vulnerability exploitation, security-gate bypass, audit evasion
 
-#### Implementation
+#### ClickOps Implementation
 
-**Step 1: Ignore Workflow**
-1. Require reason for ignores
-2. Set ignore expiration
-3. Audit ignored vulnerabilities
+**Step 1: Restrict Who Can Ignore and Require a Reason**
+1. Navigate to: **Organization → Settings → General → Ignores** (classic navigation) · Organization scope **Settings → Organization settings → General → Ignores** (new navigation)
+2. Under **Ignore an issue or edit ignore settings using Snyk Web UI or Snyk API**, select **Group and Org Admin users (Default user roles only)** — by default Org Collaborators can create, edit, and remove ignores. This also prevents ignores being added through the CLI
+3. Under **Require reason for each ignore**, select **Required**
+
+**Step 2: Approval Workflow for Snyk Code (Optional)**
+1. Enable Snyk Code Consistent Ignores, then in **Organization → Settings** (classic navigation) · **Settings** at Organization scope (new navigation) enable **Ignore Approval Workflow for Snyk Code** (Organization level only)
+2. When Consistent Ignores is enabled, the admin-only setting from Step 1 is disregarded — rely on the approval workflow instead
+
+**Step 3: Bound and Audit Every Ignore**
+1. Always set an expiry. CLI ignores default to 30 days, and a `.snyk` `expires:` value that is not in `YYYY-MM-DDThh:mm:ss.fffZ` form makes the ignore persist indefinitely
+2. Review ignored issues on a fixed cadence
 
 #### Code Implementation
 
@@ -288,13 +323,15 @@ Review Snyk audit logs and forward them to your SIEM to retain a record of user 
 **Attack Prevented:** Undetected account compromise, configuration tampering, audit gaps, delayed incident response
 
 #### Prerequisites
-- **Enterprise plan** — audit logs are not available on Free, Team, or Business
+- **Enterprise plan** — audit logs are not available on Free or Team
 
 #### ClickOps Implementation
 
-**Step 1: Access Audit Logs**
-1. Navigate to: **Settings → Audit logs**
-2. Review user activities
+> **Console location unconfirmed:** Snyk documents audit-log retrieval for the Snyk platform through the API only. Its [audit-log how-to](https://docs.snyk.io/platform-administration/user-management/user-management-with-the-api/retrieve-audit-logs-of-user-initiated-activity-by-api-for-an-org-or-group) covers the Group and Organization search endpoints, and its [navigation map](https://docs.snyk.io/navigate-the-snyk-web-ui) lists no Audit logs page at Tenant, Group, or Organization scope. The Web UI audit-log reports Snyk also documents belong to Snyk API & Web, a separate product. Plan on the API until your Enterprise console shows a page.
+
+**Step 1: Retrieve and Review Audit Logs**
+1. Search the Group's and each Organization's audit logs through the API — Step 2 schedules this, and the read-only export under Code Implementation below runs it
+2. Review user activities against the Detection Focus list below
 
 **Step 2: Forward to SIEM Before the 90-Day Window Closes**
 1. Pull group- and org-level audit events via the [audit logs API](https://docs.snyk.io/platform-administration/user-management/user-management-with-the-api/retrieve-audit-logs-of-user-initiated-activity-by-api-for-an-org-or-group)
@@ -311,16 +348,27 @@ Review Snyk audit logs and forward them to your SIEM to retain a record of user 
 
 #### Detection Focus
 
+Snyk documents these event classes in its audit logs; alert on them in the SIEM:
+
+- Users invited, added, or removed, or a user's role changed
+- A service account created, modified, or deleted
+- A license rule or policy modified
+- A Group or Organization added or removed, or a setting changed
+- Sign-in is not in these logs — alert on Snyk SSO events in the IdP instead
+
 ---
 
 ## Appendix A: Edition Compatibility
 
-| Control | Free | Team | Business | Enterprise |
-|---------|------|------|----------|------------|
-| SAML SSO | ❌ | ❌ | ✅ | ✅ |
-| SCIM | ❌ | ❌ | ❌ | ✅ |
-| Audit Logs | ❌ | ❌ | ❌ | ✅ |
-| Service Accounts | ❌ | ❌ | ✅ | ✅ |
+Snyk's plans page lists Free, Team, and Enterprise.
+
+| Control | Free | Team | Enterprise |
+|---------|------|------|------------|
+| SAML SSO (1.1) | ❌ | ❌ | ✅ |
+| Custom member roles (1.2, 3.1) | ❌ | ❌ | ✅ |
+| Service Accounts (2.1) | ❌ | ❌ | ✅ |
+| Snyk Broker (2.2) | ❌ | ❌ | ✅ |
+| Audit Logs (4.1) | ❌ | ❌ | ✅ |
 
 ---
 
@@ -335,13 +383,13 @@ Review Snyk audit logs and forward them to your SIEM to retain a record of user 
 - [Snyk Broker](https://docs.snyk.io/platform-administration/snyk-broker/snyk-broker)
 - [Universal Broker](https://docs.snyk.io/platform-administration/snyk-broker/universal-broker)
 - [Classic Broker](https://docs.snyk.io/platform-administration/snyk-broker/classic-broker)
-- [Vulnerability Disclosure Program](https://snyk.io/vulnerability-disclosure/)
+- [Vulnerability Disclosure Program](https://snyk.io/report-a-vulnerability/)
 
 **API Documentation:**
-- [API Overview](https://docs.snyk.io/snyk-api)
+- [API Overview](https://docs.snyk.io/developer-tools/snyk-api/snyk-api)
 - [Interactive REST API Docs](https://apidocs.snyk.io/)
 - [Retrieve Audit Logs by API](https://docs.snyk.io/platform-administration/user-management/user-management-with-the-api/retrieve-audit-logs-of-user-initiated-activity-by-api-for-an-org-or-group)
-- [Authentication for API](https://docs.snyk.io/snyk-api/authentication-for-api)
+- [Authentication for API](https://docs.snyk.io/developer-tools/snyk-api/authentication-for-api)
 
 **Compliance Frameworks:**
 - ISO 27001, ISO 27017, SOC 2 Type II — via [Trust Center](https://trust.snyk.io/)
@@ -356,6 +404,7 @@ Review Snyk audit logs and forward them to your SIEM to retain a record of user 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.3.0 | ai-drafted | validate-hth-guide fix loop, run offline against Snyk's docs and REST spec (the console was signed out, so 0 surfaces were exercised live and the guide is not ai-validated): corrected SSO to Enterprise-only at Group scope with IdP-side MFA (1.1); replaced the role table and member paths (1.2); added the Enterprise gate and new-navigation paths to service accounts (2.1); rewrote Project Visibility around Organization membership and custom roles (3.1) and Ignore Policy around Organization Settings → General → Ignores, with classic and new navigation paths (3.2); refreshed Classic Broker approved-data wording (2.2); replaced 4.1's unconfirmed Settings → Audit logs console path with API retrieval, the only route Snyk documents, and filled its Detection Focus; corrected Appendix A to Free/Team/Enterprise and removed the SCIM row (no SCIM control in this guide); repaired three redirecting Appendix B links; added read-only api Code Packs for 1.1, 1.2, 2.2, and 3.1; fixed fail-open, pagination, portability, and exit-code defects in the 2.1, 3.2, and 4.1 packs | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.1 | ai-drafted | Added api Code Packs for §2.1 (service-account credential-type audit + legacy-key deletion via the REST service_accounts endpoints) and §4.1 (org/group audit-log export via audit_logs/search inside the 90-day window), plus a cli Code Pack for §3.2 (snyk ignore with mandatory reason and expiry, .snyk suppression audit), all verified against docs.snyk.io API and CLI references | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass (Tier 1 only): rewrote 2.1 for the three service-account credential types (API key never expires and is not recommended; access token 1-year max with no in-place rotation; OAuth 2.0 recommended); added Universal vs Classic Broker and the April 2026 Broker high-availability default to 2.2; documented Enterprise-only audit logs, 90-day rolling retention, and the login/logout exclusion in 4.1; repaired rotted docs.snyk.io links to the platform-administration tree and removed Trust Center / marketing pages from Appendix B. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | ai-drafted | Initial Snyk hardening guide | Claude Code (Opus 4.5) |

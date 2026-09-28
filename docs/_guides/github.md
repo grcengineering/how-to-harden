@@ -2857,11 +2857,11 @@ Prohibit the use of `secrets: inherit` when calling reusable workflows. Instead,
 
 **Time to Complete:** ~30 minutes for initial audit; ~5 minutes per workflow to remediate
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Final pack 5.20 dispatched on a live repo with a test callee; only the two explicitly passed secrets reached it" date="2026-09-24" %}
+#### Code Implementation
 
 The pack below shows the anti-patterns to eliminate and the explicit-passing pattern to adopt:
 
-{% include pack-code.html vendor="github" section="5.20" %}
+{% include pack-code.html vendor="github" section="5.20" validated_types="config" mark_status="ai-validated" mark_evidence="Final pack 5.20 dispatched on a live repo with a test callee; only the two explicitly passed secrets reached it" mark_date="2026-09-24" %}
 
 #### Validation & Testing
 1. No workflow files in the organization contain `secrets: inherit`
@@ -3183,9 +3183,9 @@ Configure Dependabot with grouped updates to reduce PR noise while keeping depen
 
 **Time to Complete:** ~10 minutes
 
-#### Code Implementation{% include status-mark.html status="ai-validated" evidence="Dependabot grouping pack 6.03 deployed to a live repo; grouped Dependabot PR opened" date="2026-09-24" %}
+#### Code Implementation
 
-{% include pack-code.html vendor="github" section="6.3" %}
+{% include pack-code.html vendor="github" section="6.3" validated_types="config" mark_status="ai-validated" mark_evidence="Dependabot grouping pack 6.03 deployed to a live repo; grouped Dependabot PR opened" mark_date="2026-09-24" %}
 
 #### Compliance Mappings
 - **NIST 800-53:** SA-12 (Supply chain protection), SI-2 (Flaw remediation)

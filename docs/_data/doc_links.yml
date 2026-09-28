@@ -791,8 +791,12 @@ replit:
   product_docs: "https://docs.replit.com"
   api_docs: "https://docs.replit.com/teams/admin-api"
   hardening_docs:
-    - label: "Enterprise Privacy & Governance Settings"
+    - label: "Privacy & Deployment Settings"
+      url: "https://docs.replit.com/teams/privacy-and-deployment-settings"
+    - label: "Source Control Settings"
       url: "https://docs.replit.com/teams/enterprise-privacy-settings"
+    - label: "Security Settings (Scans & Auto-Protect)"
+      url: "https://docs.replit.com/teams/security"
     - label: "Project Security Center"
       url: "https://docs.replit.com/features/security/project-security-center"
     - label: "Workspace Security Center"
@@ -885,7 +889,7 @@ snyk:
     - label: "Authentication & Access (Enterprise)"
       url: "https://docs.snyk.io/implementation-guides/enterprise-implementation-guide/configure-group-settings-and-policies/authentication-and-access"
     - label: "Service Accounts"
-      url: "https://docs.snyk.io/snyk-platform-administration/service-accounts"
+      url: "https://docs.snyk.io/platform-administration/service-accounts/service-accounts"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/snyk"
 
 splunk:
