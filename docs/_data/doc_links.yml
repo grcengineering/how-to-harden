@@ -791,8 +791,12 @@ replit:
   product_docs: "https://docs.replit.com"
   api_docs: "https://docs.replit.com/teams/admin-api"
   hardening_docs:
-    - label: "Enterprise Privacy & Governance Settings"
+    - label: "Privacy & Deployment Settings"
+      url: "https://docs.replit.com/teams/privacy-and-deployment-settings"
+    - label: "Source Control Settings"
       url: "https://docs.replit.com/teams/enterprise-privacy-settings"
+    - label: "Security Settings (Scans & Auto-Protect)"
+      url: "https://docs.replit.com/teams/security"
     - label: "Project Security Center"
       url: "https://docs.replit.com/features/security/project-security-center"
     - label: "Workspace Security Center"

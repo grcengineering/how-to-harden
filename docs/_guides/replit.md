@@ -6,9 +6,9 @@ slug: "replit"
 tier: "3"
 category: "DevOps"
 description: "Security and privacy hardening for Replit organizations and the apps they deploy — SAML SSO/SCIM, admin tiering, Enterprise governance toggles, Agent guardrails (dev/prod database separation, Plan mode, rollbacks), deployment access control, secrets, external access tokens, and audit/SIEM logging."
-version: "0.1.0"
+version: "0.2.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-15"
+last_updated: "2026-09-25"
 ---
 
 **Plans Covered:** Starter, Core, Pro, Enterprise (controls are heavily plan-gated; each notes its gate)
@@ -90,6 +90,8 @@ Enterprise SAML SSO is configured at **Settings → Advanced → Authentication 
 3. Submit the IdP SSO URL, entity ID, X.509 certificate, and your **comma-separated email domains** (include subdomains/aliases); wait for **Provisioning…** (~1 min) → **Active**
 4. Enforce MFA in the IdP's policy for the Replit application
 
+**Automation:** ClickOps only — Replit exposes no write interface for SAML SSO or domain claiming ([SAML](https://docs.replit.com/teams/identity-and-access-management/saml); the [Admin API reference](https://api.replit.com/docs) lists no SSO or domain endpoint, 2026-09-24). Self-service disable isn't supported either; turning SSO off goes through your Replit account manager.
+
 **Time to Complete:** ~1–2 hours
 
 #### Validation & Testing
@@ -124,18 +126,24 @@ SCIM (Enterprise; enabled via **Settings → Advanced → Identity & Governance*
 
 - SCIM-provisioned members "can only be added, removed, or have their roles changed through your IdP" — membership becomes directory-governed, which is what your access reviews assume
 - The legacy-member gap is a real deprovisioning hole: anyone who joined before SCIM stays until manually removed — a one-time audit plus periodic re-check closes it
-- An IdP-assigned **"Admin" role maps to ACCOUNT admin** — over-granting by default; use the Workspace admin role for workspace-scoped provisioning (see 1.3)
+- Account admin is granted only through one designated **Account admin group** (**Settings → Advanced → Identity & Governance → Automatic member provisioning (SCIM)** card → **Account admin group** → **Edit**). A group given **Admin** on a workspace becomes workspace admin of that workspace only — "it does not grant account admin." Keep the Account admin group small and IdP-governed; designating a different group is a cutover that revokes the previous one (see 1.3)
 
 **Attack Prevented:** Orphaned access after offboarding; unmanaged membership beside the managed path
 
 #### Prerequisites
 - Enterprise plan (contact sales@replit.com to enable); IdP admin
 
+#### Code Implementation
+
+{% include pack-code.html vendor="replit" section="1.2" %}
+
 #### ClickOps Implementation
 1. **Settings → Advanced → Identity & Governance** → follow the IdP-specific onboarding portal (Entra ID, Okta supported natively)
-2. Map IdP groups → Replit roles; prefer **Workspace admin** over account-level Admin in mappings
+2. In the SCIM card's workspace-access surface, designate a dedicated, minimal **Account admin group** first; then **Workspaces** tab → workspace row **⋮** → **Edit assignments** → give each synced group **Admin**, **Member**, **Viewer**, or **Guest** on that workspace (Admin = workspace admin of that workspace only). Roles of SCIM-provisioned members can't be edited in Replit — change group membership in the IdP instead
 3. Audit the Members list for pre-SCIM legacy members; remove any not in the IdP; re-check quarterly
 4. Entra ID: assign flat groups directly (nested groups are not expanded)
+
+**Automation:** The Admin API reads membership (`GET /v1/members`, which the pack diffs against your IdP) but has no member-removal or role-assignment endpoint — removing legacy members and mapping groups to workspaces is **ClickOps only** ([Admin API reference](https://api.replit.com/docs), [SCIM](https://docs.replit.com/teams/identity-and-access-management/scim), 2026-09-24).
 
 #### Validation & Testing
 1. IdP deactivation of a test user removes their Replit access automatically
@@ -162,13 +170,13 @@ SCIM (Enterprise; enabled via **Settings → Advanced → Identity & Governance*
 | NIST 800-53 | AC-6(1), AC-6(5) |
 
 #### Description
-Enterprise splits the Admin role: **account admins** hold billing, seats, all workspaces, admin management, and exclusively configure SAML/SCIM/audit logs; **workspace admins** are scoped to specific workspaces with none of that. Core/Pro have a single admin tier. Keep account admins to a governed minimum (the platform refuses to demote yourself or remove the last one), and provision workspace-scoped power via the Workspace admin role.
+Enterprise splits the Admin role: **account admins** hold billing, seats, all workspaces, admin management, and exclusively configure SAML/SCIM/audit logs; **workspace admins** are scoped to specific workspaces with none of that. Core/Pro have a single admin tier. Keep account admins to a governed minimum (the platform refuses to demote yourself or remove the last one), and provision workspace-scoped power via the workspace **Admin** role. Under SCIM, account admins are exactly the members of the designated **Account admin group**, and a group given **Admin** on a workspace becomes workspace admin there only.
 
 #### Rationale
 **Why This Matters:**
 
 - Account admin is the org-takeover role — it controls the IdP wiring itself (SSO/SCIM/audit config), so a compromised account admin can unwind every identity control above
-- SCIM's Admin→account-admin mapping default silently mints top-tier admins from IdP group membership — the split only works if your mappings use Workspace admin
+- Under SCIM the Account admin group is the org-takeover lever: its IdP membership *is* your account-admin roster, so govern that group like the admin login itself
 - Least-privilege admin tiering is the difference auditors look for between "some admins" and "administered admin access"
 
 **Attack Prevented:** Full-org compromise via over-provisioned admin accounts
@@ -176,10 +184,16 @@ Enterprise splits the Admin role: **account admins** hold billing, seats, all wo
 #### Prerequisites
 - Enterprise plan (Core/Pro: minimize the single admin tier instead)
 
+#### Code Implementation
+
+{% include pack-code.html vendor="replit" section="1.3" %}
+
 #### ClickOps Implementation
-1. **Settings → Seats** → member's actions menu → **Promote to account admin** — only for the governed few (2–3)
-2. Per workspace: **Members page → role selector → Workspace admin** for scoped administration
-3. Review SCIM role mappings: IdP "Admin" groups should map to Workspace admin unless account-tier is intended
+1. **Settings → Seats** → member's actions menu → **Promote to account admin** — only for the governed few (2–3). Under SCIM, account admins are the members of the designated Account admin group, managed in your IdP
+2. Per workspace: **Members page → role selector → Admin** (in a workspace's role selector, Admin is the workspace admin role). Under SCIM the selector is disabled for provisioned members — assign a synced group the **Admin** role on that workspace instead
+3. Under SCIM, confirm the Account admin group holds only the governed 2–3 people; workspace **Admin** grants never confer account admin
+
+**Automation:** The Admin API reads the roster (`GET /v1/members` returns `isAccountAdmin` and each workspace role — the pack compares it to your governed list) but has no endpoint to promote or demote an admin — role changes are **ClickOps only** ([Admin API reference](https://api.replit.com/docs), 2026-09-24).
 
 #### Validation & Testing
 1. Account-admin count matches the governed list
@@ -206,7 +220,7 @@ Enterprise splits the Admin role: **account admins** hold billing, seats, all wo
 | NIST 800-53 | AC-2, AC-3, AC-6 |
 
 #### Description
-Org apps are **private by default** (since June 9, 2025) — but legacy apps may retain looser settings, and team-workspace members get automatic access to **all** workspace projects. Guests (Enterprise) are external collaborators limited to explicitly shared apps, and **must use an email outside your SSO domains** — a guardrail preventing internal users from being smuggled in unmanaged. Viewers are read-only (50 seats included on Pro). Per-app access runs through the **Invite** button (roles: Owner/Publisher/Editor/Viewer/None) and group grants.
+Org apps are **private by default** (since June 9, 2025) — but legacy apps may retain looser settings, and team-workspace members get automatic access to **all** workspace projects. Guests (Enterprise) are external collaborators limited to explicitly shared apps, and **must use an email outside your SSO domains** — a guardrail preventing internal users from being smuggled in unmanaged. Viewers are read-only (50 seats included on Pro). Per-app access runs through the **Invite** button in the Project Editor header (roles: **Owner / Publisher / Editor / Read-only**; choose **None** to revoke) and group grants. Viewer-seat members can't be added to an app individually — grant them through a group, and their app access is capped at Read-only whatever the group's role — and an email invite can't grant Owner.
 
 #### Rationale
 **Why This Matters:**
@@ -217,11 +231,17 @@ Org apps are **private by default** (since June 9, 2025) — but legacy apps may
 
 **Attack Prevented:** Ambient internal access to sensitive apps; stale external access
 
+#### Code Implementation
+
+{% include pack-code.html vendor="replit" section="1.4" %}
+
 #### ClickOps Implementation
-1. **Members tab** → review Guests: each maps to a live engagement and only the intended shared apps; email invitations expire after 7 days — clear stale ones
-2. Per sensitive app: **Invite** (upper right, left of Publish) → verify people/groups and roles; remove "None"-eligible grantees
+1. **Members** page → **Guests** table: each guest maps to a live engagement and only the intended apps; **Revoke** stale guests. Email invitations expire after 7 days
+2. Per sensitive app: **Invite** (Project Editor header) → verify people and groups and their roles; set any grantee who no longer needs access to **None** to revoke
 3. Audit legacy apps created before 2025-06-09 for looser access settings
 4. Enterprise: use custom **Groups** (Groups tab → Add) for scoped bulk access, SCIM-synced where possible
+
+**Automation:** Guest review is automated read-only by the pack (`GET /v1/members?role=guest`); per-app grants are **ClickOps only** — the Admin API exposes no app-access endpoint ([Admin API reference](https://api.replit.com/docs), 2026-09-24).
 
 #### Validation & Testing
 1. Every guest is externally domained and time-bounded
@@ -250,12 +270,12 @@ Org apps are **private by default** (since June 9, 2025) — but legacy apps may
 | NIST 800-53 | CM-6, AC-3, SA-11 |
 
 #### Description
-**Settings → Advanced** (Enterprise) carries the org-wide hardening switches, each transcribed from the vendor's enterprise-privacy-settings doc: **Private deployments** (require all new apps published private — new apps only), **Password-protected deployments** (allow/deny password-gated publishing), **Require private development URLs** (authentication on all dev URLs — **applies retroactively to all existing apps**), **Ban source code export** (no zip downloads), **Require security scan** (mandatory pre-publish scan; not retroactive), **Require Git remote** (local changes must be pushed to a remote before publishing), and **Private remotes** (Off | Require for non-admins | Require for all).
+Enterprise account admins set the org-wide hardening switches in **Settings → Advanced** (**Privacy settings**, **Deployment settings**, **Source control settings**) and **Account settings → Advanced → Security**, transcribed from Replit's privacy-and-deployment, source-control, and security docs: **Private deployments** (Off | Require | Require for non-admins — newly published apps only), **Public publishing exceptions** (per-project exceptions that let a project publish publicly despite the policy; reviewed under **Manage**), **Password-protected deployments** (Enabled | Disabled | Disabled for non-admins — not retroactive), **Require private development URLs** (authentication on all dev URLs — **applies retroactively to all existing apps**; private previews don't work in Expo Go, simulators, or the Replit mobile app), **Ban source code export** (no ZIP export), **Ban attachment uploads**, **Deployment geography**, **Require Git remote** (push to a remote before publishing; not applied to apps published before it was enabled), **Private remotes** (Off | Require for non-admins | Require for all), and **Require security scan** with **Block publishing at severity** (defaults to critical-only) and **Security alert recipients**.
 
 #### Rationale
 **Why This Matters:**
 
-- These seven toggles are the entire difference between "builders can do anything" and a governed platform: private-by-default publishing, authenticated dev URLs, no source exfil via zip, scans as a gate, and code provenance through Git remotes
+- These settings are the entire difference between "builders can do anything" and a governed platform: private-by-default publishing, authenticated dev URLs, no source exfil via ZIP, scans as a gate, and code provenance through Git remotes
 - "Require private development URLs" is the only retroactive switch — it immediately closes the public-dev-URL exposure (4.2) across every existing app
 - "Require Git remote" + "Private remotes" give you code custody outside Replit — recovery and review both improve
 
@@ -265,12 +285,15 @@ Org apps are **private by default** (since June 9, 2025) — but legacy apps may
 - Enterprise plan; account admin
 
 #### ClickOps Implementation
-1. **Settings → Advanced** → enable: **Private deployments**, **Require private development URLs**, **Ban source code export**, **Require security scan** (Require), **Require Git remote**
-2. Set **Private remotes** to **Require for non-admins** (L2) or **Require for all** (L3); decide **Password-protected deployments** per policy (disable at L3 — password gates are shared secrets)
-3. Existing apps: private-deployment enforcement is not retroactive — sweep the Workspace Security Center's published-projects inventory (7.2) and unpublish/republish stragglers
+1. **Settings → Advanced → Privacy settings**: **Private deployments** = **Require** (L3) or **Require for non-admins** (L2); **Password-protected deployments** = **Disabled** (L3) or **Disabled for non-admins** (L2) — password gates are shared secrets; **Require private development URLs** on; **Ban source code export** on; **Ban attachment uploads** per policy. Then **Public publishing exceptions → Manage** and revoke any exception without a current approval
+2. **Settings → Advanced → Source control settings**: **Require Git remote** on; **Private remotes** = **Require for non-admins** (L2) or **Require for all** (L3)
+3. **Account settings → Advanced → Security**: **Require security scan** on; **Block publishing at severity** = **Critical** (L2) or **High** (L3); route **Security alert recipients** to a monitored list; **Save**
+4. Existing apps: private deployments, password policy, Require Git remote, and Require security scan are not retroactive — sweep published apps (the 4.1 pack, or the Workspace Security Center inventory in 7.2) and unpublish/republish stragglers
+
+**Automation:** ClickOps only — Replit exposes no write interface for Privacy, Deployment, Source control, or Security settings ([privacy and deployment settings](https://docs.replit.com/teams/privacy-and-deployment-settings), [security](https://docs.replit.com/teams/security), [Admin API reference](https://api.replit.com/docs), 2026-09-24). The Admin API lists public-publishing *requests* (`GET /v1/projects/public-publishing-requests`) and a `write:deployments` key can approve them, but it does not return the live exception list — review exceptions under **Manage**.
 
 #### Validation & Testing
-1. A member's new app cannot publish public, cannot export source, and cannot publish unscanned
+1. A member's new app cannot publish public (unless a listed publishing exception exists), cannot export source, and cannot publish past the blocking severity
 2. All dev URLs demand authentication, including pre-existing apps
 
 **Expected result:** The org's guardrails hold regardless of individual builder choices.
@@ -316,6 +339,8 @@ Every Replit App now works with two databases: development (where "you and Agent
 2. **Database tool → production database → My Data** → leave **Edit** toggled off except during deliberate maintenance
 3. At publish/republish, review the schema-change approval prompt — treat destructive flags (dropped columns, type changes, renames, constraint changes) as change-control events
 
+**Automation:** ClickOps only — Replit exposes no write interface for production-database edit access or dev/prod separation ([production databases](https://docs.replit.com/cloud-services/storage-and-databases/production-databases); the [Admin API reference](https://api.replit.com/docs) has no database endpoint, 2026-09-24).
+
 #### Validation & Testing
 1. Agent chat requests targeting production data are refused (dev-only)
 2. A dev schema change reaches production only after the explicit publish-time approval
@@ -341,7 +366,7 @@ Every Replit App now works with two databases: development (where "you and Agent
 | NIST 800-53 | CP-10, CM-3 |
 
 #### Description
-**Plan mode** (mode selector at the bottom-left of the Agent chat input) lets you "ask questions without modifying your project's code or data" — the agent produces a task list you must explicitly approve via **Start building**. Checkpoints capture project files, full AI context, environment configuration, agent memory, and database contents; rollback is **Agent tab → checkpoint → Rollback to here**. The critical nuance: **"By default, rollbacks do not change your database"** — include the dev database by selecting **Database** under **Additional rollback options**. Production restoration is a separate point-in-time-restore procedure (5.2). Leave **auto-approve-plan** off for production work (preferences are per-user, so your discipline isn't undone by a teammate's setting).
+**Plan mode** (the **Plan** toggle at the bottom right of the Agent chat input) lets you "ask questions without modifying your project's code or data" — the agent produces a task list you must explicitly approve: **Start building** before the project's first checkpoint, **Build here** or **Build in background** after it. Checkpoints capture project files, full AI context, environment configuration, agent memory, and database contents; rollback is **Agent tab → checkpoint → Rollback to here**. The critical nuance: **"By default, rollbacks do not change your database"** — include the dev database by selecting **Database** under **Additional rollback options**. Production restoration is a separate point-in-time-restore procedure (5.2). Leave **Auto-approve for plans** and **Automatically apply changes** for background tasks (**Auto-merge for background tasks**) off for production work — by default a background task waits for you to review and apply its changes, and both settings are per-user, so your discipline isn't undone by a teammate's setting.
 
 #### Rationale
 **Why This Matters:**
@@ -355,10 +380,12 @@ Every Replit App now works with two databases: development (where "you and Agent
 #### ClickOps Implementation
 1. Start risky or exploratory sessions in **Plan mode**; approve transitions to Build explicitly
 2. Rehearse a rollback on a non-critical app: **Agent tab → Rollback to here**, once with and once without the **Database** option — observe the difference
-3. Keep **auto-approve-plan** off (Agent settings dropdown) for anything touching production
+3. Keep **Auto-approve for plans** and **Automatically apply changes** (background build options / **Auto-merge for background tasks**) off for anything touching production — both are per-user Agent settings (Agent settings dropdown)
+
+**Automation:** ClickOps only — Plan mode, plan auto-approval, background auto-merge, and checkpoint rollback are per-user Agent UI settings with no API ([Plan mode](https://docs.replit.com/core-concepts/agent/plan-mode), [Agent modes](https://docs.replit.com/core-concepts/agent/agent-modes), 2026-09-24).
 
 #### Validation & Testing
-1. In Plan mode, no file/database changes occur until Start building
+1. In Plan mode, no file/database changes occur until the plan is approved (**Start building** / **Build here** / **Build in background**)
 2. The rehearsed rollback restores the expected state both ways
 
 **Expected result:** Agent changes are deliberate; recovery semantics are rehearsed, not discovered mid-incident.
@@ -382,24 +409,26 @@ Every Replit App now works with two databases: development (where "you and Agent
 | NIST 800-53 | AC-20, SA-9 |
 
 #### Description
-Agent can wire apps to managed model providers (OpenAI, Anthropic, Google Gemini, 200+ via OpenRouter). On Pro/Enterprise this is **disabled by default** and controlled by org admins via the **Replit AI Integrations** section of organization settings. Documented privacy defaults for managed endpoints: paid endpoints training **disabled**, free endpoints training **enabled**, input/output logging disabled; **Enterprise accounts are restricted to Zero Data Retention endpoints only**. Two honest negatives to plan around: **Agent Web Search cannot be disabled** ("there's nothing to toggle on" — an untoggleable egress channel for prompt/project context), and **no org-level switch disables Agent itself** — your levers are budgets (3.4), the AI-integrations toggle, and app access.
+Agent can wire apps to managed model providers (OpenAI, Anthropic, Google Gemini, Grok, and 200+ via OpenRouter). Starter: disabled (own API key only). Core: available with Replit-managed credentials, no admin toggle. Pro/Enterprise: **disabled by default** and controlled by org admins via the **Replit AI Integrations** section of organization settings; separately, **Disable external AI model integrations** in the organization billing settings blocks Replit-managed AI integrations for every user. For requests routed through OpenRouter, Replit sets: paid endpoints training **disabled**; free endpoints training **and publishing to public datasets** **enabled**; input/output logging disabled; **Enterprise is restricted to Zero Data Retention endpoints**. Two honest negatives to plan around: **Agent Web Search cannot be disabled** ("there's nothing to toggle on" — an untoggleable egress channel for prompt/project context), and **no org-level switch disables Agent itself** — Enterprise can narrow which providers and models Agent may use (**Settings → Advanced → Agent modes and model providers**), but at least one model each from OpenAI, Anthropic, and Google must stay enabled. Your levers are budgets (3.4), the AI-integration toggles, model policy, and app access.
 
 #### Rationale
 **Why This Matters:**
 
-- Free-endpoint traffic may be used for provider training on self-serve plans — the admin toggle plus paid/ZDR endpoints is how you keep app data out of third-party training loops
+- Free OpenRouter endpoints may train on — and publish to public datasets — the prompts and completions of self-serve plans; the admin toggles plus paid/ZDR endpoints are how you keep app data out of third-party training loops
 - Users can decline a managed integration (**Dismiss** instead of Approve) and supply their own API key via Secrets — a governed alternative when you want provider relationships under your own contracts
 - Untoggleable Web Search means project context can reach search infrastructure whenever the agent decides — factor it into what data you let agent-built projects contain (pair with 5.x data controls)
 
 **Attack Prevented (privacy):** App/prompt data flowing to model providers on training-enabled endpoints; ungoverned AI-provider sprawl
 
 #### Prerequisites
-- Pro/Enterprise for the org-admin toggle (Core: enabled by default — govern by policy and review)
+- Pro/Enterprise for the org-admin toggle (Starter: disabled, own API key only; Core: available with Replit-managed credentials and no admin toggle — govern by policy and review)
 
 #### ClickOps Implementation
-1. **Organization settings → Replit AI Integrations** → keep disabled until a governed request exists; prefer own-API-key integrations (stored in Secrets) for contracted providers
-2. Enterprise: confirm the ZDR-only restriction applies to your account
+1. **Organization settings → Replit AI Integrations** → keep disabled until a governed request exists, or block managed integrations entirely via the organization billing settings → **Disable external AI model integrations**; prefer own-API-key integrations (stored in Secrets) for contracted providers
+2. Enterprise: confirm the ZDR-only restriction applies to your account, and set **Settings → Advanced → Agent modes and model providers** → each provider's **Account policy** (**Enable all** / **Enable selected** / **Disabled**) to your approved model list
 3. Document the Web Search and no-Agent-off-switch limitations in your platform risk assessment
+
+**Automation:** ClickOps only — Replit exposes no write interface for the Replit AI Integrations, external-AI-integration, or model-provider settings ([Replit AI Integrations](https://docs.replit.com/replitai/replit-ai-integrations), [Agent modes and models](https://docs.replit.com/teams/modes-and-model-providers), [Admin API reference](https://api.replit.com/docs), 2026-09-24).
 
 #### Validation & Testing
 1. A member's managed-integration request on Pro/Enterprise requires the admin-enabled state
@@ -426,7 +455,7 @@ Agent can wire apps to managed model providers (OpenAI, Anthropic, Google Gemini
 | NIST 800-53 | SC-6, CM-6 |
 
 #### Description
-Organization budgets (**Settings → Billing**, org admin/owner; $500 increments) block usage-based services — Agent included — when reached. Enterprise adds per-user limits (**Workspace usage page → Agent users table → edit the Usage limit column**; per-user overrides supersede group and workspace defaults). Individual Core accounts set a spend cap at **Settings → Account → Billing**.
+Organization budgets (the organization's **Settings → Billing** page, org admin/owner; $500 increments) cap usage-based services — Agent included. Organizations set usage limits, plus a **Service shutdown limit** that suspends services until the budget is raised or the next cycle starts, on the usage page → **Account usage** → **Manage limits**. Enterprise adds per-user limits (**Workspace usage page → Agent users table → edit the Usage limit column**; per-user overrides supersede group and workspace defaults). Individual Core accounts set a spend cap at **Settings → Account → Usage → Account usage → Manage limits** (usage limit and optional service shutdown limit).
 
 #### Rationale
 **Why This Matters:**
@@ -437,10 +466,16 @@ Organization budgets (**Settings → Billing**, org admin/owner; $500 increments
 
 **Attack Prevented:** Resource abuse and runaway agent loops; unbounded spend from a compromised account
 
+#### Code Implementation
+
+{% include pack-code.html vendor="replit" section="3.4" %}
+
 #### ClickOps Implementation
-1. **Settings → Billing** → set an org budget aligned to expected usage
+1. Organization **Settings → Billing** → set an org budget aligned to expected usage; then the usage page → **Account usage** → **Manage limits** → set a usage limit and a **Service shutdown limit**
 2. Enterprise: set per-user Agent limits for new/low-trust members; raise on review
 3. Alert on budget-threshold hits through your FinOps process
+
+**Automation:** The pack reads the account spending controls and workspace Agent limits (`GET /v1/budgets`). The write side exists too — `POST /v1/budgets` with a `write:budgets` key sets or clears a budget ([Admin API reference](https://api.replit.com/docs), 2026-09-24) — so keep that scope out of read-only automation (7.3).
 
 #### Validation & Testing
 1. A test account hitting its limit is blocked from further Agent usage until raised
@@ -469,7 +504,7 @@ Organization budgets (**Settings → Billing**, org admin/owner; $500 increments
 | NIST 800-53 | AC-3, AC-14 |
 
 #### Description
-The Publishing tool's **"Who can access your app"** offers Public, Password protected (shared password, no Replit account needed), **Workspace only** (all workspace admins/members/viewers, authenticated through Replit), and **Invite only** (you, admins, invited groups/users — most restrictive). Changing access requires **unpublish → change → republish** (no live flip). Workspace admins can restrict which options members may use, including turning off password-protected publishing.
+The Publishing tool's **"Who can access your app"** offers Public, Password protected (shared password, no Replit account needed), **Workspace only** (all workspace admins/members/viewers, authenticated through Replit), and **Invite only** (you, admins, invited groups/users — most restrictive). Changing access requires **unpublish → change → republish** (no live flip). The default depends on where you build: personal-workspace apps default to **Public**, organization-workspace apps to a private option. Workspace admins can restrict which options members may use, including turning off password-protected publishing.
 
 #### Rationale
 **Why This Matters:**
@@ -480,10 +515,16 @@ The Publishing tool's **"Who can access your app"** offers Public, Password prot
 
 **Attack Prevented:** Unauthenticated access to internal apps and their data
 
+#### Code Implementation
+
+{% include pack-code.html vendor="replit" section="4.1" %}
+
 #### ClickOps Implementation
-1. At publish: **Publish → Publishing (Tools pane) → Who can access your app** → **Workspace only** (internal) or **Invite only** (sensitive)
-2. Custom domains: **Publishing tool → Domains tab** — keep the `replit-verify` TXT record in DNS **permanently** (removing it breaks certificate renewal); A records only, no Cloudflare proxying during issuance
-3. Sweep existing public apps via the Workspace Security Center inventory (7.2)
+1. At publish: **Publish** (top right of the Project Editor) or **Tools** pane → **Replit Cloud** → **Publishing** → **Who can access your app** → **Workspace only** (internal) or **Invite only** (sensitive)
+2. Custom domains: **Publishing tool → Domains tab** — keep the `replit-verify` TXT record in DNS **permanently** (removing it breaks certificate renewal); A records only (no AAAA); keep Cloudflare records **DNS only (gray cloud)** permanently, because Replit cannot renew certificates for proxied records; add each subdomain (including `www`) as its own entry with its own A and TXT records
+3. Sweep existing public apps with the pack above (Enterprise) or the Workspace Security Center inventory (7.2)
+
+**Automation:** The pack audits `deploymentPrivacy` across team workspaces (`GET /v1/deployments`); changing access is **ClickOps only** — unpublish, choose the option, republish in the Publishing tool ([private deployments](https://docs.replit.com/features/publishing/private-deployments), [Admin API reference](https://api.replit.com/docs), 2026-09-24).
 
 #### Validation & Testing
 1. An incognito request to the app is met with Replit sign-in (or invite denial)
@@ -525,6 +566,9 @@ The Publishing tool's **"Who can access your app"** offers Public, Password prot
 1. Per app: **Project Editor → Developer tools → Networking → Private development URL** → enable
 2. Enterprise: enforce via **Settings → Advanced → Require private development URLs**
 3. Where automation must reach a private dev URL, use scoped external access tokens (4.3), not a return to public
+4. Private previews are not supported for mobile apps in Expo Go, simulators, or the Replit mobile app — test those builds with non-sensitive data
+
+**Automation:** ClickOps only — Replit exposes no write interface for the Private development URL toggle ([development URLs](https://docs.replit.com/core-concepts/project-editor/app-setup/development-urls), [privacy and deployment settings](https://docs.replit.com/teams/privacy-and-deployment-settings), 2026-09-24).
 
 #### Validation & Testing
 1. The dev URL prompts for authentication from a clean browser
@@ -551,14 +595,14 @@ The Publishing tool's **"Who can access your app"** offers Public, Password prot
 | NIST 800-53 | IA-5, AC-6 |
 
 #### Description
-External access tokens let automated services (CI, webhooks, monitors) reach apps behind private dev URLs or private deployments — i.e., they are **deliberate bypasses of the controls in 4.1/4.2** and must be governed like credentials. Created at **Publishing tool → Adjust settings → Security → External access tokens** (label ≤120 chars; environment Development *or* Production — one per token; expiry 1 hour to 5 years, no permanent option). Use the **`Authorization: Bearer` header, not the `?project-protection-bypass=` query parameter** (URLs leak into logs and history). Production tokens bind to a specific deployment and are **invalidated on republish**; revocation is immediate and irreversible; only a token's creator can revoke it, and removing a collaborator auto-revokes their tokens. Core/Pro plans; Enterprise requires Replit opt-in.
+External access tokens let automated services (CI, webhooks, monitors) reach apps behind private dev URLs or private deployments — i.e., they are **deliberate bypasses of the controls in 4.1/4.2** and must be governed like credentials. Created at **Publishing tool → Adjust settings → Security → External access tokens** (label ≤120 chars; environment Development *or* Production — one per token; expiry 1 hour to 5 years, no permanent option). Use the **`Authorization: Bearer` header, not the `?project-protection-bypass=` query parameter** (URLs leak into logs and history). A Production token **survives republishing** (including a new version); Replit revokes it when you unpublish or delete the deployment, or switch the Project from private to public. Revocation is immediate and irreversible, and only a token's creator can revoke it — or even see it: a Project owner cannot list collaborators' tokens. Removing a member from a Workspace revokes the tokens they minted for every Project in it; removing a collaborator, or removing a Project from a custom group's access, revokes the affected tokens. Tokens are available whenever a deployment uses private access, with no Workspace opt-in; in an Enterprise Workspace only Workspace admins can manage them.
 
 #### Rationale
 **Why This Matters:**
 
 - Each token is standing authenticated access to a private app — inventory them, shorten expiries (the 5-year option is an anti-pattern), and rotate on personnel or pipeline changes
 - The query-parameter form writes the credential into server logs, proxies, and referrers — the header form is the only acceptable usage
-- Creator-only revocation means offboarding a token owner is the revocation path for their tokens — the auto-revoke on collaborator removal is your safety net, but verify it
+- Creator-only revocation and creator-only visibility mean no single reviewer sees every token — offboarding (Workspace member removal auto-revokes that member's tokens) is the backstop, so verify it during offboarding
 
 **Attack Prevented:** Long-lived bypass credentials leaking through logs or surviving personnel changes
 
@@ -568,11 +612,13 @@ External access tokens let automated services (CI, webhooks, monitors) reach app
 
 #### ClickOps Implementation
 1. **Publishing tool → Adjust settings → Security → External access tokens** → create per-service tokens with descriptive labels and the shortest workable expiry (≤30 days for CI at L2)
-2. Standardize the Bearer-header usage; grep pipelines for `project-protection-bypass` and eliminate it
-3. On any exposure or role change: revoke immediately; remember republishing production invalidates production tokens (plan re-issuance into deploys)
+2. Standardize the Bearer-header usage; run the pack's `scan` mode (no credential needed) in every pipeline to catch `project-protection-bypass` and inline Bearer literals
+3. On any exposure or role change: revoke immediately. Unpublishing, deleting the deployment, or making the app public revokes Production tokens — plan re-issuance around those events, not around ordinary republishes
+
+**Automation:** Token issuance, listing, and revocation are **ClickOps only** — neither the docs nor the [Admin API reference](https://api.replit.com/docs) expose a token-management endpoint ([external access tokens](https://docs.replit.com/features/deployment-customization/external-access-tokens), 2026-09-24). The pack automates usage hygiene (`scan`) and a live bearer-header check (`probe`).
 
 #### Validation & Testing
-1. Token inventory maps 1:1 to live automations, all with expiries
+1. Each token creator (in Enterprise, each Workspace admin) reviews their own token list — owners can't see collaborators' tokens — and every token maps 1:1 to a live automation with an expiry
 2. No pipeline uses the query-parameter form
 
 **Expected result:** Every bypass credential is labeled, scoped, short-lived, and header-borne.
@@ -596,7 +642,7 @@ External access tokens let automated services (CI, webhooks, monitors) reach app
 | NIST 800-53 | CM-7, SC-7 |
 
 #### Description
-Replit auto-binds the first opened non-localhost port to external port 80; **localhost services are not auto-exposed** (exposing one requires explicit `exposeLocalhost` config). Port mappings live in the `.replit` file's `[[ports]]` section (`localPort`, `externalPort`, `exposeLocalhost`); published apps expose **a single external port**. Audit the mappings — every `[[ports]]` entry and `exposeLocalhost = true` is deliberate attack surface. Static deployments additionally support `[[deployment.responseHeaders]]` for hardening headers (X-Frame-Options, X-Content-Type-Options, HSTS; reserved headers like Set-Cookie/Server are blocked), matching Replit's own checklist advice.
+Replit binds the first port you open to external port 80; **localhost services are not auto-exposed** — unless a port sets `exposeLocalhost = true`, or a user sets **automatic port forwarding** in the User Settings tool to **All ports**, which exposes localhost ports by default. Port mappings live in the `.replit` file's `[[ports]]` section (`localPort`, `externalPort`, `exposeLocalhost`). Autoscale and Reserved VM deployments support **a single external port**, and exposing a localhost-bound port makes the publish fail. Audit the mappings — every `[[ports]]` entry and `exposeLocalhost = true` is deliberate attack surface. Static deployments additionally support `[[deployment.responseHeaders]]` for hardening headers (X-Frame-Options, X-Content-Type-Options, HSTS; reserved headers like Set-Cookie/Server are blocked), matching Replit's own checklist advice.
 
 #### Rationale
 **Why This Matters:**
@@ -613,8 +659,11 @@ Replit auto-binds the first opened non-localhost port to external port 80; **loc
 
 #### ClickOps Implementation
 1. Review each app's `.replit` `[[ports]]` entries; remove unused mappings and any unjustified `exposeLocalhost = true`
-2. Static deployments: add hardening headers via `[[deployment.responseHeaders]]`; republish (`.replit` changes require it) and verify at securityheaders.com
-3. Remember ports 22 and 8283 are reserved by the platform (not forwardable)
+2. **User Settings** tool → **automatic port forwarding**: must not be **All ports** (that exposes localhost-bound services by default); keep the default, or **never** for manual control
+3. Static deployments: add hardening headers via `[[deployment.responseHeaders]]` (the pack's `--apply-headers` appends only the missing ones); republish (`.replit` changes require it) and re-run the pack with the app URL
+4. Remember ports 22 and 8283 are reserved by the platform (not forwardable)
+
+**Automation:** The pack audits `.replit` and the live response headers by default and edits `.replit` only with `--apply-headers`; the per-user **automatic port forwarding** preference is **ClickOps only** ([ports](https://docs.replit.com/features/project-setup/ports), 2026-09-24).
 
 #### Validation & Testing
 1. Only intended ports answer externally; localhost services are unreachable from outside
@@ -659,6 +708,8 @@ The Secrets pane (Tool dock → All tools → Secrets) holds **App Secrets** (pe
 2. Audit Account Secrets: unlink from apps that don't need them
 3. Treat every collaborator-with-edit as secret-privileged; rotate secrets when such a collaborator leaves
 
+**Automation:** ClickOps only — Replit exposes no write interface for App or Account Secrets ([Secrets](https://docs.replit.com/core-concepts/project-editor/app-setup/secrets); the [Admin API reference](https://api.replit.com/docs) has no secrets endpoint, 2026-09-24).
+
 #### Validation & Testing
 1. No secret value appears in source or client-served assets
 2. Account-secret linkage matches a documented need per app
@@ -684,7 +735,7 @@ The Secrets pane (Tool dock → All tools → Secrets) holds **App Secrets** (pe
 | NIST 800-53 | IA-5, CP-9, CP-10 |
 
 #### Description
-Replit's managed PostgreSQL exposes its connection string (`DATABASE_URL`) in the **Database tool → Settings tab**. Reachability differs by environment: **production databases are externally connectable** from any PostgreSQL client via that string; **development databases cannot be accessed externally**. Production credentials can be **regenerated** (app owner or workspace admin; no active deployment/latest build succeeded) — "existing connection strings stop working immediately." Point-in-time restore is plan-gated: **Core 7 days, Pro 28 days**. The two-step recovery rule: restore the database first, then roll code back to the matching checkpoint, then republish.
+Replit's managed PostgreSQL exposes its connection string (`DATABASE_URL`) in the **Database tool → Settings tab**. Reachability differs by environment: **production databases are externally connectable** from any PostgreSQL client via that string; **development databases cannot be accessed externally**. Production credentials can be **regenerated** when the app has a Neon production database, you are the app owner or an admin of the owning workspace, you use Replit in a web browser, no deployment is in progress, and any live deployment's latest build completed successfully on Autoscale or a Reserved VM — "existing connection strings stop working immediately," the action cannot be undone, and a live deployment is briefly unavailable while Replit redeploys it. Point-in-time restore is plan-gated: **Core up to 7 days; Pro/Enterprise up to 28 days** — but every plan starts at 7 days, so raise the window in the production database's settings (longer windows cost more storage). The two-step recovery rule: restore the database first, then roll code back to the matching checkpoint, then republish.
 
 #### Rationale
 **Why This Matters:**
@@ -697,8 +748,11 @@ Replit's managed PostgreSQL exposes its connection string (`DATABASE_URL`) in th
 
 #### ClickOps Implementation
 1. Keep `DATABASE_URL` only in Secrets (5.1); never in code, logs, or tickets
-2. On suspected exposure: **Database tool → Settings** → regenerate production credentials (coordinate — existing connections drop immediately)
-3. Rehearse: point-in-time restore to T, checkpoint rollback to match, republish; note dev databases restore via checkpoint rollback with the **Database** option (3.2)
+2. On suspected exposure: **Database** tool → **Production Database** → **Settings** → **Advanced** → **Regenerate credentials** (coordinate — existing connections drop immediately; replace strings copied into external tools)
+3. Raise the point-in-time-restore retention window to your recovery objective (production database **Settings**); every plan starts at 7 days
+4. Rehearse: point-in-time restore to T, checkpoint rollback to match, republish; note dev databases restore via checkpoint rollback with the **Database** option (3.2)
+
+**Automation:** ClickOps only — Replit exposes no write interface for credential regeneration, retention, or point-in-time restore ([connection details](https://docs.replit.com/features/data-and-storage/connection-details), [data recovery](https://docs.replit.com/features/data-and-storage/data-recovery), 2026-09-24).
 
 #### Validation & Testing
 1. A rotated credential invalidates the old string immediately
@@ -715,7 +769,7 @@ Replit's managed PostgreSQL exposes its connection string (`DATABASE_URL`) in th
 
 ---
 
-### 5.3 Keep Object Storage Attachment-Scoped
+### 5.3 Segment App Storage per Project (Dev and Prod Share It)
 
 **Profile Level:** L2 (Walk)
 
@@ -725,31 +779,33 @@ Replit's managed PostgreSQL exposes its connection string (`DATABASE_URL`) in th
 | NIST 800-53 | AC-3, AC-6 |
 
 #### Description
-App Storage (Google Cloud Storage-backed) buckets are **account-wide**: every bucket you create is available to all your apps, with access granted per app by attaching the bucket (**bucket dropdown → Add an existing bucket**) and revoked by detaching (**Settings view → Remove Bucket from Repl**). Apps authenticate through the official SDKs (`@replit/object-storage` JS; Python equivalent) with no long-lived keys to manage. Honest limitation: the docs describe **no public/private bucket ACLs, per-object permissions, or signed-URL controls** — the only documented access boundary is which apps a bucket is attached to.
+App Storage (formerly Object Storage; Google Cloud Storage-backed) buckets are **project-exclusive**: "Each bucket belongs to one project and cannot be shared across apps," and you cannot attach a bucket to another project, even one in the same account. The exposure to govern is inside the project: "The App Storage tool lets you share data between the development and production environments of the same Replit App," so whatever production serves from a bucket is readable by dev-time Agent and code activity in that project. Apps authenticate through the official SDKs (`@replit/object-storage` JS; Python equivalent) with no long-lived keys to manage. The docs say buckets "include access policies," but document no console or SDK control for bucket ACLs, per-object permissions, or signed URLs — end-user access control is something your app code implements.
 
 #### Rationale
 **Why This Matters:**
 
-- Account-wide buckets mean a bucket holding sensitive exports is one attach-click away from any experimental app — periodic attach-audits are the control
-- With no finer-grained ACLs documented, bucket-per-purpose (rather than one shared bucket) is the only real segmentation available
-- SDK-implicit auth removes key management but also means *any code in an attached app* reads the bucket — same code-execution boundary as secrets (5.1)
+- Dev and prod share a project's buckets, so sensitive production objects sit within reach of every Agent session and experiment in that project — the environment separation 3.1 gives the database does not exist for App Storage
+- Buckets cannot span projects, so the only real segmentation is putting sensitive data in its own project, with its own smaller set of collaborators
+- SDK-implicit auth removes key management but also means *any code in the project* reads the bucket — same code-execution boundary as secrets (5.1)
 
-**Attack Prevented:** Cross-app data exposure through over-attached buckets
+**Attack Prevented:** Dev-time exposure or corruption of the files production serves; sensitive exports sitting in agent-reachable storage
 
 #### Code Implementation
 
 {% include pack-code.html vendor="replit" section="5.3" %}
 
 #### ClickOps Implementation
-1. **All tools → App Storage** → inventory buckets; detach any not needed by the current app (**Settings → Remove Bucket from Repl**)
-2. Structure buckets per purpose/sensitivity; never share one bucket across trust levels
-3. Include bucket attach/detach review in your periodic access review
+1. **All tools → App Storage** → bucket dropdown: inventory this project's buckets and their contents; delete buckets you don't need via the **Settings** view → **Delete Bucket** (irreversible — back up first)
+2. Keep sensitive exports and regulated files out of App Storage in projects where Agent works on development; put them in a dedicated project with minimal collaborators
+3. Include bucket-content review in your periodic access review
+
+**Automation:** The pack inventories and flags bucket contents from inside the project; creating and deleting buckets is **ClickOps only** — the SDK reads and writes objects, not buckets ([App Storage](https://docs.replit.com/features/data-and-storage/object-storage), [JS SDK](https://docs.replit.com/features/sdks/object-storage-javascript-sdk), 2026-09-24).
 
 #### Validation & Testing
-1. Each bucket's attached-apps list matches documented need
-2. A detached app's storage calls fail
+1. Each project's buckets hold only data its collaborators and development work may read
+2. After removing a sensitive object, the pack's existence check reports it NOT PRESENT (an SDK error is not evidence of removal)
 
-**Expected result:** Storage access follows the same least-privilege line as everything else.
+**Expected result:** Sensitive files live only in projects whose development surface is as tightly held as their production one.
 
 #### Compliance Mappings
 
@@ -772,7 +828,7 @@ App Storage (Google Cloud Storage-backed) buckets are **account-wide**: every bu
 | NIST 800-53 | SI-12, SA-9, PL-4 |
 
 #### Description
-Replit's privacy story is tiered, and none of it is a console toggle: the privacy policy says data may improve "machine learning technologies such as code generation" with **no user-facing do-not-train toggle**; the ToS reserves access to private-app content for troubleshooting/service improvement/safety. The **Commercial Agreement** (§B.2.h) is the binding no-training commitment: "Replit will not use Customer Content to… train machine learning models" — commercial customers own AI output (§B.2.b) and projects are private by default (§B.2.e). The **DPA** adds purpose limitation, subprocessor flow-down (live list at the published subprocessors page), and 90-day post-termination deletion on request. Managed AI endpoints: paid = training disabled, free = training enabled, **Enterprise = ZDR-only** (3.3).
+Replit's privacy story is tiered, and none of it is a console toggle: the privacy policy says data may improve "machine learning technologies such as code generation" with **no user-facing do-not-train toggle**; the ToS reserves access to private-app content for troubleshooting/service improvement/safety. The **Commercial Agreement** (§B.2.g, "Use Restrictions") is the binding no-training commitment: "Replit will not use Customer Content to… train machine learning models" — and commercial customers own AI output (§B.2.b). Privacy of apps is a product default, not a contract term: organization-workspace apps default to a private publishing option, while personal-workspace apps default to **Public** (4.1). The **DPA** adds purpose limitation, subprocessor flow-down (live list at the published subprocessors page), and 90-day post-termination deletion on request. OpenRouter-routed managed endpoints: paid = training disabled; free = training **and publication to public datasets** enabled; **Enterprise = ZDR-only** (3.3).
 
 #### Rationale
 **Why This Matters:**
@@ -784,9 +840,11 @@ Replit's privacy story is tiered, and none of it is a console toggle: the privac
 **Attack Prevented (privacy):** Customer content entering ML improvement or provider training outside contracted terms
 
 #### ClickOps Implementation
-1. Self-serve: keep apps private (default since June 2025), prefer paid/own-key model endpoints, exclude regulated data from agent-built projects by policy
-2. Commercial/Enterprise: execute the Commercial Agreement + DPA; record §B.2.h in your vendor file; review the subprocessor list on a cadence
+1. Self-serve: keep apps private (organization projects are private by default since June 9, 2025; personal-workspace apps publish **Public** by default), prefer paid/own-key model endpoints, exclude regulated data from agent-built projects by policy
+2. Commercial/Enterprise: execute the Commercial Agreement + DPA; record §B.2.g in your vendor file; review the subprocessor list on a cadence
 3. Enterprise: confirm ZDR-only endpoint restriction (3.3) is active
+
+**Automation:** ClickOps only — data-use terms are contractual; Replit exposes no data-use or training-opt-out setting ([Commercial Agreement](https://replit.com/commercial-agreement), 2026-09-24).
 
 #### Validation & Testing
 1. The vendor-risk file cites the current Commercial Agreement/DPA clauses and subprocessor list
@@ -805,7 +863,7 @@ Replit's privacy story is tiered, and none of it is a console toggle: the privac
 
 ## 7. Monitoring & Audit
 
-### 7.1 Enable Audit Logs and Stream to Your SIEM (Mind the Single-Workspace Limit)
+### 7.1 Enable Audit Logs and Stream to Your SIEM
 
 **Profile Level:** L2 (Walk)
 
@@ -815,30 +873,33 @@ Replit's privacy story is tiered, and none of it is a console toggle: the privac
 | NIST 800-53 | AU-2, AU-6, AU-11 |
 
 #### Description
-Enterprise audit logs (**Settings → Advanced → Audit Logs**; sales-enabled) capture user lifecycle events — provisioning, deprovisioning, invitations, role changes — viewable and filterable (event type, date range, actor, target) by org admins only, with download for offline analysis. For retention beyond the portal default, **stream to your SIEM**. One documented constraint to plan around: **audit logs support single-workspace accounts only — enabling them disables additional workspace creation** for the organization.
+Enterprise audit logs (**Settings → Advanced → Audit Logs → Enable audit logs**; account admins only) are **Audit Logs V2**, powered by WorkOS: 65+ event types across deployments, access and identity, workspace administration, project activity, secrets, connectors, domains, and Agent activity, each described in Replit's public audit log schema catalog. Only account admins can view them, in a portal with search, filters (event type, date range, actor, target), and bulk export. The portal **retains 30 days by default** — for longer retention, **stream to your SIEM** (Datadog, Splunk, Amazon S3, or a generic HTTP endpoint, configured in the WorkOS portal). A related Compliance API (`GET /v1/compliance/messages`, scope `compliance:messages:read`) returns the full prompt text behind `project.message_sent` events.
 
 #### Rationale
 **Why This Matters:**
 
-- Identity-lifecycle events are exactly the evidence SOC 2/ISO access reviews need — and the record that catches SCIM's legacy-member gap (1.2) drifting back open
-- SIEM streaming is the documented long-retention path; portal-only retention plus admin-only visibility is not an evidence pipeline
-- The single-workspace trade-off is an architecture decision: organizations wanting per-team workspaces must choose between that layout and audit logging — decide deliberately, before enabling
+- Access, identity, and deployment events are exactly the evidence SOC 2/ISO access reviews need — and the record that catches SCIM's legacy-member gap (1.2) drifting back open
+- SIEM streaming is the documented long-retention path; a 30-day portal default plus admin-only visibility is not an evidence pipeline
+- Recording is best-effort by design — a failed event never blocks the underlying action — so alert on gaps in the stream rather than assuming completeness
+- Prompt text can carry secrets and personal data: grant `compliance:messages:read` only to authorized systems and administrators (7.3)
 
 **Attack Prevented:** Un-investigable identity changes; retention gaps in compliance evidence
 
 #### Prerequisites
-- Enterprise plan (sales-enabled); account admin; a SIEM destination
+- Enterprise plan; account admin; a SIEM destination
 
 #### ClickOps Implementation
-1. Decide the workspace architecture first (single workspace ↔ audit logs); then **Settings → Advanced → Audit Logs** → enable
-2. Configure SIEM streaming to your own storage; set alerting on role-change and deprovisioning anomalies
-3. Request the full event list from your account rep and map it to your detection rules
+1. **Settings → Advanced → Audit Logs** → **Enable audit logs**
+2. **Set up SIEM integration** → connect your destination in the WorkOS log-streaming portal; keep retention in your own storage; alert on role-change and deprovisioning anomalies and on gaps in the stream
+3. Map detections to the event contracts in the public audit log schema catalog
+
+**Automation:** ClickOps only for enabling audit logs and configuring streaming (**Settings → Advanced → Audit Logs**; WorkOS portal) ([audit logs](https://docs.replit.com/teams/identity-and-access-management/audit-logs), 2026-09-24). The Admin API's `GET /v1/compliance/messages` reads prompt text for `project.message_sent` events only; it neither lists other audit events nor configures streaming ([Admin API reference](https://api.replit.com/docs)).
 
 #### Validation & Testing
 1. A test role change appears in the portal and arrives in the SIEM
 2. Retention in your storage meets your compliance requirement
 
-**Expected result:** Identity-lifecycle telemetry flows continuously into your own evidence store.
+**Expected result:** Audit telemetry flows continuously into your own evidence store.
 
 #### Compliance Mappings
 
@@ -859,7 +920,7 @@ Enterprise audit logs (**Settings → Advanced → Audit Logs**; sales-enabled) 
 | NIST 800-53 | RA-5, SA-11, CA-7 |
 
 #### Description
-Replit ships layered scanning: **project Security Center** (Security pane / "Review security" in Publish) with free dependency-CVE scans (npm, Python, Go, Rust, PHP, Ruby) and Agent security scans on paid plans (model-based review plus Semgrep and HoundDog.ai static analysis, ~15 min); **workspace Security Center** (Home → Security, all plans) with org-wide CVE views, a **published/publicly-published project inventory**, bulk unpublish, and Enterprise SBOM export; **Auto-Protect** (continuous new-CVE monitoring with agent-prepared patches; thresholds at Settings → Account → Advanced); and the publish-time gate — "Replit always runs a security scan before publishing," with a **Block publishing of critical vulnerabilities** toggle. **Package Firewall** is always-on for everyone (network-level blocking of malicious/typosquatted/slopsquatted packages across npm, yarn, pnpm, pip, Go) — no configuration, no off-switch; record it as a platform control.
+Replit ships layered scanning: the **project Security Center** (**Tools** pane → **Security Center**) with free, automatic dependency-CVE scans (Node.js/npm, Python, Go, Rust, PHP, Ruby), **Agent security scans** that review application code on paid plans, and **Level 3** scans that add a black-box pen test of the running app; the **workspace Security Center** (Home → **Security**, all plans) with org-wide CVE views, a **published/publicly-published project inventory**, bulk unpublish, and SBOM export (bulk SBOM download is Enterprise); **Auto-Protect** (Agent-prepared, tested patches for newly disclosed dependency CVEs — both of its settings are off by default); and a security scan before every publish, whose **Block publishing of critical vulnerabilities** setting Enterprise can require for every app (**Account settings → Advanced → Security → Block publishing at severity**, 2.1). **Package Firewall** is always-on for everyone (network-level blocking of malicious/typosquatted/slopsquatted packages across npm, yarn, pnpm, pip, Go) — no configuration, no off-switch; record it as a platform control.
 
 #### Rationale
 **Why This Matters:**
@@ -871,9 +932,11 @@ Replit ships layered scanning: **project Security Center** (Security pane / "Rev
 **Attack Prevented:** Publishing vulnerable apps; malicious/hallucinated dependency installs; unnoticed public exposure
 
 #### ClickOps Implementation
-1. Enable **Block publishing of critical vulnerabilities** in the publishing flow settings; Enterprise: pair with **Require security scan** (2.1)
-2. **Home → Security** → weekly sweep of the publicly-published inventory; enable **Auto-Protect** with thresholds at **Settings → Account → Advanced**
-3. Paid plans: run Agent security scans pre-launch; triage Critical/High findings via **Fix with Agent** or manually; Enterprise: export SBOMs per release
+1. Enable **Block publishing of critical vulnerabilities** in the publishing flow settings; Enterprise: set **Require security scan** and **Block publishing at severity** org-wide (2.1)
+2. **Home → Security** → weekly sweep of the publicly-published inventory (or the 4.1 pack); enable Auto-Protect patch preparation (Workspace admin: **Settings → Account → Advanced**, minimum severity) **and** security emails (**Settings → Personalization → Email Notifications**, minimum severity); Enterprise: route alerts through **Account settings → Advanced → Security → Security alert recipients**
+3. Paid plans: run Agent security scans pre-launch (a Level 3 scan when you also need a black-box test of the running app); triage Critical/High findings via **Fix with Agent** or manually; export SBOMs per release (bulk download: Enterprise)
+
+**Automation:** The public-exposure inventory is automated read-only by the 4.1 pack (`GET /v1/deployments`, `deploymentPrivacy`); running scans, Auto-Protect, and publish blocking are **ClickOps only** ([project Security Center](https://docs.replit.com/features/security/project-security-center), [security](https://docs.replit.com/teams/security), [Admin API reference](https://api.replit.com/docs), 2026-09-24).
 
 #### Validation & Testing
 1. A project with a critical finding is refused publication
@@ -900,13 +963,13 @@ Replit ships layered scanning: **project Security Center** (Security pane / "Rev
 | NIST 800-53 | IA-5, AC-6 |
 
 #### Description
-The Enterprise Admin API provides programmatic **read** access to usage analytics, workspaces, members (filter by role, search by email), and projects (**filter by visibility/deployment status** — the programmatic version of the public-apps sweep), plus budget reads/writes (`write:budgets`). Keys are created at **Settings → Developer → Create API key**, are prefixed `rpl_`, and are usable **only by account admins** — making each key an account-admin-equivalent credential to vault, scope, and rotate. (Endpoint reference: api.replit.com/docs; the API is read-mostly — no audit-log or security-settings endpoints are documented.)
+The Enterprise Admin API (**beta**; endpoint reference [api.replit.com/docs](https://api.replit.com/docs)) gives programmatic access to usage, workspaces, members (filter by role; search by name, username, or email), groups, projects, deployments (each with its `deploymentPrivacy` — the programmatic public-apps sweep, 4.1), and budgets. Keys are created at **Settings → Account → Developer → Create API key** as **read-only** or **read and write**, are prefixed `rpl_`, and are usable **only by account admins** — making each key an account-admin-equivalent credential to vault and rotate. Beyond reads, a read-and-write key can set budgets (`write:budgets`) and **approve member access requests (`write:members`), public-publishing exceptions (`write:deployments`), and budget-limit increases**; the `compliance:messages:read` scope returns prompt text from audit events (7.1).
 
 #### Rationale
 **Why This Matters:**
 
-- A leaked `rpl_` key exposes your full member directory, project inventory, and spend data — and can rewrite budgets with the write scope; treat it at the same tier as the account-admin login itself
-- Least-scope discipline applies: omit `write:budgets` unless the automation genuinely manages budgets
+- A leaked `rpl_` key exposes your full member directory, project inventory, and spend data — and a read-and-write key can rewrite budgets and approve access and public-publishing exceptions, bypassing 1.4 and 2.1; treat it at the same tier as the account-admin login itself
+- Prefer read-only keys — every audit pack in this guide runs on one; issue read-and-write only to an automation that must write budgets or review requests, and keep `compliance:messages:read` away from general tooling
 - The members/projects read scopes make governed automation possible (membership reconciliation, public-project detection) — build against the documented scopes, and prefer them over screen-scraping
 
 **Attack Prevented:** Org-wide reconnaissance and budget manipulation via leaked admin keys
@@ -915,9 +978,11 @@ The Enterprise Admin API provides programmatic **read** access to usage analytic
 - Enterprise plan; account admin
 
 #### ClickOps Implementation
-1. **Settings → Developer → Create API key** — one key per automation, descriptive names, minimum scopes
+1. **Settings → Account → Developer → Create API key** → choose **read-only** unless the automation must write budgets or review requests; one key per automation, descriptive names
 2. Vault keys (never in code/CI variables without secret management); rotate on personnel change and on schedule
 3. Inventory existing keys quarterly; delete unused ones
+
+**Automation:** ClickOps only — Replit exposes no API for creating, listing, or revoking Admin API keys ([Admin API](https://docs.replit.com/teams/admin-api), [Admin API reference](https://api.replit.com/docs), 2026-09-24).
 
 #### Validation & Testing
 1. Each key maps to a live automation with documented scopes
@@ -954,9 +1019,9 @@ Mappings reference CIS Controls v8, NIST 800-53 Rev 5, and ISO 27001:2022.
 | Org governance | [2.1](#21-turn-on-the-enterprise-governance-toggles) | CM-6, AC-3, SA-11 |
 | Agent guardrails | [3.1](#31-verify-devprod-database-separation-on-every-data-bearing-app)–[3.4](#34-cap-agent-spend-with-budgets-and-per-user-limits) | AC-3, CM-3, CP-10, SA-9, SC-6 |
 | Deployment & app access | [4.1](#41-set-deployment-access-to-private-workspace-or-invite-only)–[4.4](#44-minimize-exposed-ports-and-set-security-headers) | AC-3, SC-7, IA-5, CM-7 |
-| Data protection | [5.1](#51-manage-secrets-correctly-ui-masking-is-not-a-boundary)–[5.3](#53-keep-object-storage-attachment-scoped) | IA-5, SC-28, CP-9, AC-3 |
+| Data protection | [5.1](#51-manage-secrets-correctly-ui-masking-is-not-a-boundary)–[5.3](#53-segment-app-storage-per-project-dev-and-prod-share-it) | IA-5, SC-28, CP-9, AC-3 |
 | Privacy | [6.1](#61-establish-your-data-use-posture-contract-beats-console) | SA-9, SI-12, PL-4 |
-| Monitoring | [7.1](#71-enable-audit-logs-and-stream-to-your-siem-mind-the-single-workspace-limit)–[7.3](#73-govern-enterprise-admin-api-keys) | AU-2, AU-11, RA-5, CA-7 |
+| Monitoring | [7.1](#71-enable-audit-logs-and-stream-to-your-siem)–[7.3](#73-govern-enterprise-admin-api-keys) | AU-2, AU-11, RA-5, CA-7 |
 
 ---
 
@@ -969,27 +1034,27 @@ Mappings reference CIS Controls v8, NIST 800-53 Rev 5, and ISO 27001:2022.
 | Account/workspace admin split | ❌ | ❌ | ❌ | ✅ |
 | Governance toggles (2.1) | ❌ | ❌ | ❌ | ✅ |
 | Dev/prod DB separation + Plan mode | ✅ | ✅ | ✅ | ✅ |
-| AI-integrations admin toggle | — | default on | ✅ (default off) | ✅ (default off, ZDR-only) |
+| Replit AI Integrations (managed credentials) | ❌ (own key only) | ✅ (no admin toggle) | ✅ (admin toggle, default off) | ✅ (admin toggle, default off, ZDR-only) |
 | Private deployments (per-app) | ✅ | ✅ | ✅ | ✅ (enforceable) |
 | Private dev URL (per-app) | ✅ | ✅ | ✅ | ✅ (enforceable) |
-| External access tokens | ❌ | ✅ | ✅ | opt-in |
-| DB point-in-time restore | — | 7 days | 28 days | 28 days |
-| Audit logs + SIEM | ❌ | ❌ | ❌ | ✅ (single-workspace only) |
+| External access tokens (any deployment with private access; no opt-in) | not verified | ✅ | ✅ | ✅ (Workspace admins manage) |
+| DB point-in-time restore | — | up to 7 days | up to 28 days (default 7) | up to 28 days (default 7) |
+| Audit logs + SIEM | ❌ | ❌ | ❌ | ✅ |
 | Agent security scans | ❌ | ✅ | ✅ | ✅ |
-| SBOM export | ❌ | ❌ | ❌ | ✅ |
+| SBOM export | ✅ | ✅ | ✅ | ✅ (+ bulk download) |
 | Admin API (`rpl_` keys) | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
 ## Appendix B: References
 
-**Tier 1 — Replit documentation and terms (all fetch-verified 2026-08-15):**
+**Tier 1 — Replit documentation and terms (all fetch-verified 2026-08-15; re-fetched 2026-09-24):**
 
 - [SAML SSO](https://docs.replit.com/teams/identity-and-access-management/saml) · [SCIM](https://docs.replit.com/teams/identity-and-access-management/scim) · [Managing members](https://docs.replit.com/teams/identity-and-access-management/managing-members) · [Account & workspace admins](https://docs.replit.com/teams/identity-and-access-management/account-and-workspace-admins) · [Groups & permissions](https://docs.replit.com/teams/identity-and-access-management/groups-and-permissions) · [Viewer seats](https://docs.replit.com/teams/identity-and-access-management/viewer-seats) · [App access management](https://docs.replit.com/teams/identity-and-access-management/repl-access-management)
-- [Enterprise privacy settings](https://docs.replit.com/teams/enterprise-privacy-settings) · [Audit logs](https://docs.replit.com/teams/identity-and-access-management/audit-logs) · [Admin API](https://docs.replit.com/teams/admin-api) · [Team workspaces](https://docs.replit.com/features/collaboration/team-workspaces)
+- [Privacy and deployment settings](https://docs.replit.com/teams/privacy-and-deployment-settings) · [Source control settings](https://docs.replit.com/teams/enterprise-privacy-settings) · [Security settings](https://docs.replit.com/teams/security) · [Agent modes and models](https://docs.replit.com/teams/modes-and-model-providers) · [Audit logs](https://docs.replit.com/teams/identity-and-access-management/audit-logs) · [Admin API](https://docs.replit.com/teams/admin-api) · [Admin API reference](https://api.replit.com/docs) · [Team workspaces](https://docs.replit.com/features/collaboration/team-workspaces)
 - [Production databases](https://docs.replit.com/cloud-services/storage-and-databases/production-databases) · [Checkpoints & rollbacks](https://docs.replit.com/core-concepts/agent/checkpoints-and-rollbacks) · [Plan mode](https://docs.replit.com/core-concepts/agent/plan-mode) · [Agent modes](https://docs.replit.com/core-concepts/agent/agent-modes) · [Replit AI integrations](https://docs.replit.com/replitai/replit-ai-integrations) · [Web search](https://docs.replit.com/features/agent/web-search) · [Managing spend](https://docs.replit.com/billing/managing-spend)
 - [Private deployments](https://docs.replit.com/features/publishing/private-deployments) · [Development URLs](https://docs.replit.com/core-concepts/project-editor/app-setup/development-urls) · [External access tokens](https://docs.replit.com/features/deployment-customization/external-access-tokens) · [Ports](https://docs.replit.com/features/project-setup/ports) · [Static deployment headers](https://docs.replit.com/features/deployment-customization/static-deployments-advanced) · [Custom domains](https://docs.replit.com/features/publishing/custom-domains) · [Publishing overview](https://docs.replit.com/features/publishing/overview) · [Deployment types](https://docs.replit.com/features/publishing/deployment-types)
-- [Secrets](https://docs.replit.com/core-concepts/project-editor/app-setup/secrets) · [Connection details](https://docs.replit.com/features/data-and-storage/connection-details) · [Dev & production databases](https://docs.replit.com/features/data-and-storage/development-and-production) · [Data recovery](https://docs.replit.com/features/data-and-storage/data-recovery) · [SQL database](https://docs.replit.com/features/data-and-storage/sql-database) · [Object storage](https://docs.replit.com/features/data-and-storage/object-storage) · [Object Storage JS SDK](https://docs.replit.com/features/sdks/object-storage-javascript-sdk)
+- [Secrets](https://docs.replit.com/core-concepts/project-editor/app-setup/secrets) · [Connection details](https://docs.replit.com/features/data-and-storage/connection-details) · [Dev & production databases](https://docs.replit.com/features/data-and-storage/development-and-production) · [Data recovery](https://docs.replit.com/features/data-and-storage/data-recovery) · [SQL database](https://docs.replit.com/features/data-and-storage/sql-database) · [App Storage](https://docs.replit.com/features/data-and-storage/object-storage) · [App Storage JS SDK](https://docs.replit.com/features/sdks/object-storage-javascript-sdk)
 - [Project Security Center](https://docs.replit.com/features/security/project-security-center) · [Workspace Security Center](https://docs.replit.com/features/security/workspace-security-center) · [Package Firewall](https://docs.replit.com/features/security/package-firewall) · [Security checklist](https://docs.replit.com/learn/security-checklist)
 - [Commercial Agreement](https://replit.com/commercial-agreement) · [DPA](https://replit.com/dpa) · [Privacy policy](https://replit.com/privacy-policy)
 
@@ -1004,6 +1069,7 @@ Mappings reference CIS Controls v8, NIST 800-53 Rev 5, and ISO 27001:2022.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.2.0 | ai-drafted | [BREAKING] validate-hth-guide run (Phases 4–5): the Replit console was signed out on both read-only probes, so 0 of 40 surfaces were exercised live and maturity stays ai-drafted. Corrections re-fetched against Replit docs and the Admin API OpenAPI spec: 5.3 rewritten and retitled — App Storage buckets are project-exclusive and shared by dev and prod, with no attach/detach step; 4.3 production tokens survive republish (revoked on unpublish, delete, or private→public), no Enterprise opt-in, creator-only visibility; 7.1 single-workspace limit removed and retitled (Audit Logs V2, 30-day retention, Compliance API); 1.2/1.3 SCIM Admin grants workspace admin only, account admins come from the Account admin group; 1.4 per-app roles Owner/Publisher/Editor/Read-only; 2.1 privacy, deployment, source-control and security settings plus publishing exceptions; 3.2 Plan toggle and background auto-merge; 3.3 Grok, OpenRouter-only privacy defaults, Disable external AI model integrations, Enterprise model policy; 3.4 Usage → Manage limits; 4.1 Cloudflare DNS-only and per-subdomain records; 4.4 automatic port forwarding; 5.2 regeneration preconditions and 7-day PITR default; 6.1 §B.2.g; 7.2 Auto-Protect settings and Level 3 scans; 7.3 read-only vs read-and-write keys; Appendix A. New read-only Admin API packs for 1.2, 1.3, 1.4, 3.4 and 4.1; packs 4.3, 4.4 and 5.3 fixed to fail closed, with v1 contracts; the 4.3 scan reports path:line only, so a matched credential never reaches the CI log; the 1.2, 1.3 and 1.4 packs count only enabled workspace memberships as access and list all-disabled members as notes; an Automation verdict on every control. | Claude Code (Opus 5.5) |
 | 2026-08-15 | 0.1.0 | ai-drafted | Initial guide: 20 controls across identity (SAML SSO as the only MFA path — no native 2FA documented, SCIM with the legacy-member gap, admin tiering, guests/viewers), Enterprise governance toggles, Agent guardrails (dev/prod DB separation with the July 2025 SaaStr incident as motivating case, Plan mode + rollback-database-opt-in semantics, managed AI integrations/ZDR with untoggleable-Web-Search and no-Agent-off-switch negatives, budgets), deployment/app access (private deployments, public-by-default dev URLs, external access tokens as governed bypass credentials, ports/headers), data protection (secrets UI-masking caveat, DB credential rotation + plan-gated PITR, attachment-scoped object storage), privacy (Commercial Agreement §B.2.h vs no self-serve training toggle), and monitoring (audit logs with the single-workspace limitation, dual Security Centers + Package Firewall, Admin API key governance). Tier 2 negatives (no CIS/STIG/SCuBA) cited. Authored by Claude Code (Opus 5). | Claude Code (Opus 5) |
 
 ---
