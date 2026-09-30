@@ -6,9 +6,9 @@ slug: "square"
 tier: "2"
 category: "Productivity"
 description: "Commerce platform hardening for Square including SSO configuration, team permissions, and API security"
-version: "0.3.0"
-maturity: ["ai-drafted"]
-last_updated: "2026-09-25"
+version: "0.3.1"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-09-30"
 ---
 
 ## Overview
@@ -55,6 +55,8 @@ This guide covers Square Dashboard security including SSO, team permissions, dev
 Configure SSO for Square Dashboard access (Square for Enterprise).
 
 > **Verification note (2026-08):** Square's SSO documentation is not externally verifiable — the Square help center is a single-page application that returns HTTP 200 with the support homepage for pages that do not exist, so the "Square for Enterprise" plan requirement and the **Security** → **Single Sign-On** path below could not be corroborated against a fetchable first-party page. Confirm availability, plan eligibility, and the exact console path with Square support or in the live Dashboard before relying on this control.
+>
+> **Live observation (2026-09-30):** the Dashboard has no **Security** page directly under **Account & Settings**. Business security settings sit at **Settings** → **Account & Settings** → **My business** → **Security**, and the path below now points there. On a Square Free account, neither that page nor **Personal information** → **Sign in & security** shows a Single Sign-On section. The section, if any, appears only on Square for Enterprise, and its exact location is still unconfirmed.
 
 #### Rationale
 **Why This Matters:**
@@ -73,7 +75,7 @@ Configure SSO for Square Dashboard access (Square for Enterprise).
 #### ClickOps Implementation
 
 **Step 1: Access SSO Settings**
-1. Navigate to: **Square Dashboard** → **Account & Settings** → **Security**
+1. Navigate to: **Settings** → **Account & Settings** → **My business** → **Security**
 2. Find Single Sign-On section
 
 **Step 2: Configure SSO**
@@ -113,7 +115,7 @@ Require 2FA for all Square accounts.
 
 **Attack Prevented:** Credential stuffing, phishing, password reuse, account takeover
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Both console paths observed live on a Square Free account; two-step verification left unchanged" date="2026-09-30" %}
 
 **Step 1: Enable 2FA on Your Own Sign-In**
 1. Navigate to: **Settings** → **Account & Settings** → **Personal information** → **Sign in & security**
@@ -197,7 +199,7 @@ Control team access to specific locations.
 
 **Attack Prevented:** Lateral movement, cross-location data exposure, excessive-access abuse
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live through the team member Access panel; nothing saved" date="2026-09-30" %}
 
 **Step 1: Assign Locations per Team Member**
 1. Navigate to: **Staff** → **Team** → **Team members**, then select a team member
@@ -235,7 +237,7 @@ Protect the account owner and minimize the team members who hold Full access.
 
 **Attack Prevented:** Privilege escalation, account takeover, insider abuse, orphaned-admin access
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console paths observed live on an owner-only account, where the control reads Add authorized representatives" date="2026-09-30" %}
 
 **Step 1: Inventory Privileged Access**
 1. Navigate to: **Staff** → **Team** → **Permissions**
@@ -317,7 +319,7 @@ Secure Square API access — personal access tokens, OAuth access and refresh to
 
 **Attack Prevented:** API token theft, third-party integration abuse, credential leakage, unauthorized data access, persistent access via unrevoked refresh tokens
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Developer Console and App integrations observed live, both with no applications; no token was reviewed" date="2026-09-30" %}
 
 **Step 1: Review Applications**
 1. Navigate to: **Developer Console** ([developer.squareup.com/apps](https://developer.squareup.com/apps)) and review every application your account owns — each application's **Credentials** page holds an access token with permission to update all Square account data ([Developer Console](https://developer.squareup.com/docs/devtools/developer-dashboard))
@@ -474,6 +476,7 @@ Two surfaces. The API pack inventories the application's webhook subscriptions, 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-30 | 0.3.1 | ai-drafted · ai-validated | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated**: an AI agent exercised this guidance against a live Square account and the guidance survived that contact. No human practitioner has reviewed or applied it, so the guide claims no **ni-** status. **What was exercised** (validate-hth-guide Phases 4–6): the ClickOps console paths of seven of the eight controls were walked read-only in the live Square Dashboard and Developer Console of a Square Free account (3.3 was not walkable, see below), and 4 of 16 surfaces came back verified live. Those are the ClickOps surfaces of 1.2, 2.2, 2.3 and 3.2, and each carries a mark. **Corrected:** 1.1's console path, which pointed at a **Security** page that no longer sits directly under **Account & Settings**, now reads **Settings** → **Account & Settings** → **My business** → **Security**. **Not exercised, so unmarked:** 1.1 ClickOps, because no Single Sign-On section appears on a Free account and SSO needs Square for Enterprise; 2.1 ClickOps, because only the permission-set list was observed and the Create permission set step that does the configuring was not opened; 3.1 ClickOps, because the account has no device or mode, so only the empty Devices and Modes pages were seen and the Timeout, passcode, filter and Forget steps were not; 3.3 ClickOps, because the account has no Developer Console application; and every Code surface. The four API audit packs and the SDK verifier were not run against a live account because no Sandbox access token exists yet, so no Code Pack in this guide has been proven against a live account. Nothing on the account was changed. | Claude Code (Opus 5.5) |
 | 2026-09-25 | 0.3.0 | ai-drafted | validate-hth-guide run (Phases 4–5, doc-level only): add four read-only API audit packs (2.2, 3.1, 3.2, 3.3) and an SDK webhook-verification pack (3.3), tested offline against fixtures and a fail-closed Sandbox run but not executed against a live Square account. An independent audit then corrected three packs: 3.1 now judges devices by their status category instead of `updated_at`, 2.2 treats zero active locations as a failed scan, and 3.2 treats a response that describes no token as a failed call. Also: add evidenced ClickOps-only Automation verdicts to 1.1, 1.2, 2.1 and 2.3; correct console paths in 1.2, 2.1, 3.1 and 3.3 and the Developer Console naming in 3.2/3.3 against current Square docs; add navigation to 2.2 and 2.3 and replace 2.3's multi-owner guidance with Full-access limits; list every subscription tier in 2.1's plan note; add the Full-access caveat to 2.1, the third-party App integrations review to 3.2, and Square's documented signature-key rotation call to 3.3. A second independent audit then made 2.2, 3.1 and 3.3 fail closed on an HTTP 200 that carries an error on any page, made 2.2 list broad non-owners for review on single-location accounts, and made the API packs time out stalled requests, fail closed at their page cap, and read RFC 3339 offsets in 3.1 and 3.2 timestamps. No console was walked live (Square sign-in wall), so 0 surfaces are verified live and maturity is unchanged. | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: add 3.3 webhook signature verification; document OAuth/PAT token lifetimes and unrestricted-PAT scope in 3.2; annotate 1.1 SSO as externally unverifiable; prune marketing and rotted help-center references from Appendix A. Tier 3/4 sources not surveyed this pass. | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
