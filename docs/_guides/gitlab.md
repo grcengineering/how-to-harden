@@ -6,9 +6,9 @@ slug: "gitlab"
 tier: "2"
 category: "DevOps"
 description: "DevOps platform security for CI/CD pipelines, repository access, and runners"
-version: "0.3.0"
-maturity: ["ai-drafted"]
-last_updated: "2026-09-25"
+version: "0.3.1"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-10-02"
 ---
 
 
@@ -116,7 +116,7 @@ Configure project-level access controls using GitLab's role-based permissions.
 
 **Attack Prevented:** Privilege escalation, unauthorized code changes, insider tampering, malicious merge to protected branches
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Protected branches form labels and Merge requests settings read on the live gitlab.com console (Free tier); Allowed to push and merge label and Premium/Ultimate gating corrected against it" date="2026-10-02" %}
 
 **Step 1: Define Role Strategy**
 
@@ -132,10 +132,10 @@ Configure project-level access controls using GitLab's role-based permissions.
 1. Navigate to: **Project → Settings → Repository → Protected branches**
 2. Protect `main` and `release/*`:
    - **Allowed to merge:** Maintainers
-   - **Allowed to push:** No one (force MR workflow)
-   - **Require approval from code owners:** Enable
+   - **Allowed to push and merge:** No one (force MR workflow)
+   - **Require approval from code owners:** Enable (Premium/Ultimate)
 
-**Step 3: Enable Required Approvals**
+**Step 3: Enable Required Approvals (Premium/Ultimate)**
 1. Navigate to: **Project → Settings → Merge requests**
 2. Configure:
    - **Approvals required:** 2 (minimum)
@@ -281,13 +281,13 @@ Configure CI/CD variables with appropriate protection levels and masking.
 
 **Attack Prevented:** Secret exposure in logs, credential exfiltration via untrusted branches, cross-environment secret leakage
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Add variable drawer read on the live gitlab.com console; Visibility (Masked / Masked and hidden) label corrected against it" date="2026-10-02" %}
 
 **Step 1: Configure Variable Protection**
 1. Navigate to: **Project → Settings → CI/CD → Variables**
 2. For each sensitive variable:
    - **Protect variable:** Enable (only available in protected branches)
-   - **Mask variable:** Enable (hidden in job logs)
+   - **Visibility:** Masked (hidden in job logs), or **Masked and hidden** so the value can never be revealed in CI/CD settings after it is saved
    - **Expand variable reference:** Disable
 
 **Step 2: Use Group-Level Variables**
@@ -335,7 +335,7 @@ Restrict pipeline execution and prevent unauthorized CI/CD modifications.
 4. Select **Save changes**
 
 **Step 3: Control Who Can Run Pipelines**
-1. On a protected branch, only users allowed to merge or push to it can run manual or scheduled pipelines, run manual jobs, or retry and cancel jobs, so restrict **Allowed to merge** and **Allowed to push** on your protected branches (control 1.2)
+1. On a protected branch, only users allowed to merge or push to it can run manual or scheduled pipelines, run manual jobs, or retry and cancel jobs, so restrict **Allowed to merge** and **Allowed to push and merge** on your protected branches (control 1.2)
 2. Navigate to: **Project → Settings → CI/CD → Variables** and set **Minimum role to use pipeline variables** to `no_one_allowed`, or to `maintainer` if a pipeline genuinely needs them
 3. Merge requests from forks run their pipelines in the fork by default. A parent-project member can run one in the parent project, with the parent's variables and runners, from the merge request's **Pipelines** tab after accepting a warning, so read the fork's changes first. To stop this entirely, set `ci_allow_fork_pipelines_to_run_in_parent_project` to `false` through the projects API; there is no console setting for it
 
@@ -363,7 +363,7 @@ Implement secure CI/CD configuration practices. See the Code Pack below for a se
 
 **Attack Prevented:** CI/CD supply-chain injection, malicious build steps, privileged container escape, untrusted include abuse
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Code Pack config pasted into the live gitlab.com Pipeline editor and run through Validate pipeline (simulation passed after the pack fix); nothing committed" date="2026-10-02" %}
 
 **Step 1: Edit and Validate in the Pipeline Editor**
 1. Navigate to: **Project → Build → Pipeline editor**
@@ -524,7 +524,7 @@ Treat CI/CD catalog components as third-party dependencies: pin every reference 
 
 **Attack Prevented:** Supply-chain injection through mutable component references, adoption of a look-alike or partner-published component with no support commitment, credential theft by a component that reads job variables it does not need
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Explore CI/CD Catalog and component verification badge observed on the live gitlab.com console" date="2026-10-02" %}
 
 **Step 1: Review Before Adoption**
 1. Navigate to: **Search or go to → Explore → CI/CD Catalog** and open the component you intend to use
@@ -582,7 +582,7 @@ Deploy isolated runners for different trust levels and environments.
 
 **Attack Prevented:** Runner-based lateral movement, cross-job contamination, production network pivot, persistent runner compromise
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Project runner created with tags and Protected, confirmed and deleted on the live gitlab.com console" date="2026-10-02" %}
 
 **Step 1: Plan Runner Tiers**
 1. **shared-runners** -- general use, Docker executor, ephemeral containers
@@ -628,7 +628,7 @@ Implement regular runner token rotation to limit exposure from compromised token
 
 **Attack Prevented:** Rogue runner registration, token theft, unauthorized job execution, secret harvesting
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Delete runner flow walked on the live gitlab.com console; the runner detail URL then returned Not Found" date="2026-10-02" %}
 
 **Step 1: Rotate Runner Authentication Tokens Automatically (Self-Managed and Dedicated)**
 1. Navigate to: **Admin → Settings → CI/CD → Continuous Integration and Deployment**
@@ -1072,6 +1072,7 @@ The Code Pack is a read-only audit: it fails when Duo is on by default for a gro
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-02 | 0.3.1 | ai-drafted · ai-validated | validate-hth-guide live run against a signed-in gitlab.com console (a throwaway GitLab Free group and project): added **ai-validated** to the status set, which now reads **ai-drafted** + **ai-validated**. An AI agent did the exercising; no human practitioner has reviewed this guide, so it claims no **ni-** status. **Exercised live:** 6 ClickOps surfaces, each marked on its heading: 1.2 (Protected branches form, Merge requests settings), 2.1 (Add variable drawer), 2.3 (the Code Pack config run through Pipeline editor → Validate pipeline, not committed), 2.6 (Explore → CI/CD Catalog), 3.1 (a project runner created with tags and Protected, confirmed, then deleted) and 3.2 (runner deletion). **Corrected from that contact:** 1.2 and 2.2 now name the current **Allowed to push and merge** field, and 1.2 marks code-owner approval and the merge request approval settings as Premium/Ultimate; 2.1 replaces the retired Mask variable checkbox with the **Visibility** choice (Masked, or Masked and hidden); the 2.3 Code Pack failed Validate pipeline (`sast` had no script) and now includes the GitLab SAST, Dependency Scanning and Container Scanning templates whose jobs it overrides, and pins a real image digest in place of a placeholder. **Not exercised:** no Code Pack ran in a pipeline or against the API (no credential; the 2.3 config was only validated), and 1.1, 1.3, 1.4, 2.5, 4.1–4.3, 5.1, 6.1, 7.1 and 7.2 need Premium or Ultimate; the 2.2 and 2.4 job token panels did not render in a background tab | Claude Code (Opus 5.5) |
 | 2026-09-25 | 0.3.0 | ai-drafted | validate-hth-guide run (offline fix loop; console signed out, 0 surfaces exercised live, maturity unchanged): corrected ClickOps against current GitLab docs in 1.1 (SAML labels, GitLab.com vs Self-Managed password sign-in), 1.2 (current approval setting names), 1.3 (365-day default ceiling, group token-creation restriction, GitLab.com enterprise-user token switch), 1.4 and 2.5 (a policy takes effect only once the merge request from Configure with a merge request is merged), 2.2 (replaced two settings that do not exist with job token permissions, merge checks, the pipeline-variable role and fork-pipeline guidance), 2.4 (CI/CD job token allowlist), 2.6 (Explore → CI/CD Catalog path), 3.2 (runner authentication token rotation), 4.1/4.2 (push rules are Premium/Ultimate; Appendix A; current GPG keys path), 5.1 (Vault via ID tokens and CI/CD variables, not Secure Files), 6.1 (Secure → Audit events, Streams tab) and 7.1 (GitLab.com top-level group path); added ClickOps to 2.3 and 3.1; added read-only API audit packs for 1.2, 2.2, 2.4, 2.6, 4.3, 7.1 and 7.2 and policy-file packs for 1.4 and 2.5; moved 3.1/3.2 packs to runner authentication tokens; fixed the 1.1 pack (config emitter, dropped an obsolete sign-in key), 2.1 (inverted raw check), 3.1 (unknown config.toml key), 5.1 (missing id_tokens) and 6.1 (missed AWS S3 streaming destinations); the 2.6 pack now follows `include: local` files and reports any include it cannot follow as unknown, and the 7.1 pack reports a missing experiment setting as unknown, with the 2.6 and 7.1 descriptions updated to match; the API packs now name the HTTP status behind a failed call (a 401 as an invalid or expired token rather than a role or tier gate) and treat a redirect as a failed call, not as content; removed a 2.2 reference to a Terraform pack that does not exist and 2.3/4.1 references to a CLI pack that does not exist; the 1.3 description now says that on GitLab.com the pack sees only the calling user's tokens; the 3.2 pack prints the runner's verify output when verify fails; fixed the CIS benchmark URL | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.2.0 | ai-drafted | Add fine-grained job token permissions (2.4), pipeline execution policies (2.5), CI/CD catalog component trust (2.6), merge request approval policies (1.4), secret push protection (4.3), and new AI Assistant Governance section (7.1 Duo availability, 7.2 Duo prompt injection); correct 1.3 token expiry to mandatory-expiry model (365-day default, 400-day ceiling); renumber Compliance Quick Reference to 8 | Claude Code (Sonnet 5) |

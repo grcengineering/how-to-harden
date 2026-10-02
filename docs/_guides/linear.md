@@ -6,9 +6,9 @@ slug: "linear"
 tier: "3"
 category: "DevOps"
 description: "Issue tracking platform hardening for Linear including SAML SSO and SCIM, login-method restriction, workspace access, team permissions, and integration security"
-version: "0.3.0"
-maturity: ["ai-drafted"]
-last_updated: "2026-09-25"
+version: "0.3.1"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-10-02"
 ---
 
 ## Overview
@@ -120,19 +120,19 @@ Source: [SAML](https://linear.app/docs/saml-and-access-control), [SCIM](https://
 | NIST 800-53 | IA-2(1) |
 
 #### Description
-Use Linear's **Restrict login methods** setting to require specific sign-in methods for every member: SAML where you have it, passkeys otherwise. Without it, Google, emailed login link, passkey, and SAML all stay open. Linear has no two-factor authentication setting of its own; the lever is which methods you allow.
+Use the **Authentication methods** toggles on Linear's Security page to turn off the sign-in methods members should not use, leaving SAML. Without them, Google, emailed login link or code, passkey, and SAML all stay open. Linear has no two-factor authentication setting of its own; the lever is which methods you allow. Email sign-in and passkeys share one toggle, so passkey-only sign-in cannot be enforced on its own.
 
 #### Rationale
 **Why This Matters:**
 - Linear has no passwords and no built-in second factor. Members sign in with a Google account, an emailed login link or code, a passkey, or SAML, so a Linear login is only as strong as the weakest method you allow
 - With no restriction, every method stays open to every member, and an attacker needs only the weakest one, for example a phished email login code
-- Requiring SAML moves MFA, device posture, and session policy into your IdP. Requiring passkeys gives an origin-bound credential that a phishing proxy cannot relay
-- Owners and admins can still sign in with any method, so they can't be locked out of this setting. That makes those few accounts the ones to protect most (see 2.3)
+- Requiring SAML moves MFA, device posture, and session policy into your IdP. Passkeys give an origin-bound credential that a phishing proxy cannot relay, but because they share a toggle with emailed login links, encourage them rather than relying on them as the only method
+- The restriction applies to members only: admins and guests can always sign in with Google and email/passkeys, even when those methods are turned off for members. That makes admin accounts the ones to protect most (see 2.3)
 - Linear issues and projects can reveal unreleased features and security work that attackers actively seek
 
 **Attack Prevented:** Phishing of emailed login links and codes, account takeover through a weaker sign-in method, adversary-in-the-middle relay of non-phishing-resistant logins
 
-**Linear has no two-factor authentication setting.** Earlier versions of this control told you to turn on a workspace **Require two-factor authentication** toggle. Linear's login-methods documentation lists four sign-in methods (Google, email, passkey, SAML) and no second factor, and the enforcement lever is **Restrict login methods** ([Login methods](https://linear.app/docs/login-methods), checked 2026-09-24).
+**Linear has no two-factor authentication setting.** Earlier versions of this control told you to turn on a workspace **Require two-factor authentication** toggle. Linear's login-methods documentation lists four sign-in methods (Google, email, passkey, SAML) and no second factor, and the enforcement lever is the per-method **Authentication methods** toggles on the Security page ([Login methods](https://linear.app/docs/login-methods), checked 2026-09-24; console labels observed live 2026-10-02).
 
 #### Prerequisites
 - Business or Enterprise plan (login restrictions); Enterprise plan for SAML
@@ -141,18 +141,18 @@ Use Linear's **Restrict login methods** setting to require specific sign-in meth
 #### ClickOps Implementation
 
 **Step 1: Register Passkeys First**
-1. Each member adds a passkey from **Settings** → **Account** → **Security & Access**. Several devices can be registered
-2. Passkeys aren't supported in the Linear desktop app. Before you require them, confirm your members can sign in through a browser or the mobile app
+1. Each member adds a passkey from **Settings** → **Personal** → **Security & access** → **Passkeys** → **New passkey**. Several devices can be registered
+2. Passkeys aren't supported in the Linear desktop app. Before you rely on them, confirm your members can sign in through a browser or the mobile app
 3. Start with owners and admins, and with members who can see private teams
 
 **Step 2: Restrict Login Methods**
 1. Navigate to: **Settings** → **Administration** → **Security**
-2. Use **Restrict login methods** to allow only SAML (once 1.1 is complete) or passkey
+2. Under **Authentication methods**, turn off **Google authentication** and **Email & passkey authentication** for members, leaving SAML (once 1.1 is complete). Email sign-in and passkeys share one toggle, so passkey-only cannot be enforced on its own. The toggles are disabled on the Free plan
 3. Before saving, confirm that at least one owner or admin has completed a sign-in with the method you are requiring
 
 **Step 3: Enforce MFA in the IdP**
 1. When SAML is the required method, require MFA in your IdP for the Linear application, and phishing-resistant methods (FIDO2/WebAuthn) for admins
-2. Login-method restrictions do not apply to guests invited directly to the workspace. Provision guests through your IdP when they need the same bar
+2. Restrictions apply to members only: admins and guests can always authenticate via Google and email/passkeys, even when those methods are disabled for members. Protect admin accounts with passkeys and IdP MFA, and provision guests through your IdP when they need the same bar
 
 #### Code Implementation
 
@@ -181,7 +181,7 @@ Decide who can join the workspace without an explicit invitation, and who may se
 - An approved email domain is an auto-join rule, not a block: anyone with a matching address can join the workspace without an invitation or approval, so every listed domain is a standing grant of access
 - Linear states that the setting does not prevent users from creating new workspaces with that domain's email. Blocking separate workspaces is the job of the SAML domain claim in 1.1
 - A domain you let lapse or transfer keeps auto-join open to whoever controls it next, which is why Linear tells admins to remove such domains
-- On paid plans only admins can invite by default. Turning on **Allow users to send invites**, or sharing the persistent invite link, widens who can bring people in
+- On paid plans, **New user invitations** decides which role may invite people. Widening it beyond admins, or sharing the persistent invite link, widens who can bring people in
 
 **Attack Prevented:** Unauthorized workspace joining, access through lapsed or transferred domains, invite-link leakage
 
@@ -196,7 +196,7 @@ Decide who can join the workspace without an explicit invitation, and who may se
 4. Re-review the list on a regular schedule
 
 **Step 2: Restrict Invitations**
-1. On the same page, leave **Allow users to send invites** off so only admins can invite members (paid plans; on the Free plan every member is an admin)
+1. On the same page, under **Workspace management**, set **New user invitations** (who can invite new members) to admins only (Basic plan and above; on the Free plan every member is an admin)
 2. Leave the invite link disabled. If you must use one, share it internally only and click **Reset invite link** whenever it may have leaked. Invite links are unavailable in SAML- and SCIM-enabled workspaces
 
 **Step 3: Don't Confuse the Two Domain Settings**
@@ -244,8 +244,8 @@ Implement least privilege with Linear's roles and teams. Give each person the lo
 #### ClickOps Implementation
 
 **Step 1: Structure Teams**
-1. Create teams by function: navigate to **Settings**, scroll to **Your teams**, and click **+** (Join or create a team). Admins can also manage teams from **Settings** → **Administration** → **Teams**
-2. Restrict team creation to admins: **Settings** → **Administration** → **Security** → **Restrict team creation**
+1. Create teams by function: navigate to **Settings**, scroll to **Your teams**, and click **Create a team**. Admins can also manage teams from **Settings** → **Administration** → **Teams** (**Create team**)
+2. Restrict team creation to admins: **Settings** → **Administration** → **Security** → **Workspace management** → **Team creation** (Business and Enterprise)
 3. Set each team's visibility (see 2.2)
 
 **Step 2: Assign Minimum Necessary Roles**
@@ -261,7 +261,7 @@ Implement least privilege with Linear's roles and teams. Give each person the lo
 5. With SCIM enabled, roles come from IdP groups (`linear-owners`, `linear-admins`, `linear-guests`); manage them there
 6. Review membership regularly. Suspend leavers from the row's overflow menu (⋯) → **Suspend user...**; suspended users lose all access immediately
 
-**Step 3: Delegate Team Administration**
+**Step 3: Delegate Team Administration (Business and Enterprise; the section is absent on Free)**
 1. Promote team owners from **Team settings** → **Members**
 2. In **Team settings** → **Access and permissions**, restrict label, template, team-settings, and member management to team owners where appropriate
 
@@ -302,13 +302,13 @@ Control who can see sensitive work by making the teams that own it private. In L
 #### ClickOps Implementation
 
 **Step 1: Make Sensitive Teams Private**
-1. For a new team, turn on **Make team private** when you create it from workspace settings
-2. For an existing team, open its team settings (right-click the team in the sidebar) → **Access and permissions** → **Change team visibility**
+1. For a new team, use **Team access** → **Change team access** on the **Create a new team** form and choose private (Business and Enterprise)
+2. For an existing team, open its team settings (right-click the team in the sidebar) → **Access and permissions** → **Change team visibility** (Business and Enterprise; the section is absent from team settings on Free)
 3. Converting a team to private removes non-members from active issue assignments and unsubscribes non-member subscribers
-4. Admins can review every private team at **Settings** → **Administration** → **Teams**
+4. Admins can review every team's **Visibility** at **Settings** → **Administration** → **Teams**
 
 **Step 2: Restrict Who Can Join Public Teams**
-1. In **Team settings** → **Access and permissions**, restrict team access to members that team owners add or invite
+1. In **Team settings** → **Access and permissions** (Business and Enterprise), restrict team access to members that team owners add or invite
 
 **Step 3: Control Sub-Teams and Issue Sharing**
 1. Under a private parent team, choose **Private** for any sub-team that must be hidden from the parent team's members. **Restricted**, the default, lets members of the parent team see and join it
@@ -336,7 +336,7 @@ Source: [Private teams](https://linear.app/docs/private-teams), [Members and rol
 | NIST 800-53 | AC-6(1) |
 
 #### Description
-Keep the set of workspace owners and admins small and documented, and use Linear's workspace restrictions to decide which role may perform sensitive workspace-level actions.
+Keep the set of workspace owners and admins small and documented, and use Linear's **Workspace management** settings to decide which role may perform sensitive workspace-level actions.
 
 #### Rationale
 **Why This Matters:**
@@ -350,7 +350,7 @@ Keep the set of workspace owners and admins small and documented, and use Linear
 
 #### Prerequisites
 - A paid plan (on the Free plan every user is an Admin)
-- Enterprise plan and the Workspace owner role for workspace restrictions
+- Admin access for **Workspace management**; which actions can be restricted varies by plan, from Basic to Business
 
 #### ClickOps Implementation
 
@@ -365,9 +365,9 @@ Keep the set of workspace owners and admins small and documented, and use Linear
 3. Protect every owner and admin account with a passkey (1.2) or IdP-enforced MFA (1.1)
 4. Monitor admin activity in the audit log (4.1)
 
-**Step 3: Scope Sensitive Actions (Enterprise)**
-1. As a workspace owner, navigate to: **Settings** → **Administration** → **Security** → **Workspace restrictions**
-2. Configure which roles may perform workspace-level actions. Linear's API exposes these as minimum-role settings for inviting users, creating teams, creating personal API keys, managing API settings, installing integrations, and granting the admin role
+**Step 3: Scope Sensitive Actions**
+1. Navigate to: **Settings** → **Administration** → **Security** → **Workspace management**
+2. For each action (new user invitations, team creation, API key creation, data import, agent guidance, workspace labels/templates/initiatives), choose the minimum role. Availability varies by plan, from Basic to Business
 
 #### Code Implementation
 
@@ -409,7 +409,7 @@ Control which third-party apps can be installed. Review the integrations, OAuth 
 
 **Step 1: Require Approval for Third-Party Apps**
 1. Navigate to: **Settings** → **Administration** → **Security**
-2. Turn on third-party application approvals. On Enterprise a workspace owner does this; on other paid plans a workspace admin does
+2. Under **Integrations & applications**, turn on **Review third-party applications** (Basic plan and above). On Enterprise a workspace owner does this; on other paid plans a workspace admin does
 3. Members who try to install an app can then only request approval. Approved and denied apps appear in **Applications**
 
 **Step 2: Review Integrations, OAuth Apps, and Webhooks**
@@ -459,22 +459,22 @@ Restrict who may create personal API keys. Then review and prune everything that
 
 **Step 1: Restrict and Review Workspace API Keys**
 1. Navigate to: **Settings** → **Administration** → **API**
-2. Under **Member API keys**, choose whether Members may create their own API keys. Admins can always create them
-3. Review the workspace's existing API keys on the same page and revoke any without a documented owner and purpose
+2. Under **API keys**, set **API key creation** to choose which members can create personal API keys. Admins can always create them
+3. Review **Issued keys** on the same page and revoke any without a documented owner and purpose
 
 **Step 2: Review Personal API Keys**
-1. Navigate to: **Settings** → **Account** → **Security & Access**
+1. Navigate to: **Settings** → **Personal** → **Security & access**
 2. Review every personal API key and document its purpose and owner
 3. Create automation keys with the narrowest permission that works (Read, Write, Admin, Create issues, Create comments), limited to specific teams where possible
 4. Revoke keys with no documented owner or purpose
 
 **Step 3: Revoke Stale Sessions**
-1. On the same page, review **active sessions**. Each is listed with its location and date last seen, and clicking an entry shows its IP address and original sign-in date
-2. Revoke any session from an unrecognized location, an old device, or a departed contractor. Inactive sessions expire automatically after 30 days
+1. On the same page, review **Sessions**. Each is listed with its location and date last seen, and clicking an entry shows its IP address and original sign-in date
+2. Click **Log out** on any session from an unrecognized location, an old device, or a departed contractor. Inactive sessions expire automatically after 30 days
 3. Treat an unexplained session as a suspected compromise: revoke it, then rotate the account's API keys
 
 **Step 4: Review Authorized OAuth Applications**
-1. Review the list of **authorized OAuth applications** on the same page
+1. Review the list of **Authorized applications** on the same page
 2. Revoke every application the member no longer actively uses
 3. Re-review after any third-party breach disclosure affecting a connected vendor
 
@@ -571,7 +571,7 @@ Linear lets you choose whether a workspace's data is hosted in the **US** or the
 
 **Some data stays in the US whatever region you choose.** Workspace information, all user account information, and user-created API keys (used to authenticate users and route them to the right region), notification emails (held 7 days by Linear's email provider), usage and analytics data, and crash-related account information are always stored in the United States ([Security](https://linear.app/docs/security), checked 2026-09-24). Record these exceptions in your data-processing inventory.
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Step 1 region choice read on the live create-workspace form (Region selector offering United States and European Union, not submitted); Step 2 and Validation read at Settings, Workspace, Region (Set when a workspace is created and cannot be changed)" date="2026-10-02" %}
 
 **Step 1: Decide Region Before Creating the Workspace**
 1. Confirm your residency obligation (GDPR, customer contract, internal policy) before anyone provisions the workspace
@@ -650,6 +650,7 @@ Source: [Security](https://linear.app/docs/security)
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-02 | 0.3.1 | ai-drafted · ai-validated | validate-hth-guide run (Phases 4–6) against a live Free-plan Linear workspace, read-only, no settings changed: 1 of 20 surfaces came back VERIFIED-LIVE (4.2 ClickOps: the US/EU region choice read on the live create-workspace form without submitting it, and the fixed region read in Settings). The other nine ClickOps surfaces were walked: 1.1 and 4.1 are Enterprise-gated, and the console labels in 1.2, 1.3, 2.1, 2.2, 2.3, 3.1 and 3.2 were corrected to what the live console shows, but each of those still has steps that are plan-gated on Free or were not observed, so they carry no mark. No Code pack ran live (no API key could be stored). Corrections: 1.2 now uses the **Authentication methods** toggles, notes that email and passkeys share one toggle, and that the restriction exempts admins as well as guests; 1.3 **New user invitations**; 2.1 **Create a team** and **Workspace management** → **Team creation**; 2.2 **Team access** → **Change team access**; 2.3 **Workspace management** replaces "Workspace restrictions" and is not Enterprise-only; 3.1 **Review third-party applications**; 3.2 **API key creation**, **Issued keys**, **Log out**, and the **Personal** settings group. Matching console labels in five pack comments and finding messages | Claude Code (Opus 5.5) |
 | 2026-09-25 | 0.3.0 | ai-drafted | validate-hth-guide run (Phases 4–5, read-only tenant policy). 0 surfaces exercised live: the Linear console was behind a sign-in wall in the validation browser and no API key could be minted, so maturity is unchanged. Corrections from current Linear docs: rewrote 1.2 around **Restrict login methods** (Linear has no two-factor setting; renamed from "Enforce Two-Factor Authentication"); fixed console paths throughout (**Settings → Administration → …**); 1.1 now describes metadata exchange, domain claiming and SCIM; 1.3 reframed approved domains as auto-join rather than a block and added invitation controls; 2.1 lists all five roles and the Free-plan all-admin caveat; 2.2 gains real paths for private teams; 2.3 adds workspace restrictions; 3.1 adds third-party app approvals and webhook signature verification; 3.2 adds the workspace Member API keys setting; 4.2 lists the data that always stays in the US; replaced the stale developers.linear.app links. Added nine read-only GraphQL audit packs and one SDK webhook-verification pack, all run against a schema-validating mock and failing closed against the real API; 4.2 carries a ClickOps-only automation verdict | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass, scope-limited: only three Linear documentation pages (security, security-and-access, audit-log) were publicly reachable this pass, so findings outside them soften rather than assert. Rewrote 4.1 audit log (Enterprise, workspace owners only, 90-day retention, GraphQL queryable, webhook streaming to SIEM, actor IP/country); added 4.2 data residency (US/EU, fixed at workspace creation); added passkeys to 1.2 and OAuth-grant/session review to 3.2; annotated 1.2 and 1.3 as unverifiable against current public docs; removed the 404 SAML SSO link and the Trust Center/security marketing links in favor of linear.app/docs/security | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |

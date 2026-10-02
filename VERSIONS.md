@@ -96,7 +96,7 @@ A guide can be `ai-drafted` and `ni-drafted` at once. Holding both `ai-validated
 
 **Both agents at the same stage is the strongest thing this vocabulary can express.** `ai-validated` + `ni-validated` means the guidance survived contact with a real system twice, once under machine rigour and once under human judgement, and the two failure modes those catch barely overlap. There is no seventh status above it; combining is how the matrix expresses "better".
 
-**Where the corpus actually stands: no guide holds any `ni-*` status.** All 130 guides are `ai-drafted`; eight of them (Buildkite, Cloudflare, Dropbox, GitHub, Okta, Ona, Stripe, Vercel) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
+**Where the corpus actually stands: no guide holds any `ni-*` status.** All 130 guides are `ai-drafted`; fourteen of them (Atlassian, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Okta, Ona, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
 
 #### The version qualifier
 
@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-09-26 — 130 guides. Every one is `ai-drafted`; eight (Buildkite, Cloudflare, Dropbox, GitHub, Okta, Ona, Stripe, Vercel) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-10-02 — 130 guides. Every one is `ai-drafted`; fourteen (Atlassian, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Okta, Ona, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -183,7 +183,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Google Workspace](docs/_guides/google-workspace.md) | v0.4.1 | ai-drafted | 2026-08-08 |
 | [HashiCorp Vault](docs/_guides/hashicorp-vault.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Idira (formerly CyberArk)](docs/_guides/cyberark.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [LangChain](docs/_guides/langchain.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [LangChain](docs/_guides/langchain.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
 | [Microsoft 365](docs/_guides/microsoft-365.md) | v0.3.1 | ai-drafted | 2026-08-08 |
 | [Microsoft Entra ID](docs/_guides/microsoft-entra-id.md) | v0.3.0 | ai-drafted | 2026-08-08 |
 | [Microsoft Intune](docs/_guides/microsoft-intune.md) | v0.3.0 | ai-drafted | 2026-08-08 |
@@ -209,7 +209,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Airtable](docs/_guides/airtable.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Amplitude](docs/_guides/amplitude.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Asana](docs/_guides/asana.md) | v0.3.0 | ai-drafted | 2026-09-25 |
-| [Atlassian Cloud](docs/_guides/atlassian.md) | v0.4.0 | ai-drafted | 2026-08-08 |
+| [Atlassian Cloud](docs/_guides/atlassian.md) | v0.5.1 | ai-drafted · ai-validated | 2026-10-02 |
 | [Auth0](docs/_guides/auth0.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Azure DevOps](docs/_guides/azure-devops.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Bitbucket Cloud](docs/_guides/bitbucket.md) | v0.2.1 | ai-drafted | 2026-08-08 |
@@ -224,7 +224,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Drata](docs/_guides/drata.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Figma Enterprise](docs/_guides/figma.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Fivetran](docs/_guides/fivetran.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [GitLab](docs/_guides/gitlab.md) | v0.2.1 | ai-drafted | 2026-08-08 |
+| [GitLab](docs/_guides/gitlab.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
 | [Gong](docs/_guides/gong.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Harness](docs/_guides/harness.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [HubSpot](docs/_guides/hubspot.md) | v0.2.0 | ai-drafted | 2026-08-08 |
@@ -257,7 +257,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [SendGrid](docs/_guides/sendgrid.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Sentry](docs/_guides/sentry.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Shopify Plus](docs/_guides/shopify.md) | v0.3.0 | ai-drafted | 2026-09-24 |
-| [Square](docs/_guides/square.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Square](docs/_guides/square.md) | v0.3.1 | ai-drafted · ai-validated | 2026-09-30 |
 | [Tenable](docs/_guides/tenable.md) | v0.2.2 | ai-drafted | 2026-08-08 |
 | [Twilio](docs/_guides/twilio.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [UKG Pro](docs/_guides/ukg.md) | v0.2.0 | ai-drafted | 2026-08-08 |
@@ -281,7 +281,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [HCP Terraform (formerly Terraform Cloud)](docs/_guides/terraform-cloud.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Heap](docs/_guides/heap.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Kernel](docs/_guides/kernel.md) | v0.1.0 | ai-drafted | 2026-08-11 |
-| [Linear](docs/_guides/linear.md) | v0.3.0 | ai-drafted | 2026-09-24 |
+| [Linear](docs/_guides/linear.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
 | [Lovable](docs/_guides/lovable.md) | v0.1.0 | ai-drafted | 2026-08-15 |
 | [Oracle HCM Cloud](docs/_guides/oracle-hcm.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Pendo](docs/_guides/pendo.md) | v0.2.0 | ai-drafted | 2026-08-08 |
@@ -313,7 +313,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Power BI](docs/_guides/power-bi.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Rippling](docs/_guides/rippling.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Smartsheet](docs/_guides/smartsheet.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Snyk](docs/_guides/snyk.md) | v0.3.0 | ai-drafted | 2026-09-25 |
+| [Snyk](docs/_guides/snyk.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
 | [Vercel](docs/_guides/vercel.md) | v1.3.1 | ai-drafted · ai-validated | 2026-09-25 |
 
 ---
