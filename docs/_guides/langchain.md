@@ -6,9 +6,9 @@ slug: "langchain"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for the LangChain library, LangSmith observability platform, and LangGraph deployment platform — covering SSO/RBAC, SDK CVE patching, prompt injection defense (OWASP LLM Top 10), tracing redaction, audit logs, and self-hosted deployment"
-version: "0.3.0"
-maturity: ["ai-drafted"]
-last_updated: "2026-09-25"
+version: "0.3.1"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-10-02"
 ---
 
 ## Overview
@@ -168,12 +168,13 @@ LangSmith offers two API key types: **Personal Access Tokens (PATs)** that inher
 - Workspace Admin role on the target LangSmith workspace
 - Secrets manager (1Password, Vault, AWS Secrets Manager) for storing the issued Service Key
 
-#### ClickOps Implementation
-1. Navigate to **smith.langchain.com** → **Settings** → **API Keys**
-2. Choose **Service key**, then **Workspace-scoped**, and select the one workspace the workload needs (an organization-scoped key reaches every workspace)
-3. Set an expiration of 90 days or less — avoid **never**
-4. Click **Create API Key** and name it after the consuming service (e.g., `ci-pipeline-prod`, `agent-runtime-staging`)
-5. Copy the `lsv2_sk_...` key into your secrets manager **immediately** — it is shown only once. (Keys with the old `ls__` prefix stopped working on 2024-10-22.)
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Create-an-API-Key dialog walked on a live LangSmith Cloud org: Service tab, Description, Key Type, Scope for Service Key, Workspaces and Expiration Date observed and corrected; cancelled before Create API Key, so the lsv2_sk_ prefix was not observed" date="2026-10-02" %}
+1. Navigate to **smith.langchain.com** → **Settings** → **API Keys**, open the **Service** tab, and click **API Key**
+2. Enter a **Description** named after the consuming service (e.g., `ci-pipeline-prod`, `agent-runtime-staging`) — **Create API Key** stays disabled until it is filled
+3. Under **Key Type**, select **Service Key** — the dialog defaults to **Personal Access Token**, even when opened from the Service tab
+4. Under **Scope for Service Key**, choose **Specific Workspaces** and pick the one workspace the workload needs in **Workspaces** (**Full Organization** grants access across all workspaces)
+5. Under **Expiration Date**, choose **30d**, **90d**, or a **Custom** date 90 days out or less — avoid **Never**
+6. Click **Create API Key** and copy the `lsv2_sk_...` key into your secrets manager **immediately** — it is shown only once. (Keys with the old `ls__` prefix stopped working on 2024-10-22.)
 
 #### Code Implementation
 
@@ -995,6 +996,7 @@ A `bogware/langsmith` Terraform provider also exists on the Terraform Registry, 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-02 | 0.3.1 | ai-drafted · ai-validated | [SECURITY] validate-hth-guide live run against a LangSmith Cloud Developer/Free org: 1 of 46 surfaces VERIFIED-LIVE (1.2 ClickOps — the create-key dialog walked in the live console and cancelled before submit); 1.1, 1.3, 5.3, 6.1 and 6.2 are BLOCKED as Enterprise-gated on this tier, and every Code surface that needs a LangSmith key is BLOCKED pending a credential. 1.2 ClickOps steps rewritten to match the live dialog: the scope choice is **Scope for Service Key** → **Specific Workspaces** (not "Workspace-scoped"), Key Type defaults to Personal Access Token even from the Service tab, and **Create API Key** stays disabled until **Description** is filled | Claude Code (Opus 5.5) |
 | 2026-09-25 | 0.3.0 | ai-drafted | [SECURITY] validate-hth-guide run (Phases 4-6, no promotion): 0 of 46 surfaces VERIFIED-LIVE because the LangSmith console was signed out and no tenant was reachable, so `ai-validated` was not added; 26 FAILs fixed and re-run offline. 1.2's read-only audit no longer fails every org it runs against: the organization-scoped key it authenticates with is exempt from the scope check (never the expiry check) when named in `LANGSMITH_CALLER_KEY_ID`. 7.2 no longer installs the third-party PyPI `langsmith-cli` (official Go binary, checksum-verified); 3.2 and 3.6 CVE gates no longer fail open (PyPI floor 0.8.18, npm 0.6.0): they read versions through the environment's interpreter, not `pip`, which uv and `--without-pip` venvs lack, and exit 2 when they cannot inspect the environment or compare versions, and 3.6's inventory step no longer uses a bare `pip`, which can list a different environment; 2.1 Helm values use real chart keys (CORS and public LoadBalancer were silently left at defaults); 1.1/1.2/1.3 console paths corrected against the vendor docs; api packs moved to real endpoints with declared modes; new packs for 1.1, 3.6, 4.3, 5.2, 5.3, 6.3 plus official-provider Terraform for 1.2/1.3/5.3; 5.2 sampling variable corrected to `LANGSMITH_TRACING_SAMPLING_RATE`; 3.6 lists nine LangGraph advisories (adds GHSA-fvww-7h3r-vfhp); Automation verdicts for 2.2 and 4.4 | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: corrected CVE-2026-25750 attribution (LangSmith Helm chart <0.12.71 Studio URL-param injection, not an SDK flaw) and the nonexistent `@langchain/langsmith` npm package (real package: `langsmith`); added missing langsmith SDK, langchain-core, and LangGraph CVE batches; new control 3.6 (LangGraph checkpoint-store hardening); CVE-2026-41182 redaction-bypass callout in 5.1; 6.1 self-hosted audit-log enablement step, 400-day retention, endpoint/role specifics, OCSF Class 6003; corrected 7.2's Terraform note (first-party modules at langchain-ai/terraform); 1.1/1.3 access-model updates (Applications tier, org roles, SCIM/SSO Groups Sync, OIDC self-hosted SSO); fixed 3.4 cheat-parser miss; flagged unresolvable Swagger reference | Claude Code (Fable 5) |
 | 2026-04-27 | 0.1.0 | ai-drafted | Initial draft. Verified all Code Packs against live vendor docs (langchain-cli, langgraph-cli, langsmith-cli are first-party from langchain-ai org; LangSmith REST API at api.smith.langchain.com is documented; Helm charts are official; bogware/langsmith Terraform provider is third-party and explicitly excluded). Includes CVE-2026-25528 and CVE-2026-25750 patching guidance. | Claude Code (Opus 4.7) † |

@@ -21,7 +21,7 @@
 #    space unclassified as far as this account can prove, so a 404 is reported
 #    as a finding and never skipped. Any other non-200 exits 2.
 #  - Levels are defined for the organization, in the console (admin.atlassian.com
-#    → Data classification) or through the Data Loss Prevention REST API
+#    → Security → Data protection → Data classification) or through the Data Loss Prevention REST API
 #    (https://developer.atlassian.com/cloud/admin/dlp/rest/, marked experimental;
 #    write:classification-levels:admin). No write pack is shipped for it. Jira
 #    project classification is not covered by this pack.
