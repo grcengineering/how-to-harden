@@ -12,8 +12,8 @@
 # Source: https://howtoharden.com/guides/linear/#12-restrict-login-methods-to-saml-or-passkeys
 # Dependencies: bash, curl (7.55+ for -H @-), jq
 #
-# Read-only audit of "Restrict login methods" (Settings > Administration >
-# Security, https://linear.app/docs/login-methods). Linear has no two-factor
+# Read-only audit of the "Authentication methods" toggles (Settings >
+# Administration > Security, https://linear.app/docs/login-methods). Linear has no two-factor
 # setting of its own; the lever is which sign-in methods are allowed.
 #
 # Vendor surface (Linear's published GraphQL schema,

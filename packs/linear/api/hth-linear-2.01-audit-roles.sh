@@ -24,7 +24,7 @@
 #     ("The minimum role required to create teams"; OrganizationSecuritySettingsInput)
 #   Organization.restrictTeamCreationToAdmins: Boolean  deprecated mirror
 # Console: Settings > Administration > Members (roles), Settings >
-#   Administration > Security > "Restrict team creation"
+#   Administration > Security > Workspace management > "Team creation"
 #   (https://linear.app/docs/members-roles, https://linear.app/docs/teams).
 #
 # TRAP 1: FREE PLAN. On the Free plan every user is an admin, so role
@@ -186,14 +186,14 @@ audit_roles() {
     echo "  securitySettings.teamCreationRole: ${role}"
     case "${role}" in
       owner|admin) ;;
-      user|guest)  finding "teamCreationRole is '${role}': members below admin can create teams (\"Restrict team creation\" is off)." ;;
+      user|guest)  finding "teamCreationRole is '${role}': members below admin can create teams (\"Team creation\" allows members)." ;;
       *)           undetermined "teamCreationRole has an unrecognised value '${role}'." ;;
     esac
   elif [ -n "${legacy}" ]; then
     echo "  restrictTeamCreationToAdmins (deprecated mirror): ${legacy}"
     case "${legacy}" in
       true)  ;;
-      false) finding "\"Restrict team creation\" is off: any member can create teams." ;;
+      false) finding "\"Team creation\" is not restricted to admins: any member can create teams." ;;
       *)     undetermined "restrictTeamCreationToAdmins has an unrecognised value '${legacy}'." ;;
     esac
   else

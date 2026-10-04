@@ -6,9 +6,9 @@ slug: "snyk"
 tier: "5"
 category: "Security"
 description: "AppSec platform security for service accounts, SCM integrations, and Broker configs"
-version: "0.3.0"
-maturity: ["ai-drafted"]
-last_updated: "2026-09-25"
+version: "0.3.1"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-10-02"
 ---
 
 
@@ -71,7 +71,7 @@ Require SAML SSO through your corporate identity provider and enforce multi-fact
 4. Verify the connection with the direct login URL shown at the top of **Step 3** before rolling it out
 
 **Step 2: Remove Non-SSO Access and Enforce MFA at the Identity Provider**
-1. In **Group → Members**, remove users who previously signed in with a social login and any personal accounts used during a pilot, so every remaining account is governed by your IdP
+1. In **Group → Members** (classic navigation) · **Settings → Security and access → Members** at Group scope (new navigation), use the **Auth** column to find users who signed in with a social login (GitHub, Google, Bitbucket, Entra ID, or Docker ID) and remove them along with any personal accounts used during a pilot, so every remaining account is governed by your IdP
 2. Enforce MFA in your IdP for the Snyk application. Snyk has no Snyk-side MFA setting; on Free and Team plans (no SSO), MFA can only be enforced on the GitHub, Google, Bitbucket, Entra ID, or Docker ID account used to sign in
 
 #### Code Implementation
@@ -203,8 +203,9 @@ Review and restrict Snyk's source-code-management integrations so each connectio
 
 **Step 1: Review Integrations**
 1. Navigate to: **Settings → Integrations** (classic and new navigation; Broker connections are under **Settings → Integrations → Snyk Broker** in the new navigation)
-2. Review SCM connections
-3. Limit repository access
+2. Open each SCM integration (for example **Settings → Integrations → GitHub**) and confirm it is still needed
+3. Under **Repository access**, clear **Allow access to private repositories** unless Snyk must scan private repositories. The integration page offers no per-repository allow-list, so narrow which repositories it can reach on the SCM side (the GitHub App installation or the integration token's scope)
+4. Under **Settings → Integrations → General**, decide deliberately whether **Enable Workspaces** is acceptable: it lets Snyk store shallow temporary clones of your source repositories
 
 **Step 2: Choose a Broker Deployment Model (Enterprise)**
 
@@ -249,6 +250,7 @@ Limit who can see vulnerability findings, Project history, and reports by contro
 **Step 1: Scope Visibility with Organizations**
 1. Every pre-defined Organization role can view the Organization's Projects, ignores, and reports. Put sensitive repositories in a dedicated Organization and invite only the people who need them
 2. Navigate to: **Organization → Members** (classic navigation) · **Settings → Security and access → Members** (new navigation), and remove anyone who no longer needs access
+3. In **Settings → Organization settings → General → Requesting Access**, disable access requests for Organizations that hold sensitive repositories, so users outside the Organization cannot ask to join it
 
 **Step 2: Narrow Read Rights with Custom Roles (Enterprise)**
 1. Navigate to: **Group → Settings → Member roles** (classic navigation) · **Settings → Security and access → Member roles** at Group scope (new navigation)
@@ -281,16 +283,18 @@ Govern how vulnerabilities are ignored by requiring a documented reason, an expi
 
 **Attack Prevented:** Risk-acceptance abuse, suppressed-vulnerability exploitation, security-gate bypass, audit evasion
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="New-navigation console path, setting names and options confirmed on the live console (read-only walk; no setting changed)" date="2026-10-02" %}
 
 **Step 1: Restrict Who Can Ignore and Require a Reason**
 1. Navigate to: **Organization → Settings → General → Ignores** (classic navigation) · Organization scope **Settings → Organization settings → General → Ignores** (new navigation)
-2. Under **Ignore an issue or edit ignore settings using Snyk Web UI or Snyk API**, select **Group and Org Admin users (Default user roles only)** — by default Org Collaborators can create, edit, and remove ignores. This also prevents ignores being added through the CLI
-3. Under **Require reason for each ignore**, select **Required**
+2. Under **Manage ignores for projects not using Code Consistent Ignores using Snyk UI or API**, select **Group and Org Admin (Default user roles only)**. The other option, **All user roles with Project Ignores permissions**, lets every role holding the ignore permissions manage ignores; Snyk's pre-defined roles give Org Collaborator Create, Edit, and Remove Ignores, so under that option Collaborators can suppress findings. Snyk's documentation presents admin-only as a restriction you opt into
+3. Under **Ignore issues using Snyk CLI or the .snyk file**, select **Snyk app and API only** so `.snyk` file ignores in a repository are not applied. Ignores managed in Snyk, including those created through the CLI, still apply
+4. Under **Require reason for each ignore**, select **Required (only applies to ignores in the Snyk app, not the CLI or API)**. Enforce reasons for CLI and API ignores in pipeline review, because this setting does not reach them
 
 **Step 2: Approval Workflow for Snyk Code (Optional)**
-1. Enable Snyk Code Consistent Ignores, then in **Organization → Settings** (classic navigation) · **Settings** at Organization scope (new navigation) enable **Ignore Approval Workflow for Snyk Code** (Organization level only)
-2. When Consistent Ignores is enabled, the admin-only setting from Step 1 is disregarded — rely on the approval workflow instead
+1. Consistent Ignores appears under **Ignores** as **Enable ignoring across the repository** (Snyk Code and Snyk Secrets); when it is switched on at the Group level, it can only be switched off there
+2. With it on, in **Organization → Settings** (classic navigation) · **Settings → Organization settings → General** at Organization scope (new navigation), turn on **Ignore approval workflow → Enable ignore approval workflow** (Organization level only), and leave **Allow Ignore Reviewers to ignore issues without requiring approval** off
+3. Projects using Consistent Ignores are outside the Step 1 restriction, which applies only to projects not using it, so rely on the approval workflow for them
 
 **Step 3: Bound and Audit Every Ignore**
 1. Always set an expiry. CLI ignores default to 30 days, and a `.snyk` `expires:` value that is not in `YYYY-MM-DDThh:mm:ss.fffZ` form makes the ignore persist indefinitely
@@ -404,6 +408,7 @@ Snyk's plans page lists Free, Team, and Enterprise.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-02 | 0.3.1 | ai-drafted · ai-validated | Added **ai-validated** to this guide's status set (now **ai-drafted** + **ai-validated**) from a validate-hth-guide run against a live Snyk Free organization: 1 surface VERIFIED-LIVE by a read-only console walk (3.2 ClickOps); no setting was changed and no Code Pack ran, because every api/ pack needs Snyk Enterprise and no token was minted. No human has reviewed this guide. Corrected against the live console: 3.2 now names the current Ignores settings (who can manage ignores, the separate **Ignore issues using Snyk CLI or the .snyk file** setting, the reason requirement that applies only in the Snyk app, and the **Ignore approval workflow** labels), replacing the claim that the admin-only setting blocks CLI ignores; 2.2 Step 1 replaces "Limit repository access" with the real **Repository access** control and adds **Enable Workspaces**; 1.1 Step 2 gains the new-navigation Group Members path and the **Auth** column; 3.1 Step 1 adds disabling **Requesting Access** | Claude Code (Opus 5.5) |
 | 2026-09-25 | 0.3.0 | ai-drafted | validate-hth-guide fix loop, run offline against Snyk's docs and REST spec (the console was signed out, so 0 surfaces were exercised live and the guide is not ai-validated): corrected SSO to Enterprise-only at Group scope with IdP-side MFA (1.1); replaced the role table and member paths (1.2); added the Enterprise gate and new-navigation paths to service accounts (2.1); rewrote Project Visibility around Organization membership and custom roles (3.1) and Ignore Policy around Organization Settings → General → Ignores, with classic and new navigation paths (3.2); refreshed Classic Broker approved-data wording (2.2); replaced 4.1's unconfirmed Settings → Audit logs console path with API retrieval, the only route Snyk documents, and filled its Detection Focus; corrected Appendix A to Free/Team/Enterprise and removed the SCIM row (no SCIM control in this guide); repaired three redirecting Appendix B links; added read-only api Code Packs for 1.1, 1.2, 2.2, and 3.1; fixed fail-open, pagination, portability, and exit-code defects in the 2.1, 3.2, and 4.1 packs | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.1 | ai-drafted | Added api Code Packs for §2.1 (service-account credential-type audit + legacy-key deletion via the REST service_accounts endpoints) and §4.1 (org/group audit-log export via audit_logs/search inside the 90-day window), plus a cli Code Pack for §3.2 (snyk ignore with mandatory reason and expiry, .snyk suppression audit), all verified against docs.snyk.io API and CLI references | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass (Tier 1 only): rewrote 2.1 for the three service-account credential types (API key never expires and is not recommended; access token 1-year max with no in-place rotation; OAuth 2.0 recommended); added Universal vs Classic Broker and the April 2026 Broker high-availability default to 2.2; documented Enterprise-only audit logs, 90-day rolling retention, and the login/logout exclusion in 4.1; repaired rotted docs.snyk.io links to the platform-administration tree and removed Trust Center / marketing pages from Appendix B. Tier 3/4 research sweep out of scope this pass. | Claude Code (Opus 4.8) |

@@ -22,7 +22,8 @@
 #       "The minimum role required to invite users" (owner | admin | user | guest | app).
 #   Organization.allowMembersToInvite: Boolean  deprecated mirror
 #       ("Use `securitySettings.invitationsRole` instead"); read only as a fallback.
-# Console: Settings > Administration > Security > "Allow users to send invites"
+# Console: Settings > Administration > Security > Workspace management >
+#   "New user invitations"
 #   (https://linear.app/docs/invite-members). "By default, only Admins can
 #   invite members on paid plans"; on the Free plan every member is an admin.
 #
@@ -129,14 +130,14 @@ audit_invitations() {
     echo "  securitySettings.invitationsRole: ${role}"
     case "${role}" in
       owner|admin) ;;
-      user|guest)  finding "invitationsRole is '${role}': members below admin can invite people into the workspace (\"Allow users to send invites\" is on)." ;;
+      user|guest)  finding "invitationsRole is '${role}': members below admin can invite people into the workspace (\"New user invitations\" allows members)." ;;
       *)           undetermined "invitationsRole has an unrecognised value '${role}'." ;;
     esac
   elif [ -n "${legacy}" ]; then
     echo "  allowMembersToInvite (deprecated mirror): ${legacy}"
     case "${legacy}" in
       false) ;;
-      true)  finding "\"Allow users to send invites\" is on: any member can invite people into the workspace." ;;
+      true)  finding "\"New user invitations\" is not restricted to admins: any member can invite people into the workspace." ;;
       *)     undetermined "allowMembersToInvite has an unrecognised value '${legacy}'." ;;
     esac
   else

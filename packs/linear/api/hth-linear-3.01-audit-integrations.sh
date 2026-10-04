@@ -203,7 +203,7 @@ audit_integrations() {
   esac
 
   # TRAP 2
-  echo "  third-party application approvals: NOT CHECKED. Not readable through the public API; confirm it in Settings > Administration > Security."
+  echo "  third-party application approvals: NOT CHECKED. Not readable through the public API; confirm \"Review third-party applications\" in Settings > Administration > Security."
 }
 # HTH Guide Excerpt: end audit-integrations
 

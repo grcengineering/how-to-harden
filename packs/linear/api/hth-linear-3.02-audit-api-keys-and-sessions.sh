@@ -13,7 +13,7 @@
 # Dependencies: bash, curl (7.55+ for -H @-), jq
 #
 # Read-only audit: which role may create personal API keys (the workspace's
-# "Member API keys" setting), plus an inventory of the key owner's own active
+# "API key creation" setting), plus an inventory of the key owner's own active
 # sessions, by count and age only.
 #
 # Vendor surface (Linear's published GraphQL schema,
@@ -22,8 +22,8 @@
 #     ("The minimum role required to create personal API keys")
 #   Query.authenticationSessions: "User's active sessions"
 #     (AuthenticationSession: createdAt, lastActiveAt, isCurrentSession, type)
-# Console: Settings > Administration > API > "Member API keys" and Settings >
-#   Account > Security & Access (https://linear.app/docs/api-and-webhooks,
+# Console: Settings > Administration > API > "API key creation" and Settings >
+#   Personal > Security & access (https://linear.app/docs/api-and-webhooks,
 #   https://linear.app/docs/security-and-access).
 #
 # TRAP 1: NO API LISTS PERSONAL API KEYS. The schema has no key type or key
@@ -128,7 +128,7 @@ audit_api_keys_and_sessions() {
   case "${role}" in
     owner|admin) echo "  securitySettings.personalApiKeysRole: ${role} (members cannot create personal API keys)" ;;
     user|guest)  echo "  securitySettings.personalApiKeysRole: ${role}"
-                 finding "personalApiKeysRole is '${role}': members below admin can mint long-lived personal API keys (\"Member API keys\" is on)." ;;
+                 finding "personalApiKeysRole is '${role}': members below admin can mint long-lived personal API keys (\"API key creation\" allows members)." ;;
     "")          undetermined "securitySettings.personalApiKeysRole is not set, so who may create personal API keys could not be read." ;;
     *)           undetermined "personalApiKeysRole has an unrecognised value '${role}'." ;;
   esac
