@@ -24,7 +24,9 @@
 # including one an attacker registers).
 #
 # Exit codes: 0 no wildcard entries | 1 finding | 2 precondition (jq missing,
-# or a permissions.json that does not parse — Cursor falls back silently)
+# a permissions.json that does not parse — Cursor falls back silently — or NO
+# permissions.json at either scope: the allowlist in force is then
+# editor-managed and cannot be read from disk, so nothing was assessed)
 # =============================================================================
 
 set -uo pipefail
@@ -57,7 +59,10 @@ for PERM_FILE in "${HOME}/.cursor/permissions.json" ".cursor/permissions.json"; 
   done < <(printf '%s\n' "${ENTRIES}")
 done
 
-[ "${FILES_SEEN}" -gt 0 ] || echo "No permissions.json found — Cursor uses the editor-managed allowlist; review it in Settings > Agents > Approvals & Execution"
+if [ "${FILES_SEEN}" -eq 0 ]; then
+  echo "NOT ASSESSED: no permissions.json at ~/.cursor or ./.cursor — the MCP allowlist is editor-managed; review Settings > Agents > Approvals & Execution"
+  exit 2
+fi
 if [ "${FINDINGS}" -gt 0 ]; then
   echo "${FINDINGS} wildcard MCP allowlist entr(y/ies) — replace each with explicit server:tool pairs"
   exit 1

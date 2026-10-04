@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "AI/ML Platform"
 description: "Platform-wide security hardening for Anthropic — the Common Controls hub (SSO, organization roles, admin API keys, integration governance) shared by the Claude Enterprise, Claude Code, and Claude API & Console product guides."
-version: "1.2.0"
-maturity: ["ai-drafted"]
-last_updated: "2026-09-25"
+version: "1.2.1"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-10-04"
 ---
 
 ## Overview
@@ -83,16 +83,17 @@ Configure SAML 2.0 or OIDC-based SSO to authenticate Claude users through your c
 **Attack Prevented:** Credential theft, unauthorized access, orphaned accounts
 
 #### Prerequisites
-- Claude Team or Enterprise subscription
+- A Claude Team or Enterprise plan, or a Claude Console organization (single sign-on is available to all three)
 - SAML 2.0 or OIDC compatible identity provider (Okta, Azure AD, OneLogin, Google Workspace)
-- Organization Admin access to Claude Console
+- Owner or Primary Owner role (Team/Enterprise) or Admin role (Console)
 - Domain ownership for domain verification
+- **Console organizations:** the SSO controls on **Identity and access** appear only after SSO has been enabled for the organization through Anthropic Sales or a completed organization merge. Until then the page shows only the API-key creation settings
 
 #### ClickOps Implementation
 
-**Step 1: Access Identity & Access Settings**
-1. Navigate to: **platform.claude.com** → **Settings** → **Identity & Access**
-2. Click **Configure SSO**
+**Step 1: Access Identity and Access Settings**
+1. Navigate to: **platform.claude.com** → **Settings** → **Identity and access** (Console organizations) or **claude.ai** → **Admin settings** → **Organization and access** (Team and Enterprise plans)
+2. In the **Authentication** section, click **Setup SSO** (or **Manage SSO** if a connection already exists)
 
 **Step 2: Configure SSO via WorkOS**
 1. Select your IdP type (SAML 2.0 or OIDC)
@@ -113,7 +114,7 @@ Configure SAML 2.0 or OIDC-based SSO to authenticate Claude users through your c
 
 **Step 4: Verify Domain and Enforce SSO**
 1. Complete domain verification (DNS TXT record)
-2. Enable **Require SSO for all users**
+2. In the **Authentication** section, turn on **Require SSO for Console** and/or **Require SSO for Claude**
 3. Test login before full enforcement
 
 **Time to Complete:** ~30 minutes
@@ -185,7 +186,7 @@ Assign the minimum necessary organization role to each user. The role model diff
 - Organization Admin access
 - Current member inventory with role justifications
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Settings → Members path walked on a live Console organization: member table with Role column and Role filter observed; Edit Role not reachable on a single-member org" date="2026-10-04" %}
 
 **Step 1: Review Current Role Assignments**
 1. Navigate to: **platform.claude.com** → **Settings** → **Members**
@@ -261,7 +262,7 @@ Admin credentials grant organization-wide management access — treat them with 
 - Organization Admin access (Console) / primary owner or organization owner (Enterprise)
 - Secrets management solution (Vault, AWS Secrets Manager, etc.)
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console → Settings → Admin keys walked live: admin key created with the 3-hour preset (3 hours, 1 day, 7 days, 30 days, Custom, Never observed), then deleted from the row menu; claude.ai Enterprise path not walked" date="2026-10-04" %}
 
 **Step 1: Audit Existing Admin Keys**
 1. Navigate to: **Console → Settings → Admin keys** (Console orgs) and **claude.ai → Organization settings → API → Keys** (Enterprise orgs)
@@ -287,7 +288,7 @@ Admin credentials grant organization-wide management access — treat them with 
 
 #### Code Implementation
 
-{% include pack-code.html vendor="anthropic-claude" section="1.3" %}
+{% include pack-code.html vendor="anthropic-claude" section="1.3" validated_types="api" mark_status="ai-validated" mark_evidence="admin-key validity pack executed against a live Console organization: exit 0 with the live key, exit 1 with an invalid key and with the revoked key" mark_date="2026-10-04" %}
 
 #### Validation & Testing
 1. Validate admin key works via `/v1/organizations/me` endpoint
@@ -451,7 +452,7 @@ Assess the security posture of applications and services that consume your Claud
 - **6-10 points:** Enhanced controls (dedicated workspace, low spend limits, key rotation)
 - **11-15 points:** Reject or isolate (dedicated workspace with minimum limits, frequent rotation, monitoring)
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Settings → API keys and Settings → Workspaces walked on a live Console organization; Default workspace shows no Spend or Rate limits tabs; named-workspace limit tabs not walked" date="2026-10-04" %}
 
 **Step 1: Inventory the Keys and Their Consumers**
 1. Navigate to: **platform.claude.com** → **Settings** → **API keys**
@@ -555,7 +556,7 @@ This table covers this hub's controls. Product-specific availability is in each 
 
 | Control | API (All Tiers) | Team | Enterprise |
 |---------|----------------|------|------------|
-| 1.1 Enforce SSO | N/A (API-only) | ✅ | ✅ |
+| 1.1 Enforce SSO | ✅ (Console organizations, once SSO is enabled via Anthropic Sales or an organization merge) | ✅ | ✅ |
 | 1.2 Least-Privilege Roles | ✅ | ✅ | ✅ |
 | 1.3 Admin Key Protection | ✅ | ✅ | ✅ |
 | 1.4 Tenant Restrictions | ✅ (Console org IDs can be allowlisted) | Not documented | ✅ |
@@ -641,6 +642,7 @@ This table covers this hub's controls. Product-specific availability is in each 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-04 | 1.2.1 | ai-drafted · ai-validated | validate-hth-guide run against a live Claude Console organization (Evaluation access): 4 surfaces came back VERIFIED-LIVE across 3 of 6 controls — ClickOps 1.2 (Members), 1.3 (Admin keys: a short-lived key was created and then deleted) and 2.2 (API keys, Workspaces); Code 1.3 (the admin-key validity pack, run with a short-lived admin key that was revoked afterwards: exit 0 with the live key, exit 1 with an invalid and with the revoked key). The 1.1 and 1.2 Code packs also ran read-only but are not marked: 1.01 lists members and cannot see SSO state, and 1.02 ran against a one-member org that cannot exceed its admin threshold. 1.4 and 2.1 were not exercised (no egress proxy; no pending invite), and 6.02 ran against an org with no API keys, so its Code surface is not marked. §1.1 corrected against the live Console and the SSO setup article: the Console page is **Identity and access**, its SSO controls are **Setup SSO**/**Manage SSO** under Authentication and appear only once SSO is enabled via Anthropic Sales or an organization merge, the enforcement toggles are **Require SSO for Console**/**Require SSO for Claude**, SSO is available to Console organizations as well as Team and Enterprise, and the roles are Owner/Primary Owner or Console Admin; Appendix A no longer marks 1.1 N/A for Console organizations. SSO Steps 2–4 were not walked live. | `Claude Code (Opus 5.5)` |
 | 2026-09-25 | 1.2.0 | ai-drafted | validate-hth-guide run (Phases 4-6, including an independent audit). The live Console stayed behind its sign-in wall and no Admin API key could be minted, so 0 surfaces were exercised live and no status was added; packs were exercised offline against a mock of the documented Admin API. Fixes: the shared POST helper appended a stray `}` to every request body, so 1.02's role change could never send valid JSON (now fixed, and 1.02 keeps the API's response, a member record, off stdout); packs 1.01, 1.02, 1.03 and 6.01 now exit 1 when an API call fails (they printed `[FAIL]` and exited 0) and page through `has_more`/`last_id` with `limit=1000` (the shared helper read a `next_page` field the API never returns, so every list stopped at 20 entries); the admin key reaches curl as a header file instead of a command-line argument; 1.01 drops the Linux-only `column -N`; 6.01 prints `invited_at` (invites have no `created_at`); 1.02 matches undocumented roles exactly; 1.02 and 6.01 now declare `mode: mutating` for their opt-in write branches, which also validate their inputs. New read-only packs: 1.04 verifies tenant restrictions from inside the network against the documented HTTP 403 `tenant_restriction_violation`; 6.02 inventories active API keys by scope (workspace, Default Workspace, organization) for 2.2. §2.2 gains ClickOps steps (Settings → API keys, workspace limits under Settings → Workspaces). §1.4 names where each organization type shows its organization ID and says to overwrite the header. §1.2: Limited Developer is a workspace role, not an organization role. §3 and Appendix A rebuilt around this hub's six controls (they cited sections 3.1-7.11, which now live in the product guides); CSF 2.0 `PR.AC` corrected to `PR.AA`; ISO IDs labelled as 2013 Annex A numbering; §3 now says its CSF 2.0 and AI RMF rows are category-level mappings that no control table carries; §1.4's Compliance Mappings table gains `AC-4`, which its header table already listed. Usage Policy link moved to anthropic.com/legal/aup; doc_links.yml points at platform.claude.com and academy.claude.com directly. Correction to the 1.1.0 row: Anthropic documents the OAuth access-token prefix quoted there for tokens issued by `POST /v1/oauth/token` (WIF reference); the prefix of interactive `ant auth login --scope "org:admin"` tokens is not documented and was not verified. | `Claude Code (Opus 5.5)` |
 | 2026-08-15 | 1.1.0 | ai-drafted | Admin API currency pass against platform.claude.com. §1.2 role model corrected to the two-org-type picture: five Console/API roles plus the Console UI's Limited Developer tier, `owner`/`primary_owner` above admin, `managed`/`membership_admin` on the Enterprise side, and the full nine-value API role enum documented so audit scripts stop silently miscounting; the admin-assignment and admin-removal API blocks are now quoted from the current references. §1.3 rebuilt on the two-track credential model — Console admin keys (`sk-ant-admin01-`, no selectable scopes) vs Claude Enterprise scoped keys (`sk-ant-api01-`, 12-scope table, primary-owner/org-owner creation split) — plus key expiration at creation, the organization maximum-expiration policy, the `org:admin` OAuth bearer path via the `ant` CLI (dedicated admin profile, `sk-ant-oat01-` prefix added for secret-scanning coverage), and the WIF-endpoints carve-out (service-account/federation endpoints reject admin keys). References moved to canonical platform.claude.com URLs — two of the old docs.anthropic.com links were dead 404s. Roles pack rewritten to count the full enum and the elevated tier; rotation pack now audits `expires_at`. | `Claude Code (Opus 5)` |
 | 2026-02-21 | 0.1.0 | ai-drafted | Initial guide: 12 controls across 6 categories, API pack scripts for Admin API | `Claude Code (Opus 4.6)` |

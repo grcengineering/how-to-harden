@@ -9,7 +9,7 @@
 # HTH Anthropic Claude Control 1.1: Enforce SSO (SAML/OIDC)
 # Profile: L1 | NIST: IA-2, IA-8 | SOC 2: CC6.1
 #
-# Note: SSO is configured via the Claude Console UI (Settings > Identity & Access).
+# Note: SSO is configured via the Claude Console UI (Settings > Identity and access).
 # There is no Admin API endpoint for SSO configuration.
 # This script lists every organization member for an IdP cross-reference.
 # Exit codes: 0 member list retrieved | 1 missing key or failed API call

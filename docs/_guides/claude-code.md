@@ -9,9 +9,9 @@ product: "Claude Code"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for Claude Code — managed settings via MDM, permission and tool restriction, MCP server governance, sandbox isolation, prompt-injection defense, CI/CD hardening, Cowork governance, and incident response."
-version: "1.1.0"
+version: "1.1.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-09-25"
+last_updated: "2026-10-04"
 ---
 
 ## Overview
@@ -77,7 +77,7 @@ Deploy organization-wide Claude Code security policies using one of four managed
 #### ClickOps Implementation
 
 **Option A: Server-Managed Settings (No MDM Required)**
-1. Navigate to: **claude.ai** → **Admin Settings** → **Claude Code** → **Managed settings**
+1. Navigate to: **claude.ai** → **Organization settings** → **Claude Code** → **Managed settings** ([claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code); Owner or Primary Owner)
 2. Add JSON configuration with required security settings
 3. Settings propagate to all users at next startup or within 1 hour
 
@@ -343,7 +343,7 @@ Restrict the Claude Code extensibility surface by enforcing managed-only hooks, 
 #### ClickOps Implementation
 
 **Step 1: Lock Hooks to Managed-Only**
-1. Navigate to: **claude.ai** → **Admin Settings** → **Claude Code** → **Managed settings**
+1. Navigate to: **claude.ai** → **Organization settings** → **Claude Code** → **Managed settings** ([claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code))
 2. Add `"allowManagedHooksOnly": true` — blocks all user, project, and plugin hooks
 3. Define any required hooks directly in managed settings under the `"hooks"` key
 
@@ -424,7 +424,7 @@ Enable OS-level bash command sandboxing to isolate Claude Code's subprocess exec
 #### ClickOps Implementation
 
 **Step 1: Enable Sandbox**
-1. Navigate to: **claude.ai** → **Admin Settings** → **Claude Code** → **Managed settings**
+1. Navigate to: **claude.ai** → **Organization settings** → **Claude Code** → **Managed settings** ([claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code))
 2. Add `"sandbox": { "enabled": true, "failIfUnavailable": true }` to your managed settings JSON
 3. Set `sandbox.allowUnsandboxedCommands` to `false` (inside the `sandbox` object) to close the `dangerouslyDisableSandbox` escape hatch
 
@@ -825,7 +825,7 @@ Use the Claude Code Analytics API (`/v1/organizations/usage_report/claude_code`)
 
 **Step 1: Review Usage in Console**
 1. Navigate to: **platform.claude.com/claude-code** (the Claude Code usage page, separate from the general **Usage** page). It requires the **UsageView** permission, granted to the Developer, Billing, Admin, Owner, and Primary Owner roles
-2. Team and Enterprise (claude.ai) organizations use **claude.ai/analytics** instead
+2. Team and Enterprise (claude.ai) organizations use **claude.ai/analytics/claude-code** instead (Admins and Owners)
 3. Review per-user activity patterns
 
 **Step 2: Configure Alerts**
@@ -909,12 +909,12 @@ Configure governance controls for Claude Cowork collaborative sessions, includin
 #### Prerequisites
 - Claude Team or Enterprise plan
 - Managed settings deployment (Control 1.1)
-- Organization UUID (found in Claude.ai admin settings)
+- Organization UUID (found in claude.ai **Organization settings**)
 
 #### ClickOps Implementation
 
 **Step 1: Enforce Organizational Login**
-1. Navigate to: **claude.ai** → **Admin Settings** → **Claude Code** → **Managed settings**
+1. Navigate to: **claude.ai** → **Organization settings** → **Claude Code** → **Managed settings** ([claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code))
 2. Add `"forceLoginMethod": "claudeai"` to require Claude.ai account login
 3. Add `"forceLoginOrgUUID": "your-org-uuid"` to auto-select the organization
 4. This prevents developers from using personal accounts or switching organizations
@@ -1200,6 +1200,7 @@ See the [Anthropic platform hub references](/guides/anthropic-claude/#appendix-b
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-04 | 1.1.1 | ai-drafted | validate-hth-guide run against a live Claude Console organization, read-only: 0 of 22 surfaces exercised live, so `ai-validated` was not added. The §5.1 Console page at platform.claude.com/claude-code loaded only its headings and placeholder rows (no metric or per-user data; the org had no Claude Code activity), and the §5.1 script, run with an Admin API key, returned 0 records for each day tried. The claude.ai Team/Enterprise admin pages need a Team or Enterprise org. Corrections: the claude.ai managed-settings path in §1.1, §2.2, §3.1 and §5.2 is now **Organization settings** → **Claude Code** → **Managed settings** (was "Admin Settings"); the Team/Enterprise analytics URL in §5.1 is claude.ai/analytics/claude-code. | Claude Code (Opus 5.5) |
 | 2026-09-25 | 1.1.0 | ai-drafted | [SECURITY] Fixes from a validate-hth-guide run (22 surfaces; 0 exercised live — the Console was behind a sign-in wall and the claude.ai admin surfaces need a Team or Enterprise org — so `ai-validated` was not added). §4.2's workflow pinned two action commits that do not exist and passed inputs `claude-code-action@v1` ignores: repinned, with model, tool and turn limits moved into `claude_args`. The §4.1 rules-file scanner never matched invisible Unicode: fixed, bidi controls added. Validators for §1.1, §1.2 and §2.1 now merge `managed-settings.d/` drop-ins, read `disableBypassPermissionsMode` only under `permissions`, and exit non-zero on failure; the §5.1 script no longer aborts on macOS, follows pagination, fails on a day with zero records instead of reporting healthy acceptance rates, and keeps the admin key out of process arguments; the §5.3 collector preserves timestamps and writes SHA256SUMS. Guide: settings keys shown under their parent objects, `/status` and `claude doctor` verification, HKCU fallback and first-wins source precedence, `allowManagedMcpServersOnly`, `cleanupPeriodDays` minimum 1 (0 fails validation), Cowork admin paths, instructions and Compliance API coverage re-sourced from support.claude.com, tenant-restriction availability and header rules, HackerOne and security.txt contacts. | Claude Code (Opus 5.5) |
 | 2026-08-15 | 1.0.2 | ai-drafted | §5.1 corrections from the Admin API currency pass: prerequisites fixed — the gate is an Admin API key on a Claude Console organization (free for every org with Admin API access, both `api` pay-as-you-go and `subscription` Pro/Team customer types), not a Team/Enterprise plan; Claude Enterprise (claude.ai) users' Claude Code activity reports through the separate Claude Enterprise Analytics API. Documented the cloud-provider monitoring blind spot (sessions via Bedrock, Foundry, Vertex AI, or Claude Platform on AWS are invisible to this API — close with OpenTelemetry or provider-side logging), added the detection dimensions (`terminal_type`, `customer_type`, `user_actor`/`api_actor`), and the operational facts (up to 1-hour data delay, single-day `starting_at` queries, `limit` max 1000). Console hosts canonicalized to platform.claude.com. | Claude Code (Opus 5) |
 | 2026-08-08 | 1.0.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §5.3 (no content-facts changed) | Claude Code (Fable 5) |
