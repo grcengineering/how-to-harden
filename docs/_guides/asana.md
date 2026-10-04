@@ -6,9 +6,9 @@ slug: "asana"
 tier: "2"
 category: "Productivity"
 description: "Project management platform hardening for Asana including SAML SSO, admin console controls, and mobile security"
-version: "0.3.0"
-maturity: ["ai-drafted"]
-last_updated: "2026-09-25"
+version: "0.3.1"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-10-04"
 ---
 
 ## Overview
@@ -773,7 +773,7 @@ Configure mobile device security settings.
 | NIST 800-53 | AC-3, SA-9, SC-7 |
 
 #### Description
-Decide deliberately whether AI Studio is enabled for the organization and understand where the data goes. Super admins enable or disable Asana AI for the whole organization under **Admin Console** → **Settings** → **Domain settings** → **Asana AI**, on Starter through Enterprise+ ([Managing organization settings](https://help.asana.com/s/article/managing-organization-settings)). Asana states that "Our AI partners that power AI Studio, OpenAI and Anthropic, do not use customer data to train their models and are required to delete customer data once a query is complete" ([AI Studio](https://asana.com/product/ai/ai-studio)).
+Decide deliberately whether AI Studio is enabled for the organization and understand where the data goes. Super admins enable or disable Asana AI for the whole organization with the **Enable Asana AI** setting, which the current admin console places under **Admin Console** → **Asana AI** → **AI settings** (Asana's help center documents the same setting under **Settings** → **Domain settings** → **Asana AI**, on Starter through Enterprise+; [Managing organization settings](https://help.asana.com/s/article/managing-organization-settings)). That console page states that "Asana AI uses AWS Bedrock-hosted models as well as the third-party AI providers enabled below" and that "AI partners do not retain data or use your data for model training", and lists the providers under **Advanced** → **Providers and APIs**. Asana's AI Studio page states that "Our AI partners that power AI Studio, OpenAI and Anthropic, do not use customer data to train their models and are required to delete customer data once a query is complete" ([AI Studio](https://asana.com/product/ai/ai-studio)).
 
 #### Rationale
 **Why This Matters:**
@@ -788,17 +788,19 @@ Decide deliberately whether AI Studio is enabled for the organization and unders
 - Super Admin access
 - A completed data-flow and residency review for the AI partner arrangement
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path, Enable Asana AI choice, provider list and Enterprise+ RBAC gate re-read on the live admin console" date="2026-10-04" %}
 
 **Step 1: Make the Enablement Decision Explicitly**
-1. Determine whether AI Studio is enabled for the organization, and record the decision, its owner, and its date
+1. Navigate to: **Admin Console** → **Asana AI** → **AI settings** → **Enable Asana AI**, and record whether *Yes, allow … to use Asana AI* or *No, don't allow users in … to use Asana AI* is selected, together with the decision's owner and date. AI Studio seat and credit usage is under **Asana AI** → **AI Studio**
 2. Where AI features are not needed, leave them disabled rather than enabled-and-unused — an unused enabled feature is still an open data path
 3. Re-confirm the decision when Asana ships new AI capabilities, since scope can expand under an existing toggle
+4. Restricting AI to specific roles or features (RBAC) requires Enterprise+; below that tier the setting applies to every member of the organization
 
 **Step 2: Record the Vendor Assurances**
-1. Capture Asana's stated position in the vendor file: the AI partners (OpenAI and Anthropic) do not train on customer data, and are required to delete it once a query is complete
-2. Get the AI partners' processing location from Asana (its admin guidance points to the Asana AI FAQ and the [Trust Center](https://asana.com/trust)), and confirm it is compatible with the organization's data-residency commitments before enabling
-3. For EU-resident data, treat residency as the deciding factor rather than the training and deletion guarantees alone
+1. Capture Asana's stated position in the vendor file, from the **AI settings** page: Asana AI uses AWS Bedrock-hosted models plus whichever third-party AI providers are enabled, and AI partners do not retain data or use it for model training. The AI Studio page adds that its partners (OpenAI and Anthropic) are required to delete customer data once a query is complete
+2. Under **AI settings** → **Advanced** → **Providers and APIs**, review which providers are checked (AWS Bedrock, Fireworks, Google, OpenAI and Anthropic are listed), clear any not covered by the vendor review, and select **Save changes**
+3. Get the AI partners' processing location from Asana (its admin guidance points to the Asana AI FAQ and the [Trust Center](https://asana.com/trust)), and confirm it is compatible with the organization's data-residency commitments before enabling
+4. For EU-resident data, treat residency as the deciding factor rather than the training and deletion guarantees alone
 
 **Step 3: Scope What AI Can Reach**
 1. AI features operate on the content the invoking user can already see, so the permission work in [3.1](#31-configure-sharing-controls) and [2.1](#21-configure-admin-roles) determines the AI blast radius
@@ -1038,6 +1040,7 @@ Each row names the Asana page it comes from (read 2026-09-24). Legacy Enterprise
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-04 | 0.3.1 | ai-drafted · ai-validated | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated**. An AI agent did the exercising in a validate-hth-guide run; no human practitioner has reviewed or applied this guide, so it claims no **ni-** status. **What was exercised (2026-10-04):** a signed-in, read-only walk of a live Asana admin console (an Advanced-trial workspace). It found that 3.4's ClickOps gave no navigation path and named only two AI partners, so 3.4 now gives the path **Admin Console** → **Asana AI** → **AI settings** → **Enable Asana AI**, quotes the page's own data-handling statement (AWS Bedrock-hosted models plus enabled third-party providers, no retention or training), adds a step to review the **Providers and APIs** list (AWS Bedrock, Fireworks, Google, OpenAI, Anthropic), and notes that per-role AI access needs Enterprise+. The corrected steps were then re-read against the same console. The 3.4 pack's comment now carries the same path. **Live surface count: 1 of 34** (3.4 ClickOps). **What was NOT exercised:** every other ClickOps surface needs an organization or Enterprise-tier admin page this workspace does not have (Security, Apps, domains, SCIM, service accounts), and no Code Pack ran against the tenant, because no API token could be stored and the service-account packs need Enterprise+. Those controls carry no mark. | Claude Code (Opus 5.5) |
 | 2026-09-25 | 0.3.0 | ai-drafted | Automation verdict for all 17 controls (AGENTS.md rule 4), from a validate-hth-guide run. Added ten read-only `api/` packs (2.1 admin roster and role escalation, 2.2 email domains, 2.3 SCIM orphan reconciliation, 2.7 service-account callers, 3.1 guests, sharing roles and team guest gates, 3.2 export permission, 3.3 mobile attachment permission, 3.4 AI Studio seats, 4.1 audit-log NDJSON export, 4.2 security-setting drift). Added six `siem/sigma/` detections over the audit-log feed (1.1, 1.2, 1.3, 2.4, 2.5, 3.3). Added evidenced `**Automation:** ClickOps only` lines where Asana has no write interface (1.1–1.4, 2.2, 2.4–2.7, 3.1–3.4). Every endpoint, field and event type was checked against Asana's OpenAPI specification and developer documentation. The packs were exercised offline against a mock of those response shapes, and against the real API only with an invalid token (fail-closed path). No pack has run against a live tenant, because the console was behind a sign-in wall, so maturity is unchanged. Added an automation-surface census to Appendix B. An independent audit of the run then led to two sets of fixes. First, the 2.1, 2.7, 3.1, 3.2, 3.3 and 4.2 packs no longer report compliant when the data they judge is missing: a role or team that does not report the permission, an unknown role type, or an audit window with no events now exits 2. Second, plan tiers and paths were corrected against Asana's help center (read in a real browser), the Roles reference, the MCP guide and the pricing page. SAML, SAML session timeout and SCIM are Enterprise and above, not Starter. Custom roles are Enterprise+. Guest invite settings are Enterprise and above. File attachment options restrict upload sources, not file types, and need Enterprise+. Mobile data controls are Enterprise+ or an add-on. The beta v1 MCP app is reachable by default and blocked on request (opt-out, not opt-in). The Audit Log API is documented as feeding SIEMs such as Splunk and Sumo Logic. The AI partner guarantees are re-sourced to the AI Studio page, and the unsupported US-servers claim is removed. Appendix A now cites a source for each row, and 2.5's plan statement cites the help center instead of the Admin & Security Features page, which names no plans. | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass against asana.com and developers.asana.com. Corrected the plan matrix (SSO, 2FA, password strength, session limits, SCIM, guest restrictions, custom roles, app blocking/approval are all paid tiers; mobile security is Advanced+). Rewrote 4.1 for the Audit Log API (Service Account PAT auth, 90-day retention, nine documented event categories, SIEM via API rather than a named Splunk integration). Added 2.4 IP allowlisting, 2.5 third-party app control, 2.6 MCP server governance, 2.7 service accounts as non-human identities, and 3.4 AI governance; expanded 2.1 (custom roles/password policy), 2.3 (service-account auth and SCIM deprovisioning), 3.2 (DLP/CASB). Documented the Audit Log API entitlement conflict between two Tier 1 sources as both-with-callout per SOURCES.md. Removed trust-center and security-standards links from Appendix B. Tier 2 (CIS/DISA/CISA SCuBA) publishes no Asana baseline; Tier 3/4 research not surveyed this pass. Help-center nav paths in sections 1–3 were left unchanged — help.asana.com is a JavaScript shell and could not be re-verified. | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
