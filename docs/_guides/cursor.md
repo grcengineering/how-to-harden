@@ -6,9 +6,9 @@ slug: "cursor"
 tier: "1"
 category: "DevOps"
 description: "AI code editor security hardening for code privacy, MCP security, agent sandboxing, API key management, and workspace trust"
-version: "0.5.0"
+version: "0.5.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-09-25"
+last_updated: "2026-10-04"
 ---
 
 
@@ -99,7 +99,7 @@ Require all developers to authenticate with a Cursor account instead of using th
 4. For team deployments: Use Cursor Teams or Enterprise to enforce authentication
 
 **Step 2: Configure Authentication Method**
-1. Go to: https://cursor.com/settings — signed out, this redirects to the sign-in page at `authenticator.cursor.sh`, which opens with an email field
+1. Go to: https://cursor.com/settings — signed out, this redirects to the sign-in page at `authenticator.cursor.sh`, which opens with an email field; signed in, it redirects to the dashboard, and account settings are at https://cursor.com/dashboard/settings
 2. Complete sign-in with the method your account uses
 3. For organizational accounts, prefer SSO (1.3) so authentication is governed by your identity provider rather than by a Cursor credential
 
@@ -143,7 +143,7 @@ Require all developers to authenticate with a Cursor account instead of using th
 **NIST 800-53:** IA-2(1)
 
 #### Description
-Require MFA for Cursor account authentication to prevent account takeover via compromised credentials.
+Cursor has no account-level MFA setting, so require MFA where Cursor sign-in is actually decided: at the Google or GitHub account used to sign in, or at your SAML/OIDC identity provider for teams. This prevents account takeover via compromised credentials or an intercepted sign-in link.
 
 #### Rationale
 **Why This Matters:**
@@ -156,34 +156,30 @@ Require MFA for Cursor account authentication to prevent account takeover via co
 
 #### ClickOps Implementation
 
-> **Source note (2026-09-24).** Cursor's current documentation index has no page on account-level MFA, and the path below sits behind sign-in, so it was not re-verified in this pass. Confirm the options your account actually shows. For team accounts, the stronger design is to enforce MFA in your identity provider and require SSO (1.3), so Cursor never holds a password at all.
+Cursor has no account-level MFA setting to turn on. On 2026-10-04 `https://cursor.com/settings/security` returned Cursor's 404 page, and **Dashboard → Settings** (https://cursor.com/dashboard/settings) offered no MFA, two-factor, or authenticator option. Its sections are Privacy, Profile, Appearance, Pull Requests, Restricted and Early-Access Models, Active Sessions, and Delete Account. Cursor signs you in by email magic link, Google, or GitHub ([Cursor Help](https://cursor.com/help/security-and-privacy/account-compromised)), so the second factor has to be enforced by whichever of those holds the sign-in.
 
-**Step 1: Enable MFA on Cursor Account**
-1. Visit: https://cursor.com/settings/security
-2. Navigate to **Multi-Factor Authentication**
-3. Click **Enable MFA**
-4. Choose method:
-   - **Authenticator App (TOTP):** Recommended (Authy, 1Password, Google Authenticator)
-   - **SMS:** Available but less secure
-5. Scan QR code with authenticator app
-6. Enter verification code
-7. Save recovery codes in secure location (password manager)
+**Step 1: Individual accounts — enforce MFA at the sign-in provider**
+1. Sign in with Google or GitHub rather than an email magic link, so a second factor stands between a stolen password and your Cursor account
+2. Require two-step verification on that account: Google [2-Step Verification](https://support.google.com/accounts/answer/185839), or GitHub [two-factor authentication](https://docs.github.com/en/authentication/securing-your-account-with-two-factor-authentication-2fa/configuring-two-factor-authentication). Prefer a passkey, security key, or authenticator app over SMS
+3. If you keep using an email magic link, require MFA on the mailbox that receives it, because whoever can read that inbox can sign in to Cursor
 
-**Step 2: Verify MFA Enforcement**
-1. Sign out of Cursor
-2. Sign back in
-3. Verify MFA prompt appears after password
+**Step 2: Teams and Enterprise — require SSO and enforce MFA in the IdP**
+1. Configure SAML/OIDC SSO and verify your domains (1.3), so members sign in through your identity provider instead of personal Google, GitHub, or email logins
+2. In the IdP, require MFA (phishing-resistant where available) in the Cursor application's sign-on policy
 
-**Automation:** ClickOps only — Cursor exposes no write interface for account MFA; the Admin API documents no MFA route ([Admin API](https://cursor.com/docs/account/teams/admin-api), 2026-09-24).
+**Step 3: Review active sessions**
+1. Open **Dashboard → Settings → Active Sessions** and revoke any session you do not recognise, especially after turning on MFA at the sign-in provider
+
+**Automation:** ClickOps only — Cursor has no account MFA setting to automate; enforce MFA at the sign-in identity provider. The Admin API documents no MFA route ([Admin API](https://cursor.com/docs/account/teams/admin-api), 2026-10-04).
 
 **Time to Complete:** ~10 minutes
 
 #### Validation & Testing
-1. Attempt login with only password - should prompt for MFA
-2. Test authenticator app generates valid codes
-3. Verify recovery codes work for MFA bypass
+1. Sign out of Cursor and sign back in with your Google or GitHub account — the provider should prompt for its second factor
+2. For teams, sign in through SSO and confirm the IdP enforces MFA before returning you to Cursor
+3. Confirm **Dashboard → Settings → Active Sessions** lists only sessions you recognise
 
-**Expected result:** All logins require MFA verification
+**Expected result:** Every Cursor sign-in passes through an identity provider that requires a second factor
 
 #### Compliance Mappings
 
@@ -358,9 +354,10 @@ Configure Cursor's Privacy Mode to prevent code from being stored or used for tr
 2. Navigate to: **Cursor Settings** → **General** → **Privacy Mode**
 3. Enable: **Privacy Mode**
    - When enabled, zero data retention agreements apply with all AI providers
-   - Code enters volatile memory only for processing, then is discarded
+   - The dashboard's own Privacy Mode description reads: "Your code data will not be trained on or used to improve the product. Code may be stored for Cloud Agent, Team Rules, and other features" (observed 2026-10-04; its Learn More link resolves to [Data Use](https://cursor.com/data-use)). Privacy Mode stops training and product-improvement use; it does not mean code is never stored
    - Cursor's servers run separate replicas where logging is disabled
-4. For Teams/Enterprise: open the [team dashboard](https://cursor.com/dashboard) → **Settings** → **Privacy Settings**, enable Privacy Mode for the team, and enforce it so members cannot disable it. Privacy Mode is on by default for Enterprise teams — confirm it is still on and enforced
+4. Individual accounts can also set it on the web: open https://cursor.com/dashboard/settings → **Privacy** → **Privacy Mode**, which shows the current state (for example **Active**) and an **Edit** button
+5. For Teams/Enterprise: open the [team dashboard](https://cursor.com/dashboard) → **Settings** → **Privacy Settings**, enable Privacy Mode for the team, and enforce it so members cannot disable it. Privacy Mode is on by default for Enterprise teams — confirm it is still on and enforced
 
 **Step 2: Request US-only data residency (Enterprise, L2/L3)**
 
@@ -376,9 +373,12 @@ Privacy Mode governs *retention*; data residency governs *location*. Where your 
 
 Some models are withheld from Privacy Mode and Enterprise users until an admin explicitly approves them, because the provider retains inputs and outputs. Cursor documents Claude Fable 5 and Claude Fable 5.1 as requiring such approval: Anthropic "stores their inputs and outputs to run automatic and human harm-prevention reviews," and "this data is not used for training or product improvement." Opting in applies to the whole team.
 
+On individual accounts the opt-in is per user, not an admin decision: **Dashboard → Settings → Restricted and Early-Access Models** lists these models ("These models require accepting the provider's data-retention policy before they can be used") with the user's acknowledgement status and a **Revoke Acknowledgement** button.
+
 1. Treat any such approval as a data-flow decision, not a model-availability decision — approving it changes what leaves your organization under Privacy Mode
 2. If you approve it, narrow the exposure: Cursor notes that "Enterprise admins can still limit which user groups can select the model," so scope it to the teams that need it rather than the whole organization
 3. Record the approval and its scope in your AI vendor register, since it is an exception to the zero-retention posture the rest of this control establishes
+4. For individual accounts, review **Dashboard → Settings → Restricted and Early-Access Models** and use **Revoke Acknowledgement** for any model your policy does not approve
 
 **Step 4: Pin managed devices to the enforcing team**
 
@@ -956,7 +956,7 @@ Cursor's current documented model is a set of approval tiers. Reading files and 
 4. **Enterprise:** restrict which modes users may pick with the team dashboard's **Auto Run Configuration**; team settings take precedence over individual and project configuration
 
 **Step 2: Verify the terminal allowlist**
-1. Run the Code Pack below. It audits `terminalAllowlist` and `autoRun` in both `permissions.json` files and exits `1` on an entry that is empty, `*`, or starts with a shell, interpreter, or network tool. The Run Mode itself is not stored in a documented file — confirm it in the app or the dashboard
+1. Run the Code Pack below. It audits `terminalAllowlist` and `autoRun` in both `permissions.json` files and exits `1` on an entry that is empty, `*`, or starts with a shell, interpreter, or network tool. When neither `permissions.json` exists it exits `2` (not assessed), because the allowlist in force is then editor-managed and not readable from disk. The Run Mode itself is not stored in a documented file — confirm it in the app or the dashboard
 
 **Time to Complete:** ~2 minutes
 
@@ -1498,6 +1498,26 @@ The following are the hosts Cursor documents for enterprise network configuratio
 
 **Block all other network traffic from Cursor.** If Cloud Agents are disabled per 5.3, omit the `*.cursorvm.com` entries rather than allowing them "just in case" — an unused allowlist entry is an available egress path.
 
+#### ClickOps Implementation
+
+These steps are carried out in your own egress control (firewall, secure web gateway, forward proxy, or endpoint-security console), not in Cursor; Cursor has no setting that restricts its own egress.
+
+**Step 1: Create an allow rule for Cursor**
+1. In your egress firewall, proxy, or endpoint-security console, create an application or destination rule for Cursor
+2. Allow the hosts in **Required Endpoints** above, or the documented wildcards where per-host rules are impractical
+
+**Step 2: Deny direct provider APIs and everything else**
+1. Add explicit deny rules for `api.openai.com` and `api.anthropic.com` from Cursor, so model traffic cannot bypass Cursor's Privacy Mode backend
+2. Set the rule's default for other Cursor egress to deny
+
+**Step 3: Drop entries you do not use**
+1. If Cloud Agents are disabled (5.3), omit `*.cursorvm.com` and `*.*.cursorvm.com`
+2. If extensions are managed centrally (8.1), confirm `marketplace.cursorapi.com` is the only marketplace host allowed
+
+**Step 4: Verify the rule**
+1. Run the Code Pack below while Cursor is open and compare its connection snapshot with your firewall or proxy log
+2. Confirm no allowed connection goes to a host outside the list and that denied attempts to provider APIs are logged
+
 #### Code Implementation
 
 The Code Pack prints Cursor's documented allowlist — no `*.cursor.com` — with direct provider APIs listed under **BLOCK**, and snapshots Cursor's established connections for comparison with your firewall log.
@@ -1991,6 +2011,7 @@ Plan names and tiers follow [cursor.com/pricing](https://cursor.com/pricing) and
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-04 | 0.5.1 | ai-drafted | validate-hth-guide live run against a signed-in Free (Hobby) account on the cursor.com dashboard; 0 surfaces VERIFIED-LIVE (Cursor app not installed, no Teams/Enterprise team or Admin API key), so maturity is unchanged. Corrected from the live dashboard: 1.2 rewritten — `cursor.com/settings/security` is a 404 and Cursor has no account MFA setting, so MFA is enforced at the Google/GitHub sign-in or the SSO IdP; 2.1 adds the web path Dashboard → Settings → Privacy → Privacy Mode, replaces the "volatile memory… discarded" bullet with the dashboard's own "Code may be stored for Cloud Agent, Team Rules, and other features", and documents the per-account Restricted and Early-Access Models acknowledgement; 1.1 notes the signed-in redirect to the dashboard; 9.2 gains its missing ClickOps section. Code: 4.2 and 5.1 packs now exit 2 (not assessed) instead of passing when no `permissions.json` exists | Claude Code (Opus 5.5) |
 | 2026-09-25 | 0.5.0 | ai-drafted | validate-hth-guide Phase 5 fix pass plus its independent-audit response (no live surface verified — Hobby account behind a sign-in wall, Cursor app not installed — so maturity is unchanged). Corrected against current vendor docs: 1.1 sign-in methods are email magic link, Google, or GitHub (not email/password); 1.3 SSO is Teams and Enterprise, dashboard path, and domain verification is the enforcement (no toggle); 1.4 SCIM wizard path and roles; 2.1 provider list, Privacy Mode wording, Enterprise default, team path; 2.2 router availability and defaults, Model Access Control, Impose Auto; 2.3 `.cursorignore` does not cover terminal/MCP tools, hierarchical/global ignore, removed `.cursorindexingignore`; 2.4 requests still transit Cursor's backend; 3.2/3.3 Anthropic console moved to platform.claude.com; 4.1 MCP Configuration path; 4.2 MCP follows Run Modes, file protections; 5.1 Auto-review default since 3.6; 5.2 documented sandbox and `sandbox.json`; 5.3 Cloud Agents never prompt; 10.1 audit log always on (Enterprise), streaming on request, stale caveat replaced; 11.2 Linux `policy.json`, no Privacy Mode policy; 11.3 `failClosed`; Appendix A rebuilt on Hobby/Individual/Teams/Enterprise; CVE-2025-64106 citation replaced with the vendor advisory. Code: new api/ packs (1.4, 2.1, 2.2, 3.3, 10.1, 11.1) on the Cursor Admin API, new config/ packs (4.2, 5.2, 7.2, 10.2, 11.2, 11.3); fixed fail-open or destructive packs (2.3 overwrite, 3.1 placeholder append, 3.2 key clobber, 4.1 secret printing, 6.1 BSD-grep fail-open, 8.1/10.1 exit 0 on no data); every api/ pack now exits 2 on an HTTP 200 whose body lacks the documented response shape (and 1.4, 3.3, 11.1 on zero members) instead of passing on nothing, and 8.1 no longer trusts a `cursor` CLI that fails; removed undocumented settings keys (2.1, 5.1, 9.1, 9.2); every pack carries an HTH Pack Contract v1 header; `**Automation:**` verdicts added to 1.1, 1.2, 1.3, 2.4, 5.3 | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.4.0 | ai-drafted | Add 11.3 Cursor Hooks as an enforcement layer (event classes, Enterprise→Team→Project→User precedence, per-platform config paths, fail-open default, ~30 min dashboard sync). Rewrite 2.2 around Cursor Router model governance (on by default for Teams; routed model hidden by default; mode restrictions; soft/hard enforcement). Add US-only data residency and restricted-model retention approvals to 2.1. Replace the 9.2 endpoint table with Cursor's documented hosts, add `*.cursorvm.com` cloud-agent VMs, and remove `*.cursor.com` and `marketplace.visualstudio.com` (not in the vendor list). Correct exact identifiers in 1.4, 7.1, 8.1, 11.2 (`cursorAuth.allowedTeamId`/`AllowedTeamId`, `extensions.allowed`/`AllowedExtensions` with MDM override and 2.1+ version floor, `security.workspace.trust.enabled`/`WorkspaceTrustEnabled`, three roles, SCIM requires Enterprise with SSO). Reframe 4.2, 5.1, and 5.2 around the current approval-tier model and quote the vendor's "best-effort guardrails rather than a hard security boundary" caveat. Soften 5.2 sandbox internals and 10.1 audit-log specifics — both source URLs now 404, annotated rather than asserted. Add missing **Attack Prevented** to 2.2, 2.4, 4.2, 5.2, 6.2, 9.1, 10.1, 10.2, 11.1, 11.2, 11.3. Remove Trust Center and `/security` marketing references | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.3.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |

@@ -30,7 +30,10 @@
 # into arbitrary execution. autoRun.allow_instructions are printed for REVIEW
 # (they lean the classifier toward running calls) but do not fail the pack.
 #
-# Exit codes: 0 pass | 1 finding | 2 precondition
+# Exit codes: 0 pass | 1 finding | 2 precondition (jq missing, a
+# permissions.json that does not parse, or NO permissions.json at either scope:
+# the terminal allowlist and Run Mode are then editor-managed and cannot be
+# read from disk, so nothing was assessed)
 # =============================================================================
 
 set -uo pipefail
@@ -69,7 +72,10 @@ for PERM_FILE in "${HOME}/.cursor/permissions.json" ".cursor/permissions.json"; 
   fi
 done
 
-[ "${FILES_SEEN}" -gt 0 ] || echo "No permissions.json found — the editor-managed allowlist applies; review it in Settings > Agents > Approvals & Execution"
+if [ "${FILES_SEEN}" -eq 0 ]; then
+  echo "NOT ASSESSED: no permissions.json at ~/.cursor or ./.cursor — the terminal allowlist and Run Mode are editor-managed; confirm them in Settings > Agents > Approvals & Execution"
+  exit 2
+fi
 echo "Run Mode itself is not stored in a documented file: confirm it is not 'Run Everything' in Settings > Agents > Approvals & Execution (or in the team dashboard)."
 if [ "${FINDINGS}" -gt 0 ]; then
   echo "${FINDINGS} finding(s)"

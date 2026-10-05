@@ -536,7 +536,7 @@ langchain:
 klaviyo:
   product_docs: "https://help.klaviyo.com/hc/en-us"
   api_docs: "https://developers.klaviyo.com/en"
-  hardening_docs: "https://help.klaviyo.com/hc/en-us/articles/360052448451"
+  hardening_docs: "https://help.klaviyo.com/hc/en-us/articles/360052448451-How-to-keep-your-account-secure"
 
 knowbe4:
   product_docs: "https://support.knowbe4.com/hc/en-us"

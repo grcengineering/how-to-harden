@@ -6,9 +6,9 @@ slug: "replit"
 tier: "3"
 category: "DevOps"
 description: "Security and privacy hardening for Replit organizations and the apps they deploy — SAML SSO/SCIM, admin tiering, Enterprise governance toggles, Agent guardrails (dev/prod database separation, Plan mode, rollbacks), deployment access control, secrets, external access tokens, and audit/SIEM logging."
-version: "0.2.0"
-maturity: ["ai-drafted"]
-last_updated: "2026-09-25"
+version: "0.2.1"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-10-04"
 ---
 
 **Plans Covered:** Starter, Core, Pro, Enterprise (controls are heavily plan-gated; each notes its gate)
@@ -541,7 +541,7 @@ The Publishing tool's **"Who can access your app"** offers Public, Password prot
 
 ---
 
-### 4.2 Turn On Private Development URLs (Public by Default)
+### 4.2 Keep Development URLs Private (Private Preview)
 
 **Profile Level:** L1 (Crawl)
 
@@ -551,7 +551,7 @@ The Publishing tool's **"Who can access your app"** offers Public, Password prot
 | NIST 800-53 | AC-3, SC-7 |
 
 #### Description
-**"By default, development URLs are public to the web. Anyone with the URL can view your app while you're building it."** Dev URLs follow `UUID.servername.replit.dev` and are live while you work. Enable the **Private development URL** toggle (**Project Editor → Developer tools → Networking tab**) so the dev URL requires authentication; Enterprise can enforce it org-wide (2.1).
+Dev URLs follow `UUID.servername.replit.dev` and are live while you work. The per-app switch is **Private preview** ("Restrict preview access to authenticated editors only"; Replit's docs still call it the **Private development URL** toggle) under **Tools & files → Developer → Networking**. With it on, an unauthenticated request to the dev URL is redirected to Replit's auth wall instead of being served; with it off, "anyone with the preview URL can access your app preview." The docs still say **"By default, development URLs are public to the web"**, but a new empty App on a Starter personal workspace (2026-10-04) came up with Private preview already **on** — so verify the switch per app instead of assuming either default. Enterprise can enforce it org-wide (2.1).
 
 #### Rationale
 **Why This Matters:**
@@ -562,13 +562,13 @@ The Publishing tool's **"Who can access your app"** offers Public, Password prot
 
 **Attack Prevented:** Exposure of unfinished apps, test data, and debug surfaces
 
-#### ClickOps Implementation
-1. Per app: **Project Editor → Developer tools → Networking → Private development URL** → enable
-2. Enterprise: enforce via **Settings → Advanced → Require private development URLs**
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Private preview switch read live on two new Apps (Tools & files, Developer, Networking); unauthenticated dev-URL request redirected to the Replit auth wall; Enterprise step 2 not exercised" date="2026-10-04" %}
+1. Per app: **Tools & files → Developer → Networking → Private preview** ("Restrict preview access to authenticated editors only") → confirm it is on, and turn it on if not
+2. Enterprise: enforce via **Settings → Advanced → Require private development URLs** (Enterprise-only; not observed live in this guide's validation)
 3. Where automation must reach a private dev URL, use scoped external access tokens (4.3), not a return to public
 4. Private previews are not supported for mobile apps in Expo Go, simulators, or the Replit mobile app — test those builds with non-sensitive data
 
-**Automation:** ClickOps only — Replit exposes no write interface for the Private development URL toggle ([development URLs](https://docs.replit.com/core-concepts/project-editor/app-setup/development-urls), [privacy and deployment settings](https://docs.replit.com/teams/privacy-and-deployment-settings), 2026-09-24).
+**Automation:** ClickOps only — Replit exposes no write interface for the Private preview toggle ([development URLs](https://docs.replit.com/core-concepts/project-editor/app-setup/development-urls), [privacy and deployment settings](https://docs.replit.com/teams/privacy-and-deployment-settings), 2026-09-24).
 
 #### Validation & Testing
 1. The dev URL prompts for authentication from a clean browser
@@ -642,7 +642,7 @@ External access tokens let automated services (CI, webhooks, monitors) reach app
 | NIST 800-53 | CM-7, SC-7 |
 
 #### Description
-Replit binds the first port you open to external port 80; **localhost services are not auto-exposed** — unless a port sets `exposeLocalhost = true`, or a user sets **automatic port forwarding** in the User Settings tool to **All ports**, which exposes localhost ports by default. Port mappings live in the `.replit` file's `[[ports]]` section (`localPort`, `externalPort`, `exposeLocalhost`). Autoscale and Reserved VM deployments support **a single external port**, and exposing a localhost-bound port makes the publish fail. Audit the mappings — every `[[ports]]` entry and `exposeLocalhost = true` is deliberate attack surface. Static deployments additionally support `[[deployment.responseHeaders]]` for hardening headers (X-Frame-Options, X-Content-Type-Options, HSTS; reserved headers like Set-Cookie/Server are blocked), matching Replit's own checklist advice.
+Replit binds the first port you open to external port 80; **localhost services are not auto-exposed** — unless a port sets `exposeLocalhost = true`, or a user sets **Forward Opened Ports Automatically** (User Settings tool → App Preview) to **all ports**, which exposes localhost ports by default. Port mappings live in the `.replit` file's `[[ports]]` section (`localPort`, `externalPort`, `exposeLocalhost`). Autoscale and Reserved VM deployments support **a single external port**, and exposing a localhost-bound port makes the publish fail. Audit the mappings — every `[[ports]]` entry and `exposeLocalhost = true` is deliberate attack surface. Static deployments additionally support `[[deployment.responseHeaders]]` for hardening headers (X-Frame-Options, X-Content-Type-Options, HSTS; reserved headers like Set-Cookie/Server are blocked), matching Replit's own checklist advice.
 
 #### Rationale
 **Why This Matters:**
@@ -659,11 +659,11 @@ Replit binds the first port you open to external port 80; **localhost services a
 
 #### ClickOps Implementation
 1. Review each app's `.replit` `[[ports]]` entries; remove unused mappings and any unjustified `exposeLocalhost = true`
-2. **User Settings** tool → **automatic port forwarding**: must not be **All ports** (that exposes localhost-bound services by default); keep the default, or **never** for manual control
+2. **User Settings** tool (**Tools & files → User Settings**), or account **Settings → Personalization** → **App Preview → Forward Opened Ports Automatically**: must not be **all ports** (that exposes localhost-bound services); keep the default **all ports except localhost**, or **never** for manual control
 3. Static deployments: add hardening headers via `[[deployment.responseHeaders]]` (the pack's `--apply-headers` appends only the missing ones); republish (`.replit` changes require it) and re-run the pack with the app URL
 4. Remember ports 22 and 8283 are reserved by the platform (not forwardable)
 
-**Automation:** The pack audits `.replit` and the live response headers by default and edits `.replit` only with `--apply-headers`; the per-user **automatic port forwarding** preference is **ClickOps only** ([ports](https://docs.replit.com/features/project-setup/ports), 2026-09-24).
+**Automation:** The pack audits `.replit` and the live response headers by default and edits `.replit` only with `--apply-headers`; the per-user **Forward Opened Ports Automatically** preference is **ClickOps only** ([ports](https://docs.replit.com/features/project-setup/ports), 2026-09-24).
 
 #### Validation & Testing
 1. Only intended ports answer externally; localhost services are unreachable from outside
@@ -692,7 +692,7 @@ Replit binds the first port you open to external port 80; **localhost services a
 | NIST 800-53 | IA-5, SC-28 |
 
 #### Description
-The Secrets pane (Tool dock → All tools → Secrets) holds **App Secrets** (per-app; become environment variables; sync automatically to the published deployment — they *are* the deployment env vars) and **Account Secrets** (account-wide, explicitly linked per app). Encryption is AES-256 at rest, TLS in transit. The documented visibility matrix has one critical caveat: multiplayer collaborators and org owners see names **and values**; org non-owners see names only in the UI — **but "can access them by printing environment variables in code."** UI masking is cosmetic; anyone who can run code in the app can read its secrets. Static deployments cannot use secrets at all (no backend).
+The Secrets pane (**Tools & files → Tools → Secrets**) holds **App Secrets** (per-app; become environment variables; sync automatically to the published deployment — they *are* the deployment env vars) and **Account Secrets** (account-wide, explicitly linked per app). Encryption is AES-256 at rest, TLS in transit. The documented visibility matrix has one critical caveat: multiplayer collaborators and org owners see names **and values**; org non-owners see names only in the UI — **but "can access them by printing environment variables in code."** UI masking is cosmetic; anyone who can run code in the app can read its secrets. Static deployments cannot use secrets at all (no backend).
 
 #### Rationale
 **Why This Matters:**
@@ -704,8 +704,8 @@ The Secrets pane (Tool dock → All tools → Secrets) holds **App Secrets** (pe
 **Attack Prevented:** Secret disclosure through collaborator code execution or over-linked account secrets
 
 #### ClickOps Implementation
-1. **Tool dock → All tools → Secrets** → keep credentials in App Secrets; use "Edit as .env"/"Edit as JSON" for bulk hygiene reviews
-2. Audit Account Secrets: unlink from apps that don't need them
+1. **Tools & files → Tools → Secrets** → keep credentials in App Secrets; use the pane's **More → Edit as .env / Edit as JSON** for bulk hygiene reviews
+2. Audit Account Secrets (**Settings → Profile → Account secrets**, linked per app via the Secrets pane's **Link Account Secrets**): unlink from apps that don't need them
 3. Treat every collaborator-with-edit as secret-privileged; rotate secrets when such a collaborator leaves
 
 **Automation:** ClickOps only — Replit exposes no write interface for App or Account Secrets ([Secrets](https://docs.replit.com/core-concepts/project-editor/app-setup/secrets); the [Admin API reference](https://api.replit.com/docs) has no secrets endpoint, 2026-09-24).
@@ -795,7 +795,7 @@ App Storage (formerly Object Storage; Google Cloud Storage-backed) buckets are *
 {% include pack-code.html vendor="replit" section="5.3" %}
 
 #### ClickOps Implementation
-1. **All tools → App Storage** → bucket dropdown: inventory this project's buckets and their contents; delete buckets you don't need via the **Settings** view → **Delete Bucket** (irreversible — back up first)
+1. **Tools & files → Tools → App Storage** → bucket dropdown: inventory this project's buckets and their contents; delete buckets you don't need via the **Settings** view → **Delete Bucket** (irreversible — back up first)
 2. Keep sensitive exports and regulated files out of App Storage in projects where Agent works on development; put them in a dedicated project with minimal collaborators
 3. Include bucket-content review in your periodic access review
 
@@ -933,7 +933,7 @@ Replit ships layered scanning: the **project Security Center** (**Tools** pane �
 
 #### ClickOps Implementation
 1. Enable **Block publishing of critical vulnerabilities** in the publishing flow settings; Enterprise: set **Require security scan** and **Block publishing at severity** org-wide (2.1)
-2. **Home → Security** → weekly sweep of the publicly-published inventory (or the 4.1 pack); enable Auto-Protect patch preparation (Workspace admin: **Settings → Account → Advanced**, minimum severity) **and** security emails (**Settings → Personalization → Email Notifications**, minimum severity); Enterprise: route alerts through **Account settings → Advanced → Security → Security alert recipients**
+2. **Home → Security** → weekly sweep of the publicly-published inventory (or the 4.1 pack); enable Auto-Protect patch preparation (Workspace admin: **Settings → Account → Advanced**, minimum severity; that page requires a paid subscription) **and** security emails (**Settings → Personalization → Email Notifications → Production Alerts → Security alerts**, minimum severity; the default is **No emails**); Enterprise: route alerts through **Account settings → Advanced → Security → Security alert recipients**
 3. Paid plans: run Agent security scans pre-launch (a Level 3 scan when you also need a black-box test of the running app); triage Critical/High findings via **Fix with Agent** or manually; export SBOMs per release (bulk download: Enterprise)
 
 **Automation:** The public-exposure inventory is automated read-only by the 4.1 pack (`GET /v1/deployments`, `deploymentPrivacy`); running scans, Auto-Protect, and publish blocking are **ClickOps only** ([project Security Center](https://docs.replit.com/features/security/project-security-center), [security](https://docs.replit.com/teams/security), [Admin API reference](https://api.replit.com/docs), 2026-09-24).
@@ -1069,6 +1069,7 @@ Mappings reference CIS Controls v8, NIST 800-53 Rev 5, and ISO 27001:2022.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-04 | 0.2.1 | ai-drafted · ai-validated | validate-hth-guide run (Phases 4–6) against a live Starter (Free) personal workspace through a signed-in browser session: 1 of 40 surfaces came back VERIFIED-LIVE (ClickOps 4.2; Code 0), so maturity widens to ai-drafted · ai-validated with a mark on that heading only. 5.1 ClickOps stays unmarked: its console paths were walked live, but no secret could be stored in a test App, so masking and unlinking were not exercised. Most other surfaces are Enterprise- or paid-tier gated, need a published app, or need an Admin API key, and stay unmarked. Console paths corrected against the live UI: 4.2 retitled — the per-app switch is labelled Private preview under Tools & files → Developer → Networking, and it was already on for a new App despite the docs' public-by-default wording; 4.4 the preference is Forward Opened Ports Automatically (User Settings tool or Settings → Personalization → App Preview); 5.1 the Secrets pane is under Tools & files → Tools, with More → Edit as .env / Edit as JSON, and Account secrets under Settings → Profile; 7.2 security emails are under Email Notifications → Production Alerts → Security alerts (default No emails), and the Auto-Protect settings page needs a paid subscription; 5.3 App Storage path. Test Apps the run created were deleted, with proof. | Claude Code (Opus 5.5) |
 | 2026-09-25 | 0.2.0 | ai-drafted | [BREAKING] validate-hth-guide run (Phases 4–5): the Replit console was signed out on both read-only probes, so 0 of 40 surfaces were exercised live and maturity stays ai-drafted. Corrections re-fetched against Replit docs and the Admin API OpenAPI spec: 5.3 rewritten and retitled — App Storage buckets are project-exclusive and shared by dev and prod, with no attach/detach step; 4.3 production tokens survive republish (revoked on unpublish, delete, or private→public), no Enterprise opt-in, creator-only visibility; 7.1 single-workspace limit removed and retitled (Audit Logs V2, 30-day retention, Compliance API); 1.2/1.3 SCIM Admin grants workspace admin only, account admins come from the Account admin group; 1.4 per-app roles Owner/Publisher/Editor/Read-only; 2.1 privacy, deployment, source-control and security settings plus publishing exceptions; 3.2 Plan toggle and background auto-merge; 3.3 Grok, OpenRouter-only privacy defaults, Disable external AI model integrations, Enterprise model policy; 3.4 Usage → Manage limits; 4.1 Cloudflare DNS-only and per-subdomain records; 4.4 automatic port forwarding; 5.2 regeneration preconditions and 7-day PITR default; 6.1 §B.2.g; 7.2 Auto-Protect settings and Level 3 scans; 7.3 read-only vs read-and-write keys; Appendix A. New read-only Admin API packs for 1.2, 1.3, 1.4, 3.4 and 4.1; packs 4.3, 4.4 and 5.3 fixed to fail closed, with v1 contracts; the 4.3 scan reports path:line only, so a matched credential never reaches the CI log; the 1.2, 1.3 and 1.4 packs count only enabled workspace memberships as access and list all-disabled members as notes; an Automation verdict on every control. | Claude Code (Opus 5.5) |
 | 2026-08-15 | 0.1.0 | ai-drafted | Initial guide: 20 controls across identity (SAML SSO as the only MFA path — no native 2FA documented, SCIM with the legacy-member gap, admin tiering, guests/viewers), Enterprise governance toggles, Agent guardrails (dev/prod DB separation with the July 2025 SaaStr incident as motivating case, Plan mode + rollback-database-opt-in semantics, managed AI integrations/ZDR with untoggleable-Web-Search and no-Agent-off-switch negatives, budgets), deployment/app access (private deployments, public-by-default dev URLs, external access tokens as governed bypass credentials, ports/headers), data protection (secrets UI-masking caveat, DB credential rotation + plan-gated PITR, attachment-scoped object storage), privacy (Commercial Agreement §B.2.h vs no self-serve training toggle), and monitoring (audit logs with the single-workspace limitation, dual Security Centers + Package Firewall, Admin API key governance). Tier 2 negatives (no CIS/STIG/SCuBA) cited. Authored by Claude Code (Opus 5). | Claude Code (Opus 5) |
 

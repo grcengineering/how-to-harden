@@ -22,7 +22,7 @@
 # "/seats returns only paid seats, so the free tier is not included." A clean
 # result proves no UNAPPROVED PAID seat exists; it says nothing about the free
 # tier or about the org-wide "Enable Asana AI" setting, which has no API and is
-# verified in the console (Admin Console > Settings > Asana AI).
+# verified in the console (Admin Console > Asana AI > AI settings).
 #
 # ── TRAP 2: an empty approved list is a decision ────────────────────────────
 # ASANA_AI_STUDIO_APPROVED_USERS must be SET. Set to an empty string it means

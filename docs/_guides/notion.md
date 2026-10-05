@@ -6,9 +6,9 @@ slug: "notion"
 tier: "2"
 category: "Productivity"
 description: "Collaboration platform hardening for Notion including SAML SSO, workspace security, DLP, AI and MCP connection governance, and audit logging"
-version: "0.2.1"
-maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+version: "0.2.2"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-10-04"
 ---
 
 ## Overview
@@ -72,13 +72,13 @@ Configure SAML SSO to centralize authentication for Notion users.
 #### ClickOps Implementation
 
 **Step 1: Verify Domain**
-1. Navigate to: **Settings** → **Identity** (Business) or **Organization Settings** → **General** (Enterprise)
-2. Add and verify your organization's domain
-3. Domain verification required before SSO setup
+1. Business: first go to **Settings** → **General** and remove every entry under **Allowed email domains** — Notion requires this before SAML SSO can be set up on a Business workspace
+2. Navigate to: **Settings** → **Identity** → **Domain management** → **Verified domains** → **Add domain**, then verify your organization's domain
+3. Domain verification is required before SSO setup — **Enable SAML SSO** stays disabled until a domain is verified
 
 **Step 2: Access SSO Configuration**
-1. For Business: Navigate to **Settings** → **Identity**
-2. For Enterprise: Navigate to **Organization Settings** → **General** → **SAML Single sign-on (SSO)**
+1. For Business: Navigate to **Settings** → **Identity** → **SAML single sign-on (SSO)** and use **Enable SAML SSO** / **Edit SAML SSO configuration**
+2. For Enterprise: Open the workspace switcher → **Manage organization** → **General** tab → **SAML configurations**
 
 **Step 3: Configure SAML Settings**
 1. Copy the **Assertion Consumer Service (ACS) URL**
@@ -86,7 +86,7 @@ Configure SAML SSO to centralize authentication for Notion users.
 3. Configure IdP with:
    - ACS URL from Notion
    - Entity ID
-4. Supported IdPs: Azure, Google, Gusto, Okta, OneLogin, Rippling
+4. Any SAML 2.0 IdP works; Notion's *Set up Identity Provider (IdP) for SAML SSO* article, linked from [SAML SSO configuration](https://www.notion.com/help/saml-sso-configuration), covers provider-specific setup
 
 **Step 4: Enter IdP Details**
 1. Provide either IdP URL or IdP metadata XML
@@ -94,6 +94,9 @@ Configure SAML SSO to centralize authentication for Notion users.
 3. Test SSO authentication
 
 **Time to Complete:** ~1 hour
+
+**Automation:** ClickOps only — Notion exposes no write interface for this setting: Notion's public API covers blocks, pages, databases, data sources, comments, views, file uploads, search, users, custom emojis and agents, and no workspace or organization settings ([API reference](https://developers.notion.com/reference/intro), 2026-10-04).
+
 
 ---
 
@@ -121,7 +124,7 @@ Require SAML authentication for all workspace members.
 #### ClickOps Implementation
 
 **Step 1: Configure Login Method**
-1. Navigate to SSO settings
+1. Navigate to: **Settings** → **Identity** → **SAML single sign-on (SSO)** → **Login method**
 2. Default login method is **Any method**
 3. Change to **Only SAML SSO**
 
@@ -131,12 +134,15 @@ Require SAML authentication for all workspace members.
 3. Before enabling, confirm every member exists in your IdP; Notion warns explicitly that missing members are locked out of the workspace
 
 **Step 3: Understand Exceptions**
-1. Organization owners can still log in with email and password if the IdP has an outage, so they can modify or disable the SAML configuration
+1. Workspace owners can always log in with a password or passkey (the console states: "Workspace owners can always log in with a password or passkey"), so they can modify or disable the SAML configuration during an IdP outage
 2. Protect those owner accounts accordingly — they are the standing bypass (see 2.3)
 3. The configuration can be changed to re-enable other methods, so treat changes to it as an audited event (see 4.1)
 
 #### Validation & Testing
 Attempt a login with email/password as a non-owner member and confirm it is refused. Then test with an external collaborator on a non-verified domain and confirm they are routed through SAML — this is the behavior that supersedes the older guidance that external collaborators could not authenticate via SAML SSO. Source: [SAML SSO configuration](https://www.notion.com/help/saml-sso-configuration).
+
+**Automation:** ClickOps only — Notion exposes no write interface for this setting: Notion's public API covers blocks, pages, databases, data sources, comments, views, file uploads, search, users, custom emojis and agents, and no workspace or organization settings ([API reference](https://developers.notion.com/reference/intro), 2026-10-04).
+
 
 ---
 
@@ -164,8 +170,8 @@ Configure SCIM for automated user lifecycle management.
 #### ClickOps Implementation
 
 **Step 1: Enable SCIM**
-1. Navigate to organization settings
-2. Access SCIM provisioning section
+1. Navigate to: **Settings** → **Identity** → **SCIM provisioning** (workspace), or the workspace switcher → **Manage organization** (Enterprise organization owners)
+2. Open **SCIM tokens** — below Enterprise the console reads "Upgrade to generate a token to configure SCIM"
 3. Generate SCIM API token
 
 **Step 2: Configure IdP SCIM**
@@ -188,6 +194,9 @@ Configure SCIM for automated user lifecycle management.
 
 #### Validation & Testing
 Deactivate a test user in the IdP and confirm the Notion account is deprovisioned. After any admin change, run a sync and confirm it still succeeds rather than assuming it does.
+
+**Automation:** ClickOps only — the SCIM API provisions users and groups once configured, but enabling SCIM and generating its token is console-only: "Only Enterprise Plan organization owners can generate and view SCIM API tokens" ([Provision users and groups with SCIM](https://www.notion.com/help/provision-users-and-groups-with-scim), 2026-10-04).
+
 
 ---
 
@@ -222,16 +231,18 @@ Control who can access workspaces and create accounts.
 3. Restrict to corporate domains only
 
 **Step 2: Disable Automatic Account Creation**
-1. Turn off **Automatic account creation**
+1. Navigate to: **Settings** → **Identity** → **SAML single sign-on (SSO)** and turn off **Automatic account creation** (the toggle is only active once SAML SSO is enabled on a verified domain)
 2. Prevents users from creating accounts through SSO
 3. Requires explicit provisioning
 
 **Step 3: Configure Membership**
-1. Review workspace membership
+1. Navigate to: **Settings** → **People** and review **Members** and **Guests**
 2. Remove unauthorized users
 3. Apply least privilege
 
 #### Code Implementation
+
+The pack below audits membership through the public API. On the Enterprise Plan, the SCIM API is also a write surface for Step 3: `DELETE /scim/v2/Users/<id>` removes a member from the workspace ([Provision users and groups with SCIM](https://www.notion.com/help/provision-users-and-groups-with-scim), 2026-10-04).
 
 {% include pack-code.html vendor="notion" section="2.1" %}
 
@@ -261,14 +272,17 @@ Organize content using team spaces for access control.
 #### ClickOps Implementation
 
 **Step 1: Create Team Spaces**
-1. Organize by team or function
-2. Configure team space permissions
+1. Navigate to: **Settings** → **Teamspaces**; turn on **Limit teamspace creation to workspace owners** and review **Default teamspaces**
+2. Organize teamspaces by team or function
 3. Limit membership appropriately
 
 **Step 2: Configure Team Space Security**
-1. Enable security settings per team space
-2. Configure sharing restrictions
-3. Apply export controls selectively
+1. Open each teamspace's **···** → **Teamspace settings** → **Security**
+2. Set **Who can invite or remove teamspace members** and **Who can edit teamspace sidebar**
+3. On Enterprise, also set **Disable publishing sites, forms, and public links**, **Disable guests**, and **Disable export** per teamspace — below Enterprise these read "Upgrade to Enterprise"
+
+**Automation:** ClickOps only — Notion exposes no write interface for teamspace settings: Notion's public API covers blocks, pages, databases, data sources, comments, views, file uploads, search, users, custom emojis and agents, and no workspace or organization settings ([API reference](https://developers.notion.com/reference/intro), 2026-10-04).
+
 
 ---
 
@@ -293,7 +307,7 @@ Minimize and protect workspace owner accounts.
 
 **Attack Prevented:** Admin account takeover, privilege escalation, unauthorized configuration changes
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Step 1 only: Settings → People walked live on a 1-member Business Trial workspace, Members, Guests and the Role column read and owners inventoried; the Step 2 role selector was not opened and no role changed" date="2026-10-04" %}
 
 **Step 1: Inventory Workspace Owners**
 1. Navigate to: **Settings** → **People**
@@ -304,6 +318,13 @@ Minimize and protect workspace owner accounts.
 1. Limit workspace owners to 2-3 users
 2. Use member roles for regular users
 3. Remove unnecessary admin access
+
+#### Code Implementation
+
+Workspace roles are not in Notion's public REST API (the user object from `GET /v1/users` carries no role), but the SCIM API reads and writes them through the `role` attribute of the Notion user-schema extension (`owner`, `membership_admin`, `member`). SCIM is Enterprise-only, and only an organization owner can generate its token ([Provision users and groups with SCIM](https://www.notion.com/help/provision-users-and-groups-with-scim), 2026-10-04). The pack below reads that attribute to inventory owners; it changes nothing.
+
+{% include pack-code.html vendor="notion" section="2.3" %}
+
 
 ---
 
@@ -333,8 +354,8 @@ Control how content can be shared internally and externally.
 #### ClickOps Implementation
 
 **Step 1: Configure Guest Access**
-1. Navigate to: **Settings** → **Members**
-2. Configure guest permissions
+1. Navigate to: **Settings** → **Security** → **Members & guests** → **Who can invite guests to pages**
+2. Restrict guest invitations — below Enterprise the console reads "Upgrade to disable the ability for members to invite guests to pages"
 3. Limit guest capabilities
 
 **Step 1b: Turn Guests Off Entirely (Enterprise)**
@@ -343,9 +364,9 @@ Control how content can be shared internally and externally.
 3. Source: [Notion Enterprise security provisions](https://www.notion.com/help/guides/notion-enterprise-security-provisions)
 
 **Step 2: Configure Public Pages**
-1. Control who can publish pages publicly
-2. Audit existing public pages
-3. Disable if not needed
+1. Audit at **Settings** → **Public pages** (Notion Sites, Public forms, Anyone with the link, Shared AI chats, Domains)
+2. Unpublish anything not deliberately public
+3. On Enterprise, turn on **Settings** → **Security** → **Disable public forms, page links, and Notion Sites**
 
 **Step 3: Configure Link Sharing**
 1. Set default sharing permissions
@@ -368,7 +389,7 @@ Control how content can be shared internally and externally.
 | NIST 800-53 | AC-3 |
 
 #### Description
-Turn on **Disable moving or duplicating pages to other workspaces** so members cannot relocate or copy pages into personal or external workspaces.
+On Enterprise, turn on **Disable duplicating pages to other workspaces** so members cannot relocate or copy pages into personal or external workspaces.
 
 #### Rationale
 **Why This Matters:**
@@ -379,13 +400,13 @@ Turn on **Disable moving or duplicating pages to other workspaces** so members c
 
 **Attack Prevented:** Data exfiltration, content theft, unauthorized data movement out of the workspace
 
-**Correction (2026-08): the setting is named "Disable moving or duplicating pages to other workspaces."** Earlier revisions of this guide referred to "Disable duplicating pages," which understates the control — the real setting also covers the **Move to** action. Source: [Notion Enterprise security provisions](https://www.notion.com/help/guides/notion-enterprise-security-provisions).
+**Correction (2026-10): the console label is "Disable duplicating pages to other workspaces," but the setting covers both actions.** Its description in **Settings** → **Security** reads "prevent users from duplicating pages to other workspaces via Move To or Duplicate To" — so the label names only duplicating, while the control also blocks **Move to**. The 2026-08 revision of this guide gave the name as "Disable moving or duplicating pages to other workspaces," which is not the label the console shows. Source: [Notion Enterprise security provisions](https://www.notion.com/help/guides/notion-enterprise-security-provisions).
 
 #### ClickOps Implementation
 
 **Step 1: Enable the Control**
-1. Navigate to: **Settings** → **Security**
-2. Turn on **Disable moving or duplicating pages to other workspaces**
+1. Navigate to: **Settings** → **Security** (Enterprise — below Enterprise the toggle reads "Upgrade")
+2. Turn on **Disable duplicating pages to other workspaces**
 3. This blocks both the copy path and the move path out of the workspace
 
 **Step 2: Review Exceptions**
@@ -395,6 +416,9 @@ Turn on **Disable moving or duplicating pages to other workspaces** so members c
 
 #### Validation & Testing
 As a test member, open a page's `•••` menu and confirm both **Duplicate to** and **Move to** offer no destination outside the workspace.
+
+**Automation:** ClickOps only — Notion exposes no write interface for this setting: Notion's public API covers blocks, pages, databases, data sources, comments, views, file uploads, search, users, custom emojis and agents, and no workspace or organization settings ([API reference](https://developers.notion.com/reference/intro), 2026-10-04).
+
 
 ---
 
@@ -419,17 +443,24 @@ Control ability to export content from Notion.
 
 **Attack Prevented:** Mass data exfiltration, insider data theft, intellectual property loss
 
+#### Prerequisites
+- Notion Enterprise plan (below Enterprise the toggle reads "Upgrade")
+- Workspace owner role
+
 #### ClickOps Implementation
 
 **Step 1: Configure Export Settings**
 1. Navigate to: **Settings** → **Security**
-2. Turn on **Disable export**
-3. Enable only in team spaces that need it
+2. Turn on **Disable exports**
+3. Per teamspace: **···** → **Teamspace settings** → **Security** → **Disable export**, keeping export available only in teamspaces that need it
 
 **Step 2: Audit Export Activity**
-1. Review export logs
+1. Review export events in the audit log (4.1)
 2. Monitor for unusual patterns
 3. Investigate bulk exports
+
+**Automation:** ClickOps only — Notion exposes no write interface for this setting: Notion's public API covers blocks, pages, databases, data sources, comments, views, file uploads, search, users, custom emojis and agents, and no workspace or organization settings ([API reference](https://developers.notion.com/reference/intro), 2026-10-04).
+
 
 ---
 
@@ -463,7 +494,7 @@ On Enterprise, connect a supported DLP provider so page and file content is scan
 
 **Step 1: Select and Connect the Provider**
 1. Confirm which supported provider your organization uses — Nightfall AI is the currently available integration
-2. As an organization owner, connect the provider from the Enterprise security settings
+2. As an organization owner, connect the provider from **Settings** → **Connections** → **Discover** → **DLP** → **Nightfall AI**
 3. Authorize the connection with the scope the provider requires
 
 **Step 2: Define Detection and Remediation Policy**
@@ -473,6 +504,9 @@ On Enterprise, connect a supported DLP provider so page and file content is scan
 
 #### Validation & Testing
 Paste a synthetic detector-triggering string (a test credential pattern) into a scratch page and confirm the provider raises a finding and applies the configured remediation. Source: [Notion Enterprise security provisions](https://www.notion.com/help/guides/notion-enterprise-security-provisions).
+
+**Automation:** ClickOps only — Notion exposes no write interface for DLP provider connections: Notion's public API covers blocks, pages, databases, data sources, comments, views, file uploads, search, users, custom emojis and agents, and no workspace or organization settings ([API reference](https://developers.notion.com/reference/intro), 2026-10-04).
+
 
 ---
 
@@ -486,13 +520,13 @@ Paste a synthetic detector-triggering string (a test credential pattern) into a 
 | NIST 800-53 | AC-3, CM-7, SC-7 |
 
 #### Description
-Review and set the workspace-level Notion AI controls under **Settings → Notion AI**: whether workspace data is shared to improve Notion AI, which AI Connectors to third-party apps are enabled, whether AI may make web requests and whether those requests require confirmation, which models members may use, image generation, and AI Meeting Notes audio and transcript retention.
+Review and set the workspace-level Notion AI controls under **Settings → Notion AI**: whether workspace data is shared to improve Notion AI, which AI Connectors to third-party apps are enabled, whether AI may search the web or drive a browser, whether agents may skip approvals, which models members may use, and image generation — plus AI Meeting Notes audio and transcript retention under **Settings → Meeting notes**.
 
 #### Rationale
 **Why This Matters:**
 - AI features read workspace content to answer; the data-sharing toggle determines whether that content also feeds product improvement, which is a procurement and privacy decision, not a user preference
 - AI Connectors extend Notion AI's reach into other systems (Slack, Google Drive and similar), so each connector widens the blast radius of a compromised Notion account beyond Notion
-- Web search lets AI send workspace-derived context outbound; **Require confirmation for web requests** is the control that keeps a human in that loop
+- Web search and the agent web browser let AI send workspace-derived context outbound; keeping **Enable ‘Skip all approvals’** off is the control that keeps a human in that loop
 - AI Meeting Notes generate audio recordings and transcripts — durable, highly sensitive artifacts whose retention must be set deliberately rather than left at default
 - Some models must be enabled by a workspace admin before members can select them, so the model roster is an admin decision that should follow your third-party AI review
 
@@ -509,21 +543,25 @@ Review and set the workspace-level Notion AI controls under **Settings → Notio
 2. Set **Share data to improve Notion AI** according to your data-handling policy — decide this explicitly rather than inheriting the default
 
 **Step 2: Constrain External Reach**
-1. Review each configured **AI Connector** to third-party apps and remove those without a business justification
+1. Review **Settings** → **Notion AI** → **AI connectors** and remove connectors to third-party apps without a business justification
 2. Set **Enable web search for workspace** deliberately
-3. Turn on **Require confirmation for web requests** so outbound requests are not silent
+3. Set **Enable web browser for computer** deliberately and keep **Enable ‘Skip all approvals’** off so agents cannot act without approval
 
 **Step 3: Govern Models and Generation**
-1. Review which models are enabled for the workspace — certain models require workspace-admin enablement in Settings before members can select them
-2. Enable or disable image generation (available on Business and Enterprise)
+1. Review **Allowed models for Notion Agent**, **Allowed models for Custom Agents**, and **Default model for Custom Agents** — certain models require workspace-admin enablement before members can select them
+2. Set **Enable image generation** (available on Business and Enterprise)
 3. Review agent personalization settings (name, appearance, custom instructions) as part of the same review
 
 **Step 4: Bound AI Meeting Notes Retention**
-1. Configure audio storage and transcript deletion for AI Meeting Notes
-2. Align the retention window with your recording and records-retention policy, not with the platform default
+1. Navigate to: **Settings** → **Meeting notes**
+2. Set **Automatic transcript deletion** (Enterprise — the default is **Never**), **Store audio locally**, and **Enforce consent for all workspace members**
+3. Align the retention window with your recording and records-retention policy, not with the platform default
 
 #### Validation & Testing
-As a test member, trigger an AI action requiring a web request and confirm the confirmation prompt appears; then create an AI meeting note and confirm the audio and transcript are removed on the configured schedule. Sources: [Notion AI FAQs](https://www.notion.com/help/notion-ai-faqs), [Notion Agent](https://www.notion.com/help/notion-agent).
+Confirm **Enable ‘Skip all approvals’** reads off, then as a test member trigger an agent action that writes and confirm the approval prompt appears; then create an AI meeting note and confirm the audio and transcript are removed on the configured schedule. Sources: [Notion AI FAQs](https://www.notion.com/help/notion-ai-faqs), [Notion Agent](https://www.notion.com/help/notion-agent).
+
+**Automation:** ClickOps only — Notion exposes no write interface for Notion AI workspace settings: Notion's public API covers blocks, pages, databases, data sources, comments, views, file uploads, search, users, custom emojis and agents, and no workspace or organization settings ([API reference](https://developers.notion.com/reference/intro), 2026-10-04).
+
 
 ---
 
@@ -556,13 +594,13 @@ Restrict which AI apps and MCP clients members may connect to the workspace, mai
 #### ClickOps Implementation
 
 **Step 1: Restrict Which AI Apps Can Connect (Enterprise)**
-1. Navigate to: **Settings** → **Connections** → **Permissions**
-2. Under AI apps, set **Restrict AI apps members can connect** to **Only from approved list**
-3. Use **Manage approved AI apps** and **Add approved AI apps** to curate that list — Notion blocks every call from any AI app or MCP client not on it
-4. Use **Disconnect All Users** to revoke MCP connections workspace-wide during an incident
+1. Navigate to: **Settings** → **Notion MCP** → **Manage workspace clients**
+2. Set **Which clients members can connect** to an approved list instead of **All MCP clients** (Enterprise — below it the console reads "Upgrade to control what workspace members can connect") — Notion blocks every call from any AI app or MCP client not on the list
+3. Use **Disconnect all users** (under **Disconnect all connections to Notion MCP**) to revoke MCP connections workspace-wide during an incident
+4. Under **Settings** → **Connections** → **Manage**, leave **Enable custom MCP servers** off unless reviewed, and review external agents at **Settings** → **Notion AI** → **Agents** → **Manage external agents**
 
 **Step 2: Keep Confirmation On**
-1. Notion defaults to requesting human confirmation for tool calls on all non-read-only tools — leave that default in place
+1. Keep **Settings** → **Notion AI** → **Enable ‘Skip all approvals’** turned off — Notion requests human confirmation for tool calls on non-read-only tools only while approvals are not skipped
 2. Where an agent only needs to read, enable only read-only tools for it
 
 **Step 3: Scope Each Agent Narrowly**
@@ -572,6 +610,9 @@ Restrict which AI apps and MCP clients members may connect to the workspace, mai
 
 #### Validation & Testing
 As a non-owner member, attempt to connect an AI client that is not on the approved list and confirm the connection is blocked. Then exercise a non-read-only tool through an approved agent and confirm the confirmation prompt appears. Sources: [Notion MCP](https://www.notion.com/help/notion-mcp), [Security best practices for agent connections](https://www.notion.com/help/security-best-practices-for-agent-connections), [Notion MCP (developer docs)](https://developers.notion.com/docs/mcp).
+
+**Automation:** ClickOps only — Notion exposes no write interface for MCP client governance; the MCP server acts on content with the connecting user's permissions and has no admin settings tools ([Notion MCP](https://developers.notion.com/docs/mcp), 2026-10-04).
+
 
 ---
 
@@ -605,8 +646,8 @@ On Enterprise, restrict which API connections members may install, maintain an a
 
 **Step 1: Restrict and Curate**
 1. Navigate to: **Settings** → **Connections** → **Manage**
-2. Restrict which connections members are allowed to install
-3. Build and maintain the approved connections list
+2. Set **Limit which connections members can install** and build the approved connections list (Enterprise — below it the console reads "Upgrade to control what workspace members can connect")
+3. Set **Limit who can create internal connections** and **Limit who can create personal access tokens (PATs)** to **Workspace owners only** (available below Enterprise)
 
 **Step 2: Review Installations**
 1. For each connection, view all members who have it installed
@@ -618,6 +659,9 @@ On Enterprise, restrict which API connections members may install, maintain an a
 
 #### Validation & Testing
 As a member, attempt to install a connection outside the approved list and confirm it is blocked. Then confirm an approved connection can only reach the pages you selected. Source: [Add and manage connections with the API](https://www.notion.com/help/add-and-manage-connections-with-the-api).
+
+**Automation:** ClickOps only — Notion exposes no API to list or restrict workspace connections: Notion's public API covers blocks, pages, databases, data sources, comments, views, file uploads, search, users, custom emojis and agents, and no workspace or organization settings ([API reference](https://developers.notion.com/reference/intro), 2026-10-04).
+
 
 ---
 
@@ -644,7 +688,7 @@ Enable and monitor the Notion audit log — available to organization owners on 
 
 **Attack Prevented:** Undetected breaches, insider misuse, configuration tampering without accountability, unmonitored agent and worker activity
 
-**Correction (2026-08): the audit log is not under Analytics, and its history has two hard boundaries.** The path is **Settings → Admin → Audit log**, reached from the workspace switcher — earlier revisions of this guide pointed at "Organization Settings → Analytics." Two limits matter operationally: history is retained up to **365 days**, and events are only recorded **from the date the organization upgraded to Enterprise** — there is no backfill of prior activity. Exports also capture data up to roughly two hours before the request. Treat regular export or streaming as the mechanism that preserves anything you need beyond a year. Source: [Audit log](https://www.notion.com/help/audit-log).
+**Correction (2026-10): the audit log is not under Analytics, and its history has two hard boundaries.** The workspace audit log is at **Settings → Audit log** (listed in the **Admin** group of the Settings sidebar); the organization audit log is at the workspace switcher → **Manage organization** → **Data & Compliance** → **Audit log** — earlier revisions of this guide pointed at "Organization Settings → Analytics." Two limits matter operationally: history is retained up to **365 days**, and events are only recorded **from the date the organization upgraded to Enterprise** — there is no backfill of prior activity. Exports also capture data up to roughly two hours before the request. Treat regular export or streaming as the mechanism that preserves anything you need beyond a year. Source: [Audit log](https://www.notion.com/help/audit-log).
 
 #### Prerequisites
 - Notion Enterprise plan
@@ -653,7 +697,7 @@ Enable and monitor the Notion audit log — available to organization owners on 
 #### ClickOps Implementation
 
 **Step 1: Access Audit Logs**
-1. Open the workspace switcher → **Settings** → **Admin** section → **Audit log**
+1. Workspace: **Settings** → **Audit log** (Admin group of the sidebar). Organization: workspace switcher → **Manage organization** → **Data & Compliance** → **Audit log**
 2. Filter by date, person or agent, event type, or related activity
 3. Export as CSV (filters apply to the export) on a schedule if you are not streaming
 
@@ -666,13 +710,16 @@ Enable and monitor the Notion audit log — available to organization owners on 
 6. Content exports and sharing changes
 
 **Step 3: Stream to a SIEM**
-1. Configure event streaming to your SIEM — Notion publishes partner guidance for **Splunk**, **Sumo Logic**, **Panther**, and **Datadog**
+1. Configure event streaming to your SIEM from **Settings** → **Connections** → **Discover** → **SIEM** — Notion publishes partner guidance for **Splunk**, **Sumo Logic**, **Panther**, and **Datadog**
 2. For anything else, use custom webhook streaming: one webhook endpoint per workspace, JSON payloads containing metadata only (never page content), with up to seven retry attempts over roughly 24 hours
 3. Note that syslog is not supported — webhook delivery is the only streaming transport
 4. Alert on delivery failure: with a single endpoint per workspace and a bounded retry window, a broken receiver loses events permanently
 
 #### Validation & Testing
 Trigger a known auditable action (a permission change, then an export) and confirm it appears in the audit log and arrives at the SIEM endpoint within your expected latency. Verify the retry behavior by taking the receiver offline briefly and confirming redelivery.
+
+**Automation:** ClickOps only — Notion exposes no REST endpoint for audit-log configuration or retrieval; events leave Notion only through webhook/SIEM streaming ("No syslog support: Webhooks only") ([Audit log](https://www.notion.com/help/audit-log), 2026-10-04).
+
 
 ---
 
@@ -700,7 +747,7 @@ Use analytics to monitor workspace activity.
 #### ClickOps Implementation
 
 **Step 1: Access Analytics**
-1. Navigate to organization analytics
+1. Navigate to: **Settings** → **Analytics** (workspace analytics — Enterprise; below it the page reads "Upgrade to the Enterprise plan to gain visibility into workspace-level engagement, adoption trends, and AI usage"); on lower plans turn on **Settings** → **General** → **Save and display page view analytics** for page-level views
 2. Review workspace usage
 3. Monitor member activity
 
@@ -708,6 +755,9 @@ Use analytics to monitor workspace activity.
 1. Track guest access patterns
 2. Monitor sharing activity
 3. Identify unusual behavior
+
+**Automation:** ClickOps only — Notion exposes no analytics API: Notion's public API covers blocks, pages, databases, data sources, comments, views, file uploads, search, users, custom emojis and agents, and no workspace or organization settings ([API reference](https://developers.notion.com/reference/intro), 2026-10-04).
+
 
 ---
 
@@ -743,13 +793,17 @@ Use analytics to monitor workspace activity.
 | Require SAML SSO authorization for workspace access (1.2) | ❌ | ❌ | ❌ | ✅ |
 | SCIM (1.3) | ❌ | ❌ | ❌ | ✅ |
 | Domain Verification | ❌ | ❌ | ✅ | ✅ |
-| Export Controls (3.3) | ❌ | ❌ | ✅ | ✅ |
+| Export Controls (3.3) | ❌ | ❌ | ❌ | ✅ |
 | Disable guests / guest invite requests (3.1) | ❌ | ❌ | ❌ | ✅ |
+| Disable public forms, page links, and Notion Sites (3.1) | ❌ | ❌ | ❌ | ✅ |
+| Teamspace page security — publishing, guests, export (2.2) | ❌ | ❌ | ❌ | ✅ |
+| Disable duplicating pages to other workspaces (3.2) | ❌ | ❌ | ❌ | ✅ |
 | DLP provider connection (3.4) | ❌ | ❌ | ❌ | ✅ |
 | Notion AI image generation (3.5) | ❌ | ❌ | ✅ | ✅ |
 | Restrict AI apps to approved list (3.6) | ❌ | ❌ | ❌ | ✅ |
 | Restrict connections / approved connections list (3.7) | ❌ | ❌ | ❌ | ✅ |
 | Audit Logs + SIEM streaming (4.1) | ❌ | ❌ | ❌ | ✅ |
+| Workspace analytics (4.2) | ❌ | ❌ | ❌ | ✅ |
 
 **Note:** Audit log events are recorded only from the date the organization upgraded to Enterprise, and history is retained up to 365 days (see 4.1).
 
@@ -787,6 +841,7 @@ Use analytics to monitor workspace activity.
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-04 | 0.2.2 | ai-drafted · ai-validated | validate-hth-guide run against a live Notion workspace (Business Trial): Settings walked read-only in a real browser across all 15 controls; 1 surface came back VERIFIED-LIVE (2.3 ClickOps, Step 1 only — Settings → People owner inventory; the Step 2 role selector was not opened), every other surface was corrected to the live console, is plan-gated (Enterprise), or awaits a credential. Corrected console paths and labels in 1.1, 1.2, 1.3, 2.1, 2.2, 3.1, 3.2 (label is "Disable duplicating pages to other workspaces"), 3.3 ("Disable exports"), 3.4, 3.5 (removed the nonexistent "Require confirmation for web requests"; Meeting notes retention moved to Settings → Meeting notes), 3.6 (Settings → Notion MCP → Manage workspace clients; "Enable ‘Skip all approvals’"), 3.7, 4.1 (Settings → Audit log; org path Manage organization → Data & Compliance) and 4.2; Appendix A now marks 2.2 teamspace security, 3.1 public-link disable, 3.2, 3.3 and 4.2 analytics Enterprise-only as the console gates them; evidenced `**Automation:** ClickOps only` verdicts added to 12 pack-less controls; new read-only SCIM pack 2.03 inventories workspace owners through the SCIM `role` attribute (Enterprise; Bearer auth per Notion's IdP setup article; not run against this Business Trial); packs 2.01/3.01 rewritten from Python to bash+curl (api/ type) and made fail-closed — 3.01 previously printed PASS after scanning zero pages | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.1 | ai-drafted | Add first Code Packs (api, Notion REST API): 2.1 workspace-membership audit flagging members outside allowed email domains (GET /v1/users, requires user information capability), 3.1 published-page audit via the page object's public_url field (POST /v1/search) — both verified against developers.notion.com; wire Code Implementation includes into 2.1 and 3.1. SCIM pack skipped: base URL/endpoints/pagination are documented in the SCIM help article but the auth header mechanics are not, failing the verification bar; audit-log pull skipped: no documented REST endpoint (webhook streaming only) | Claude Code (Fable 5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: corrected the audit log path to Settings → Admin → Audit log with 365-day retention and no pre-upgrade backfill (was "Organization Settings → Analytics"), corrected 3.2 to the real setting name "Disable moving or duplicating pages to other workspaces", and replaced the stale "guests cannot use SAML SSO" note with the Enterprise "Require SAML SSO authorization for workspace access" option; added 3.4 DLP provider connections, 3.5 Notion AI admin settings, 3.6 agent/MCP connection governance, 3.7 API connection governance; added Workers audit events and SIEM webhook streaming to 4.1, guest disablement to 3.1, and SCIM token-hygiene sequencing to 1.3; rebuilt Appendix A and removed Trust Center / marketing sources from Appendix B (HIPAA claim rehomed to Notion's HIPAA configuration guidance). Notion's Privacy & Security category lists further articles (prompt-injection protections, custom-agent security, data residency, dormant accounts) not yet cited — their slugs must be discovered before citing, as a guessed slug 404'd. Tier 2: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline exists for Notion (confirmed zero). Tier 3/4: not surveyed in this pass. | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
