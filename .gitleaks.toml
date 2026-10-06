@@ -17,7 +17,9 @@
 # allowlist below exempts exactly the three rules that misfired, and only in the
 # published content directories. The cost, stated plainly: a generic API key or
 # password committed under packs/, docs/_guides/, docs/_data/packs/ or content/
-# is caught by neither scanner unless its provider can verify it. Everywhere
+# is caught by neither scanner unless its provider can verify it. The second
+# allowlist turns off EVERY gitleaks rule under docs/assets/monaco/, the vendored
+# Monaco editor bundle, so only TruffleHog covers that directory. Everywhere
 # else, and for every other gitleaks rule, detection is unchanged.
 #
 # ─────────────────────────────────────────────────────────────────────────────
@@ -50,9 +52,10 @@
 #
 # Only the three rules that actually misfired are exempted, and only inside
 # published content directories. Every other gitleaks rule stays live
-# everywhere, so a real cloud access key, GitHub PAT, asymmetric keypair file or
-# Slack token committed into packs/ or docs/ is still caught here, and by
-# TruffleHog when the provider verifies it.
+# everywhere except the vendored docs/assets/monaco/ bundle, so a real cloud
+# access key, GitHub PAT, asymmetric keypair file or Slack token committed into
+# packs/ or docs/ (outside that bundle) is still caught here, and by TruffleHog
+# when the provider verifies it.
 
 title = "how-to-harden gitleaks config (see header)"
 

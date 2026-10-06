@@ -25,8 +25,9 @@ trufflehog = true
 # (e.g. api_key = "<random>") and drops keys it cannot verify.
 # Gitleaks catches that detection class, except for three rules .gitleaks.toml
 # exempts in the published content directories (packs/, docs/_guides/,
-# docs/_data/packs/, content/), where teaching text misfires them. Running
-# both costs some regex-only noise in exchange for that coverage.
+# docs/_data/packs/, content/), where teaching text misfires them, and the
+# vendored docs/assets/monaco/ bundle, where it skips every rule. Running both
+# costs some regex-only noise in exchange for that coverage.
 gitleaks = true
 pre_push_range_scan = true
 

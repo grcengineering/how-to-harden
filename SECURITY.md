@@ -81,7 +81,8 @@ Highlights:
   check errors; Gitleaks additionally catches generic and unverifiable secrets
   TruffleHog never reports, outside the guide and Code Pack content
   directories, where `.gitleaks.toml` exempts three rules that misfire on
-  teaching text.
+  teaching text, and outside the vendored Monaco editor bundle
+  (`docs/assets/monaco/`), which it skips entirely.
 - **SAST** — CodeQL and OpenGrep on every pull request.
 - **Vulnerability scanning** — Trivy and OSV-Scanner, plus a weekly schedule.
 - **Signed commits** — protected-branch pushes must be signed by an approved human
