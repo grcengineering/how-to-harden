@@ -1,24 +1,28 @@
-# Gitleaks configuration — present ONLY to work around an upstream defect.
+# Gitleaks configuration. The `gitleaks` CI job (.github/workflows/secrets-scan.yml)
+# and the sscsb pre-commit and pre-push hooks all read this file, and the CI job
+# fails if it is missing. Do not delete it.
 #
 # ─────────────────────────────────────────────────────────────────────────────
-# THIS REPOSITORY DOES NOT USE GITLEAKS.
+# WHY BOTH SCANNERS.
 #
-# .sscsb/config.toml sets [controls.secrets] gitleaks = false. Credential
-# detection here is TruffleHog only, because TruffleHog VERIFIES a candidate
-# against the issuing provider — a finding means a live credential, not a string
-# that looks like one. This corpus is 130 hardening guides and ~980 Code Packs
-# whose subject matter is credentials, so regex-shape matching produces almost
-# nothing but noise, and a noisy gate is a gate people learn to skip.
+# .sscsb/config.toml enables TruffleHog and Gitleaks under [controls.secrets].
+# TruffleHog verifies a candidate against the issuing provider and runs with
+# --results=verified,unknown, so a finding means a live credential. That filter
+# also drops what no provider can verify: generic API keys, passwords, internal
+# tokens. Gitleaks matches on shape and catches those.
 #
-# sscsb 0.4.0's pre-push hook runs gitleaks anyway, ignoring that config, when a
-# branch has no upstream (a brand-new branch falls back to scanning the entire
-# history). Fixed upstream in p4gs/sscs-bootstrapper PR #77, not yet merged.
-# DELETE THIS FILE once the fixed sscsb is installed.
+# This corpus is 130 hardening guides and ~980 Code Packs whose subject matter is
+# credentials, so shape matching misfires on teaching content. The first
+# allowlist below exempts exactly the three rules that misfired, and only in the
+# published content directories. The cost, stated plainly: a generic API key or
+# password committed under packs/, docs/_guides/, docs/_data/packs/ or content/
+# is caught by neither scanner unless its provider can verify it. Everywhere
+# else, and for every other gitleaks rule, detection is unchanged.
 #
 # ─────────────────────────────────────────────────────────────────────────────
 # EVIDENCE — the allowlist below is not an assertion, it is a measurement.
 #
-# The buggy path produced 23 findings over the full history. All 23 were
+# A full-history gitleaks scan (2026-09-12) produced 23 findings. All 23 were
 # inspected. Every one is a regex match on the WORDS "key", "secret" or
 # "password" in published teaching content, or on a variable reference, and not
 # one is a literal credential. Representative examples:
@@ -31,8 +35,8 @@
 #   packs/cursor/cli/...api-key-env-setup.sh a file that no longer exists — the
 #                                            hit is in history, not in the tree
 #
-# Independently corroborated with the scanner this repo actually relies on.
-# TruffleHog over the FULL git history, 2026-09-12, v3.97.4:
+# Independently corroborated with TruffleHog over the FULL git history,
+# 2026-09-12, v3.97.4:
 #
 #   trufflehog git file://. --results=verified
 #   -> chunks:16711  bytes:23532651  verified_secrets:0  unverified_secrets:0
@@ -46,10 +50,10 @@
 # Only the three rules that actually misfired are exempted, and only inside
 # published content directories. Every other gitleaks rule stays live
 # everywhere, so a real cloud access key, GitHub PAT, asymmetric keypair file or
-# Slack token committed into packs/ or docs/ is still caught here — and by
-# TruffleHog, which is the gate that actually governs.
+# Slack token committed into packs/ or docs/ is still caught here, and by
+# TruffleHog when the provider verifies it.
 
-title = "how-to-harden — gitleaks workaround config (see header)"
+title = "how-to-harden gitleaks config (see header)"
 
 [extend]
 useDefault = true

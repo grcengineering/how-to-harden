@@ -23,8 +23,10 @@ trufflehog = true
 # the issuing provider, so a finding means a live credential rather than a regex
 # shape — but its --results=verified,unknown filter drops generic secrets with
 # no verifiable provider (e.g. api_key = "<random>") and unverifiable keys.
-# Gitleaks catches exactly that detection class TruffleHog misses. Running both
-# costs some regex-only noise in exchange for that coverage.
+# Gitleaks catches that detection class, except for three rules .gitleaks.toml
+# exempts in the published content directories (packs/, docs/_guides/,
+# docs/_data/packs/, content/), where teaching text misfires them. Running
+# both costs some regex-only noise in exchange for that coverage.
 gitleaks = true
 pre_push_range_scan = true
 
