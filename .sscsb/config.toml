@@ -20,9 +20,9 @@ github_repo = "grcengineering/how-to-harden"
 enabled = true
 trufflehog = true
 # Both scanners run, deliberately. TruffleHog verifies candidate secrets against
-# the issuing provider, so a finding means a live credential rather than a regex
-# shape — but its --results=verified,unknown filter drops generic secrets with
-# no verifiable provider (e.g. api_key = "<random>") and unverifiable keys.
+# the issuing provider and, with --results=verified,unknown, reports only those
+# confirmed live or whose check errored. It has no detector for generic secrets
+# (e.g. api_key = "<random>") and drops keys it cannot verify.
 # Gitleaks catches that detection class, except for three rules .gitleaks.toml
 # exempts in the published content directories (packs/, docs/_guides/,
 # docs/_data/packs/, content/), where teaching text misfires them. Running

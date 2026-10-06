@@ -77,9 +77,9 @@ configuration in `.sscsb/config.toml`, machine-readable posture in
 Highlights:
 
 - **Secret scanning** — TruffleHog and Gitleaks at pre-commit, pre-push, and in CI.
-  TruffleHog findings are provider-verified, so an alert means a live credential;
-  Gitleaks additionally catches generic and unverifiable secrets TruffleHog's
-  verified/unknown filter would drop, outside the guide and Code Pack content
+  TruffleHog reports a credential only when its provider confirms it live or the
+  check errors; Gitleaks additionally catches generic and unverifiable secrets
+  TruffleHog never reports, outside the guide and Code Pack content
   directories, where `.gitleaks.toml` exempts three rules that misfire on
   teaching text.
 - **SAST** — CodeQL and OpenGrep on every pull request.

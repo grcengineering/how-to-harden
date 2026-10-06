@@ -6,10 +6,11 @@
 # WHY BOTH SCANNERS.
 #
 # .sscsb/config.toml enables TruffleHog and Gitleaks under [controls.secrets].
-# TruffleHog verifies a candidate against the issuing provider and runs with
-# --results=verified,unknown, so a finding means a live credential. That filter
-# also drops what no provider can verify: generic API keys, passwords, internal
-# tokens. Gitleaks matches on shape and catches those.
+# TruffleHog only finds credentials for providers it has a detector for, and
+# with --results=verified,unknown it reports a match only when the provider
+# confirms it live or the verification attempt errors. Generic API keys,
+# passwords and internal tokens have no detector or no verifier, so it never
+# reports them. Gitleaks matches on shape and catches those.
 #
 # This corpus is 130 hardening guides and ~980 Code Packs whose subject matter is
 # credentials, so shape matching misfires on teaching content. The first
