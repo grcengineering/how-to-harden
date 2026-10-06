@@ -21,18 +21,24 @@
 # Every rule still fires on real executable code; verified by planting each
 # pattern as live code and watching it flag.
 #
-# `curl-pipe-shell` is additionally quote-aware (2026-10-05). The Cursor packs
-# hold a jq regex that DETECTS pipe-to-shell (`test("curl|wget|bash -c|…")`,
-# where `wget|bash` is regex alternation) and a test asserting a hook DENIES
-# `curl … | sh`, passed as a quoted argument. Both are data, not executions.
-# The rule now walks from line start consuming quoted strings whole, so a
-# pipeline that exists only inside quotes is unreachable — while quoted
-# ARGUMENTS of curl itself (`-H "Authorization: …"`) are still allowed, and a
-# second pattern keeps `sh -c "curl … | sh"` / `bash -c '…'` firing, since a
-# string handed to `-c` IS executed. Verified both directions against a
-# fixture: 9/9 real executions fire (plain, sudo, wget, quoted curl args,
-# after `;`, indented, workflow `run:`, both `-c` forms); 0/3 quoted-data
-# lines fire. The old rule fired on all 12.
+# `curl-pipe-shell` keeps the original detection regexes unchanged, and excludes
+# exactly two WHOLE-LINE data shapes from the Cursor packs (2026-10-06):
+#   1. a line that is only a jq `test("…")` regex literal, the MCP audit's
+#      detector for fetch-and-run launch commands (`wget|bash` there is regex
+#      alternation, not a pipe);
+#   2. a `check deny|allow` assertion line in the fail-closed shell hook's
+#      self-test. `check()` wraps its command argument as a JSON string
+#      (`jq --arg c "$3"`) and pipes that JSON into the hook under test, so the
+#      command text is never executed by a shell.
+# Both exclusions match whole lines only, and double-quoted arguments may not
+# contain `$` or a backtick (the shell would expand those). This matters because
+# OpenGrep drops a finding whenever an exclusion match is nested inside it in
+# either direction, so a partial-line exclusion would mask real pipelines.
+# An earlier quote-aware rewrite (6824c86) was reverted: independent adversarial
+# testing found it missed `eval`, `ssh host '…'`, `bash -lc`, quoted YAML
+# `run:`/`script:` and exec-form arrays. Verified against ~500 adversarial
+# cases: this rule fires on every line the original rule fires on, except
+# those two data shapes.
 #
 # sscsb default SAST ruleset (Semgrep-compatible - runs under OpenGrep and
 # Semgrep identically). Deliberately small: high-signal supply-chain patterns
@@ -47,10 +53,12 @@ rules:
       download, checksum/signature-verify, then execute.
     patterns:
       - pattern-either:
-          - pattern-regex: >-
-              (?m)^(?:[^#"'\n]|"[^"\n]*"|'[^'\n]*')*?\b(?:curl|wget)\b(?:[^|;\n"']|"[^"\n]*"|'[^'\n]*')*\|\s*(?:sudo\s+)?(?:ba|z|da)?sh\b
-          - pattern-regex: >-
-              (?m)^[^#\n]*-c\s+["'][^"'\n]*\b(?:curl|wget)\b[^|;\n"']*\|\s*(?:sudo\s+)?(?:ba|z|da)?sh\b
+          - pattern-regex: '(?m)^[^#\n]*curl[^|;\n]*\|\s*(sudo\s+)?(ba|z|da)?sh'
+          - pattern-regex: '(?m)^[^#\n]*wget[^|;\n]*\|\s*(sudo\s+)?(ba|z|da)?sh'
+      - pattern-not-regex: >-
+          (?m)^[ \t]*\|?[ \t]*test\("(?:[^"\\\n$`]|\\[^\n])*"\)+[ \t]*$
+      - pattern-not-regex: >-
+          (?m)^[ \t]*check[ \t]+(?:deny|allow)[ \t]+(?:"[^"\\\n$`]*"|'[^'\n]*')(?:[ \t]+(?:"[^"\\\n$`]*"|'[^'\n]*'))*[ \t]*$
     paths:
       include: ["*.sh", "*.bash", "*.zsh", "Makefile", "*.yml", "*.yaml"]
 
