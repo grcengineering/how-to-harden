@@ -1,4 +1,11 @@
 # =============================================================================
+# HTH Pack Contract: v1
+#   control: aws-iam-identity-center-4.1
+#   guide:   https://howtoharden.com/guides/aws-iam-identity-center/#41-configure-cloudtrail-logging
+#   profile: L1
+#   mode:    mutating
+#   requires: AWS credentials in the Organizations management account for an organization trail (s3:CreateBucket, s3:PutBucketPolicy, cloudtrail:CreateTrail, cloudtrail:StartLogging)
+#
 # HTH AWS IAM Identity Center Control 4.1: Configure CloudTrail Logging
 # Profile Level: L1 (Crawl)
 # Frameworks: NIST AU-2, SOC 2 CC7.2, ISO 27001 A.12.4.1
@@ -58,8 +65,16 @@ resource "aws_s3_bucket_lifecycle_configuration" "cloudtrail_logs" {
   }
 }
 
-# S3 bucket policy allowing CloudTrail to write
+# S3 bucket policy allowing CloudTrail to write. Both statements are scoped
+# with aws:SourceArn to this trail, so no other trail can use the bucket.
 data "aws_caller_identity" "current" {}
+data "aws_partition" "current" {}
+data "aws_region" "current" {}
+
+locals {
+  trail_name = "hth-sso-audit-trail"
+  trail_arn  = "arn:${data.aws_partition.current.partition}:cloudtrail:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:trail/${local.trail_name}"
+}
 
 resource "aws_s3_bucket_policy" "cloudtrail_logs" {
   bucket = aws_s3_bucket.cloudtrail_logs.id
@@ -74,6 +89,11 @@ resource "aws_s3_bucket_policy" "cloudtrail_logs" {
         }
         Action   = "s3:GetBucketAcl"
         Resource = aws_s3_bucket.cloudtrail_logs.arn
+        Condition = {
+          StringEquals = {
+            "aws:SourceArn" = local.trail_arn
+          }
+        }
       },
       {
         Sid    = "AWSCloudTrailWrite"
@@ -85,7 +105,8 @@ resource "aws_s3_bucket_policy" "cloudtrail_logs" {
         Resource = "${aws_s3_bucket.cloudtrail_logs.arn}/AWSLogs/*"
         Condition = {
           StringEquals = {
-            "s3:x-amz-acl" = "bucket-owner-full-control"
+            "s3:x-amz-acl"  = "bucket-owner-full-control"
+            "aws:SourceArn" = local.trail_arn
           }
         }
       }
@@ -93,9 +114,14 @@ resource "aws_s3_bucket_policy" "cloudtrail_logs" {
   })
 }
 
-# Organization-level CloudTrail capturing SSO management events
+# Organization-level CloudTrail capturing SSO management events.
+# depends_on: CreateTrail validates the bucket policy and fails with
+# InsufficientS3BucketPolicyException if the policy is not in place yet; nothing
+# else in the graph orders the trail after the policy.
 resource "aws_cloudtrail" "sso_audit" {
-  name                          = "hth-sso-audit-trail"
+  depends_on = [aws_s3_bucket_policy.cloudtrail_logs]
+
+  name                          = local.trail_name
   s3_bucket_name                = aws_s3_bucket.cloudtrail_logs.id
   is_organization_trail         = var.is_organization_trail
   is_multi_region_trail         = true

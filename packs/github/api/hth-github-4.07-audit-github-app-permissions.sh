@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 4.07: Audit GitHub App Installations and Permissions
 # Profile: L1 | NIST: AC-6, CM-8
-# https://howtoharden.com/guides/github/#42-audit-github-app-installations
+# https://howtoharden.com/guides/github/#42-audit-github-app-installation-permissions
 source "$(dirname "$0")/common.sh"
 
 banner "4.07: Audit GitHub App Installations"

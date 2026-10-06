@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 2.03: Enable Secret Scanning Non-Provider Patterns
 # Profile: L3 | NIST: IA-5, SC-28
-# https://howtoharden.com/guides/github/#23-enable-secret-scanning-non-provider-patterns
+# https://howtoharden.com/guides/github/#22-enable-security-features-dependabot-code-scanning-secret-scanning
 source "$(dirname "$0")/common.sh"
 
 banner "2.03: Enable Secret Scanning Non-Provider Patterns"

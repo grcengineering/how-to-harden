@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 3.04: Restrict Org Actions Permissions
 # Profile: L1 | NIST: CM-7, SA-12
-# https://howtoharden.com/guides/github/#34-restrict-org-actions-permissions
+# https://howtoharden.com/guides/github/#314-evaluate-action-trust-before-adoption
 source "$(dirname "$0")/common.sh"
 
 banner "3.04: Restrict Org Actions Permissions"

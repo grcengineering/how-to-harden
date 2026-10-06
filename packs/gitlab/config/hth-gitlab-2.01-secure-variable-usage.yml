@@ -5,10 +5,8 @@
 
 # HTH Guide Excerpt: begin secure-variable-usage
 # .gitlab-ci.yml - Secure variable usage
-
-variables:
-  # Never hardcode secrets
-  # Reference protected CI/CD variables
+# Never hardcode secrets in a variables: block; reference protected CI/CD
+# variables defined in Settings > CI/CD > Variables instead.
 
 deploy_production:
   stage: deploy

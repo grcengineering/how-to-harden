@@ -81,17 +81,11 @@ variable "password_history_count" {
 }
 
 # -----------------------------------------------------------------------------
-# Section 1.11: End-User Notifications
+# Org domain (Section 3.4 uses it as the issuer for Okta API scope grants)
 # -----------------------------------------------------------------------------
 
 variable "okta_domain" {
-  description = "Full Okta domain (e.g., yourorg.okta.com) used for API calls in null_resource provisioners"
-  type        = string
-  default     = ""
-}
-
-variable "support_url" {
-  description = "End-user support help URL for Okta org configuration"
+  description = "Full Okta domain (e.g., yourorg.okta.com); the issuer for okta_app_oauth_api_scope grants"
   type        = string
   default     = ""
 }
@@ -126,6 +120,12 @@ variable "blocked_countries" {
 # Section 3.4: Non-Human Identity Governance
 # -----------------------------------------------------------------------------
 
+variable "service_app_public_key_kid" {
+  description = "Key ID (kid) of the service app's public JWK, used for private_key_jwt client authentication"
+  type        = string
+  default     = ""
+}
+
 variable "service_app_public_key_e" {
   description = "RSA public key exponent for service app JWT authentication (Base64url)"
   type        = string
@@ -137,6 +137,16 @@ variable "service_app_public_key_n" {
   type        = string
   default     = ""
   sensitive   = true
+}
+
+# -----------------------------------------------------------------------------
+# Section 5.2: ThreatInsight
+# -----------------------------------------------------------------------------
+
+variable "threatinsight_exempt_zone_ids" {
+  description = "IDs of IP network zones exempt from ThreatInsight (for example, trusted scanner or test IPs)"
+  type        = list(string)
+  default     = []
 }
 
 # -----------------------------------------------------------------------------

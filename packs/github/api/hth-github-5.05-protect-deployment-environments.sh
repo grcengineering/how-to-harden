@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 5.05: Protect Deployment Environments
 # Profile: L2 | NIST: CM-3, CM-5, SA-10
-# https://howtoharden.com/guides/github/#55-protect-deployment-environments
+# https://howtoharden.com/guides/github/#51-use-github-actions-secrets-with-environment-protection
 source "$(dirname "$0")/common.sh"
 
 banner "5.05: Protect Deployment Environments"
 should_apply 2 || { increment_skipped; summary; exit 0; }
 
-REPO="${GITHUB_REPO:-how-to-harden}"
+REPO="${GITHUB_REPO:?Set GITHUB_REPO (repository to harden)}"
 info "5.05 Checking deployment environment protections on ${GITHUB_ORG}/${REPO}..."
 
 # HTH Guide Excerpt: begin api-audit-environments
 # Audit: Check all deployment environments for protection rules
 ENVS_DATA=$(gh_get "/repos/${GITHUB_ORG}/${REPO}/environments") || {
-  warn "5.05 Unable to retrieve environments (may not exist or require admin access)"
-  increment_applied
+  fail "5.05 Unable to retrieve environments (requires repository admin access)"
+  increment_failed
   summary
   exit 0
 }
@@ -58,16 +58,16 @@ for ENV_NAME in $(echo "${ENVS}" | jq -r '.[].name' 2>/dev/null); do
   RULES_COUNT=$(echo "${ENVS}" | jq "[.[] | select(.name == \"${ENV_NAME}\") | .protection_rules // [] | length] | add // 0" 2>/dev/null || echo "0")
   if [ "${RULES_COUNT}" = "0" ]; then
     info "5.05 Adding protection rules to environment '${ENV_NAME}'..."
-    gh_put "/repos/${GITHUB_ORG}/${REPO}/environments/${ENV_NAME}" '{
+    if gh_put "/repos/${GITHUB_ORG}/${REPO}/environments/${ENV_NAME}" '{
       "deployment_branch_policy": {
         "protected_branches": true,
         "custom_branch_policies": false
       }
-    }' > /dev/null 2>&1 && {
+    }' > /dev/null 2>&1; then
       pass "5.05 Protection added to environment '${ENV_NAME}'"
-    } || {
+    else
       warn "5.05 Failed to add protection to environment '${ENV_NAME}'"
-    }
+    fi
   fi
 done
 # HTH Guide Excerpt: end api-protect-environments

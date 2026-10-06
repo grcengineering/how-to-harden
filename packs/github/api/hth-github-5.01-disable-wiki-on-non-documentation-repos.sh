@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 5.01: Disable Wiki on Non-Documentation Repos
 # Profile: L2 | NIST: CM-7
-# https://howtoharden.com/guides/github/#51-disable-wiki-on-non-documentation-repos
+# https://howtoharden.com/guides/github/#21-enable-branch-protection-for-all-critical-branches
 source "$(dirname "$0")/common.sh"
 
 banner "5.01: Disable Wiki on Non-Documentation Repos"

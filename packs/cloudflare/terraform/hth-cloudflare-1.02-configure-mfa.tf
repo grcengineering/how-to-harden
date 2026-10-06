@@ -3,6 +3,12 @@
 # Profile Level: L1 (Crawl)
 # Frameworks: NIST IA-2(1) | CIS 6.5
 # Source: https://howtoharden.com/guides/cloudflare/#12-configure-multi-factor-authentication
+#
+# A reusable Access policy enforces nothing on its own. In provider v5 the
+# binding lives on the application: add
+#   policies = [{ id = cloudflare_zero_trust_access_policy.require_mfa.id, precedence = 1 }]
+# to each cloudflare_zero_trust_access_application that must require MFA
+# (pack 2.1 attaches its own MFA-requiring policy the same way).
 # =============================================================================
 
 # HTH Guide Excerpt: begin terraform

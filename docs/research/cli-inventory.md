@@ -42,7 +42,7 @@
 | 22 | SAP Concur | None | — | — | REST API + Joule AI agents | https://help.sap.com/docs/SAP_CONCUR |
 | 23 | Coupa | None | — | — | REST API (OAuth2) + flat file integrations | https://compass.coupa.com/ |
 | 24 | CrowdStrike | Vendor-Published / Not Officially Supported (toolkit) + sensor-only (falconctl) | `falcon-toolkit` + `falconctl` (endpoint) | `pipx install caracara-cli`; falconctl ships with sensor | falconctl: sensor admin only. Falcon-Toolkit: tenant-wide scripting (NOT a formal product) | https://github.com/CrowdStrike/Falcon-Toolkit |
-| 25 | Cursor | GA-Official (Beta) | Cursor CLI / `cursor-agent` | `curl https://cursor.com/install -fsSL \| bash` | No — agent invocation; admin (SSO, audit, MCP allowlist) via dashboard | https://cursor.com/cli |
+| 25 | Cursor | GA-Official (Beta) | Cursor CLI / `cursor-agent` | `curl https://cursor.com/install -fsSL \| bash` | No — agent invocation; admin (SSO, MCP allowlist) via dashboard, and admin reads (members, audit logs, spend, model access) via the REST Admin API at `api.cursor.com` — use `api/` packs, not `cli/` | https://cursor.com/cli |
 | 26 | CyberArk Conjur | GA-Official (Conjur only) | `conjur` (`conjur-cli-go`) | `brew tap cyberark/tools && brew install conjur-cli` | Yes — for Conjur Secrets Manager. **NOT for PAS/Privilege Cloud** (which our HTH guide covers) — those use REST API + PowerShell SDK | https://github.com/cyberark/conjur-cli-go |
 | 27 | Databricks | GA-Official | `databricks` (Go-based, v0.205+) | `brew tap databricks/tap && brew install databricks` | Yes — workspace, IAM, Unity Catalog, secrets, cluster policies, audit log delivery | https://docs.databricks.com/aws/en/dev-tools/cli/ |
 | 28 | Datadog | GA-Official | `datadog-ci` | `npm i -g @datadog/datadog-ci` | Yes (CI hardening) — SBOM upload, SCA, sourcemap upload, secret scanning. Account/RBAC via `datadogpy` SDK | https://github.com/DataDog/datadog-ci |
@@ -71,72 +71,75 @@
 | 51 | Jira Cloud | GA-Official | `acli` (Atlassian CLI) | Same as #8 | Same — issue ops, JQL, comments | https://developer.atlassian.com/cloud/acli/ |
 | 52 | JumpCloud | PowerShell-Only | `JumpCloud` PowerShell module | `Install-Module JumpCloud` | Yes — user/MFA enforcement, system policies, SSO assignments, Directory Insights audit export | https://jumpcloud.com/support/jumpcloud-powershell-module |
 | 53 | Keeper | GA-Official | Keeper Commander + `ksm` | `pip install keepercommander`; `pip install keeper-secrets-manager-cli` | Yes — SSO/SCIM, MFA, role policies, device approvals, IP allowlists, advanced reports | https://docs.keeper.io/en/keeperpam/commander-cli/overview |
-| 54 | Klaviyo | GA-Official | Klaviyo CLI (Headless Klaviyo) | `pipx install` (per docs) | Yes (config-as-code) — campaigns, flows, segments, content blocks GET/PUSH | https://developers.klaviyo.com/en/docs/klaviyo_cli |
+| 54 | Klaviyo | GA-Official | `klaviyo` (`klaviyo/klaviyo-cli`) | `gh release download -R klaviyo/klaviyo-cli` (binary) or `go install github.com/klaviyo/klaviyo-cli/cmd/klaviyo@latest` | Yes — calls every public API operation as a typed command (webhooks, profiles, data-privacy deletion…); the API itself has no user, role, API-key, SSO or MFA operations. Replaced the retired file-based Headless Klaviyo CLI (re-verified 2026-10-04) | https://developers.klaviyo.com/en/docs/klaviyo_cli |
 | 55 | KnowBe4 | None | — | — | REST API only | https://developer.knowbe4.com/ |
-| 56 | LastPass | GA-Official (consumer-vault scope) | `lpass` | `brew install lastpass-cli` | **No enterprise admin coverage** — consumer vault only; SSO/MFA/SIEM via Enterprise API | https://github.com/lastpass/lastpass-cli |
-| 57 | LaunchDarkly | GA-Official | `ldcli` | `brew install launchdarkly/tap/ldcli` | Yes — flag CRUD, project/env, member/team RBAC, API token mgmt, audit log queries | https://github.com/launchdarkly/ldcli |
-| 58 | Linear | None | — | — | GraphQL API only | https://developers.linear.app/ |
-| 59 | Looker | Vendor-Published / Not Officially Supported | `gzr` | `gem install gzr` | Yes (limited) — users/groups/roles/content. Disclaimer: not officially supported | https://github.com/looker-open-source/gzr |
-| 60 | Mailchimp | None | — | — | REST API only | https://mailchimp.com/developer/ |
-| 61 | Marketo (Adobe) | None | — | — | REST API + Marketo MCP Server | https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/mcp-server |
-| 62 | Microsoft 365 | PowerShell-Only | `Microsoft.Graph`, `ExchangeOnlineManagement`, `MicrosoftTeams` PowerShell modules | `Install-Module Microsoft.Graph`; `Install-Module ExchangeOnlineManagement`; `Install-Module MicrosoftTeams` | Yes — full M365 admin coverage. **Note: AzureAD/MSOnline retired Oct 2025** | https://learn.microsoft.com/powershell/microsoftgraph/ |
-| 63 | Microsoft Entra ID | PowerShell-Only | `Microsoft.Entra` + `Microsoft.Graph` PowerShell + `az ad` | `Install-Module Microsoft.Entra`; `Install-Module Microsoft.Graph`; `brew install azure-cli` | Yes — Conditional Access, MFA, app registrations, PIM, sign-in/audit log export | https://learn.microsoft.com/powershell/entra-powershell/ |
-| 64 | Microsoft Intune | PowerShell-Only | `Microsoft.Graph` PowerShell + (legacy) `Microsoft.Graph.Intune` | `Install-Module Microsoft.Graph` | Yes — device enrollment, compliance/configuration policies, app deployment, wipe/retire | https://github.com/microsoft/Intune-PowerShell-SDK |
-| 65 | Mimecast | None | — | — | REST API 2.0 + community PowerShell modules | https://integrations.mimecast.com/ |
-| 66 | Miro | None | — | — | REST API only | https://developers.miro.com/ |
-| 67 | Mixpanel | None | — | — | REST API only | https://docs.mixpanel.com/ |
-| 68 | monday.com | Vendor-Adjacent | `mapps` (`@mondaycom/apps-cli`) | `npm i -g @mondaycom/apps-cli` | No — app deploy on monday-code only; admin via GraphQL API | https://developer.monday.com/apps/docs/command-line-interface-cli |
-| 69 | MongoDB Atlas | GA-Official | `atlas` CLI | `brew install mongodb-atlas-cli` | Yes — cluster mgmt, network access lists, IAM, backups, audit logs, federated auth | https://www.mongodb.com/docs/atlas/cli/ |
-| 70 | Netskope | None | — | — | REST API v2 only | https://docs.netskope.com/ |
-| 71 | NetSuite | GA-Official | `suitecloud` (SuiteCloud CLI for Node.js) | `npm i -g --acceptSuiteCloudSDKLicense @oracle/suitecloud-cli` | Yes — SDF deploy/import/validate, role/permission XML, account auth | https://www.npmjs.com/package/@oracle/suitecloud-cli |
-| 72 | New Relic | GA-Official | `newrelic-cli` | `brew install newrelic-cli` | Yes — account/user provisioning (NerdGraph), agent install, entity tagging, workload mgmt | https://docs.newrelic.com/docs/new-relic-solutions/build-nr-ui/newrelic-cli/ |
-| 73 | Notion | None | — | — | REST API only | https://developers.notion.com/ |
-| 74 | Okta | **DEPRECATED (Jul 18, 2025)** + active `okta-aws-cli` | `okta` (deprecated); `okta-aws-cli` (active) | `brew install okta-aws-cli` | okta CLI deprecated; admin hardening via Terraform provider or Management API. okta-aws-cli is for AWS IdP federation only | https://github.com/okta/okta-cli |
-| 75 | Ona (formerly Gitpod) | GA-Official | `ona` | `brew install gitpod-io/tap/ona` (SLSA-verified alternative: `https://app.gitpod.io/releases/cli/install.sh` with `VERIFY_SLSA=true`) | Yes — Veto security policies (`ona organization security-policy init/create/update/set-default`), audit-log export (`ona audit-logs --format=json`), port admission (`ona environment port open --admission creator_only`), webhooks + signing secrets, groups, dotfiles, OIDC tokens (`ona idp token` / `ona idp login`), automations-as-code; NOT covered: secrets, service accounts, runners, SSO/SCIM, organization policies (API / Terraform `gitpod-io/ona` / dashboard only) — verified 2026-08-19 | https://ona.com/docs/ona/integrations/cli.md |
-| 76 | OneLogin | GA-Official | `onelogin` + `onelogin-aws-cli-assume-role` | `brew tap onelogin/tap-onelogin && brew install onelogin` | Limited — apps, users, mappings, Smart Hooks; many MFA/policy ops still REST-only | https://github.com/onelogin/onelogin |
-| 77 | Oracle HCM | None | (HCM Data Loader transfer utility — not a true CLI) | — | API only | https://docs.oracle.com/en/cloud/saas/human-resources/ |
-| 78 | Orca Security | None | — | — | REST API + official Terraform provider | https://docs.orcasecurity.com/ |
-| 79 | Outreach | None | — | — | REST API + Outreach MCP Server | https://developers.outreach.io/ |
-| 80 | PagerDuty | None (community: `pagerduty-cli` by martindstone; `python-pagerduty` includes basic CLI) | — | — | "PagerDuty doesn't support [CLI] officially" | https://github.com/martindstone/pagerduty-cli |
-| 81 | Paylocity | None | — | — | REST API (OAuth2) | https://developer.paylocity.com/ |
-| 82 | Pendo | None | — | — | REST API + MCP server | https://developers.pendo.io/ |
-| 83 | Ping Identity | GA-Official | `pingcli` | `brew install pingidentity/tap/pingcli` | Yes — multi-product config (PingOne, PingFederate); export/import config | https://github.com/pingidentity/pingcli |
-| 84 | Postman | GA-Official | Postman CLI + Newman | `brew install --cask postman-cli`; `npm i -g newman` | Yes — collection runs in CI, signed test runs, governance lint, API security checks | https://learning.postman.com/docs/postman-cli/postman-cli-installation |
-| 85 | Power BI | PowerShell-Only | `MicrosoftPowerBIMgmt` PowerShell module | `Install-Module MicrosoftPowerBIMgmt` | Yes — tenant admin, workspace admin, audit log export, encryption keys, capacity mgmt | https://learn.microsoft.com/powershell/power-bi/ |
-| 86 | Proofpoint | None | — | — | TAP/TRAP/SIEM/Email Protection APIs | https://help.proofpoint.com/ |
-| 87 | Qualys | None | — | — | REST/SOAP APIs + community Python SDK | https://qualysguard.qualys.com/qwebhelp/ |
-| 88 | Rapid7 | None | — | — | REST API v3 + community Python SDK | https://docs.rapid7.com/ |
-| 89 | Rippling | GA-Official (Flux only) | `rippling-cli` | GitHub release / cargo install | No (admin) — Flux integration developer workflow only | https://github.com/Rippling/rippling-cli |
-| 90 | SailPoint | GA-Official | `sailpoint-cli` | `brew install sailpoint-cli` | Yes — Identity Security Cloud API, transforms/rules/workflows, search, audit export | https://developer.sailpoint.com/docs/tools/cli/ |
-| 91 | Salesforce | GA-Official | `sf` (v66.0 Spring '26) | `npm i -g @salesforce/cli` | Yes — user create, permset assign, profile/permset metadata deploy, ConnectedApp/IpRange/SamlSso metadata | https://developer.salesforce.com/tools/salesforcecli |
-| 92 | SAP SuccessFactors | None | — | — | OData API + SAP Cloud SDK | https://help.sap.com/docs/SAP_SUCCESSFACTORS_HXM_SUITE |
-| 93 | Segment (Twilio) | None | — | — | Public API SDKs (multi-language) + Terraform provider | https://docs.segmentapis.com/ |
-| 94 | SendGrid (Twilio) | Vendor-Adjacent (parent) | `twilio email` (subset of Twilio CLI) | `brew tap twilio/brew && brew install twilio` | Limited — email send via SendGrid; account mgmt via Twilio CLI | https://www.twilio.com/docs/twilio-cli/examples/send-email-sendgrid |
-| 95 | Sentry | GA-Official | `sentry-cli` (v3.4.0 Apr 2026) | `brew install sentry-cli` or `npm i @sentry/cli` | Yes — release mgmt, source map/debug file upload, project/org admin, deploy markers | https://docs.sentry.io/cli/ |
-| 96 | SentinelOne | Vendor-Adjacent (endpoint only) | `sentinelctl` | Bundled with agent | Endpoint-only — status, scan, config, restart (passphrase-gated). Console admin via REST API | https://www.sentinelone.com/ |
-| 97 | ServiceNow | GA-Official | `snc` | Windows installer / ServiceNow Store | Yes — instance ops, app deploy, ATF tests, source control sync, custom component dev | https://www.servicenow.com/docs/r/xanadu/application-development/servicenow-cli/ |
-| 98 | Shopify | GA-Official | `shopify` (`@shopify/cli`) | `npm i -g @shopify/cli@latest` | Yes — app/theme dev, store config, webhooks, OAuth scopes | https://shopify.dev/docs/api/shopify-cli |
-| 99 | Slack | GA-Official | `slack` (slackapi/slack-cli, v4.0.0 Apr 2026) | `brew install --cask slack-cli` or curl install | App dev focused — manifests, scopes, install/link. **Workspace admin (SSO/audit/DLP) requires Admin & Audit Logs APIs** | https://docs.slack.dev/tools/slack-cli/ |
-| 100 | Smartsheet | None (samples only, unmaintained) | `smartsheet-cli` (5+ yrs since release) | — | API only; first-party direction is MCP server | https://github.com/smartsheet-samples/smartsheet-cli |
-| 101 | Snowflake | GA-Official | `snow` (Snowflake CLI) | `brew tap snowflakedb/snowflake-cli && brew install snowflake-cli` | Yes — account/warehouse, RBAC, network policies, masking policies, secrets, app deploy. **`snowsql` is being phased out** | https://docs.snowflake.com/en/developer-guide/snowflake-cli/index |
-| 102 | Snyk | GA-Official | `snyk` | `npm i -g snyk` | Yes — SCA, container, IaC, code (SAST) scans, SBOM, monitor projects | https://docs.snyk.io/snyk-cli |
-| 103 | Splunk | GA-Official | `acs` (Cloud), `splunk` (Enterprise) | `npm i -g @splunk/acs`; bundled with Splunk Enterprise | Yes — HEC token mgmt, IP allowlists, index admin, app install, user/role admin, SSO config | https://help.splunk.com/.../acs-cli |
-| 104 | Square | None | — | — | REST API only; community CLIs exist | https://developer.squareup.com/ |
-| 105 | Stripe | GA-Official | `stripe` | `brew install stripe/stripe-cli/stripe` | Yes — restricted-key login, webhook listen/forward, event tail, log streams | https://docs.stripe.com/stripe-cli |
-| 106 | Tableau | GA-Official | `tabcmd` (2.0 Python rewrite) | `pip install tabcmd` | Yes — user/group/site admin, project mgmt, workbook publish, permissions, PAT auth | https://help.tableau.com/current/online/en-us/tabcmd.htm |
-| 107 | Tenable | GA-Official (local) + SDK (cloud) | `nessuscli` (local) + `pyTenable` (SDK) | Bundled with Nessus; `pip install pytenable` | Local Nessus admin via nessuscli; Tenable.io scan/asset mgmt via pyTenable | https://developer.tenable.com/ |
-| 108 | Terraform Cloud / HCP | GA-Official | `terraform` + `hcp` | `brew install hashicorp/tap/terraform`; `brew install hashicorp/tap/hcp` | Yes — workspaces, vars, teams, projects, run triggers; OIDC dynamic credentials | https://developer.hashicorp.com/hcp/docs/cli |
-| 109 | Twilio | GA-Official | `twilio-cli` (v6.0+) | `brew tap twilio/brew && brew install twilio` | Yes — API key mgmt, subaccount admin, phone-number config, webhook config, plugins | https://www.twilio.com/docs/twilio-cli |
-| 110 | UKG | None | — | — | REST API only | https://community.ukg.com/ |
-| 111 | Vanta | None | — | — | REST API only | https://developer.vanta.com/ |
-| 112 | Vercel | GA-Official | `vercel` | `npm i -g vercel` or `brew install vercel-cli` | Yes — env vars (encrypted), deployment protection, domains/certs, team mgmt | https://vercel.com/docs/cli |
-| 113 | Webex | None (general admin) | xCommand UI (Control Hub, room devices); MSI flags (endpoints) | — | No general-purpose admin CLI | https://help.webex.com/en-us/article/9lk0bf/ |
-| 114 | Wiz | GA-Official | `wizcli` | `brew install --cask wizcli` | Yes (shift-left) — IaC, container, secrets, SBOM, dir scan. Cloud posture admin via console/API/Terraform | https://www.wiz.io/lp/wiz-cli |
-| 115 | Workato | GA-Official | `workato` (Platform CLI) + Connector SDK CLI | `pip install workato-platform-cli` | Yes — project push/pull, recipe lifecycle, OAuth connection mgmt, API client/collection mgmt | https://docs.workato.com/en/platform-cli.html |
-| 116 | Workday | Coming GA (announced Jun 2025) | Workday Developer CLI | TBD | Project scaffolding, integration deploy (not yet broadly downloadable) | Workday DevCon 2025 |
-| 117 | Zendesk | GA-Official (Beta) | `zcli` | `npm i -g @zendesk/zcli` | App dev/packaging, theme upload, profile/login mgmt | https://developer.zendesk.com/documentation/apps/getting-started/using-zcli/ |
-| 118 | Zoom | None | — | — | REST API + MSI flags | https://developers.zoom.us/ |
-| 119 | Zscaler | Vendor-Adjacent (SDK + ZPA App Connector local) | `zscaler-sdk-python`, `zpa-api-tool`; ZPA App Connector local CLI | `pip install zscaler-sdk-python` | No general admin CLI; primary path is official Terraform provider | https://help.zscaler.com/ |
+| 56 | LangChain | GA-Official | `langchain` (`langchain-cli`, PyPI), `langgraph` (`langgraph-cli`, PyPI), `langsmith` (langsmith-cli, Go binary) | `pip install langchain-cli langgraph-cli` (hash-pin via guide 7.1); `langsmith`: release tarball verified against its `checksums.txt`, or `brew install langchain-ai/tap/langsmith-cli` | Partial — app scaffolding, LangGraph validate/build/deploy, LangSmith resource queries; org admin (SSO, RBAC/ABAC, service keys, audit logs) is REST API or the official `langchain-ai/langsmith` Terraform provider. **Look-alike:** the PyPI package named `langsmith-cli` is published by a third party (github.com/gigaverse-app), not langchain-ai (verified 2026-09-24) | https://github.com/langchain-ai/langsmith-cli |
+| 57 | LastPass | GA-Official (consumer-vault scope) | `lpass` | `brew install lastpass-cli` | **No enterprise admin coverage** — consumer vault only; SSO/MFA/SIEM via Enterprise API | https://github.com/lastpass/lastpass-cli |
+| 58 | LaunchDarkly | GA-Official | `ldcli` | `brew install launchdarkly/tap/ldcli` | Yes — flag CRUD, project/env, member/team RBAC, API token mgmt, audit log queries | https://github.com/launchdarkly/ldcli |
+| 59 | Linear | None | — | — | GraphQL API only | https://linear.app/developers |
+| 60 | Looker | Vendor-Published / Not Officially Supported | `gzr` | `gem install gzr` | Yes (limited) — users/groups/roles/content. Disclaimer: not officially supported | https://github.com/looker-open-source/gzr |
+| 61 | Lovable | None | — | — | No — no first-party CLI. Admin automation is the REST API (`api.lovable.dev/v1`, GA 2026-09-11, Business/Enterprise), SCIM 2.0 (Enterprise), and the OAuth-only Lovable MCP server | https://docs.lovable.dev/integrations/lovable-api |
+| 62 | Mailchimp | None | — | — | REST API only | https://mailchimp.com/developer/ |
+| 63 | Marketo (Adobe) | None | — | — | REST API + Marketo MCP Server | https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/mcp-server |
+| 64 | Microsoft 365 | PowerShell-Only | `Microsoft.Graph`, `ExchangeOnlineManagement`, `MicrosoftTeams` PowerShell modules | `Install-Module Microsoft.Graph`; `Install-Module ExchangeOnlineManagement`; `Install-Module MicrosoftTeams` | Yes — full M365 admin coverage. **Note: AzureAD/MSOnline retired Oct 2025** | https://learn.microsoft.com/powershell/microsoftgraph/ |
+| 65 | Microsoft Entra ID | PowerShell-Only | `Microsoft.Entra` + `Microsoft.Graph` PowerShell + `az ad` | `Install-Module Microsoft.Entra`; `Install-Module Microsoft.Graph`; `brew install azure-cli` | Yes — Conditional Access, MFA, app registrations, PIM, sign-in/audit log export | https://learn.microsoft.com/powershell/entra-powershell/ |
+| 66 | Microsoft Intune | PowerShell-Only | `Microsoft.Graph` PowerShell + (legacy) `Microsoft.Graph.Intune` | `Install-Module Microsoft.Graph` | Yes — device enrollment, compliance/configuration policies, app deployment, wipe/retire | https://github.com/microsoft/Intune-PowerShell-SDK |
+| 67 | Mimecast | None | — | — | REST API 2.0 + community PowerShell modules | https://integrations.mimecast.com/ |
+| 68 | Miro | None | — | — | REST API only | https://developers.miro.com/ |
+| 69 | Mixpanel | None | — | — | REST API only | https://docs.mixpanel.com/ |
+| 70 | monday.com | Vendor-Adjacent | `mapps` (`@mondaycom/apps-cli`) | `npm i -g @mondaycom/apps-cli` | No — app deploy on monday-code only; admin via GraphQL API | https://developer.monday.com/apps/docs/command-line-interface-cli |
+| 71 | MongoDB Atlas | GA-Official | `atlas` CLI | `brew install mongodb-atlas-cli` | Yes — cluster mgmt, network access lists, IAM, backups, audit logs, federated auth | https://www.mongodb.com/docs/atlas/cli/ |
+| 72 | Netskope | None | — | — | REST API v2 only | https://docs.netskope.com/ |
+| 73 | NetSuite | GA-Official | `suitecloud` (SuiteCloud CLI for Node.js) | `npm i -g --acceptSuiteCloudSDKLicense @oracle/suitecloud-cli` | Yes — SDF deploy/import/validate, role/permission XML, account auth | https://www.npmjs.com/package/@oracle/suitecloud-cli |
+| 74 | New Relic | GA-Official | `newrelic-cli` | `brew install newrelic-cli` | Yes — account/user provisioning (NerdGraph), agent install, entity tagging, workload mgmt | https://docs.newrelic.com/docs/new-relic-solutions/build-nr-ui/newrelic-cli/ |
+| 75 | Notion | None | — | — | REST API only | https://developers.notion.com/ |
+| 76 | Okta | **DEPRECATED (Jul 18, 2025)** + active `okta-aws-cli` | `okta` (deprecated); `okta-aws-cli` (active) | `brew install okta-aws-cli` | okta CLI deprecated; admin hardening via Terraform provider or Management API. okta-aws-cli is for AWS IdP federation only | https://github.com/okta/okta-cli |
+| 77 | Ona (formerly Gitpod) | GA-Official | `ona` | `brew install gitpod-io/tap/ona` (SLSA-verified alternative: `https://app.gitpod.io/releases/cli/install.sh` with `VERIFY_SLSA=true`) | Yes — Veto security policies (`ona organization security-policy init/create/update/set-default`), audit-log export (`ona audit-logs --format=json`), port admission (`ona environment port open --admission creator_only`), webhooks + signing secrets, groups, dotfiles, OIDC tokens (`ona idp token` / `ona idp login`), automations-as-code; NOT covered: secrets, service accounts, runners, SSO/SCIM, organization policies (API / Terraform `gitpod-io/ona` / dashboard only) — verified 2026-08-19 | https://ona.com/docs/ona/integrations/cli.md |
+| 78 | OneLogin | GA-Official | `onelogin` + `onelogin-aws-cli-assume-role` | `brew tap onelogin/tap-onelogin && brew install onelogin` | Limited — apps, users, mappings, Smart Hooks; many MFA/policy ops still REST-only | https://github.com/onelogin/onelogin |
+| 79 | Oracle HCM | None | (HCM Data Loader transfer utility — not a true CLI) | — | API only | https://docs.oracle.com/en/cloud/saas/human-resources/ |
+| 80 | Orca Security | None | — | — | REST API + official Terraform provider | https://docs.orcasecurity.com/ |
+| 81 | Outreach | None | — | — | REST API + Outreach MCP Server | https://developers.outreach.io/ |
+| 82 | PagerDuty | None (community: `pagerduty-cli` by martindstone; `python-pagerduty` includes basic CLI) | — | — | "PagerDuty doesn't support [CLI] officially" | https://github.com/martindstone/pagerduty-cli |
+| 83 | Paylocity | None | — | — | REST API (OAuth2) | https://developer.paylocity.com/ |
+| 84 | Pendo | None | — | — | REST API + MCP server | https://developers.pendo.io/ |
+| 85 | Ping Identity | GA-Official | `pingcli` | `brew install pingidentity/tap/pingcli` | Yes — multi-product config (PingOne, PingFederate); export/import config | https://github.com/pingidentity/pingcli |
+| 86 | Postman | GA-Official | Postman CLI + Newman | `brew install --cask postman-cli`; `npm i -g newman` | Yes — collection runs in CI, signed test runs, governance lint, API security checks | https://learning.postman.com/docs/postman-cli/postman-cli-installation |
+| 87 | Power BI | PowerShell-Only | `MicrosoftPowerBIMgmt` PowerShell module | `Install-Module MicrosoftPowerBIMgmt` | Yes — tenant admin, workspace admin, audit log export, encryption keys, capacity mgmt | https://learn.microsoft.com/powershell/power-bi/ |
+| 88 | Proofpoint | None | — | — | TAP/TRAP/SIEM/Email Protection APIs | https://help.proofpoint.com/ |
+| 89 | Qualys | None | — | — | REST/SOAP APIs + community Python SDK | https://qualysguard.qualys.com/qwebhelp/ |
+| 90 | Rapid7 | None | — | — | REST API v3 + community Python SDK | https://docs.rapid7.com/ |
+| 91 | Replit | None | — | — | API-only — Enterprise Admin API (REST, beta, `rpl_` keys) plus the in-app App Storage SDK; the complete docs index (`docs.replit.com/llms.txt`) lists no CLI and the `replit` GitHub org holds no CLI repo (only the archived `ReplitClient.js` library). Replit's MCP server is an agent integration, not a CLI — verified 2026-09-24 | https://docs.replit.com/teams/admin-api |
+| 92 | Rippling | GA-Official (Flux only) | `rippling-cli` | GitHub release / cargo install | No (admin) — Flux integration developer workflow only | https://github.com/Rippling/rippling-cli |
+| 93 | SailPoint | GA-Official | `sailpoint-cli` | `brew install sailpoint-cli` | Yes — Identity Security Cloud API, transforms/rules/workflows, search, audit export | https://developer.sailpoint.com/docs/tools/cli/ |
+| 94 | Salesforce | GA-Official | `sf` (v66.0 Spring '26) | `npm i -g @salesforce/cli` | Yes — user create, permset assign, profile/permset metadata deploy, ConnectedApp/IpRange/SamlSso metadata | https://developer.salesforce.com/tools/salesforcecli |
+| 95 | SAP SuccessFactors | None | — | — | OData API + SAP Cloud SDK | https://help.sap.com/docs/SAP_SUCCESSFACTORS_HXM_SUITE |
+| 96 | Segment (Twilio) | None | — | — | Public API SDKs (multi-language) + Terraform provider | https://docs.segmentapis.com/ |
+| 97 | SendGrid (Twilio) | Vendor-Adjacent (parent) | `twilio email` (subset of Twilio CLI) | `brew tap twilio/brew && brew install twilio` | Limited — email send via SendGrid; account mgmt via Twilio CLI | https://www.twilio.com/docs/twilio-cli/examples/send-email-sendgrid |
+| 98 | Sentry | GA-Official | `sentry-cli` (v3.4.0 Apr 2026) | `brew install sentry-cli` or `npm i @sentry/cli` | Yes — release mgmt, source map/debug file upload, project/org admin, deploy markers | https://docs.sentry.io/cli/ |
+| 99 | SentinelOne | Vendor-Adjacent (endpoint only) | `sentinelctl` | Bundled with agent | Endpoint-only — status, scan, config, restart (passphrase-gated). Console admin via REST API | https://www.sentinelone.com/ |
+| 100 | ServiceNow | GA-Official | `snc` | Windows installer / ServiceNow Store | Yes — instance ops, app deploy, ATF tests, source control sync, custom component dev | https://www.servicenow.com/docs/r/xanadu/application-development/servicenow-cli/ |
+| 101 | Shopify | GA-Official | `shopify` (`@shopify/cli`) | `npm i -g @shopify/cli@latest` | Yes — app/theme dev, store config, webhooks, OAuth scopes | https://shopify.dev/docs/api/shopify-cli |
+| 102 | Slack | GA-Official | `slack` (slackapi/slack-cli, v4.0.0 Apr 2026) | `brew install --cask slack-cli` or curl install | App dev focused — manifests, scopes, install/link. **Workspace admin (SSO/audit/DLP) requires Admin & Audit Logs APIs** | https://docs.slack.dev/tools/slack-cli/ |
+| 103 | Smartsheet | None (samples only, unmaintained) | `smartsheet-cli` (5+ yrs since release) | — | API only; first-party direction is MCP server | https://github.com/smartsheet-samples/smartsheet-cli |
+| 104 | Snowflake | GA-Official | `snow` (Snowflake CLI) | `brew tap snowflakedb/snowflake-cli && brew install snowflake-cli` | Yes — account/warehouse, RBAC, network policies, masking policies, secrets, app deploy. **`snowsql` is being phased out** | https://docs.snowflake.com/en/developer-guide/snowflake-cli/index |
+| 105 | Snyk | GA-Official | `snyk` | `npm i -g snyk` | Yes — SCA, container, IaC, code (SAST) scans, SBOM, monitor projects | https://docs.snyk.io/snyk-cli |
+| 106 | Splunk | GA-Official | `acs` (Cloud), `splunk` (Enterprise) | `npm i -g @splunk/acs`; bundled with Splunk Enterprise | Yes — HEC token mgmt, IP allowlists, index admin, app install, user/role admin, SSO config | https://help.splunk.com/.../acs-cli |
+| 107 | Square | None | — | — | REST API only; community CLIs exist | https://developer.squareup.com/ |
+| 108 | Stripe | GA-Official | `stripe` | `brew install stripe/stripe-cli/stripe` | Yes — restricted-key login, webhook listen/forward, event tail, log streams | https://docs.stripe.com/stripe-cli |
+| 109 | Tableau | GA-Official | `tabcmd` (2.0 Python rewrite) | `pip install tabcmd` | Yes — user/group/site admin, project mgmt, workbook publish, permissions, PAT auth | https://help.tableau.com/current/online/en-us/tabcmd.htm |
+| 110 | Tenable | GA-Official (local) + SDK (cloud) | `nessuscli` (local) + `pyTenable` (SDK) | Bundled with Nessus; `pip install pytenable` | Local Nessus admin via nessuscli; Tenable.io scan/asset mgmt via pyTenable | https://developer.tenable.com/ |
+| 111 | Terraform Cloud / HCP | GA-Official | `terraform` + `hcp` | `brew install hashicorp/tap/terraform`; `brew install hashicorp/tap/hcp` | Yes — workspaces, vars, teams, projects, run triggers; OIDC dynamic credentials | https://developer.hashicorp.com/hcp/docs/cli |
+| 112 | Twilio | GA-Official | `twilio-cli` (v6.0+) | `brew tap twilio/brew && brew install twilio` | Yes — API key mgmt, subaccount admin, phone-number config, webhook config, plugins | https://www.twilio.com/docs/twilio-cli |
+| 113 | UKG | None | — | — | REST API only | https://community.ukg.com/ |
+| 114 | Vanta | None | — | — | REST API only | https://developer.vanta.com/ |
+| 115 | Vercel | GA-Official | `vercel` | `npm i -g vercel` or `brew install vercel-cli` | Yes — env vars (encrypted), deployment protection, domains/certs, team mgmt | https://vercel.com/docs/cli |
+| 116 | Webex | None (general admin) | xCommand UI (Control Hub, room devices); MSI flags (endpoints) | — | No general-purpose admin CLI | https://help.webex.com/en-us/article/9lk0bf/ |
+| 117 | Wiz | GA-Official | `wizcli` | `brew install --cask wizcli` | Yes (shift-left) — IaC, container, secrets, SBOM, dir scan. Cloud posture admin via console/API/Terraform | https://www.wiz.io/lp/wiz-cli |
+| 118 | Workato | GA-Official | `workato` (Platform CLI) + Connector SDK CLI | `pip install workato-platform-cli` | Yes — project push/pull, recipe lifecycle, OAuth connection mgmt, API client/collection mgmt | https://docs.workato.com/en/platform-cli.html |
+| 119 | Workday | Coming GA (announced Jun 2025) | Workday Developer CLI | TBD | Project scaffolding, integration deploy (not yet broadly downloadable) | Workday DevCon 2025 |
+| 120 | Zendesk | GA-Official (Beta) | `zcli` | `npm i -g @zendesk/zcli` | App dev/packaging, theme upload, profile/login mgmt | https://developer.zendesk.com/documentation/apps/getting-started/using-zcli/ |
+| 121 | Zoom | None | — | — | REST API + MSI flags | https://developers.zoom.us/ |
+| 122 | Zscaler | Vendor-Adjacent (SDK + ZPA App Connector local) | `zscaler-sdk-python`, `zpa-api-tool`; ZPA App Connector local CLI | `pip install zscaler-sdk-python` | No general admin CLI; primary path is official Terraform provider | https://help.zscaler.com/ |
 
 ---
 
@@ -149,7 +152,7 @@ The 22 vendor directories with existing `packs/{vendor}/cli/` directories, mappe
 | azure-devops | 7 | Yes (`az devops`) | ✅ Yes (uses `az`/PowerShell + pipeline YAML) | Leave as-is |
 | bitbucket | 3 | **No first-party CLI** | ❌ No — files are pipeline YAML + git-secrets | **Relocate to `pipelines/`; remove from `cli/`** |
 | circleci | 7 | Yes (`circleci`) | ⚠️ Partial — files are `.yml` configs (CircleCI uses YAML); CLI invokes them | Acceptable; consider renaming pack type to `config/` |
-| cursor | 12 | Yes (Cursor CLI exists, beta) but packs use bash/jq on local config files | ⚠️ Partial — admin scripts, not Cursor CLI | **Relocate to `scripts/` or `config/`** (no Cursor CLI command is invoked) |
+| cursor | 12 | Yes (Cursor CLI exists, beta) but packs use bash/jq on local config files | ⚠️ Partial — admin scripts, not Cursor CLI | ✅ Done — relocated to `config/`; Admin API packs live in `api/` (2026-09-24) |
 | cyberark | 4 | CyberArk Conjur CLI exists (Vault CLI doesn't) | ❌ No — `.ini` config snippets, NOT CLI invocations + violates extension rules | **Relocate to `config/` and rename extension** |
 | databricks | 2 | Yes (`databricks`) | ✅ Yes (uses `databricks` CLI) | Leave as-is |
 | dockerhub | 6 | Yes (`docker` + Scout/Buildx) | ✅ Yes (uses `docker scout`, `docker trust`, etc.) | Leave as-is |
@@ -179,7 +182,7 @@ The 22 vendor directories with existing `packs/{vendor}/cli/` directories, mappe
 
 ### Tier 2 — Non-CLI content in cli/ directory
 3. `packs/bitbucket/cli/*` (3 files) — Bitbucket has no first-party CLI; content is Pipelines YAML + git-secrets
-4. `packs/cursor/cli/*` (12 files) — bash scripts editing local Cursor config files; no Cursor CLI invocation
+4. ~~`packs/cursor/cli/*` (12 files) — bash scripts editing local Cursor config files; no Cursor CLI invocation~~ — done: relocated to `packs/cursor/config/`, with Admin API packs in `packs/cursor/api/` (2026-09-24)
 5. `packs/okta/cli/hth-okta-7.01-sanitize-har-files.sh` — pure jq script
 6. `packs/workato/cli/hth-workato-4.03-agent-config.sh` — comments only, no executable code
 7. `packs/workato/cli/hth-workato-4.03-deploy-opa.sh` — uses `docker`, not `workato`
@@ -194,5 +197,5 @@ The 22 vendor directories with existing `packs/{vendor}/cli/` directories, mappe
 - **`gws` adoption decision:** Should we accept Google's "not officially supported" CLI and add a header disclaimer, OR wait for the announced "official" Workspace CLI?
 - **Okta direction:** With the official `okta` CLI deprecated, future Okta hardening packs should target Terraform provider or REST API curl scripts.
 - **Bitbucket/Atlassian:** Atlassian's `acli` does not currently cover Bitbucket. Watch for future expansion.
-- **Cursor:** New `cursor-agent` CLI is in beta and primarily for agent invocation, not config admin. Existing scripts that touch `settings.json`/`mcp.json` directly remain the practical hardening surface.
+- **Cursor:** New `cursor-agent` CLI is in beta and primarily for agent invocation, not config admin. The hardening surfaces are local files (`permissions.json`, `sandbox.json`, `mcp.json`, `hooks.json`, MDM `policy.json`) and the REST Admin API (`api.cursor.com`, team Admin API key).
 - **CircleCI/GitLab/GitHub `.yml` files:** These represent CI configuration consumed *by* the platform — they are not invoked as CLI commands directly. Consider whether `cli/` is the right pack-type label, or if a `pipelines/` type would be more accurate.

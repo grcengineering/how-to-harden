@@ -1,6 +1,6 @@
 # HTH GitHub Control 7.01: Splunk Detection Queries
 # Profile: L2 | NIST: AU-2, AU-6
-# https://howtoharden.com/guides/github/#71-enable-audit-log-streaming-to-siem
+# https://howtoharden.com/guides/github/#81-enable-audit-log-streaming-to-siem
 
 # HTH Guide Excerpt: begin db-splunk-unusual-member-additions
 index=github action=org.add_member

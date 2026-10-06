@@ -1,5 +1,5 @@
 title: Cloudflare WARP Client Lock Setting Disabled
-id: cf-zt-4002-warp-unlocked
+id: cac5b797-9ad9-5d66-a27a-ad1b1a99378f
 status: test
 description: |
     Detects when the WARP client lock setting is disabled, allowing users to
@@ -22,7 +22,7 @@ detection:
     selection:
         ActionType: 'UpdateDevicePolicy'
     filter_unlock:
-        ActionMetadata|contains:
+        Metadata|contains:
             - 'switch_locked'
             - 'allowed_to_leave'
     condition: selection and filter_unlock

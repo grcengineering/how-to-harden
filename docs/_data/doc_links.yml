@@ -42,11 +42,11 @@ anthropic-api:
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
 
 anthropic-claude:
-  product_docs: "https://docs.anthropic.com/"
-  api_docs: "https://docs.anthropic.com/en/api/"
+  product_docs: "https://platform.claude.com/docs/en/home"
+  api_docs: "https://platform.claude.com/docs/en/api/overview"
   hardening_docs:
     - label: "Claude Enterprise Administrator Guide"
-      url: "https://claude.com/resources/tutorials/claude-enterprise-administrator-guide"
+      url: "https://academy.claude.com/tutorials/claude-enterprise-administrator-guide"
     - label: "Tenant Restrictions (Network Control)"
       url: "https://support.claude.com/en/articles/13198485-enforce-network-level-access-control-with-tenant-restrictions"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
@@ -97,7 +97,7 @@ auth0:
 
 aws-iam-identity-center:
   product_docs: "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html"
-  api_docs: "https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html"
+  api_docs: "https://docs.aws.amazon.com/singlesignon/latest/APIReference/Welcome.html"
   hardening_docs:
     - label: "IAM Identity Center Security"
       url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/security.html"
@@ -204,7 +204,7 @@ crowdstrike:
 
 cursor:
   product_docs: "https://cursor.com/docs"
-  api_docs: ""
+  api_docs: "https://cursor.com/docs/account/teams/admin-api"
   hardening_docs:
     - label: "LLM Safety & Controls (Enterprise)"
       url: "https://cursor.com/docs/enterprise/llm-safety-and-controls"
@@ -536,7 +536,7 @@ langchain:
 klaviyo:
   product_docs: "https://help.klaviyo.com/hc/en-us"
   api_docs: "https://developers.klaviyo.com/en"
-  hardening_docs: "https://help.klaviyo.com/hc/en-us/articles/360052448451"
+  hardening_docs: "https://help.klaviyo.com/hc/en-us/articles/360052448451-How-to-keep-your-account-secure"
 
 knowbe4:
   product_docs: "https://support.knowbe4.com/hc/en-us"
@@ -568,7 +568,7 @@ launchdarkly:
 
 linear:
   product_docs: "https://linear.app/docs"
-  api_docs: "https://developers.linear.app/docs"
+  api_docs: "https://linear.app/developers"
   hardening_docs:
     - label: "Login Methods (Admin)"
       url: "https://linear.app/docs/login-methods"
@@ -584,7 +584,7 @@ looker:
 
 lovable:
   product_docs: "https://docs.lovable.dev"
-  api_docs: "https://docs.lovable.dev/features/business/scim"
+  api_docs: "https://docs.lovable.dev/api-reference/introduction"
   hardening_docs:
     - label: "Privacy & Security Settings"
       url: "https://docs.lovable.dev/features/privacy-and-security-settings"
@@ -791,8 +791,12 @@ replit:
   product_docs: "https://docs.replit.com"
   api_docs: "https://docs.replit.com/teams/admin-api"
   hardening_docs:
-    - label: "Enterprise Privacy & Governance Settings"
+    - label: "Privacy & Deployment Settings"
+      url: "https://docs.replit.com/teams/privacy-and-deployment-settings"
+    - label: "Source Control Settings"
       url: "https://docs.replit.com/teams/enterprise-privacy-settings"
+    - label: "Security Settings (Scans & Auto-Protect)"
+      url: "https://docs.replit.com/teams/security"
     - label: "Project Security Center"
       url: "https://docs.replit.com/features/security/project-security-center"
     - label: "Workspace Security Center"
@@ -885,7 +889,7 @@ snyk:
     - label: "Authentication & Access (Enterprise)"
       url: "https://docs.snyk.io/implementation-guides/enterprise-implementation-guide/configure-group-settings-and-policies/authentication-and-access"
     - label: "Service Accounts"
-      url: "https://docs.snyk.io/snyk-platform-administration/service-accounts"
+      url: "https://docs.snyk.io/platform-administration/service-accounts/service-accounts"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/snyk"
 
 splunk:

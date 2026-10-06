@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 1.02: Restrict Default Repository Permissions
 # Profile: L1 | NIST: AC-6, AC-6(1)
-# https://howtoharden.com/guides/github/#12-restrict-default-repository-permissions
+# https://howtoharden.com/guides/github/#12-restrict-base-permissions-for-organization-members
 source "$(dirname "$0")/common.sh"
 
 banner "1.02: Restrict Default Repository Permissions"

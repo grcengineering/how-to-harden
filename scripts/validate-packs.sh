@@ -226,6 +226,41 @@ TYPE_EXT = {
     "config":    {".jsonc", ".yml", ".sh"},
 }
 MUTATION_RE = re.compile(r"-X\s*(POST|PUT|PATCH|DELETE)\b")
+
+# Check 14 must also see a verb that a pack reaches through a helper. common.sh is
+# STRUCTURAL (not a pack), so a `vendor_post() { curl -X POST … }` defined there
+# and called from a pack would otherwise hide the pack's mutation from the check —
+# the exact blind spot that let packs/stripe/api/hth-stripe-3.02 create a webhook
+# endpoint with no mode declared (validate-hth-guide stripe run, 2026-09-24).
+# Only functions whose own body carries a mutation verb count, so helper naming
+# (`_post`, `_rpc`, …) never decides the answer.
+SH_FUNC_RE = re.compile(r"^\s*(?:function\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*\(\)\s*\{(.*)$")
+_helper_cache = {}
+def mutating_helpers(pack_dir):
+    """Names of shell functions in pack_dir/common.sh whose body has a mutation verb."""
+    if pack_dir in _helper_cache:
+        return _helper_cache[pack_dir]
+    names = set()
+    path = os.path.join(pack_dir, "common.sh")
+    if os.path.isfile(path):
+        cur, body, depth = None, [], 0
+        for raw in open(path, encoding="utf-8", errors="replace").read().splitlines():
+            if raw.lstrip().startswith("#"):
+                continue
+            m = SH_FUNC_RE.match(raw) if cur is None else None
+            if m:
+                cur, body = m.group(1), [m.group(2)]
+                depth = raw.count("{") - raw.count("}")
+            elif cur is not None:
+                body.append(raw)
+                depth += raw.count("{") - raw.count("}")
+            if cur is not None and depth <= 0:
+                if MUTATION_RE.search("\n".join(body)):
+                    names.add(cur)
+                cur, body = None, []
+    _helper_cache[pack_dir] = names
+    return names
+
 BEGIN_RE = re.compile(r"HTH Guide Excerpt:\s*begin\s+(\S+)\s*$")
 END_RE   = re.compile(r"HTH Guide Excerpt:\s*end\s+(\S+)\s*$")
 CONTRACT_RE = re.compile(r"HTH Pack Contract:\s*v(\d+)")
@@ -388,8 +423,14 @@ for path in all_files:
             declared = mm.group(1)
             body = "\n".join(l for l in lines if not l.strip().startswith(("#", "//", "--")))
             actually_mutates = bool(MUTATION_RE.search(body))
+            via = ""
+            if not actually_mutates and ptype in ("api", "cli", "config"):
+                for h in sorted(mutating_helpers(os.path.dirname(path))):
+                    if re.search(rf"(?<![A-Za-z0-9_]){re.escape(h)}(?![A-Za-z0-9_])", body):
+                        actually_mutates, via = True, f" (via common.sh helper {h})"
+                        break
             if declared == "read-only" and actually_mutates:
-                mode_bad.append(f"{rel}: declares mode: read-only but contains a mutation verb")
+                mode_bad.append(f"{rel}: declares mode: read-only but contains a mutation verb{via}")
     else:
         contract_missing.append(rel)
 
@@ -428,10 +469,14 @@ for ypath in sorted(glob.glob(os.path.join(data_dir, "*.yml"))):
     if unused:
         orphan_keys.append(f"{vendor}: {len(unused)} yml section(s) referenced by no include: {', '.join(sorted(unused)[:6])}")
 
+# Print EVERY item. This used to cap at 25, which made the count and the list
+# disagree ("40 files violate the type table", 25 printed) and hid whichever
+# findings sorted past the cap — including a vendor's own when it was asked for
+# by name, and from --touched, whose attribution only sees printed lines.
 def emit(name, items):
     print(f"==={name}===")
     print(len(items))
-    for i in items[:25]:
+    for i in items:
         print(f"    {i}")
 
 emit("COLLISION", collisions)
@@ -455,7 +500,10 @@ PYEOF
 section_of() {
   echo "$results" | sed -n "/===$1===/,/^===/p" | sed '$d' | tail -n +2
 }
-count_of() { section_of "$1" | head -1; }
+# `sed -n 1p` rather than `head -1`: head exits after one line, and under
+# `set -o pipefail` the SIGPIPE it leaves upstream (exit 141) kills the script
+# as soon as a section is longer than the pipe buffer (CONTRACT is ~1000 lines).
+count_of() { section_of "$1" | sed -n 1p; }
 body_of()  { section_of "$1" | tail -n +2; }
 
 report() { # report <SECTION> <label> <fail|warn>

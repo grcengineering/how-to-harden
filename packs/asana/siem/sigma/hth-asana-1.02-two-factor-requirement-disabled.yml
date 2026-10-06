@@ -1,0 +1,52 @@
+# HTH Pack Contract: v1
+#   control: asana-1.2
+#   guide:   https://howtoharden.com/guides/asana/#12-enforce-two-factor-authentication
+#   profile: L1
+#   mode:    read-only
+#   requires: audit-log ingestion from GET /workspaces/{workspace_gid}/audit_log_events (Enterprise+ or Legacy Enterprise)
+# Frameworks: CIS Controls 6.5 | NIST 800-53 IA-2(1)
+# Feed: packs/asana/api/hth-asana-4.01-export-audit-log-events.sh (NDJSON, one AuditLogEvent per line)
+title: Asana Two-Factor Authentication Requirement Disabled
+id: 32462c99-0eb5-4079-a755-7d9b61e5ef91
+status: experimental
+description: |
+    Fires when the workspace-wide two-factor requirement is switched off, or
+    when an individual user's two-factor authentication is disabled. The first
+    reopens password-only login for every member not behind SSO; the second is
+    the per-account version of the same regression and a common step after an
+    account takeover. Asana has no API that reads or sets the requirement, so
+    this event is the machine-readable evidence that it changed.
+    Event types are taken verbatim from Asana's supported audit log events
+    (Admin settings and User updates tables).
+    This corresponds to HTH Asana control 1.2 (Enforce Two-Factor Authentication, L1).
+references:
+    - https://howtoharden.com/guides/asana/#12-enforce-two-factor-authentication
+    - https://developers.asana.com/docs/audit-log-events
+author: How to Harden
+date: 2026/09/24
+tags:
+    - attack.defense_evasion
+    - attack.t1556.006
+    - attack.persistence
+logsource:
+    product: asana
+    service: audit_log
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        event_type:
+            - 'workspace_require_two_factor_auth_disabled'
+            - 'user_two_factor_auth_disabled'
+    condition: selection
+fields:
+    - created_at
+    - event_type
+    - actor.gid
+    - actor.name
+    - resource.gid
+    - context.client_ip_address
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - A user re-enrolling a lost second factor, which disables then re-enables it; expect a matching user_two_factor_auth_enabled shortly after
+    - Moving the organization to IdP-enforced MFA under SAML, recorded as a planned change
+level: high

@@ -9,13 +9,19 @@
 #            Snyk "ToxicSkills" study (Feb 2026)
 #
 # Usage: ./hth-anthropic-claude-7.07-prompt-injection-defense.sh [directory]
-# Exit code 0 = clean, 1 = suspicious patterns found
+# Exit code 0 = clean, 1 = suspicious patterns found, 2 = scan target missing
 
 # HTH Guide Excerpt: begin scan-rules-files
 set -euo pipefail
 
 TARGET_DIR="${1:-.}"
 FINDINGS=0
+
+# A typo'd path must not read as a clean scan
+if [ ! -d "$TARGET_DIR" ]; then
+  echo "ERROR: scan target is not a directory: $TARGET_DIR" >&2
+  exit 2
+fi
 
 echo "=== Claude Code Rules File Security Scanner ==="
 echo "Scanning: ${TARGET_DIR}"
@@ -34,11 +40,23 @@ SUSPICIOUS_PATTERNS=(
   'base64\s+--decode'
   'eval\s*\('
   'exec\s*\('
-  # Invisible Unicode characters used to hide instructions
-  '\xe2\x80\x8b'   # zero-width space
-  '\xe2\x80\x8c'   # zero-width non-joiner
-  '\xe2\x80\x8d'   # zero-width joiner
-  '\xef\xbb\xbf'   # BOM in middle of file
+  # Invisible Unicode characters used to hide instructions. $'...' (ANSI-C
+  # quoting) turns each escape into the raw UTF-8 bytes; grep treats a plain
+  # '\xe2...' string as literal text and would never match.
+  $'\xe2\x80\x8b'   # zero-width space (U+200B)
+  $'\xe2\x80\x8c'   # zero-width non-joiner (U+200C)
+  $'\xe2\x80\x8d'   # zero-width joiner (U+200D)
+  $'\xef\xbb\xbf'   # BOM / zero-width no-break space (U+FEFF)
+  # Bidirectional controls that reorder how text displays (Trojan Source)
+  $'\xe2\x80\xaa'   # left-to-right embedding (U+202A)
+  $'\xe2\x80\xab'   # right-to-left embedding (U+202B)
+  $'\xe2\x80\xac'   # pop directional formatting (U+202C)
+  $'\xe2\x80\xad'   # left-to-right override (U+202D)
+  $'\xe2\x80\xae'   # right-to-left override (U+202E)
+  $'\xe2\x81\xa6'   # left-to-right isolate (U+2066)
+  $'\xe2\x81\xa7'   # right-to-left isolate (U+2067)
+  $'\xe2\x81\xa8'   # first strong isolate (U+2068)
+  $'\xe2\x81\xa9'   # pop directional isolate (U+2069)
   # Instruction override attempts
   'ignore\s+(all\s+)?previous\s+instructions'
   'disregard\s+(all\s+)?prior'
@@ -82,10 +100,12 @@ echo ""
 for file in "${SCAN_FILES[@]}"; do
   echo "--- Scanning: ${file} ---"
   for pattern in "${SUSPICIOUS_PATTERNS[@]}"; do
-    matches=$(grep -cEi "$pattern" "$file" 2>/dev/null || true)
-    if [ "$matches" -gt 0 ]; then
-      echo "  [ALERT] Pattern matched ($matches occurrences): $pattern"
-      grep -nEi "$pattern" "$file" 2>/dev/null | head -3 | while read -r line; do
+    # LC_ALL=C makes grep match raw bytes, so multibyte patterns match in any locale
+    matches=$(LC_ALL=C grep -cEi "$pattern" "$file" 2>/dev/null || true)
+    if [ "${matches:-0}" -gt 0 ]; then
+      # cat -v renders invisible bytes visibly (e.g. U+200B prints as M-bM-^@M-^K)
+      echo "  [ALERT] Pattern matched ($matches occurrences): $(printf '%s' "$pattern" | LC_ALL=C cat -v)"
+      { LC_ALL=C grep -nEi "$pattern" "$file" 2>/dev/null || true; } | head -3 | LC_ALL=C cat -v | while read -r line; do
         echo "    $line"
       done
       FINDINGS=$((FINDINGS + matches))

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 1.06: Restrict Org Member Repository Deletion
 # Profile: L3 | NIST: AC-6, MP-6
-# https://howtoharden.com/guides/github/#16-restrict-org-member-repository-deletion
+# https://howtoharden.com/guides/github/#12-restrict-base-permissions-for-organization-members
 source "$(dirname "$0")/common.sh"
 
 banner "1.06: Restrict Org Member Repository Deletion"

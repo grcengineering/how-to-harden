@@ -16,6 +16,7 @@ resource "okta_app_oauth" "service_automation" {
   pkce_required              = false
 
   jwks {
+    kid = var.service_app_public_key_kid
     kty = "RSA"
     e   = var.service_app_public_key_e
     n   = var.service_app_public_key_n

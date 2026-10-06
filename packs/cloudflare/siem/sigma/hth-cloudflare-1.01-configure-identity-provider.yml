@@ -1,5 +1,5 @@
 title: Cloudflare Zero Trust Identity Provider Deleted or Modified
-id: cf-zt-1001-idp-changed
+id: 7fc89fbc-b7cd-51ee-ad35-08bdc97d63dd
 status: test
 description: |
     Detects when an identity provider configuration is deleted or modified in

@@ -1,6 +1,9 @@
 # HTH GitHub Control 3.14: Workflow Permission Examples
 # Profile: L1 | SLSA: Build L2
 # https://howtoharden.com/guides/github/#32-use-least-privilege-workflow-permissions
+#
+# One valid workflow: the least-privilege CI job, then one job per common
+# permission combination. Copy the permissions block your job needs.
 
 # HTH Guide Excerpt: begin cli-workflow-explicit-permissions
 # .github/workflows/ci.yml
@@ -9,40 +12,76 @@ name: CI
 
 on: [push, pull_request]
 
-permissions:
-  contents: read       # Read code
-  pull-requests: write # Comment on PRs (if needed)
-  # Omit permissions not needed
+# Nothing at the workflow level; each job asks for exactly what it needs
+permissions: {}
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read        # Read code
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
       - run: npm test
 # HTH Guide Excerpt: end cli-workflow-explicit-permissions
 
-# HTH Guide Excerpt: begin cli-permissions-read-only
-permissions:
-  contents: read
-# HTH Guide Excerpt: end cli-permissions-read-only
+  pr-feedback:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    # HTH Guide Excerpt: begin cli-permissions-build-test-pr
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+    # HTH Guide Excerpt: end cli-permissions-build-test-pr
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr comment "$PR_URL" --body "Build and tests passed."
 
-# HTH Guide Excerpt: begin cli-permissions-build-test-pr
-permissions:
-  contents: read
-  pull-requests: write
-  statuses: write
-# HTH Guide Excerpt: end cli-permissions-build-test-pr
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    # HTH Guide Excerpt: begin cli-permissions-release-publish
+    permissions:
+      contents: write      # Create releases
+      packages: write      # Publish to GitHub Packages
+      id-token: write      # OIDC token for signing
+    # HTH Guide Excerpt: end cli-permissions-release-publish
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" --generate-notes
 
-# HTH Guide Excerpt: begin cli-permissions-release-publish
-permissions:
-  contents: write      # Create releases
-  packages: write      # Publish to GitHub Packages
-  id-token: write      # OIDC token for signing
-# HTH Guide Excerpt: end cli-permissions-release-publish
+  codeql:
+    runs-on: ubuntu-latest
+    # HTH Guide Excerpt: begin cli-permissions-security-scanning
+    permissions:
+      contents: read
+      security-events: write  # Upload SARIF results
+    # HTH Guide Excerpt: end cli-permissions-security-scanning
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2  # v4.38.2
+        with:
+          languages: javascript
+      - uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2  # v4.38.2
 
-# HTH Guide Excerpt: begin cli-permissions-security-scanning
-permissions:
-  contents: read
-  security-events: write  # Upload SARIF results
-# HTH Guide Excerpt: end cli-permissions-security-scanning
+  read-only-audit:
+    runs-on: ubuntu-latest
+    # HTH Guide Excerpt: begin cli-permissions-read-only
+    permissions:
+      contents: read
+    # HTH Guide Excerpt: end cli-permissions-read-only
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - run: npm audit --audit-level=high

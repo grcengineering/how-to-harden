@@ -4,6 +4,7 @@
 # https://howtoharden.com/guides/gitlab/#21-protect-cicd-variables
 #
 # Required: PROJECT_ID environment variable (or pass as $1)
+# Exit codes: 0 compliant | 1 finding | 2 precondition (an API call failed, so nothing was audited)
 source "$(dirname "$0")/common.sh"
 
 PROJECT_ID="${PROJECT_ID:-${1:-}}"
@@ -15,26 +16,35 @@ should_apply 1 || { increment_skipped; summary; exit 0; }
 info "2.1 Auditing CI/CD variables for project ${PROJECT_ID}..."
 
 # HTH Guide Excerpt: begin api-audit-cicd-variables
-# Retrieve all project-level CI/CD variables and check protection settings
-VARIABLES=$(gl_get "/projects/${PROJECT_ID}/variables" 2>/dev/null) || {
-  fail "2.1 Failed to retrieve CI/CD variables -- check PROJECT_ID and token permissions"
-  increment_failed
-  summary
-  exit 0
-}
+# Retrieve all project-level CI/CD variables and check protection settings.
+# The endpoint is paginated (20 per page by default), so walk every page --
+# auditing only the first page would report a partial scan as a clean one.
+VARIABLES="[]"
+PAGE=1
+while true; do
+  RESPONSE=$(gl_get "/projects/${PROJECT_ID}/variables?per_page=100&page=${PAGE}") || {
+    fail "2.1 Failed to retrieve CI/CD variables (page ${PAGE}) -- check PROJECT_ID and token permissions (Maintainer role)"
+    increment_failed; summary; exit 2
+  }
+  COUNT=$(printf '%s' "${RESPONSE}" | jq 'length') || {
+    fail "2.1 Unparseable response on page ${PAGE}"
+    increment_failed; summary; exit 2
+  }
+  [ "${COUNT}" -eq 0 ] && break
+  VARIABLES=$(printf '%s %s' "${VARIABLES}" "${RESPONSE}" | jq -s 'add')
+  [ "${COUNT}" -lt 100 ] && break
+  PAGE=$((PAGE + 1))
+done
 
-VAR_COUNT=$(echo "${VARIABLES}" | jq 'length' 2>/dev/null || echo "0")
+VAR_COUNT=$(printf '%s' "${VARIABLES}" | jq 'length')
 info "2.1 Found ${VAR_COUNT} CI/CD variable(s)"
 
-UNPROTECTED=0
-UNMASKED=0
-RAW_EXPOSED=0
-
-echo "${VARIABLES}" | jq -c '.[]' 2>/dev/null | while IFS= read -r var; do
-  KEY=$(echo "${var}" | jq -r '.key')
-  PROTECTED=$(echo "${var}" | jq -r '.protected')
-  MASKED=$(echo "${var}" | jq -r '.masked')
-  RAW=$(echo "${var}" | jq -r '.raw // false')
+printf '%s' "${VARIABLES}" | jq -c '.[]' | while IFS= read -r var; do
+  KEY=$(printf '%s' "${var}" | jq -r '.key')
+  PROTECTED=$(printf '%s' "${var}" | jq -r '.protected')
+  MASKED=$(printf '%s' "${var}" | jq -r '.masked')
+  # raw=true means "Expand variable reference" is off, the recommended state
+  RAW=$(printf '%s' "${var}" | jq -r '.raw')
 
   ISSUES=""
   if [ "${PROTECTED}" != "true" ]; then
@@ -43,8 +53,8 @@ echo "${VARIABLES}" | jq -c '.[]' 2>/dev/null | while IFS= read -r var; do
   if [ "${MASKED}" != "true" ]; then
     ISSUES="${ISSUES} unmasked"
   fi
-  if [ "${RAW}" == "true" ]; then
-    ISSUES="${ISSUES} raw-exposed"
+  if [ "${RAW}" == "false" ]; then
+    ISSUES="${ISSUES} expands-references"
   fi
 
   if [ -n "${ISSUES}" ]; then
@@ -55,19 +65,20 @@ echo "${VARIABLES}" | jq -c '.[]' 2>/dev/null | while IFS= read -r var; do
 done
 
 # Summary counts (re-parse for totals since while-loop runs in subshell)
-UNPROTECTED=$(echo "${VARIABLES}" | jq '[.[] | select(.protected != true)] | length' 2>/dev/null || echo "0")
-UNMASKED=$(echo "${VARIABLES}" | jq '[.[] | select(.masked != true)] | length' 2>/dev/null || echo "0")
-RAW_EXPOSED=$(echo "${VARIABLES}" | jq '[.[] | select(.raw == true)] | length' 2>/dev/null || echo "0")
+UNPROTECTED=$(printf '%s' "${VARIABLES}" | jq '[.[] | select(.protected != true)] | length')
+UNMASKED=$(printf '%s' "${VARIABLES}" | jq '[.[] | select(.masked != true)] | length')
+EXPANDED=$(printf '%s' "${VARIABLES}" | jq '[.[] | select(.raw == false)] | length')
 
-info "2.1 Unprotected: ${UNPROTECTED}, Unmasked: ${UNMASKED}, Raw-exposed: ${RAW_EXPOSED}"
+info "2.1 Unprotected: ${UNPROTECTED}, Unmasked: ${UNMASKED}, Expands references: ${EXPANDED}"
 # HTH Guide Excerpt: end api-audit-cicd-variables
 
 if [ "${UNPROTECTED}" -gt 0 ] || [ "${UNMASKED}" -gt 0 ]; then
   fail "2.1 Found CI/CD variables without protection or masking -- update via Settings > CI/CD > Variables"
   increment_failed
 else
-  pass "2.1 All CI/CD variables are protected and masked"
+  pass "2.1 All ${VAR_COUNT} CI/CD variable(s) are protected and masked"
   increment_applied
 fi
 
 summary
+[ "${CONTROLS_FAILED}" -eq 0 ] || exit 1

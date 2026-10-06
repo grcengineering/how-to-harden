@@ -1,0 +1,27 @@
+# HTH GitHub Control 6.7: Enforce Dependency Cool-Down Periods (Dependabot)
+# Profile: L2 | NIST: SA-12, SI-7
+# https://howtoharden.com/guides/github/#67-enforce-dependency-cool-down-periods
+# Deploy: Copy to .github/dependabot.yml in your repository
+#
+# Native Dependabot cool-down. Security updates are exempt and open immediately.
+
+# HTH Guide Excerpt: begin config-dependabot-cooldown
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+      semver-minor-days: 3
+      semver-patch-days: 3
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 3
+# HTH Guide Excerpt: end config-dependabot-cooldown

@@ -4,13 +4,17 @@
 //
 // Renovate configuration enforcing cool-down (minimumReleaseAge) so a
 // freshly published, potentially hijacked package version cannot enter
-// the build the moment it appears. Security patches bypass the delay.
+// the build the moment it appears. Vulnerability-fix PRs bypass the delay via
+// vulnerabilityAlerts (Renovate's default, stated explicitly here).
 
 // HTH Guide Excerpt: begin config-renovate-cooldown
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "minimumReleaseAge": "3 days",
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": null
+  },
   "packageRules": [
     {
       "description": "Production dependencies: 3-day cool-down",
@@ -21,13 +25,6 @@
       "description": "Dev dependencies: 1-day cool-down",
       "matchDepTypes": ["devDependencies"],
       "minimumReleaseAge": "1 day"
-    },
-    {
-      "description": "Security patches: no cool-down",
-      "matchUpdateTypes": ["patch"],
-      "matchDepTypes": ["dependencies"],
-      "isVulnerabilityAlert": true,
-      "minimumReleaseAge": "0 days"
     },
     {
       "description": "GitHub Actions: 3-day cool-down",

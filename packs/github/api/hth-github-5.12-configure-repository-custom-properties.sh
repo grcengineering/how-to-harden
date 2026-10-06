@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# HTH GitHub Control 5.10: Configure Repository Custom Properties
+# HTH GitHub Control 5.12: Configure Repository Custom Properties
 # Profile: L2 | NIST: RA-2, SC-16, CM-8
 # https://howtoharden.com/guides/github/#56-configure-repository-custom-properties-for-security-classification
 source "$(dirname "$0")/common.sh"
 
-banner "5.10: Configure Repository Custom Properties"
+banner "5.12: Configure Repository Custom Properties"
 should_apply 2 || { increment_skipped; summary; exit 0; }
 
-info "5.10 Checking custom properties in ${GITHUB_ORG}..."
+info "5.12 Checking custom properties in ${GITHUB_ORG}..."
 
 PROPERTIES=$(gh_get "/orgs/${GITHUB_ORG}/properties/schema") || {
-  fail "5.10 Unable to retrieve custom properties schema"
+  fail "5.12 Unable to retrieve custom properties schema"
   increment_failed
   summary
   exit 0
@@ -18,16 +18,17 @@ PROPERTIES=$(gh_get "/orgs/${GITHUB_ORG}/properties/schema") || {
 
 PROP_COUNT=$(echo "${PROPERTIES}" | jq '. | length')
 if [ "${PROP_COUNT}" -gt "0" ]; then
-  pass "5.10 Custom properties defined (${PROP_COUNT} found)"
+  pass "5.12 Custom properties defined (${PROP_COUNT} found)"
   echo "${PROPERTIES}" | jq '.[] | {property_name, value_type, required}'
 fi
 
 # HTH Guide Excerpt: begin api-create-custom-properties
 # Create security classification custom properties for the organization
-gh api --method POST \
+# PATCH creates or updates; the body wraps the definitions in {"properties": [...]}
+gh api --method PATCH \
   "/orgs/${GITHUB_ORG}/properties/schema" \
   --input - <<'JSON'
-[
+{"properties": [
   {
     "property_name": "security-tier",
     "value_type": "single_select",
@@ -51,13 +52,13 @@ gh api --method POST \
     "description": "Applicable compliance frameworks",
     "allowed_values": ["soc2", "pci-dss", "hipaa", "fedramp", "none"]
   }
-]
+]}
 JSON
 # HTH Guide Excerpt: end api-create-custom-properties
 
 # HTH Guide Excerpt: begin api-set-repo-properties
 # Set custom property values on a specific repository
-REPO="${GITHUB_REPO:-how-to-harden}"
+REPO="${GITHUB_REPO:?Set GITHUB_REPO (repository to classify)}"
 gh api --method PATCH \
   "/orgs/${GITHUB_ORG}/properties/values" \
   --input - <<JSON

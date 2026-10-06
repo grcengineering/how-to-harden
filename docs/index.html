@@ -4,9 +4,22 @@ title: Home
 ---
 
 {% assign pack_count = 0 %}
+{% assign ai_val_guides = 0 %}
+{% assign ni_val_guides = 0 %}
+{% assign ai_val_packs = 0 %}
+{% assign ni_val_packs = 0 %}
 {% for guide in site.guides %}
   {% assign pd = site.data.packs[guide.slug] %}
   {% if pd %}{% assign pack_count = pack_count | plus: 1 %}{% endif %}
+  {% include status-set.html guide=guide %}
+  {% if statuses contains "ai-validated" %}{% assign ai_val_guides = ai_val_guides | plus: 1 %}{% endif %}
+  {% if statuses contains "ni-validated" %}{% assign ni_val_guides = ni_val_guides | plus: 1 %}{% endif %}
+  {% comment %} Validated pack FILES: pack-code.html writes one hth-pack-mark comment
+  per validated pack type, so counting them in the rendered guide counts files. {% endcomment %}
+  {% assign n_ai = guide.content | split: "<!--hth-pack-mark:ai-validated-->" | size | minus: 1 | at_least: 0 %}
+  {% assign n_ni = guide.content | split: "<!--hth-pack-mark:ni-validated-->" | size | minus: 1 | at_least: 0 %}
+  {% assign ai_val_packs = ai_val_packs | plus: n_ai %}
+  {% assign ni_val_packs = ni_val_packs | plus: n_ni %}
 {% endfor %}
 
 <section class="hero">
@@ -16,20 +29,33 @@ title: Home
   </div>
 </section>
 
-<section class="terminal-demo" id="terminal-demo">
+<section class="harden-visual" id="harden-visual" aria-label="Animation: third-party SaaS integrations are hardened one by one until supply chain attacks are blocked">
   <div class="container">
-    <h2 class="demo-heading">See it in action</h2>
-    <p class="demo-subheading"><a href="https://github.com/grcengineering/ocean" class="ocean-link"><code>ocean</code></a> is the CLI companion to How to Harden — scan, assess, and remediate any platform that has an HTH guide.</p>
-    <div class="terminal-window">
-      <div class="terminal-titlebar">
-        <div class="terminal-dots">
-          <span class="terminal-dot dot-close"></span>
-          <span class="terminal-dot dot-minimize"></span>
-          <span class="terminal-dot dot-maximize"></span>
-        </div>
-        <span class="terminal-title">ocean &mdash; GitHub Security Scan</span>
+    <div class="hv-stage">
+      <svg class="hv-svg" id="hv-svg" viewBox="0 0 800 440" role="img" aria-labelledby="hv-title">
+        <title id="hv-title">Your organization connected to eight SaaS vendors; each integration is hardened in turn and inbound supply chain attacks are blocked</title>
+        <defs>
+          <radialGradient id="hv-core-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" class="hv-glow-stop-a"/>
+            <stop offset="100%" class="hv-glow-stop-b"/>
+          </radialGradient>
+        </defs>
+        <g class="hv-orbit"><ellipse cx="400" cy="220" rx="320" ry="168"/></g>
+        <g id="hv-links"></g>
+        <g id="hv-packets"></g>
+        <g id="hv-nodes"></g>
+        <g class="hv-core" id="hv-core">
+          <circle class="hv-core-glow" cx="400" cy="220" r="78" fill="url(#hv-core-glow)"/>
+          <path class="hv-core-shield" d="M400 172 L440 186 V220 C440 246 422 264 400 272 C378 264 360 246 360 220 V186 Z"/>
+          <path class="hv-core-check" d="M384 221 L396 233 L418 208"/>
+          <text class="hv-core-label" x="400" y="300">Your organization</text>
+        </g>
+      </svg>
+      <div class="hv-status" aria-live="off">
+        <span class="hv-status-dot" id="hv-status-dot"></span>
+        <span id="hv-status-text">Mapping third-party integrations&hellip;</span>
+        <span class="hv-status-count" id="hv-status-count">0/8 hardened</span>
       </div>
-      <div class="terminal-body" id="terminal-body"></div>
     </div>
   </div>
 </section>
@@ -37,18 +63,34 @@ title: Home
 <section class="hero-stats-section">
   <div class="container">
     <div class="hero-stats">
-      <div class="stat">
-        <div class="stat-value">{{ site.guides.size }}</div>
-        <div class="stat-label">Hardening Guides</div>
-      </div>
+      <button type="button" class="stat stat-link" data-quick="reset" title="Show all guides">
+        <span class="stat-value">{{ site.guides.size }}</span>
+        <span class="stat-label">Hardening Guides</span>
+      </button>
       <div class="stat">
         <div class="stat-value">7</div>
         <div class="stat-label">SaaS Categories</div>
       </div>
-      <div class="stat">
-        <div class="stat-value">{{ pack_count }}</div>
-        <div class="stat-label">Code Packs</div>
-      </div>
+      <button type="button" class="stat stat-link" data-quick="packs:has-pack" title="Show guides with Code Packs">
+        <span class="stat-value">{{ pack_count }}</span>
+        <span class="stat-label">Code Packs</span>
+      </button>
+      <button type="button" class="stat stat-link stat-ai" data-quick="status:ai-validated" title="Show AI Validated guides">
+        <span class="stat-value">{{ ai_val_guides }}</span>
+        <span class="stat-label">AI Validated Guides</span>
+      </button>
+      <button type="button" class="stat stat-link stat-ni" data-quick="status:ni-validated" title="Show Human Validated guides">
+        <span class="stat-value">{{ ni_val_guides }}</span>
+        <span class="stat-label">Human Validated Guides</span>
+      </button>
+      <button type="button" class="stat stat-link stat-ai" data-quick="packs:ai-validated-pack" title="Show guides with AI Validated Code Pack files">
+        <span class="stat-value">{{ ai_val_packs }}</span>
+        <span class="stat-label">AI Validated Code Pack Files</span>
+      </button>
+      <button type="button" class="stat stat-link stat-ni" data-quick="packs:ni-validated-pack" title="Show guides with Human Validated Code Pack files">
+        <span class="stat-value">{{ ni_val_packs }}</span>
+        <span class="stat-label">Human Validated Code Pack Files</span>
+      </button>
     </div>
   </div>
 </section>
@@ -121,6 +163,8 @@ title: Home
         <div class="filter-dropdown-menu">
           <label class="filter-option"><input type="radio" name="packs" value="all" checked> All Guides</label>
           <label class="filter-option"><input type="radio" name="packs" value="has-pack"> With Code Pack</label>
+          <label class="filter-option"><input type="radio" name="packs" value="ai-validated-pack"> <span class="dot dot-validated"></span> AI Validated Packs</label>
+          <label class="filter-option"><input type="radio" name="packs" value="ni-validated-pack"> <span class="dot dot-validated"></span> Human Validated Packs</label>
         </div>
       </div>
     </div>
@@ -166,7 +210,10 @@ title: Home
       {% assign has_pack = false %}
       {% assign pack_data = site.data.packs[guide.slug] %}
       {% if pack_data %}{% assign has_pack = true %}{% endif %}
-      <div class="guide-card" data-category="{{ data_cat }}" data-name="{{ guide.slug }}" data-status="{{ status_attr }}" data-has-pack="{{ has_pack }}">
+      {% assign pack_status = "" %}
+      {% if guide.content contains "<!--hth-pack-mark:ai-validated-->" %}{% assign pack_status = pack_status | append: " ai-validated-pack" %}{% endif %}
+      {% if guide.content contains "<!--hth-pack-mark:ni-validated-->" %}{% assign pack_status = pack_status | append: " ni-validated-pack" %}{% endif %}
+      <div class="guide-card" data-category="{{ data_cat }}" data-name="{{ guide.slug }}" data-status="{{ status_attr }}" data-has-pack="{{ has_pack }}" data-pack-status="{{ pack_status | strip }}">
         <div class="guide-card-header">
           <h3><a href="{{ guide.url | relative_url }}">{{ guide.vendor }}</a></h3>
           {% comment %} Every status the guide holds, so a card that says both
@@ -202,7 +249,9 @@ title: Home
         {% assign p0 = pg.items | first %}
         {% assign p_has_pack = false %}
         {% assign p_names = "" %}
-        {% for g in pg.items %}{% if site.data.packs[g.slug] %}{% assign p_has_pack = true %}{% endif %}{% assign p_names = p_names | append: " " | append: g.slug %}{% endfor %}
+        {% assign p_pack_status = "" %}
+        {% for g in pg.items %}{% if site.data.packs[g.slug] %}{% assign p_has_pack = true %}{% endif %}{% assign p_names = p_names | append: " " | append: g.slug %}{% if g.content contains "<!--hth-pack-mark:ai-validated-->" %}{% assign p_pack_status = p_pack_status | append: " ai-validated-pack" %}{% endif %}{% if g.content contains "<!--hth-pack-mark:ni-validated-->" %}{% assign p_pack_status = p_pack_status | append: " ni-validated-pack" %}{% endif %}{% endfor %}
+        {% assign p_pack_attr = p_pack_status | strip | split: " " | uniq | join: " " %}
         {% comment %} Platform card categories are the UNION of every member
         guide's category (hub + products), slugified with the same chain the
         standalone cards use. Deriving from the hub alone (or hardcoding
@@ -233,7 +282,7 @@ title: Home
           {% assign p_status_list = p_status_list | append: " " | append: statuses | join: " " %}
         {% endfor %}
         {% assign p_statuses = p_status_list | strip | split: " " | uniq | sort %}
-        <div class="guide-card platform-card" data-category="{{ p_cats | join: ' ' }}" data-name="{{ p_names }}" data-status="{{ p_statuses | join: ' ' }}" data-has-pack="{{ p_has_pack }}">
+        <div class="guide-card platform-card" data-category="{{ p_cats | join: ' ' }}" data-name="{{ p_names }}" data-status="{{ p_statuses | join: ' ' }}" data-has-pack="{{ p_has_pack }}" data-pack-status="{{ p_pack_attr }}">
           <div class="guide-card-header platform-card-header">
             <h3>{{ p0.platform }}</h3>
             <span class="platform-count">{{ pg.items.size }} guides
@@ -266,6 +315,24 @@ title: Home
         </div>
       {% endfor %}
 
+    </div>
+  </div>
+</section>
+
+<section class="terminal-demo" id="terminal-demo">
+  <div class="container">
+    <h2 class="demo-heading">See it in action</h2>
+    <p class="demo-subheading"><a href="https://github.com/grcengineering/ocean" class="ocean-link"><code>ocean</code></a> is the CLI companion to How to Harden — scan, assess, and remediate any platform that has an HTH guide.</p>
+    <div class="terminal-window">
+      <div class="terminal-titlebar">
+        <div class="terminal-dots">
+          <span class="terminal-dot dot-close"></span>
+          <span class="terminal-dot dot-minimize"></span>
+          <span class="terminal-dot dot-maximize"></span>
+        </div>
+        <span class="terminal-title">ocean &mdash; GitHub Security Scan</span>
+      </div>
+      <div class="terminal-body" id="terminal-body"></div>
     </div>
   </div>
 </section>
@@ -415,7 +482,9 @@ document.addEventListener('DOMContentLoaded', function() {
       // their member guides' categories), so match on tokens, not the whole string.
       const matchesCategory = activeCategory === 'all' || category.split(' ').indexOf(activeCategory) !== -1;
       const matchesReview = activeStatus === 'all' || statuses.indexOf(activeStatus) !== -1;
-      const matchesPack = activePack === 'all' || hasPack === 'true';
+      const packStatuses = (card.dataset.packStatus || '').split(' ').filter(Boolean);
+      const matchesPack = activePack === 'all'
+        || (activePack === 'has-pack' ? hasPack === 'true' : packStatuses.indexOf(activePack) !== -1);
 
       card.style.display = matchesSearch && matchesCategory && matchesReview && matchesPack ? '' : 'none';
     });
@@ -515,9 +584,184 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  // Quick filters: each clickable stat sets one dropdown and resets the others.
+  function selectRadio(name, value) {
+    var radio = document.querySelector('input[type="radio"][name="' + name + '"][value="' + value + '"]');
+    if (radio && !radio.checked) {
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+  document.querySelectorAll('.stat-link').forEach(function(stat) {
+    stat.addEventListener('click', function() {
+      var q = this.dataset.quick.split(':');
+      ['category', 'status', 'packs'].forEach(function(n) { if (n !== q[0]) selectRadio(n, 'all'); });
+      if (q[0] !== 'reset') selectRadio(q[0], q[1]);
+      if (searchInput.value) { searchInput.value = ''; filterGuides(); }
+      document.querySelectorAll('.stat-link').forEach(function(s) { s.classList.toggle('is-active', s === stat && q[0] !== 'reset'); });
+      var guidesEl = document.getElementById('guides');
+      if (guidesEl) guidesEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
   // Sort A-Z on initial load
   sortGuides();
 });
+
+// ─── Hardening visual (hero) ─────────────────────────────────────────────────
+// Your org at the centre, eight third-party SaaS integrations around it. While an
+// integration is exposed, supply chain attacks (red packets) ride its link into the
+// org; as each vendor is hardened a shield ring closes around it and its attacks are
+// stopped on the link. Runs only while on screen and the tab is visible; reduced
+// motion shows the hardened end state, still.
+(function() {
+  var svg = document.getElementById('hv-svg');
+  if (!svg) return;
+  var NS = 'http://www.w3.org/2000/svg';
+  var VENDORS = [
+    {% assign hv_slugs = "okta,github,slack,snowflake,crowdstrike,anthropic-claude,salesforce,workday" | split: "," %}
+    {% assign hv_names = "Okta,GitHub,Slack,Snowflake,CrowdStrike,Claude,Salesforce,Workday" | split: "," %}
+    {% assign hv_cats = "identity,devops,productivity,data,security,ai,marketing,hr" | split: "," %}
+    {% assign hv_labels = "Identity,DevOps,Productivity,Data,Security,AI,Marketing,HR/Finance" | split: "," %}
+    {% for s in hv_slugs %}{% assign hv_g = site.guides | where: "slug", s | first %}
+    { name: {{ hv_names[forloop.index0] | jsonify }}, cat: {{ hv_cats[forloop.index0] | jsonify }}, label: {{ hv_labels[forloop.index0] | jsonify }}, url: {{ hv_g.url | relative_url | jsonify }} }{% unless forloop.last %},{% endunless %}{% endfor %}
+  ];
+  var CX = 400, CY = 220, RX = 320, RY = 168, NODE_R = 27, RING_R = 37;
+  var linksG = document.getElementById('hv-links');
+  var packetsG = document.getElementById('hv-packets');
+  var nodesG = document.getElementById('hv-nodes');
+  var core = document.getElementById('hv-core');
+  var statusText = document.getElementById('hv-status-text');
+  var statusCount = document.getElementById('hv-status-count');
+  var statusDot = document.getElementById('hv-status-dot');
+  function el(name, attrs, parent) {
+    var e = document.createElementNS(NS, name);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  var ringLen = 2 * Math.PI * RING_R;
+  var nodes = VENDORS.map(function(v, i) {
+    var a = -Math.PI / 2 + i * (2 * Math.PI / VENDORS.length);
+    var x = CX + RX * Math.cos(a), y = CY + RY * Math.sin(a);
+    var link = el('line', { x1: x, y1: y, x2: CX, y2: CY, 'class': 'hv-link' }, linksG);
+    var g = el('a', { href: v.url, 'class': 'hv-node hv-cat-' + v.cat, 'aria-label': v.name + ' hardening guide' }, nodesG);
+    el('circle', { cx: x, cy: y, r: RING_R, 'class': 'hv-ring', 'stroke-dasharray': ringLen, 'stroke-dashoffset': ringLen,
+      transform: 'rotate(-90 ' + x + ' ' + y + ')' }, g);
+    el('circle', { cx: x, cy: y, r: NODE_R, 'class': 'hv-node-body' }, g);
+    var initials = el('text', { x: x, y: y + 5, 'class': 'hv-node-initial' }, g);
+    initials.textContent = v.name.charAt(0);
+    var below = y >= CY;
+    var name = el('text', { x: x, y: below ? y + RING_R + 18 : y - RING_R - 22, 'class': 'hv-node-name' }, g);
+    name.textContent = v.name;
+    var cat = el('text', { x: x, y: below ? y + RING_R + 32 : y - RING_R - 8, 'class': 'hv-node-cat' }, g);
+    cat.textContent = v.label;
+    var badge = el('g', { 'class': 'hv-badge', transform: 'translate(' + (x + 20) + ' ' + (y - 20) + ')' }, g);
+    el('circle', { r: 9, 'class': 'hv-badge-bg' }, badge);
+    el('path', { d: 'M-4 0 L-1 3 L4 -3', 'class': 'hv-badge-check' }, badge);
+    return { v: v, x: x, y: y, g: g, link: link, ring: g.querySelector('.hv-ring'), hardened: false };
+  });
+
+  function setHardened(n, on) {
+    n.hardened = on;
+    n.g.classList.toggle('is-hardened', on);
+    n.link.classList.toggle('is-hardened', on);
+  }
+  function setStatus(text, state) {
+    statusText.textContent = text;
+    statusDot.className = 'hv-status-dot is-' + state;
+    var h = nodes.filter(function(n) { return n.hardened; }).length;
+    statusCount.textContent = h + '/' + nodes.length + ' hardened';
+    core.classList.toggle('is-secure', h === nodes.length);
+  }
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) {
+    nodes.forEach(function(n) { setHardened(n, true); });
+    setStatus('Every integration hardened — attacks blocked at the edge', 'secure');
+    return;
+  }
+
+  // Timeline (ms of visible time): exposed, then one vendor hardened per STEP, then hold.
+  var EXPOSED = 2600, STEP = 1150, HOLD = 3800;
+  var CYCLE = EXPOSED + STEP * nodes.length + HOLD;
+  var t = 0, last = null, spawnIn = 0, packets = [], raf = null, visible = false, hitUntil = 0, lastPhase = '';
+
+  function phaseAt(time) {
+    if (time < EXPOSED) return { name: 'exposed' };
+    var k = Math.floor((time - EXPOSED) / STEP);
+    if (k < nodes.length) return { name: 'harden', k: k };
+    return { name: 'secure' };
+  }
+
+  function spawn() {
+    var n = nodes[Math.floor(Math.random() * nodes.length)];
+    var c = el('circle', { r: 4.5, 'class': 'hv-packet' }, packetsG);
+    // Hardened links stop the attack just outside the vendor's shield ring.
+    packets.push({ n: n, c: c, p: 0, speed: 0.00042 + Math.random() * 0.00018, stopAt: n.hardened ? 0.3 : 1, dying: 0 });
+  }
+
+  function spark(x, y, cls) {
+    var s = el('circle', { cx: x, cy: y, r: 3, 'class': cls }, packetsG);
+    setTimeout(function() { if (s.parentNode) s.parentNode.removeChild(s); }, 600);
+  }
+
+  function frame(now) {
+    raf = null;
+    if (!visible || document.hidden) { last = null; return; }
+    var dt = last === null ? 16 : Math.min(64, now - last);
+    last = now;
+    t += dt;
+    if (t >= CYCLE) {
+      t = 0;
+      nodes.forEach(function(n) { setHardened(n, false); });
+    }
+    var ph = phaseAt(t), key = ph.name + (ph.k === undefined ? '' : ph.k);
+    if (key !== lastPhase) {
+      lastPhase = key;
+      if (ph.name === 'exposed') setStatus(nodes.length + ' third-party integrations exposed — supply chain attacks reaching your org', 'exposed');
+      else if (ph.name === 'harden') {
+        var n = nodes[ph.k];
+        setHardened(n, true);
+        setStatus('Hardening ' + n.v.name + ' · ' + n.v.label + ' — applying the guide’s controls', 'working');
+      } else setStatus('Every integration hardened — attacks blocked at the edge', 'secure');
+    }
+
+    spawnIn -= dt;
+    if (spawnIn <= 0) { spawn(); spawnIn = 260 + Math.random() * 220; }
+
+    for (var i = packets.length - 1; i >= 0; i--) {
+      var pk = packets[i];
+      if (pk.dying) {
+        pk.dying -= dt;
+        if (pk.dying <= 0) { packetsG.removeChild(pk.c); packets.splice(i, 1); }
+        continue;
+      }
+      // A packet already in flight is caught as soon as its vendor becomes hardened.
+      if (pk.n.hardened && pk.stopAt === 1) pk.stopAt = Math.max(pk.p, 0.3);
+      pk.p = Math.min(pk.stopAt, pk.p + pk.speed * dt);
+      var x = pk.n.x + (CX - pk.n.x) * pk.p, y = pk.n.y + (CY - pk.n.y) * pk.p;
+      pk.c.setAttribute('cx', x); pk.c.setAttribute('cy', y);
+      if (pk.p >= pk.stopAt) {
+        if (pk.stopAt >= 1) { hitUntil = now + 260; spark(x, y, 'hv-spark hv-spark-hit'); }
+        else spark(x, y, 'hv-spark hv-spark-blocked');
+        pk.c.classList.add(pk.stopAt >= 1 ? 'is-hit' : 'is-blocked');
+        pk.dying = 260;
+      }
+    }
+    core.classList.toggle('is-hit', now < hitUntil);
+    raf = requestAnimationFrame(frame);
+  }
+
+  function kick() { if (raf === null && visible && !document.hidden) raf = requestAnimationFrame(frame); }
+  new IntersectionObserver(function(entries) {
+    visible = entries.some(function(e) { return e.isIntersecting; });
+    kick();
+  }, { threshold: 0.05 }).observe(svg);
+  document.addEventListener('visibilitychange', kick);
+  setStatus(nodes.length + ' third-party integrations exposed — supply chain attacks reaching your org', 'exposed');
+})();
 
 // ─── Terminal Demo Animation ─────────────────────────────────────────────────
 (function() {

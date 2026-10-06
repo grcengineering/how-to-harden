@@ -6,15 +6,15 @@ slug: "okta"
 tier: "1"
 category: "Identity"
 description: "Identity Provider hardening for SSO, MFA policies, and API token security"
-version: "0.4.1"
-maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+version: "0.5.0"
+maturity: ["ai-drafted", "ai-validated"]
+last_updated: "2026-09-24"
 ---
 
 
 ## Overview
 
-Okta is an identity and access management (IAM) platform that controls authentication for **18,000+ organizations** with **7,000+ integrations** in its network. As the central authentication provider for enterprise applications, Okta represents the highest-leverage hardening target in most organizations. The 2022 LAPSUS$ breach and October 2023 support system breach (affecting all 18,400 customers via HAR file exfiltration) demonstrated how stolen session tokens grant attackers SSO access to thousands of downstream applications.
+Okta is an identity and access management (IAM) platform that controls authentication for **18,000+ organizations** with **7,000+ integrations** in its network. As the central authentication provider for enterprise applications, Okta represents the highest-leverage hardening target in most organizations. The 2022 LAPSUS$ breach and October 2023 support system breach (files associated with 134 customers accessed, including HAR files carrying session tokens) demonstrated how stolen session tokens grant attackers SSO access to thousands of downstream applications.
 
 ### Intended Audience
 - Security engineers managing identity infrastructure
@@ -69,7 +69,7 @@ Require phishing-resistant authenticators (FIDO2 security keys or platform authe
 **Attack Prevented:** Real-time phishing, session hijacking, MFA bypass
 
 **Real-World Incidents:**
-- **October 2023 Okta Support Breach:** HAR files containing session cookies were exfiltrated, affecting all 18,400 customers
+- **October 2023 Okta Support Breach:** A threat actor accessed support-case files associated with 134 customers, including HAR files containing session tokens
 - **January 2022 LAPSUS$ Breach:** Third-party support engineer compromised via social engineering
 
 #### Prerequisites
@@ -78,38 +78,36 @@ Require phishing-resistant authenticators (FIDO2 security keys or platform authe
 - Super Admin access for policy configuration
 - User inventory for phased rollout
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Passkey settings, App sign-in policy and rule form labels read on a live org" date="2026-09-24" %}
 
-**Step 1: Enable FIDO2 (WebAuthn) as Authenticator**
+**Step 1: Enable Passkey (FIDO2 WebAuthn) as an Authenticator**
 1. Navigate to: **Security → Authenticators**
-2. Click **Add Authenticator** → Select **FIDO2 (WebAuthn)**
+2. Click **Add authenticator** → select **Passkey (FIDO2 WebAuthn)** → **Add**. If it is already listed, click **Actions** next to it → **Edit**, then **Edit** on its settings page
 3. Configure:
-   - **User verification:** Required
-   - **Authenticator attachment:** Cross-platform (for security keys) or Platform (for biometrics)
-4. Click **Add**
+   - **User verification:** **Required** for both Enrollment and Authentication
+   - **Block synced passkeys:** enable when policy requires device-bound keys (L3 / NIST AAL3)
+   - **Required characteristics:** **Hardware protection** (add **FIPS compliant** in FIPS environments; see 1.8)
+4. Click **Save**
 
-**Step 2: Create Phishing-Resistant Authentication Policy**
-1. Navigate to: **Security → Authentication Policies**
-2. Click **Add Policy** → Name: "Phishing-Resistant MFA"
-3. Add Rule:
-   - **IF:** User is member of "Administrators" group
-   - **THEN:** Authentication requires FIDO2 (WebAuthn)
-   - **Re-authentication frequency:** Every session
-4. **Save** and set priority above default policies
+**Step 2: Create a Phishing-Resistant Authentication Policy**
+1. Navigate to: **Security → Authentication Policies → App sign-in**
+2. Click **Create policy** → Name: "Phishing-Resistant MFA" → **Create policy**
+3. Click **Add rule** and configure:
+   - **IF User's group membership includes:** At least one of the following groups → your administrators group
+   - **THEN Access is:** Allowed after successful authentication
+   - **User must authenticate with:** Any 2 factor types
+   - **Possession factor constraints are:** **Phishing resistant** (add **Hardware protected** for L3)
+   - **Prompt for authentication:** Every time user signs in to resource
+4. Click **Save**, then assign the applications this policy should protect (the policy's **Application** tab)
 
-**Step 3: Enforce for All Admin Access**
-1. Navigate to: **Security → Global Session Policy**
-2. Create rule for Admin Console access requiring FIDO2
-3. Apply to Admin groups
+**Step 3: Require Phishing-Resistant Factors on the Okta Dashboard and Admin Console**
+The Global Session Policy cannot target the Admin Console or require a specific authenticator, so enforce this in the app sign-in policies of both Okta apps:
 
-**Step 4: Configure Authentication Policy Requirements**
-Configure both Okta Dashboard and Admin Console policies:
-
-1. Navigate to: **Security → Authentication Policies**
+1. Navigate to: **Security → Authentication Policies → App sign-in**
 2. Click the **Okta Dashboard** policy
 3. Click **Actions** next to the top rule → **Edit**
-4. In "User must authenticate with", select **Password/IdP + Another factor** or **Any 2 factor types**
-5. In "Possession factor constraints are" section, check **Phishing resistant**
+4. In "User must authenticate with", select **Password + Another factor** or **Any 2 factor types**
+5. In "Possession factor constraints are", check **Phishing resistant**
 6. Repeat for the **Okta Admin Console** policy
 
 | Specification | Requirement |
@@ -136,7 +134,7 @@ Configure both Okta Dashboard and Admin Console policies:
 - Alert on authentication attempts that fail FIDO2 requirement
 - Monitor for users bypassing policy via legacy sessions
 
-**Log query:** See Code Pack section 1.1 (cli) above for the System Log filter expression.
+**Detection rule:** See the Sigma rule in Code Pack section 1.1 above.
 
 **Maintenance schedule:**
 - **Monthly:** Review FIDO2 enrollment completion rates
@@ -173,7 +171,7 @@ Configure both Okta Dashboard and Admin Console policies:
 | NIST 800-53 | AC-5, AC-6(1) |
 
 #### Description
-Separate administrative privileges using Okta's custom admin roles instead of granting Super Admin access. Create role-specific permissions for Help Desk, Application Admins, and Read-Only Auditors.
+Separate administrative privileges using Okta's custom admin roles instead of granting Super Admin access. Create role-specific permissions for Help Desk and Application Admins, and give auditors Okta's built-in Read-only Administrator role.
 
 #### Rationale
 **Why This Matters:**
@@ -183,34 +181,32 @@ Separate administrative privileges using Okta's custom admin roles instead of gr
 
 **Attack Prevented:** Privilege escalation, lateral movement via admin accounts
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Roles list incl. the Standard Read-only Administrator, the Create new role permission picker and the Add administrator page read on a live org" date="2026-09-24" %}
 
 **Step 1: Create Custom Admin Roles**
 1. Navigate to: **Security → Administrators → Roles**
-2. Click **Create new role**
-3. Create the following roles:
+2. Click **Create new role** ([Okta: Create a role](https://help.okta.com/oie/en-us/content/topics/security/custom-admin-role/create-role.htm)), enter a **Role name** and **Role description**, choose permissions under **Select permissions**, and click **Save role**
+3. Create the following roles, using the permission names as the picker labels them ([Okta: Role permissions](https://help.okta.com/oie/en-us/content/topics/security/custom-admin-role/about-role-permissions.htm)):
 
-**Help Desk Admin:**
-- Reset passwords
-- Unlock accounts
-- View user profiles
-- NO: Edit policies, manage apps, access API tokens
+**Help Desk Admin (custom role):**
+- User: **View users and their details**, **Reset users' passwords**, **Unlock users**
+- Do not grant: **Manage users**, **Manage policies**, **Manage applications**, **Manage API tokens**
 
-**Application Admin:**
-- Manage specific applications
-- Configure SAML/OIDC settings
-- NO: Manage users, access system settings
+**Application Admin (custom role):**
+- Application: **View application and their details**, plus **Manage applications** (view, create, edit and delete apps; it also grants the Manage directories permission). Grant only **Manage application general settings** instead when the admin should change nothing beyond an app's general settings
+- Do not grant: **Manage policies**, **Manage identity providers**, or any User permission beyond **View users and their details**
 
-**Security Auditor (Read-Only):**
-- View all configurations
-- Access System Log
-- NO: Make any changes
+**Security Auditor (read-only):**
+- Do not build a custom role for this. The custom-role picker has no System Log or report permission, so a custom role cannot give an auditor log access
+- Assign the Standard **Read-only Administrator** role instead ("View most data in the Admin Console"). It can view users, groups, apps, reports, Okta settings, sign-on policies and the System Log, and it cannot edit data ([Okta: Read-only administrators](https://help.okta.com/oie/en-us/content/topics/security/administrators-read-only-admin.htm))
+- For auditors who need only logs and reports, the Standard **Report Administrator** role ("View all reports and the System log") is narrower
 
 **Step 2: Assign Roles to Specific Groups**
 1. Navigate to: **Security → Administrators**
-2. Click **Add Administrator**
-3. Select user/group and assign custom role
-4. Limit scope to specific apps/groups if applicable
+2. Click **Add administrator**
+3. Under **Select admin**, choose the user, group or app, then click **Add assignment**
+4. Choose the **Role**: one of the custom roles above, or the Standard **Read-only Administrator** for auditors
+5. For a custom role, also choose the **Resource set** (apps/groups) that scopes it — custom roles are always assigned together with a resource set — then click **Save Changes**
 
 #### Code Implementation
 
@@ -240,29 +236,32 @@ Configure Okta to bind session tokens to specific devices using device trust and
 **Real-World Incidents:**
 - **October 2023:** Attackers exfiltrated HAR files containing session tokens from Okta support portal
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Okta Verify form, Add platform and device rule conditions read on a live org" date="2026-09-24" %}
 
 **Step 1: Enable Okta Verify with FastPass**
 1. Navigate to: **Security → Authenticators**
-2. Click **Okta Verify** → **Edit**
-3. Enable:
-   - **Okta FastPass:** On
-   - **User verification with Okta FastPass:** Required
-4. Save
+2. Click **Actions** next to **Okta Verify** → **Edit**
+3. Configure:
+   - **Verification options → User can verify with:** check **Okta FastPass**
+   - **Device passcode or biometric user verification → Enrollment:** **Required** (user verification during authentication is enforced by app sign-in policy rules, per the form)
+4. Click **Save**
 
 **Step 2: Configure Device Trust**
-1. Navigate to: **Security → Device Integrations**
-2. Configure device trust for managed devices:
-   - Jamf Pro for macOS
-   - Microsoft Intune for Windows
-   - VMware Workspace ONE
-3. Create policy requiring managed devices
+1. Navigate to: **Security → Device Integrations → Endpoint management** → **Add platform**
+2. Select the platform (**iOS**, **Android**, or **Desktop (Windows and macOS only)**) and connect the device management tool that manages it (for example Jamf Pro, Microsoft Intune, or VMware Workspace ONE)
+3. Create the device assurance policies that define a trusted device (see 1.12)
 
-**Step 3: Create Device-Bound Session Policy**
-1. Navigate to: **Security → Authentication Policies**
-2. Create rule:
-   - **Condition:** Device trust = Not trusted
-   - **Action:** Deny access OR require additional verification
+**Step 3: Create a Device-Bound Sign-In Rule**
+1. Navigate to: **Security → Authentication Policies → App sign-in**
+2. Open the policy protecting the application, then **Add rule**:
+   - **IF Device state is:** Registered
+   - **AND Device assurance policy is:** the policy from 1.12
+   - **THEN Access is:** Allowed after successful authentication
+3. Add a lower-priority rule for the same apps whose **Access is:** Denied, so unregistered or non-compliant devices cannot sign in
+
+#### Code Implementation
+
+{% include pack-code.html vendor="okta" section="1.3" %}
 
 ---
 
@@ -305,7 +304,7 @@ Configure comprehensive password policies with appropriate complexity, age, and 
 | Common password check | Recommended | Required |
 | Password history | 4 generations | 5 generations |
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Password policy form read on a live org" date="2026-09-24" %}
 
 **Step 1: Access Password Authenticator Settings**
 1. Navigate to: **Security → Authenticators**
@@ -330,9 +329,10 @@ For each listed Password Policy, click **Edit** and configure:
 - **Enforce password history for last XX passwords:** Set to **5**
 
 **Step 3: Enable Common Password Check**
-1. Under **Password Settings** section
-2. Check **Common Password Check**
-3. Click **Save**
+1. In the same policy's **Password Requirements** section, under **Common password check**, check **Restrict use of common passwords**
+2. Click **Update Policy**
+
+> **Note:** Okta HealthInsight flags a password policy as weak below a minimum length of 12 and a password history of 24 (see 5.6). The history values in the table above meet DISA STIG; raise them toward 24 if you also want HealthInsight to pass this task.
 
 #### Code Implementation
 
@@ -374,7 +374,7 @@ Enforce account lockout after consecutive invalid login attempts to protect agai
 | Lockout threshold | 5 attempts | 3 attempts |
 | Lockout duration | 30 minutes | Until admin unlock |
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Lock out settings read on a live org" date="2026-09-24" %}
 
 **Step 1: Configure Password Authenticator Lockout**
 1. Navigate to: **Security → Authenticators**
@@ -384,10 +384,13 @@ Enforce account lockout after consecutive invalid login attempts to protect agai
 **Step 2: Configure Each Password Policy**
 For each listed Password Policy:
 1. Click **Edit** on the policy
-2. Locate the **Lock Out** section
-3. Check **Lock out after X unsuccessful attempts**
+2. Locate the **Lock out** section
+3. Check **Lock out user after X unsuccessful attempts**
 4. Set the value to **3** (L2/L3) or **5** (L1)
-5. Click **Save**
+5. For **L1**, check **Account is automatically unlocked after** and set **30** minutes. For **L2/L3**, leave automatic unlock unchecked so accounts stay locked until an administrator unlocks them
+6. Click **Update Policy**
+
+#### Code Implementation
 
 {% include pack-code.html vendor="okta" section="1.5" %}
 
@@ -431,7 +434,7 @@ Automatically disable user accounts after a period of inactivity to reduce the r
 - Okta Workflows license (required for Automations)
 - Super Admin or Org Admin access
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Automation editor walked on a live org with a temporary inactive automation" date="2026-09-24" %}
 
 **Step 1: Create Inactivity Automation**
 1. Navigate to: **Workflow → Automations**
@@ -446,7 +449,7 @@ Automatically disable user accounts after a period of inactivity to reduce the r
 
 **Step 3: Configure Schedule**
 1. Click the edit button next to **Select Schedule**
-2. Set **Schedule** field to **Run Daily**
+2. Set **Schedule** field to **Run daily**
 3. Set **Time** field to an appropriate time (e.g., 2:00 AM local time)
 4. Click **Save**
 
@@ -457,13 +460,15 @@ Automatically disable user accounts after a period of inactivity to reduce the r
 
 **Step 5: Configure Action**
 1. Click **Add Action**
-2. Select **Change User lifecycle state in Okta**
+2. Select **Change user lifecycle state in Okta**
 3. In **Change user state to**, select **Suspended**
 4. Click **Save**
 
 **Step 6: Activate Automation**
 1. Click the **Inactive** button near the top of the screen
 2. Select **Activate**
+
+**Automation:** ClickOps only — Okta exposes no public write interface for Automations. The console stores them as `USER_LIFECYCLE` policies, a type absent from the Okta Management API's documented policy types (`ACCESS_POLICY`, `ENTITY_RISK`, `IDP_DISCOVERY`, `MFA_ENROLL`, `OKTA_SIGN_ON`, `PASSWORD`, `POST_AUTH_SESSION`, `PROFILE_ENROLLMENT`, and others), and no documented endpoint creates one ([Okta Policy API](https://developer.okta.com/docs/api/openapi/okta-management/management/tag/Policy/), management API spec 2026.08.4, checked 2026-09-24).
 
 #### Validation
 1. Navigate to: **Workflow → Automations**
@@ -502,19 +507,14 @@ Configure Okta to accept Personal Identity Verification (PIV) credentials and Co
 
 #### ClickOps Implementation
 
-**Step 1: Add Smart Card Authenticator**
-1. Navigate to: **Security → Authenticators**
-2. In the **Setup** tab, click **Add authenticator**
-3. Select the configured **Smart Card Identity Provider**
-4. Complete the configuration and click **Add**
-
-**Step 2: Configure Smart Card Identity Provider**
+**Step 1: Configure Smart Card Identity Provider**
 1. Navigate to: **Security → Identity Providers**
 2. Click **Add identity provider**
 3. Select **Smart Card IdP** and click **Next**
 4. Enter a name for the identity provider (e.g., "CAC Authentication")
+5. Under **Security Characteristics**, mark the IdP **PIN protected** and **Hardware protected**
 
-**Step 3: Build Certificate Chain**
+**Step 2: Build Certificate Chain**
 1. Click **Browse** to select your root CA certificate file
 2. Click **Add Another** to add intermediate CA certificates
 3. Continue until the complete certificate chain is uploaded
@@ -522,15 +522,25 @@ Configure Okta to accept Personal Identity Verification (PIV) credentials and Co
 5. Verify the chain builds successfully with all certificates shown
 6. If errors occur, verify certificate order and format
 
-**Step 4: Configure User Matching**
+**Step 3: Configure User Matching**
 1. In **IdP username**, select **idpuser.subjectAltNameUpn**
    - This attribute stores identifiers like the Electronic Data Interchange Personnel Identifier (EDIPI)
-2. In **Match Against**, select the Okta Profile Attribute where the identifier is stored
-3. Click **Save**
+2. In **Match against**, select the Okta Profile Attribute where the identifier is stored
+3. Click **Finish**
 
-**Step 5: Activate the Identity Provider**
+**Step 4: Activate the Identity Provider**
 1. Verify the IdP status shows **Active**
 2. If inactive, click **Activate**
+
+**Step 5: Add the Smart Card Authenticator**
+1. Navigate to: **Security → Authenticators**
+2. In the **Setup** tab, click **Add authenticator**
+3. Select **Smart Card Authenticator** ("Authentication with a Security Card (PIV/CAC)")
+4. Select the Smart Card IdP created in Step 1 and click **Add**
+
+#### Code Implementation
+
+{% include pack-code.html vendor="okta" section="1.7" %}
 
 #### Validation
 1. Navigate to: **Security → Identity Providers**
@@ -570,16 +580,27 @@ Configure Okta Verify to only connect with FIPS-compliant devices. This ensures 
 
 **Step 1: Edit Okta Verify Settings**
 1. Navigate to: **Security → Authenticators**
-2. In the **Setup** tab, click **Edit** next to **Okta Verify**
+2. In the **Setup** tab, click **Actions** next to **Okta Verify** → **Edit**
 
 **Step 2: Enable FIPS Compliance**
-1. Locate the **FIPS Compliance** field
+1. Locate the **FIPS Compliance** field ([Okta: Configure Okta Verify options](https://help.okta.com/oie/en-us/content/topics/identity-engine/authenticators/configure-okta-verify-options.htm))
 2. Select **FIPS-compliant devices only**
 3. Click **Save**
 
+> **Note:** Not every org's Okta Verify form shows this field — it was absent on an Okta Integrator Free Plan org checked 2026-09-24, although that org's Authenticators API still returned the underlying setting (`settings.compliance.fips`); see Code Implementation.
+
+**Step 3: Require FIPS-Compliant Passkeys**
+1. In **Security → Authenticators**, click **Actions** next to **Passkey (FIDO2 WebAuthn)** → **Edit**, then **Edit** on its settings page
+2. Under **Required characteristics**, check **FIPS compliant**
+3. Click **Save**
+
+#### Code Implementation
+
+{% include pack-code.html vendor="okta" section="1.8" %}
+
 #### Validation
 1. Navigate to: **Security → Authenticators**
-2. From the **Setup** tab, select **Edit Okta Verify**
+2. From the **Setup** tab, click **Actions** next to **Okta Verify** → **Edit**
 3. Verify **FIPS Compliance** is set to "FIPS-compliant devices only"
 
 > **Note:** Enabling FIPS-compliant devices only will prevent users with non-FIPS compliant devices from enrolling in Okta Verify. Ensure users have compatible devices before enabling this setting.
@@ -595,13 +616,13 @@ Configure Okta Verify to only connect with FIPS-compliant devices. This ensures 
 | NIST 800-53 | AC-3, IA-2 |
 
 #### Description
-Audit and mitigate the risk posed by Okta's immutable Default Authentication Policy, which permits password-only login with no MFA requirement. This built-in policy acts as a catch-all backstop and cannot be modified or deleted. Any application or login flow that falls through to the default policy bypasses all MFA enforcement.
+Audit and mitigate the risk posed by Okta's default app sign-in policy — the system policy every new application is assigned to unless it is explicitly moved. The default policy cannot be deleted, and in older orgs its catch-all rule permits password-only sign-in. Any application that falls through to a weak default policy bypasses the MFA enforcement configured elsewhere.
 
 #### Rationale
 **Why This Matters:**
-- Okta ships with a "Default Policy" that allows single-factor (password-only) authentication
-- This policy is immutable -- it cannot be edited, deleted, or reordered
-- It serves as the final catch-all: any login not matched by a higher-priority policy silently falls through to the default
+- Every org has one default app sign-in policy ("Default Policy" in older orgs, "Any two factors" in newer ones); in older orgs its catch-all rule allows single-factor (password-only) authentication
+- The default policy cannot be deleted, and its requirements are only as strong as its Catch-all Rule — which admins often never open
+- It serves as the final catch-all: any application not assigned to a stronger policy silently uses the default
 - New applications added to the tenant are assigned to the default policy unless explicitly moved
 - Organizations often believe MFA is enforced globally, unaware that the default backstop allows password-only access
 
@@ -610,38 +631,37 @@ Audit and mitigate the risk posed by Okta's immutable Default Authentication Pol
 **Real-World Context:**
 - **Obsidian Security Research:** Identified that a significant percentage of Okta tenants have applications inadvertently assigned to the default policy, creating silent MFA gaps in otherwise hardened environments
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Default policy, Catch-all Rule and app Sign On tab read on a live org" date="2026-09-24" %}
 
-**Step 1: Identify the Default Authentication Policy**
-1. Navigate to: **Security → Authentication Policies**
-2. Locate the policy named **"Default Policy"** -- it will be at the bottom of the policy list
-3. Click the policy to inspect its rules
-4. Note: The default rule permits access with **"Password"** only and cannot be changed
+**Step 1: Identify the Default App Sign-In Policy**
+1. Navigate to: **Security → Authentication Policies → App sign-in**
+2. Open the policy marked **Default** ("Any two factors" in current orgs, "Default Policy" in older ones)
+3. Inspect its **Catch-all Rule** (**Actions → Edit**) — the rule is editable, so confirm it requires MFA rather than a password alone
 
 **Step 2: Audit Application Policy Assignments**
-1. Navigate to: **Security → Authentication Policies**
-2. For **each** authentication policy, click the **Applications** tab
+1. Navigate to: **Security → Authentication Policies → App sign-in**
+2. For **each** policy, click the **Application** tab
 3. Document which applications are assigned to each policy
-4. **Critical:** Check the **Default Policy → Applications** tab
-5. If ANY applications appear under the Default Policy, they are vulnerable to password-only login
+4. **Critical:** Check the default policy's **Application** tab
+5. Every application listed there gets only the default policy's requirements — move it to an explicit policy
 
 **Step 3: Reassign Applications to Explicit Policies**
-1. For each application assigned to the Default Policy:
-   - Navigate to: **Applications → Applications → [App Name]**
+1. For each application assigned to the default policy:
+   - Navigate to: **Applications and Resources → Applications → [App Name]**
    - Click the **Sign On** tab
-   - Under **Authentication policy**, click **Edit**
-   - Select an appropriate custom authentication policy that enforces MFA
+   - Under **User authentication**, click **Edit**
+   - In **Authentication policy**, select a custom policy that enforces MFA
    - Click **Save**
-2. Repeat until the Default Policy has **zero** applications assigned
+2. Repeat until the default policy has **zero** applications assigned
 
 **Step 4: Create a Catch-All Deny Rule in Custom Policies**
-1. Navigate to: **Security → Authentication Policies**
-2. For each custom authentication policy:
-   - Click **Add Rule**
+1. Navigate to: **Security → Authentication Policies → App sign-in**
+2. For each custom policy:
+   - Click **Add rule**
    - Name: "Catch-All Deny"
    - **IF:** Any user, any device, any network
-   - **THEN:** Access is **Denied**
-   - Position this rule as the **second-to-last** rule (above only the default rule)
+   - **THEN Access is:** Denied
+   - Position this rule as the **second-to-last** rule (above only the Catch-all Rule)
 3. This ensures that any request not explicitly permitted by a higher-priority rule is denied rather than falling through
 
 **Step 5: Establish Ongoing Governance**
@@ -667,7 +687,7 @@ Audit and mitigate the risk posed by Okta's immutable Default Authentication Pol
 
 #### Monitoring & Maintenance
 
-**Log query and SIEM alert rule:** See Code Pack section 1.9 (cli and db) above for log filter expressions and SIEM detection queries.
+**Detection rule:** See the Sigma rule in Code Pack section 1.9 above.
 
 **Maintenance schedule:**
 - **Weekly:** Automated script to check for apps on Default Policy (integrate into CI/CD)
@@ -712,36 +732,38 @@ Restrict self-service account recovery to trusted methods and network locations.
 
 **Step 1: Remove Weak Recovery Authenticators**
 1. Navigate to: **Security → Authenticators**
-2. Review the list of active authenticators
-3. For **Phone (SMS/Voice)**:
+2. Review the authenticators listed on the **Setup** tab
+3. For **Phone** (SMS / Voice call), if it is listed:
    - Click **Actions → Edit**
-   - Under **Used for**, uncheck **Recovery** (leave Authentication if still needed for non-admin users)
+   - Set its use to authentication only, so it can no longer serve recovery
    - If SMS/Voice is not needed at all, click **Actions → Deactivate**
-4. For **Security Question**:
+4. For **Security Question**, if it is listed:
    - Click **Actions → Deactivate**
    - Confirm deactivation
    - Note: Existing enrolled security questions will be removed from user accounts
 
 **Step 2: Configure Password Recovery Settings**
+Recovery authenticators are set in each password policy's **rule**, not in the policy itself:
+
 1. Navigate to: **Security → Authenticators**
 2. Click **Actions** next to **Password** → Select **Edit**
-3. For each Password Policy listed, click **Edit**:
-   - Locate the **Account Recovery** section
-   - **Recovery authenticators:** Ensure only **Email** and **Okta Verify** are selected
-   - **Phone (SMS/Voice call):** Uncheck / remove
-   - **Security question:** Uncheck / remove
-4. Click **Save** for each policy
+3. For each password policy, click **Edit rule** on its rule:
+   - **Users can initiate recovery with:** keep only **Okta Verify (Push notification only)** and **Email**; clear **Phone (SMS / Voice call)** and **Google Authenticator**
+   - **Additional verification is:** **Any enrolled authenticator used for MFA/SSO**
+   - **Access control:** **Authentication policy** (so the Okta account management policy in Step 3 governs recovery)
+4. Click **Update rule** for each policy
 
 **Step 3: Restrict Recovery to Corporate Network Zones**
-1. Navigate to: **Security → Authentication Policies**
-2. Select your primary authentication policy (or create a new one for recovery)
-3. Click **Add Rule**:
+Self-service recovery is governed by the Okta account management policy (or, for rules left on the legacy setting, by the password policy rule itself):
+
+1. Navigate to: **Security → Authentication Policies → Okta account management**
+2. Open the **Okta Account Management Policy** and click **Add rule**:
    - **Name:** "Block Recovery from Untrusted Networks"
-   - **IF:** Network zone is **NOT** "Corporate Network" (or your defined trusted zone)
-   - **AND:** User is attempting self-service recovery
-   - **THEN:** Access is **Denied**
-4. Position this rule above your general allow rules
-5. Click **Save**
+   - **IF User's IP is:** Not in any of the following zones → "Corporate Network" (or your defined trusted zone)
+   - **THEN Access is:** Denied (or require a phishing-resistant factor)
+3. Position this rule above your general allow rules
+4. Click **Save**
+5. For any password policy rule still on **This rule (legacy)** access control, set **User's IP is: In zone** "Corporate Network" on that rule instead
 
 **Step 4: Configure Authenticator Enrollment Policy**
 1. Navigate to: **Security → Authenticators → Enrollment** tab
@@ -776,7 +798,7 @@ Restrict self-service account recovery to trusted methods and network locations.
 
 #### Monitoring & Maintenance
 
-**Log query and SIEM alert rules:** See Code Pack section 1.10 (cli and db) above for log filter expressions and SIEM detection queries.
+**Detection rules:** See the Sigma rules in Code Pack section 1.10 above.
 
 **Maintenance schedule:**
 - **Monthly:** Verify authenticator enrollment policy still disables weak recovery options
@@ -795,7 +817,7 @@ Restrict self-service account recovery to trusted methods and network locations.
 | NIST 800-53 | SI-4, IR-6 |
 
 #### Description
-Enable all five end-user security notification types in Okta so that users receive immediate alerts when security-relevant changes occur on their accounts. Additionally enable Suspicious Activity Reporting to allow users to flag unauthorized actions directly from notification emails, creating actionable system log events for security teams.
+Enable all four end-user security notification emails in Okta so that users receive immediate alerts when security-relevant changes occur on their accounts. Additionally enable Suspicious Activity Reporting to allow users to flag unauthorized actions directly from notification emails, creating actionable system log events for security teams.
 
 #### Rationale
 **Why This Matters:**
@@ -809,32 +831,29 @@ Enable all five end-user security notification types in Okta so that users recei
 
 **Real-World Context:**
 - **Okta HealthInsight:** Flags missing end-user notifications as a security gap in tenant health assessments
-- **Obsidian Security Research:** Recommends all five notification types as a low-effort, high-value detection control
+- **Obsidian Security Research:** Recommends enabling the end-user notification emails as a low-effort, high-value detection control
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Security notification emails panel read on a live org" date="2026-09-24" %}
 
-**Step 1: Enable End-User Notification Types**
-1. Navigate to: **Settings → Account**
-2. Scroll to the **End-User Notifications** section
-3. Enable **all five** notification types:
+**Step 1: Enable the Security Notification Emails**
+1. Navigate to: **Security → General**
+2. In the **Security notification emails** section, click **Edit**
+3. Enable all four notification emails:
 
 | Notification | Description | Enable |
 |-------------|-------------|--------|
-| **New sign-on notification** | Alerts users when a sign-on occurs from an unrecognized device or browser | Yes |
-| **Authenticator enrolled notification** | Alerts users when a new authenticator (MFA factor) is registered to their account | Yes |
-| **Authenticator reset notification** | Alerts users when an authenticator is removed or reset on their account | Yes |
-| **Password changed notification** | Alerts users when their password is changed | Yes |
-| **MFA factor reset notification** | Alerts users when an MFA factor is reset by an administrator | Yes |
+| **New sign-on notification email** | Alerts users when a sign-on occurs from an unrecognized device or browser | Yes |
+| **Password changed notification email** | Alerts users when their password is changed | Yes |
+| **Authenticator enrolled notification email** | Alerts users when a new authenticator (MFA factor) is registered to their account | Yes |
+| **Authenticator reset notification email** | Alerts users when an authenticator is removed or reset on their account, including by an administrator | Yes |
 
 4. Click **Save**
 
 **Step 2: Enable Suspicious Activity Reporting**
-1. Navigate to: **Security → General**
-2. Scroll to the **Suspicious Activity Reporting** section
-3. Set to **Enabled**
-4. Click **Save**
-5. When enabled, notification emails include a **"Report Suspicious Activity"** button
-6. User clicks generate a system log event: `user.account.report_suspicious_activity_by_enduser`
+1. In the same **Security notification emails** section, enable **Report suspicious activity via email**
+2. Click **Save**
+3. When enabled, notification emails include a **"Report Suspicious Activity"** button
+4. User clicks generate a system log event: `user.account.report_suspicious_activity_by_enduser`
 
 **Step 3: Verify Notification Delivery**
 1. Using a test user account, perform a sign-on from a new browser or device
@@ -853,9 +872,11 @@ Enable all five end-user security notification types in Okta so that users recei
 
 {% include pack-code.html vendor="okta" section="1.11" %}
 
+The Okta Management API documents no endpoint for these settings; the Terraform resource above uses an internal Okta endpoint (as its provider documentation states) and needs an SSWS API token.
+
 #### Validation & Testing
-1. Navigate to **Settings → Account → End-User Notifications** and verify all five notification types are **Enabled**
-2. Navigate to **Security → General → Suspicious Activity Reporting** and verify it is **Enabled**
+1. Navigate to **Security → General → Security notification emails** and verify all four notification emails are **Enabled**
+2. In the same section, verify **Report suspicious activity via email** is **Enabled**
 3. Sign in with a test user from a new device/browser -- verify "New sign-on" email is received
 4. Enroll a new authenticator for a test user -- verify "Authenticator enrolled" email is received
 5. Reset an authenticator for a test user -- verify "Authenticator reset" email is received
@@ -863,11 +884,11 @@ Enable all five end-user security notification types in Okta so that users recei
 7. In a notification email, click **"Report Suspicious Activity"** -- verify the system log event `user.account.report_suspicious_activity_by_enduser` is created
 8. Verify SIEM alert fires for the suspicious activity report event
 
-**Expected result:** All five notification types active; users receive timely emails for security-relevant account changes; suspicious activity reports generate system log events that trigger SIEM alerts.
+**Expected result:** All four notification emails active; users receive timely emails for security-relevant account changes; suspicious activity reports generate system log events that trigger SIEM alerts.
 
 #### Monitoring & Maintenance
 
-**Log queries and SIEM alert rules:** See Code Pack section 1.11 (cli and db) above for log filter expressions and SIEM detection queries.
+**Detection rules:** See the Sigma rules in Code Pack section 1.11 above.
 
 **Incident response workflow for suspicious activity reports:**
 1. SIEM receives `user.account.report_suspicious_activity_by_enduser` event
@@ -878,7 +899,7 @@ Enable all five end-user security notification types in Okta so that users recei
 
 **Maintenance schedule:**
 - **Monthly:** Review suspicious activity report volume and response times
-- **Quarterly:** Verify all five notification types are still enabled (configuration drift check)
+- **Quarterly:** Verify all four notification emails are still enabled (configuration drift check)
 - **Quarterly:** Test notification delivery by performing a controlled sign-on from a new device
 - **Annually:** Review notification types against Okta feature updates (new notification types may be added)
 
@@ -894,7 +915,7 @@ Enable all five end-user security notification types in Okta so that users recei
 | NIST 800-53 | CM-6, IA-3, SI-2 |
 
 #### Description
-Device Assurance policies define the minimum security posture a device must meet before its user is permitted to authenticate, and they are bound to access decisions through device conditions in application sign-in policy rules. Each policy is scoped to a single platform (Android, ChromeOS, iOS, macOS, or Windows) and evaluates signals such as minimum OS version and patch level, disk encryption, screen lock, jailbreak or root status, and secure hardware presence, collected by Okta Verify or by Chrome Device Trust on managed Chrome browsers. See Okta's [Device assurance policies guide](https://developer.okta.com/docs/guides/device-assurance-policies/main/) for the full attribute model and the underlying Device Assurance Policies API.
+Device Assurance policies define the minimum security posture a device must meet before its user is permitted to authenticate, and they are bound to access decisions through device conditions in application sign-in policy rules. Each policy is scoped to a single platform (Android, ChromeOS, iOS, macOS, or Windows) and evaluates signals such as minimum OS version and patch level, disk encryption, screen lock, jailbreak or root status, and secure hardware presence, collected by Okta Verify or by Chrome Device Trust on managed Chrome browsers. See Okta's [Device assurance policies guide](https://developer.okta.com/docs/guides/device-assurance-policies/main/) and the [Device Assurance Policies API](https://developer.okta.com/docs/api/openapi/okta-management/management/tag/DeviceAssurance/) (`diskEncryptionType`, `screenLockType`, `secureHardwarePresent`, `jailbreak`, `osVersion`) for the full attribute model.
 
 #### Rationale
 **Why This Matters:**
@@ -912,12 +933,12 @@ Device Assurance policies define the minimum security posture a device must meet
 - Device registration or endpoint management integration already in place (see Section 1.3)
 - Super Admin access
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Device assurance form for macOS, Windows and Android read on a live org" date="2026-09-24" %}
 
 **Step 1: Confirm the Device Signal Source**
 1. Navigate to: **Security → Authenticators** and confirm **Okta Verify** is active with **Okta FastPass** enabled (see Section 1.3)
-2. For managed Chrome browsers, navigate to: **Security → Device Integrations** and add the **Chrome Device Trust** connector
-3. Navigate to: **Directory → Devices** and confirm managed endpoints are reporting with a registered/managed status
+2. For managed Chrome browsers, plan to select **Chrome Device Trust** under **Device attribute provider(s)** in each device assurance policy (Step 2)
+3. Navigate to: **Directory → Devices** and confirm managed endpoints are reporting (filter **Device management: Managed**)
 
 **Step 2: Create a Device Assurance Policy per Platform**
 1. Navigate to: **Security → Device Assurance Policies**
@@ -928,37 +949,41 @@ Device Assurance policies define the minimum security posture a device must meet
 
 | Attribute | Recommended Setting |
 |-----------|---------------------|
-| Minimum OS version | Current vendor-supported release at the latest security patch level |
+| OS version | Current vendor-supported release at the latest security patch level |
 | Disk encryption | Required |
-| Screen lock | Required |
+| Lock screen | Required |
 | Jailbroken or rooted device | Blocked (iOS and Android) |
-| Secure hardware | Required (TPM or Secure Enclave-backed keys) |
+| Secure Enclave (macOS) / Hardware keystore (Android) / Trusted Platform Module (Windows) | Required |
 
 6. Click **Save**
 7. Repeat for every platform present in your fleet — a platform with no policy is a platform with no assurance
 
 **Step 3: Bind the Policy to Application Sign-In Rules**
-1. Navigate to: **Security → Authentication Policies**
+1. Navigate to: **Security → Authentication Policies → App sign-in**
 2. Select the policy protecting your most sensitive applications — start with the **Okta Admin Console** policy
 3. Click **Actions** next to the rule you want to harden and select **Edit**
-4. Under the device conditions, set device state to **Registered** and select the device assurance policies created in Step 2
-5. Set the rule action to **Allowed** only when the assurance policy is satisfied, then add a lower-priority rule that denies access when it is not
+4. Set **Device state is:** **Registered**, and in **Device assurance policy is** select the device assurance policies created in Step 2
+5. Set **Access is:** **Allowed after successful authentication** only when the assurance policy is satisfied, then add a lower-priority rule that denies access when it is not
 6. Click **Save**
 7. Repeat for each authentication policy protecting sensitive applications
 
 **Step 4: Configure Grace Periods and Remediation Messaging**
 1. Re-open each device assurance policy
-2. Set a grace period on the OS version requirement so users are warned before enforcement begins — 7 days for L2, 0 days for L3
-3. Enable remediation guidance so end users see the specific failed check and how to fix it rather than a generic denial
+2. Where your org's form offers a grace period for the OS version requirement (**No** / **Yes, by a due date** / **Yes, after a number of days** — the field was not displayed on an Okta Integrator Free Plan org checked 2026-09-24), set one so users are warned before enforcement begins — 7 days for L2, none for L3
+3. Under **Remediation**, select **Display remediation instructions** so end users see the specific failed check and how to fix it rather than a generic denial
 4. Click **Save**
 
 **Step 5: Add Advanced Posture Checks (Early Access, Optional)**
-1. Confirm the Advanced Posture Checks early-access feature is enabled for your tenant under **Settings → Features**
+1. Navigate to: **Security → Advanced Posture Checks → Custom checks** (if the page is absent, ask Okta to enable the feature for your tenant)
 2. Author custom osquery rules that assert the absence of prohibited software or the presence of required agents on corporate devices
 3. Attach the custom check to the relevant device assurance policy
 4. Roll the check out in a monitoring posture first, review the sign-in outcomes for false positives, then move to enforcement
 
 **Time to Complete:** ~2 hours for initial policy creation across platforms, plus fleet remediation time
+
+#### Code Implementation
+
+{% include pack-code.html vendor="okta" section="1.12" %}
 
 #### Validation & Testing
 1. Navigate to **Security → Device Assurance Policies** and verify one active policy exists for every platform in your fleet
@@ -1026,19 +1051,19 @@ Document a written standard requiring, for every password reset, MFA factor rese
 1. Navigate to: **Security → Administrators → Roles**
 2. Open the Help Desk custom role created in Section 1.2
 3. Confirm permissions are limited to password reset and account unlock, and exclude `okta.users.manage`, `okta.apps.manage`, and all IdP permissions
-4. Open the role's **Resource sets** and scope it to a group that explicitly **excludes** all administrators — help desk agents should not be technically capable of acting on privileged accounts
+4. On the **Resources** tab, create or edit the resource set assigned with this role and scope it to a group that explicitly **excludes** all administrators — help desk agents should not be technically capable of acting on privileged accounts
 5. Click **Save**
 
-**Step 3: Require Step-Up Authentication for Factor Resets**
-1. Navigate to: **Security → General**
-2. Scroll to **Protected Actions** and click **Edit**
-3. Confirm **Reset user MFA factors** is selected
-4. Set the authenticator requirement to phishing-resistant (FIDO2/WebAuthn)
-5. Click **Save**
+**Step 3: Require Step-Up Authentication for Privileged Resets**
+1. Navigate to: **Applications and Resources → Applications → Okta Admin Console → Protected Actions**
+2. Click **Edit** next to **Protected actions**
+3. Select **Reset authenticators for super admins**, **Reset passwords for super admins**, **Assign and revoke admin role (excluding super admin role)**, and **Assign and revoke super admin role**
+4. Set **Authentication required every** to **1** minute(s)
+5. Click **Save configuration**. The step-up factor comes from the Okta Admin Console authentication policy — make it phishing-resistant per Section 1.1
 
 **Step 4: Notify the Account Owner on Every Reset**
-1. Navigate to: **Settings → Account** and confirm the **Authenticator reset notification** and **MFA factor reset notification** types are enabled (see Section 1.11)
-2. Navigate to: **Security → General → Suspicious Activity Reporting** and confirm it is **Enabled** so an account owner can report a reset they did not request
+1. Navigate to: **Security → General → Security notification emails** and confirm **Authenticator reset notification email** is **Enabled** (see Section 1.11)
+2. In the same section, confirm **Report suspicious activity via email** is **Enabled** so an account owner can report a reset they did not request
 
 **Step 5: Train and Test the Help Desk**
 1. Deliver targeted training on the impersonation techniques used against service desks, using the Okta cross-tenant impersonation writeup as the case study
@@ -1048,11 +1073,13 @@ Document a written standard requiring, for every password reset, MFA factor rese
 
 **Time to Complete:** ~2 hours for policy drafting, plus training rollout
 
+**Automation:** ClickOps only — Okta exposes no write interface for this setting: the verification standard and training are procedural, and the Okta Management API documents no Protected Actions endpoint ([Okta Management API](https://developer.okta.com/docs/api/openapi/okta-management/management/), spec 2026.08.4, checked 2026-09-24). The help-desk role itself is automatable through Section 1.2's pack and the resource-set API (`/api/v1/iam/resource-sets`).
+
 #### Validation & Testing
 1. A written verification standard exists, is published to the help desk, and names visual verification as mandatory for password resets, factor resets, and new factor enrollment
 2. Review a sample of the last 20 password and factor reset tickets — each must record the verification method and the verifier
-3. Navigate to **Security → Administrators → Roles** and confirm the help desk resource set excludes all admin accounts
-4. Navigate to **Security → General → Protected Actions** and confirm MFA factor reset requires step-up authentication
+3. Navigate to **Security → Administrators → Resources** and confirm the help desk resource set excludes all admin accounts
+4. Navigate to **Applications and Resources → Applications → Okta Admin Console → Protected Actions** and confirm the reset actions require step-up authentication
 5. Conduct an unannounced social engineering test against the help desk — the agent should refuse and escalate
 6. Review System Log `user.mfa.factor.reset` and `user.account.reset_password` events and confirm each maps to a ticket documenting visual verification
 
@@ -1088,6 +1115,7 @@ Document a written standard requiring, for every password reset, MFA factor rese
 |-----------|---------|
 | CIS Controls | 13.3 |
 | NIST 800-53 | AC-3, SC-7 |
+| DISA STIG | V-279691, V-279693 (V1R2) |
 
 #### Description
 Define network zones (corporate, VPN, known bad) and enforce authentication policies based on network location. Block or require step-up authentication from untrusted networks.
@@ -1100,7 +1128,7 @@ Define network zones (corporate, VPN, known bad) and enforce authentication poli
 
 **Attack Prevented:** Credential stuffing from botnets, unauthorized access from foreign locations
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Add zone dialogs and rule IP conditions read on a live org" date="2026-09-24" %}
 
 **Step 1: Define Network Zones**
 1. Navigate to: **Security → Networks**
@@ -1113,17 +1141,17 @@ Define network zones (corporate, VPN, known bad) and enforce authentication poli
 
 **Blocked Locations:**
 - Type: Dynamic Zone
-- Block: TOR exit nodes, known-bad IP ranges
-- Use threat intelligence feeds
+- IP type: **Tor anonymizer proxy** (or **Any proxy**); add known-bad **Locations** or **ISP ASNs** as needed
+- Either check **Block access from IPs matching conditions listed in this zone** — a global pre-authentication block that makes the zone unavailable in policies, so skip the deny rule in Step 2 — or leave it unchecked and deny the zone in policy (Step 2)
 
-**Step 2: Create Zone-Based Authentication Policy**
-1. Navigate to: **Security → Authentication Policies**
+**Step 2: Create Zone-Based Authentication Policy Rules**
+1. Navigate to: **Security → Authentication Policies → App sign-in** → open the policy to harden
 2. Add rule:
-   - **IF:** Network zone = "Not Corporate"
-   - **THEN:** Require MFA + limit session duration
-3. Add rule:
-   - **IF:** Network zone = "Blocked Locations"
-   - **THEN:** Deny access
+   - **IF User's IP is:** Not in any of the following zones → "Corporate Network"
+   - **THEN:** require MFA (**User must authenticate with:** Any 2 factor types) and a shorter re-authentication interval
+3. Add rule (only if "Blocked Locations" is not a blocklist zone):
+   - **IF User's IP is:** In any of the following zones → "Blocked Locations"
+   - **THEN Access is:** Denied
 
 #### Code Implementation
 
@@ -1151,15 +1179,21 @@ Limit access to the Okta Admin Console to specific IP ranges (corporate network,
 
 **Attack Prevented:** Stolen admin credential reuse, session token replay from external networks, unauthorized console access
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="IP Zone, Admin Console rule conditions and IP binding setting read on a live org" date="2026-09-24" %}
 
-1. Navigate to: **Security → General**
-2. Under **Okta Admin Console**, configure:
-   - **Allowed IPs:** Add corporate network ranges
-   - **Block all other IPs:** Enable
-3. Test access from allowed IP before enforcement
+1. Navigate to: **Security → Networks** → **Add zone** → **IP Zone**, name it "Admin Allowed IPs", and enter your corporate egress ranges as **Gateway IPs**
+2. Navigate to: **Security → Authentication Policies → App sign-in → Okta Admin Console**
+3. **Add rule** at priority 1:
+   - **IF User's IP is:** In any of the following zones → "Admin Allowed IPs"
+   - **THEN Access is:** Allowed after successful authentication
+4. Prove a break-glass administrator path works from an allowed IP first, then edit the **Catch-all Rule** so **Access is:** Denied
+5. Optional: **Security → General → Organization Security → IP binding for admin console: Enabled** binds each admin session to the IP it started on
 
-**Warning:** Ensure break-glass procedure for lockout scenarios.
+**Warning:** A wrong zone on the Okta Admin Console policy locks every administrator out. Ensure a tested break-glass procedure before denying the Catch-all Rule.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="okta" section="2.2" %}
 
 ---
 
@@ -1170,6 +1204,7 @@ Limit access to the Okta Admin Console to specific IP ranges (corporate network,
 | Framework | Control |
 |-----------|---------|
 | NIST 800-53 | SC-7, AC-3 |
+| DISA STIG | V-279692 (V1R2) |
 
 #### Description
 Activate Okta's Enhanced Dynamic Zone to automatically block traffic from anonymizing proxies, Tor exit nodes, and residential proxies. The `DefaultEnhancedDynamicZone` ships inactive by default and must be explicitly activated.
@@ -1183,38 +1218,30 @@ Activate Okta's Enhanced Dynamic Zone to automatically block traffic from anonym
 
 **Attack Prevented:** Credential stuffing via anonymized infrastructure, session replay from Tor/proxy networks
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Default enhanced dynamic zone and zone dialogs read on a live org" date="2026-09-24" %}
 
-**Step 1: Activate Enhanced Dynamic Zone**
+**Step 1: Activate the Default Enhanced Dynamic Zone**
 1. Navigate to: **Security → Networks**
-2. Locate **DefaultEnhancedDynamicZone** in the zone list
-3. Click **Edit**
-4. Change **Zone Status** to **Active**
-5. Set **Usage** to **Blocklist**
-6. Click **Save**
+2. Locate **DefaultEnhancedDynamicZone** in the zone list — it is a system blocklist zone that already includes the **ALL_ANONYMIZERS** IP service category
+3. Change its status from **Inactive** to **Active**. It has no edit form; its only setting is its status
 
-**Step 2: Configure Blocked IP Categories**
-1. In the Enhanced Dynamic Zone settings, select categories to block:
-   - **Anonymizing Proxies:** ☑ Checked
-   - **Tor Exit Nodes:** ☑ Checked
-   - **Residential Proxies:** ☑ Checked (optional, may impact remote workers using ISP proxies)
-2. Click **Save**
+**Step 2: Add Finer-Grained Anonymizer Categories (Optional)**
+1. Navigate to: **Security → Networks** → **Add zone** → **Enhanced dynamic zone**
+2. Check **Block access from IPs matching conditions listed in this zone**
+3. Under **IP service category**, choose **Include the following IP service categories** and add the anonymizer and proxy categories to block (residential proxies may affect remote workers)
+4. Click **Save**
 
-**Step 3: Apply to Authentication Policies**
-1. Navigate to: **Security → Authentication Policies**
-2. For each policy, add a rule:
-   - **IF:** Network zone = "DefaultEnhancedDynamicZone"
-   - **THEN:** Deny access
-3. Position this rule with higher priority than allow rules
+**Step 3: No Policy Rule Is Needed for Blocklist Zones**
+A zone saved as a blocklist is enforced before any policy is evaluated: the console states that "Configuring a zone as a blocklist makes it unavailable in policies. The configured conditions apply as a pre-authentication deny rule on all Okta endpoints." Do not try to add these zones to authentication policy rules.
 
 **Step 4: Configure Geographic Restrictions (Optional)**
 1. Navigate to: **Security → Networks**
-2. Click **Add Zone** → **Dynamic Zone**
+2. Click **Add zone** → **Dynamic Zone**
 3. Configure:
    - **Name:** "Blocked Countries"
    - **Locations:** Select countries where your organization has no users
-   - **Usage:** Blocklist
-4. Add deny rule in authentication policies for this zone
+   - Check **Block access from IPs matching conditions listed in this zone**
+4. Click **Save**
 
 #### Code Implementation
 
@@ -1222,13 +1249,13 @@ Activate Okta's Enhanced Dynamic Zone to automatically block traffic from anonym
 
 #### Validation & Testing
 1. Navigate to **Security → Networks** and verify DefaultEnhancedDynamicZone shows **Active** status
-2. Verify zone usage is set to **Blocklist**
+2. Verify the zone is listed as an enhanced dynamic zone **blocklist**
 3. Test access from a Tor exit node or known anonymizing proxy — should be denied
 4. Verify legitimate users on corporate VPN are not affected
 
 #### Monitoring & Maintenance
 
-**Log query:** See Code Pack section 2.3 (cli) above for the System Log filter expression.
+**Detection rule:** See the Sigma rule in Code Pack section 2.3 above.
 
 **Maintenance schedule:**
 - **Monthly:** Review blocked traffic patterns for false positives
@@ -1258,27 +1285,26 @@ Control which OAuth applications users can authorize and require admin approval 
 
 **Attack Prevented:** OAuth phishing, malicious app consent, shadow IT
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Self Service, Okta API Scopes and Tokens pages read on a live org" date="2026-09-24" %}
 
-**Step 1: Configure App Integration Policies**
-1. Navigate to: **Applications → App Integration Policies**
-2. Create policy:
-   - **Name:** "Require Admin Approval for New Apps"
-   - **Scope:** All users except Admins
-   - **Action:** Require admin approval for user-initiated apps
+**Step 1: Restrict User-Initiated App Requests**
+1. Navigate to: **Applications and Resources → Self Service**
+2. Under **User App Requests**, click **Edit**
+3. Uncheck **Allow users to add personal apps**
+4. Uncheck **Allow users to add org-managed apps** unless every self-service app requires admin approval
+5. Click **Save**
 
 **Step 2: Review Existing App Grants**
-1. Navigate to: **Reports → Application Access Audit**
-2. Export list of all OAuth grants
-3. Review for over-permissioned or suspicious apps
+1. Navigate to: **Applications and Resources → Applications**
+2. For each OIDC and API Services app, open the **Okta API Scopes** tab
+3. Review for over-permissioned or suspicious grants
 4. Revoke unnecessary grants
 
 **Step 3: Restrict API Token Creation**
 1. Navigate to: **Security → API → Tokens**
-2. Review existing tokens
-3. Configure:
-   - Require admin approval for new tokens
-   - Set expiration policies (max 90 days)
+2. Review existing tokens and revoke any without a current owner and purpose
+3. Require step-up authentication to create tokens: **Applications and Resources → Applications → Okta Admin Console → Protected Actions** → confirm **Create API Token** is selected
+4. SSWS tokens have no expiration-policy setting: a token expires only after 30 days without use, and that period is fixed ([Okta: Create an API token](https://developer.okta.com/docs/guides/create-an-api-token/main/)) — so schedule rotation (see 3.4)
 
 #### Code Implementation
 
@@ -1310,21 +1336,22 @@ Secure SCIM (System for Cross-domain Identity Management) connectors that provis
 #### ClickOps Implementation
 
 **Step 1: Audit SCIM-Enabled Apps**
-1. Navigate to: **Applications → Applications**
-2. Filter by: Provisioning = Enabled
+1. Navigate to: **Applications and Resources → Applications**
+2. Open each app and look for a **Provisioning** tab (the application list has no provisioning filter)
 3. Document all SCIM integrations
 
-**Step 2: Rotate SCIM Tokens**
+**Step 2: Rotate SCIM Credentials**
 1. For each SCIM-enabled app:
-   - Navigate to app → **Provisioning** tab
-   - Regenerate API token
-   - Update receiving application
-2. Document token rotation schedule (quarterly minimum)
+   - Issue a new credential (API token or service-account password) in the receiving application
+   - In Okta, open the app → **Provisioning** tab → **Settings → Integration** → **SCIM Connection** → **Edit**
+   - Replace the credential under **Authentication Mode** and click **Save** — Okta tests the connection on save, so a wrong credential is rejected immediately
+   - Revoke the old credential in the receiving application
+2. Document credential rotation schedule (quarterly minimum)
 
 **Step 3: Limit SCIM Scope**
-1. Configure provisioning to sync only required attributes
-2. Disable "Sync Password" unless required
-3. Enable "Group Push" only for necessary groups
+1. Under **SCIM Connection → Supported provisioning actions**, enable only the actions you need (**Push New Users**, **Push Profile Updates**, **Push Groups**, **Import New Users and Profile Updates**, **Import Groups**)
+2. In **Settings → To App**, sync only required attributes and leave **Sync Password** off unless required
+3. Use **Push Groups** only for necessary groups
 
 #### Monitoring
 
@@ -1352,21 +1379,18 @@ Restrict which third-party applications can receive OAuth grants from users. OAu
 
 **Attack Prevented:** OAuth consent phishing, supply chain compromise via over-privileged integrations, shadow IT
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="App scopes tab, Self Service and authorization server tabs read on a live org" date="2026-09-24" %}
 
 **Step 1: Review Existing OAuth Grants**
-1. Navigate to: **Applications → Applications**
-2. Filter by: Sign-on method = **OpenID Connect** or **OAuth 2.0**
-3. For each application, click **Okta API Scopes** tab
+1. Navigate to: **Applications and Resources → Applications**
+2. Open each OIDC and API Services app (the list filters only by status, not sign-on method)
+3. Click the **Okta API Scopes** tab
 4. Document all granted scopes — flag any with `okta.users.manage`, `okta.apps.manage`, or `okta.authorizationServers.manage`
 
-**Step 2: Configure App Integration Policies**
-1. Navigate to: **Settings → Account → App Integration Settings**
-2. Under **User app requests:**
-   - Select **Require admin approval for user-initiated app integrations**
-3. Under **Third-party app consent:**
-   - Select **Only allow pre-approved applications**
-4. Click **Save**
+**Step 2: Restrict Which Apps Users Can Add**
+1. Navigate to: **Applications and Resources → Self Service**
+2. Under **User App Requests**, click **Edit** and apply the restrictions from Section 3.1 Step 1
+3. For user consent to OAuth scopes, review each OIDC app's consent setting and the authorization server's scope consent settings (Step 3) — Okta has no org-wide "only pre-approved applications" switch
 
 **Step 3: Audit API Scopes for Each Application**
 1. Navigate to: **Security → API → Authorization Servers**
@@ -1390,7 +1414,7 @@ Restrict which third-party applications can receive OAuth grants from users. OAu
 
 #### Monitoring & Maintenance
 
-**Log query:** See Code Pack section 3.3 (cli) above for the System Log filter expression.
+**Detection rule:** See the Sigma rule in Code Pack section 3.3 above.
 
 **Maintenance schedule:**
 - **Monthly:** Review OAuth consent grants across all users
@@ -1406,25 +1430,25 @@ Restrict which third-party applications can receive OAuth grants from users. OAu
 | Framework | Control |
 |-----------|---------|
 | NIST 800-53 | IA-4, IA-5, AC-2 |
-| DISA STIG | v1.1 NHI Controls (Feb 2026) |
+| DISA STIG | V-279689, V-279690 (V1R2, Jan 2026) |
 
 #### Description
-Implement governance for non-human identities: service accounts, API tokens, automation accounts, and machine-to-machine (M2M) integrations. Migrate from static SSWS API tokens to OAuth 2.0 for API access. NHI compromise is a leading cause of identity-based breaches and is now covered by DISA STIG v1.1.
+Implement governance for non-human identities: service accounts, API tokens, automation accounts, and machine-to-machine (M2M) integrations. Migrate from static SSWS API tokens to OAuth 2.0 for API access. NHI compromise is a leading cause of identity-based breaches, and DISA's Okta IDaaS STIG V1R2 now requires API tokens to be network-restricted and created under dedicated accounts.
 
 #### Rationale
 **Why This Matters:**
 - The October 2023 Okta breach was caused by a compromised service account whose credentials were saved to a personal Google profile
-- Static SSWS API tokens never expire unless manually revoked, creating persistent access risk
+- Static SSWS API tokens stay valid as long as they are used at least once every 30 days, so a token in regular use never expires on its own — a persistent access risk
 - Service accounts tied to individual admin users become orphaned when that admin leaves
 - OAuth 2.0 provides shorter token lifespans, granular scopes, and automatic key rotation vs static SSWS
-- DISA STIG v1.1 (Feb 2026) adds five new checks specifically for NHI security
+- DISA STIG V1R2 (Jan 2026) adds two API-token checks: tokens restricted to network zones (V-279689) and created under dedicated user accounts (V-279690)
 
 **Attack Prevented:** Service account compromise, API token theft and replay, persistent unauthorized access via stale tokens
 
 **Real-World Incidents:**
 - **October 2023:** Compromised service account credentials stored in personal Google profile enabled breach of Okta support system
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Token dialog and API Services app flow walked on a live org with a temporary app" date="2026-09-24" %}
 
 **Step 1: Audit All API Tokens**
 1. Navigate to: **Security → API → Tokens**
@@ -1437,30 +1461,24 @@ Implement governance for non-human identities: service accounts, API tokens, aut
 3. Flag tokens with no activity in 90+ days for deactivation
 4. Flag tokens created by users who are no longer active
 
-**Step 2: Add IP Restrictions to Existing SSWS Tokens**
-1. For each active SSWS token:
-   - Navigate to: **Security → API → Tokens**
-   - Click the token name
-   - Under **Network**, select a specific network zone (e.g., "Corporate Network" or "Automation Servers")
-   - Click **Save**
-2. This limits where stolen tokens can be replayed from
+**Step 2: Restrict SSWS Tokens to Network Zones**
+1. A token's network restriction is chosen when it is created: **Security → API → Tokens → Create token** → **API calls made with this token must originate from:** choose **In any of the following zones:** and select a specific network zone (e.g., "Corporate Network" or "Automation Servers") instead of **Any IP**
+2. Re-create any existing token that allows **Any IP** with a zone restriction, move its consumer to the new token, then revoke the old one
+3. This limits where stolen tokens can be replayed from (DISA STIG V-279689)
 
 **Step 3: Create OAuth 2.0 Service Apps (Migration)**
-1. Navigate to: **Applications → Applications**
+1. Navigate to: **Applications and Resources → Applications** (or **Applications and Resources → API Service Integrations**)
 2. Click **Create App Integration**
 3. Select **API Services** → **Next**
-4. Configure:
-   - **App integration name:** "[Service Name] API Access"
-   - **Grant type:** Client Credentials
-   - **Client authentication:** Public key / Private key (recommended) or Client secret
-5. Under **Okta API Scopes**, grant ONLY the minimum required scopes
-6. Click **Save**
-7. Configure token lifetime: **Security → API → Authorization Servers → default → Access Policies**
+4. Enter **App integration name:** "[Service Name] API Access" and click **Save** — the app is created as a **Service** with grant type **Client Credentials**
+5. On the **General** tab, under **Client Credentials**, click **Edit** and set **Client authentication** to **Public key / Private key** (recommended) or **Client secret**, then save
+6. On the **Okta API Scopes** tab, click **Grant** for ONLY the minimum required scopes
+7. Token lifetime: access tokens that carry Okta API scopes (`okta.*`) come from the org authorization server, whose policies can't be customized, with a lifetime fixed at one hour ([Okta: OAuth for Okta service apps](https://developer.okta.com/docs/guides/implement-oauth-for-okta-serviceapp/main/)); the default custom authorization server's access policies do not govern them
 
 **Step 4: Create Dedicated Service Accounts**
 1. Navigate to: **Directory → People**
-2. Click **Add Person**
-3. Create a dedicated service account:
+2. Click **Add person**
+3. Create a dedicated service account (DISA STIG V-279690 requires API tokens to be created under dedicated accounts):
    - **First name:** "SVC"
    - **Last name:** "[Service Name]"
    - **Username:** "svc-[service]@yourdomain.com"
@@ -1498,7 +1516,7 @@ Implement governance for non-human identities: service accounts, API tokens, aut
 
 #### Monitoring & Maintenance
 
-**Log query:** See Code Pack section 3.4 (cli) above for the System Log filter expression.
+**Detection rule:** See the Sigma rule in Code Pack section 3.4 above.
 
 **Maintenance schedule:**
 - **Monthly:** Review API token usage (flag tokens with no recent activity)
@@ -1518,7 +1536,7 @@ Implement governance for non-human identities: service accounts, API tokens, aut
 | NIST 800-53 | AC-3, AC-6, IA-4, IA-5, AU-2 |
 
 #### Description
-Cross App Access (XAA) is Okta's extension to OAuth 2.0 that lets an enterprise broker, scope, and audit the connections AI agents and Model Context Protocol (MCP) servers make to business applications, replacing the standing API keys those integrations otherwise require. It combines RFC 8693 token exchange with RFC 7523 JWT bearer authorization so an agent receives a scoped, short-lived, centrally revocable token bound to an enterprise identity instead of a long-lived secret pasted into a configuration file. The Model Context Protocol specification has adopted the pattern as "Enterprise-Managed Authorization," and Okta has stated Okta Integration Network availability for Workforce Identity customers beginning August 2026. ([Okta announces Cross App Access partners](https://www.okta.com/newsroom/press-releases/okta-announces-cross-app-access-partners/))
+Cross App Access (XAA) is Okta's extension to OAuth 2.0 that lets an enterprise broker, scope, and audit the connections AI agents and Model Context Protocol (MCP) servers make to business applications, replacing the standing API keys those integrations otherwise require. It builds on the IETF [Identity Assertion JWT Authorization Grant](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/) draft, which combines [RFC 8693](https://www.rfc-editor.org/rfc/rfc8693) token exchange with [RFC 7523](https://www.rfc-editor.org/rfc/rfc7523) JWT bearer authorization, so an agent receives a scoped, short-lived, centrally revocable token bound to an enterprise identity instead of a long-lived secret pasted into a configuration file. The Model Context Protocol specification has adopted the pattern as "Enterprise-Managed Authorization," and Okta has stated Okta Integration Network availability for Workforce Identity customers beginning August 2026. ([Okta announces Cross App Access partners](https://www.okta.com/newsroom/press-releases/okta-announces-cross-app-access-partners/))
 
 #### Rationale
 **Why This Matters:**
@@ -1539,23 +1557,21 @@ Cross App Access (XAA) is Okta's extension to OAuth 2.0 that lets an enterprise 
 #### ClickOps Implementation
 
 **Step 1: Inventory AI Agents and MCP Servers Already in Use**
-1. Navigate to: **Reports → Application Access Audit** and export the current OAuth grants
+1. Navigate to: **Directory → AI Agents** for agents already registered, and to **Applications and Resources → Applications** → each app → **Okta API Scopes** for current grants
 2. Navigate to: **Security → API → Tokens** and flag every SSWS token whose consumer is an AI assistant, agent framework, or MCP server
 3. Interview engineering and operations teams about MCP servers running on developer workstations against corporate SaaS — these almost never appear in the application inventory
 4. Record for each agent: the applications it reaches, the credential type it holds, the human who created it, and the scopes granted
 
 **Step 2: Confirm XAA Availability for Your Tenant and Applications**
 1. Confirm your edition and XAA entitlement with your Okta account team
-2. Navigate to: **Applications → Browse App Catalog** and check whether each target application publishes an XAA-enabled integration
+2. Navigate to: **Applications and Resources → Applications → Browse App Catalog** and check the **Cross App Access** category (and **MCP Server**) for an XAA-enabled integration of each target application
 3. For applications without XAA support, keep them on the OAuth 2.0 service app pattern from Section 3.4 and record the gap in your risk register
 
 **Step 3: Register the Agent as an Identity-Bound Client**
-1. Navigate to: **Applications → Applications**
-2. Click **Create App Integration**, select **API Services**, and click **Next**
-3. Name the integration for the agent rather than the person who configured it (e.g., "MCP — Ticket Triage Agent")
-4. Set **Client authentication** to **Public key / Private key** — never a shared client secret
-5. Under **Okta API Scopes** and the resource application's scopes, grant only the scopes the agent's task actually requires, read-only wherever the workflow permits
-6. Click **Save**
+1. Navigate to: **Directory → AI Agents** → **Register AI agent**, name the agent for its function rather than the person who configured it (e.g., "MCP — Ticket Triage Agent"), and complete the wizard's **User access and authentication** step
+2. For an agent that cannot use XAA, register it instead as a service app: **Applications and Resources → Applications → Create App Integration → API Services → Next**, enter the name, and click **Save**
+3. On the service app's **General** tab, under **Client Credentials** → **Edit**, set **Client authentication** to **Public key / Private key** — never a shared client secret
+4. On the **Okta API Scopes** tab (and in the resource application's own scopes), **Grant** only the scopes the agent's task actually requires, read-only wherever the workflow permits
 
 **Step 4: Enable the Cross App Access Connection**
 1. Open the resource application's configuration and enable the Cross App Access connection for the registered agent client
@@ -1570,6 +1586,10 @@ Cross App Access (XAA) is Okta's extension to OAuth 2.0 that lets an enterprise 
 4. Add agent connections to the quarterly access review in Section 7.3
 
 **Time to Complete:** ~1 hour per agent integration, plus inventory time
+
+#### Code Implementation
+
+{% include pack-code.html vendor="okta" section="3.5" %}
 
 #### Validation & Testing
 1. Every AI agent and MCP server in the inventory maps to either an XAA connection or a documented OAuth 2.0 service app — zero remain on static SSWS tokens
@@ -1634,7 +1654,7 @@ Set session timeouts appropriate to risk level. Reduce maximum session lifetime 
 | Admin Console idle time | 30 minutes | 15 minutes | 15 minutes |
 | Persistent sessions | Optional | Disabled | Disabled |
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Global session rule form and Admin Console session settings read on a live org" date="2026-09-24" %}
 
 **Step 1: Configure Global Session Policy**
 1. Navigate to: **Security → Global Session Policy**
@@ -1643,17 +1663,20 @@ Set session timeouts appropriate to risk level. Reduce maximum session lifetime 
 4. Configure settings per the specification requirements table above
 
 **Step 2: Configure Admin Console Session Timeout**
-1. Navigate to: **Applications → Applications → Okta Admin Console**
+1. Navigate to: **Applications and Resources → Applications → Okta Admin Console**
 2. Click the **Sign On** tab
-3. Under "Okta Admin Console session", set:
+3. Under "Okta Admin Console session", click **Edit** and set:
    - **Maximum app session idle time:** 15 minutes (L2/L3)
+4. Click **Save**
 
-**Step 3: Create App-Specific Session Policies**
-For sensitive apps (PAM, admin consoles, financial systems):
-1. Navigate to app → **Sign On** tab
-2. Configure:
-   - **Session lifetime:** 2 hours max
-   - **Re-authentication:** Required on every access
+**Step 3: Require Re-Authentication for Sensitive Apps**
+For sensitive apps (PAM, admin consoles, financial systems), re-authentication is set in the app's authentication policy — an app's **Sign On** tab has no session-lifetime field:
+1. Navigate to: **Security → Authentication Policies → App sign-in** → the policy assigned to the app
+2. Click **Actions** next to its rule → **Edit**
+3. Set **Prompt for authentication** to **Every time user signs in to resource** (or to a time-based interval of 2 hours at most)
+4. Click **Save**
+
+#### Code Implementation
 
 {% include pack-code.html vendor="okta" section="4.1" %}
 
@@ -1680,17 +1703,18 @@ Disable "Remember Me" and persistent session features that increase session hija
 
 **Attack Prevented:** Session cookie theft and replay, session hijacking, persistent access from compromised devices
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Global session rule form and Organization Security panel read on a live org" date="2026-09-24" %}
 
 1. Navigate to: **Security → Global Session Policy**
 2. Select the **Default Policy**
 3. Click **Add rule** (create a custom rule at Priority 1)
-4. Disable:
-   - **Remember my device for MFA**
-   - **Okta global session cookies persist across browser sessions:** Disabled
-   - **Stay signed in for:** Set to minimum
-5. Navigate to: **Customizations → Other**
-6. Disable: **Allow users to remain signed in**
+4. Configure:
+   - **Okta global session cookies persist across browser sessions:** **Disable**
+   - **Multifactor authentication (MFA) is:** **Required**, with **Users will be prompted for MFA:** **At every sign in** (not "When signing in with a new device cookie")
+5. Navigate to: **Security → General → Organization Security** → **Edit**
+6. Set **Show option to stay signed in before users sign in** to **Not Enabled** and click **Save**; also leave **Option to stay signed in** off in each app sign-in policy rule
+
+#### Code Implementation
 
 {% include pack-code.html vendor="okta" section="4.2" %}
 
@@ -1705,7 +1729,7 @@ Disable "Remember Me" and persistent session features that increase session hija
 | NIST 800-53 | SC-23, AC-12 |
 
 #### Description
-Harden admin sessions with ASN binding, IP binding, and Protected Actions. These controls prevent session hijacking by invalidating admin sessions when network characteristics change, and require step-up authentication before critical operations.
+Harden admin sessions with IP binding, Protected Actions, and per-sign-in re-authentication for the Admin Console. These controls prevent session hijacking by invalidating admin sessions when network characteristics change, and require step-up authentication before critical operations.
 
 #### Rationale
 **Why This Matters:**
@@ -1720,57 +1744,57 @@ Harden admin sessions with ASN binding, IP binding, and Protected Actions. These
 **Real-World Incidents:**
 - **October 2023:** Stolen HAR file session tokens replayed from attacker infrastructure to access admin consoles
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="IP binding, Protected Actions and Admin Console rule form read on a live org" date="2026-09-24" %}
 
-**Step 1: Verify Admin Session ASN Binding (Enabled by Default)**
-1. Navigate to: **Security → General**
-2. Scroll to **Admin Session Settings**
-3. Verify **Bind admin sessions to ASN** is **ON**
-4. If not enabled, toggle it **ON** and click **Save**
+**Step 1: Understand Admin Session ASN Binding**
+Okta binds admin sessions to the network (ASN) they started on — its [admin-account guidance](https://support.okta.com/help/s/article/best-practices-for-securing-okta-workforce-identity-cloud-admin-accounts) still describes this as a protection — but current consoles expose no ASN setting to verify or change. Rely on IP binding (Step 2) for a control you can see.
 
 **Step 2: Enable Admin Session IP Binding (Recommended for L2+)**
 1. Navigate to: **Security → General**
-2. Under **Admin Session Settings**:
-   - Enable **Bind admin sessions to IP address**
-3. Click **Save**
+2. In **Organization Security**, click **Edit**
+3. Set **IP binding for admin console** to **Enabled**
+4. Click **Save**
 
 > **Note:** IP binding may cause disruptions for admins on dynamic IP addresses or mobile networks. Test with a pilot group before enforcing broadly.
 
 **Step 3: Enable Protected Actions**
-1. Navigate to: **Security → General**
-2. Scroll to **Protected Actions**
-3. Click **Edit**
-4. Enable Protected Actions and select the operations that require step-up authentication:
-   - ☑ Activate/deactivate identity providers
-   - ☑ Create/modify identity providers
-   - ☑ Reset user MFA factors
-   - ☑ Modify authentication policies
-   - ☑ Create/modify admin role assignments
-   - ☑ Modify network zones
-5. Set **Authenticator requirement:** Phishing-resistant (FIDO2/WebAuthn)
-6. Click **Save**
+1. Navigate to: **Applications and Resources → Applications → Okta Admin Console → Protected Actions**
+2. Click **Edit** next to **Protected actions**
+3. Select the operations that require step-up authentication, for example:
+   - ☑ Create identity providers
+   - ☑ Modify identity providers
+   - ☑ Reset authenticators for super admins
+   - ☑ Update any authentication policy/app sign-on policy
+   - ☑ Update global session policy/Okta sign-on policy
+   - ☑ Assign and revoke admin role (excluding super admin role)
+   - ☑ Assign and revoke super admin role
+   - ☑ Create API Token
+4. Set **Authentication required every** to **1** minute(s)
+5. Click **Save configuration**. The step-up factor comes from the Okta Admin Console authentication policy (Step 4), so make that policy phishing-resistant
 
-**Step 4: Disable MFA Device Remembrance for Admin Sessions**
-1. Navigate to: **Security → Authentication Policies**
+**Step 4: Require Re-Authentication for Every Admin Console Sign-In**
+1. Navigate to: **Security → Authentication Policies → App sign-in**
 2. Select the **Okta Admin Console** policy
-3. Edit the active rule:
-   - Set **MFA remember device:** Disabled (require MFA every session)
-   - Set **Re-authentication frequency:** Every sign-in attempt
+3. Click **Actions** next to the active rule → **Edit**:
+   - **Possession factor constraints are:** **Phishing resistant**
+   - **Prompt for authentication:** **Every time user signs in to resource**
 4. Click **Save**
 
 #### Code Implementation
 
 {% include pack-code.html vendor="okta" section="4.3" %}
 
+The pack above audits Step 4 read-only. Steps 2 and 3 are console-only: the Okta Management API documents no endpoint for admin console IP binding or Protected Actions ([Okta Management API](https://developer.okta.com/docs/api/openapi/okta-management/management/), spec 2026.08.4, checked 2026-09-24).
+
 #### Validation & Testing
-1. Verify ASN binding is active: Navigate to **Security → General → Admin Session Settings**
-2. Verify IP binding is active (if applicable)
+1. Verify IP binding is active: **Security → General → Organization Security → IP binding for admin console**
+2. Verify the selected operations on the Okta Admin Console app's **Protected Actions** tab
 3. Test Protected Actions: Attempt to modify an IdP — should prompt for step-up authentication
 4. Test session invalidation: Log in as admin, change network (e.g., switch from WiFi to VPN) — session should be invalidated if IP binding is enabled
 
 #### Monitoring & Maintenance
 
-**Log queries:** See Code Pack section 4.3 (cli) above for session binding and Protected Actions log filter expressions.
+**Detection rules:** See the Sigma rules in Code Pack section 4.3 above for session-binding and Protected Actions events.
 
 **Maintenance schedule:**
 - **Monthly:** Review Protected Actions audit log for any failures or unusual patterns
@@ -1801,12 +1825,12 @@ Configure Okta System Log forwarding to SIEM with comprehensive event capture fo
 
 **Attack Prevented:** Undetected account takeover, log tampering, delayed incident response, evidence loss
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Log Streaming add page and API Services scopes read on a live org" date="2026-09-24" %}
 
 **Step 1: Configure Log Streaming**
 1. Navigate to: **Reports → Log Streaming**
 2. Click **Add Log Stream**
-3. Select integration type:
+3. Select integration type and click **Next**:
    - **AWS EventBridge** - For AWS-based SIEM solutions
    - **Splunk Cloud** - For Splunk deployments
 4. Complete the required configuration fields
@@ -1814,11 +1838,13 @@ Configure Okta System Log forwarding to SIEM with comprehensive event capture fo
 
 **Step 2: Alternative - Okta Log API Integration**
 If your SIEM is not directly supported:
-1. Navigate to: **Security → API → Tokens**
-2. Create an API token with read-only System Log permissions
+1. Preferred: navigate to **Applications and Resources → Applications → Create App Integration → API Services → Next**, save the app, **Grant** only **okta.logs.read** on its **Okta API Scopes** tab, and have the SIEM authenticate with client credentials
+2. If an SSWS token is unavoidable, create it at **Security → API → Tokens** while signed in as a **Read-only Administrator** — a token has no permissions of its own and inherits its creator's admin role
 3. Configure your SIEM to pull logs via the System Log API endpoint
 
 **Step 3: Create Alert Rules (via SIEM)**
+
+#### Code Implementation
 
 {% include pack-code.html vendor="okta" section="5.1" %}
 
@@ -1834,19 +1860,23 @@ Enable Okta ThreatInsight to automatically block authentication from known-malic
 #### Rationale
 **Why This Matters:**
 - ThreatInsight draws on signals aggregated across Okta's customer base to identify IPs actively conducting credential-based attacks
-- Setting the action to Block stops authentication attempts from known-malicious sources before they ever reach a password or MFA check
+- Setting the action to log and enforce stops authentication attempts from known-malicious sources before they ever reach a password or MFA check
 - Network-level blocking of attacker infrastructure reduces the volume of credential-stuffing and password-spray traffic the tenant must absorb
 - It is a low-effort control requiring no additional credentials that adds a proactive defensive layer in front of every login
 
 **Attack Prevented:** Credential stuffing, password spraying, brute-force attempts from known-malicious IPs
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="ThreatInsight settings panel read on a live org" date="2026-09-24" %}
 
 1. Navigate to: **Security → General**
-2. Under **Okta ThreatInsight**:
-   - **Action:** Block
-   - **Exempt IPs:** Add known testing IPs if needed
-3. Save
+2. In **Okta ThreatInsight settings**, click **Edit**:
+   - **Action:** **Log and enforce security based on threat level**
+   - **Exempt Zones:** add only trusted network zones (e.g., scanner or test IP zones)
+3. Click **Save**
+
+> **Note:** Free-trial editions run ThreatInsight in limited capacity, as the console states.
+
+#### Code Implementation
 
 {% include pack-code.html vendor="okta" section="5.2" %}
 
@@ -1898,20 +1928,22 @@ Enable Identity Threat Protection with Okta AI for continuous post-authenticatio
 3. Click **Save**
 
 **Step 3: Configure Session Risk Evaluation**
-1. Navigate to: **Security → Authentication Policies**
+1. Navigate to: **Security → Authentication Policies → App sign-in**
 2. Edit rules to include: **Evaluate risk with ITP** = Enabled
 3. Set re-authentication triggers based on risk score changes
 
 **Step 4: Integrate with Okta Workflows (Optional)**
-1. Navigate to: **Workflow → Flows**
-2. Create a flow triggered by **ITP Risk Event**
+1. Navigate to: **Workflow → Workflows console** (opens Okta Workflows)
+2. Create a flow triggered by the ITP risk event
 3. Configure automated response actions:
    - Send Slack/Teams alert to security team
    - Create ticket in ITSM
    - Revoke active sessions for affected user
    - Add source IP to dynamic blocklist
 
-#### Monitoring & Maintenance
+#### Code Implementation
+
+Identity Threat Protection's policies are read-only in the Okta Management API (`ENTITY_RISK` and `POST_AUTH_SESSION` policy types), so the pack below is detection content: Sigma rules for ITP events.
 
 {% include pack-code.html vendor="okta" section="5.3" %}
 
@@ -1937,35 +1969,35 @@ Configure Okta's Behavior Detection to identify anomalous user behavior patterns
 
 **Attack Prevented:** Account takeover via stolen credentials, session replay from anomalous locations, impossible travel attacks
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Behavior Detection page and policy rule conditions read on a live org" date="2026-09-24" %}
 
-**Step 1: Configure Behavior Detection Rules**
+**Step 1: Review Behavior Detection Rules**
 1. Navigate to: **Security → Behavior Detection**
-2. Review the default behavior types:
+2. Confirm the behaviors you rely on are **Active** — New Device, New IP, New City, New Country, and Velocity (impossible travel). A behavior only defines what "new" means (its edit dialog holds **Behavior name** and **Evaluate against past N Authentications**); it has no action of its own
+3. Add any missing behavior with **Add behavior** (Location, IP, Device, Velocity, or ASN)
 
-| Behavior Type | Recommended Action |
+**Step 2: Enforce Responses in the Global Session Policy**
+1. Navigate to: **Security → Global Session Policy** → select the policy → **Add rule**
+2. Set the response per behavior with the **Behavior is** condition:
+
+| Behavior Type | Recommended Response (Global Session Policy rule) |
 |--------------|-------------------|
-| New Device | Challenge with additional factor |
-| New IP | Challenge with additional factor |
-| New City | Challenge with additional factor |
-| New State | Log only |
-| New Country | Deny |
-| Velocity (impossible travel) | Deny |
+| New Device | **Multifactor authentication (MFA) is:** Required |
+| New IP | **Multifactor authentication (MFA) is:** Required |
+| New City | **Multifactor authentication (MFA) is:** Required |
+| New State | No rule (log only) |
+| New Country | **Access is:** Denied |
+| Velocity (impossible travel) | **Access is:** Denied |
 
-3. Click **Edit** for each behavior type
-4. Set the **Action** per the table above
-5. Click **Save**
+3. Click **Create rule** for each
 
-**Step 2: Enable Risk Scoring in Authentication Policies**
-1. Navigate to: **Security → Authentication Policies**
-2. Edit the primary user-facing policy
-3. In the rule conditions, enable:
-   - **Risk score:** Evaluate risk for each authentication request
-4. Configure responses:
-   - **Low risk:** Allow with current factors
-   - **Medium risk:** Challenge with additional factor
-   - **High risk:** Deny access
-5. Click **Save**
+**Step 3: Use Risk in App Sign-In Policies**
+1. Navigate to: **Security → Authentication Policies → App sign-in** → the primary user-facing policy
+2. Add one rule per risk level with the **Risk is** condition:
+   - **Risk is: High** → **Access is:** Denied
+   - **Risk is: Medium** → **User must authenticate with:** Any 2 factor types, **Possession factor constraints are:** Phishing resistant
+   - **Risk is: Low** → the policy's normal rules apply
+3. Click **Save**
 
 #### Code Implementation
 
@@ -1978,7 +2010,7 @@ Configure Okta's Behavior Detection to identify anomalous user behavior patterns
 
 #### Monitoring & Maintenance
 
-**Log query:** See Code Pack section 5.4 (cli) above for the System Log filter expression.
+**Detection rule:** See the Sigma rule in Code Pack section 5.4 above.
 
 ---
 
@@ -2006,7 +2038,7 @@ Monitor for cross-tenant impersonation attacks where an adversary with admin acc
 **Real-World Context:**
 - **Obsidian Security Research:** Documented this technique as a post-compromise persistence mechanism used against Okta customers
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Role permission picker and Identity Providers tabs read on a live org" date="2026-09-24" %}
 
 **Step 1: Restrict IdP Configuration Permissions**
 1. Navigate to: **Security → Administrators**
@@ -2014,7 +2046,7 @@ Monitor for cross-tenant impersonation attacks where an adversary with admin acc
 3. Limit IdP configuration capability to the absolute minimum number of administrators
 4. Create a custom admin role WITHOUT IdP management if possible:
    - Navigate to: **Security → Administrators → Roles → Create new role**
-   - Exclude permissions: `okta.idps.manage`, `okta.policies.manage` (for IDP_DISCOVERY type)
+   - Leave unchecked **Identity provider → Manage identity providers** and **Policies → Manage policies** (API permission ids `okta.idps.manage` and `okta.policies.manage`); limit which policies a role can touch with the resource set assigned alongside it
 5. Reassign administrators to the restricted role
 
 **Step 2: Audit Existing Identity Providers**
@@ -2051,7 +2083,7 @@ Configure alerts in your SIEM for these system log events:
 
 #### Monitoring & Maintenance
 
-**SIEM alert rules (CRITICAL -- investigate immediately):** See Code Pack section 5.5 (db) above for IdP creation and routing rule modification detection queries.
+**SIEM alert rules (CRITICAL -- investigate immediately):** See the Sigma rules in Code Pack section 5.5 above for IdP creation and routing rule modification detections.
 
 **Maintenance schedule:**
 - **Weekly:** Review IdP configuration and routing rules for unauthorized changes
@@ -2069,7 +2101,7 @@ Configure alerts in your SIEM for these system log events:
 | NIST 800-53 | CA-7, RA-5 |
 
 #### Description
-Run Okta HealthInsight regularly to assess your tenant's security posture against Okta's 16 built-in security recommendations. HealthInsight provides a posture score and actionable remediation guidance for common misconfigurations.
+Run Okta HealthInsight regularly to assess your tenant's security posture against Okta's built-in security task recommendations (18 on a current Identity Engine org). HealthInsight reports the share of tasks completed and links each open task to the setting that fixes it.
 
 #### Rationale
 **Why This Matters:**
@@ -2080,50 +2112,54 @@ Run Okta HealthInsight regularly to assess your tenant's security posture agains
 
 **Attack Prevented:** Exploitation of common tenant misconfigurations left undetected between reviews
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="HealthInsight task list read on a live org" date="2026-09-24" %}
 
 **Step 1: Access HealthInsight**
 1. Navigate to: **Security → HealthInsight**
-2. Review the dashboard showing overall posture score
+2. Review the completion summary ("N% — X of Y tasks completed") and the **Incomplete**, **Complete**, and **Dismissed** tabs
 
-**Step 2: Review All 16 Recommendations**
+**Step 2: Review All 18 Tasks**
 
-| # | HealthInsight Check | Category |
+| # | HealthInsight Task | Guide Section |
 |---|-------------------|----------|
-| 1 | Admin MFA enrollment | Authentication |
-| 2 | User MFA enrollment | Authentication |
-| 3 | Phishing-resistant authenticator enabled | Authentication |
-| 4 | Password policy complexity | Password |
-| 5 | Password policy age settings | Password |
-| 6 | Common password check enabled | Password |
-| 7 | Account lockout configured | Account Security |
-| 8 | Session timeout configured | Session |
-| 9 | Persistent sessions disabled | Session |
-| 10 | ThreatInsight enabled and set to block | Threat Protection |
-| 11 | Network zones configured | Network |
-| 12 | Suspicious Activity Reporting enabled | Monitoring |
-| 13 | New sign-on notification enabled | Notifications |
-| 14 | Authenticator enrollment notification enabled | Notifications |
-| 15 | Password change notification enabled | Notifications |
-| 16 | System log forwarding configured | Logging |
+| 1 | Limit the share of admins holding super admin privileges | 1.2, 7.3 |
+| 2 | Password policy strength (minimum length 12, history 24, minimum age, lockout, common passwords restricted) | 1.4, 1.5 |
+| 3 | A block-listed network zone exists | 2.1, 2.3 |
+| 4 | Okta Admin Console authentication requirement is strong | 1.1, 4.3 |
+| 5 | ThreatInsight blocks login attempts from suspicious IPs | 5.2 |
+| 6 | Password Changed notifications are enabled | 1.11 |
+| 7 | Session lifetime is under 2 hours in all policies | 4.1 |
+| 8 | Suspicious activity reporting for end users is enabled | 1.11 |
+| 9 | New Sign-On notifications are enabled | 1.11 |
+| 10 | Authenticator Enrollment notifications are enabled | 1.11 |
+| 11 | Authenticator Reset notifications are enabled | 1.11 |
+| 12 | SAML authentication is enabled for all supported apps | 6.2 |
+| 13 | Sign-in failures from Tor anonymizer proxies | 2.3 |
+| 14 | Authenticators are required in all MFA enrollment policies | 1.10 |
+| 15 | MFA requirements do not conflict with Behavior Detection "New Device" | 5.4 |
+| 16 | MFA lifetime is shorter than the session expiration | 4.1 |
+| 17 | Risk score is evaluated for each request | 5.4 |
+| 18 | Content Security Policy is enforced for all brands | — |
 
-**Step 3: Remediate Failed Checks**
-1. For each check with **Failed** or **Warning** status:
-   - Click the recommendation for detailed remediation steps
-   - Follow Okta's guided remediation
-   - Mark as resolved after implementation
-2. Target: All 16 checks should show **Passed**
+**Step 3: Remediate Incomplete Tasks**
+1. For each task on the **Incomplete** tab:
+   - Use its **Go to …** link to open the setting that fixes it
+   - Apply the fix; the task moves to **Complete** on its own once HealthInsight's check passes
+   - **Dismiss** a task only with a documented reason (risk acceptance)
+2. Target: all 18 tasks complete, or dismissed with a documented reason
 
 **Step 4: Schedule Regular Reviews**
 1. Set a monthly calendar reminder to review HealthInsight
 2. Document posture score in your security metrics dashboard
 3. Include HealthInsight review in your quarterly security review process
 
+**Automation:** ClickOps only — Okta exposes no write interface for this setting: the Okta Management API documents no HealthInsight endpoint ([Okta Management API](https://developer.okta.com/docs/api/openapi/okta-management/management/), spec 2026.08.4, checked 2026-09-24). The settings each task checks are automated in the sections the table above maps them to.
+
 #### Validation & Testing
 1. Navigate to **Security → HealthInsight** and verify it loads
 2. Document current posture score as baseline
-3. Verify all 16 checks have been reviewed
-4. Remediate any Failed checks and confirm they move to Passed
+3. Verify all 18 tasks have been reviewed
+4. Remediate any Incomplete tasks and confirm they move to Complete
 
 #### Monitoring & Maintenance
 **Maintenance schedule:**
@@ -2143,11 +2179,11 @@ Run Okta HealthInsight regularly to assess your tenant's security posture agains
 | NIST 800-53 | CA-7, RA-5, AC-2(3), AC-6(7) |
 
 #### Description
-Identity Security Posture Management is Okta's native posture module that continuously scans the identity graph and reports exploitable weaknesses rather than checking a fixed list of tenant settings. It surfaces shadow admin accounts and permissions, dormant identities unused for 90 days or more, access points without MFA including local accounts, permission creep where users hold more access than their current role requires, and offboarded users who still retain active access. Coverage extends past Okta itself into Microsoft Entra ID and Microsoft 365, AWS, and Salesforce. ([Okta Identity Security Posture Management](https://www.okta.com/products/identity-security-posture-management/))
+Identity Security Posture Management is Okta's native posture module that continuously scans the identity graph and reports exploitable weaknesses rather than checking a fixed list of tenant settings. It surfaces shadow admin accounts and permissions, dormant identities unused for 90 days or more, access points without MFA including local accounts, permission creep where users hold more access than their current role requires, and offboarded users who still retain active access. Coverage extends past Okta itself into Microsoft Entra ID (still called Azure Active Directory on Okta's product page) and Microsoft 365, AWS, and Salesforce. ([Okta Identity Security Posture Management](https://www.okta.com/products/identity-security-posture-management/))
 
 #### Rationale
 **Why This Matters:**
-- HealthInsight (Section 5.6) checks sixteen fixed tenant settings and answers "is Okta configured correctly" — it cannot see that a user accumulated three overlapping admin grants, or that a contractor's account still holds Salesforce access two months after offboarding
+- HealthInsight (Section 5.6) checks a fixed list of tenant settings and answers "is Okta configured correctly" — it cannot see that a user accumulated three overlapping admin grants, or that a contractor's account still holds Salesforce access two months after offboarding
 - Shadow admins hold administrative capability through group nesting, delegated permissions, or app-level roles without ever appearing on the **Security → Administrators** list, so the admin-count review in Section 7.3 misses them entirely
 - Dormant accounts are the preferred takeover target precisely because no legitimate owner will notice the sign-on; Section 1.6 automates suspension inside Okta, but ISPM finds the same problem in connected clouds where no such automation exists
 - MFA coverage gaps rarely present as an obvious policy misconfiguration — they present as a specific local account, a legacy protocol path, or an application still assigned to the Default Policy, and finding those requires graph analysis rather than a settings check
@@ -2196,6 +2232,8 @@ Work the findings in this order:
 
 **Time to Complete:** ~2 hours for enablement and connector setup, plus remediation time proportional to findings
 
+**Automation:** ClickOps only — Okta exposes no write interface for this setting in its Management API, which documents no ISPM endpoint; ISPM connectors and triage are configured in the ISPM console ([Okta Management API](https://developer.okta.com/docs/api/openapi/okta-management/management/), spec 2026.08.4, checked 2026-09-24).
+
 #### Validation & Testing
 1. ISPM is enabled and has completed a full scan of the Okta tenant
 2. All connected identity platforms report identities and permissions successfully
@@ -2213,7 +2251,7 @@ Work the findings in this order:
 - **Quarterly:** Report the posture trend to leadership alongside HealthInsight, and reconcile ISPM findings against the access review in Section 7.3
 - **On new platform onboarding:** Connect the platform to ISPM as part of the deployment checklist
 
-> **Note:** ISPM complements rather than replaces HealthInsight (Section 5.6). HealthInsight validates tenant configuration against Okta's sixteen built-in checks; ISPM analyzes the identity graph for exploitable access paths across Okta and connected platforms. Run both.
+> **Note:** ISPM complements rather than replaces HealthInsight (Section 5.6). HealthInsight validates tenant configuration against Okta's built-in task list; ISPM analyzes the identity graph for exploitable access paths across Okta and connected platforms. Run both.
 
 #### Compliance Mappings
 
@@ -2297,7 +2335,9 @@ Establish a mandatory procedure to sanitize HTTP Archive (HAR) files before shar
 **Real-World Incidents:**
 - **October 2023:** Threat actor accessed Okta support system and extracted session tokens from HAR files uploaded by 134 customers
 
-#### Implementation
+#### ClickOps Implementation
+
+This control has no vendor-console step; it is a procedure your engineers follow on their own machines.
 
 **Step 1: Create Organizational Policy**
 Document a formal policy requiring:
@@ -2311,10 +2351,14 @@ Document a formal policy requiring:
    - `Cookie` request headers
    - `Authorization` request headers
    - `Set-Cookie` response headers
-   - `x-csrf-token` or similar CSRF headers
+   - `X-Okta-XsrfToken`, `x-csrf-token`, or similar CSRF headers
    - Any `Bearer` token values
+   - `sessionToken`, `stateToken`, `access_token`, `id_token`, and `code` values in URLs, query strings, `Location` headers, and request/response bodies
+   - Passwords in request bodies
 3. Save the sanitized file
-4. Verify no sensitive tokens remain by searching for common patterns: `sid=`, `sessionToken`, `Bearer`, `SSWS`
+4. Verify no sensitive tokens remain by searching for common patterns: `sid=`, `sessionToken`, `Bearer`, `SSWS`, `access_token`
+
+#### Code Implementation
 
 **Step 3: Automated Sanitization Script**
 
@@ -2345,20 +2389,21 @@ Establish a process to monitor Okta security advisories and ensure all Okta clie
 
 #### Rationale
 **Why This Matters:**
-- Okta Verify for Windows was vulnerable to privilege escalation via DLL hijacking (fixed in 5.0.2)
-- Okta Browser Plugin versions 6.5.0-6.31.0 were vulnerable to cross-site scripting
-- Okta Verify for iOS had a push bypass allowing responses regardless of user selection
+- Okta Verify for Windows was vulnerable to privilege escalation via DLL hijacking, fixed in 5.0.2 ([CVE-2024-7061](https://trust.okta.com/security-advisories/okta-verify-for-windows-privilege-escalation-cve-2024-7061))
+- Okta Browser Plugin versions 6.5.0-6.31.0 were vulnerable to cross-site scripting ([CVE-2024-0981](https://trust.okta.com/security-advisories/okta-browser-plugin-reflected-cross-site-scripting-cve-2024-0981))
+- Okta Verify for iOS let an authentication proceed regardless of the user's selection in its ContextExtension ([CVE-2024-10327](https://trust.okta.com/security-advisories/okta-verify-for-ios-cve-2024-10327))
 - Downstream dependencies (React/Next.js CVEs) affect Okta-integrated applications
 - Okta maintains an active bug bounty program (153 valid issues, $405K paid)
 
 **Attack Prevented:** Exploitation of known vulnerabilities in outdated Okta client software (DLL hijacking privilege escalation, XSS, push bypass)
 
-#### Implementation
+#### ClickOps Implementation
 
 **Step 1: Subscribe to Security Advisories**
 1. Bookmark: [trust.okta.com/security-advisories](https://trust.okta.com/security-advisories/)
-2. Subscribe to Okta's security advisory RSS feed or email notifications
-3. Add to your security team's weekly monitoring checklist
+2. Subscribe to the page's **Subscribe to RSS Feed** link ([security-advisories.xml](https://trust.okta.com/security-advisories.xml)) in your team's feed reader or alerting channel
+3. Have a Super Admin set the org's **Primary Security Contact** in the Okta Help Center ([how to](https://support.okta.com/help/s/article/super-admins-leverage-the-okta-help-center-to-review-and-update-your-companys-primary-security-contact-and-cio-ciso-contact?language=en_US)) so Okta can notify your security team directly
+4. Add the advisories page to your security team's weekly monitoring checklist
 
 **Step 2: Establish Client Update Policy**
 1. Define maximum patch delay: **Critical** = 48 hours, **High** = 7 days, **Medium** = 30 days
@@ -2374,6 +2419,12 @@ Establish a process to monitor Okta security advisories and ensure all Okta clie
    - Next.js middleware (CVE-2025-29927)
    - Auth0 SDK versions
 2. Include Okta dependency monitoring in your vulnerability management program
+
+#### Code Implementation
+
+The script reads the advisory RSS feed and lists advisories published in the last N days; schedule it (cron or CI) and route its output to your security channel.
+
+{% include pack-code.html vendor="okta" section="7.2" %}
 
 #### Validation & Testing
 1. Security advisory monitoring is assigned to a specific team member
@@ -2403,7 +2454,7 @@ Perform periodic access reviews (recertification campaigns) to verify user acces
 
 **Attack Prevented:** Privilege creep, orphaned-account abuse, insider misuse, excessive standing access
 
-#### ClickOps Implementation
+#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Administrators, People, Applications and Groups pages read on a live org" date="2026-09-24" %}
 
 **Step 1: Review Admin Accounts**
 1. Navigate to: **Security → Administrators**
@@ -2420,7 +2471,7 @@ Perform periodic access reviews (recertification campaigns) to verify user acces
 4. Suspend any accounts for users no longer with the organization
 
 **Step 3: Review Application Assignments**
-1. Navigate to: **Applications → Applications**
+1. Navigate to: **Applications and Resources → Applications**
 2. For each sensitive application, review assigned users/groups
 3. Remove users who no longer need access
 
@@ -2472,7 +2523,9 @@ Establish a change management process for Okta configuration changes. All modifi
 
 **Attack Prevented:** Unauthorized policy weakening, malicious configuration changes, insider sabotage, undetected control drift
 
-#### Implementation
+#### ClickOps Implementation
+
+This control is a process; it has no single vendor-console setting.
 
 **Step 1: Define Change Categories**
 
@@ -2483,8 +2536,8 @@ Establish a change management process for Okta configuration changes. All modifi
 | **Low Risk** | Self-approved (with logging) | User profile updates, non-privileged group changes |
 
 **Step 2: Track Configuration as Code**
-1. Export Okta configuration using Terraform (see Code Pack section 7.4 cli for commands)
-2. Store Terraform state in version control
+1. Manage Okta configuration with the `okta/okta` Terraform provider (this guide's Terraform packs are a starting point); bring existing objects under management with `terraform import`
+2. Keep the `.tf` files in version control, and the Terraform state in an encrypted remote backend with locking — never in git, because state holds secrets such as API tokens and client secrets
 3. Require pull request review for all Okta Terraform changes
 4. Use `terraform plan` diff as the change documentation
 
@@ -2510,6 +2563,10 @@ Key events to track:
 - No single admin can both propose and approve critical changes
 - Require two-person integrity for authentication policy modifications
 - Use Okta Workflows to enforce approval gates for critical changes
+
+#### Code Implementation
+
+The Sigma rules below alert on the configuration-change events listed in Step 3.
 
 {% include pack-code.html vendor="okta" section="7.4" %}
 
@@ -2542,7 +2599,11 @@ Document specific response procedures for identity-based security incidents. The
 
 **Attack Prevented:** Prolonged attacker dwell time, incomplete containment, persistence via factors and IdPs, repeat compromise
 
-#### Incident Response Runbooks
+#### ClickOps Implementation
+
+The runbooks below are the procedure; the API calls they reference are in the Code Implementation that follows.
+
+**Incident Response Runbooks**
 
 **Runbook 1: Compromised Admin Account**
 1. **Contain:** Immediately suspend the admin account (see api-ir-suspend-admin in Code Pack)
@@ -2575,6 +2636,8 @@ Document specific response procedures for identity-based security incidents. The
 3. **Communicate** to affected users about potential credential exposure
 4. **Force** password reset for accounts that were targeted
 5. **Verify** MFA is enforced -- password spray is only effective without MFA
+
+#### Code Implementation
 
 {% include pack-code.html vendor="okta" section="7.5" %}
 
@@ -2682,7 +2745,7 @@ NIST SP 800-63-4 (final July 2025) defines Authentication Assurance Levels. Map 
 - AAL3 requires hardware-bound authenticators (syncable passkeys NOT acceptable)
 - Introduces Digital Identity Risk Management (DIRM) framework for continuous risk evaluation (Section 5.3)
 
-### 8.4 DISA STIG Okta IDaaS V1R1
+### 8.4 DISA STIG Okta IDaaS V1R2
 
 | STIG ID | Severity | Control | Guide Section |
 |---------|----------|---------|---------------|
@@ -2710,8 +2773,13 @@ NIST SP 800-63-4 (final July 2025) defines Authentication Assurance Levels. Map 
 | V-273207 | Medium | Approved CA certificates | 1.7 |
 | V-273208 | Medium | Common password check | 1.4 |
 | V-273209 | Medium | Password history (5 generations) | 1.4 |
+| V-279689 | Medium | API tokens restricted to network zones | 3.4 |
+| V-279690 | Medium | API tokens created under dedicated user accounts | 3.4 |
+| V-279691 | Medium | Global Session Policy allows or denies by IP per access-control policy | 2.1 |
+| V-279692 | Medium | Network zones block anonymized proxies | 2.3 |
+| V-279693 | Medium | Network zones defined in each application's authentication policy | 2.1 |
 
-> **DISA STIG v1.1 (Feb 2026)** adds five new checks for Non-Human Identity (NHI) security: service account governance, API token lifecycle management, and CC SRG alignment. See Section 3.4 for NHI governance controls.
+> **DISA STIG V1R2 (released 05 Jan 2026)** adds the five rules V-279689 through V-279693 to the 24 rules of V1R1 (released 22 Apr 2025): two for API-token hygiene and three for network zones ([V1R2 detail view](https://cyber.trackr.live/stig/Okta_Identity_as_a_Service_(IDaaS)/1/2)).
 
 ---
 
@@ -2745,7 +2813,7 @@ Use this checklist to verify controls are implemented for your compliance requir
 - Account inactivity automation active (1.6)
 - Default authentication policy audited — zero apps assigned (1.9)
 - Self-service recovery hardened — SMS/voice/questions disabled (1.10)
-- End-user security notifications enabled — all five types (1.11)
+- End-user security notification emails enabled — all four (1.11)
 - Suspicious activity reporting enabled (1.11)
 - Device assurance policy active for every platform in the fleet (1.12)
 - Help desk visual identity verification required for all resets (1.13)
@@ -2766,7 +2834,7 @@ Use this checklist to verify controls are implemented for your compliance requir
 - Admin Console session timeout configured (4.1)
 - Global session lifetime limited (4.1)
 - Persistent session cookies disabled (4.2)
-- Admin session ASN binding verified active (4.3)
+- Admin console IP binding enabled (4.3)
 - Protected Actions enabled for critical operations (4.3)
 
 #### Monitoring & Detection
@@ -2775,7 +2843,7 @@ Use this checklist to verify controls are implemented for your compliance requir
 - Identity Threat Protection configured (5.3) — if licensed
 - Behavior detection rules active (5.4)
 - Cross-tenant impersonation monitoring alerts configured (5.5)
-- HealthInsight reviewed — all 16 checks passed (5.6)
+- HealthInsight reviewed — all 18 tasks complete or dismissed with a documented reason (5.6)
 - Identity Security Posture Management deployed and findings triaged (5.7)
 
 #### Operational Security
@@ -2806,6 +2874,8 @@ Use this checklist to verify controls are implemented for your compliance requir
 | Enhanced Dynamic Zones | ❌ | ❌ | ✅ | ✅ |
 | Identity Governance (OIG) | ❌ | ❌ | ❌ | Add-on |
 
+Editions and packaging change often; confirm with your Okta account team. On an Okta Integrator Free Plan org checked 2026-09-24, Enhanced Dynamic Zones, Behavior Detection, Log Streaming, Device Assurance, and Automations were all available, while Identity Threat Protection and Identity Security Posture Management were not.
+
 ---
 
 ## Appendix B: References
@@ -2818,7 +2888,10 @@ Use this checklist to verify controls are implemented for your compliance requir
 - [9 Admin Best Practices](https://www.okta.com/blog/2019/10/9-admin-best-practices-to-keep-your-org-secure/)
 - [Securing Admin Accounts](https://support.okta.com/help/s/article/best-practices-for-securing-okta-workforce-identity-cloud-admin-accounts)
 - [Secure Identity Commitment Whitepaper (Aug 2025)](https://www.okta.com/sites/default/files/2025-08/OktaSecureIdentityCommitment_0826.pdf)
-- [Admin Role Permissions](https://help.okta.com/en-us/Content/Topics/Security/administrators-admin-comparison.htm)
+- [Admin Role Permissions](https://help.okta.com/en-us/Content/Topics/Security/administrators-admin-comparison.htm) (built-in roles)
+- [Create a Custom Admin Role](https://help.okta.com/oie/en-us/content/topics/security/custom-admin-role/create-role.htm)
+- [Create an API Token](https://developer.okta.com/docs/guides/create-an-api-token/main/)
+- [Security Advisories RSS Feed](https://trust.okta.com/security-advisories.xml)
 - [HealthInsight Recommendations](https://help.okta.com/oie/en-us/content/topics/security/healthinsight/healthinsight-security-task-recomendations.htm)
 - [Suspicious Activity Reporting](https://help.okta.com/oie/en-us/content/topics/security/suspicious-activity-reporting.htm)
 - [Protected Actions](https://help.okta.com/oie/en-us/content/topics/security/admin-console-protected-actions.htm)
@@ -2837,11 +2910,13 @@ Use this checklist to verify controls are implemented for your compliance requir
 - [Policies API](https://developer.okta.com/docs/reference/api/policy/)
 - [Identity Providers API](https://developer.okta.com/docs/reference/api/idps/)
 - [Network Zones API](https://developer.okta.com/docs/reference/api/zones/)
+- [Device Assurance Policies API](https://developer.okta.com/docs/api/openapi/okta-management/management/tag/DeviceAssurance/)
+- [Okta Application Settings API (Admin Console session)](https://developer.okta.com/docs/api/openapi/okta-management/management/tag/OktaApplicationSettings/)
 
 **Compliance Frameworks:**
-- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, FedRAMP High, FedRAMP Moderate, FIPS 140-2, HIPAA, PCI DSS v4.0, CSA STAR, NIST 800-53 Rev 5 — via [Okta Compliance](https://trust.okta.com/compliance/)
-- [DISA STIG Library](https://public.cyber.mil/stigs/) — Okta IDaaS STIG V1R1 (March 2025), v1.1 NHI update (Feb 2026)
-- [DISA STIG Detail View](https://cyber.trackr.live/stig/Okta_Identity_as_a_Service_(IDaaS)/1/1)
+- SOC 2 Type II, ISO 27001, ISO 27017, ISO 27018, FedRAMP High, FedRAMP Moderate, FIPS 140-2, HIPAA, PCI DSS v4.0, CSA STAR, NIST 800-53 Rev 5 — via the [Okta Security Trust Center](https://security.okta.com/) (the former trust.okta.com/compliance page now redirects there)
+- [DISA STIG Library](https://public.cyber.mil/stigs/) — Okta IDaaS STIG V1R1 (released 22 Apr 2025), V1R2 (released 05 Jan 2026)
+- [DISA STIG Detail View — V1R1](https://cyber.trackr.live/stig/Okta_Identity_as_a_Service_(IDaaS)/1/1) · [V1R2](https://cyber.trackr.live/stig/Okta_Identity_as_a_Service_(IDaaS)/1/2)
 - [CIS Controls v8](https://www.cisecurity.org/controls)
 - [NIST 800-53 Rev 5](https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final)
 - [NIST SP 800-63-4 Final (July 2025)](https://pages.nist.gov/800-63-4/)
@@ -2857,8 +2932,8 @@ Use this checklist to verify controls are implemented for your compliance requir
 - [Okta Secure by Design — One Year On](https://sec.okta.com/articles/2025/05/oktas-secure-by-design-pledge-one-year-on/)
 
 **Security Incidents:**
-- **October 2023:** Unauthorized access to Okta support system via compromised service account; HAR files containing session cookies exfiltrated, affecting 134 customers (all 18,400 notified) — [Root Cause](https://sec.okta.com/articles/2023/11/unauthorized-access-oktas-support-case-management-system-root-cause/) | [Investigation Closure](https://sec.okta.com/harfiles/)
-- **January 2022:** LAPSUS$ group compromised a Sitel (sub-processor) support engineer for 25 minutes, impacting 2 customers — [Okta Investigation](https://www.okta.com/blog/2022/03/oktas-investigation-of-the-january-2022-compromise/)
+- **October 2023:** Unauthorized access to Okta support system via compromised service account; files associated with 134 customers accessed, including HAR files containing session tokens; Okta alerted all customers with registered security contacts — [Root Cause](https://sec.okta.com/articles/2023/11/unauthorized-access-oktas-support-case-management-system-root-cause/) | [Investigation Closure](https://sec.okta.com/harfiles/)
+- **January 2022:** LAPSUS$ group controlled a Sitel (sub-processor) support engineer's workstation for 25 consecutive minutes and accessed two active customer tenants — [Okta Concludes Its Investigation (Apr 2022)](https://www.okta.com/blog/company-and-culture/okta-concludes-its-investigation-into-the-january-2022-compromise/) | [Initial Investigation (Mar 2022)](https://www.okta.com/blog/2022/03/oktas-investigation-of-the-january-2022-compromise/)
 
 ---
 
@@ -2866,6 +2941,7 @@ Use this checklist to verify controls are implemented for your compliance requir
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-24 | 0.5.0 | ai-drafted · ai-validated | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated**. A validate-hth-guide run walked this guidance against a live Okta Integrator Free Plan org (Identity Engine) and corrected it until it matched the console; 24 of 36 controls came back live on their ClickOps surface and carry a mark there. An independent audit of the run removed the 1.13 mark, because that control's visual-verification steps are a written procedure and training rather than a console setting. No Code surface was run with a real credential, because creating the API token is a protected action that needs step-up MFA, so no Code marks. An AI agent did this; no human practitioner has reviewed or applied the guide, so it claims no **ni-** status. Fixes: current navigation (Applications and Resources, App sign-in policies, Protected Actions on the Okta Admin Console app), 1.2's auditor role (now the built-in Read-only Administrator, because a custom role cannot grant System Log access), the four security notification emails, HealthInsight's 18 tasks, DISA STIG V1R2 (five new rules), and the incident figures with sources. New verified packs for 1.3, 1.7, 1.8, 1.12, 2.2, 3.5 and 7.2; evidenced Automation lines for 1.6, 1.13, 5.6 and 5.7. API packs now fail closed and keep the token out of process arguments; payloads were checked against Okta's API spec; Terraform validates; the HAR sanitizer redacts tokens in bodies and URLs. | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.4.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.3, §3.2, §4.1, §5.6, §7.2 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.4.0 | ai-drafted | Guidance-currency refresh. Added 4 new controls: Device Assurance Policies including Okta Verify Advanced Posture Checks (1.12), Help Desk Visual Identity Verification (1.13), Cross App Access for AI agents and MCP servers (3.5), Identity Security Posture Management (5.7). Expanded SOC 2 and NIST 800-53 mappings and the compliance checklist to cover the new controls. | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.3.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |

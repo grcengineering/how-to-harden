@@ -53,12 +53,14 @@ DANGEROUS_EXPRESSIONS=(
 )
 
 if [ ! -d "${WORKFLOW_DIR}" ]; then
-  echo "No workflow directory found at ${WORKFLOW_DIR}"
-  exit 0
+  echo "No workflow directory found at ${WORKFLOW_DIR} — nothing was audited" >&2
+  exit 2
 fi
 
+SCANNED=0
 for workflow in "${WORKFLOW_DIR}"/*.yml "${WORKFLOW_DIR}"/*.yaml; do
   [ -f "$workflow" ] || continue
+  SCANNED=$((SCANNED + 1))
   filename=$(basename "$workflow")
 
   for pattern in "${DANGEROUS_EXPRESSIONS[@]}"; do
@@ -66,25 +68,33 @@ for workflow in "${WORKFLOW_DIR}"/*.yml "${WORKFLOW_DIR}"/*.yaml; do
     # We look for the pattern anywhere on lines that are part of a run: block
     matches=$(grep -nE "\\\$\{\{[^}]*${pattern}" "$workflow" 2>/dev/null || true)
     if [ -n "$matches" ]; then
-      # Filter: only flag if the line is inside a run: block (not env: block)
-      echo "$matches" | while IFS= read -r match; do
+      # Filter: only flag if the line is inside a run: block (not env:, with:, key: ...).
+      # The nearest YAML key at or above the line (including "- run:" list items) decides.
+      # Read via process substitution, not a pipe (a piped while-loop runs in a
+      # subshell and loses FINDINGS) and not a here-string (a here-string needs a
+      # temp file; if that fails the loop silently reads nothing and reports 0).
+      while IFS= read -r match; do
         line_num=$(echo "$match" | cut -d: -f1)
-        # Check context: is this line inside a run: block or an env: block?
-        # Look backwards from this line for the nearest run: or env: key
-        context=$(head -n "$line_num" "$workflow" | tail -20 | grep -E '^\s*(run:|env:)' | tail -1)
-        if echo "$context" | grep -q "run:"; then
+        context=$(head -n "$line_num" "$workflow" \
+          | grep -E '^[[:space:]]*(-[[:space:]]+)?[A-Za-z_][A-Za-z0-9_-]*:' | tail -1 || true)
+        if echo "$context" | grep -qE '^[[:space:]]*(-[[:space:]]+)?run:'; then
           echo "  [VULNERABLE] ${filename}:${line_num} — ${pattern}"
           echo "    $(echo "$match" | cut -d: -f2-)"
           echo "    FIX: Move to env: block, reference via \$ENV_VAR in run:"
           FINDINGS=$((FINDINGS + 1))
         fi
-      done
+      done < <(printf '%s\n' "$matches")
     fi
   done
 done
 
 echo ""
 echo "=== Audit Complete ==="
+echo "Workflow files scanned: ${SCANNED}"
+if [ "$SCANNED" -eq 0 ]; then
+  echo "No workflow files found in ${WORKFLOW_DIR} — nothing was audited" >&2
+  exit 2
+fi
 echo "Expression injection risks found: ${FINDINGS}"
 
 if [ "$FINDINGS" -gt 0 ]; then
@@ -104,7 +114,7 @@ if [ "$FINDINGS" -gt 0 ]; then
   echo "  cargo install zizmor   # or: brew install zizmor"
   echo "  zizmor .github/workflows/"
   echo ""
-  echo "See: howtoharden.com/guides/github/#313"
+  echo "See: howtoharden.com/guides/github/#313-prevent-github-actions-expression-injection"
   exit 1
 fi
 

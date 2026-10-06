@@ -1,3 +1,9 @@
+# HTH Pack Contract: v1
+#   control: aws-iam-identity-center-3.1
+#   guide:   https://howtoharden.com/guides/aws-iam-identity-center/#31-configure-permission-sets
+#   profile: L1
+#   mode:    read-only
+#   requires: CloudTrail management events from the IAM Identity Center home Region delivered to the SIEM
 title: AWS IAM Identity Center Permission Set Modified
 id: hth-aws-iic-3.01-permission-set-modified
 status: test
@@ -33,7 +39,7 @@ detection:
             - 'AttachManagedPolicyToPermissionSet'
             - 'DetachManagedPolicyFromPermissionSet'
             - 'AttachCustomerManagedPolicyReferenceToPermissionSet'
-            - 'DetachCustomerManagedPolicyReferenceToPermissionSet'
+            - 'DetachCustomerManagedPolicyReferenceFromPermissionSet'
             - 'PutPermissionsBoundaryToPermissionSet'
             - 'DeletePermissionsBoundaryFromPermissionSet'
     condition: selection

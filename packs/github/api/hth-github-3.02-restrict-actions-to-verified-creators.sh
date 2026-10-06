@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 3.02: Restrict Actions to Verified Creators
 # Profile: L2 | NIST: CM-7, SA-12
-# https://howtoharden.com/guides/github/#32-restrict-actions-to-verified-creators
+# https://howtoharden.com/guides/github/#31-restrict-third-party-github-actions-to-verified-creators-only
 source "$(dirname "$0")/common.sh"
 
 banner "3.02: Restrict Actions to Verified Creators"

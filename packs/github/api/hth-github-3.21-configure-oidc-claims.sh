@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 3.21: Harden Actions OIDC Subject Claims
 # Profile: L2 | NIST: IA-2, IA-8
-# https://howtoharden.com/guides/github/#36-harden-actions-oidc-claims
+# https://howtoharden.com/guides/github/#36-harden-actions-oidc-subject-claims
 source "$(dirname "$0")/common.sh"
 
 banner "3.21: Harden Actions OIDC Claims"

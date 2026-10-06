@@ -12,7 +12,7 @@
 
 output "saml_enforced" {
   description = "Whether SAML SSO enforcement is active"
-  value       = vercel_team_config.saml_enforcement.saml
+  value       = vercel_team_config.hardened.saml
 }
 
 
@@ -56,8 +56,8 @@ output "preview_deployments_disabled" {
 # -----------------------------------------------------------------------------
 
 output "firewall_enabled" {
-  description = "Whether the Web Application Firewall is enabled"
-  value       = var.firewall_enabled
+  description = "Whether this pack manages (and enables) the project firewall"
+  value       = local.firewall_managed
 }
 
 
@@ -115,8 +115,8 @@ output "hardening_summary" {
     saml_enforced                = var.saml_enforced
     team_members_managed         = length(var.team_members) > 0
     git_fork_protection          = var.git_fork_protection_enabled
-    preview_deployments_disabled = var.profile_level >= 2
-    firewall_enabled             = var.firewall_enabled
+    preview_deployments_disabled = local.preview_deployments_disabled
+    firewall_enabled             = local.firewall_managed
     waf_owasp_action             = var.waf_owasp_action
     attack_challenge_mode        = var.attack_challenge_mode_enabled
     sensitive_env_policy         = var.profile_level >= 2 ? "enforced" : "default"

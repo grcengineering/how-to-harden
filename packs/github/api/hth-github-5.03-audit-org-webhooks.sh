@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 5.03: Audit Org Webhooks
 # Profile: L2 | NIST: SC-8, SI-7
-# https://howtoharden.com/guides/github/#53-audit-org-webhooks
+# https://howtoharden.com/guides/github/#81-enable-audit-log-streaming-to-siem
 source "$(dirname "$0")/common.sh"
 
 banner "5.03: Audit Org Webhooks (Audit Only)"

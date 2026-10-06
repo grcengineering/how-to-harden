@@ -4,7 +4,7 @@ title: "Configure Dependabot Grouped Security Updates"
 section: "6.3"
 profile_level: 2
 severity: "medium"
-guide_url: "https://howtoharden.com/guides/github/#45-configure-dependabot-grouped-security-updates"
+guide_url: "https://howtoharden.com/guides/github/#63-configure-dependabot-grouped-security-updates"
 description: >
   Configure Dependabot grouped security updates to combine related dependency updates
   into a single pull request. Without grouping, Dependabot creates individual PRs for

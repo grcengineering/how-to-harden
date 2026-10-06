@@ -1,0 +1,34 @@
+# =============================================================================
+# HTH GitLab Control 2.5: Enforce Security Scans with Pipeline Execution Policies
+# Profile: L2 | NIST: CM-7, SI-7 | Tier: Ultimate
+# https://howtoharden.com/guides/gitlab/#25-enforce-security-scans-with-pipeline-execution-policies
+#
+# Vendor-native policy file. Commit it as .gitlab/security-policies/policy.yml
+# in the security policy project linked at Group > Secure > Policies (merge it
+# with any policies already in that file). The included CI file holds the
+# mandatory jobs; keep it in a project only the security team can change.
+# Schema: GitLab's security_orchestration_policy.json; reference:
+# docs.gitlab.com/user/application_security/policies/pipeline_execution_policies
+# Replace your-group/security-policy-project and ci/mandatory-scans.yml.
+# =============================================================================
+# HTH Guide Excerpt: begin config-pipeline-execution-policy
+pipeline_execution_policy:
+  - name: Mandatory security scans
+    description: Inject the security team's scan jobs into every pipeline.
+    enabled: true
+    pipeline_config_strategy: inject_policy
+    content:
+      include:
+        - project: your-group/security-policy-project
+          file: ci/mandatory-scans.yml
+    policy_scope:
+      projects:
+        excluding: []
+    # Projects cannot override the policy's CI/CD variables, and the
+    # [skip ci] directive cannot skip pipelines this policy applies to.
+    # (Both are GitLab's defaults; stating them keeps them from drifting.)
+    variables_override:
+      allowed: false
+    skip_ci:
+      allowed: false
+# HTH Guide Excerpt: end config-pipeline-execution-policy

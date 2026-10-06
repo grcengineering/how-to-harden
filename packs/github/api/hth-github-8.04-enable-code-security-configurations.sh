@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 3.19: Enable Code Security Configurations
 # Profile: L1 | NIST: CM-2, CM-6, SA-11
-# https://howtoharden.com/guides/github/#38-enable-organization-level-code-security-configurations
+# https://howtoharden.com/guides/github/#83-apply-github-recommended-security-configuration
 source "$(dirname "$0")/common.sh"
 
 banner "3.19: Enable Code Security Configurations"

@@ -1,0 +1,56 @@
+# HTH Pack Contract: v1
+#   control: asana-1.1
+#   guide:   https://howtoharden.com/guides/asana/#11-configure-saml-single-sign-on
+#   profile: L1
+#   mode:    read-only
+#   requires: audit-log ingestion from GET /workspaces/{workspace_gid}/audit_log_events (Enterprise+ or Legacy Enterprise)
+# Frameworks: CIS Controls 6.3, 12.5 | NIST 800-53 IA-2, IA-8
+# Feed: packs/asana/api/hth-asana-4.01-export-audit-log-events.sh (NDJSON, one AuditLogEvent per line)
+title: Asana SAML or Required SSO Configuration Changed
+id: 4ba46d15-303f-4d2c-bf4b-a87ed116e6b7
+status: experimental
+description: |
+    Fires when the organization's SAML configuration, SAML URL, or required SSO
+    provider changes. SAML is the one control in this guide that decides where
+    authentication happens at all: repointing the SAML URL at an attacker IdP,
+    or relaxing the required provider, moves every member's login outside the
+    IdP policy the rest of the guide depends on. Asana exposes no API to read or
+    set these values, so the audit event is the only machine-readable signal
+    that they moved.
+    Event types are taken verbatim from the Admin settings table of Asana's
+    supported audit log events. Correlate the actor against the admin roster
+    (control 2.1) and the change window.
+    This corresponds to HTH Asana control 1.1 (Configure SAML Single Sign-On, L1).
+references:
+    - https://howtoharden.com/guides/asana/#11-configure-saml-single-sign-on
+    - https://developers.asana.com/docs/audit-log-events
+author: How to Harden
+date: 2026/09/24
+tags:
+    - attack.persistence
+    - attack.t1556
+    - attack.defense_evasion
+logsource:
+    product: asana
+    service: audit_log
+# HTH Guide Excerpt: begin detection
+detection:
+    selection:
+        event_type:
+            - 'workspace_saml_settings_changed'
+            - 'workspace_saml_url_changed'
+            - 'workspace_required_sso_provider_settings_changed'
+    condition: selection
+fields:
+    - created_at
+    - event_type
+    - actor.gid
+    - actor.name
+    - context.client_ip_address
+    - details.old_value
+    - details.new_value
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Planned IdP migration or certificate rotation inside a recorded change window
+    - Initial SAML setup
+level: high

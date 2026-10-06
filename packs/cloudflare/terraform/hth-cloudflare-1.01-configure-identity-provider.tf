@@ -17,6 +17,7 @@ resource "cloudflare_zero_trust_access_identity_provider" "corporate_idp" {
     auth_url      = var.oidc_auth_url
     token_url     = var.oidc_token_url
     certs_url     = var.oidc_certs_url
+    pkce_enabled  = true
     claims        = ["email_verified", "preferred_username", "groups"]
     scopes        = ["openid", "email", "profile", "groups"]
   }

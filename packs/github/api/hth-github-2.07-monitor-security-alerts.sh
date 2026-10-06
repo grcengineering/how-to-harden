@@ -10,12 +10,14 @@ info "2.07 Monitoring security alerts for ${GITHUB_ORG}..."
 
 # HTH Guide Excerpt: begin api-list-dependabot-alerts
 # List critical/high severity alerts
-gh api /orgs/{org}/dependabot/alerts --jq '.[] | select(.severity == "critical" or .severity == "high") | {repo: .repository.name, package: .security_advisory.package.name, severity: .severity}'
+gh api --paginate "/orgs/${GITHUB_ORG}/dependabot/alerts?state=open&severity=critical,high&per_page=100" \
+  --jq '.[] | {repo: .repository.name, package: .dependency.package.name, severity: .security_advisory.severity}'
 # HTH Guide Excerpt: end api-list-dependabot-alerts
 
 # HTH Guide Excerpt: begin api-list-secret-scanning-alerts
 # List active secret alerts
-gh api /orgs/{org}/secret-scanning/alerts?state=open --jq '.[] | {repo: .repository.name, secret_type: .secret_type, created_at: .created_at}'
+gh api --paginate "/orgs/${GITHUB_ORG}/secret-scanning/alerts?state=open&per_page=100" \
+  --jq '.[] | {repo: .repository.name, secret_type: .secret_type, created_at: .created_at}'
 # HTH Guide Excerpt: end api-list-secret-scanning-alerts
 
 increment_applied

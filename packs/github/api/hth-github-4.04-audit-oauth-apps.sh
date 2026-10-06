@@ -9,20 +9,23 @@ should_apply 1 || { increment_skipped; summary; exit 0; }
 info "4.04 Auditing OAuth app access for ${GITHUB_ORG}..."
 
 # HTH Guide Excerpt: begin api-list-oauth-apps
-# List organization authorized OAuth apps
-info "4.04 Listing authorized OAuth apps for ${GITHUB_ORG}..."
-APPS=$(gh_get "/orgs/${GITHUB_ORG}/installations") || {
-  warn "4.04 Unable to retrieve app list (may require admin scope)"
+# List OAuth app credentials that members have authorized against the organization.
+# Requires GitHub Enterprise Cloud with SAML SSO; without SAML SSO there is no API
+# for the organization's approved OAuth app list (review it under Third-party Access).
+info "4.04 Listing OAuth app credential authorizations for ${GITHUB_ORG}..."
+AUTHS=$(gh_get "/orgs/${GITHUB_ORG}/credential-authorizations?per_page=100") || {
+  fail "4.04 credential-authorizations requires GitHub Enterprise Cloud with SAML SSO"
+  increment_failed
+  summary
+  exit 0
 }
-echo "${APPS}" | jq '.installations[] | {app: .app_slug, permissions: .permissions, created_at: .created_at}'
-
-# NOTE: The /applications endpoint was deprecated by GitHub in 2019.
-# Use the Admin Console (Settings > OAuth Apps) to review personal OAuth authorizations.
+OAUTH=$(echo "${AUTHS}" | jq '[.[] | select(.credential_type | test("OAuth"; "i"))]')
+echo "${OAUTH}" | jq '.[] | {login, scopes, credential_authorized_at, credential_accessed_at}'
 # HTH Guide Excerpt: end api-list-oauth-apps
 
-APP_COUNT=$(echo "${APPS}" | jq '.installations | length' 2>/dev/null || echo "0")
+APP_COUNT=$(echo "${OAUTH}" | jq 'length')
 if [ "${APP_COUNT}" -gt 20 ]; then
-  warn "4.04 ${APP_COUNT} OAuth apps authorized -- review and revoke unused apps"
+  warn "4.04 ${APP_COUNT} OAuth app authorizations -- review and revoke unused apps"
 fi
 
 increment_applied

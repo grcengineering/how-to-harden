@@ -1,0 +1,7 @@
+# Security/Platform team must approve all CI/CD changes
+.github/workflows/    @org/security-team @org/platform-team
+.github/actions/      @org/security-team @org/platform-team
+
+# Also protect Dependabot and Renovate configs
+.github/dependabot.yml  @org/security-team
+renovate.json           @org/security-team

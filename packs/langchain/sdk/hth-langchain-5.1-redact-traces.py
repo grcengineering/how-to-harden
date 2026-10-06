@@ -1,6 +1,13 @@
+# HTH Pack Contract: v1
+#   control: langchain-5.1
+#   guide:   https://howtoharden.com/guides/langchain/#51-redact-sensitive-data-from-langsmith-traces
+#   profile: L1
+#   mode:    read-only
+#   requires: langsmith SDK (PyPI >= 0.7.31 for the CVE-2026-41182 streaming-redaction fix; >= 0.8.18 per control 3.2), LANGSMITH_API_KEY at run time
+# =============================================================================
 # HTH LangChain Control 5.1: Redact Sensitive Data from LangSmith Traces
 # Profile: L1 | NIST: SC-28, SI-12
-# https://howtoharden.com/guides/langchain/#51-redact-sensitive-data-from-traces
+# https://howtoharden.com/guides/langchain/#51-redact-sensitive-data-from-langsmith-traces
 
 # HTH Guide Excerpt: begin sdk-trace-redaction
 import re

@@ -6,9 +6,9 @@ slug: "miro"
 tier: "4"
 category: "Productivity"
 description: "Visual collaboration security for board sharing, app governance, classification guardrails, and AI controls"
-version: "0.2.0"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-09-25"
 ---
 
 
@@ -31,6 +31,8 @@ Miro is a visual collaboration platform for whiteboards, diagrams, and design se
 
 ### Scope
 This guide covers Miro security configurations including authentication, access controls, and integration security.
+
+**Automation surface:** Miro publishes no Terraform provider and no first-party CLI, and has no vendor-native configuration files. Its official SDKs, `@mirohq/miro-api` for Node.js and `miro_api` for Python, are clients for the same REST API, so the `api/` packs below cover that surface too. The REST API *reads* most of the settings in this guide, but only on the Enterprise plan with a Company Admin token, and it has no endpoint for SSO, 2FA, idle session timeout, SCIM enablement, app governance, or Miro AI capability settings. Controls with a read endpoint carry a read-only audit pack. The rest carry an **Automation:** ClickOps-only line. For SIEM, Miro documents connectors that read the same audit-log API: an Enterprise **SIEM** access token (**Admin console → Apps and integrations → Enterprise integrations**) for its IBM QRadar and Splunk apps, and a Microsoft Sentinel connector. No detection-rule pack (`siem/` or Sigma) ships, because the audit-log reference types `event` as a free string with one example value (`sign_in_succeeded`), so a rule keyed on event names could not be checked against Miro's documentation. The 4.1 pack exports events as NDJSON for any SIEM, and 4.1's Detection Focus lists what to alert on. Sources: [Miro REST API reference](https://developers.miro.com/reference), [Miro Python client](https://pypi.org/project/miro-api/), [Miro Node.js client](https://www.npmjs.com/package/@mirohq/miro-api), [Setting up SIEM](https://help.miro.com/hc/en-us/articles/21852138484882-7-2-Setting-up-SIEM), [Microsoft Sentinel integration](https://help.miro.com/hc/en-us/articles/31325908249362-Microsoft-Sentinel-integration), [audit logs API reference](https://developers.miro.com/reference/enterprise-get-audit-logs) (all checked 2026-09-24).
 
 ---
 
@@ -56,32 +58,38 @@ Require SAML SSO with enforced multi-factor authentication for all Miro access, 
 #### Rationale
 **Why This Matters:**
 - Centralizes Miro authentication in the corporate IdP, enforcing MFA and conditional access on every login
-- Local password logins bypass IdP controls and are prime targets for credential stuffing and phishing
+- Magic-link and social-account sign-ins sit outside the IdP's MFA and conditional-access policy, so a compromised mailbox or personal Google/Microsoft/Apple account becomes a Miro login
 - Enforced SSO lets you deprovision departed users centrally, eliminating orphaned accounts with standing board access
 - Boards hold architecture diagrams, roadmaps, and strategic planning — a single compromised login can expose all of it
 
 **Attack Prevented:** Credential theft, phishing, MFA bypass, password reuse, orphaned-account access
 
-**Enabling SSO removes the alternate login paths.** Miro documents that once SSO is enabled, "other login options will be disabled for users, including standard login + password, Google, Facebook, Slack, AppleID and O365." Existing sessions keep working until they expire or the user logs out, so plan the cutover around session expiry rather than expecting an instant change. Source: [Single sign-on (SSO)](https://help.miro.com/hc/en-us/articles/360017571414-Single-sign-on-SSO) (content verified via the vendor's help-center API, 2026-08).
+**Enabling SSO removes the alternate login paths.** Miro documents that once SSO is enabled, "Other login options will be disabled for users, including magic link, Google, Facebook, Slack, AppleID and O365." Existing sessions keep working until they expire or the user logs out, so plan the cutover around session expiry rather than expecting an instant change. Source: [Single sign-on (SSO)](https://help.miro.com/hc/en-us/articles/360017571414-Single-sign-on-SSO) (content verified via the vendor's help-center API, 2026-09).
 
-**Who is actually forced through SSO:** SSO login is required for users on domains listed in your SSO settings. In an Enterprise organization, users on *verified* domains become managed users who must authenticate with SSO; users on unverified domains in the same organization still authenticate with email and password. Verify every domain you intend to govern, and use domain control (Enterprise) to restrict which teams those managed users can reach.
+**Who is actually forced through SSO:** SSO login is required for users on domains listed in your SSO settings. In an Enterprise organization, users on *verified* domains become managed users who must authenticate with SSO; for users on unverified domains in the same organization, "a magic link or social account is used for authentication." Miro no longer offers password sign-in at all ("We have removed the option to sign in with username and password", [Two-factor authentication (2FA)](https://help.miro.com/hc/en-us/articles/27356474050834-Two-factor-authentication-2FA)), so the non-SSO paths are magic link and social accounts. Verify every domain you intend to govern, and use domain control (Enterprise) to restrict which teams those managed users can reach.
 
 #### ClickOps Implementation
 
 **Step 1: Configure SAML SSO (Business and Enterprise)**
-1. Navigate to: **Company Settings → Security → SAML SSO**
-2. Configure your SAML IdP using Miro's metadata
-3. Verify each domain whose users must be governed by SSO
-4. Enable: **Enforce SSO**
+1. Verify each domain whose users must be governed by SSO. SSO login only becomes available after your domains are verified
+2. Configure the Miro application in your IdP using Miro's SP metadata
+3. Navigate to: **Company settings → Security → Single sign-on** (Business) or **Company settings → Security & Compliance → Authentication → Single sign-on** (Enterprise)
+4. Toggle on: **SSO/SAML**
+5. Enter the **SAML Sign-in URL** and **Public Key x.509 Certificate** from your IdP, then under **Users from these domains will sign in using SSO** select your verified domains
+6. Before cutover, keep a break-glass admin whose email domain is *not* in the SSO domain list. This is Miro's own lockout guidance; otherwise only Miro support can disable SSO for the organization
 
-**Step 2: Add Additional Identity Providers (Enterprise only)**
-1. Multi-IdP configuration is an Enterprise-only capability — Business plans support a single IdP
-2. Navigate to: **Company Settings → Security → SAML SSO**
-3. Add each additional provider and map its domains
+**Step 2: Additional Identity Providers (Enterprise, private beta)**
+1. Multiple IdPs per organization are a private beta. Miro's SSO article asks Enterprise organizations to sign up for it; Business plans support a single IdP
 
-**Step 3: Enable 2FA (Non-SSO)**
-1. Navigate to: **Company Settings → Security**
-2. Enable: **Require 2FA**
+**Step 3: Enforce 2FA for Sign-Ins That Bypass SSO**
+1. Enterprise: navigate to **Admin console → Security → Authentication** and toggle on **Enforce 2FA for non-SSO users**
+2. Business: navigate to **Admin Console → Security → Authentication**, then under **Two-factor authentication (2FA)** toggle on **Require two-factor authentication when signing in**
+3. Starter: navigate to **Admin Console → Security → Permissions** and toggle on the same setting
+4. 2FA covers magic-link sign-ins only. Miro states that "2FA doesn't apply when signing in with SSO or a social account (Google, Microsoft, Apple, etc.)", so it does not replace SSO enforcement for social-account users
+
+Sources: [Single sign-on (SSO)](https://help.miro.com/hc/en-us/articles/360017571414-Single-sign-on-SSO), [Enterprise two-factor authentication (2FA) – admin guide](https://help.miro.com/hc/en-us/articles/7935391125394-Enterprise-two-factor-authentication-2FA-admin-guide), [Two-factor authentication (2FA)](https://help.miro.com/hc/en-us/articles/27356474050834-Two-factor-authentication-2FA) (content verified via the vendor's help-center API, 2026-09).
+
+**Automation:** ClickOps only — Miro exposes no write interface for this setting ([Miro REST API reference](https://developers.miro.com/reference), 2026-09-24). The reference has no SSO, SAML or 2FA endpoint.
 
 ---
 
@@ -112,10 +120,17 @@ Define least-privilege team roles (Admin, Member, Guest) and configure member pe
 | Member | Create/edit boards |
 | Guest | Board-specific access |
 
-**Step 2: Configure Team Settings**
-1. Navigate to: **Team Settings**
-2. Configure member permissions
-3. Set guest access policies
+**Step 2: Restrict Invitations and Guests**
+1. Navigate to: **Admin Console → Teams → {team} → Settings** (Business and Enterprise, Company Admin) or **Admin Console → Security → Permissions** (Free, Starter and Education, Team Admin) ([Team invitation settings](https://help.miro.com/hc/en-us/articles/13205512707858-Team-invitation-settings), [Team permissions on Enterprise plan](https://help.miro.com/hc/en-us/articles/4402822899986-Team-permissions-on-Enterprise-plan))
+2. Under **Invitation**, limit who can invite users to the team to admins
+3. (Business and Enterprise) Set guests to **Don't allow** unless the team works with outside collaborators
+4. (Free, Starter and Education) Leave **Enable team invite link** off, because anyone who has the link can join the team
+
+#### Code Implementation
+
+{% include pack-code.html vendor="miro" section="1.2" %}
+
+The pack reads each team's role counts and its invitation policy (`whoCanInvite`, `inviteExternalUsers`). It needs an Enterprise organization and a Company Admin token with `organizations:teams:read`. On other plans the endpoints return "Invalid access" and the review stays in the console.
 
 ---
 
@@ -149,6 +164,8 @@ Enable Miro's Idle Session Timeout so inactive members and guests are automatica
 3. Note that inactivity means no mouse movement, clicks, or keystrokes anywhere in the app; users get a warning several minutes before logout
 4. Where a user belongs to multiple organizations with different intervals, the shortest duration wins
 
+**Automation:** ClickOps only — Miro exposes no write interface for this setting ([Miro REST API reference](https://developers.miro.com/reference), 2026-09-24). The reference has no idle-session or timeout endpoint.
+
 #### Validation & Testing
 Sign in as a test member, leave the session untouched past the configured limit, and confirm the warning appears and the session terminates. Source: [Idle Session Timeout](https://help.miro.com/hc/en-us/articles/360017571454-Idle-Session-Timeout) (content verified via the vendor's help-center API, 2026-08).
 
@@ -180,13 +197,16 @@ Configure SCIM between your identity provider and Miro so accounts and group mem
 
 **Step 1: Enable SCIM**
 1. Confirm SAML SSO is configured and working
-2. In the admin console, generate the SCIM credentials for your organization
-3. Migrate to the user-group synchronization model if you are still on the legacy team-mapped model
+2. Navigate to: **Company settings → Enterprise integrations**, enable **SCIM Provisioning**, and copy the **Base URL** and **API Token** for your IdP ([SCIM](https://help.miro.com/hc/en-us/articles/37593868431378-SCIM))
+3. To rotate the token later, click **Generate new token** in the **SCIM Provisioning** section, then **Generate**, and enter the new token in your IdP
+4. Migrate to the user-group synchronization model if you are still on the legacy team-mapped model
 
 **Step 2: Configure the IdP**
 1. Add the Miro SCIM application in your IdP (Okta and Entra ID have first-party guides)
 2. Enable provisioning, updates, and **deactivation** — deactivation is the control that matters here
 3. Optionally link IdP groups to Miro user groups for sharing and @mentions
+
+**Automation:** ClickOps only — Miro exposes no write interface for this setting ([SCIM](https://help.miro.com/hc/en-us/articles/37593868431378-SCIM), [Miro REST API reference](https://developers.miro.com/reference), 2026-09-24). SCIM is enabled and its token generated in the console. Miro's SCIM API is the protocol your IdP calls to provision users. It does not switch SCIM on.
 
 #### Validation & Testing
 Deactivate a test user in the IdP and confirm the corresponding Miro account loses access. Note Miro's SCIM email-change guardrails: updates are rejected with a 400 error when the current or target domain is claimed by a different organization. Source: [SCIM](https://help.miro.com/hc/en-us/articles/37593868431378-SCIM) (content verified via the vendor's help-center API, 2026-08).
@@ -214,17 +234,36 @@ Control board sharing to prevent data exposure.
 
 **Attack Prevented:** Unauthenticated data exposure, search-engine indexing of internal diagrams, competitive intelligence leakage, accidental oversharing
 
+**Plan note:** the organization-wide sharing policy below is Enterprise-only, set by a Company Admin. Below Enterprise, public sharing is a per-board choice (**Share → Anyone with the link**) that board owners make and undo.
+
+**New teams start open.** Miro documents that "Sharing via a public link is turned on by default on Team level and set to 'Anyone can view and comment' for newly created teams." If the Company-level toggle below is off, teams cannot share publicly whatever their own setting says.
+
 #### ClickOps Implementation
 
-**Step 1: Disable Public Sharing**
-1. Navigate to: **Company Settings → Security → Board sharing**
-2. Disable: **Allow public boards**
-3. Review existing public boards
+**Step 1: Disable Public Sharing (Enterprise, Company Admin)**
+1. Navigate to: **Company settings → Security → Sharing**
+2. Toggle off: **Boards can be shared publicly**
+3. This removes the **Anyone with the link** option from every board's Share menu. Boards already shared by public link or embedded on sites become unavailable to public users, and their active sessions close. If public sharing is re-enabled later, each board has to be re-shared by hand
+4. Per team: go to **Teams**, select the team, open **Settings**, scroll to **Sharing settings**, and under **Board sharing → By public link** restrict public sharing
 
-**Step 2: Configure Default Permissions**
-1. Set default share settings
-2. Restrict external access
-3. Configure domain restrictions
+**Step 2: Restrict Sharing to Allowed Domains (Enterprise, Company Admin)**
+1. Navigate to: **Company settings → Security → Sharing**
+2. Toggle on: **Restrict allowed domains**, and add the domains your organization uses
+3. Leave **Allow sharing with guests outside these domains** unchecked unless guests are a deliberate business need
+4. Use **Verify all users against the allowlist** to find existing users whose domain is not allowed
+5. A team-level allowlist (**Teams → {team} → Settings → Allowed domains for team**) *overrides* the company list for that team, so review team lists too
+
+**Step 3: If Public Links Must Stay On**
+1. In **Company settings → Security → Sharing → Content**, select **Expire public sharing link** and set the inactivity period (30–999 days)
+2. In the same section, check **Require passwords for publicly shared boards**
+
+Source: [Sharing policy on Enterprise Plan](https://help.miro.com/hc/en-us/articles/360017730133-Sharing-policy-on-Enterprise-Plan) (content verified via the vendor's help-center API, 2026-09).
+
+#### Code Implementation
+
+{% include pack-code.html vendor="miro" section="2.1" %}
+
+The pack reads each team's `teamSharingPolicySettings`. It cannot see the Company-level **Boards can be shared publicly** toggle, which has no endpoint, so a team whose own setting still allows public links is reported even when the Company toggle masks it. That team setting takes effect again the moment someone turns the Company toggle back on.
 
 ---
 
@@ -260,6 +299,12 @@ Restrict who can copy and export board content — in particular whether non-tea
 1. When non-team members are not allowed to copy, the **Anyone with board access** option disappears from individual board sharing settings, so visitors and guests cannot copy
 2. Board owners and co-owners can still tighten (but not loosen beyond the admin setting) copying on a board via **Share → Sharing settings → Who can copy board content**
 3. On Free plans, copying is enabled by default and cannot be modified — this control requires Starter or above
+
+#### Code Implementation
+
+{% include pack-code.html vendor="miro" section="2.2" %}
+
+The console setting exists from Starter, but the API that reads it (`teamCopyAccessLevelSettings` on the team-settings endpoint) is Enterprise-only. On Starter and Business, check the setting in the console.
 
 #### Validation & Testing
 As a guest on a board, open **Share → Sharing settings** and confirm the copy option is absent; then attempt a copy and confirm it is blocked.
@@ -299,6 +344,12 @@ Use Miro data classification to label boards by sensitivity, enable auto-classif
 1. In the Enterprise Guard settings, define guardrails per classification level: restrict sharing (public / team / organization), restrict content replication, **Block Miro AI usage**, **Block Miro MCP Access**
 2. Choose the rollout mode: default mode leaves active sharing on existing boards untouched; **Apply guardrails in strict mode** overrides all active sharing options and can immediately remove access for some users
 3. Configure auto-classification rules and, where you use Microsoft Purview, import Purview sensitivity labels so Miro classification follows the enterprise scheme
+
+#### Code Implementation
+
+{% include pack-code.html vendor="miro" section="2.3" %}
+
+The pack proves the labelling half: classification is on for the organization and every team, and new boards get a default label. Intelligent Guardrails are ClickOps only. Miro exposes no write interface for them, and the REST API reference has no guardrail endpoint ([Miro REST API reference](https://developers.miro.com/reference), 2026-09-24).
 
 #### Validation & Testing
 Classify a test board at your most restrictive level, then attempt to share it publicly, duplicate it, and invoke Miro AI on it — each should be blocked. Boards created before the feature was enabled show as not classified, so treat pre-existing boards as an explicit remediation backlog. Sources: [Data classification](https://help.miro.com/hc/en-us/articles/4417739162258-Data-classification), [Intelligent Guardrails overview](https://help.miro.com/hc/en-us/articles/14375998880018-Intelligent-Guardrails-overview), [Import Microsoft Purview sensitivity labels](https://help.miro.com/hc/en-us/articles/22161930709010-Import-Microsoft-Purview-sensitivity-labels) (content verified via the vendor's help-center API, 2026-08).
@@ -343,6 +394,8 @@ Audit installed Miro apps, remove unused integrations, and require admin approva
 3. Pre-add and preauthorize the approved set for all teams or specific teams
 4. Review pending requests at **Company settings → Apps and integrations → Apps → App Requests** — all Company Admins are emailed on each request, and approving a request approves the app for other users too
 
+**Automation:** ClickOps only — Miro exposes no write interface for this setting ([Miro REST API reference](https://developers.miro.com/reference), 2026-09-24). The reference has no app-management, allowlist or app-request endpoint.
+
 #### Validation & Testing
 As a non-admin test user, attempt to install an unapproved Marketplace app. On Enterprise with the restriction enabled, the install should convert into a request; on Business with non-admin installs disabled, it should be blocked outright.
 
@@ -354,7 +407,7 @@ As a non-admin test user, attempt to install an unapproved Marketplace app. On E
 **NIST 800-53:** IA-5
 
 #### Description
-Audit and revoke personal access tokens, review authorized OAuth apps, limit token scopes, and rotate credentials periodically to control programmatic access to Miro.
+Audit the access tokens your Miro apps hold and revoke the ones you no longer need, review installed apps, limit token scopes, and rotate credentials periodically to control programmatic access to Miro.
 
 #### Rationale
 **Why This Matters:**
@@ -367,19 +420,22 @@ Audit and revoke personal access tokens, review authorized OAuth apps, limit tok
 
 **Prefer expiring access tokens.** Miro's OAuth documentation states that Miro recommends expiring access tokens: by default an access token is valid for 60 minutes and is issued with a refresh token valid for 60 days, and each refresh returns a new access token plus a new refresh token, resetting the 60-day window. The non-expiring token model does not age out on its own, so a leaked non-expiring token stays usable until someone notices and revokes it. Build integrations on the expiring model and treat any surviving non-expiring token as a rotation backlog item. Source: [Getting started with OAuth 2.0](https://developers.miro.com/docs/getting-started-with-oauth).
 
-#### Implementation
+#### ClickOps Implementation
 
-**Step 1: Manage Access Tokens**
-1. Navigate to: **Profile → Apps & integrations**
-2. Audit personal access tokens
-3. Revoke unused tokens
+**Step 1: Review the Apps You Created**
+1. Sign in to Miro and open **Your apps**, which lists the Miro apps you created and their credentials ([Getting started with OAuth 2.0](https://developers.miro.com/docs/getting-started-with-oauth))
+2. For each app, confirm it is still in use and that it requests only the scopes it needs (see Step 4)
+3. End tokens you no longer need with Miro's revoke endpoint ([Revoke token (v2)](https://developers.miro.com/reference/revoke-token-v2)). Revocation is a write, so the read-only pack below does not do it
 
-**Step 2: OAuth App Security**
-1. Review authorized apps
-2. Grant the minimum scopes the integration actually needs
-3. Rotate tokens periodically, and migrate any non-expiring tokens to the expiring model
+**Step 2: Review Installed Apps**
+1. Navigate to: **Team settings → Apps & Integrations**, which lists every app installed for your team or by you personally
+2. Select an app you no longer use and click **Uninstall for team** (or **Uninstall for me**). Source: [How to install apps](https://help.miro.com/hc/en-us/articles/360017731093-How-to-install-apps)
 
-**Step 3: Watch the High-Impact Scopes**
+**Step 3: OAuth App Security**
+1. Grant the minimum scopes the integration actually needs
+2. Rotate tokens periodically, and migrate any non-expiring tokens to the expiring model
+
+**Step 4: Watch the High-Impact Scopes**
 1. Several Miro scopes grant capabilities that no control in this guide otherwise constrains — treat a grant of any of them as a privileged-access decision:
 
 | Scope | What it grants | Availability |
@@ -393,6 +449,12 @@ Audit and revoke personal access tokens, review authorized OAuth apps, limit tok
 2. Review which registered apps hold these scopes and remove them where the integration's function does not require them
 
 Source: [Permission scopes](https://developers.miro.com/docs/scopes).
+
+#### Code Implementation
+
+{% include pack-code.html vendor="miro" section="3.2" %}
+
+Run the pack once per integration token. It asks Miro what that token can do (`GET /v1/oauth-token`) and flags the high-impact scopes above, or any scope outside `MIRO_ALLOWED_SCOPES` when you declare the integration's allowlist. It inspects only the token it is given.
 
 ---
 
@@ -431,6 +493,8 @@ Use the Miro AI admin controls in the Admin Console to decide which AI capabilit
 **Step 3: Pair with Classification**
 1. Where boards are classified, use the **Block Miro AI usage** guardrail (see 2.3) so classified content is excluded from AI interaction regardless of the capability scope
 
+**Automation:** ClickOps only — Miro exposes no write interface for this setting ([Miro REST API reference](https://developers.miro.com/reference), 2026-09-24). The only AI endpoint, `GET /v2/orgs/{org_id}/ai-interaction-logs` (Enterprise Guard, scope `aiinteractionlogs:read`), reads interaction logs. It configures nothing.
+
 #### Validation & Testing
 As a member of a team excluded from a capability, confirm the corresponding AI entry point is unavailable on a board. Sources: [Miro AI admin controls](https://help.miro.com/hc/en-us/articles/32486862599442-Miro-AI-admin-controls), [Miro AI granular admin controls](https://help.miro.com/hc/en-us/articles/27016283682578-Miro-AI-granular-admin-controls) (content verified via the vendor's help-center API, 2026-08).
 
@@ -455,39 +519,51 @@ Enable Miro Enterprise audit logs, review activity events, and forward them to a
 
 **Attack Prevented:** Undetected account compromise, insider misuse, delayed breach detection, gaps in forensic evidence
 
-**The audit API only reaches back 90 days — scheduled export is mandatory, not optional.** Miro's Enterprise audit logs endpoint "retrieves a page of audit events from the last 90 days"; anything older must come from a CSV export taken while it was still in window. A retention policy longer than 90 days therefore cannot be satisfied by querying the API on demand — you need a scheduled pull into the SIEM or archive. Source: [Get audit logs (Enterprise)](https://developers.miro.com/reference/enterprise-get-audit-logs).
+**Audit events are deleted on a schedule, so scheduled export is mandatory, not optional.** Miro stores audit events for 180 days by default. Admins can set retention to 30, 90, 180 or 365 days, indefinite retention has been deprecated, and "Once audit logs are deleted, they can't be recovered." The API returns only what is still inside that window: it "retrieves a page of audit events within your organization's configured audit log retention period." The console preview is shorter still, covering only the last 90 days. A retention requirement longer than the configured period therefore needs a scheduled pull into the SIEM or archive. Sources: [Audit logs](https://help.miro.com/hc/en-us/articles/360017571434-Audit-logs) (content verified via the vendor's help-center API, 2026-09), [Get audit logs (Enterprise)](https://developers.miro.com/reference/enterprise-get-audit-logs).
 
 #### ClickOps Implementation
 
 **Step 1: Access Audit Logs**
-1. Navigate to: **Company Settings → Security → Audit logs**
-2. Review activity events
-3. Export CSV for any period you need beyond the API's 90-day window
+1. Navigate to: **Company Settings → Security → Audit logs** ([Audit logs](https://help.miro.com/hc/en-us/articles/360017571434-Audit-logs))
+2. Filter by **Date range**, **Actor**, **Event category** and **Event**, then click **View events**. The preview covers the last 90 days only
+3. Click **Export to CSV** for any period you must keep outside Miro. The file stays downloadable for 24 hours, and only one export file per organization exists at a time
 
-**Step 2: Automate Export to the SIEM**
+**Step 2: Set the Retention Period**
+1. On the same page, open the **Settings** tab
+2. Choose a retention period (30, 90, 180 or 365 days) at least as long as your export cadence needs, and confirm. Events past the period are deleted and cannot be recovered
+
+**Step 3: Automate Export to the SIEM**
 1. Register an app and grant the `auditlogs:read` scope (Enterprise)
-2. Schedule a pull against the Enterprise audit logs endpoint on a cadence well inside 90 days — a daily or weekly job, not an ad-hoc query
-3. Alert on job failure: a silently broken export means events age out of the API permanently
+2. Schedule a pull against the Enterprise audit logs endpoint on a cadence well inside the retention period: a daily or weekly job, not an ad-hoc query
+3. Alert on job failure: a silently broken export means events age out and are deleted
+
+#### Code Implementation
+
+{% include pack-code.html vendor="miro" section="4.1" %}
+
+The pack walks the documented cursor through a time window (default: the last 24 hours) and writes each event as one JSON line for the SIEM. It exits non-zero on an empty window or a truncated pull, so a broken schedule cannot pass as a quiet day.
 
 #### Detection Focus
-- **Export-pipeline gaps:** alert when the scheduled audit pull returns zero events or fails, since the 90-day ceiling makes a lapsed job an unrecoverable evidence loss
+- **Export-pipeline gaps:** alert when the scheduled audit pull returns zero events or fails, since events past the retention period are deleted and cannot be recovered
 - **Sharing and copying spikes:** bursts of board-share or content-copy events, especially involving guests or non-team members (see 2.2)
-- **App and token activity:** new app installs, app approvals, and personal-token creation — correlate against the approved-apps list from 3.1
+- **App and token activity:** new app installs, app approvals, and SCIM token generation — correlate against the approved-apps list from 3.1
 - **Authentication anomalies:** SSO configuration changes, 2FA disablement, and logins from users on unverified domains who bypass SSO enforcement
 
 ---
 
 ## Appendix A: Edition Compatibility
 
-Miro's current plan tiers are **Free**, **Starter**, **Business**, and **Enterprise** — there is no "Team" plan. Verified against [Miro pricing](https://miro.com/pricing/), 2026-08.
+Miro's current plan tiers are **Free**, **Starter**, **Business**, and **Enterprise** — there is no "Team" plan. Verified against [Miro pricing](https://miro.com/pricing/), 2026-08. The 2FA, multi-IdP, sharing-policy and REST API rows were verified against the help-center and API reference pages cited in 1.1, 2.1 and the Scope note, 2026-09.
 
 | Control | Free | Starter | Business | Enterprise |
 |---------|------|---------|----------|------------|
 | SAML SSO (1.1) | ❌ | ❌ | ✅ | ✅ |
-| Multiple identity providers (1.1) | ❌ | ❌ | ❌ | ✅ |
+| Multiple identity providers (1.1) | ❌ | ❌ | ❌ | Private beta |
+| 2FA enforcement for magic-link sign-ins (1.1) | ❌ | ✅ | ✅ | ✅ |
 | Idle Session Timeout (1.3) | ❌ | ❌ | ❌ | ✅ |
 | SCIM provisioning (1.4) | ❌ | ❌ | ❌ | ✅ |
 | Domain control | ❌ | ❌ | ❌ | ✅ |
+| Org-level sharing policy: public links, allowed domains (2.1) | ❌ | ❌ | ❌ | ✅ |
 | Copying/export permissions (2.2) | ❌ | ✅ | ✅ | ✅ |
 | Data classification (2.3) | ❌ | ❌ | ❌ | ✅ |
 | Intelligent Guardrails / auto-classification (2.3) | ❌ | ❌ | ❌ | Enterprise Guard add-on |
@@ -496,6 +572,7 @@ Miro's current plan tiers are **Free**, **Starter**, **Business**, and **Enterpr
 | Miro AI admin controls (3.3) | ❌ | ❌ | ❌ | ✅ |
 | Per-feature Miro AI control (3.3) | ❌ | ❌ | ❌ | Enterprise Guard / AI Workflows add-on |
 | Audit logs + audit API (4.1) | ❌ | ❌ | ❌ | ✅ |
+| REST API reads used by the Code Packs (1.2, 2.1–2.3, 4.1) | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
@@ -504,6 +581,12 @@ Miro's current plan tiers are **Free**, **Starter**, **Business**, and **Enterpr
 **Official Miro Documentation:**
 - [Miro Help Center](https://help.miro.com/hc/en-us)
 - [Single sign-on (SSO)](https://help.miro.com/hc/en-us/articles/360017571414-Single-sign-on-SSO)
+- [Enterprise two-factor authentication (2FA) – admin guide](https://help.miro.com/hc/en-us/articles/7935391125394-Enterprise-two-factor-authentication-2FA-admin-guide)
+- [Two-factor authentication (2FA)](https://help.miro.com/hc/en-us/articles/27356474050834-Two-factor-authentication-2FA)
+- [Sharing policy on Enterprise Plan](https://help.miro.com/hc/en-us/articles/360017730133-Sharing-policy-on-Enterprise-Plan)
+- [Audit logs](https://help.miro.com/hc/en-us/articles/360017571434-Audit-logs)
+- [Setting up SIEM](https://help.miro.com/hc/en-us/articles/21852138484882-7-2-Setting-up-SIEM), [Microsoft Sentinel integration](https://help.miro.com/hc/en-us/articles/31325908249362-Microsoft-Sentinel-integration)
+- [Team invitation settings](https://help.miro.com/hc/en-us/articles/13205512707858-Team-invitation-settings), [Team permissions on Enterprise plan](https://help.miro.com/hc/en-us/articles/4402822899986-Team-permissions-on-Enterprise-plan)
 - [Idle Session Timeout](https://help.miro.com/hc/en-us/articles/360017571454-Idle-Session-Timeout)
 - [SCIM](https://help.miro.com/hc/en-us/articles/37593868431378-SCIM)
 - [How to allow or restrict copying and exporting boards and content](https://help.miro.com/hc/en-us/articles/360018350399-How-to-allow-or-restrict-copying-and-exporting-boards-and-content)
@@ -518,7 +601,7 @@ Miro's current plan tiers are **Free**, **Starter**, **Business**, and **Enterpr
 - [Enterprise Guard Deployment Guide](https://help.miro.com/hc/en-us/articles/17120515162386-Enterprise-Guard-Deployment-Guide-Introduction)
 - [Miro pricing (plan tiers and feature matrix)](https://miro.com/pricing/)
 
-Miro's help center returns HTTP 403 to non-browser fetchers. Every `help.miro.com` article above was content-verified through Miro's own first-party help-center API (`help.miro.com/api/v2/help_center/...`, published non-draft article bodies) in 2026-08; the human-readable article URLs are cited here.
+Miro's help center returns HTTP 403 to non-browser fetchers. Every `help.miro.com` article above was content-verified through Miro's own first-party help-center API (`help.miro.com/api/v2/help_center/...`, published non-draft article bodies) in 2026-08, and the articles added in 0.3.0 on 2026-09-24; the human-readable article URLs are cited here.
 
 **API Documentation:**
 - [Miro Developer Portal](https://developers.miro.com/)
@@ -526,6 +609,9 @@ Miro's help center returns HTTP 403 to non-browser fetchers. Every `help.miro.co
 - [Getting started with OAuth 2.0](https://developers.miro.com/docs/getting-started-with-oauth)
 - [Permission scopes](https://developers.miro.com/docs/scopes)
 - [Get audit logs (Enterprise)](https://developers.miro.com/reference/enterprise-get-audit-logs)
+- [Get teams](https://developers.miro.com/reference/enterprise-get-teams), [Get team members](https://developers.miro.com/reference/enterprise-get-team-members), [Get team settings](https://developers.miro.com/reference/enterprise-get-team-settings) (Enterprise)
+- [Get organization data classification settings](https://developers.miro.com/reference/enterprise-dataclassification-organization-settings-get), [Get team data classification settings](https://developers.miro.com/reference/enterprise-dataclassification-team-settings-get) (Enterprise)
+- [Get access token context](https://developers.miro.com/reference/get-access-token-context), [Revoke token (v2)](https://developers.miro.com/reference/revoke-token-v2)
 
 **Compliance Frameworks:**
 - [Miro security and compliance FAQ](https://help.miro.com/hc/en-us/articles/360012346599-Miro-security-and-compliance-FAQ) — current certification scope
@@ -539,6 +625,7 @@ Miro's help center returns HTTP 403 to non-browser fetchers. Every `help.miro.co
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-09-25 | 0.3.0 | ai-drafted | validate-hth-guide run, fix phase. **No live surface was exercised (0 VERIFIED-LIVE):** the Miro console was behind a sign-in wall, and no credential or tenant was available. Maturity is unchanged. **New Code Packs:** six read-only `api/` audit packs, for 1.2 (team roles and invitation policy), 2.1 (team sharing policy), 2.2 (copy access), 2.3 (data classification), 3.2 (token scope review) and 4.1 (audit-log pull to NDJSON). Each follows the documented Enterprise REST endpoints and fails closed on any non-200, an empty listing or a truncated pull. They were tested offline against schema-shaped fixtures, not against a tenant. **Automation verdicts:** 1.1, 1.3, 1.4, 3.1 and 3.3 now carry an evidenced ClickOps-only line, and the Scope section records the automation surface. **Corrections:** 1.1 SSO path (Single sign-on, toggle **SSO/SAML**, per-plan breadcrumbs), multi-IdP is a private beta, 2FA enforcement paths per plan (Starter, Business, Enterprise) and its magic-link-only coverage, the SSO quote now lists magic link where it said password, and unverified-domain users sign in by magic link or social account (Miro removed password sign-in). 2.1 real path **Company settings → Security → Sharing**, toggle **Boards can be shared publicly** (Enterprise), plus allowed domains, the team-level override and link expiry/passwords. 3.2 heading renamed to ClickOps Implementation, **Your apps** and **Team settings → Apps & Integrations** replace the undocumented "Profile → Apps & integrations", and "personal access tokens", a term Miro does not use, is gone. 4.1 console path cited, **Export to CSV**, and the retention **Settings** tab, and Detection Focus names SCIM token generation (a logged event) in place of personal-token creation. The stale "last 90 days" API quote is replaced: the endpoint now covers the configured retention period, 180 days by default. Appendix A adds 2FA, sharing-policy and REST API rows. **After an independent audit of the run:** 1.2 Step 2 cites Miro's per-plan invitation paths and covers who can invite, guests and the team invite link. 1.4 names **Company settings → Enterprise integrations → SCIM Provisioning** and token rotation. The Scope section records the SIEM surface and why no detection-rule pack ships. The 3.2 pack now fails closed when a scope comparison errors (it had reported OK) and accepts comma-space scope lists, and 1.2's role counts fail closed the same way. | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: corrected SAML SSO to Business+Enterprise (multi-IdP Enterprise-only), corrected 2.2 to the real Copying Content control (no "Export restrictions" setting exists), corrected 3.1 app governance plan split (no allowlist below Enterprise), corrected plan tiers (no "Team" plan; domain control Enterprise-only); added 1.3 Idle Session Timeout, 1.4 SCIM, 2.3 classification + Intelligent Guardrails, 3.3 Miro AI admin controls; added 90-day audit-API window and Detection Focus content; added expiring-OAuth-token guidance and high-impact scope table; rebuilt Appendix A and removed Trust Center / marketing sources from Appendix B. help.miro.com articles 403 non-browser fetchers and were content-verified via Miro's first-party help-center API. Tier 2: no CIS Benchmark, DISA STIG, or CISA SCuBA baseline exists for Miro (confirmed zero). Tier 3/4: not surveyed in this pass. | Claude Code (Opus 5) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | ai-drafted | Initial Miro hardening guide | Claude Code (Opus 4.5) |

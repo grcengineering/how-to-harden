@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 1.04: Disable Private Repository Forking
 # Profile: L2 | NIST: AC-4, AC-6
-# https://howtoharden.com/guides/github/#14-disable-private-repository-forking
+# https://howtoharden.com/guides/github/#12-restrict-base-permissions-for-organization-members
 source "$(dirname "$0")/common.sh"
 
 banner "1.04: Disable Private Repository Forking"

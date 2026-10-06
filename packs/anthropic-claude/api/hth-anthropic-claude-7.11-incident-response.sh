@@ -35,7 +35,8 @@ if [ -d "${CLAUDE_DIR}" ]; then
   find "${CLAUDE_DIR}" -name "*.jsonl" -type f 2>/dev/null | while read -r f; do
     rel="${f#${CLAUDE_DIR}/}"
     mkdir -p "${OUTPUT_DIR}/transcripts/$(dirname "${rel}")"
-    cp "${f}" "${OUTPUT_DIR}/transcripts/${rel}"
+    # -p keeps the original timestamps and mode: evidence must not look newer
+    cp -p "${f}" "${OUTPUT_DIR}/transcripts/${rel}"
   done
   transcript_count=$(find "${OUTPUT_DIR}/transcripts" -name "*.jsonl" 2>/dev/null | wc -l)
   echo "  Collected ${transcript_count} transcript files"
@@ -50,7 +51,7 @@ for settings_file in \
   "${CLAUDE_DIR}/settings.local.json" \
   "${HOME}/.claude.json"; do
   if [ -f "${settings_file}" ]; then
-    cp "${settings_file}" "${OUTPUT_DIR}/$(basename "${settings_file}")"
+    cp -p "${settings_file}" "${OUTPUT_DIR}/$(basename "${settings_file}")"
     echo "  Collected: ${settings_file}"
   fi
 done
@@ -58,7 +59,7 @@ done
 # Collect project-level settings from CWD if present
 if [ -d ".claude" ]; then
   echo "[3/5] Collecting project-level .claude/ directory..."
-  cp -r .claude "${OUTPUT_DIR}/project-claude/"
+  cp -Rp .claude "${OUTPUT_DIR}/project-claude/"
 else
   echo "[3/5] No project .claude/ directory in CWD"
 fi
@@ -69,23 +70,34 @@ for mcp_file in \
   ".mcp.json" \
   "${CLAUDE_DIR}/mcp.json"; do
   if [ -f "${mcp_file}" ]; then
-    cp "${mcp_file}" "${OUTPUT_DIR}/$(basename "${mcp_file}").mcp-config"
+    cp -p "${mcp_file}" "${OUTPUT_DIR}/$(basename "${mcp_file}").mcp-config"
     echo "  Collected: ${mcp_file}"
   fi
 done
 
-# Collect managed settings (if accessible)
-for managed_path in \
-  "/Library/Application Support/ClaudeCode/managed-settings.json" \
-  "/etc/claude-code/managed-settings.json"; do
-  if [ -f "${managed_path}" ]; then
-    cp "${managed_path}" "${OUTPUT_DIR}/managed-settings.json"
-    echo "  Collected managed settings: ${managed_path}"
+# Collect managed policy (if accessible): settings, MCP policy, and drop-ins
+for managed_dir in \
+  "/Library/Application Support/ClaudeCode" \
+  "/etc/claude-code"; do
+  for managed_file in managed-settings.json managed-mcp.json; do
+    if [ -f "${managed_dir}/${managed_file}" ]; then
+      cp -p "${managed_dir}/${managed_file}" "${OUTPUT_DIR}/${managed_file}"
+      echo "  Collected managed policy: ${managed_dir}/${managed_file}"
+    fi
+  done
+  if [ -d "${managed_dir}/managed-settings.d" ]; then
+    cp -Rp "${managed_dir}/managed-settings.d" "${OUTPUT_DIR}/managed-settings.d"
+    echo "  Collected managed drop-ins: ${managed_dir}/managed-settings.d"
   fi
 done
 
+# Record a SHA-256 for every collected file so later tampering is detectable
+echo "[5/5] Hashing evidence and generating collection summary..."
+if command -v sha256sum >/dev/null 2>&1; then HASH_CMD=(sha256sum); else HASH_CMD=(shasum -a 256); fi
+( cd "${OUTPUT_DIR}" && find . -type f ! -name SHA256SUMS ! -name SUMMARY.txt | LC_ALL=C sort | \
+    while IFS= read -r f; do "${HASH_CMD[@]}" "${f}"; done ) > "${OUTPUT_DIR}/SHA256SUMS"
+
 # Generate summary
-echo "[5/5] Generating collection summary..."
 {
   echo "Claude Forensic Collection Summary"
   echo "=================================="
@@ -99,6 +111,9 @@ echo "[5/5] Generating collection summary..."
     size=$(wc -c < "${f}" | tr -d ' ')
     echo "  ${f} (${size} bytes)"
   done
+  echo ""
+  echo "Integrity: SHA256SUMS holds a SHA-256 for every collected file"
+  echo "  Verify: (cd ${OUTPUT_DIR} && ${HASH_CMD[*]} -c SHA256SUMS)"
   echo ""
   echo "Next Steps:"
   echo "  1. Correlate session_id and prompt.id UUIDs with OTel logs in SIEM"

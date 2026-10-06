@@ -16,18 +16,23 @@ resource "github_organization_ruleset" "production_branch_protection" {
       include = ["~DEFAULT_BRANCH", "refs/heads/release/*"]
       exclude = []
     }
+
+    repository_name {
+      include = ["~ALL"]
+      exclude = []
+    }
   }
 
   rules {
-    deletion                = true
-    non_fast_forward        = true
-    required_signatures     = true
+    deletion            = true
+    non_fast_forward    = true
+    required_signatures = true
 
     pull_request {
-      required_approving_review_count   = 2
-      dismiss_stale_reviews_on_push     = true
-      require_code_owner_review         = true
-      require_last_push_approval        = true
+      required_approving_review_count = 2
+      dismiss_stale_reviews_on_push   = true
+      require_code_owner_review       = true
+      require_last_push_approval      = true
     }
   }
 }

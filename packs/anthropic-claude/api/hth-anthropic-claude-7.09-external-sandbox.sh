@@ -9,17 +9,23 @@
 #
 # These tools provide defense-in-depth: even if Claude Code's built-in
 # sandbox is bypassed, the kernel-level restrictions remain enforced.
+#
+# Usage: ./hth-anthropic-claude-7.09-external-sandbox.sh [--install]
+#   --install  also install nono and OpenShell (skipped by default)
+#   NONO_SESSION_ID  a session id from `nono audit list`, for the audit step
 
 set -euo pipefail
 
 # HTH Guide Excerpt: begin nono-setup
 # ── nono: Kernel-Enforced Agent Sandbox ──
-# Source: github.com/always-further/nono (Apache-2.0)
+# Source: github.com/nolabs-ai/nono (Apache-2.0)
 # Platforms: macOS (Seatbelt), Linux (Landlock)
 # Docs: docs.nono.sh
 
-# Install nono via Homebrew
-brew install nono
+# Install nono via Homebrew (only when run with --install)
+if [[ "${1:-}" == "--install" ]]; then
+  brew install nono
+fi
 
 # Run Claude Code inside nono with the built-in profile.
 # The claude-code profile grants:
@@ -42,7 +48,7 @@ nono run \
 
 # Audit trail: review all actions taken during a session
 nono audit list
-nono audit show <session-id> --json
+nono audit show "${NONO_SESSION_ID:?set NONO_SESSION_ID to a session id from 'nono audit list'}" --json
 
 # Rollback: restore filesystem to pre-session state
 nono rollback list
@@ -55,8 +61,10 @@ nono rollback restore
 # Platforms: Linux (container-based via K3s)
 # Docs: github.com/NVIDIA/OpenShell/tree/main/docs
 
-# Install OpenShell
-curl -LsSf https://raw.githubusercontent.com/NVIDIA/OpenShell/main/install.sh | sh
+# Install OpenShell (only when run with --install)
+if [[ "${1:-}" == "--install" ]]; then
+  curl -LsSf https://raw.githubusercontent.com/NVIDIA/OpenShell/main/install.sh | sh
+fi
 
 # Launch Claude Code in an isolated sandbox.
 # OpenShell auto-detects ANTHROPIC_API_KEY, creates a provider,

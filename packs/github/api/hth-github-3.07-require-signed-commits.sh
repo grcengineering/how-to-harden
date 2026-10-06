@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 3.07: Require Signed Commits
 # Profile: L3 | NIST: AU-10, SC-13
-# https://howtoharden.com/guides/github/#37-require-signed-commits
+# https://howtoharden.com/guides/github/#24-enforce-commit-signing
 source "$(dirname "$0")/common.sh"
 
 banner "3.07: Require Signed Commits (Audit Only)"

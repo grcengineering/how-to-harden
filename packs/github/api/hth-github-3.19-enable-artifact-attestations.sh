@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH GitHub Control 4.07: Enable Artifact Attestations
 # Profile: L2 | NIST: SA-12, SI-7, CM-14
-# https://howtoharden.com/guides/github/#44-enable-artifact-attestations-for-supply-chain-provenance
+# https://howtoharden.com/guides/github/#35-generate-and-verify-artifact-attestations
 source "$(dirname "$0")/common.sh"
 
 banner "4.07: Enable Artifact Attestations"

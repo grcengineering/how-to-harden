@@ -6,9 +6,18 @@
 # HTH Guide Excerpt: begin hardened-ci-config
 # .gitlab-ci.yml - Security hardened example
 
+# The scanner jobs below come from GitLab's maintained templates; this file
+# only overrides them. Without these includes, sast/dependency_scanning/
+# container_scanning have no script and the pipeline fails validation.
+include:
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+
 default:
-  # Use specific image tags, not :latest
-  image: ruby:3.2.0-alpine@sha256:abc123...
+  # Pin images by digest, not a mutable tag (and never :latest).
+  # Resolve the digest for your tag with: docker buildx imagetools inspect ruby:3.2.0-alpine
+  image: ruby:3.2.0-alpine@sha256:c690d3b45ef65e0098104c272f1736b0595b824908d5639c3a3d17636581a905
 
   # Limit job timeout
   timeout: 30 minutes

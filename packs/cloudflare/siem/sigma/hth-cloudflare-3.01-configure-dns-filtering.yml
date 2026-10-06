@@ -1,5 +1,5 @@
 title: Cloudflare Gateway DNS Security Policy Disabled or Deleted
-id: cf-zt-3001-dns-policy-weakened
+id: b810bb6d-94f6-53a9-a376-133ec1ed51e8
 status: test
 description: |
     Detects when a Gateway DNS filtering policy is disabled or deleted in
@@ -24,7 +24,7 @@ detection:
             - 'DeleteGatewayRule'
             - 'UpdateGatewayRule'
     filter_dns:
-        ActionMetadata|contains: 'dns'
+        Metadata|contains: 'dns'
     condition: selection and filter_dns
 fields:
     - ActorEmail
