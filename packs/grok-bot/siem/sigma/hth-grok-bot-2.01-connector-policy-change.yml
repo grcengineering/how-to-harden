@@ -1,0 +1,97 @@
+# HTH Pack Contract: v1
+#   control: grok-bot-2.1
+#   guide:   https://howtoharden.com/guides/grok-bot/#21-restrict-the-connectors-every-bot-inherits
+#   profile: L1
+#   mode:    read-only
+#   requires: Cursor Enterprise audit logs in the Admin API pull shape (GET /teams/audit-logs events[]), or a stream remapped per FIELD MAPPING below
+# =============================================================================
+# HTH Grok Bot Control 2.1: Restrict the Connectors Every Bot Inherits
+# Profile Level: L1 (Crawl)
+# Frameworks: CIS Controls v8 2.5, 4.8 | NIST 800-53 CM-7, AC-6, SA-9 | SOC 2 CC6.1, CC9.2 | ISO 27001:2022 A.5.19, A.5.23 | OWASP Agentic 2026 ASI02
+# Sources (every event type and field below is transcribed from these; fetched 2026-10-08):
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#log-format
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#event-types  (Team settings and integrations table)
+#   https://cursor.com/docs/account/teams/admin-api#get-audit-logs
+# Feed: packs/cursor/api/hth-cursor-10.01-export-audit-logs.sh with HTH_AUDIT_OUT set
+#   (JSONL, one Admin API event object per line).
+#
+# LOGSOURCE (custom). Sigma has no upstream taxonomy for Cursor audit logs, so
+# this rule declares product: cursor / service: audit. Field names are the
+# Admin API pull shape, one flat object per event:
+#   event_type       one value from the Event types tables (the selector)
+#   event_data.<f>   the event-specific fields, documented as keys in event_data
+#   user_email       the actor
+#   event_id, timestamp, ip_address, application_type
+# FIELD MAPPING for streamed delivery (Splunk HEC, Sumo Logic, HTTPS webhook or
+# S3; set up by contacting hi@cursor.com), which uses the raw message shape:
+#   event_data.<f>  ->  <event_type>.<f>     e.g. team_marketplace.plugin_name
+#   event_id        ->  metadata.id
+#   timestamp       ->  metadata.timestamp
+#
+# TRAPS
+#  1. team_marketplace is the team's Cursor-wide connector policy, not a Grok
+#     Bot event. Grok Bot has no connector list of its own and inherits this
+#     policy on every plan, so every change here reaches every Bot.
+#  2. The doc lists an `action` field for team_marketplace without enumerating
+#     its values, so the rule does not filter on action. It also documents
+#     "before and after values for the changed install mode, access groups, or
+#     source repository" without naming those keys, so they are not listed in
+#     `fields`. Inspect the raw event.
+#  3. MCP allowlist edits may log as team_settings with a setting_name such as
+#     mcp_allowlist_import, and that setting_name list is explicitly "not an
+#     exhaustive list". mcp_server_config also fires for user-scope servers.
+#     Neither is selected here; the 2.01 API audit pack reviews both.
+#  4. The documented streamed example carries no top-level event_type key, only
+#     the payload key named after the event type. On a stream, replace the
+#     event_type match with "the team_marketplace key exists" unless your
+#     pipeline adds event_type itself.
+title: Cursor Team Marketplace Connector Policy Changed (Inherited by Every Grok Bot)
+id: 933f4f98-0df9-4196-abf0-805916487e45
+status: experimental
+description: |
+    Fires when an admin creates, updates or deletes a team plugin marketplace,
+    or adds, removes, pins, links or reconfigures its plugins. Grok Bot inherits
+    the team's Cursor connector policy, and any permitted connector is available
+    to every Bot a member runs, so a marketplace change can hand every Bot a new
+    tool that writes to a system of record or sends data outside the company.
+    Removing a linked MCP plugin or deleting the marketplace can also delete the
+    Team MCP server for local users and Cloud Agents. Review each event against
+    an approved change request.
+    Audit logs exist only on Cursor Enterprise.
+    This corresponds to HTH Grok Bot control 2.1 (Restrict the Connectors Every Bot Inherits, L1).
+references:
+    - https://howtoharden.com/guides/grok-bot/#21-restrict-the-connectors-every-bot-inherits
+    - https://cursor.com/docs/enterprise/compliance-and-monitoring
+    - https://docs.x.ai/grok-bot/teams-and-enterprises
+    - https://cursor.com/docs/plugins
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: cursor
+    service: audit
+    definition: 'Cursor Enterprise audit log events in the Admin API pull shape (GET /teams/audit-logs events[]); streamed events need the FIELD MAPPING in the rule header'
+# HTH Guide Excerpt: begin detection
+# Admin API pull shape (event_type + event_data.<field>). The action values for
+# team_marketplace are not enumerated in the docs, so every action is selected.
+detection:
+    selection:
+        event_type: 'team_marketplace'
+    condition: selection
+fields:
+    - timestamp
+    - user_email
+    - ip_address
+    - event_type
+    - event_data.action
+    - event_data.marketplace_id
+    - event_data.marketplace_name
+    - event_data.plugin_id
+    - event_data.plugin_name
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Approved connector reviews that add, pin or remove plugins
+    - Marketplace changes made for Cursor editor users that were not meant for Grok Bot, which still reach every Bot because the policy is shared
+level: medium

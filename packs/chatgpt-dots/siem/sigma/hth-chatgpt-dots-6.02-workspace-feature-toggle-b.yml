@@ -1,0 +1,152 @@
+# HTH Pack Contract: v1
+#   control: chatgpt-dots-6.2
+#   guide:   https://howtoharden.com/guides/chatgpt-dots/#62-alert-on-governance-changes-that-widen-what-dots-can-reach
+#   profile: L2
+#   mode:    read-only
+#   requires: Compliance Logs Platform AUDIT_LOG ingestion (ChatGPT Enterprise/Edu only); ChatGPT Admin key with scope chatgpt.enterprise.compliance_logs_platform.audit_log.read
+# =============================================================================
+# HTH ChatGPT Dots Control 6.2: Alert on governance changes that widen what dots can reach
+# Profile Level: L2 (Walk)
+# Frameworks: CIS Controls v8 8.11, 6.8 | NIST 800-53 AU-6, CM-3, AC-2(4), SI-4 | SOC 2 CC7.2, CC8.1 | no benchmark equivalent yet
+# Feed: GET https://api.chatgpt.com/v1/compliance/workspaces/{workspace_id}/logs?event_type=AUDIT_LOG&after=<ISO8601>
+#       (List Files; page with last_end_time), then GET .../logs/{log_file_id}
+#       (Download File; 307 to a short-lived signed JSONL URL). Deduplicate on event_id.
+#
+# Sources (action names and fields transcribed from these; all fetched 2026-10-08):
+#   - https://chatgpt.com/public/admin/api-reference
+#       Admin API spec v2.5.37, Audit tag: WORKSPACE_TOGGLE_FEATURE ("Enabled or disabled a
+#       workspace feature flag": feature, value, app_id, source_surface, context_plugin_id,
+#       affected_connector_ids, changed_fields) and its example record
+#       (feature canvas_code_network_access, value false); APP_UPDATE_ACCESS_POLICY
+#       (allow_all_in_workspace); APP_ALLOW_USER (allowed_user_id);
+#       PLUGIN_UPDATE_INSTALLATION_POLICY (installation_policy_before, installation_policy,
+#       installed_by_default_role_ids_before, installed_by_default_role_ids); PLUGIN_SHARE
+#       (added_assignments, removed_assignments, discoverability_before, discoverability);
+#       APP_PUBLISH (affected_connector_ids, changed_fields, per-connector snapshots),
+#       re-read 2026-10-09. 403 to curl; spec read in a real browser.
+#   - https://learn.chatgpt.com/docs/dots/computers-and-apps  (a member installs and
+#       connects each plugin their dot uses)
+#   - https://learn.chatgpt.com/docs/enterprise/dots-admin-guide
+#   - https://help.openai.com/en/articles/11509118
+#
+# TRAPS
+#   1. Feature identifiers are UNDOCUMENTED for dots. The only identifier the spec shows is
+#      the example canvas_code_network_access. Whether the dots permissions or the Cloud
+#      computer capabilities surface here, in ROLE_UPDATE, or only in the API Platform tenant
+#      feed is undocumented. Capture the real identifiers during validate-hth-guide.
+#   2. Every WORKSPACE_TOGGLE_FEATURE is matched, value true AND false. value is "the
+#      resulting state", but without the identifier list the widening direction is unknown: a
+#      feature can be a restriction, and turning a restriction off widens reach.
+#   3. APP_UPDATE_ACCESS_POLICY is matched only when allow_all_in_workspace is true ("the app
+#      is now visible to the full workspace"). APP_ALLOW_USER is always a grant.
+#      APP_DISALLOW_USER narrows access and is excluded.
+#   4. PLUGIN_UPDATE_INSTALLATION_POLICY is matched in both directions because the
+#      installation_policy values are not enumerated in the spec. Compare
+#      installed_by_default_role_ids against installed_by_default_role_ids_before.
+#   5. Toggles made from the Apps or Plugins admin pages carry source_surface admin_apps or
+#      admin_plugins and per-connector workspace-permission snapshots whose contents are
+#      undocumented; they are triage fields only. APP_PUBLISH ("Publication of a knowledge
+#      app to end users") carries the same undocumented snapshots and is triaged the same way.
+#   6. Excluded on purpose: WORKSPACE_ADMIN_PREVIEW_LAUNCH_SETTINGS_UPDATE ("This does not
+#      change current feature access"); APP_SET_ENABLED_ACTIONS (2.01 rule);
+#      WORKSPACE_SET_POLICY (4.02 rule); role and group changes
+#      (hth-chatgpt-dots-6.02-role-permission-change.yml).
+#   7. Enterprise/Edu only. Business workspace-wide app availability and Memory toggles
+#      produce no exportable record.
+#   8. PLUGIN_SHARE ("Changed plugin access or discoverability") is matched in every
+#      direction and for both STANDARD_USER and ADMIN privilege: one event can carry
+#      additions, removals, role changes or only a discoverability change. Sigma cannot
+#      portably match inside added_assignments (an array of {principal_id, principal_type,
+#      role}), so triage it: escalate when an added assignment has principal_type
+#      workspace or group, when role is editor, or when discoverability moves to LISTED.
+#      action_result BLOCKED or ERROR "describes an attempted change and does not establish
+#      access". Sharing makes a plugin available but does not install it: each member still
+#      installs and connects a plugin before their dot can use it. Which Plugin controls UI
+#      action emits PLUGIN_SHARE versus PLUGIN_UPDATE_INSTALLATION_POLICY is undocumented.
+title: ChatGPT Workspace Feature Toggle or App Availability Widened
+id: 6e4f0661-656b-4171-8164-c384d09ae357
+status: experimental
+description: |
+    Fires when a ChatGPT workspace feature flag is toggled, when an app is made visible to
+    the whole workspace or granted to an individual user, when a knowledge app is published
+    to end users, when a plugin's sharing or discoverability changes, or when a plugin's
+    installation policy changes. Dots act through their owner's ChatGPT app connections and use workspace
+    capabilities shared with Work Cloud, so a single admin toggle can widen what every dot
+    in the workspace can reach. The dots feature identifiers are undocumented, so this rule
+    surfaces every toggle for review rather than only the dots ones; narrow it once the
+    identifiers are captured from a live tenant.
+    This corresponds to HTH ChatGPT Dots control 6.2 (section 6.2, L2).
+references:
+    - https://howtoharden.com/guides/chatgpt-dots/#62-alert-on-governance-changes-that-widen-what-dots-can-reach
+    - https://chatgpt.com/public/admin/api-reference
+    - https://learn.chatgpt.com/docs/enterprise/dots-admin-guide
+    - https://help.openai.com/en/articles/11509118
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.defense_evasion
+    - attack.privilege_escalation
+    - attack.t1484
+# HTH Guide Excerpt: begin feature-toggle-detection
+logsource:
+    product: openai
+    service: chatgpt-compliance
+    definition: 'ChatGPT Compliance Logs Platform JSONL records with type AUDIT_LOG; nested keys flattened with dots (action_data.feature)'
+detection:
+    selection_toggle:
+        type: 'AUDIT_LOG'
+        action: 'WORKSPACE_TOGGLE_FEATURE'
+    selection_app_workspace_wide:
+        type: 'AUDIT_LOG'
+        action: 'APP_UPDATE_ACCESS_POLICY'
+        action_data.allow_all_in_workspace: true
+    selection_app_user_grant:
+        type: 'AUDIT_LOG'
+        action: 'APP_ALLOW_USER'
+    selection_plugin_install_policy:
+        type: 'AUDIT_LOG'
+        action: 'PLUGIN_UPDATE_INSTALLATION_POLICY'
+    selection_plugin_share:
+        type: 'AUDIT_LOG'
+        action: 'PLUGIN_SHARE'
+    selection_app_publish:
+        type: 'AUDIT_LOG'
+        action: 'APP_PUBLISH'
+    condition: 1 of selection_*
+fields:
+    - timestamp
+    - event_id
+    - actor.type
+    - actor.user_email
+    - action
+    - action_result
+    - action_privilege
+    - action_data.feature
+    - action_data.value
+    - action_data.app_id
+    - action_data.app_name
+    - action_data.source_surface
+    - action_data.context_plugin_id
+    - action_data.affected_connector_ids
+    - action_data.changed_fields
+    - action_data.previous_workspace_permissions_by_connector
+    - action_data.new_workspace_permissions_by_connector
+    - action_data.allow_all_in_workspace
+    - action_data.allowed_user_id
+    - action_data.plugin_id
+    - action_data.plugin_name
+    - action_data.added_assignments
+    - action_data.removed_assignments
+    - action_data.discoverability_before
+    - action_data.discoverability
+    - action_data.installation_policy_before
+    - action_data.installation_policy
+    - action_data.installed_by_default_role_ids_before
+    - action_data.installed_by_default_role_ids
+# HTH Guide Excerpt: end feature-toggle-detection
+falsepositives:
+    - Planned feature enablement or app rollouts made through change management
+    - Toggles of workspace features unrelated to dots (indistinguishable until the dots identifiers are captured)
+    - Tightening toggles, since both values of WORKSPACE_TOGGLE_FEATURE are matched
+    - Standard-user plugin sharing to individual colleagues, and PLUGIN_SHARE removals or BLOCKED/ERROR attempts (TRAP 8)
+level: medium

@@ -140,7 +140,7 @@ What matters when you are contributing is who is allowed to add each one:
 
 **An `ai-*` status asserts what a machine did and nothing about human judgement.** It never discharges the need for its `ni-*` twin: an agent can prove a console path exists; it cannot judge whether the control is the right control for your organization. Holding both agents at the same stage is the strongest thing the vocabulary can say, and it is the only way "better than AI Validated" is expressed — there is no rung above it to climb to.
 
-**No guide in this repository currently holds any `ni-*` status.** Every one of the 130 guides is `ai-drafted`, two are additionally `ai-validated`, and the entire natural-intelligence half of the matrix is empty. If you are a practitioner reading this, that row is the contribution nobody else can make.
+**No guide in this repository currently holds any `ni-*` status.** Every one of the 132 guides is `ai-drafted`, nineteen are additionally `ai-validated`, and the entire natural-intelligence half of the matrix is empty. If you are a practitioner reading this, that row is the contribution nobody else can make.
 
 ### Author Attribution in Changelog
 

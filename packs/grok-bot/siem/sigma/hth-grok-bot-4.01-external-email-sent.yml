@@ -1,0 +1,115 @@
+# HTH Pack Contract: v1
+#   control: grok-bot-4.1
+#   guide:   https://howtoharden.com/guides/grok-bot/#41-enforce-auto-review-with-team-ask-first-rules
+#   profile: L1
+#   mode:    read-only
+#   requires: Cursor Enterprise; Action Recording on (control 6.1); OpenTelemetry Export destination with the grok_bot_agent_actions family on
+# =============================================================================
+# HTH Grok Bot Control 4.1: Enforce Auto-review with Team Ask-First Rules
+# Profile Level: L1 (Crawl)
+# Frameworks: CIS Controls v8 4.1 | NIST 800-53 AC-3, AC-6, SI-4 | SOC 2 CC6.1, CC8.1 | ISO 27001:2022 A.5.15, A.8.9 | OWASP Agentic 2026 ASI01, ASI09 | OWASP LLM06:2025
+# Sources (every event name, attribute and value below is transcribed from these; fetched 2026-10-08):
+#   https://cursor.com/docs/enterprise/opentelemetry-export/wire  (Shared grok_bot.* attributes; cursor.grok_bot.message_delivery; cursor.grok_bot.tool_decision)
+#   https://cursor.com/docs/enterprise/opentelemetry-export
+#   https://cursor.com/help/grok-bot/connect-plugins (Gmail plugin can draft and send; re-checked 2026-10-09)
+#   https://x.ai/changelog/bot (V0.60.0, V0.64.0; read in a real browser, Cloudflare blocks curl)
+# Feed: OTLP/HTTP protobuf logs that Cursor POSTs to <your base URL>/v1/logs.
+#   Every Grok Bot record carries the resource attribute cursor.surface=grok_bot.
+#
+# LOGSOURCE (custom). Sigma has no upstream taxonomy for Cursor's OpenTelemetry
+# export, so this rule declares product: cursor / service: opentelemetry. Field
+# names are the documented OTel names:
+#   event_name   the log event name (cursor.grok_bot.message_delivery)
+#   body         the documented constant body (grok_bot_message_delivery)
+#   cursor.grok_bot.*, cursor.conversation.id, cursor.event.id   log attributes
+#   cursor.user.email, cursor.surface                            resource attributes
+# FIELD MAPPING: point each name at the path your collector or SIEM writes, for
+# example attributes["cursor.grok_bot.message_delivery.destination_type"] and
+# resource.attributes["cursor.user.email"].
+#
+# TRAPS
+#  1. The wire reference says to route on the log event name, but it does not
+#     say which OTLP field carries that name (the LogRecord event_name field or
+#     an event.name attribute). The rule matches the event name OR the
+#     documented constant body; keep whichever your pipeline populates.
+#  2. destination_type 'email' means outside recipients, sent from one of the
+#     user's Bot addresses. A message drafted onto a card for the user's
+#     approval is destination_type 'draft' (result 'held' while it waits), and
+#     the docs do not say whether a draft the user then sends is exported as an
+#     'email' row. Mail sent from the member's own mailbox is a separate path:
+#     the Gmail plugin can "draft and send ... on the connected mailbox"
+#     (cursor.com/help/grok-bot/connect-plugins), Outlook drafts send from the
+#     member's Outlook account (changelog V0.60.0), and a Bot with drafts
+#     disabled sends messages directly (changelog V0.64.0). The wire reference
+#     records connector (plugin) calls as cursor.grok_bot.mcp_tool_call, and its
+#     destination_type enum has no value for mail from the member's mailbox, so
+#     those sends are not selected here. Expect this rule to see mail from Bot
+#     addresses only. There is no documented tool or server name that marks a
+#     mail send on mcp_tool_call (both are open, customer-defined values); take
+#     your Gmail/Outlook tool names from rows in your own export, and join on
+#     cursor.grok_bot.tool_call.id to the tool_decision rows to see whether a
+#     'human' decision source approved the send.
+#  3. The record never carries the recipient, subject, body or length, so the
+#     alert cannot say who received the mail. To learn whether a person
+#     approved the send, join the call's tool_decision rows on
+#     cursor.grok_bot.tool_call.id and read cursor.grok_bot.decision.source
+#     (human | policy | hook | automatic).
+#  4. Nothing is exported until an admin turns on Action Recording (off by
+#     default; Enterprise only), there is no backfill from before the
+#     destination was activated, and logs arrive at least once (dedupe on
+#     cursor.event.id).
+title: Grok Bot Sent Email to Outside Recipients
+id: 3d432a0b-68be-4576-bcbb-c49a5ef3fc2a
+status: experimental
+description: |
+    Fires when a Grok Bot sends email to outside recipients from one of the
+    user's Bot addresses (cursor.grok_bot.message_delivery.destination_type=email
+    with result=sent). Mail a Bot sends through the member's connected Gmail or
+    Outlook plugin is not selected; see trap 2. External email is one of the
+    vendor's own examples of an action to put behind an Ask first rule, because
+    a goal-hijacked Bot that can send mail is the exfiltration leg of the
+    lethal trifecta. Each hit should map to a send the member asked for or
+    approved. Treat a hit as unattended, and review it first, when
+    cursor.grok_bot.initiated_by is 'routine' or 'agent', or when it is absent
+    (system-started turns such as an inbound Slack or Teams wake, which the
+    wire reference says carry no initiated_by). Check the joined tool_decision
+    rows for a 'human' decision source.
+    Requires Cursor Enterprise with Action Recording and OpenTelemetry Export.
+    This corresponds to HTH Grok Bot control 4.1 (Enforce Auto-review with Team Ask-First Rules, L1).
+references:
+    - https://howtoharden.com/guides/grok-bot/#41-enforce-auto-review-with-team-ask-first-rules
+    - https://cursor.com/docs/enterprise/opentelemetry-export/wire
+    - https://cursor.com/docs/grok-bot/teams
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.exfiltration
+logsource:
+    product: cursor
+    service: opentelemetry
+    definition: 'Cursor OpenTelemetry Export logs, family grok_bot_agent_actions (needs Action Recording); attribute keys as named on the wire reference'
+# HTH Guide Excerpt: begin detection
+# destination_type 'email' is mail from the user's Bot addresses; drafts
+# awaiting approval are 'draft', and sends through a connected Gmail/Outlook
+# plugin are mcp_tool_call rows; neither is selected.
+detection:
+    selection_event:
+        - event_name: 'cursor.grok_bot.message_delivery'
+        - body: 'grok_bot_message_delivery'
+    selection_email_sent:
+        cursor.grok_bot.message_delivery.destination_type: 'email'
+        cursor.grok_bot.message_delivery.result: 'sent'
+    condition: selection_event and selection_email_sent
+fields:
+    - cursor.user.email
+    - cursor.conversation.id
+    - cursor.event.id
+    - cursor.grok_bot.tool_call.id
+    - cursor.grok_bot.turn.id
+    - cursor.grok_bot.initiated_by
+    - cursor.grok_bot.provenance
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Sends the member asked for in chat or approved on an Auto-review card (a human decision source on the joined tool_decision row)
+    - Routines built to email outside parties on a schedule, once each routine is reviewed and recorded
+level: medium

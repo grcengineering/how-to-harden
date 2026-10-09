@@ -1,0 +1,118 @@
+# HTH Pack Contract: v1
+#   control: grok-bot-7.2
+#   guide:   https://howtoharden.com/guides/grok-bot/#72-prepare-a-grok-bot-containment-runbook
+#   profile: L2
+#   mode:    read-only
+#   requires: Cursor Enterprise audit logs in the Admin API pull shape (GET /teams/audit-logs events[]), or a stream remapped per FIELD MAPPING below
+# =============================================================================
+# HTH Grok Bot Control 7.2: Prepare a Grok Bot Containment Runbook
+# Profile Level: L2 (Walk)
+# Frameworks: CIS Controls v8 17.4 | NIST 800-53 IR-4, IR-8 | SOC 2 CC7.4 | ISO 27001:2022 A.5.24, A.5.26
+# Sources (every event type, field and value below is transcribed from these; fetched 2026-10-08):
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#log-format
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#event-types  (Grok Bot table)
+#   https://cursor.com/docs/account/teams/admin-api#get-audit-logs
+# Feed: packs/cursor/api/hth-cursor-10.01-export-audit-logs.sh with HTH_AUDIT_OUT set
+#   (JSONL, one Admin API event object per line). The Grok-Bot-scoped pull is
+#   packs/grok-bot/api/hth-grok-bot-6.02-export-grok-bot-audit.sh.
+#
+# LOGSOURCE (custom). Sigma has no upstream taxonomy for Cursor audit logs, so
+# this rule declares product: cursor / service: audit. Field names are the
+# Admin API pull shape, one flat object per event:
+#   event_type       one value from the Event types tables (the selector)
+#   event_data.<f>   the event-specific fields, documented as keys in event_data
+#   user_email       the actor: an email, 'Api Key: <name>', or 'System'
+#   event_id, timestamp, ip_address, application_type
+# FIELD MAPPING for streamed delivery (Splunk HEC, Sumo Logic, HTTPS webhook or
+# S3; set up by contacting hi@cursor.com), which uses the raw message shape:
+#   event_data.<f>  ->  <event_type>.<f>     e.g. sand_onboarding.new_completed
+#   event_id        ->  metadata.id
+#   timestamp       ->  metadata.timestamp
+#
+# TRAPS
+#  1. grok_bot_vm_bulk is emitted when a bulk operation COMPLETES, and "Its
+#     child operations emit no rows". Expect one row per operation, with
+#     target_count and succeeded/skipped/failed counts, not one per member.
+#  2. grok_bot_vm names the member in target_user_id and target_user_email when
+#     an admin acted on that member's computer; both are "empty for
+#     self-service". The docs do not list which self-service actions can be a
+#     'kill', so treat an empty target as "not an admin acting on someone else"
+#     and read user_email for the actor.
+#  3. The JSON type of new_completed is not documented (the doc writes
+#     'new_completed=true means enabled'), so the selection lists the boolean
+#     and the string for false.
+#  4. The docs do not say whether automatic Terminate Inactive Computers (7.3)
+#     or a single-member Organization API operation emits these rows. Confirm on
+#     a pilot team before relying on the rule as the record of a containment.
+#  5. The documented streamed example carries no top-level event_type key, only
+#     the payload key named after the event type. On a stream, replace each
+#     event_type match with "the <event_type> key exists" unless your pipeline
+#     adds event_type itself.
+title: Grok Bot Disabled for the Team or Computers Terminated, Recreated or Deleted
+id: 3131298d-c7de-4a2c-9f0d-03b1e64cffe6
+status: experimental
+description: |
+    Fires on the actions a Grok Bot containment runbook takes: Grok Bot disabled
+    for the team (sand_onboarding with new_completed=false), any bulk computer
+    operation completing (grok_bot_vm_bulk: bulk_recreate, bulk_kill or
+    bulk_permanent_delete), and a single computer killed (grok_bot_vm with
+    action 'kill'). During an incident these rows are the record that the
+    runbook ran, and the counts show whether every computer was reached. At any
+    other time they mean every member lost Grok Bot, running work was stopped,
+    or Bot computers and their data were deleted, which an attacker holding an
+    admin or Organization API key could also do. Map every hit to an incident
+    ticket, a rehearsal or an offboarding.
+    Audit logs, the disable switch and bulk computer operations exist only on
+    Cursor Enterprise.
+    This corresponds to HTH Grok Bot control 7.2 (Prepare a Grok Bot Containment Runbook, L2).
+references:
+    - https://howtoharden.com/guides/grok-bot/#72-prepare-a-grok-bot-containment-runbook
+    - https://cursor.com/docs/enterprise/compliance-and-monitoring
+    - https://cursor.com/docs/account/organizations/organization-admin-api#grok-bot-computers
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.impact
+    - attack.t1489
+    - attack.t1485
+logsource:
+    product: cursor
+    service: audit
+    definition: 'Cursor Enterprise audit log events in the Admin API pull shape (GET /teams/audit-logs events[]); streamed events need the FIELD MAPPING in the rule header'
+# HTH Guide Excerpt: begin detection
+# Admin API pull shape (event_type + event_data.<field>). grok_bot_vm_bulk is one
+# row per completed operation; its child operations emit no rows.
+detection:
+    selection_disabled:
+        event_type: 'sand_onboarding'
+        event_data.new_completed:
+            - false
+            - 'false'
+    selection_bulk:
+        event_type: 'grok_bot_vm_bulk'
+    selection_kill:
+        event_type: 'grok_bot_vm'
+        event_data.action: 'kill'
+    condition: 1 of selection_*
+fields:
+    - timestamp
+    - user_email
+    - ip_address
+    - event_type
+    - event_data.action
+    - event_data.operation_id
+    - event_data.target_count
+    - event_data.succeeded_count
+    - event_data.skipped_count
+    - event_data.failed_count
+    - event_data.target_user_id
+    - event_data.target_user_email
+    - event_data.old_completed
+    - event_data.new_completed
+    - event_data.source
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Tabletop rehearsals on a dedicated pilot team, which the 7.2 runbook recommends because disable applies to the whole team
+    - Offboarding (7.1) and planned recreates after a Team Setup change (3.3), recorded as approved operations
+    - Self-service kill rows, where target_user_id and target_user_email are empty because no admin acted on another member's computer
+level: high
