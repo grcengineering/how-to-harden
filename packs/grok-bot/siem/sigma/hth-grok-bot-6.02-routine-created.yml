@@ -1,0 +1,112 @@
+# HTH Pack Contract: v1
+#   control: grok-bot-6.2
+#   guide:   https://howtoharden.com/guides/grok-bot/#62-monitor-grok-bot-control-plane-audit-events
+#   profile: L2
+#   mode:    read-only
+#   requires: Cursor Enterprise audit logs in the Admin API pull shape (GET /teams/audit-logs events[]), or a stream remapped per FIELD MAPPING below
+# =============================================================================
+# HTH Grok Bot Control 6.2: Monitor Grok Bot Control-Plane Audit Events
+# Profile Level: L2 (Walk)
+# Frameworks: CIS Controls v8 8.2, 8.9, 8.11 | NIST 800-53 AU-2, AU-6, SI-4 | SOC 2 CC7.2 | ISO 27001:2022 A.8.15, A.8.16
+# Sources (every event type, field and value below is transcribed from these; fetched 2026-10-08):
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#log-format
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#event-types  (Grok Bot table)
+#   https://cursor.com/docs/account/teams/admin-api#get-audit-logs
+#   https://cursor.com/docs/enterprise/opentelemetry-export/wire  (cursor.grok_bot.routine_run, for the per-run follow-up only)
+#   https://cursor.com/help/grok-bot/routines  (trigger sources; editing in place; re-checked 2026-10-09)
+# Feed: packs/cursor/api/hth-cursor-10.01-export-audit-logs.sh with HTH_AUDIT_OUT set
+#   (JSONL, one Admin API event object per line). The Grok-Bot-scoped pull is
+#   packs/grok-bot/api/hth-grok-bot-6.02-export-grok-bot-audit.sh.
+#
+# LOGSOURCE (custom). Sigma has no upstream taxonomy for Cursor audit logs, so
+# this rule declares product: cursor / service: audit. Field names are the
+# Admin API pull shape, one flat object per event:
+#   event_type       one value from the Event types tables (the selector)
+#   event_data.<f>   the event-specific fields, documented as keys in event_data
+#   user_email       the actor: an email, 'Bot: <owner email>' when a Bot acted during its owner's turn, or 'System'
+#   event_id, timestamp, ip_address, application_type
+# FIELD MAPPING for streamed delivery (Splunk HEC, Sumo Logic, HTTPS webhook or
+# S3; set up by contacting hi@cursor.com), which uses the raw message shape:
+#   event_data.<f>  ->  <event_type>.<f>     e.g. grok_bot_routine.trigger_type
+#   event_id        ->  metadata.id
+#   timestamp       ->  metadata.timestamp
+#
+# TRAPS
+#  1. trigger_type and creation_source are documented as fields but their
+#     values are not enumerated, so the rule does not filter on them. Read them
+#     at triage.
+#  2. 'create', 'update' and 'enable' are selected. A routine is edited in
+#     place ("open it and choose Edit", cursor.com/help/grok-bot/routines), so a
+#     goal-hijacked Bot can repoint an existing benign routine at a broad
+#     trigger ('any message', all of Slack) or rewrite its instruction, and that
+#     logs as 'update'. A routine re-enabled after containment logs as 'enable'
+#     and re-arms just the same. (The docs do not say whether the app's "pause"
+#     is logged as 'disable'.)
+#  3. Members create, pause and delete their own routines, and there is no
+#     routine allowlist, disable switch or admin API. Detection is the remaining
+#     control, and this audit row is the only default-on, control-plane record.
+#     Each run is visible only with Action Recording plus OpenTelemetry Export,
+#     as cursor.grok_bot.routine_run (cursor.grok_bot.routine_run.trigger
+#     schedule | event). The docs do not say that the audit automation_id equals
+#     the OTel cursor.grok_bot.routine.id, so do not join on it unverified.
+#  4. The documented streamed example carries no top-level event_type key, only
+#     the payload key named after the event type. On a stream, replace the
+#     event_type match with "the grok_bot_routine key exists" unless your
+#     pipeline adds event_type itself.
+title: Grok Bot Routine Created, Edited or Re-enabled
+id: e704111d-b8ca-4025-8d6c-634651446e3a
+status: experimental
+description: |
+    Fires when a Grok Bot routine is created, edited or re-enabled
+    (grok_bot_routine with action 'create', 'update' or 'enable'). Routines run
+    unattended on a schedule, or when something happens: a Slack message (one
+    channel or all of Slack, including on any message), a GitHub, Linear,
+    Sentry or PagerDuty event, an email, or a webhook call. They keep running
+    while the member's laptop is closed. A routine is the natural persistence
+    mechanism for a goal-hijacked Bot: one injected instruction becomes a
+    recurring job, and an edit can quietly widen an existing one. Map each
+    routine change to its owner and purpose, and look hardest at
+    event-triggered routines that read untrusted input such as Slack messages,
+    tracker events, email or webhook payloads.
+    Audit logs exist only on Cursor Enterprise.
+    This corresponds to HTH Grok Bot control 6.2 (Monitor Grok Bot Control-Plane Audit Events, L2).
+references:
+    - https://howtoharden.com/guides/grok-bot/#62-monitor-grok-bot-control-plane-audit-events
+    - https://cursor.com/docs/enterprise/compliance-and-monitoring
+    - https://cursor.com/docs/enterprise/opentelemetry-export/wire
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.persistence
+    - attack.t1053
+logsource:
+    product: cursor
+    service: audit
+    definition: 'Cursor Enterprise audit log events in the Admin API pull shape (GET /teams/audit-logs events[]); streamed events need the FIELD MAPPING in the rule header'
+# HTH Guide Excerpt: begin detection
+# Admin API pull shape (event_type + event_data.<field>). trigger_type values are
+# not enumerated, so the rule does not filter on them.
+detection:
+    selection:
+        event_type: 'grok_bot_routine'
+        event_data.action:
+            - 'create'
+            - 'update'
+            - 'enable'
+    condition: selection
+fields:
+    - timestamp
+    - user_email
+    - ip_address
+    - application_type
+    - event_data.automation_id
+    - event_data.name
+    - event_data.sand_agent_id
+    - event_data.trigger_type
+    - event_data.creation_source
+    - event_data.enabled
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Routines members build for their own recurring work, such as a daily summary on a schedule, once reviewed and recorded
+    - Routine edits and re-enables the routine's owner made deliberately, such as a changed schedule
+level: medium

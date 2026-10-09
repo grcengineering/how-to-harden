@@ -1,0 +1,107 @@
+# HTH Pack Contract: v1
+#   control: grok-bot-2.4
+#   guide:   https://howtoharden.com/guides/grok-bot/#24-set-the-team-execution-on-local-computer-ceiling-to-never-allow
+#   profile: L1
+#   mode:    read-only
+#   requires: Cursor Enterprise; Action Recording on (control 6.1); OpenTelemetry Export destination with the grok_bot_agent_actions family on
+# =============================================================================
+# HTH Grok Bot Control 2.4: Set the Team Execution on Local Computer Ceiling to Never Allow
+# Profile Level: L1 (Crawl)
+# Frameworks: CIS Controls v8 4.1, 4.8 | NIST 800-53 AC-6, CM-7, AC-17 | SOC 2 CC6.1, CC6.8 | ISO 27001:2022 A.8.1, A.8.9 | OWASP Agentic 2026 ASI02, ASI05
+# Sources (every event name, attribute and value below is transcribed from these; fetched 2026-10-08):
+#   https://cursor.com/docs/enterprise/opentelemetry-export/wire  (Families; Shared grok_bot.* attributes; cursor.grok_bot.shell_command)
+#   https://cursor.com/docs/enterprise/opentelemetry-export
+# Feed: OTLP/HTTP protobuf logs that Cursor POSTs to <your base URL>/v1/logs.
+#   Every Grok Bot record carries the resource attribute cursor.surface=grok_bot.
+#
+# LOGSOURCE (custom). Sigma has no upstream taxonomy for Cursor's OpenTelemetry
+# export, so this rule declares product: cursor / service: opentelemetry. Field
+# names are the documented OTel names:
+#   event_name   the log event name (cursor.grok_bot.shell_command)
+#   body         the documented constant body (grok_bot_shell_command)
+#   cursor.grok_bot.*, cursor.conversation.id, cursor.event.id   log attributes
+#   cursor.user.email, cursor.surface                            resource attributes
+# FIELD MAPPING: point each name at the path your collector or SIEM writes, for
+# example attributes["cursor.grok_bot.shell.target"] and
+# resource.attributes["cursor.user.email"].
+#
+# TRAPS
+#  1. The wire reference says to route on the log event name, but it does not
+#     say which OTLP field carries that name (the LogRecord event_name field or
+#     an event.name attribute). The rule matches the event name OR the
+#     documented constant body; keep whichever your pipeline populates. The body
+#     is grok_bot_shell_command, never cursor.grok_bot.shell_command.
+#  2. Nothing is exported until an admin turns on Action Recording (off by
+#     default; Enterprise only). There is no backfill from before the
+#     destination was activated, and Bot actions of a personal (team-less) owner
+#     are skipped. Zero hits proves nothing until a pilot command has been seen
+#     end to end (control 6.1 validation).
+#  3. Logs are delivered at least once. Dedupe on cursor.event.id.
+#  4. The record is written when the command settles but keeps the issue time as
+#     its timestamp, so a long command arrives well after that timestamp. Search
+#     a wider window than the alert schedule.
+#  5. cursor.grok_bot.shell.machine_id names only a machine registered at turn
+#     start; it can be absent on a user_machine record.
+title: Grok Bot Ran or Attempted a Shell Command on a Member's Machine
+id: e206686f-99bf-4efb-943b-238a622a510a
+status: experimental
+description: |
+    Fires on every Grok Bot shell command whose target is the member's own
+    computer (cursor.grok_bot.shell.target=user_machine) rather than the Bot's
+    hosted computer (box). With the team's Execution on Local Computer ceiling
+    set to Never allow and no group raising it (control 4.3), only blocked
+    attempts are expected, and any record with
+    cursor.grok_bot.shell.allowed=true is a true positive: a command ran on an
+    endpoint that holds corporate credentials and network reach. A record with
+    allowed=false is an attempt the shell policy blocked, logged at WARN with
+    cursor.grok_bot.shell.blocked_reason. The command text is exported
+    secret-scrubbed and capped at 8 KiB.
+    The Grok Bot changelog's V0.37.0 Fixed list reads 'Allow once works even
+    when Execution on this computer is set to Never allow'
+    (https://x.ai/changelog/bot, read in real Chrome on 2026-10-08). That is
+    the member's own per-computer setting (Settings > Computer, V0.29.0), not
+    the team ceiling. No doc says whether Allow once also gets past a team
+    Never allow, which the docs describe as turning local execution off for
+    the whole team; validate it live (guide 2.4 Validation step 3). This rule
+    is the detective check either way.
+    Requires Cursor Enterprise with Action Recording and OpenTelemetry Export.
+    This corresponds to HTH Grok Bot control 2.4 (Set the Team Execution on Local Computer Ceiling to Never Allow, L1).
+references:
+    - https://howtoharden.com/guides/grok-bot/#24-set-the-team-execution-on-local-computer-ceiling-to-never-allow
+    - https://cursor.com/docs/enterprise/opentelemetry-export/wire
+    - https://docs.x.ai/grok-bot/teams-and-enterprises
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.execution
+    - attack.t1059
+logsource:
+    product: cursor
+    service: opentelemetry
+    definition: 'Cursor OpenTelemetry Export logs, family grok_bot_agent_actions (needs Action Recording); attribute keys as named on the wire reference'
+# HTH Guide Excerpt: begin detection
+# The wire reference does not say which OTLP field carries the event name, so
+# match the event name or the documented constant body.
+detection:
+    selection_event:
+        - event_name: 'cursor.grok_bot.shell_command'
+        - body: 'grok_bot_shell_command'
+    selection_target:
+        cursor.grok_bot.shell.target: 'user_machine'
+    condition: selection_event and selection_target
+fields:
+    - cursor.user.email
+    - cursor.conversation.id
+    - cursor.event.id
+    - cursor.grok_bot.shell.command
+    - cursor.grok_bot.shell.allowed
+    - cursor.grok_bot.shell.blocked_reason
+    - cursor.grok_bot.shell.machine_id
+    - cursor.grok_bot.shell.exit_code
+    - cursor.grok_bot.initiated_by
+    - cursor.grok_bot.provenance
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - A documented exception where a member's Bots are approved to work on that member's machine, recorded with the machine id
+    - Blocked attempts (shell.allowed false) while the ceiling is Never allow, which show the control working but still deserve a look at what the Bot was asked to do
+level: high

@@ -1,0 +1,107 @@
+# HTH Pack Contract: v1
+#   control: grok-bot-1.1
+#   guide:   https://howtoharden.com/guides/grok-bot/#11-limit-grok-bot-to-approved-groups
+#   profile: L1
+#   mode:    read-only
+#   requires: Cursor Enterprise audit logs in the Admin API pull shape (GET /teams/audit-logs events[]), or a stream remapped per FIELD MAPPING below
+# =============================================================================
+# HTH Grok Bot Control 1.1: Limit Grok Bot to Approved Groups
+# Profile Level: L1 (Crawl)
+# Frameworks: CIS Controls v8 6.1, 6.7 | NIST 800-53 AC-2, AC-3 | SOC 2 CC6.1, CC6.2 | ISO 27001:2022 A.5.15, A.5.18 | OWASP Agentic 2026 ASI03
+# Sources (every event type, field and value below is transcribed from these; fetched 2026-10-08):
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#log-format
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#event-types  (Grok Bot table)
+#   https://cursor.com/docs/account/teams/admin-api#get-audit-logs
+# Feed: packs/cursor/api/hth-cursor-10.01-export-audit-logs.sh with HTH_AUDIT_OUT set
+#   (JSONL, one Admin API event object per line). The Grok-Bot-scoped pull is
+#   packs/grok-bot/api/hth-grok-bot-6.02-export-grok-bot-audit.sh.
+#
+# LOGSOURCE (custom). Sigma has no upstream taxonomy for Cursor audit logs, so
+# this rule declares product: cursor / service: audit. Field names are the
+# Admin API pull shape, one flat object per event:
+#   event_type       one value from the Event types tables (the selector)
+#   event_data.<f>   the event-specific fields, documented as keys in event_data
+#   user_email       the actor: an email, 'Bot: <owner email>', 'Api Key: <name>', or 'System'
+#   event_id, timestamp, ip_address, application_type
+# FIELD MAPPING for streamed delivery (Splunk HEC, Sumo Logic, HTTPS webhook or
+# S3; set up by contacting hi@cursor.com), which uses the raw message shape:
+#   event_data.<f>  ->  <event_type>.<f>     e.g. grok_bot_access_changed.new_mode
+#   event_id        ->  metadata.id
+#   timestamp       ->  metadata.timestamp
+#
+# TRAPS
+#  1. Never key this rule on application_type. It names the ACTING surface:
+#     'grok_bot' only when the Grok Bot surface acted, 'cursor' for cursor.com
+#     and the Admin API. An admin widening access in the dashboard or through
+#     PUT /grok-bot/access logs 'cursor', so a grok_bot filter would drop exactly
+#     the events this rule exists for.
+#  2. The documented streamed example carries no top-level event_type key, only
+#     the payload key named after the event type. On a stream, replace each
+#     event_type match with "the <event_type> key exists" unless your pipeline
+#     adds event_type itself.
+#  3. The JSON type of new_completed is not documented (the doc writes
+#     'new_completed=true means enabled'). The selection lists the boolean and
+#     the string so either serialization matches.
+#  4. Adding groups while new_mode stays 'limited' also widens access, but Sigma
+#     cannot diff old_group_ids against new_group_ids. Compare those lists in
+#     the 6.02 export instead.
+title: Grok Bot Access Widened to All Members or Grok Bot Enabled
+id: b40838a1-2269-4d02-abbb-c5b4158d01fe
+status: experimental
+description: |
+    Fires when Grok Bot member access changes to mode 'all', so every team
+    member can run Bots on a persistent cloud computer, or when Grok Bot is
+    enabled for the team (sand_onboarding with new_completed=true). A change to
+    'all' puts agents in front of members outside the groups approved through
+    Manage Group Access. An enable exposes Grok Bot to whoever the current
+    access mode admits, so read the access mode at triage (GET
+    /grok-bot/access): it reaches members outside approved groups only when the
+    mode is 'all'. On grok_bot_access_changed the group lists are the
+    post-change allowlist and are empty when the mode is 'all'.
+    Audit logs, and therefore this rule, exist only on Cursor Enterprise.
+    Self-serve Cursor Teams has no enable switch and no group access to change.
+    This corresponds to HTH Grok Bot control 1.1 (Limit Grok Bot to Approved Groups, L1).
+references:
+    - https://howtoharden.com/guides/grok-bot/#11-limit-grok-bot-to-approved-groups
+    - https://cursor.com/docs/enterprise/compliance-and-monitoring
+    - https://cursor.com/docs/account/teams/admin-api#grok-bot
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.privilege_escalation
+    - attack.t1098
+logsource:
+    product: cursor
+    service: audit
+    definition: 'Cursor Enterprise audit log events in the Admin API pull shape (GET /teams/audit-logs events[]); streamed events need the FIELD MAPPING in the rule header'
+# HTH Guide Excerpt: begin detection
+# Admin API pull shape (event_type + event_data.<field>). On a stream the fields
+# sit under <event_type>.<field>. Never filter on application_type.
+detection:
+    selection_widened:
+        event_type: 'grok_bot_access_changed'
+        event_data.new_mode: 'all'
+    selection_enabled:
+        event_type: 'sand_onboarding'
+        event_data.new_completed:
+            - true
+            - 'true'
+    condition: 1 of selection_*
+fields:
+    - timestamp
+    - user_email
+    - ip_address
+    - application_type
+    - event_type
+    - event_data.old_mode
+    - event_data.new_mode
+    - event_data.old_group_names
+    - event_data.new_group_names
+    - event_data.old_completed
+    - event_data.new_completed
+    - event_data.source
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - The planned first enable on an eligible Enterprise team, which the Admin API reference says starts the trial, recorded as an approved change
+    - A deliberate, approved move to all-member access after the connector (2.1), network (3.1) and Auto-review (4.1) controls are in place
+level: high

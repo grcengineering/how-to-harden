@@ -1,0 +1,104 @@
+# HTH Pack Contract: v1
+#   control: grok-bot-2.4
+#   guide:   https://howtoharden.com/guides/grok-bot/#24-set-the-team-execution-on-local-computer-ceiling-to-never-allow
+#   profile: L1
+#   mode:    read-only
+#   requires: Cursor Enterprise; Action Recording on (control 6.1); OpenTelemetry Export destination with the grok_bot_agent_actions family on
+# =============================================================================
+# HTH Grok Bot Control 2.4: Set the Team Execution on Local Computer Ceiling to Never Allow
+# Profile Level: L1 (Crawl)
+# Frameworks: CIS Controls v8 4.1, 4.8 | NIST 800-53 AC-6, CM-7, AC-17 | SOC 2 CC6.1, CC6.8 | ISO 27001:2022 A.8.1, A.8.9 | OWASP Agentic 2026 ASI02, ASI05
+# Sources (every event name, attribute and value below is transcribed from these; fetched 2026-10-08):
+#   https://cursor.com/docs/enterprise/opentelemetry-export/wire  (Families; Shared grok_bot.* attributes; cursor.grok_bot.file_transfer)
+#   https://cursor.com/docs/enterprise/opentelemetry-export
+# Feed: OTLP/HTTP protobuf logs that Cursor POSTs to <your base URL>/v1/logs.
+#   Every Grok Bot record carries the resource attribute cursor.surface=grok_bot.
+#
+# LOGSOURCE (custom). Sigma has no upstream taxonomy for Cursor's OpenTelemetry
+# export, so this rule declares product: cursor / service: opentelemetry. Field
+# names are the documented OTel names:
+#   event_name   the log event name (cursor.grok_bot.file_transfer)
+#   body         the documented constant body (grok_bot_file_transfer)
+#   cursor.grok_bot.*, cursor.conversation.id, cursor.event.id   log attributes
+#   cursor.user.email, cursor.surface                            resource attributes
+# FIELD MAPPING: point each name at the path your collector or SIEM writes, for
+# example attributes["cursor.grok_bot.file.target"] and
+# resource.attributes["cursor.user.email"].
+#
+# TRAPS
+#  1. The wire reference says to route on the log event name, but it does not
+#     say which OTLP field carries that name (the LogRecord event_name field or
+#     an event.name attribute). The rule matches the event name OR the
+#     documented constant body; keep whichever your pipeline populates.
+#  2. Direction is seen from the Bot's computer. 'download' means bytes landed
+#     on the Bot's computer (pulled off the member's machine), 'upload' means
+#     bytes left the Bot's computer (written to the member's machine), and
+#     'read' means a file on the member's machine went straight into the Bot's
+#     context; 'read' is always target user_machine.
+#  3. A read of a file on the Bot's OWN computer is a tool_result row, not this
+#     event, and target 'box' is reserved and not produced today. Only
+#     user_machine is selected here; 'cloud' (Google Drive, OneDrive, Gmail)
+#     moves are a separate review.
+#  4. Nothing is exported until an admin turns on Action Recording (off by
+#     default; Enterprise only), there is no backfill from before the
+#     destination was activated, and logs arrive at least once (dedupe on
+#     cursor.event.id). The path, file name and content are never exported.
+title: Grok Bot Moved or Read a File on a Member's Machine
+id: ef2971f2-8748-45ad-accc-adf26ef946b1
+status: experimental
+description: |
+    Fires on every Grok Bot file move or read whose far end is the member's own
+    computer (cursor.grok_bot.file.target=user_machine): bytes pulled from the
+    laptop to the Bot's hosted computer, bytes written onto the laptop, or a
+    laptop file read straight into the Bot's context. With the team's Execution
+    on Local Computer ceiling set to Never allow and no group raising it
+    (control 4.3), it should show no successful records: only denied or failed
+    moves are expected, and any outcome=success hit is a true positive.
+    Outcome 'success' means bytes moved; 'denied' means a local-tool
+    permission, a connector review or the machine's own filesystem refused the
+    move before any bytes left; 'error' means it failed. This is the file-side
+    companion to the shell-command rule for the same control, because local
+    file reads and moves are not shell_command records.
+    Requires Cursor Enterprise with Action Recording and OpenTelemetry Export.
+    This corresponds to HTH Grok Bot control 2.4 (Set the Team Execution on Local Computer Ceiling to Never Allow, L1).
+references:
+    - https://howtoharden.com/guides/grok-bot/#24-set-the-team-execution-on-local-computer-ceiling-to-never-allow
+    - https://cursor.com/docs/enterprise/opentelemetry-export/wire
+    - https://docs.x.ai/grok-bot/teams-and-enterprises
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.collection
+    - attack.t1005
+    - attack.command_and_control
+    - attack.t1105
+logsource:
+    product: cursor
+    service: opentelemetry
+    definition: 'Cursor OpenTelemetry Export logs, family grok_bot_agent_actions (needs Action Recording); attribute keys as named on the wire reference'
+# HTH Guide Excerpt: begin detection
+# Direction is seen from the Bot's computer: download = pulled off the member's
+# machine, upload = written onto it, read = straight into the Bot's context.
+detection:
+    selection_event:
+        - event_name: 'cursor.grok_bot.file_transfer'
+        - body: 'grok_bot_file_transfer'
+    selection_target:
+        cursor.grok_bot.file.target: 'user_machine'
+    condition: selection_event and selection_target
+fields:
+    - cursor.user.email
+    - cursor.conversation.id
+    - cursor.event.id
+    - cursor.grok_bot.file.direction
+    - cursor.grok_bot.file.outcome
+    - cursor.grok_bot.file.bytes
+    - cursor.grok_bot.file.machine_id
+    - cursor.grok_bot.file.error_category
+    - cursor.grok_bot.tool_call.id
+    - cursor.grok_bot.initiated_by
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - A documented exception where a member's Bots are approved to work on that member's machine, recorded with the machine id
+    - Denied moves (file.outcome denied) while the ceiling is Never allow, which show the control working but still deserve a look at what the Bot was asked to do
+level: high

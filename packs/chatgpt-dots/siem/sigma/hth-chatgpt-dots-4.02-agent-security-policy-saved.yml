@@ -1,0 +1,113 @@
+# HTH Pack Contract: v1
+#   control: chatgpt-dots-4.2
+#   guide:   https://howtoharden.com/guides/chatgpt-dots/#42-enforce-orchestrator-approval-and-web-search-limits-in-the-agent-security-global-baseline
+#   profile: L2
+#   mode:    read-only
+#   requires: Compliance Logs Platform AUDIT_LOG ingestion (ChatGPT Enterprise/Edu only); ChatGPT Admin key with scope chatgpt.enterprise.compliance_logs_platform.audit_log.read
+# =============================================================================
+# HTH ChatGPT Dots Control 4.2: Enforce orchestrator approval and web-search limits in the Agent Security Global baseline
+# Profile Level: L2 (Walk)
+# Frameworks: CIS Controls v8 4.1 | NIST 800-53 CM-6, CM-7, AC-4 | SOC 2 CC6.1, CC8.1 | no benchmark equivalent yet
+# Feed: GET https://api.chatgpt.com/v1/compliance/workspaces/{workspace_id}/logs?event_type=AUDIT_LOG&after=<ISO8601>
+#       (List Files; page with last_end_time), then GET .../logs/{log_file_id}
+#       (Download File; 307 to a short-lived signed JSONL URL). Deduplicate on event_id.
+#
+# Sources (field names and semantics transcribed from these; all fetched 2026-10-08):
+#   - https://chatgpt.com/public/admin/api-reference
+#       Admin API spec v2.5.37, Audit tag, WORKSPACE_SET_POLICY ("Updated workspace policy
+#       text or attempted a Codex policy save"): workspace_policy values codex.policy_stack,
+#       codex.legacy_requirements and codex.agent_policy; mutation_applied; policy_changes;
+#       policy_changes_omitted_reason. 403 to curl; spec read in a real browser.
+#   - https://learn.chatgpt.com/docs/enterprise/agent-security
+#   - https://learn.chatgpt.com/docs/enterprise/cloud-local-access
+#   - https://learn.chatgpt.com/docs/config-file/config-reference
+#
+# TRAPS
+#   1. Agent Security UI saves carry NO content (codex.agent_policy; see TRAP 5 for
+#      policy-stack saves): "Agent Security save attempts use codex.agent_policy without
+#      additional action_data." The rule cannot tell a Global
+#      layer from a Local one, or whether allowed_approval_policies or
+#      allowed_web_search_modes changed. Every hit needs a human comparison of the Global
+#      Requirements against the baseline emitted by the 4.02 config pack.
+#   2. These are ATTEMPTS, not only saves. Read action_result (SUCCESS, BLOCKED, ERROR).
+#      For codex.policy_stack, mutation_applied false "does not prove that no write committed".
+#   3. Agent Security says "Use the policy API to manage Global settings" and mentions
+#      "Terraform integrations", and this spec's own WORKSPACE_SET_POLICY text cites policy-
+#      stack saves "from the UI and public API PUT" (see TRAP 5), yet public spec v2.5.37
+#      publishes neither a policy route nor any PUT operation. A policy-stack save through
+#      that PUT would carry codex.policy_stack; whether a Global change made through the
+#      referenced policy API emits codex.policy_stack or codex.agent_policy is undocumented,
+#      so all three Codex identifiers are matched.
+#   4. Whether Global binds dots at all is conditional: "For Work with local access and dots,
+#      supported Global policy applies through the shared cloud orchestrator when managed
+#      policy is enabled" (learn agent-security). The learn dots admin guide never mentions
+#      Agent Security. This rule watches the policy; it does not prove the policy reaches a
+#      cloud-only dot. Live-test that per control 4.2.
+#   5. codex.policy_stack events (UI and public API PUT) also record
+#      policy_changes[].toml_changes[].key_changes[].path, the TOML key segments that changed.
+#      If your SIEM indexes nested arrays you can narrow on allowed_approval_policies or
+#      allowed_web_search_modes. Values are never logged: "TOML details identify which keys
+#      changed, not what the old or new settings allowed."
+#   6. Successful identical resaves emit no event for codex.policy_stack or
+#      codex.legacy_requirements, but repeated Agent Security saves ARE audited ("every
+#      accepted save persists the policy and last-editor metadata"), so expect duplicates.
+#   7. WORKSPACE_SET_POLICY also records non-Codex workspace policy text; the
+#      workspace_policy filter excludes it. codex.policy_stack and codex.legacy_requirements
+#      also govern Codex, so not every hit concerns dots.
+#   8. Enterprise/Edu only.
+title: ChatGPT Agent Security or Codex Policy Save Attempted
+id: d5f84a16-81bf-4335-9516-938b99708434
+status: experimental
+description: |
+    Fires on every attempt to save Agent Security or Codex managed policy in the ChatGPT
+    workspace. Global is the only Agent Security layer whose approval and web-search
+    requirements reach the shared cloud orchestrator that coordinates dots, when managed
+    policy is enabled. Adding never back to allowed_approval_policies, or allowing live in
+    allowed_web_search_modes, can change what a dot does without asking wherever Global binds
+    dots (the docs make that conditional; live-test it per control 4.2). Agent Security saves
+    log no content, so every hit is a prompt to diff the saved Global Requirements against
+    the approved baseline and to match the actor to a change ticket.
+    This corresponds to HTH ChatGPT Dots control 4.2 (section 4.2, L2).
+references:
+    - https://howtoharden.com/guides/chatgpt-dots/#42-enforce-orchestrator-approval-and-web-search-limits-in-the-agent-security-global-baseline
+    - https://chatgpt.com/public/admin/api-reference
+    - https://learn.chatgpt.com/docs/enterprise/agent-security
+    - https://learn.chatgpt.com/docs/config-file/config-reference
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.defense_evasion
+    - attack.t1484
+    - attack.t1562
+# HTH Guide Excerpt: begin policy-save-detection
+logsource:
+    product: openai
+    service: chatgpt-compliance
+    definition: 'ChatGPT Compliance Logs Platform JSONL records with type AUDIT_LOG; nested keys flattened with dots (action_data.workspace_policy)'
+detection:
+    selection:
+        type: 'AUDIT_LOG'
+        action: 'WORKSPACE_SET_POLICY'
+        action_data.workspace_policy:
+            - 'codex.agent_policy'
+            - 'codex.policy_stack'
+            - 'codex.legacy_requirements'
+    condition: selection
+fields:
+    - timestamp
+    - event_id
+    - actor.type
+    - actor.user_email
+    - action_result
+    - action_privilege
+    - action_data.workspace_policy
+    - action_data.mutation_applied
+    - action_data.policy_changes
+    - action_data.policy_changes_omitted_reason
+    - request_metadata.client_ip
+# HTH Guide Excerpt: end policy-save-detection
+falsepositives:
+    - Planned baseline edits made through change management (match the actor and time to the ticket)
+    - Repeated Agent Security saves with no change, which are audited on every accepted save
+    - Codex-only policy-stack or legacy requirements edits that do not touch the Global orchestrator controls
+level: medium

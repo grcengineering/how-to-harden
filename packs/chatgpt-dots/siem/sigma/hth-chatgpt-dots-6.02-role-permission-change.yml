@@ -1,0 +1,169 @@
+# HTH Pack Contract: v1
+#   control: chatgpt-dots-6.2
+#   guide:   https://howtoharden.com/guides/chatgpt-dots/#62-alert-on-governance-changes-that-widen-what-dots-can-reach
+#   profile: L2
+#   mode:    read-only
+#   requires: Compliance Logs Platform AUDIT_LOG ingestion (ChatGPT Enterprise/Edu only); ChatGPT Admin key with scope chatgpt.enterprise.compliance_logs_platform.audit_log.read
+# =============================================================================
+# HTH ChatGPT Dots Control 6.2: Alert on governance changes that widen what dots can reach
+# Profile Level: L2 (Walk)
+# Frameworks: CIS Controls v8 8.11, 6.8 | NIST 800-53 AU-6, CM-3, AC-2(4), SI-4 | SOC 2 CC7.2, CC8.1 | no benchmark equivalent yet
+# Feed: GET https://api.chatgpt.com/v1/compliance/workspaces/{workspace_id}/logs?event_type=AUDIT_LOG&after=<ISO8601>
+#       (List Files; page with last_end_time), then GET .../logs/{log_file_id}
+#       (Download File; 307 to a short-lived signed JSONL URL). Deduplicate on event_id.
+#
+# Sources (action names and fields transcribed from these; all fetched 2026-10-08):
+#   - https://chatgpt.com/public/admin/api-reference
+#       Admin API spec v2.5.37, Audit tag: ROLE_CREATE, ROLE_UPDATE, ROLE_DELETE, ROLE_ASSIGN,
+#       ROLE_UNASSIGN, ROLE_SET_PLUGIN_PERMISSIONS, ROLE_SET_CONNECTOR_PERMISSIONS,
+#       ROLE_SET_ALL_CONNECTOR_PERMISSIONS, ROLE_UPDATE_BINDING_PERMISSIONS, GROUP_ADD_USERS,
+#       GROUP_EDIT and USER_ROLE_UPDATED with their action_data fields, plus the note that
+#       role changes are moving to a shared RBAC system; the "API key actions" section
+#       (ADD_WORKSPACE_DIRECTORY_GROUP_USER) and tag Workspace Users (UPDATE_WORKSPACE_USER),
+#       re-read 2026-10-09. 403 to curl; spec read in a real browser.
+#   - https://learn.chatgpt.com/docs/enterprise/dots-admin-guide
+#   - https://learn.chatgpt.com/docs/enterprise/roles-and-workspace-permissions
+#   - https://learn.chatgpt.com/docs/enterprise/groups-and-provisioning
+#   - https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/audit_logs/methods/list
+#
+# TRAPS
+#   1. The dots permission identifier strings are UNDOCUMENTED. The spec, the roles page and
+#      the dots admin guide give UI labels only (Use dots, Add dots to Slack, Allow local
+#      computer access, Use custom rules for dots; Cloud browser use, Cloud network access,
+#      Cloud computer use, Use password manager). The rule therefore matches the ACTION and
+#      routes every role or group change to review; it cannot say "this was a dots grant".
+#      Toggle Use dots (Beta) on a test role during validation, record the identifier that
+#      appears in action_data.permissions_added, and add a narrowing selection then. Whether
+#      a Workspace default change is audited as a ROLE_UPDATE is also undocumented (the spec
+#      uses the identifier role-workspace-member for the Workspace default only in Admin
+#      Preview launch settings), so confirm it in the same test.
+#   2. RBAC migration can silence this rule. The Audit tag says: "Many of these permissions
+#      and role changes have been moved to a shared RBAC system. These logs must be enabled
+#      and then are accessible through API Platform. Non-RBAC logs are preserved here until
+#      the migration is complete." Enable API Platform audit logs and also run the 6.02 api
+#      pack (or its cli twin), which reads tenant.custom_role.*, tenant.role_assignment.*,
+#      tenant.group.member.* and role.bound_to_resource with tenant_only=true, plus the role.*
+#      family. Those tenant.* events have no documented payload schema, so do not expect
+#      permission diffs there; role.updated is the only type that documents one.
+#   3. Doc conflict on how roles combine: learn roles-and-workspace-permissions says "Ordinary
+#      role permissions combine additively", and so does the spec's own ROLE_CREATE /
+#      ROLE_UPDATE text ("grants from other assigned roles remain additive"); learn
+#      groups-and-provisioning says "an explicit Off in any role denies that permission, even
+#      when another role grants it". Under the second reading, ROLE_UNASSIGN, ROLE_DELETE and
+#      disallowed_permissions_removed WIDEN access, so removals are matched as well as grants.
+#      GROUP_REMOVE_USER and DELETE_WORKSPACE_DIRECTORY_GROUP_USER (its Admin API twin, and
+#      the bulk-remove path) can widen access the same way but are left out as leaver noise;
+#      add them if your dots design relies on a role that sets an explicit Off. Delete Group
+#      (DELETE_WORKSPACE_DIRECTORY_GROUP, which "removes its dependent memberships, role
+#      assignments") can widen access under the same reading.
+#   4. Group membership is the dots grant path that does have a write API. The spec's "API
+#      key actions" section states that Admin API endpoint requests made with API key
+#      authentication (actor.type = API_KEY) emit the actions it lists, and that section
+#      documents ADD_WORKSPACE_DIRECTORY_GROUP_USER (workspace_id, group_id, user_id), which
+#      matches Add Group User; the endpoint description itself has no "Emits" line, so
+#      confirm it during validation. UPDATE_WORKSPACE_USER is the documented action for the
+#      Admin API's built-in role/seat update (Workspace Users tag); its action_data fields are
+#      undocumented, so it is matched on the action alone. Console additions appear as
+#      GROUP_ADD_USERS ("Bulk addition of users to a group via email", email_addresses) or
+#      GROUP_EDIT ("Updated group metadata or membership", added_user_id "when applicable";
+#      it also fires on renames). No action is documented for Bulk Add Group Users or for
+#      SCIM-driven membership changes; tenant.group.member.added is the cross-check for those.
+#   5. USER_ROLE_UPDATED also fires for seat-type and credit-limit changes. Its role field is
+#      "Requested workspace role when the role changes", so only events carrying it are kept.
+#   6. Deliberately excluded to avoid double alerts: APP_SET_ENABLED_ACTIONS (2.01 rule),
+#      WORKSPACE_SET_POLICY (4.02 rule), WORKSPACE_TOGGLE_FEATURE and app/plugin availability
+#      changes (hth-chatgpt-dots-6.02-workspace-feature-toggle-b.yml).
+#   7. Enterprise/Edu only. Business and Pro have no Compliance API or audit logs.
+title: ChatGPT Role, Role Assignment or Group Membership Changed
+id: 7efa7367-8c0b-41ee-ba7a-756570f6aae6
+status: experimental
+description: |
+    Fires on any ChatGPT workspace change to a custom role's permissions, to which groups
+    hold a role, to a member's built-in role or seat, or to who sits in a group, whether
+    made in the console or through the Admin API (API-key actor). Workspace owners manage dots access through
+    workspace defaults and custom roles assigned to groups (Use dots, Add dots to Slack,
+    Allow local computer access, Use custom rules for dots, and the Cloud computer
+    capabilities), and none of those permissions has a write API, so drift detection is the
+    only automated control on them. One role edit or one group addition can hand local
+    computer access or permissive custom rules to a whole group. Because the dots permission
+    identifiers are undocumented, every hit routes to review against the approved dots role
+    design.
+    This corresponds to HTH ChatGPT Dots control 6.2 (section 6.2, L2).
+references:
+    - https://howtoharden.com/guides/chatgpt-dots/#62-alert-on-governance-changes-that-widen-what-dots-can-reach
+    - https://chatgpt.com/public/admin/api-reference
+    - https://learn.chatgpt.com/docs/enterprise/dots-admin-guide
+    - https://learn.chatgpt.com/docs/enterprise/roles-and-workspace-permissions
+    - https://learn.chatgpt.com/docs/enterprise/groups-and-provisioning
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.persistence
+    - attack.privilege_escalation
+    - attack.t1098.003
+# HTH Guide Excerpt: begin role-change-detection
+logsource:
+    product: openai
+    service: chatgpt-compliance
+    definition: 'ChatGPT Compliance Logs Platform JSONL records with type AUDIT_LOG; nested keys flattened with dots (action_data.permissions_added)'
+detection:
+    selection_role_and_group:
+        type: 'AUDIT_LOG'
+        action:
+            - 'ROLE_CREATE'
+            - 'ROLE_UPDATE'
+            - 'ROLE_DELETE'
+            - 'ROLE_ASSIGN'
+            - 'ROLE_UNASSIGN'
+            - 'ROLE_SET_PLUGIN_PERMISSIONS'
+            - 'ROLE_SET_CONNECTOR_PERMISSIONS'
+            - 'ROLE_SET_ALL_CONNECTOR_PERMISSIONS'
+            - 'ROLE_UPDATE_BINDING_PERMISSIONS'
+            - 'GROUP_ADD_USERS'
+            - 'GROUP_EDIT'
+            - 'ADD_WORKSPACE_DIRECTORY_GROUP_USER'
+            - 'UPDATE_WORKSPACE_USER'
+    selection_member_role:
+        type: 'AUDIT_LOG'
+        action: 'USER_ROLE_UPDATED'
+        action_data.role|exists: true
+    condition: 1 of selection_*
+fields:
+    - timestamp
+    - event_id
+    - actor.type
+    - actor.user_email
+    - actor.redacted_id
+    - action
+    - action_result
+    - action_privilege
+    - action_data.workspace_id
+    - action_data.role_id
+    - action_data.role_name
+    - action_data.permissions
+    - action_data.permissions_added
+    - action_data.permissions_removed
+    - action_data.disallowed_permissions
+    - action_data.disallowed_permissions_added
+    - action_data.disallowed_permissions_removed
+    - action_data.state
+    - action_data.resource_type
+    - action_data.resource_id
+    - action_data.binding_removed
+    - action_data.principal_id
+    - action_data.principal_type
+    - action_data.plugin_id
+    - action_data.connector_id
+    - action_data.group_id
+    - action_data.group_name
+    - action_data.new_name
+    - action_data.email_addresses
+    - action_data.added_user_id
+    - action_data.user_id
+    - action_data.role
+# HTH Guide Excerpt: end role-change-detection
+falsepositives:
+    - Planned role design changes and pilot-group onboarding made through change management
+    - Routine joiner, mover and leaver group membership changes in groups that carry no dots-granting role
+    - Role edits that only change permissions unrelated to dots (indistinguishable until the dots identifiers are captured)
+level: medium

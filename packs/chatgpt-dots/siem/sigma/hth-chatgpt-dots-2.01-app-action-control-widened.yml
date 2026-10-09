@@ -1,0 +1,126 @@
+# HTH Pack Contract: v1
+#   control: chatgpt-dots-2.1
+#   guide:   https://howtoharden.com/guides/chatgpt-dots/#21-restrict-the-app-connections-and-actions-dots-inherit-to-read-only-by-default
+#   profile: L1
+#   mode:    read-only
+#   requires: Compliance Logs Platform AUDIT_LOG ingestion (ChatGPT Enterprise/Edu only); ChatGPT Admin key with scope chatgpt.enterprise.compliance_logs_platform.audit_log.read
+# =============================================================================
+# HTH ChatGPT Dots Control 2.1: Restrict the app connections and actions dots inherit to read-only by default
+# Profile Level: L1 (Crawl)
+# Frameworks: CIS Controls v8 3.3, 2.5 | NIST 800-53 AC-3, AC-6, CM-7 | SOC 2 CC6.1, CC6.6 | no benchmark equivalent yet
+# Feed: GET https://api.chatgpt.com/v1/compliance/workspaces/{workspace_id}/logs?event_type=AUDIT_LOG&after=<ISO8601>
+#       (List Files; page with last_end_time), then GET .../logs/{log_file_id}
+#       (Download File; 307 to a short-lived signed JSONL URL). Deduplicate on event_id.
+#
+# Sources (field names and semantics transcribed from these; all fetched 2026-10-08):
+#   - https://chatgpt.com/public/admin/api-reference
+#       Admin API spec v2.5.37, Audit tag: record shape (type, action, action_result,
+#       action_privilege, action_data) and APP_SET_ENABLED_ACTIONS ("Updated workspace action
+#       controls for an app") with app_id, action_controls_edited, action_controls_source,
+#       enabled_actions_before, enabled_actions ("or null when unrestricted"),
+#       enabled_actions_added, enabled_actions_removed, action_policy_before, action_policy,
+#       action_name, previous_action_clamp_present, new_action_clamp_present.
+#       403 to curl; spec read in a real browser.
+#   - https://help.openai.com/en/articles/11509118
+#   - https://learn.chatgpt.com/docs/enterprise/dots-admin-guide
+#   - https://learn.chatgpt.com/docs/enterprise/apps-and-connectors
+#
+# TRAPS
+#   1. There is no enabled_actions_after field. The after state is enabled_actions, and null
+#      means UNRESTRICTED. A rule keyed on an "_after" field never matches.
+#   2. "Non-empty list" is not portable Sigma. selection_added uses the '*' wildcard on
+#      enabled_actions_added, which most backends evaluate against array elements, so an
+#      empty array does not match. Confirm that on your backend; if it does not hold,
+#      replace it with your SIEM's array-length test.
+#   3. In most backends a null test also matches a MISSING key. If your tenant's clamp-only
+#      or workspace_permissions events omit enabled_actions, they will match
+#      selection_unrestricted; add action_data.enabled_actions|exists: true there if so.
+#   4. This event is documented for Action control. No documented audit field is identified
+#      as App permissions (Always ask / Allow read actions / Allow low-risk actions / Allow
+#      all actions); action_policy and the *_workspace_permissions_by_connector snapshots
+#      (action_controls_source workspace_permissions) may carry it, unverified until a live
+#      tenant shows the values. Their contents are undocumented, so the rule does not key on
+#      them. Verify App permissions in the console.
+#   5. action_policy values are not enumerated in the spec; they are triage fields only. A
+#      New actions (future-action policy) change that enables no current action most
+#      plausibly lands only in action_policy, so it does NOT fire this rule; re-check New
+#      actions in the console. Sigma cannot portably compare action_policy with
+#      action_policy_before, so no selection keys on it.
+#   6. No dots attribute exists. Plugin permissions are shared across dots, ChatGPT,
+#      ChatGPT Work and Codex (help 20001529), so any widening reaches every dot whose owner
+#      holds that app; the rule cannot narrow to dots and does not try.
+#   7. Workspace-wide feature toggles from the Apps/Plugins admin surfaces
+#      (WORKSPACE_TOGGLE_FEATURE with source_surface admin_apps|admin_plugins) are covered by
+#      hth-chatgpt-dots-6.02-workspace-feature-toggle-b.yml, not here.
+#   8. Enterprise/Edu only; Business has no Compliance API, and Pro owners set Plugin
+#      permissions in their own Settings with no exportable record.
+#   9. Only action_result SUCCESS is matched: the spec defines SUCCESS, BLOCKED and ERROR,
+#      and a blocked or failed attempt changed nothing. Remove the filter if you want to
+#      see attempts too.
+#  10. enabled_actions_added carries action names only, with no read/write flag, so newly
+#      enabled Read actions also fire the rule.
+title: ChatGPT App Action Control Widened
+id: 127aaf62-9224-42b8-b78d-6f40215d857c
+status: experimental
+description: |
+    Fires when a workspace admin successfully widens the Action control of a connected
+    app: any action was added (read or write; the spec carries no read/write flag), the
+    resulting action set is unrestricted (enabled_actions is null), or a parameter clamp
+    was removed from an action. Dots act through their owner's existing ChatGPT app
+    connections, so Action control is the ChatGPT-side layer between an injected dot and
+    write actions in Gmail, Google Drive, Outlook and other connected apps. The control 2.1
+    baseline enables only Read actions; any enabled write action or an unrestricted app is
+    a departure from it and should be traced to an approved change.
+    This corresponds to HTH ChatGPT Dots control 2.1 (section 2.1, L1).
+references:
+    - https://howtoharden.com/guides/chatgpt-dots/#21-restrict-the-app-connections-and-actions-dots-inherit-to-read-only-by-default
+    - https://chatgpt.com/public/admin/api-reference
+    - https://help.openai.com/en/articles/11509118
+    - https://learn.chatgpt.com/docs/enterprise/dots-admin-guide
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+# HTH Guide Excerpt: begin action-control-widened-detection
+logsource:
+    product: openai
+    service: chatgpt-compliance
+    definition: 'ChatGPT Compliance Logs Platform JSONL records with type AUDIT_LOG; nested keys flattened with dots (action_data.enabled_actions_added)'
+detection:
+    selection_event:
+        type: 'AUDIT_LOG'
+        action: 'APP_SET_ENABLED_ACTIONS'
+        action_result: 'SUCCESS'
+    selection_added:
+        action_data.enabled_actions_added: '*'
+    selection_unrestricted:
+        action_data.enabled_actions: null
+    selection_clamp_removed:
+        action_data.previous_action_clamp_present: true
+        action_data.new_action_clamp_present: false
+    condition: selection_event and (selection_added or selection_unrestricted or selection_clamp_removed)
+fields:
+    - timestamp
+    - event_id
+    - actor.user_email
+    - action_result
+    - action_privilege
+    - action_data.app_id
+    - action_data.action_controls_edited
+    - action_data.action_controls_source
+    - action_data.enabled_actions_before
+    - action_data.enabled_actions
+    - action_data.enabled_actions_added
+    - action_data.action_policy_before
+    - action_data.action_policy
+    - action_data.action_name
+    - action_data.affected_connector_ids
+    - action_data.changed_fields
+# HTH Guide Excerpt: end action-control-widened-detection
+falsepositives:
+    - An approved change that enables a specific write action for an app whose owners are outside the dots role
+    - Apps that are intentionally unrestricted and already documented as an exception to the 2.1 baseline (every save of such an app matches)
+    - Admin testing of a write action during validation of this rule
+    - Enabling additional Read actions, which also populates enabled_actions_added (TRAP 10)
+level: high

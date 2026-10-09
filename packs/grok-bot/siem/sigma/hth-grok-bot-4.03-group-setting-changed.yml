@@ -1,0 +1,104 @@
+# HTH Pack Contract: v1
+#   control: grok-bot-4.3
+#   guide:   https://howtoharden.com/guides/grok-bot/#43-audit-group-grok-bot-tabs-for-widening-overrides
+#   profile: L2
+#   mode:    read-only
+#   requires: Cursor Enterprise audit logs in the Admin API pull shape (GET /teams/audit-logs events[]), or a stream remapped per FIELD MAPPING below
+# =============================================================================
+# HTH Grok Bot Control 4.3: Audit Group Grok Bot Tabs for Widening Overrides
+# Profile Level: L2 (Walk)
+# Frameworks: CIS Controls v8 4.1, 8.11 | NIST 800-53 CM-3, CM-6, AU-6 | SOC 2 CC7.2, CC8.1 | ISO 27001:2022 A.8.9
+# Sources (every event type, field and value below is transcribed from these; fetched 2026-10-08):
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#log-format
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#event-types  (Grok Bot table)
+#   https://cursor.com/docs/account/teams/admin-api#get-audit-logs
+# Feed: packs/cursor/api/hth-cursor-10.01-export-audit-logs.sh with HTH_AUDIT_OUT set
+#   (JSONL, one Admin API event object per line). The Grok-Bot-scoped pull is
+#   packs/grok-bot/api/hth-grok-bot-6.02-export-grok-bot-audit.sh.
+#
+# LOGSOURCE (custom). Sigma has no upstream taxonomy for Cursor audit logs, so
+# this rule declares product: cursor / service: audit. Field names are the
+# Admin API pull shape, one flat object per event:
+#   event_type       one value from the Event types tables (the selector)
+#   event_data.<f>   the event-specific fields, documented as keys in event_data
+#   user_email       the actor: an email, 'Api Key: <name>', or 'System'
+#   event_id, timestamp, ip_address, application_type
+# FIELD MAPPING for streamed delivery (Splunk HEC, Sumo Logic, HTTPS webhook or
+# S3; set up by contacting hi@cursor.com), which uses the raw message shape:
+#   event_data.<f>  ->  <event_type>.<f>     e.g. grok_bot_group_settings.setting_name
+#   event_id        ->  metadata.id
+#   timestamp       ->  metadata.timestamp
+#
+# TRAPS
+#  1. setting_name values for grok_bot_group_settings are not enumerated, so the
+#     rule does not filter on them. Whether a group's network policy or its
+#     Auto-review rules land in this event is undocumented; confirm live.
+#  2. old_value and new_value "come back as parsed JSON when the stored value is
+#     JSON, otherwise as a string", so never string-match them in a rule.
+#  3. This detects CHANGES. An override set before your log window, or before
+#     audit collection began, is invisible here and through every API; only a
+#     dashboard review of each group's Grok Bot tab proves current state.
+#  4. Payloads never carry Group Rule or Setup Script text. grok_bot_group_resource
+#     with resource 'setup_manifest' is also matched by the 3.03 rule; dedupe on
+#     event_id if both are deployed.
+#  5. The documented streamed example carries no top-level event_type key, only
+#     the payload key named after the event type. On a stream, replace each
+#     event_type match with "the <event_type> key exists" unless your pipeline
+#     adds event_type itself.
+title: Grok Bot Group Setting, Group Rule or Group Setup Script Changed
+id: 77d6dc7e-438f-4f9c-8236-efcdfb36be8f
+status: experimental
+description: |
+    Fires when a group-owned Grok Bot setting changes (grok_bot_group_settings),
+    or when a Group Rule or Group Setup Script is created, updated, saved or
+    deleted (grok_bot_group_resource). Group settings only widen: a group can
+    grant its members more than the team allows, never less, and a member in
+    several groups gets the most permissive result. One group tab can therefore
+    re-allow Cloud Agents, raise the local-execution ceiling, re-enable local
+    egress or lift Enforce Auto-review with "Don't enforce for this group", and
+    none of that shows on the team-level Grok Bot page. Every hit should map to
+    a recorded, approved exception.
+    Audit logs and group Grok Bot tabs exist only on Cursor Enterprise.
+    This corresponds to HTH Grok Bot control 4.3 (Audit Group Grok Bot Tabs for Widening Overrides, L2).
+references:
+    - https://howtoharden.com/guides/grok-bot/#43-audit-group-grok-bot-tabs-for-widening-overrides
+    - https://cursor.com/docs/enterprise/compliance-and-monitoring
+    - https://docs.x.ai/grok-bot/teams-and-enterprises
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: cursor
+    service: audit
+    definition: 'Cursor Enterprise audit log events in the Admin API pull shape (GET /teams/audit-logs events[]); streamed events need the FIELD MAPPING in the rule header'
+# HTH Guide Excerpt: begin detection
+# Admin API pull shape (event_type + event_data.<field>). setting_name values
+# are not enumerated, so every group change is selected.
+detection:
+    selection_group_setting:
+        event_type: 'grok_bot_group_settings'
+    selection_group_resource:
+        event_type: 'grok_bot_group_resource'
+    condition: 1 of selection_*
+fields:
+    - timestamp
+    - user_email
+    - ip_address
+    - event_type
+    - event_data.group_id
+    - event_data.group_name
+    - event_data.setting_name
+    - event_data.old_value
+    - event_data.new_value
+    - event_data.resource
+    - event_data.action
+    - event_data.resource_id
+    - event_data.resource_name
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Approved, recorded group exceptions
+    - A group being reset back to the team value, which also logs as a change and closes an exception rather than opening one
+    - The same Group Setup Script change seen twice when the 3.03 rule is also deployed (dedupe on event_id)
+level: medium

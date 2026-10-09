@@ -153,6 +153,23 @@ buildkite:
       url: "https://buildkite.com/docs/agent/self-hosted/security"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/buildkite"
 
+chatgpt-dots:
+  product_docs: "https://learn.chatgpt.com/docs/dots"
+  api_docs:
+    - label: "ChatGPT Admin API Reference"
+      url: "https://chatgpt.com/public/admin/api-reference"
+    - label: "API Platform Audit Logs"
+      url: "https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/audit_logs/methods/list"
+  hardening_docs:
+    - label: "Dots Admin Guide"
+      url: "https://learn.chatgpt.com/docs/enterprise/dots-admin-guide"
+    - label: "Manage Dots in ChatGPT Workspaces"
+      url: "https://help.openai.com/en/articles/20001554-manage-dots-in-chatgpt-workspaces"
+    - label: "Agent Security"
+      url: "https://learn.chatgpt.com/docs/enterprise/agent-security"
+    - label: "Local Computer Access for Work Cloud and Dots"
+      url: "https://learn.chatgpt.com/docs/enterprise/cloud-local-access"
+
 chatgpt-enterprise:
   product_docs: "https://help.openai.com/en/collections/5688074-chatgpt-enterprise"
   api_docs: "https://platform.openai.com/docs/api-reference/introduction"
@@ -403,6 +420,23 @@ gmail:
       url: "https://knowledge.workspace.google.com/admin/security/set-up-spf"
     - label: "CIS Google Workspace Benchmark"
       url: "https://www.cisecurity.org/benchmark/google_workspace"
+
+grok-bot:
+  product_docs: "https://docs.x.ai/grok-bot/bots"
+  api_docs:
+    - label: "Cursor Admin API: Grok Bot"
+      url: "https://cursor.com/docs/account/teams/admin-api#grok-bot"
+    - label: "Cursor Organization API: Grok Bot Computers"
+      url: "https://cursor.com/docs/account/organizations/organization-admin-api#grok-bot-computers"
+  hardening_docs:
+    - label: "Grok Bot Security (xAI)"
+      url: "https://docs.x.ai/grok-bot/security"
+    - label: "Recommended Configuration for Teams and Enterprises (xAI)"
+      url: "https://docs.x.ai/grok-bot/teams-and-enterprises#recommended-configuration"
+    - label: "Grok Bot Security (Cursor)"
+      url: "https://cursor.com/docs/grok-bot/security"
+    - label: "Grok Bot for Teams and Enterprise (Cursor)"
+      url: "https://cursor.com/docs/grok-bot/teams"
 
 gusto:
   product_docs: "https://support.gusto.com/"

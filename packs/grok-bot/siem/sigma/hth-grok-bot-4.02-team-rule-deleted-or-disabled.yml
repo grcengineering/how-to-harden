@@ -1,0 +1,106 @@
+# HTH Pack Contract: v1
+#   control: grok-bot-4.2
+#   guide:   https://howtoharden.com/guides/grok-bot/#42-set-required-team-rules-for-grok-bot
+#   profile: L1
+#   mode:    read-only
+#   requires: Cursor Enterprise audit logs in the Admin API pull shape (GET /teams/audit-logs events[]), or a stream remapped per FIELD MAPPING below
+# =============================================================================
+# HTH Grok Bot Control 4.2: Set Required Team Rules for Grok Bot
+# Profile Level: L1 (Crawl)
+# Frameworks: CIS Controls v8 4.1 | NIST 800-53 PL-4, AC-6 | SOC 2 CC2.2, CC6.1 | ISO 27001:2022 A.5.10
+# Sources (every event type, field and value below is transcribed from these; fetched 2026-10-08):
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#log-format
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#event-types  (Team settings and integrations table)
+#   https://cursor.com/docs/account/teams/admin-api#get-audit-logs
+# Feed: packs/cursor/api/hth-cursor-10.01-export-audit-logs.sh with HTH_AUDIT_OUT set
+#   (JSONL, one Admin API event object per line).
+#
+# LOGSOURCE (custom). Sigma has no upstream taxonomy for Cursor audit logs, so
+# this rule declares product: cursor / service: audit. Field names are the
+# Admin API pull shape, one flat object per event:
+#   event_type       one value from the Event types tables (the selector)
+#   event_data.<f>   the event-specific fields, documented as keys in event_data
+#   user_email       the actor: an email, 'Api Key: <name>', and so on
+#   event_id, timestamp, ip_address, application_type
+# FIELD MAPPING for streamed delivery (Splunk HEC, Sumo Logic, HTTPS webhook or
+# S3; set up by contacting hi@cursor.com), which uses the raw message shape:
+#   event_data.<f>  ->  <event_type>.<f>     e.g. team_rule.is_active
+#   event_id        ->  metadata.id
+#   timestamp       ->  metadata.timestamp
+#
+# TRAPS
+#  1. GROK BOT COVERAGE IS INFERRED, NOT DOCUMENTED. team_rule is the generic
+#     Cursor team-rule event, listed under "Team settings and integrations" and
+#     not in the Grok Bot table, and no page says that a Grok-Bot-scoped rule
+#     emits it. Its payload has no scope field, so the rule cannot tell a Grok
+#     Bot rule from a Cursor editor rule. Validate live by disabling a test rule.
+#  2. The Admin API calls the flag `enabled` (PATCH /grok-bot/team-rules/:id);
+#     the audit payload calls it `is_active`. That they are the same flag is
+#     inferred from the names.
+#  3. The JSON type of is_active is not documented, so the selection lists the
+#     boolean and the string.
+#  4. Group Rules are a separate event (grok_bot_group_resource with resource
+#     'rule'), covered by the 4.03 rule, not here.
+#  5. "Always required" stops members, not admins or API keys, which is why the
+#     update-with-is_active-false branch exists alongside delete.
+#  6. The documented streamed example carries no top-level event_type key, only
+#     the payload key named after the event type. On a stream, replace the
+#     event_type match with "the team_rule key exists" unless your pipeline
+#     adds event_type itself.
+title: Cursor Team Rule Deleted or Disabled (Grok Bot Required Rules)
+id: d2fe847c-bbb1-4247-b06a-2d03ea135df2
+status: experimental
+description: |
+    Fires when a team rule is deleted, or updated so that it is no longer
+    active. Rules applied to Grok Bot are always required, so members cannot
+    turn them off, but an admin or an Admin API key can still delete a rule or
+    set it to disabled. On self-serve Teams, where Enforce Auto-review and
+    Network Controls do not exist, Team Rules are the only org-wide
+    instruction-level policy over what Bots do, so losing one silently is a
+    real regression. Map every hit to an approved change, and re-run the 4.2
+    verify pack against the reviewed rule file.
+    Audit logs exist only on Cursor Enterprise, so self-serve Teams cannot run
+    this rule even though Team Rules apply there.
+    This corresponds to HTH Grok Bot control 4.2 (Set Required Team Rules for Grok Bot, L1).
+references:
+    - https://howtoharden.com/guides/grok-bot/#42-set-required-team-rules-for-grok-bot
+    - https://cursor.com/docs/enterprise/compliance-and-monitoring
+    - https://cursor.com/docs/account/teams/admin-api#grok-bot
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+logsource:
+    product: cursor
+    service: audit
+    definition: 'Cursor Enterprise audit log events in the Admin API pull shape (GET /teams/audit-logs events[]); streamed events need the FIELD MAPPING in the rule header'
+# HTH Guide Excerpt: begin detection
+# Admin API pull shape (event_type + event_data.<field>). team_rule has no scope
+# field, so Cursor editor rules match too; Grok Bot coverage is inferred.
+detection:
+    selection_deleted:
+        event_type: 'team_rule'
+        event_data.action: 'delete'
+    selection_disabled:
+        event_type: 'team_rule'
+        event_data.action: 'update'
+        event_data.is_active:
+            - false
+            - 'false'
+    condition: 1 of selection_*
+fields:
+    - timestamp
+    - user_email
+    - ip_address
+    - application_type
+    - event_data.action
+    - event_data.rule_id
+    - event_data.rule_name
+    - event_data.is_active
+    - event_data.is_required
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Approved retirement or replacement of a rule, where a replacement create event appears in the same change window
+    - Changes to Cursor editor team rules that never applied to Grok Bot, which the payload cannot distinguish
+level: medium

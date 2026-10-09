@@ -1,0 +1,105 @@
+# HTH Pack Contract: v1
+#   control: grok-bot-3.3
+#   guide:   https://howtoharden.com/guides/grok-bot/#33-govern-team-setup-scripts-and-keep-credentials-in-team-secrets
+#   profile: L2
+#   mode:    read-only
+#   requires: Cursor Enterprise audit logs in the Admin API pull shape (GET /teams/audit-logs events[]), or a stream remapped per FIELD MAPPING below
+# =============================================================================
+# HTH Grok Bot Control 3.3: Govern Team Setup Scripts and Keep Credentials in Team Secrets
+# Profile Level: L2 (Walk)
+# Frameworks: CIS Controls v8 2.7, 4.1, 10.1 | NIST 800-53 CM-3, CM-5, SI-4, IA-5(7) | SOC 2 CC8.1, CC6.1 | ISO 27001:2022 A.8.9, A.8.32, A.5.17
+# Sources (every event type, field and value below is transcribed from these; fetched 2026-10-08):
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#log-format
+#   https://cursor.com/docs/enterprise/compliance-and-monitoring#event-types  (Grok Bot table)
+#   https://cursor.com/docs/account/teams/admin-api#get-audit-logs
+# Feed: packs/cursor/api/hth-cursor-10.01-export-audit-logs.sh with HTH_AUDIT_OUT set
+#   (JSONL, one Admin API event object per line). The Grok-Bot-scoped pull is
+#   packs/grok-bot/api/hth-grok-bot-6.02-export-grok-bot-audit.sh.
+#
+# LOGSOURCE (custom). Sigma has no upstream taxonomy for Cursor audit logs, so
+# this rule declares product: cursor / service: audit. Field names are the
+# Admin API pull shape, one flat object per event:
+#   event_type       one value from the Event types tables (the selector)
+#   event_data.<f>   the event-specific fields, documented as keys in event_data
+#   user_email       the actor: an email, 'Bot: <owner email>', 'Api Key: <name>', or 'System'
+#   event_id, timestamp, ip_address, application_type
+# FIELD MAPPING for streamed delivery (Splunk HEC, Sumo Logic, HTTPS webhook or
+# S3; set up by contacting hi@cursor.com), which uses the raw message shape:
+#   event_data.<f>  ->  <event_type>.<f>     e.g. grok_bot_group_resource.resource
+#   event_id        ->  metadata.id
+#   timestamp       ->  metadata.timestamp
+#
+# TRAPS
+#  1. Script text is never logged ("Grok Bot payloads carry identifiers and
+#     changed field names, never content such as ... Group Rule or Setup Script
+#     text"). This rule says THAT fleet-wide code changed; read what changed
+#     with GET /grok-bot/setup-manifests (team manifests only).
+#  2. Group Setup Scripts have no API read or write route, so the dashboard is
+#     the only place to review their content after this rule fires.
+#  3. No audit event is documented for adding, replacing or deleting a Team
+#     Secret, so this rule cannot see secret changes at all.
+#  4. grok_bot_group_resource with resource 'setup_manifest' is also matched by
+#     the 4.03 group-settings rule. Dedupe on event_id if both are deployed.
+#  5. The documented streamed example carries no top-level event_type key, only
+#     the payload key named after the event type. On a stream, replace each
+#     event_type match with "the <event_type> key exists" unless your pipeline
+#     adds event_type itself.
+title: Grok Bot Team Setup Manifest or Group Setup Script Changed
+id: e3013482-7865-4451-85c9-f3b284b5c7ff
+status: experimental
+description: |
+    Fires when a Team Setup manifest is saved or deleted, or when a group's
+    Setup Script is saved or deleted (grok_bot_group_resource with resource
+    'setup_manifest'). Setup scripts run as the computer user, with sudo
+    available, on every team computer at start and on a roughly daily refresh,
+    so one save executes on the whole fleet (or, for a group script, on every
+    computer of that group's members). The vendor documents no approval
+    workflow on manifest saves; map every event to an approved, two-person
+    change. A manifest that installs your EDR or networking client is exactly
+    what an attacker with admin access would replace.
+    Audit logs exist only on Cursor Enterprise, which is also the only plan
+    with Team Setup.
+    This corresponds to HTH Grok Bot control 3.3 (Govern Team Setup Scripts and Keep Credentials in Team Secrets, L2).
+references:
+    - https://howtoharden.com/guides/grok-bot/#33-govern-team-setup-scripts-and-keep-credentials-in-team-secrets
+    - https://cursor.com/docs/enterprise/compliance-and-monitoring
+    - https://docs.x.ai/grok-bot/private-networks
+author: How to Harden
+date: 2026/10/08
+tags:
+    - attack.execution
+    - attack.t1072
+    - attack.persistence
+logsource:
+    product: cursor
+    service: audit
+    definition: 'Cursor Enterprise audit log events in the Admin API pull shape (GET /teams/audit-logs events[]); streamed events need the FIELD MAPPING in the rule header'
+# HTH Guide Excerpt: begin detection
+# Admin API pull shape (event_type + event_data.<field>). Script text is never
+# logged; fetch the manifest itself to see what changed.
+detection:
+    selection_team_manifest:
+        event_type: 'grok_bot_team_setup_manifest'
+    selection_group_script:
+        event_type: 'grok_bot_group_resource'
+        event_data.resource: 'setup_manifest'
+    condition: 1 of selection_*
+fields:
+    - timestamp
+    - user_email
+    - ip_address
+    - event_type
+    - event_data.action
+    - event_data.manifest_id
+    - event_data.revision
+    - event_data.entry_count
+    - event_data.entry_ids
+    - event_data.group_id
+    - event_data.group_name
+    - event_data.resource_id
+    - event_data.resource_name
+# HTH Guide Excerpt: end detection
+falsepositives:
+    - Approved manifest rollouts, such as an EDR or networking-client version bump, that match a recorded change request
+    - The same change seen twice when the 4.03 group-settings rule is also deployed (dedupe on event_id)
+level: high
