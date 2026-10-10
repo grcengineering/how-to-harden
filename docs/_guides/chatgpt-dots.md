@@ -1,12 +1,15 @@
 ---
 layout: guide
 title: "ChatGPT Dots Hardening Guide"
-vendor: "OpenAI"
+vendor: "ChatGPT Dots"
 slug: "chatgpt-dots"
+platform: "OpenAI"
+platform_slug: "openai"
+product: "ChatGPT Dots"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for ChatGPT dots, OpenAI's always-on personal agents (launched 2026-09-29): dots enablement and RBAC, owner-account protection, connected apps and Slack participation, shared cloud-computer capabilities, local computer access, custom rules and Agent Security orchestrator policy, memory and residency limits, Compliance API coverage, and the revoke, pause and reset sequence."
-version: "0.1.0"
+version: "0.1.1"
 maturity: ["ai-drafted"]
 last_updated: "2026-10-09"
 ---
@@ -17,7 +20,7 @@ last_updated: "2026-10-09"
 
 ## Overview
 
-This guide covers dots only. Org-wide identity, SSO/SCIM, retention, EKM, Plugin controls and Compliance API ingestion live in the [ChatGPT Enterprise guide](/guides/chatgpt-enterprise/).
+This is a **product guide within the [OpenAI platform](/guides/chatgpt-enterprise/)**, and it covers dots only. Org-wide identity, SSO/SCIM, retention, EKM, Plugin controls and Compliance API ingestion live in the OpenAI **Common Controls** hub, the [ChatGPT Enterprise guide](/guides/chatgpt-enterprise/), and are referenced here rather than duplicated.
 
 A **dot** is a personal agent in ChatGPT. In OpenAI's words: "Powered by GPT-6 Astra, your dot lives in the cloud and has its own computer and browser. You can reach it and it can keep working even when your computer is off" ([Meet dots](https://learn.chatgpt.com/docs/dots)). What a dot does:
 
@@ -2386,6 +2389,7 @@ How to read the table:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-09 | 0.1.1 | ai-drafted | Moved under the new OpenAI multi-product platform as a product guide (`platform: "OpenAI"`, `product: "ChatGPT Dots"`); the Overview now points to the ChatGPT Enterprise guide as the OpenAI Common Controls hub. No control changed. | Claude Code (Opus 5.5) |
 | 2026-10-09 | 0.1.0 | ai-drafted | Initial guide for ChatGPT dots (launched 2026-09-29): 18 controls in 7 sections (access and enablement, connected apps and channels, cloud computer and local access, autonomy and approvals, data and memory, monitoring, lifecycle), a Known Gaps and Member Guidance reference section recording eighteen OpenAI documentation conflicts and the controls OpenAI does not offer, and Code Pack includes for 11 controls (api, siem/sigma, config, cli). Written from OpenAI documentation with no live tenant validation, then corrected after an adversarial review whose facts were re-checked on 2026-10-09 (help.openai.com, chatgpt.com/public/admin/api-reference and www.beyondtrust.com return 403 to automated fetchers, so those pages were read in a real browser) | Claude Code (Opus 5.5) |
 
 ---

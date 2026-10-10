@@ -3,12 +3,15 @@ layout: guide
 title: "ChatGPT Enterprise Hardening Guide"
 vendor: "OpenAI"
 slug: "chatgpt-enterprise"
+platform: "OpenAI"
+platform_slug: "openai"
+product: "Common Controls"
 tier: "1"
 category: "AI/ML Platform"
 description: "Enterprise AI security hardening for ChatGPT, SSO configuration, data privacy, admin controls, and workspace agent governance"
-version: "0.3.0"
+version: "0.3.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-10-09"
 ---
 
 ## Overview
@@ -16,6 +19,8 @@ last_updated: "2026-08-08"
 ChatGPT Enterprise is OpenAI's enterprise-grade AI assistant serving organizations that require enhanced security, privacy, and administrative controls. With AI adoption accelerating across enterprises, properly securing ChatGPT Enterprise is critical to prevent data leakage, maintain compliance, and ensure responsible AI usage. Unlike consumer versions, Enterprise provides SOC 2 Type II compliance, data isolation, and guarantees that prompts and outputs are not used for model training.
 
 On April 22, 2026, OpenAI announced **[Workspace Agents in ChatGPT](https://openai.com/index/introducing-workspace-agents-in-chatgpt/)** — cloud-resident agents that can connect to enterprise apps (Slack, Google Drive, SharePoint, Gmail, Calendar, GitHub, Jira, Confluence, and others), run on schedules, and complete multi-step workflows on a user's behalf. Workspace agents are an evolution of custom GPTs and inherit a substantially broader risk surface because they can take **actions** in connected systems, not just answer questions. OpenAI's *Workspace Agents Security Overview* PDF (April 29, 2026) was the original authoritative reference for the security model but **has since been removed (the URL now returns HTTP 404)**; the canonical enterprise admin documentation now lives at **[learn.chatgpt.com/docs/enterprise](https://learn.chatgpt.com/docs/enterprise/governance.md)** (Administration, Governance, Compliance API, Roles and workspace permissions, Apps and connectors) with developer surfaces at **[developers.openai.com](https://developers.openai.com/workspace-agents/authentication.md)**. Claims in Section 6 that traced only to the retired PDF are annotated accordingly.
+
+This guide is the **Common Controls hub of the OpenAI platform**: the ChatGPT workspace-wide controls (identity, RBAC, data retention, EKM, app and GPT governance, audit and Compliance Platform logging, workspace agents) that every ChatGPT product inherits. Product-specific controls live in product guides, listed in [Products in This Platform](#products-in-this-platform).
 
 ### Intended Audience
 - Security engineers managing AI tools
@@ -42,6 +47,19 @@ This guide covers ChatGPT Enterprise security configurations including SSO/SAML,
 5. [Third-Party Integration Security](#5-third-party-integration-security)
 6. [Workspace Agents Hardening](#6-workspace-agents-hardening)
 7. [Compliance Quick Reference](#7-compliance-quick-reference)
+
+**Product guides:** [ChatGPT Dots](/guides/chatgpt-dots/)
+
+---
+
+## Products in This Platform
+
+OpenAI is a multi-product platform. This guide is the **Common Controls hub**, holding the ChatGPT workspace-wide controls. Product-specific controls live in their own guides:
+
+| Product | Guide | Covers |
+|---------|-------|--------|
+| **Common Controls** (this guide) | — | SSO, MFA and SCIM, role-based access, data privacy, retention and EKM, acceptable use, GPT, app and custom-instruction controls, usage analytics, Purview and audit-trail review, integration risk, workspace agents (including Compliance Platform logs to SIEM) |
+| **ChatGPT Dots** | [ChatGPT Dots guide](/guides/chatgpt-dots/) | Dots enablement and RBAC, owner-account protection, connected apps and Slack/Teams participation, cloud computer and local access, custom rules and Agent Security policy, memory and residency, audit coverage, revoke/pause/reset |
 
 ---
 
@@ -659,6 +677,8 @@ Establish regular audit trail reviews to detect policy violations, unusual usage
 
 > **Status update (2026-08):** workspace agents are **no longer described as a research preview**. OpenAI's current help documentation describes a shipped feature set — templates, an agent builder, Preview, schedules, ChatGPT/Slack/API channels, a Team directory, and "Publish to [organization] directory" — and states the feature is **off by default at launch for ChatGPT Enterprise workspaces**. Note also: **disabling Workspace Agents for a user or role also disables the Workspace Agents plugin in Codex** — there is no separate Codex-only toggle. Source: [ChatGPT workspace agents for Enterprise and Business](https://help.openai.com/en/articles/20001143-chatgpt-workspace-agents-for-enterprise-and-business).
 
+> **Dots are covered separately.** ChatGPT dots (always-on personal agents with their own cloud computer, launched 2026-09-29) have their own permissions and admin surface. See the [ChatGPT Dots product guide](/guides/chatgpt-dots/).
+
 The full set of governance controls in this section (RBAC, app/action controls, Compliance Platform export) is available on **ChatGPT Enterprise and Edu**; Business and Teachers tiers have a more limited admin surface. The feature is **disabled by default** at the workspace level; admins must enable it per role.
 
 ### Why Workspace Agents Need Their Own Hardening Section
@@ -1253,6 +1273,7 @@ Workspace agents can now be triggered **programmatically from outside ChatGPT**:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-10-09 | 0.3.1 | ai-drafted | Became the Common Controls hub of the new OpenAI multi-product platform (`platform: "OpenAI"`, `product: "Common Controls"`): added a Products in This Platform table linking the ChatGPT Dots product guide, and a dots pointer in Section 6. No control changed. | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.3.0 | ai-drafted | Currency pass: re-sourced Section 6 off the removed Workspace Agents Security Overview PDF (annotated PDF-only claims; cited live learn.chatgpt.com / developers.openai.com docs); rewrote 3.1/3.2 for the plugins + bundled skills + connectors model and six control boundaries; new control 6.8 (Workspace Agents trigger API + PAT governance); workspace agents no longer "research preview"; added 30-day Compliance Platform retention and endpoint surface to 6.6; converted the stateful-route deprecation to a completed removal (removed 2026-06-05); added the 18-partner Compliance Platform ecosystem to 4.2/5.2; fixed 1.3/1.4/2.4/3.1 cheat-parser misses; fixed 6.6 duplicate pack includes and two broken compliance-table anchors; migrated Appendix B to the learn.chatgpt.com canonical set, fixed the Compliance API slug, purged trust-center links; rewrote the three Sigma rules in schema-agnostic form with login-gated schema warnings | Claude Code (Fable 5) |
 | 2026-05-14 | 0.2.1 | ai-drafted | Reconciled Section 6 against OpenAI's *Workspace Agents Security Overview* (April 29, 2026). Added the fifth RBAC dimension `publish_agents_with_shared_connections` (6.1). Replaced reconstructed event-type list with the PDF's authoritative agent lifecycle / run / connector-call / OAuth-resolution / skill / trigger / memory event families (6.6). Added Logs Platform technical specs (~10-min windows, p99 < 30 min, at-least-once, event_id dedup). Added control 6.7 implementing OpenAI's six-step pre-launch checklist. Updated Sigma rules and the SIEM-streaming and trifecta-detection scripts with PDF-verified event names and app catalog. New pack file: `config/hth-chatgpt-enterprise-6.07-prelaunch-checklist.jsonc`. | Claude Code (Opus 4.7) |
 | 2026-05-14 | 0.2.0 | ai-drafted | [SECURITY] Added Section 6 Workspace Agents Hardening (6 controls covering RBAC, connector posture, approval policy, lethal-trifecta detection, suspension runbook, Compliance API SIEM export). Added Code Packs under `packs/chatgpt-enterprise/` (api, config, siem/sigma). Updated NIST and GDPR mappings. Expanded References with workspace agent, Compliance API, and agent-security research links. | Claude Code (Opus 4.7) |

@@ -39,7 +39,7 @@ Like CIS Benchmarks, but free, vendor-neutral, and focused on integration contro
 | DevOps | 17 | GitHub, GitLab, Jenkins, Buildkite |
 | Identity | 13 | Okta, Auth0, Microsoft Entra ID, Duo |
 | HR/Finance | 11 | BambooHR, ADP, Workday, Stripe |
-| AI/ML Platform | 9 | Anthropic (Claude Enterprise, Claude Code, API), ChatGPT Enterprise, Ona, LangChain |
+| AI/ML Platform | 11 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots), Grok Bot, Ona, LangChain |
 | Marketing | 9 | HubSpot, Braze, SendGrid, Twilio |
 | IT Operations | 6 | ServiceNow, Jamf, PagerDuty, Windows 11 |
 | IaC | 2 | Terraform Cloud, Pulumi |
