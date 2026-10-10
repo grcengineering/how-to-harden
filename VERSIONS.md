@@ -168,8 +168,8 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Anthropic Platform](docs/_guides/anthropic-claude.md) | v1.2.1 | ai-drafted · ai-validated | 2026-10-04 |
 | [AWS IAM Identity Center](docs/_guides/aws-iam-identity-center.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-04 |
 | [BeyondTrust](docs/_guides/beyondtrust.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [ChatGPT Dots](docs/_guides/chatgpt-dots.md) | v0.1.0 | ai-drafted | 2026-10-09 |
-| [ChatGPT Enterprise](docs/_guides/chatgpt-enterprise.md) | v0.3.0 | ai-drafted | 2026-08-08 |
+| [ChatGPT Dots](docs/_guides/chatgpt-dots.md) | v0.1.1 | ai-drafted | 2026-10-09 |
+| [ChatGPT Enterprise](docs/_guides/chatgpt-enterprise.md) | v0.3.1 | ai-drafted | 2026-10-09 |
 | [Claude API & Console](docs/_guides/anthropic-api.md) | v1.1.0 | ai-drafted | 2026-08-15 |
 | [Claude Code](docs/_guides/claude-code.md) | v1.1.1 | ai-drafted | 2026-10-04 |
 | [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.2.0 | ai-drafted | 2026-08-15 |
