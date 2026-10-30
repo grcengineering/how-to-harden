@@ -1,0 +1,28 @@
+// HTH Pack Contract: v1
+//   control: devin-cli-4.1
+//   guide: https://howtoharden.com/guides/devin-cli/#41-protect-sensitive-files
+//   profile: L1
+//   mode: mutating
+//   requires: Reviewed user-config merge; substitute actual credential paths
+// HTH Control 4.01: Protect Sensitive Files
+// Framework: NIST SP 800-53 Rev. 5 CM-6
+// Source (fetched 2026-10-29): https://docs.devin.ai/cli/reference/configuration/config-file
+// Validation: offline fixtures only; not tested with a Devin account.
+
+// HTH Guide Excerpt: begin protect-sensitive-files
+// USER config fragment, not a project config. Merge rather than replace.
+// respect_gitignore is a CLI tool-access control, not a general shell sandbox.
+// Add the actual XDG_DATA_HOME / Windows credential path where non-default.
+{
+  "respect_gitignore": true,
+  "include_gitignored_files": false,
+  "permissions": {
+    "deny": [
+      "Read(.env)", "Read(.env.*)", "Read(**/.env)", "Read(**/.env.*)",
+      "Read(~/.ssh/**)", "Read(~/.aws/**)",
+      "Read(~/.local/share/devin/credentials.toml)",
+      "Write(~/.local/share/devin/credentials.toml)"
+    ]
+  }
+}
+// HTH Guide Excerpt: end protect-sensitive-files

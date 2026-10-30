@@ -1073,3 +1073,42 @@ ona:
       url: "https://ona.com/docs/ona/organizations/policies/executable-deny-list.md"
     - label: "Best Practices"
       url: "https://ona.com/docs/ona/best-practices.md"
+
+# Cognition family — verified 2026-10-29; real configuration docs, not trust pages.
+devin:
+  product_docs: "https://docs.devin.ai/"
+  api_docs: "https://docs.devin.ai/api-reference/overview"
+  hardening_docs:
+    - label: "Enterprise SSO and Lifecycle"
+      url: "https://docs.devin.ai/enterprise/security-access/sso/guide"
+    - label: "Security Profiles"
+      url: "https://docs.devin.ai/product-guides/security-profiles"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/devin"
+
+devin-cli:
+  product_docs: "https://docs.devin.ai/cli/reference/commands"
+  hardening_docs:
+    - label: "CLI Permissions"
+      url: "https://docs.devin.ai/cli/reference/permissions"
+    - label: "Sandbox"
+      url: "https://docs.devin.ai/cli/sandbox"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/devin-cli"
+
+devin-desktop:
+  product_docs: "https://docs.devin.ai/desktop/guide-for-admins"
+  api_docs: "https://docs.devin.ai/desktop/accounts/api-reference/api-introduction"
+  hardening_docs:
+    - label: "Enterprise Policies"
+      url: "https://docs.devin.ai/desktop/enterprise-policies"
+    - label: "Controls and Scope"
+      url: "https://docs.devin.ai/desktop/controls"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/devin-desktop"
+
+deepwiki:
+  product_docs: "https://docs.devin.ai/work-with-devin/deepwiki"
+  hardening_docs:
+    - label: "Private Repository Access"
+      url: "https://docs.devin.ai/integrations/gh"
+    - label: "Public DeepWiki MCP"
+      url: "https://docs.devin.ai/work-with-devin/deepwiki-mcp"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/deepwiki"

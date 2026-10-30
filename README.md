@@ -39,7 +39,7 @@ Like CIS Benchmarks, but free, vendor-neutral, and focused on integration contro
 | DevOps | 17 | GitHub, GitLab, Jenkins, Buildkite, SpaceXAI (Cursor) |
 | Identity | 13 | Okta, Auth0, Microsoft Entra ID, Duo |
 | HR/Finance | 11 | BambooHR, ADP, Workday, Stripe |
-| AI/ML Platform | 11 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots, Ona), SpaceXAI (Grok Bot), LangChain |
+| AI/ML Platform | 15 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots, Ona), SpaceXAI (Grok Bot), Cognition (Devin Cloud, CLI, Desktop, DeepWiki), LangChain |
 | Marketing | 9 | HubSpot, Braze, SendGrid, Twilio |
 | IT Operations | 6 | ServiceNow, Jamf, PagerDuty, Microsoft (Intune, Windows 11) |
 | IaC | 2 | Terraform Cloud, Pulumi |
@@ -243,9 +243,9 @@ The statuses **combine**: a guide can be AI Drafted and NI Drafted at once, and 
 **An `ai-*` status is a claim about a machine's act, and asserts nothing about human judgement.** An agent can prove a console path is where the guide says it is; it cannot decide whether that control is the right control for your organization. So an AI status never discharges the need for its NI twin -- a guide sitting at AI Validated is a guide still waiting for its human reviewer, however long it sits there.
 
 **Current coverage:**
-- 132 hardening guides across 10 categories --- **all 132 `ai-drafted`**, of which **19 also hold `ai-validated`** (Anthropic Platform, Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel)
+- 136 hardening guides across 10 categories --- **all 136 `ai-drafted`**, of which **19 also hold `ai-validated`** (Anthropic Platform, Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel)
 - **No guide holds any `ni-*` status.** Nothing here has been drafted, reviewed, or validated by a person -- the entire NI row of the matrix is empty, and it is the half that matters most
-- 76 vendor Code Packs with Terraform, API, CLI, SDK, config, DB, and Sigma implementations
+- 89 vendor Code Packs with Terraform, API, CLI, SDK, config, DB, and Sigma implementations
 - Full Jekyll site with search, six-status filtering, and dark/light themes
 
 **What we need:**

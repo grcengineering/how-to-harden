@@ -1,0 +1,27 @@
+// HTH Pack Contract: v1
+//   control: devin-cli-1.2
+//   guide: https://howtoharden.com/guides/devin-cli/#12-enforce-organization-permissions
+//   profile: L2
+//   mode: mutating
+//   requires: Enterprise admin; explicit reviewed console paste
+// HTH Control 1.02: Enforce Organization Permissions
+// Framework: NIST SP 800-53 Rev. 5 CM-6
+// Source (fetched 2026-10-29): https://docs.devin.ai/cli/enterprise/team-settings
+// Validation: offline fixtures only; not tested with a Devin account.
+
+// HTH Guide Excerpt: begin enforce-organization-permissions
+// Paste this OBJECT into Team Settings > Terminal Permissions > Configure.
+// This is NOT a complete config.json: local configs require a permissions wrapper.
+// Scope secret locations to your fleet; do not automatically allow general shells.
+{
+  "deny": [
+    "Exec(sudo)",
+    "Read(~/.ssh/**)",
+    "Read(~/.aws/**)",
+    "Read(~/.local/share/devin/credentials.toml)",
+    "Write(~/.local/share/devin/credentials.toml)"
+  ],
+  "ask": ["exec", "Write(/**)", "mcp__*"],
+  "allow": []
+}
+// HTH Guide Excerpt: end enforce-organization-permissions

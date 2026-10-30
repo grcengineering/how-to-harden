@@ -1,0 +1,23 @@
+// HTH Pack Contract: v1
+//   control: devin-cli-5.1
+//   guide: https://howtoharden.com/guides/devin-cli/#51-review-plugins-and-hooks
+//   profile: L2
+//   mode: mutating
+//   requires: Enterprise managed-manifest access; reviewed explicit apply
+// HTH Control 5.01: Review Plugins and Hooks
+// Framework: NIST SP 800-53 Rev. 5 CM-6
+// Source (fetched 2026-10-29): https://docs.devin.ai/cli/extensibility/plugins/overview
+// Validation: offline fixtures only; not tested with a Devin account.
+
+// HTH Guide Excerpt: begin review-plugins-and-hooks
+// Enterprise-level MANAGED MANIFEST, not system.json or user config.json.
+// Paste only after inventorying business-critical plugins and their dependencies.
+// Empty allowlists below mean no optional plugins: a deliberate lockdown template.
+// Add reviewed pinned sources to optionalPlugins/requiredPlugins as appropriate.
+// Managed-manifest fetch failures currently fail open; this is NOT an offline boundary.
+{
+  "requiredPlugins": [],
+  "optionalPlugins": [],
+  "forbiddenPlugins": ["*"]
+}
+// HTH Guide Excerpt: end review-plugins-and-hooks
