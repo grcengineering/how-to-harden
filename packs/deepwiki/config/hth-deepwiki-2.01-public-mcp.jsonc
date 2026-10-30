@@ -1,0 +1,22 @@
+// HTH Pack Contract: v1
+//   control: deepwiki-2.1
+//   guide: https://howtoharden.com/guides/deepwiki/#21-use-the-credential-free-official-public-mcp-endpoint
+//   profile: L1
+//   mode: mutating
+//   requires: MCP client supporting the documented mcpServers/url format
+// HTH DeepWiki 2.1: Credential-free public MCP configuration
+// Profile Level: L1 (Crawl) | NIST 800-53: CM-6, SC-8
+// Source: https://docs.devin.ai/work-with-devin/deepwiki-mcp
+// Status: available; checked 2026-10-29. /sse is legacy, being deprecated.
+// Merge the JSON object into the approved client's config; do not overwrite
+// an existing config. Select the correct user/project file for your client.
+// JSON comments/pack metadata are not part of the configuration to install.
+// HTH Guide Excerpt: begin public-mcp-config
+{
+  "mcpServers": {
+    "deepwiki": {
+      "url": "https://mcp.deepwiki.com/mcp"
+    }
+  }
+}
+// HTH Guide Excerpt: end public-mcp-config

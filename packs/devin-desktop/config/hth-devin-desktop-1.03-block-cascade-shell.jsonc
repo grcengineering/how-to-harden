@@ -1,0 +1,28 @@
+// HTH Pack Contract: v1
+//   control: devin-desktop-1.3
+//   guide: https://howtoharden.com/guides/devin-desktop/#13-block-cascade-shell-execution
+//   profile: L3
+//   mode: mutating
+//   requires: Devin Desktop; approved policy deployment
+// HTH Devin Desktop 1.3: Block Cascade Shell Execution
+// Profile Level: L3 | NIST 800-53: CM-6
+// Verified against official documentation: 2026-10-29; no live product validation.
+
+// HTH Guide Excerpt: begin block-cascade-shell
+// Source: https://docs.devin.ai/desktop/cascade/hooks
+// This is hooks.json content, NOT an editor policy.json fragment.
+// Merge the pre_run_command entry into managed hooks.json; do not replace other hooks.
+// No files are changed by this template. Pre-hook exit 2 blocks Cascade shell calls.
+// It does NOT block human terminals, other agents, or MCP tools.
+{
+  "hooks": {
+    "pre_run_command": [
+      {
+        "command": "echo 'HTH: Cascade shell execution disabled by policy.' >&2; exit 2",
+        "powershell": "[Console]::Error.WriteLine('HTH: Cascade shell execution disabled by policy.'); exit 2",
+        "show_output": true
+      }
+    ]
+  }
+}
+// HTH Guide Excerpt: end block-cascade-shell

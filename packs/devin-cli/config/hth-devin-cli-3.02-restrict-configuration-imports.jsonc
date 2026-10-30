@@ -1,0 +1,28 @@
+// HTH Pack Contract: v1
+//   control: devin-cli-3.2
+//   guide: https://howtoharden.com/guides/devin-cli/#32-restrict-configuration-imports
+//   profile: L2
+//   mode: mutating
+//   requires: Reviewed merge into user config
+// HTH Control 3.02: Restrict Configuration Imports
+// Framework: NIST SP 800-53 Rev. 5 CM-6
+// Source (fetched 2026-10-29): https://docs.devin.ai/cli/reference/configuration/read-config-from
+// Validation: offline fixtures only; not tested with a Devin account.
+
+// HTH Guide Excerpt: begin restrict-configuration-imports
+// USER config fragment: merge into ~/.config/devin/config.json.
+// Windows: %APPDATA%\devin\config.json. The cloud key is user-only.
+// Do not overwrite unrelated config or treat user defaults as managed policy.
+{
+  "read_config_from": {
+    "agents_standard": false,
+    "cursor": false,
+    "windsurf": false,
+    "claude": false,
+    "copilot": false,
+    "opencode": false,
+    "zed": false,
+    "cloud": false
+  }
+}
+// HTH Guide Excerpt: end restrict-configuration-imports

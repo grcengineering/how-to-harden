@@ -5,10 +5,11 @@
 #
 # Prerequisites:
 #   - Python 3 (content validation)
+#   - Bash and jq (offline Cognition pack regression tests; APIs/CLIs are mocked)
 #   - Ruby + Bundler (Jekyll build — CI only unless installed locally)
 
 .PHONY: help test test-all lint lint-content test-build \
-        test-build-jekyll test-build-sync validate-packs
+        test-build-jekyll test-build-sync validate-packs test-cognition-packs
 
 # ─── Default ──────────────────────────────────────────────────────────────────
 
@@ -18,9 +19,14 @@ help: ## Show available targets
 
 # ─── Top-level ────────────────────────────────────────────────────────────────
 
-test: lint test-build-sync ## Run all tests (local-safe: skips Jekyll if no Ruby)
+test: lint test-build-sync test-cognition-packs ## Run local-safe tests (no live tenants or Jekyll required)
 
-test-all: lint test-build ## Run all tests including Jekyll build (requires Ruby)
+test-all: lint test-build test-cognition-packs ## Run all tests including Jekyll build (requires Ruby)
+
+test-cognition-packs: ## Exercise Cognition pack inputs, safe defaults, and mock APIs/CLIs offline
+	@set -e; for suite in scripts/test-devin-api-packs.py scripts/test-devin-cli-packs.py scripts/test-devin-desktop-packs.py scripts/test-deepwiki-packs.py; do \
+		python3 "$$suite"; \
+	done
 
 # ─── Lint ─────────────────────────────────────────────────────────────────────
 
