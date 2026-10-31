@@ -2,7 +2,7 @@
 
 Date: 2026-10-31 UTC. Subject: the standalone Factory guide, 19 controls, and 23 source packs across native configuration, REST, CLI and the official Python SDK.
 
-Branch: `feat/factory-hardening-guide`. Verified base: `761bd5165d8323d61efba7e8392c35b0d2d74d15` (`origin/main` when the isolated checkout was prepared). Signed source commit: `ac97a96` (`Add Factory hardening guide and code packs`). This report is local review evidence; no push, PR, merge, deployment or live Factory configuration change was performed.
+Branch: `feat/factory-hardening-guide`. Verified base: `761bd5165d8323d61efba7e8392c35b0d2d74d15` (`origin/main` when the isolated checkout was prepared). Signed source commit: `ac97a96` (`Add Factory hardening guide and code packs`). This report records the local authoring and verification run, during which no remote publication or live Factory action occurred. Subsequent publication and CI results are recorded in the pull request.
 
 ## Results
 
