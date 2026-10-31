@@ -1,0 +1,17 @@
+// HTH Pack Contract: v1
+//   control: factory-3.1
+//   guide: https://howtoharden.com/guides/factory/#31-allow-only-reviewed-mcp-servers-and-tools
+//   profile: L2
+//   mode: mutating
+//   requires: organization administrator; review and merge at org level before deployment
+// HTH Factory 3.1 — NIST AC-6, CM-7
+// Source: https://docs.factory.com/enterprise/hierarchical-settings-and-org-control (available; verified 2026-10-30)
+// Org-level fragment only. Preserve unrelated policy; never replace an existing file with one fragment.
+// HTH Guide Excerpt: begin deny-unapproved-mcp-servers
+{
+  "mcpPolicy": {
+    "enabled": true,
+    "allowlist": []
+  }
+}
+// HTH Guide Excerpt: end deny-unapproved-mcp-servers

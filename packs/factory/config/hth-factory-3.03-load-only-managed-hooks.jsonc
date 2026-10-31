@@ -1,0 +1,15 @@
+// HTH Pack Contract: v1
+//   control: factory-3.3
+//   guide: https://howtoharden.com/guides/factory/#33-govern-hooks-as-executable-policy
+//   profile: L2
+//   mode: mutating
+//   requires: organization administrator; review and merge at org level before deployment
+// HTH Factory 3.3 — NIST CM-5, CM-7
+// Source: https://docs.factory.com/enterprise/hierarchical-settings-and-org-control (available; verified 2026-10-30)
+// Org-level fragment only. Preserve unrelated policy; never replace an existing file with one fragment.
+// HTH Guide Excerpt: begin load-only-managed-hooks
+{
+  "allowManagedHooksOnly": true,
+  "hooksDisabled": false
+}
+// HTH Guide Excerpt: end load-only-managed-hooks

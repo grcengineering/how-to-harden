@@ -4,8 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Guides: 132](https://img.shields.io/badge/Guides-132-blueviolet)](https://howtoharden.com)
-[![Code Packs: 76](https://img.shields.io/badge/Code%20Packs-76-orange)](packs/)
+[![Guides: 137](https://img.shields.io/badge/Guides-137-blueviolet)](https://howtoharden.com)
+[![Code Packs: 90](https://img.shields.io/badge/Code%20Packs-90-orange)](packs/)
 
 **Website:** [howtoharden.com](https://howtoharden.com) | **Organization:** [GRC Engineering](https://grc.engineering)
 
@@ -29,7 +29,7 @@ This is defense-in-depth done right: **First-party controls you configure** to l
 
 ### 1. Platform-Specific Hardening Guides
 
-Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **132 guides** across 10 categories:
+Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **137 guides** across 10 categories:
 
 | Category | Count | Examples |
 |----------|-------|---------|
@@ -39,7 +39,7 @@ Like CIS Benchmarks, but free, vendor-neutral, and focused on integration contro
 | DevOps | 17 | GitHub, GitLab, Jenkins, Buildkite, SpaceXAI (Cursor) |
 | Identity | 13 | Okta, Auth0, Microsoft Entra ID, Duo |
 | HR/Finance | 11 | BambooHR, ADP, Workday, Stripe |
-| AI/ML Platform | 15 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots, Ona), SpaceXAI (Grok Bot), Cognition (Devin Cloud, CLI, Desktop, DeepWiki), LangChain |
+| AI/ML Platform | 16 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots, Ona), SpaceXAI (Grok Bot), Cognition (Devin Cloud, CLI, Desktop, DeepWiki), Factory (Droid), LangChain |
 | Marketing | 9 | HubSpot, Braze, SendGrid, Twilio |
 | IT Operations | 6 | ServiceNow, Jamf, PagerDuty, Microsoft (Intune, Windows 11) |
 | IaC | 2 | Terraform Cloud, Pulumi |
@@ -52,7 +52,7 @@ Every control includes:
 
 ### 2. Code Packs -- Executable Security Controls
 
-**76 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
+**90 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
 
 | Language Type | Directory | What It Does |
 |---------------|-----------|-------------|
@@ -126,7 +126,7 @@ how-to-harden/
 │   ├── CNAME                             # Custom domain (howtoharden.com)
 │   ├── index.html                        # Homepage with search, filter, sort
 │   ├── about.md                          # About page
-│   ├── _guides/                          # Platform hardening guides (125 guides)
+│   ├── _guides/                          # Platform hardening guides (137 guides)
 │   │   ├── salesforce.md
 │   │   ├── okta.md
 │   │   ├── github.md
@@ -143,7 +143,7 @@ how-to-harden/
 │   └── assets/
 │       └── css/
 │           └── style.css                 # Dark + light theme stylesheet
-├── packs/                                # Code Packs (76 vendors)
+├── packs/                                # Code Packs (90 vendors)
 │   ├── README.md                         # Code Pack Ontology documentation
 │   ├── schema/                           # YAML schema definitions
 │   ├── okta/                             # Example vendor pack
@@ -243,14 +243,14 @@ The statuses **combine**: a guide can be AI Drafted and NI Drafted at once, and 
 **An `ai-*` status is a claim about a machine's act, and asserts nothing about human judgement.** An agent can prove a console path is where the guide says it is; it cannot decide whether that control is the right control for your organization. So an AI status never discharges the need for its NI twin -- a guide sitting at AI Validated is a guide still waiting for its human reviewer, however long it sits there.
 
 **Current coverage:**
-- 136 hardening guides across 10 categories --- **all 136 `ai-drafted`**, of which **19 also hold `ai-validated`** (Anthropic Platform, Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel)
+- 137 hardening guides across 10 categories --- **all 137 `ai-drafted`**, of which **19 also hold `ai-validated`** (Anthropic Platform, Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel)
 - **No guide holds any `ni-*` status.** Nothing here has been drafted, reviewed, or validated by a person -- the entire NI row of the matrix is empty, and it is the half that matters most
-- 89 vendor Code Packs with Terraform, API, CLI, SDK, config, DB, and Sigma implementations
+- 90 vendor Code Packs with Terraform, API, CLI, SDK, config, DB, and Sigma implementations
 - Full Jekyll site with search, six-status filtering, and dark/light themes
 
 **What we need:**
 - **Expert reviewers** --- the ceiling on this project. Read a guide against your platform experience and add **NI Reviewed**. This is needed whether or not a guide is AI Validated: no amount of machine validation produces a human judgement, and no guide in the corpus has this status yet
-- **Practitioners who apply the controls** and report what happened, adding **NI Validated** --- also currently at zero across all 132 guides
+- **Practitioners who apply the controls** and report what happened, adding **NI Validated** --- also currently at zero across all 137 guides
 - Live validation runs to add **AI Validated** --- console paths re-read off the real UI, Code Packs executed against a real tenant
 - Code Pack contributions for CLI, SDK, and DB language types
 

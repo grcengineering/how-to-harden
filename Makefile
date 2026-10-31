@@ -5,11 +5,11 @@
 #
 # Prerequisites:
 #   - Python 3 (content validation)
-#   - Bash and jq (offline Cognition pack regression tests; APIs/CLIs are mocked)
+#   - Bash and jq (offline pack regression tests; APIs/CLIs/SDKs are mocked)
 #   - Ruby + Bundler (Jekyll build — CI only unless installed locally)
 
 .PHONY: help test test-all lint lint-content test-build \
-        test-build-jekyll test-build-sync validate-packs test-cognition-packs
+        test-build-jekyll test-build-sync validate-packs test-cognition-packs test-factory-packs
 
 # ─── Default ──────────────────────────────────────────────────────────────────
 
@@ -19,9 +19,12 @@ help: ## Show available targets
 
 # ─── Top-level ────────────────────────────────────────────────────────────────
 
-test: lint test-build-sync test-cognition-packs ## Run local-safe tests (no live tenants or Jekyll required)
+test: lint test-build-sync test-cognition-packs test-factory-packs ## Run local-safe tests (no live tenants or Jekyll required)
 
-test-all: lint test-build test-cognition-packs ## Run all tests including Jekyll build (requires Ruby)
+test-all: lint test-build test-cognition-packs test-factory-packs ## Run all tests including Jekyll build (requires Ruby)
+
+test-factory-packs: ## Exercise Factory config inputs and mock REST/CLI/SDK boundaries offline
+	@python3 scripts/test-factory-packs.py
 
 test-cognition-packs: ## Exercise Cognition pack inputs, safe defaults, and mock APIs/CLIs offline
 	@set -e; for suite in scripts/test-devin-api-packs.py scripts/test-devin-cli-packs.py scripts/test-devin-desktop-packs.py scripts/test-deepwiki-packs.py; do \

@@ -1,0 +1,18 @@
+// HTH Pack Contract: v1
+//   control: factory-2.5
+//   guide: https://howtoharden.com/guides/factory/#25-govern-built-in-network-tools
+//   profile: L2
+//   mode: mutating
+//   requires: organization administrator; supported client; review and merge at org level
+// HTH Factory 2.5 — NIST AC-4, CM-7
+// Source: https://docs.factory.com/enterprise/hierarchical-settings-and-org-control (available; verified 2026-10-31)
+// Org-only fragment. FetchUrl approval is not a hard block; pair with sandbox policy.
+// HTH Guide Excerpt: begin govern-built-in-network-tools
+{
+  "webSearchDisabled": true,
+  "builtInToolAutonomyOverrides": {
+    "WebSearch": "high",
+    "FetchUrl": "high"
+  }
+}
+// HTH Guide Excerpt: end govern-built-in-network-tools

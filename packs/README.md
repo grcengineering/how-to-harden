@@ -148,6 +148,7 @@ Multi-rule controls use letter suffixes: `-b`, `-c`, `-d`, `-e`.
 |--------|----------|-----------|-------------|-------------|-------------|
 | [Okta](okta/) | 34 | 11 files | 22 scripts | 24 rules | 3 runbooks ([tools/okta/](../tools/okta/)) |
 | [GitHub](github/) | 25 | -- | -- | -- | -- |
+| [Factory](factory/) | 16 of 19 guide controls; 23 packs across config, API, CLI and SDK | -- | 3 read-only scripts | -- | -- |
 
 ## Quick Start
 

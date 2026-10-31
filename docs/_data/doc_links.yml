@@ -302,6 +302,16 @@ duo:
       url: "https://duo.com/docs/administration-settings"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/duo"
 
+factory:
+  product_docs: "https://docs.factory.com/"
+  api_docs: "https://docs.factory.com/api-reference"
+  hardening_docs:
+    - label: "Enterprise Controls & Managed Settings"
+      url: "https://docs.factory.com/enterprise/hierarchical-settings-and-org-control"
+    - label: "Agent Safety & Controls"
+      url: "https://docs.factory.com/enterprise/llm-safety-and-agent-controls"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/factory"
+
 figma:
   product_docs: "https://help.figma.com/hc/en-us"
   api_docs: "https://developers.figma.com/docs/rest-api/"

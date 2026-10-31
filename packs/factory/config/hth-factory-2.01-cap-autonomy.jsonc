@@ -1,0 +1,19 @@
+// HTH Pack Contract: v1
+//   control: factory-2.1
+//   guide: https://howtoharden.com/guides/factory/#21-cap-agent-and-subagent-autonomy
+//   profile: L1
+//   mode: mutating
+//   requires: organization administrator; review and merge at org level before deployment
+// HTH Factory 2.1 — NIST AC-6
+// Source: https://docs.factory.com/enterprise/hierarchical-settings-and-org-control (available; verified 2026-10-30)
+// Org-level fragment only. Preserve unrelated policy; never replace an existing file with one fragment.
+// HTH Guide Excerpt: begin cap-autonomy
+{
+  "maxAutonomyLevel": "low",
+  "subagentAutonomyLevel": "off",
+  "sessionDefaultSettings": {
+    "autonomyLevel": "off",
+    "interactionMode": "spec"
+  }
+}
+// HTH Guide Excerpt: end cap-autonomy
