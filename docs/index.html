@@ -35,30 +35,32 @@ title: Home
       <svg class="hv-svg" id="hv-svg" viewBox="0 0 800 500" role="group" aria-labelledby="hv-title">
         <title id="hv-title">Your organization connected to eight SaaS vendors; each integration is hardened in turn and inbound supply chain attacks are blocked</title>
         <g id="hv-links" aria-hidden="true"></g>
-        <circle class="hv-packet" id="hv-packet" r="3" opacity="0" aria-hidden="true"/>
+        <g id="hv-signals" aria-hidden="true">
+          <line class="hv-threat-trail" id="hv-threat-trail" opacity="0"/>
+          <circle class="hv-packet" id="hv-packet" r="3.5" opacity="0"/>
+        </g>
         <g id="hv-nodes"></g>
         <g class="hv-core" id="hv-core" transform="translate(0 30)" aria-hidden="true">
+          <path class="hv-core-wave" id="hv-core-wave" d="M400 172 L440 186 V220 C440 246 422 264 400 272 C378 264 360 246 360 220 V186 Z" opacity="0"/>
           <path class="hv-core-shield" d="M400 172 L440 186 V220 C440 246 422 264 400 272 C378 264 360 246 360 220 V186 Z"/>
-          <path class="hv-core-check" d="M384 221 L396 233 L418 208"/>
-          <text class="hv-core-label" x="400" y="300">Your organization</text>
+          <path class="hv-core-config" id="hv-core-config" d="M384 207h23 M384 218h32 M384 229h18"/>
+          <path class="hv-core-check" id="hv-core-check" d="M384 221 L396 233 L418 208" stroke-dasharray="50" stroke-dashoffset="50"/>
+          <rect class="hv-core-label-back" id="hv-core-label-back"/>
+          <text class="hv-core-label" id="hv-core-label" x="400" y="310">Your organization</text>
         </g>
       </svg>
       <div class="hv-footer">
         <div class="hv-status" aria-live="off">
           <span class="hv-status-dot" id="hv-status-dot" aria-hidden="true"></span>
           <div class="hv-status-message">
-            <span id="hv-status-text">Mapping third-party integrations&hellip;</span>
-            <span class="hv-status-detail" id="hv-status-detail"></span>
+            <span id="hv-status-text">Hardening your integrations</span>
+            <span class="hv-status-detail" id="hv-status-detail">Apply the guides&rsquo; controls. Block attacks at the edge.</span>
           </div>
         </div>
         <div class="hv-progress">
-          <span class="hv-status-count" id="hv-status-count">0/8 hardened</span>
-          <div class="hv-progress-track" aria-hidden="true"><span id="hv-progress-fill"></span></div>
+          <span class="hv-status-count">8 integrations</span>
+          <div class="hv-progress-track" aria-hidden="true">{% for step in (1..8) %}<span class="hv-progress-step"></span>{% endfor %}</div>
         </div>
-        <button class="hv-playback" id="hv-playback" type="button" aria-label="Pause hardening animation" hidden>
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path id="hv-playback-icon" d="M5 3v10M11 3v10"/></svg>
-          <span id="hv-playback-label">Pause</span>
-        </button>
       </div>
     </div>
   </div>
@@ -613,8 +615,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ─── Hardening visual (hero) ─────────────────────────────────────────────────
-// One integration at a time, then a still, completed state. A single attack
-// illustrates the exposed and protected paths; no decorative motion loops.
+// A finite, 4.6-second story: an exposed connection, controls travelling outward,
+// then a sealed boundary. The caption stays still; vendor identities stay visible.
 (function() {
   var svg = document.getElementById('hv-svg');
   if (!svg) return;
@@ -622,27 +624,29 @@ document.addEventListener('DOMContentLoaded', function() {
   var VENDORS = [
     {% assign hv_slugs = "okta,github,slack,snowflake,crowdstrike,anthropic-claude,salesforce,workday" | split: "," %}
     {% assign hv_names = "Okta,GitHub,Slack,Snowflake,CrowdStrike,Claude,Salesforce,Workday" | split: "," %}
+    {% assign hv_marks = "O,GH,S,SN,CS,C,SF,W" | split: "," %}
     {% assign hv_labels = "Identity,DevOps,Productivity,Data,Security,AI,Marketing,HR/Finance" | split: "," %}
     {% for s in hv_slugs %}{% assign hv_g = site.guides | where: "slug", s | first %}
-    { name: {{ hv_names[forloop.index0] | jsonify }}, label: {{ hv_labels[forloop.index0] | jsonify }}, url: {{ hv_g.url | relative_url | jsonify }} }{% unless forloop.last %},{% endunless %}{% endfor %}
+    { name: {{ hv_names[forloop.index0] | jsonify }}, mark: {{ hv_marks[forloop.index0] | jsonify }}, label: {{ hv_labels[forloop.index0] | jsonify }}, url: {{ hv_g.url | relative_url | jsonify }} }{% unless forloop.last %},{% endunless %}{% endfor %}
   ];
   var CX = 400, CY = 250, RX = 300, RY = 150, NODE_R = 29, RING_R = 34;
   var linksG = document.getElementById('hv-links');
+  var signalsG = document.getElementById('hv-signals');
   var nodesG = document.getElementById('hv-nodes');
   var core = document.getElementById('hv-core');
+  var coreWave = document.getElementById('hv-core-wave');
+  var coreConfig = document.getElementById('hv-core-config');
+  var coreCheck = document.getElementById('hv-core-check');
+  var coreLabel = document.getElementById('hv-core-label');
+  var coreLabelBack = document.getElementById('hv-core-label-back');
   var packet = document.getElementById('hv-packet');
-  var statusText = document.getElementById('hv-status-text');
-  var statusDetail = document.getElementById('hv-status-detail');
-  var statusCount = document.getElementById('hv-status-count');
+  var threatTrail = document.getElementById('hv-threat-trail');
   var statusDot = document.getElementById('hv-status-dot');
-  var progressFill = document.getElementById('hv-progress-fill');
-  var playback = document.getElementById('hv-playback');
-  var playbackLabel = document.getElementById('hv-playback-label');
-  var playbackIcon = document.getElementById('hv-playback-icon');
+  var steps = svg.parentNode.querySelectorAll('.hv-progress-step');
   var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  var EXPOSED = 1400, STEP = 1000, SETTLE = 1000;
-  var COMPLETE = EXPOSED + STEP * VENDORS.length;
-  var t = 0, last = null, raf = null, visible = false, paused = false, finished = false, lastPhase = '';
+  var EXPOSED = 650, STEP = 425, SETTLE = 550;
+  var COMPLETE = EXPOSED + STEP * VENDORS.length, TOTAL = COMPLETE + SETTLE;
+  var t = 0, last = null, raf = null, visible = false, finished = false, lastPhase = '';
 
   function el(name, attrs, parent) {
     var e = document.createElementNS(NS, name);
@@ -650,73 +654,92 @@ document.addEventListener('DOMContentLoaded', function() {
     if (parent) parent.appendChild(e);
     return e;
   }
+  function clamp(p) { return Math.max(0, Math.min(1, p)); }
+  function ease(p) { return 1 - Math.pow(1 - clamp(p), 4); }
+  function point(n, p) { return { x: CX + (n.x - CX) * p, y: CY + (n.y - CY) * p }; }
+  function lineBetween(line, a, b) {
+    line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
+    line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+  }
 
   var ringLen = 2 * Math.PI * RING_R;
   var nodes = VENDORS.map(function(v, i) {
     var a = -Math.PI / 2 + i * (2 * Math.PI / VENDORS.length);
     var x = CX + RX * Math.cos(a), y = CY + RY * Math.sin(a);
     var link = el('line', { x1: x, y1: y, x2: CX, y2: CY, 'class': 'hv-link' }, linksG);
+    var signal = el('line', { 'class': 'hv-control-signal', opacity: 0 }, signalsG);
+    var dot = el('circle', { r: 3.2, 'class': 'hv-signal-head', opacity: 0 }, signalsG);
     var g = el('a', { href: v.url, 'class': 'hv-node', 'aria-label': v.name + ' · ' + v.label + ' hardening guide' }, nodesG);
     el('circle', { cx: x, cy: y, r: 46, 'class': 'hv-node-hit' }, g);
     el('circle', { cx: x, cy: y, r: RING_R + 5, 'class': 'hv-node-focus' }, g);
-    el('circle', { cx: x, cy: y, r: NODE_R, 'class': 'hv-node-body' }, g);
-    var ring = el('circle', { cx: x, cy: y, r: RING_R, 'class': 'hv-ring', 'stroke-dasharray': ringLen,
-      'stroke-dashoffset': ringLen, transform: 'rotate(-90 ' + x + ' ' + y + ')' }, g);
-    var initial = el('text', { x: x, y: y, 'class': 'hv-node-initial', dy: '.35em' }, g);
-    initial.textContent = v.name.charAt(0);
-    el('path', { d: 'M-9 0 L-3 6 L10 -8', transform: 'translate(' + x + ' ' + y + ')', 'class': 'hv-node-check' }, g);
+    var position = el('g', { transform: 'translate(' + x + ' ' + y + ')' }, g);
+    var art = el('g', { 'class': 'hv-node-art' }, position);
+    el('circle', { r: NODE_R, 'class': 'hv-node-body' }, art);
+    var ring = el('circle', { r: RING_R, 'class': 'hv-ring', 'stroke-dasharray': ringLen,
+      'stroke-dashoffset': ringLen, transform: 'rotate(-90)' }, art);
+    var initial = el('text', { 'class': 'hv-node-initial', dy: '.35em' }, art);
+    initial.textContent = v.mark;
     var below = y >= CY;
     var name = el('text', { x: x, y: below ? y + RING_R + 24 : y - RING_R - 22, 'class': 'hv-node-name' }, g);
     name.textContent = v.name;
     var cat = el('text', { x: x, y: below ? y + RING_R + 39 : y - RING_R - 7, 'class': 'hv-node-cat' }, g);
     cat.textContent = v.label;
-    return { v: v, x: x, y: y, g: g, link: link, ring: ring };
+    function highlight(on) { link.classList.toggle('is-highlighted', on); }
+    g.addEventListener('pointerenter', function() { highlight(true); });
+    g.addEventListener('pointerleave', function() { highlight(document.activeElement === g); });
+    g.addEventListener('focus', function() { highlight(true); });
+    g.addEventListener('blur', function() { highlight(g.matches(':hover')); });
+    return { v: v, x: x, y: y, distance: Math.hypot(x - CX, y - CY), g: g, art: art, link: link, ring: ring, signal: signal, dot: dot };
   });
 
-  // SVG labels keep a readable physical size without ballooning at tablet widths.
   function sizeLabels() {
     var scale = svg.getBoundingClientRect().width / 800;
     if (!scale) return;
     svg.style.setProperty('--hv-label-size', Math.max(14, 12 / scale) + 'px');
     svg.style.setProperty('--hv-core-label-size', Math.max(15, 12 / scale) + 'px');
-    svg.style.setProperty('--hv-initial-size', Math.max(17, 13 / scale) + 'px');
+    svg.style.setProperty('--hv-initial-size', Math.max(16, 12 / scale) + 'px');
     svg.style.setProperty('--hv-hit-radius', Math.max(46, 22 / scale) + 'px');
+    var b = coreLabel.getBBox();
+    coreLabelBack.setAttribute('x', b.x - 8); coreLabelBack.setAttribute('y', b.y - 1);
+    coreLabelBack.setAttribute('width', b.width + 16); coreLabelBack.setAttribute('height', b.height + 2);
   }
   sizeLabels();
+  if (document.fonts) document.fonts.ready.then(sizeLabels);
   if (window.ResizeObserver) new ResizeObserver(sizeLabels).observe(svg);
   else window.addEventListener('resize', sizeLabels);
 
-  function setStatus(text, detail, state, count) {
-    statusText.textContent = text;
-    statusDetail.textContent = detail;
-    statusDot.className = 'hv-status-dot is-' + state;
-    statusCount.textContent = count + '/' + nodes.length + ' hardened';
-    progressFill.style.transform = 'scaleX(' + count / nodes.length + ')';
-    core.classList.toggle('is-secure', count === nodes.length);
-  }
-
-  function updateNodes(count, active) {
+  function setPhase(count, active) {
     nodes.forEach(function(n, i) {
       n.g.classList.toggle('is-hardened', i < count);
       n.g.classList.toggle('is-working', i === active);
       n.link.classList.toggle('is-hardened', i < count);
       n.link.classList.toggle('is-working', i === active);
+      n.art.setAttribute('transform', 'scale(1)');
       n.ring.style.strokeDashoffset = ringLen;
+      steps[i].classList.toggle('is-hardened', i < count);
+      steps[i].classList.toggle('is-working', i === active);
     });
+    core.classList.toggle('is-secure', count === nodes.length);
+    core.classList.toggle('is-exposed', count === 0 && active < 0);
+    statusDot.classList.toggle('is-secure', count === nodes.length);
   }
 
-  function updateControl() {
-    var label = finished ? 'Replay' : paused ? 'Resume' : 'Pause';
-    playbackLabel.textContent = label;
-    playback.setAttribute('aria-label', label + ' hardening animation');
-    playbackIcon.setAttribute('d', finished ? 'M13 5A5.5 5.5 0 1 0 13 10M13 2v4H9' : paused ? 'M5 3l8 5-8 5Z' : 'M5 3v10M11 3v10');
-    playback.hidden = motion.matches;
+  function beam(n, progress, opacity, secure) {
+    var start = 58 / n.distance, end = 1 - NODE_R / n.distance;
+    var head = start + (end - start) * ease(progress);
+    var a = point(n, Math.max(start, head - 30 / n.distance)), b = point(n, head);
+    lineBetween(n.signal, a, b);
+    n.signal.classList.toggle('is-secure', secure);
+    n.dot.classList.toggle('is-secure', secure);
+    n.signal.setAttribute('opacity', opacity);
+    n.dot.setAttribute('cx', b.x); n.dot.setAttribute('cy', b.y); n.dot.setAttribute('opacity', opacity);
   }
 
-  function drawPacket(n, progress, opacity) {
-    packet.setAttribute('cx', n.x + (CX - n.x) * progress);
-    packet.setAttribute('cy', n.y + (CY - n.y) * progress);
-    packet.setAttribute('opacity', opacity);
+  function threat(n, progress, opacity) {
+    var a = point(n, 1 - Math.max(0, progress - .1)), b = point(n, 1 - progress);
+    lineBetween(threatTrail, a, b);
+    threatTrail.setAttribute('opacity', opacity * .65);
+    packet.setAttribute('cx', b.x); packet.setAttribute('cy', b.y); packet.setAttribute('opacity', opacity);
   }
 
   function showAt(time) {
@@ -724,82 +747,67 @@ document.addEventListener('DOMContentLoaded', function() {
     var phase = k < 0 ? 'exposed' : k < nodes.length ? 'working-' + k : 'secure';
     if (phase !== lastPhase) {
       lastPhase = phase;
-      if (k < 0) {
-        updateNodes(0, -1);
-        setStatus(nodes.length + ' third-party integrations exposed', 'Supply chain attacks reaching your org', 'exposed', 0);
-      } else if (k < nodes.length) {
-        updateNodes(k, k);
-        setStatus('Hardening ' + nodes[k].v.name, nodes[k].v.label + ' — applying the guide’s controls', 'working', k);
-      } else {
-        updateNodes(nodes.length, -1);
-        setStatus('Every integration hardened', 'Attacks blocked at the edge', 'secure', nodes.length);
-      }
+      setPhase(k < 0 ? 0 : Math.min(k, nodes.length), k >= 0 && k < nodes.length ? k : -1);
     }
-    packet.setAttribute('opacity', 0);
+    nodes.forEach(function(n) { n.signal.setAttribute('opacity', 0); n.dot.setAttribute('opacity', 0); });
+    packet.setAttribute('opacity', 0); threatTrail.setAttribute('opacity', 0);
+    coreWave.setAttribute('opacity', 0);
     if (k < 0) {
-      var exposedProgress = Math.min(1, time / 1050);
-      drawPacket(nodes[7], exposedProgress, Math.min(1, time / 180) * Math.min(1, Math.max(0, (1250 - time) / 250)));
+      var intro = clamp(time / EXPOSED);
+      threat(nodes[7], ease(intro), Math.sin(Math.PI * intro));
     } else if (k < nodes.length) {
-      var progress = (time - EXPOSED - k * STEP) / STEP;
-      nodes[k].ring.style.strokeDashoffset = ringLen * (1 - progress);
-    } else if (time < COMPLETE + SETTLE) {
-      // The same attack now stops near the integration, well before the org.
-      var protectedTime = time - COMPLETE;
-      drawPacket(nodes[7], Math.min(.22, protectedTime / 1500), Math.min(1, protectedTime / 150) * Math.min(1, (SETTLE - protectedTime) / 350));
+      var p = clamp((time - EXPOSED - k * STEP) / STEP);
+      var n = nodes[k];
+      beam(n, p / .72, Math.sin(Math.PI * clamp(p / .88)), false);
+      n.ring.style.strokeDashoffset = ringLen * (1 - ease((p - .25) / .75));
+      n.art.setAttribute('transform', 'scale(' + (1 + .08 * Math.sin(Math.PI * p)) + ')');
+      coreConfig.setAttribute('opacity', .65 + .35 * Math.sin(Math.PI * p));
+    } else {
+      var q = clamp((time - COMPLETE) / SETTLE);
+      coreConfig.setAttribute('opacity', 1 - clamp(q * 4));
+      coreCheck.style.opacity = clamp((q - .18) * 4);
+      coreCheck.style.strokeDashoffset = 50 * (1 - ease((q - .18) / .65));
+      coreWave.setAttribute('transform', 'translate(400 220) scale(' + (1 + .22 * ease(q)) + ') translate(-400 -220)');
+      coreWave.setAttribute('opacity', .45 * Math.sin(Math.PI * q));
+      nodes.forEach(function(n, i) {
+        var v = clamp((time - COMPLETE - i * 42) / 180);
+        beam(n, v, v > 0 && v < 1 ? .75 * Math.sin(Math.PI * v) : 0, true);
+      });
+      threat(nodes[7], .12 + .13 * ease(q / .6), .85 * Math.sin(Math.PI * q));
     }
   }
 
   function syncPlayback() {
-    var shouldRun = visible && !document.hidden && !paused && !finished && !motion.matches;
+    var shouldRun = visible && !document.hidden && !finished && !motion.matches;
     if (!shouldRun && raf !== null) { cancelAnimationFrame(raf); raf = null; }
     if (!shouldRun) last = null;
     else if (raf === null) { last = null; raf = requestAnimationFrame(frame); }
   }
-
   function finish() {
-    finished = true;
-    t = COMPLETE + SETTLE;
+    finished = true; t = TOTAL;
     showAt(t);
-    packet.setAttribute('opacity', 0);
-    updateControl();
+    packet.setAttribute('opacity', 0); threatTrail.setAttribute('opacity', 0); coreWave.setAttribute('opacity', 0);
     syncPlayback();
   }
-
   function frame(now) {
     raf = null;
-    if (!visible || document.hidden || paused || motion.matches) { last = null; return; }
-    t += last === null ? 0 : Math.min(64, now - last);
+    if (!visible || document.hidden || motion.matches) { last = null; return; }
+    t += last === null ? 0 : Math.max(0, now - last);
     last = now;
-    showAt(t);
-    if (t >= COMPLETE + SETTLE) { finish(); return; }
+    showAt(Math.min(t, TOTAL));
+    if (t >= TOTAL) { finish(); return; }
     raf = requestAnimationFrame(frame);
   }
-
-  playback.addEventListener('click', function() {
-    if (motion.matches) return;
-    if (finished) {
-      t = 0; last = null; lastPhase = ''; finished = false; paused = false;
-      showAt(t);
-    } else paused = !paused;
-    updateControl();
-    syncPlayback();
-  });
-  motion.addEventListener('change', function() {
-    if (motion.matches) finish();
-    else updateControl();
-  });
+  motion.addEventListener('change', function() { if (motion.matches) finish(); });
   document.addEventListener('visibilitychange', syncPlayback);
   if (window.IntersectionObserver) {
     new IntersectionObserver(function(entries) {
       visible = entries.some(function(e) { return e.isIntersecting; });
       syncPlayback();
-    }, { threshold: .05 }).observe(svg);
+    }, { threshold: .15 }).observe(svg);
   } else visible = true;
-
-  showAt(0);
-  updateControl();
   if (motion.matches) finish();
-  else syncPlayback();
+  else { showAt(0); syncPlayback(); }
 })();
 
 // ─── Terminal Demo Animation ─────────────────────────────────────────────────
