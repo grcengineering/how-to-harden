@@ -1,0 +1,36 @@
+// HTH Pack Contract: v1
+//   control: factory-2.3
+//   guide: https://howtoharden.com/guides/factory/#23-isolate-the-runtime-and-protect-host-secrets
+//   profile: L2
+//   mode: mutating
+//   requires: organization administrator; review and merge at org level before deployment
+// HTH Factory 2.3 — NIST SC-7, AC-6
+// Source: https://docs.factory.com/enterprise/hierarchical-settings-and-org-control (available; verified 2026-10-30)
+// Org-level fragment only. Preserve unrelated policy; never replace an existing file with one fragment.
+// HTH Guide Excerpt: begin isolate-files-and-network
+{
+  "sandbox": {
+    "enabled": true,
+    "mode": "whole-process",
+    "filesystem": {
+      "denyRead": [
+        "~/.ssh",
+        "~/.aws",
+        "~/.azure",
+        "~/.config/gcloud"
+      ],
+      "denyWrite": [
+        "/etc"
+      ]
+    },
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "api.github.com"
+      ],
+      "allowAllUnixSockets": false,
+      "allowLocalBinding": false
+    }
+  }
+}
+// HTH Guide Excerpt: end isolate-files-and-network

@@ -1,0 +1,16 @@
+// HTH Pack Contract: v1
+//   control: factory-4.3
+//   guide: https://howtoharden.com/guides/factory/#43-minimize-session-and-autowiki-cloud-persistence
+//   profile: L2
+//   mode: mutating
+//   requires: organization administrator; review and merge at org level before deployment
+// HTH Factory 4.3 — NIST AC-4, SI-12
+// Source: https://docs.factory.com/enterprise/hierarchical-settings-and-org-control (available; verified 2026-10-30)
+// Org-level fragment only. Preserve unrelated policy; never replace an existing file with one fragment.
+// HTH Guide Excerpt: begin minimize-cloud-persistence
+{
+  "cloudSessionSync": false,
+  "wikiCloudSync": false,
+  "sessionRetentionDays": 30
+}
+// HTH Guide Excerpt: end minimize-cloud-persistence

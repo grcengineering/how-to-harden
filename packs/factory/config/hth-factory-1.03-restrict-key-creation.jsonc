@@ -1,0 +1,14 @@
+// HTH Pack Contract: v1
+//   control: factory-1.3
+//   guide: https://howtoharden.com/guides/factory/#13-restrict-api-key-administration-and-use-workload-identities
+//   profile: L1
+//   mode: mutating
+//   requires: organization administrator; review and merge at org level before deployment
+// HTH Factory 1.3 — NIST AC-6, IA-5
+// Source: https://docs.factory.com/enterprise/hierarchical-settings-and-org-control (available; verified 2026-10-30)
+// Org-level fragment only. Preserve unrelated policy; never replace an existing file with one fragment.
+// HTH Guide Excerpt: begin restrict-key-creation
+{
+  "restrictApiKeyCreationToManagers": true
+}
+// HTH Guide Excerpt: end restrict-key-creation

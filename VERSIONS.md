@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-10-30 — 136 guides. Every one is `ai-drafted`; nineteen (Anthropic Platform, Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-10-31 — 137 guides. Every one is `ai-drafted`; nineteen (Anthropic Platform, Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -228,6 +228,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Devin Desktop](docs/_guides/devin-desktop.md) | v0.1.0 | ai-drafted | 2026-10-30 |
 | [DocuSign](docs/_guides/docusign.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Drata](docs/_guides/drata.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Factory](docs/_guides/factory.md) | v0.1.0 | ai-drafted | 2026-10-31 |
 | [Figma Enterprise](docs/_guides/figma.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Fivetran](docs/_guides/fivetran.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [GitLab](docs/_guides/gitlab.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |

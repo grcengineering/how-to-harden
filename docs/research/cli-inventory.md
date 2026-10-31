@@ -146,6 +146,7 @@
 | 125 | Devin CLI | GA-Official | `devin` | First-party installation guide | Partial — local permissions, sandbox and MCP configuration; enterprise managed controls are configured through the admin UI, not guessed CLI switches (verified 2026-10-29) | https://docs.devin.ai/cli/reference/permissions |
 | 126 | Devin Desktop | Vendor-Adjacent | bundled Devin Local / optional `devin` CLI | Desktop command palette; enterprise may disable installation | No Desktop policy-admin CLI — IDE managed policies/configuration and enterprise UI; Cascade and Devin Local have different controls (verified 2026-10-29) | https://docs.devin.ai/desktop/controls |
 | 127 | DeepWiki | None | — | — | Public/private MCP and Devin repository-indexing API/Terraform; no standalone first-party DeepWiki CLI documented (verified 2026-10-29) | https://docs.devin.ai/work-with-devin/deepwiki-mcp |
+| 128 | Factory | GA-Official | `droid` | Approved pinned installer/version from CLI reference | Partial — runtime permission checks, MCP approvals and plugin inventory; organization identity and managed policy use console/config/REST | https://docs.factory.com/droid-cli/cli-reference |
 
 ---
 

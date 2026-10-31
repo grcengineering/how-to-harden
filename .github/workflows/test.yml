@@ -25,6 +25,8 @@ jobs:
           python-version: '3.12'
       - run: pip install pyyaml
       - run: make lint-content
+      - name: Factory pack safety tests (offline)
+        run: make test-factory-packs
 
   # ─── Pack Validation (validate-packs.sh — 17 checks) ───────────────────────
   # This job exists because the repo already owned the detectors and never ran

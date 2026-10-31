@@ -1,0 +1,60 @@
+// HTH Pack Contract: v1
+//   control: factory-2.2
+//   guide: https://howtoharden.com/guides/factory/#22-enforce-tested-command-permission-rules
+//   profile: L2
+//   mode: mutating
+//   requires: organization administrator; review and merge at org level before deployment
+// HTH Factory 2.2 — NIST AC-6, CM-7
+// Source: https://docs.factory.com/enterprise/hierarchical-settings-and-org-control (available; verified 2026-10-30)
+// Org-level fragment only. Preserve unrelated policy; never replace an existing file with one fragment.
+// HTH Guide Excerpt: begin block-unapproved-publishing
+{
+  "permissionRules": {
+    "version": 1,
+    "rules": [
+      {
+        "id": "org/hth-git-push",
+        "decision": "block",
+        "reason": "Publish through the approved review workflow.",
+        "match": {
+          "prefix": [
+            "git",
+            "push"
+          ]
+        },
+        "tests": {
+          "match": [
+            "git push origin main",
+            "git push --force origin feature"
+          ],
+          "noMatch": [
+            "git status",
+            "git -C /repo push"
+          ]
+        }
+      },
+      {
+        "id": "org/hth-npm-publish",
+        "decision": "block",
+        "reason": "Publish packages only through approved CI.",
+        "match": {
+          "prefix": [
+            "npm",
+            "publish"
+          ]
+        },
+        "tests": {
+          "match": [
+            "npm publish",
+            "npm publish --access public"
+          ],
+          "noMatch": [
+            "npm test",
+            "npm --prefix /repo publish"
+          ]
+        }
+      }
+    ]
+  }
+}
+// HTH Guide Excerpt: end block-unapproved-publishing

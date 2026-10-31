@@ -1,0 +1,14 @@
+// HTH Pack Contract: v1
+//   control: factory-2.4
+//   guide: https://howtoharden.com/guides/factory/#24-keep-droid-shield-secret-scanning-enabled
+//   profile: L1
+//   mode: mutating
+//   requires: organization administrator; review and merge at org level before deployment
+// HTH Factory 2.4 — NIST SI-4
+// Source: https://docs.factory.com/enterprise/hierarchical-settings-and-org-control (available; verified 2026-10-30)
+// Org-level fragment only. Preserve unrelated policy; never replace an existing file with one fragment.
+// HTH Guide Excerpt: begin keep-droid-shield-enabled
+{
+  "enableDroidShield": true
+}
+// HTH Guide Excerpt: end keep-droid-shield-enabled
