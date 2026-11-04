@@ -27,6 +27,8 @@ jobs:
       - run: make lint-content
       - name: Factory pack safety tests (offline)
         run: make test-factory-packs
+      - name: Tailscale pack safety tests (offline)
+        run: make test-tailscale-packs
 
   # ─── Pack Validation (validate-packs.sh — 17 checks) ───────────────────────
   # This job exists because the repo already owned the detectors and never ran

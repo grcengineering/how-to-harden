@@ -2,7 +2,7 @@
 
 Date: **2026-11-04 UTC**. Branch: `feat/tailscale-hardening-guide`. Base: `bf8172c` (`origin/main` when the isolated checkout was prepared). Subject: the standalone Tailscale guide, eighteen controls and 27 source packs across six implementation types.
 
-**No tenants declared — Tier 0+1 only.** `VERIFIED-LIVE = 0`. The guide remains exactly `["ai-drafted"]`; no live-validation or review badge was added. No push, publication, pull request, Tailscale setting change, node enrollment, credential creation or credentialed product request occurred.
+**No tenants declared — Tier 0+1 only.** `VERIFIED-LIVE = 0`. The guide remains exactly `["ai-drafted"]`; no live-validation or review badge was added. During this local verification stage, no push, publication, pull request, Tailscale setting change, node enrollment, credential creation or credentialed product request occurred.
 
 ## Results
 
@@ -70,4 +70,4 @@ Source commit: `e721c0f223870f9ee6eef3192c6d6624c8a4985c` (`Add Tailscale harden
 
 The actual `bash scripts/validate-packs.sh --touched` run exited **0**, gated **37 changed guide/pack files**, and ended `No failures in the files this branch touched.` Its five full-corpus failure groups and twenty underlying records exactly match the clean baseline. The validator and generator are unchanged. All 90 unrelated generated vendor files retain their original bytes.
 
-This report is saved in a separate local documentation commit after the source gate, without changing the tested guide, packs, generated Tailscale YAML or test code. Nothing was pushed or published; no pull request was opened. The original dirty checkout remains untouched.
+This report was saved in a separate local documentation commit after the source gate, without changing the tested guide, packs, generated Tailscale YAML or test code. That verification stage finished before branch publication or pull request creation. The original dirty checkout remains untouched.
