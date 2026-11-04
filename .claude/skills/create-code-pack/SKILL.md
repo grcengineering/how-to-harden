@@ -12,18 +12,18 @@ A step-by-step process for shipping code under `packs/{vendor}/{type}/` that is 
 > **This phase asks "what are ALL the ways to automate this?" — never "does an interface exist?"** The old wording said *identify **the** claimed interface*, and an existence gate is satisfied by the first surface an agent thinks of. That is how Buildkite shipped 9 packs that were 100% Terraform while its real security surface lived in agent config files and GraphQL, and how 14 vendors ended up with a single-type pack corpus. Enumeration is the fix; everything downstream depends on it.
 
 1. Name the control the pack serves (guide + section number).
-2. **Census every surface** the vendor exposes — all six, one line each, even to write "none, verified":
+2. **Census every surface** for the control, following the [shared evidence and management-plane distinctions](../_shared/source-discovery.md). Record documented handles, bounded verified absence, not-applicable scope, or an unverified gap for each row:
 
    | Surface | What to enumerate | Where |
    |---------|-------------------|-------|
    | `terraform` | the provider's **full resource list AND full data-source list** — not just the one resource you had in mind | registry docs index |
    | `api` | REST endpoint categories **and** GraphQL (introspect the schema, or fetch the schema docs) | vendor API reference |
-   | `cli` | **look the vendor up in [`docs/research/cli-inventory.md`](../../../docs/research/cli-inventory.md) — never judge from memory** | that file, then vendor CLI docs |
+   | `cli` | **look the vendor up in [`docs/research/cli-inventory.md`](../../../docs/research/cli-inventory.md)**, then check companion daemon/admin commands as well as the interactive client | inventory and official command references |
    | `sdk` | official language SDKs with admin/security methods | vendor SDK reference |
-   | `config` | vendor-native config files (`*.cfg`, `*.jsonc`, agent/daemon config) | vendor config reference |
+   | `config` | vendor-native config files, agent/daemon settings and MDM/system policies as well as central access-policy files | vendor deployment/config references |
    | `siem` | does the product export logs a SIEM can carry? | audit-log/export docs |
 
-3. **FETCH Tier 1 documentation this session for every surface you claim exists**, and record its URL. No verified doc → that surface is "none, verified" and gets no pack. Report gaps honestly; never infer a surface from a plausible-sounding name.
+3. **FETCH Tier 1 documentation this session for every handle you claim exists**, and record its URL and relevant content. No verified doc → **unverified**, with the failed/missing evidence recorded, and no invented pack. Use verified absence only for a bounded negative supported by current vendor evidence; an inaccessible or unresearched surface is not absent. Continue verified surfaces and report the remaining gap.
 4. **Record `status` for every handle you intend to use** — `available` / `deprecated` / `removed` / `beta`. Registry pages carry deprecation banners; a resource can be perfectly documented and unusable. Buildkite's `buildkite_agent_token` is documented and unavailable to any org created after 2024-02-26. A deprecated handle needs a note in the pack header saying so, or a different handle.
 5. **Write and read are separate packs.** For each surface ask both: *what SETS this control* (resource, write endpoint, mutation) and *what PROVES it* (Terraform **data source**, read-only endpoint, audit script). Corpus-wide this repo has 692 `resource` blocks and 40 `data` blocks — the verification half is the half that gets skipped. Read-only APIs support verification packs (audit scripts, assessment tooling like ScubaGoggles/ScubaGear, DNS checks) — never enforcement packs claiming to SET what only the console can set.
 6. Apply the type-fit tests:
@@ -32,7 +32,7 @@ A step-by-step process for shipping code under `packs/{vendor}/{type}/` that is 
    - `siem/sigma/` only if a real log source would carry the event.
    - `cli/` only for FIRST-PARTY vendor CLIs. **Decide from `cli-inventory.md`, not from the examples in this list.** `GA-Official`/`PowerShell-Only` with admin coverage **Yes** → a `cli/` pack is *expected*. `None`/`Vendor-Adjacent`/`Deprecated` → a `cli/` pack would be fabrication. **No row → research the vendor and add one in this PR.**
 7. **Checkpoint — all four, or stop and report:**
-   - a six-row surface census, each row either a fetched URL or "none, verified";
+   - a six-row surface census with explicit evidence status; no unknown promoted to verified absence;
    - `status` recorded for every handle you will use;
    - a write/read decision per surface;
    - types chosen from the AGENTS.md table.

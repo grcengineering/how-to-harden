@@ -112,13 +112,15 @@ Valid languages: `bash`, `hcl`, `python`, `sql`, `yaml`, `json`, `markdown`
 
 AI generates one method and stops. The bar is not "a code block exists" — it is **"every surface this vendor actually offers for this control was enumerated, then used or ruled out with evidence."**
 
-- **ClickOps** — GUI/console steps with exact navigation paths.
+- **ClickOps** — GUI/console steps with exact documented navigation paths, or an evidenced no-native-GUI verdict for a genuinely CLI/config/system-policy-only control. Keep the implementation heading, cite the limitation and supply the real supported path in Code; never omit a control or invent a menu because no GUI exists.
 - **Code** — one pack per surface the vendor documents for this control: `terraform` (**resources AND data sources**), `api` (REST **and** GraphQL), `cli` (first-party only), `sdk`, `config`, `siem`.
 - **No surface exists?** Say so in the control, in place of `#### Code Implementation`:
   `**Automation:** ClickOps only — {vendor} exposes no write interface for this setting ({url}, {date}).`
   Silently omitting *both* the pack and this line is not permitted. An omission is indistinguishable from an oversight — which is how a guide ships with a third of its controls unautomated and nobody notices.
 
 **Enforcement and verification are different packs.** A write pack sets the control; a read pack (Terraform *data source*, read-only endpoint, audit script) proves it. A vendor with zero read packs has skipped half its surface. Corpus-wide today: 692 Terraform `resource` blocks against 40 `data` blocks.
+
+**Discovery coverage is separate from pack coverage.** For new guides, full currency passes and newly researched areas, use the [source-first candidate reconciliation](.claude/skills/_shared/source-discovery.md). A source matrix derived only from the guide cannot reveal what the guide omitted. Preserve unverified research gaps rather than calling them verified absence.
 
 **Never decide "no CLI exists" from memory.** [`docs/research/cli-inventory.md`](docs/research/cli-inventory.md) is the fetch-verified census of first-party CLIs — look the vendor up. A row reading `GA-Official`/`PowerShell-Only` with admin coverage **Yes** means a `cli/` pack is *expected*, not merely permitted. `None`/`Vendor-Adjacent`/`Deprecated` means a `cli/` pack would be fabrication. No row → research it and add one in the same PR.
 

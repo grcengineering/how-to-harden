@@ -96,6 +96,8 @@ A hardening recommendation belongs here if it meets **at least one** of these cr
 
 **Gray areas** (case-by-case): Developer tools (GitHub, GitLab, Jira) blur SaaS/infrastructure lines. We include **application-level** hardening (OAuth apps, third-party integrations, API access controls) but exclude infrastructure hardening (self-hosted runner security, Kubernetes configurations for GitLab).
 
+**Vendor client/agent identity protection:** a product's own documented setting for protecting its credentials, node keys, sessions or identity state can be in scope because it limits impersonation or integration access. Using an OS keystore, TPM, daemon flag or MDM policy does not make that product control generic infrastructure hardening. The generic disk/database/host encryption and secret-rotation procedures above remain excluded; assess the specific control and threat.
+
 ## Target Audiences
 
 We optimize for three personas with different needs:

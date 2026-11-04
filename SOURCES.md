@@ -12,9 +12,11 @@ The standard for what counts as a legitimate source when deriving How to Harden 
 
 *May: ORIGINATE controls · authoritative on FACTS (whether a setting exists, its name, its default, its console path)*
 
-**What qualifies:** the vendor's own admin guides, security-configuration docs, hardening guides, API/CLI references, and security-relevant release notes — on the official vendor docs domain.
+**What qualifies:** the vendor's own admin guides, security-configuration docs, hardening guides, API/CLI and client/daemon/system-policy references, and security-relevant release notes — on the official vendor docs domain.
 
-**Role:** the mandatory source class. Every control must trace to at least one Tier 1 citation proving the setting exists as described; every ClickOps step and console path is transcribed from Tier 1.
+**Role:** the mandatory source class. Every control must trace to at least one Tier 1 citation proving the setting exists as described; console paths, flags and policy keys are transcribed from Tier 1. An evidenced no-GUI limitation is valid implementation context, not a reason to invent a console path.
+
+**Unknown is not absent.** Failed retrieval, unavailable access and an unresearched reference remain evidence gaps. Do not publish their claims as facts or call the capability “none, verified.” Preserve the gap and any successful fallback in the research ledger; qualify negative findings to the specific reference, operation and scope actually checked.
 
 **Built-in conflict of interest:** vendor docs prove what EXISTS, but vendor-recommended values favor adoption and compatibility. On strictness questions, Tier 1 does not outrank Tier 2 (see Conflict Resolution).
 

@@ -28,10 +28,10 @@ bash scripts/validate-packs.sh   # or: make validate-packs
 
 ## Phase 2 — Doc drift (always, networked, no credentials)
 
-1. Re-fetch each cited Tier 1 doc and confirm the guide's transcribed console path still appears. Bind drift at **guide + `doc_links.yml`** level, never per-control — most controls carry no in-control citation.
+1. Re-fetch cited Tier 1 docs and confirm the actual implementation paths (console, CLI, config or system policy). Reconcile [source-derived candidates](../_shared/source-discovery.md) for the declared scope against the guide, including older omissions and security-relevant linked features; checking only cited claims cannot find an uncited missing control. Bind retrieval at **guide + `doc_links.yml`** level and retain per-candidate evidence.
 2. **A 404 from a documentation host that is plainly still in business is a verification failure, not a finding** (SOURCES.md Rule 1). Roughly 30 hosts lie about status: SPA-200-always, 403-to-fetchers, and `docs.cyberark.com`, which 404s to every fetcher on every path including root. Only five hosts are certified honest-404.
 3. Results are `DRIFT-CHECKED-ONLY` — never PASS, never VERIFIED-LIVE.
-4. **Checkpoint:** each cited URL carries a verdict; every fetcher-hostile host is `BLOCKED`, not a link-rot FAIL.
+4. **Checkpoint:** cited URLs and candidate coverage carry separate verdicts. A documented in-scope omission is a content finding, not hidden by successful pack/render checks. An inaccessible source remains unverified/BLOCKED with its reason, not evidence that the feature is absent. Resolve content gaps only within the authorized task and report the rest; do not infer permission for live changes.
 
 ## Phase 3 — OCEAN conformance (schema always; live only if declared)
 
