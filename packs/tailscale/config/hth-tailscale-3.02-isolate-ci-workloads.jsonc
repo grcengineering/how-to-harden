@@ -1,0 +1,19 @@
+// HTH Pack Contract: v1
+//   control: tailscale-3.2
+//   guide: https://howtoharden.com/guides/tailscale/#32-limit-ci-and-third-party-workload-enrollment
+//   profile: L1
+//   mode: mutating
+//   requires: reviewed complete tailnet policy, restricted tag:ci and tag:build ownership
+// HTH Tailscale 3.2 — Limit CI and Third-Party Workload Enrollment; NIST AC-6, AC-4; SOC 2 CC6.1
+// Source: https://tailscale.com/docs/reference/syntax/grants (available; 2026-11-04)
+// Fragment only. This neither creates an auth key nor enrolls a node.
+// HTH Guide Excerpt: begin isolate-ci-workloads
+{
+  "grants": [
+    {"src": ["tag:ci"], "dst": ["tag:build"], "ip": ["tcp:443"]}
+  ],
+  "tests": [
+    {"src": "tag:ci", "proto": "tcp", "accept": ["tag:build:443"], "deny": ["tag:prod:22", "tag:prod:443", "tag:build:22"]}
+  ]
+}
+// HTH Guide Excerpt: end isolate-ci-workloads

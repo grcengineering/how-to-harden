@@ -4,8 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Guides: 137](https://img.shields.io/badge/Guides-137-blueviolet)](https://howtoharden.com)
-[![Code Packs: 90](https://img.shields.io/badge/Code%20Packs-90-orange)](packs/)
+[![Guides: 138](https://img.shields.io/badge/Guides-138-blueviolet)](https://howtoharden.com)
+[![Code Packs: 91](https://img.shields.io/badge/Code%20Packs-91-orange)](packs/)
 
 **Website:** [howtoharden.com](https://howtoharden.com) | **Organization:** [GRC Engineering](https://grc.engineering)
 
@@ -29,12 +29,12 @@ This is defense-in-depth done right: **First-party controls you configure** to l
 
 ### 1. Platform-Specific Hardening Guides
 
-Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **137 guides** across 10 categories:
+Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **138 guides** across 10 categories:
 
 | Category | Count | Examples |
 |----------|-------|---------|
 | Productivity | 25 | Slack, Airtable, Asana, Notion |
-| Security | 21 | CrowdStrike, Snyk, Wiz, Zscaler |
+| Security | 22 | CrowdStrike, Snyk, Wiz, Zscaler, Tailscale |
 | Data | 17 | Snowflake, Databricks, MongoDB Atlas |
 | DevOps | 17 | GitHub, GitLab, Jenkins, Buildkite, SpaceXAI (Cursor) |
 | Identity | 13 | Okta, Auth0, Microsoft Entra ID, Duo |
@@ -52,7 +52,7 @@ Every control includes:
 
 ### 2. Code Packs -- Executable Security Controls
 
-**90 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
+**91 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
 
 | Language Type | Directory | What It Does |
 |---------------|-----------|-------------|

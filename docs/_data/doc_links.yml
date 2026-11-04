@@ -1114,6 +1114,16 @@ devin-desktop:
       url: "https://docs.devin.ai/desktop/controls"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/devin-desktop"
 
+tailscale:
+  product_docs: "https://tailscale.com/docs"
+  api_docs: "https://tailscale.com/docs/reference/tailscale-api"
+  hardening_docs:
+    - label: "Tailnet Security Best Practices"
+      url: "https://tailscale.com/docs/reference/best-practices/security"
+    - label: "Grants and Policy Syntax"
+      url: "https://tailscale.com/docs/reference/syntax/policy-file"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/tailscale"
+
 deepwiki:
   product_docs: "https://docs.devin.ai/work-with-devin/deepwiki"
   hardening_docs:

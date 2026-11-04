@@ -9,7 +9,7 @@
 #   - Ruby + Bundler (Jekyll build — CI only unless installed locally)
 
 .PHONY: help test test-all lint lint-content test-build \
-        test-build-jekyll test-build-sync validate-packs test-cognition-packs test-factory-packs
+        test-build-jekyll test-build-sync validate-packs test-cognition-packs test-factory-packs test-tailscale-packs test-tailscale-sdk
 
 # ─── Default ──────────────────────────────────────────────────────────────────
 
@@ -19,9 +19,15 @@ help: ## Show available targets
 
 # ─── Top-level ────────────────────────────────────────────────────────────────
 
-test: lint test-build-sync test-cognition-packs test-factory-packs ## Run local-safe tests (no live tenants or Jekyll required)
+test: lint test-build-sync test-cognition-packs test-factory-packs test-tailscale-packs ## Run local-safe tests (no live tenants or Jekyll required)
 
-test-all: lint test-build test-cognition-packs test-factory-packs ## Run all tests including Jekyll build (requires Ruby)
+test-all: lint test-build test-cognition-packs test-factory-packs test-tailscale-packs ## Run all tests including Jekyll build (requires Ruby)
+
+test-tailscale-packs: ## Exercise Tailscale REST/CLI boundaries and candidate generation offline
+	@python3 scripts/test-tailscale-packs.py
+
+test-tailscale-sdk: ## Test the official Go SDK pack with fake HTTP (requires pinned dependencies)
+	@cd packs/tailscale/sdk && go test ./...
 
 test-factory-packs: ## Exercise Factory config inputs and mock REST/CLI/SDK boundaries offline
 	@python3 scripts/test-factory-packs.py

@@ -1,0 +1,18 @@
+// HTH Pack Contract: v1
+//   control: tailscale-2.3
+//   guide: https://howtoharden.com/guides/tailscale/#23-constrain-tag-ownership-and-workload-identity
+//   profile: L1
+//   mode: mutating
+//   requires: reviewed complete tailnet policy, existing group:admins
+// HTH Tailscale 2.3 — Constrain Tag Ownership and Workload Identity; NIST AC-6, AC-3; SOC 2 CC6.1
+// Source: https://tailscale.com/docs/features/tags (available; 2026-11-04)
+// Fragment only. Review the union of all tags and owners before merging.
+// HTH Guide Excerpt: begin constrain-tag-owners
+{
+  "tagOwners": {
+    "tag:prod": ["group:admins"],
+    "tag:build": ["group:admins"],
+    "tag:ci": ["group:admins"]
+  }
+}
+// HTH Guide Excerpt: end constrain-tag-owners
