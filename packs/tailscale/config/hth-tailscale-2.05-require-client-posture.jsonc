@@ -1,0 +1,37 @@
+// HTH Pack Contract: v1
+//   control: tailscale-2.5
+//   guide: https://howtoharden.com/guides/tailscale/#25-require-posture-on-sensitive-access-rules
+//   profile: L2
+//   mode: mutating
+//   requires: supported clients, existing group:staff and tag:prod, complete reviewed policy
+// HTH Tailscale 2.5 — Require Posture on Sensitive Access Rules; NIST AC-3, CA-7; SOC 2 CC6.1
+// Sources: https://tailscale.com/docs/features/device-posture/postures-and-attributes
+// https://tailscale.com/docs/reference/syntax/policy-file (available; 2026-11-04)
+// Replace the matching unconditioned grant in the complete policy. Adding this
+// beside that grant would leave its broad allow intact. This is not an MDM check.
+// HTH Guide Excerpt: begin require-client-posture
+{
+  "postures": {
+    "posture:stableAutoUpdate": {
+      "assertions": [
+        "node:tsReleaseTrack == 'stable'",
+        "node:tsAutoUpdate == true"
+      ]
+    }
+  },
+  "grants": [
+    {
+      "src": ["group:staff"],
+      "dst": ["tag:prod"],
+      "ip": ["tcp:443"],
+      "srcPosture": ["posture:stableAutoUpdate"]
+    }
+  ],
+  "tests": [
+    {"src": "group:staff", "proto": "tcp", "srcPostureAttrs": {"node:tsReleaseTrack": "stable", "node:tsAutoUpdate": true}, "accept": ["tag:prod:443"], "deny": ["tag:prod:22"]},
+    {"src": "group:staff", "proto": "tcp", "srcPostureAttrs": {"node:tsReleaseTrack": "unstable", "node:tsAutoUpdate": true}, "deny": ["tag:prod:443"]},
+    {"src": "group:staff", "proto": "tcp", "srcPostureAttrs": {"node:tsReleaseTrack": "stable", "node:tsAutoUpdate": false}, "deny": ["tag:prod:443"]},
+    {"src": "group:staff", "proto": "tcp", "srcPostureAttrs": {}, "deny": ["tag:prod:443"]}
+  ]
+}
+// HTH Guide Excerpt: end require-client-posture

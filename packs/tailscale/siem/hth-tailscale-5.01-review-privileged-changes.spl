@@ -1,0 +1,19 @@
+# HTH Pack Contract: v1
+#   control: tailscale-5.1
+#   guide: https://howtoharden.com/guides/tailscale/#51-retain-and-review-configuration-audit-logs
+#   profile: L1
+#   mode: read-only
+#   requires: Splunk, configuration logs ingested as individual JSON events, operator-defined index/sourcetype
+# HTH Tailscale 5.1 — Retain and Review Configuration Audit Logs; NIST AU-2, AU-6, AU-9; SOC 2 CC7.2
+# Source: https://tailscale.com/docs/features/logging/audit-logging (available; 2026-11-04)
+# Run the marked query only. index/sourcetype below are local ingestion names,
+# not built-in Tailscale tables. Expand an exported .logs array before ingestion.
+# This is an investigation query, not an assertion that a change was malicious.
+# HTH Guide Excerpt: begin review-privileged-changes
+index=tailscale sourcetype=tailscale:configuration
+| spath
+| rename actor.id AS actorId target.type AS targetType target.id AS targetId target.property AS property
+| where type="CONFIG" AND in(targetType, "TAILNET", "USER", "API_KEY", "NODE")
+| table eventTime eventGroupID action actorId targetType targetId property origin
+| sort - eventTime
+# HTH Guide Excerpt: end review-privileged-changes

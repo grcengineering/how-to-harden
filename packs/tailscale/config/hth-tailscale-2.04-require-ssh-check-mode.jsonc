@@ -1,0 +1,26 @@
+// HTH Pack Contract: v1
+//   control: tailscale-2.4
+//   guide: https://howtoharden.com/guides/tailscale/#24-restrict-tailscale-ssh-and-require-reauthentication
+//   profile: L2
+//   mode: mutating
+//   requires: existing group:admins, tag:prod, approved existing OS account ops, network grant for TCP 22
+// HTH Tailscale 2.4 — Restrict Tailscale SSH and Require Reauthentication; NIST AC-17, IA-2; SOC 2 CC6.1
+// Source: https://tailscale.com/docs/features/tailscale-ssh (available; 2026-11-04)
+// Fragment only. Replace broad SSH permissions; do not leave a wider accept rule.
+// HTH Guide Excerpt: begin require-ssh-check-mode
+{
+  "ssh": [
+    {
+      "action": "check",
+      "src": ["group:admins"],
+      "dst": ["tag:prod"],
+      "users": ["ops"],
+      "checkPeriod": "1h"
+    }
+  ],
+  "sshTests": [
+    {"src": "group:admins", "dst": ["tag:prod"], "check": ["ops"], "deny": ["root"]},
+    {"src": "group:staff", "dst": ["tag:prod"], "deny": ["ops", "root"]}
+  ]
+}
+// HTH Guide Excerpt: end require-ssh-check-mode
