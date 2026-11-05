@@ -51,7 +51,7 @@ op run --environment '<1password-environment-id>' -- \
   bash packs/devin/api/hth-devin-2.02-audit-security-profile-default.sh
 ```
 
-An explicit empty network allowlist is deny-all except required Devin destinations; a null network policy means **no opinion**, not deny-all. A profile's presence does not mean it is bound. This pack checks the enterprise binding; review organization and build bindings separately. A running session retains its policy until its next boot/wake. No live session is started by this pack.
+An explicit empty network allowlist is deny-all except required Devin destinations; a null network policy means **no opinion**, not deny-all. A profile's presence does not mean it is bound. This pack checks the enterprise binding; review organization and build bindings separately. Ordinary security-profile changes have boot/wake implications; the November 2 release notes specifically say automation network-policy edits reach active automation sessions. Do not generalize that exception to every field. No live session is started by this pack.
 
 ### Audit collection and guardrail review
 
@@ -97,3 +97,21 @@ The source directory is a collection of **independent examples**, not a single m
 Use `terraform init` and `terraform validate`, then inspect `terraform plan`. The data-only examples require no apply. Never apply the IP resource unless an independent administrator has proved a recovery route within the proposed allowlist. Back up the existing list first. A missing operator/runner egress can lock you out; removing/destroying this resource can clear restrictions. `prevent_destroy` only protects while its resource block remains present. Do not treat a boolean acknowledgment as proof that recovery works.
 
 Terraform format checks passed. Provider initialization was attempted with backends disabled on 2026-10-30, but the official registry connection timed out; provider-backed validation, plan, and apply were not performed. Schemas were checked against the provider's fetched `v0.5.0` documentation; this is a static check, not runtime validation. State and saved plans can retain tenant metadata even when outputs contain only counts. Store them securely and do not commit them or any secrets.
+
+## November 2026 source-first additions
+
+The [current ledger](https://howtoharden.com/research/cognition-source-coverage-2026-11/) records the complete pinned provider catalog and the current-schema export limitation. Existing October evidence remains historical.
+
+| Control | Added surfaces | Behavior |
+|---------|----------------|----------|
+| 2.4 | config emitter; first-party gateway CLI | Deny-all Tunnel YAML with loopback admin; validate-config only, no enrollment or daemon |
+| 3.3 | API; Terraform resource/data | GET all visible automations/responders with redacted private output; Oncall schema data and explicit disabled automation example |
+| 3.6 | native managed manifest | Inert wildcard-forbid fragment; explicit dependencies and independent controls required |
+
+For 3.3 set `HTH_PROFILE_LEVEL=2`, confirmed `DEVIN_ORG_ID` and new `HTH_OUTPUT_FILE`, then use the existing secret injection workflow. A group/organization-scoped credential cannot prove enterprise-wide completeness. Runbook/prompt and webhook secrets/URLs are omitted. Review tools/network and active sessions in the UI; a successful collector is not a safety verdict.
+
+For Connect select `HTH_PROFILE_LEVEL=3` (or 4), and set confirmed `DEVIN_CONNECT_ENDPOINT` (`host:443`), `DEVIN_CONNECT_GATEWAY_ID` and absolute `DEVIN_CONNECT_TOKEN_FILE` (path, never token). Both scripts refuse a lower/invalid level before work. The emitter writes stdout only. Validate a reviewed file with `bash packs/devin/cli/hth-devin-2.04-validate-connect.sh FILE.yml`. Neither script starts or enrolls the gateway. Empty routes intentionally deny every destination.
+
+The new Terraform example requires `TF_VAR_hth_profile_level=2` (or 3/4); its default 1 fails a precondition before capability retrieval. It defaults to zero automation resources and explicitly `enabled=false` even when creation is opted in. Read data still calls the API during a real plan. Configure exact service user, triggers/actions and enterprise tags before any authorized plan/apply. JSON groups do not detect out-of-band drift; import does not recover them. State can contain minted webhook secrets.
+
+New offline regression suite: `bun test --timeout 30000 scripts/test-cognition-refresh.test.ts`. No product API, login, gateway or tenant was used.

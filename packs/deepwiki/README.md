@@ -60,3 +60,7 @@ for file in packs/deepwiki/config/*.sh packs/deepwiki/api/*.sh; do bash -n "$fil
 The test suite uses synthetic temporary files and a stub curl executable; it never contacts Devin or DeepWiki. It covers valid and invalid MCP settings, credential redaction, JSON ambiguity, wiki limits and hierarchy, API pagination, denied requests, malformed responses, and rejection of unsafe input before a request.
 
 **Validation recorded 2026-10-29:** 20 offline tests passed; all three shell scripts passed Bash syntax checks. No live tenant, client integration, provider execution, or private repository access test was performed. The guide remains `ai-drafted`.
+
+## November 2026 boundary refresh
+
+November 2026 rechecks public credential-free MCP versus authenticated Devin MCP session/knowledge/schedule writes, Ask Devin session creation and deprecated SSE. Existing packs are retained; generation configuration and indexing inventory are not ACL enforcement. See the [current source ledger](https://howtoharden.com/research/cognition-source-coverage-2026-11/). Existing evidence remains historical; no live validation or maturity promotion. New regressions run with `bun test scripts/test-cognition-refresh.test.ts`.

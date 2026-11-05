@@ -27,3 +27,7 @@ done
 ```
 
 Tests use fixture files and a mocked `devin` executable, including explicit-launch/apply gates and invalid input handling. They do not establish live authorization, endpoint-management enforcement, sandbox isolation, Windows ACL behavior or cloud policy adoption. All guide maturity remains `ai-drafted`.
+
+## November 2026 boundary refresh
+
+The new 2.3 native user fragment preserves Local Hands approvals. Merge only the relevant key; it is editable user configuration, not an organization-enforced deny. SSH/forward, CA trust and diagnostics have evidenced operational guidance with explicit automation limitations. Current hooks documentation and October 22 optional fail_closed behavior conflict by version; pilot the actual release. See the [current source ledger](https://howtoharden.com/research/cognition-source-coverage-2026-11/). Existing evidence remains historical; no live validation or maturity promotion. New regressions run with `bun test scripts/test-cognition-refresh.test.ts`.

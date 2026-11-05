@@ -1,0 +1,14 @@
+// HTH Pack Contract: v1
+//   control: devin-cli-2.3
+//   guide: https://howtoharden.com/guides/devin-cli/#23-preserve-local-hands-approvals
+//   profile: L2
+//   mode: mutating
+//   requires: Reviewed merge into USER config; organization Local Hands policy separately
+// Source: https://docs.devin.ai/cli/reference/configuration/config-file (2026-11-05)
+// HTH Guide Excerpt: begin local-hands-approvals
+// USER config preference, not administrator enforcement; do not overwrite unrelated keys.
+// Disabling bypass does not revoke an existing connection or cancel work already approved.
+{
+  "local_tools_bypass_permissions": false
+}
+// HTH Guide Excerpt: end local-hands-approvals

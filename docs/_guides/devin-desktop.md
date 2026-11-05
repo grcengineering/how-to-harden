@@ -9,9 +9,9 @@ product: "Devin Desktop"
 tier: "2"
 category: "AI/ML Platform"
 description: "Harden Devin Desktop (formerly Windsurf): distinguish Cascade and Devin Local, enforce editor policies, restrict extensions and integrations, protect source context, and verify managed-device settings."
-version: "0.1.0"
+version: "0.2.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-10-30"
+last_updated: "2026-11-05"
 ---
 
 ## Overview
@@ -21,6 +21,8 @@ This is a **product guide within the [Cognition platform](/guides/devin/)**. Cog
 An editor with local agents can reach source code, developer credentials, extensions, terminals, and connected services. Harden the workstation and each agent, not merely its cloud account. Organization identity and repository access are covered in the [Devin common-controls guide](/guides/devin/). Legacy Windsurf identity administration must also be checked against the [Desktop administrator guide](https://docs.devin.ai/desktop/guide-for-admins); cloud-account controls do not automatically prove legacy-account enforcement.
 
 > **Two agents, different controls.** New tabs use Devin Local where enabled; Enterprise can disable this agent, and Cascade remains a legacy agent. Cascade autonomy levels, command lists, and hooks do **not** configure Devin Local. Apply the [Devin CLI guide](/guides/devin-cli/) to Local permissions, sandboxing, MCP, and lifecycle hooks. Third-party ACP agents require their own security review. ([Devin Local](https://docs.devin.ai/desktop/devin-local))
+
+Organization local-agent list overrides **replace**, rather than merge with, root policy. Review the [common root/override control](/guides/devin/#26-reconcile-local-agent-root-policy-and-organization-overrides) before relying on inherited permission, model or MCP lists.
 
 ### Intended Audience
 
@@ -37,7 +39,7 @@ An editor with local agents can reach source code, developer credentials, extens
 
 ### Scope
 
-Current Devin Desktop on Windows, macOS, and Linux; Teams/Enterprise features are labeled individually. This guide does not cover air-gapped/FedRAMP deployments, third-party agents, or assert that editor ignore rules stop shell or MCP access. No live tenant or client was available: configuration examples and offline tests are not live-product validation.
+Current Devin Desktop on Windows, macOS, and Linux; Teams/Enterprise features are labeled individually. The separately administered [Federal guide](/guides/devin-federal/) covers air-gapped/FedRAMP deployments. Windsurf Plugins are conditionally covered in 5.3; Desktop device policy is not JetBrains plugin policy. This guide does not cover third-party agents, or assert that editor ignore rules stop shell or MCP access. No live tenant or client was available: configuration examples and offline tests are not live-product validation.
 
 **Admin entry point:** **Settings → Enterprise → Devin Desktop** in the Devin app, or **Team Settings** at the legacy Windsurf dashboard. The same team configuration is exposed through both. Team changes require the Desktop-admin permission; enterprise settings can have child-organization overrides. Inspect both levels before declaring enforcement. ([Admin controls](https://docs.devin.ai/desktop/controls))
 
@@ -539,7 +541,7 @@ Managed device policy deployment; agreement with support owners on reduced diagn
 #### Validation & Testing
 
 1. Confirm both settings are locked in the client and use control 5.1 to compare the disk baseline.
-2. Validate model-provider retention and agent request handling independently; this control makes no claim about those flows.
+2. Validate model-provider retention and agent request handling independently; this control makes no claim about those flows. Review commercial [Data Controls and plan-specific retention](/guides/devin/#45-set-data-controls-and-verify-retention-scope) separately; disabling optional telemetry does not opt out of training.
 
 #### Compliance Mappings
 
@@ -749,6 +751,55 @@ The GET-only report includes stored UIDs/tags, effectively allowed UIDs, ETag, a
 
 ---
 
+### 5.3 Govern Windsurf Plugin Identity and MCP Separately
+
+**Profile Level:** L2 (Walk)
+
+#### Description
+
+For supported Windsurf Plugins (including JetBrains), verify legacy portal identity, team feature toggles and the plugin’s actual MCP file. Map Desktop controls only where plugin documentation explicitly supports them.
+
+#### Rationale
+
+**Why This Matters:**
+- Desktop editor policy templates and Local agent permissions do not configure a JetBrains plugin.
+- Plugin MCP discovery and the Cortex configuration opened by the plugin are separate files; empty team MCP allowlists permit all servers.
+
+**Attack Prevented:** Unmanaged plugin integration access and false confidence from applying an unrelated editor policy.
+
+#### Prerequisites
+
+Supported plugin/IDE release and legacy Windsurf team administrator. Confirm feature rollout/beta availability.
+
+#### ClickOps Implementation
+
+1. Use the **Windsurf dashboard → Team Settings** and plugin administrator guide to enforce the legacy SSO/SCIM roles, model filters and supported feature toggles. A default model is not a model allowlist; inspect effective organization/provider filters.
+2. In the IDE open **Settings → Tools → Windsurf Settings → Add Server**, or **Cascade → Open MCP Config**. Review the file actually opened: current Cortex MCP configuration uses `~/.config/devin/mcp_config.json` (XDG/Windows overrides apply). Editor MCP discovery under `.codeium/windsurf` or `windsurf-next` is separate.
+3. Populate the team **Allowlisted MCP Servers** if MCP is enabled. The first entry changes unrestricted behavior; full command/argument matching does not constrain arbitrary environment values, and a name-only empty template permits any configuration for that name. Review OAuth and upstream rights separately.
+4. Apply Desktop controls conditionally: team model/integration toggles documented for Plugins apply; Desktop ADMX/Linux policy, editor extension-marketplace settings and Devin Local sandbox do not. Use the IDE’s supported proxy/certificate workflow and review plugin diagnostics before export.
+
+#### Code Implementation
+
+The native MCP fragment contains no servers and is inert until merged into the actual plugin MCP file. It inventories a safe starting shape, not a central deny-all or removal of server definitions from every discovered file. Enforce the documented team gate/allowlist independently.
+
+{% include pack-code.html vendor="devin-desktop" section="5.3" %}
+
+#### Validation & Testing
+
+On a supported test plugin inspect the effective model and MCP lists, compare the file opened by the UI with XDG/Windows paths, and test a benign nonallowlisted server. Remove server definitions and revoke upstream OAuth/API credentials separately. No plugin installation, login or connection was performed.
+
+#### Compliance Mappings
+
+| Framework | Control | Mapping intent |
+|-----------|---------|----------------|
+| SOC 2 | CC6.1, CC7.2 | Supports access and monitoring objectives |
+| NIST SP 800-53 Rev. 5 | AC-3, AC-6, CM-6 | Supports configuration and access boundaries |
+| ISO 27001:2022 | A.5.15, A.8.9 | Supports access and configuration management |
+
+**Sources:** [Plugin administrator guide](https://docs.devin.ai/windsurf/plugins/guide-for-admins), [Plugin MCP configuration](https://docs.devin.ai/windsurf/plugins/cascade/mcp) (retrieved 2026-11-05; documentation-backed, no live validation).
+
+---
+
 ## 6. Integration Risk Reference
 
 | Surface | Main boundary | Required companion control |
@@ -827,6 +878,7 @@ The pack emitters do not install policy. JSONC examples are reviewed templates: 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-05 | 0.2.0 | ai-drafted | Added source-conditional Windsurf Plugin identity/MCP coverage, separate native state path and applicability limits; linked Federal and current source ledger. Offline only. | Codex (GPT-6) |
 | 2026-10-30 | 0.1.0 | ai-drafted | Initial Desktop guide; agent-specific boundaries, managed policy packs, offline verification, and explicit plan/validation limits | Codex |
 
 ## Contributing

@@ -177,7 +177,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [CrowdStrike Falcon](docs/_guides/crowdstrike.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Cursor](docs/_guides/cursor.md) | v0.5.2 | ai-drafted | 2026-10-10 |
 | [Datadog](docs/_guides/datadog.md) | v0.2.1 | ai-drafted | 2026-08-08 |
-| [Devin & Cognition](docs/_guides/devin.md) | v0.1.0 | ai-drafted | 2026-10-30 |
+| [Devin & Cognition](docs/_guides/devin.md) | v0.2.0 | ai-drafted | 2026-11-05 |
 | [GitHub](docs/_guides/github.md) | v0.7.2 | ai-drafted · ai-validated | 2026-09-24 |
 | [Gmail](docs/_guides/gmail.md) | v0.1.0 | ai-drafted | 2026-08-03 |
 | [Google Chat](docs/_guides/google-chat.md) | v0.3.0 | ai-drafted | 2026-08-12 |
@@ -223,9 +223,10 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Clari](docs/_guides/clari.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Coupa](docs/_guides/coupa.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Databricks](docs/_guides/databricks.md) | v0.3.0 | ai-drafted | 2026-08-03 |
-| [DeepWiki](docs/_guides/deepwiki.md) | v0.1.0 | ai-drafted | 2026-10-30 |
-| [Devin CLI](docs/_guides/devin-cli.md) | v0.1.0 | ai-drafted | 2026-10-30 |
-| [Devin Desktop](docs/_guides/devin-desktop.md) | v0.1.0 | ai-drafted | 2026-10-30 |
+| [DeepWiki](docs/_guides/deepwiki.md) | v0.1.1 | ai-drafted | 2026-11-05 |
+| [Devin CLI](docs/_guides/devin-cli.md) | v0.2.0 | ai-drafted | 2026-11-05 |
+| [Devin Desktop](docs/_guides/devin-desktop.md) | v0.2.0 | ai-drafted | 2026-11-05 |
+| [Devin Federal](docs/_guides/devin-federal.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [DocuSign](docs/_guides/docusign.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Drata](docs/_guides/drata.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Factory](docs/_guides/factory.md) | v0.1.0 | ai-drafted | 2026-10-31 |
@@ -254,6 +255,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Outreach](docs/_guides/outreach.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [PagerDuty](docs/_guides/pagerduty.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Paylocity](docs/_guides/paylocity.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Poke](docs/_guides/poke.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Postman Enterprise](docs/_guides/postman.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Proofpoint](docs/_guides/proofpoint.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Qualys](docs/_guides/qualys.md) | v0.2.0 | ai-drafted | 2026-08-08 |

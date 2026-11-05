@@ -1,0 +1,17 @@
+// HTH Pack Contract: v1
+//   control: devin-3.6
+//   guide: https://howtoharden.com/guides/devin/#36-review-managed-plugin-releases-and-dependencies
+//   profile: L2
+//   mode: mutating
+//   requires: Reviewed merge into organization/enterprise managed plugin manifest
+// Source: https://docs.devin.ai/product-guides/plugin-ecosystem (2026-11-05)
+// HTH Guide Excerpt: begin managed-plugins
+// Managed manifest fragment, NOT user config or system.json. Strip comments for strict JSON.
+// Inventory business-critical plugins first; enumerate each approved dependency explicitly.
+// Manifest fetch failure can leave this level unenforced. Retain independent permissions.
+{
+  "requiredPlugins": [],
+  "optionalPlugins": [],
+  "forbiddenPlugins": ["*"]
+}
+// HTH Guide Excerpt: end managed-plugins
