@@ -4,7 +4,7 @@ import { afterAll, expect, test } from "bun:test";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
-import { isKnownScmUnknownDiagnostic, validateOnaRecipes } from "./validate-ona-terraform";
+import { bindSyntheticScmClientId, isKnownScmUnknownDiagnostic, syntheticScmClientId, validateOnaRecipes } from "./validate-ona-terraform";
 
 const repositoryRoot = resolve(import.meta.dir, "..");
 const scratch = mkdtempSync(join(tmpdir(), "hth-ona-validator-fixtures-"));
@@ -26,6 +26,21 @@ test("only the exact single native unknown-ID diagnostic is recognized", () => {
   ]) expect(isKnownScmUnknownDiagnostic(changed)).toBe(false);
 });
 
+test("SCM binding changes exactly one expression and rejects missing or ambiguous targets", () => {
+  const source = readFileSync(join(repositoryRoot, "packs/ona/terraform/hth-ona-4.03-scm-integration.tf"), "utf8");
+  for (const value of [syntheticScmClientId, ""]) {
+    const bound = bindSyntheticScmClientId(source, value);
+    const before = source.split("\n"), after = bound.split("\n");
+    expect(after).toHaveLength(before.length);
+    const changed = before.flatMap((line, index) => line === after[index] ? [] : [index]);
+    expect(changed).toHaveLength(1);
+    expect(after[changed[0]]).toBe(before[changed[0]].replace("var.scm_oauth_client_id", JSON.stringify(value)));
+  }
+  expect(() => bindSyntheticScmClientId(source.replace("= var.scm_oauth_client_id", "= var.other_input"), syntheticScmClientId)).toThrow("exactly one");
+  expect(() => bindSyntheticScmClientId(source + "\noauth_client_id = var.scm_oauth_client_id\n", syntheticScmClientId)).toThrow("exactly one");
+  expect(() => bindSyntheticScmClientId(source, "an-operator-value")).toThrow("Only synthetic");
+});
+
 function installedTerraformFixture(mode: "valid" | "early-failure" | "extra-scm-error" | "accept-empty-id") {
   const directory = mkdtempSync(join(scratch, `${mode}-`));
   const executable = join(directory, "terraform"), log = join(directory, "calls.jsonl");
@@ -41,22 +56,19 @@ if (action !== "validate") throw Error("Forbidden action in offline harness");
 const mode = ${JSON.stringify(mode)}, missing = ${JSON.stringify(diagnostic)};
 const valid = { valid: true, error_count: 0, warning_count: 0, diagnostics: [] };
 let report = valid;
-const fixturePath = join(directory, "main.tf.json");
-if (await Bun.file(fixturePath).exists()) {
-  const fixture = await Bun.file(fixturePath).json();
-  const input = fixture.module.recipe;
-  if (input.source !== "./recipe" || input.scm_runner_id !== "00000000-0000-0000-0000-000000000000" ||
-      input.scm_oauth_client_secret !== "synthetic-offline-value-not-a-credential") throw Error("Not an explicit synthetic fixture");
-  if (input.scm_oauth_client_id === "" && mode !== "accept-empty-id") report = missing;
-} else {
-  const source = await Bun.file(join(directory, "recipe.tf")).text();
-  if (source.includes('resource "ona_scm_integration" "primary"')) {
+const source = await Bun.file(join(directory, "recipe.tf")).text();
+if (source.includes('resource "ona_scm_integration" "primary"')) {
+  if (source.includes('oauth_client_id = var.scm_oauth_client_id')) {
     report = mode === "extra-scm-error" ? { ...missing, error_count: 2,
       diagnostics: [...missing.diagnostics, { severity: "error", summary: "Unsupported argument", detail: "New native schema defect" }] } : missing;
-  } else if (mode === "early-failure" && source.includes("control: ona-1.1\\n")) {
-    report = { valid: false, error_count: 1, warning_count: 0,
-      diagnostics: [{ severity: "error", summary: "Unsupported argument", detail: "Early recipe fixture failure" }] };
+  } else if (source.includes('oauth_client_id = ""')) {
+    if (mode !== "accept-empty-id") report = missing;
+  } else if (!source.includes('oauth_client_id = "synthetic-offline-oauth-client-id"')) {
+    throw Error("Not an explicit synthetic literal binding");
   }
+} else if (mode === "early-failure" && source.includes("control: ona-1.1\\n")) {
+  report = { valid: false, error_count: 1, warning_count: 0,
+    diagnostics: [{ severity: "error", summary: "Unsupported argument", detail: "Early recipe fixture failure" }] };
 }
 console.log(JSON.stringify(report));
 process.exit(report.valid ? 0 : 1);

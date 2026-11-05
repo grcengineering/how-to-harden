@@ -7,6 +7,7 @@ const scmRecipe = "hth-ona-4.03-scm-integration.tf";
 const expectedRecipes = 20;
 const missingIdSummary = "Missing OAuth Client ID";
 const missingIdDetail = 'Set oauth_client_id when auth_mode is "oauth".';
+export const syntheticScmClientId = "synthetic-offline-oauth-client-id";
 
 type Diagnostic = { severity?: string; summary?: string; detail?: string };
 type Validation = { valid?: boolean; error_count?: number; warning_count?: number; diagnostics?: Diagnostic[] };
@@ -23,6 +24,18 @@ export function isKnownScmUnknownDiagnostic(value: unknown): value is Validation
     report.diagnostics[0].severity === "error" &&
     report.diagnostics[0].summary === missingIdSummary &&
     report.diagnostics[0].detail?.trim() === missingIdDetail;
+}
+
+// Bind only the known-bug expression in a private CI copy. Every other byte,
+// including required production variables and provider configuration, survives.
+export function bindSyntheticScmClientId(source: string, clientId: string): string {
+  if (clientId !== syntheticScmClientId && clientId !== "") throw new Error("Only synthetic SCM fixture values are allowed.");
+  const expression = /^([ \t]*oauth_client_id[ \t]*=[ \t]*)var\.scm_oauth_client_id([ \t]*)$/gm;
+  const matches = [...source.matchAll(expression)];
+  if (matches.length !== 1) throw new Error(`Expected exactly one SCM client-ID variable expression; found ${matches.length}.`);
+  const match = matches[0];
+  const replacement = match[1] + JSON.stringify(clientId) + match[2];
+  return source.slice(0, match.index!) + replacement + source.slice(match.index! + match[0].length);
 }
 
 function parsed(command: Command): Validation {
@@ -63,23 +76,11 @@ export async function validateOnaRecipes(options: {
     return { command: commandResult, report: parsed(commandResult) };
   }
   async function scmFixture(parent: string, clientId: string, name: string) {
-    const directory = join(parent, name), childDirectory = join(directory, "recipe");
-    await mkdir(childDirectory, { recursive: true, mode: 0o700 });
-    await copyFile(join(recipesDirectory, "versions.tf"), join(childDirectory, "versions.tf"));
-    await copyFile(join(recipesDirectory, scmRecipe), join(childDirectory, "recipe.tf"));
-    // Only the temporary test module receives these synthetic literals. The
-    // production pack retains required operator inputs and write-only secrets.
-    await writeFile(join(directory, "main.tf.json"), JSON.stringify({
-      module: { recipe: {
-        source: "./recipe",
-        scm_runner_id: "00000000-0000-0000-0000-000000000000",
-        scm_kind: "github",
-        scm_host: "scm.fixture.invalid",
-        scm_oauth_client_id: clientId,
-        scm_oauth_client_secret: "synthetic-offline-value-not-a-credential",
-        scm_oauth_client_secret_version: "synthetic-fixture-v1",
-      } },
-    }, null, 2) + "\n", { mode: 0o600 });
+    const directory = join(parent, name);
+    await mkdir(directory, { mode: 0o700 });
+    await copyFile(join(recipesDirectory, "versions.tf"), join(directory, "versions.tf"));
+    const production = await Bun.file(join(recipesDirectory, scmRecipe)).text();
+    await writeFile(join(directory, "recipe.tf"), bindSyntheticScmClientId(production, clientId), { mode: 0o600 });
     await initialize(directory);
     return validate(directory);
   }
@@ -97,15 +98,15 @@ export async function validateOnaRecipes(options: {
           if (direct.command.code === 0 || !isKnownScmUnknownDiagnostic(direct.report)) {
             throw new Error(`Unexpected direct-root SCM result; only the documented single unknown-ID diagnostic is expected.\n${direct.command.stdout}\n${direct.command.stderr}`);
           }
-          const positive = await scmFixture(directory, "synthetic-offline-oauth-client-id", "known-id");
+          const positive = await scmFixture(directory, syntheticScmClientId, "known-id");
           if (positive.command.code !== 0 || positive.report.valid !== true || positive.report.error_count !== 0) {
-            throw new Error(`Native SCM validation rejected the configured child-module fixture.\n${positive.command.stdout}\n${positive.command.stderr}`);
+            throw new Error(`Native SCM validation rejected the literal-bound CI copy.\n${positive.command.stdout}\n${positive.command.stderr}`);
           }
           const negative = await scmFixture(directory, "", "empty-id");
           if (negative.command.code === 0 || !isKnownScmUnknownDiagnostic(negative.report)) {
             throw new Error(`Native SCM validation did not reject exactly the empty-ID fixture.\n${negative.command.stdout}\n${negative.command.stderr}`);
           }
-          results.push({ recipe, passed: true, detail: "Exact direct-root diagnostic; native configured fixture accepted and empty ID rejected." });
+          results.push({ recipe, passed: true, detail: "Exact direct-root diagnostic; native literal-bound CI copy accepted and empty ID rejected." });
         } else {
           if (direct.command.code !== 0 || direct.report.valid !== true || direct.report.error_count !== 0) {
             throw new Error(`Native recipe validation failed.\n${direct.command.stdout}\n${direct.command.stderr}`);
