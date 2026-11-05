@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH Anthropic Claude Control 2.2: Rotate API Keys Regularly
 # Profile: L2 | NIST: IA-5(1) | SOC 2: CC6.1
-# https://howtoharden.com/guides/anthropic-claude/#22-rotate-api-keys-regularly
+# https://howtoharden.com/guides/anthropic-api/#12-rotate-api-keys-regularly
 source "$(dirname "$0")/common.sh"
 
 banner "2.2: Rotate API Keys Regularly"
@@ -18,7 +18,6 @@ API_KEYS=$(anthropic_list_all "/v1/organizations/api_keys?status=active") || {
   fail "2.2 Failed to list API keys"
   summary; exit 0
 }
-
 NEVER_EXPIRING=$(echo "${API_KEYS}" | jq '[.[] | select(.expires_at == null)]')
 NEVER_COUNT=$(echo "${NEVER_EXPIRING}" | jq 'length')
 if [[ "${NEVER_COUNT}" -gt 0 ]]; then
@@ -27,14 +26,11 @@ if [[ "${NEVER_COUNT}" -gt 0 ]]; then
 else
   pass "2.2 Every active key carries an expiration (expires_at set)"
 fi
-
 CUTOFF=$(date -d '90 days ago' '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || \
          date -v-90d '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null)
-
 STALE_KEYS=$(echo "${API_KEYS}" | jq --arg cutoff "${CUTOFF}" \
   '[.[] | select(.created_at < $cutoff)]')
 STALE_COUNT=$(echo "${STALE_KEYS}" | jq 'length')
-
 if [[ "${STALE_COUNT}" -gt 0 ]]; then
   warn "2.2 ${STALE_COUNT} API keys are older than 90 days:"
   echo "${STALE_KEYS}" | jq -r '.[] | "  \(.name // "unnamed") | Created: \(.created_at) | Expires: \(.expires_at // "never") | Workspace: \(.workspace_id)"'

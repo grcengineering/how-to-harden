@@ -165,7 +165,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 
 | Guide | Version | Maturity | Last Updated |
 |-------|---------|----------|--------------|
-| [Anthropic Platform](docs/_guides/anthropic-claude.md) | v1.2.1 | ai-drafted · ai-validated | 2026-10-04 |
+| [Anthropic Platform](docs/_guides/anthropic-claude.md) | v1.3.0 | ai-drafted | 2026-11-05 |
 | [AWS IAM Identity Center](docs/_guides/aws-iam-identity-center.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-04 |
 | [BeyondTrust](docs/_guides/beyondtrust.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [ChatGPT Dots](docs/_guides/chatgpt-dots.md) | v0.2.0 | ai-drafted | 2026-11-05 |
@@ -173,9 +173,9 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [ChatGPT Work and Codex](docs/_guides/chatgpt-work-codex.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [OpenAI API Platform](docs/_guides/openai-api.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [OpenAI Ads](docs/_guides/openai-ads.md) | v0.1.0 | ai-drafted | 2026-11-05 |
-| [Claude API & Console](docs/_guides/anthropic-api.md) | v1.1.0 | ai-drafted | 2026-08-15 |
-| [Claude Code](docs/_guides/claude-code.md) | v1.1.1 | ai-drafted | 2026-10-04 |
-| [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.2.0 | ai-drafted | 2026-08-15 |
+| [Claude API & Console](docs/_guides/anthropic-api.md) | v1.2.0 | ai-drafted | 2026-11-05 |
+| [Claude Code](docs/_guides/claude-code.md) | v1.2.0 | ai-drafted | 2026-11-05 |
+| [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.3.0 | ai-drafted | 2026-11-05 |
 | [Cloudflare Zero Trust](docs/_guides/cloudflare.md) | v0.2.3 | ai-drafted · ai-validated | 2026-09-25 |
 | [CrowdStrike Falcon](docs/_guides/crowdstrike.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Cursor / SpaceXSI Common Controls](docs/_guides/cursor.md) | v0.6.0 | ai-drafted | 2026-11-05 |

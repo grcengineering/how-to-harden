@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH Anthropic Claude Control 7.2: Restrict Claude Code Permissions and Tools
 # Profile: L2 | NIST: AC-3, CM-7 | SOC 2: CC6.1, CC6.3
-# https://howtoharden.com/guides/anthropic-claude/#72-restrict-claude-code-permissions-and-tools
+# https://howtoharden.com/guides/claude-code/#12-restrict-claude-code-permissions-and-tools
 #
 # Validates the permission restrictions in the file-based managed settings
 # (managed-settings.json merged with managed-settings.d/*.json drop-ins, the
@@ -24,7 +24,6 @@ else
     *) fail "7.2 Unknown OS — cannot locate the managed settings directory"; summary; exit 1 ;;
   esac
 fi
-
 # Base file first, then drop-ins in alphabetical order (hidden files ignored)
 SOURCES=()
 if [[ -f "${MANAGED_DIR}/managed-settings.json" ]]; then
@@ -34,12 +33,10 @@ LC_COLLATE=C
 for f in "${MANAGED_DIR}/managed-settings.d/"*.json; do
   if [[ -f "${f}" ]]; then SOURCES+=("${f}"); fi
 done
-
 if [[ ${#SOURCES[@]} -eq 0 ]]; then
   fail "7.2 No managed-settings.json or managed-settings.d/*.json in ${MANAGED_DIR} — permissions are not restricted by managed policy"
   summary; exit 1
 fi
-
 MERGED=$(jq -s '
   def m($a; $b):
     if ($a|type) == "object" and ($b|type) == "object" then
@@ -50,25 +47,21 @@ MERGED=$(jq -s '
   fail "7.2 A managed settings file is not valid JSON"; summary; exit 1
 }
 merged() { printf '%s' "${MERGED}" | jq "$@"; }
-
 DENY_COUNT=$(merged '.permissions.deny // [] | length')
 ALLOW_COUNT=$(merged '.permissions.allow // [] | length')
 ASK_COUNT=$(merged '.permissions.ask // [] | length')
 info "Permission rules across ${#SOURCES[@]} file(s): deny=${DENY_COUNT}, allow=${ALLOW_COUNT}, ask=${ASK_COUNT}"
-
 if [[ "${DENY_COUNT}" -gt 0 ]]; then
   pass "7.2 Deny rules configured (${DENY_COUNT} rules)"
 else
   fail "7.2 No deny rules — sensitive files and commands are unrestricted"
 fi
-
 PERMS_ONLY=$(merged -r '.allowManagedPermissionRulesOnly // false')
 if [[ "${PERMS_ONLY}" == "true" ]]; then
   pass "7.2 Managed-only permission rules enforced"
 else
   fail "7.2 allowManagedPermissionRulesOnly is not enabled — users can add their own allow rules"
 fi
-
 # Step 2.3: bypass mode must be disabled inside the permissions object
 if [[ "$(merged -r 'has("disableBypassPermissionsMode")')" == "true" ]]; then
   fail "7.2 disableBypassPermissionsMode is at the root — Claude Code reads it only as permissions.disableBypassPermissionsMode"
@@ -79,7 +72,6 @@ if [[ "${BYPASS}" == "disable" ]]; then
 else
   fail "7.2 permissions.disableBypassPermissionsMode is not \"disable\""
 fi
-
 SANDBOX_ENABLED=$(merged -r '.sandbox.enabled // false')
 if [[ "${SANDBOX_ENABLED}" == "true" ]]; then
   pass "7.2 Bash sandbox is enabled"

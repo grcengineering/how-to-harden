@@ -1,0 +1,42 @@
+// Claude API 3.4: Native Managed Agents create-body fragments, two SEPARATE resources.
+// Profile: L3 | NIST: AC-6, SC-7, CM-6 | SOC 2: CC6.1
+// https://howtoharden.com/guides/anthropic-api/#34-limit-managed-agents-tools-credentials-and-runtime-egress
+// Source: https://platform.claude.com/docs/en/managed-agents/secure-deployment
+// Beta managed-agents-2026-04-01. Examples only; never auto-apply to test a guide.
+// HTH Guide Excerpt: begin managed-agent-narrow-toolset
+// Agent request: no shell, web search, writes, credentials or MCP toolsets.
+// Replace model/host with the reviewed supported choices before creation.
+{
+  "name": "HTH reviewed research agent",
+  "model": "claude-opus-5-5",
+  "tools": [
+    {
+      "type": "agent_toolset_20260401",
+      "default_config": {
+        "enabled": false,
+        "permission_policy": {"type": "always_ask"}
+      },
+      "configs": [
+        {"name": "read", "enabled": true, "permission_policy": {"type": "always_allow"}},
+        {"name": "web_fetch", "enabled": true, "allowed_domains": ["help.example.com"], "permission_policy": {"type": "always_ask"}}
+      ]
+    }
+  ]
+}
+// HTH Guide Excerpt: end managed-agent-narrow-toolset
+// HTH Guide Excerpt: begin managed-agent-limited-environment
+// Separate Environment request. Do not POST both objects as a single document.
+// allowed_hosts opens every operation to each host; web tool limits are separate.
+{
+  "name": "HTH limited research environment",
+  "config": {
+    "type": "cloud",
+    "networking": {
+      "type": "limited",
+      "allowed_hosts": ["help.example.com"],
+      "allow_package_managers": false,
+      "allow_mcp_servers": false
+    }
+  }
+}
+// HTH Guide Excerpt: end managed-agent-limited-environment

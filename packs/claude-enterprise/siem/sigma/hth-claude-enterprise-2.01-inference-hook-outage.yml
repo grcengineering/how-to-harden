@@ -1,0 +1,24 @@
+# HTH Guide Excerpt: begin inference-hook-outage-detection
+title: Anthropic Inference Hooks Circuit Breaker Tripped
+id: 0961f5bc-a39d-4ccd-b05c-4ff9d022a663
+status: experimental
+description: A documented circuit-breaker event may signal sustained loss of inline inspection; interpret it with failure handling and rollout settings.
+references:
+  - https://platform.claude.com/docs/en/manage-claude/inference-hooks-endpoint
+author: How to Harden Community
+date: 2026-11-05
+tags:
+  - attack.defense-evasion
+logsource:
+  product: anthropic
+  service: compliance_activity
+detection:
+  selection:
+    type: inference_hooks_circuit_breaker_tripped
+  condition: selection
+falsepositives:
+  - Planned AI security server maintenance or connectivity failure
+level: high
+# Ingest the documented Activity Feed data[].type into field `type` first.
+# Do not infer a posture-check failure or a deliberate attack from this event alone.
+# HTH Guide Excerpt: end inference-hook-outage-detection

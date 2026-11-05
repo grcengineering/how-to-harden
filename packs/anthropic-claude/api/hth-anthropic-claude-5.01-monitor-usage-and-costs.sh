@@ -1,41 +1,30 @@
 #!/usr/bin/env bash
-# HTH Anthropic Claude Control 5.1: Monitor API Usage and Costs
-# Profile: L1 | NIST: AU-6, SI-4 | SOC 2: CC7.2
-# https://howtoharden.com/guides/anthropic-claude/#51-monitor-api-usage-and-costs
+# HTH Pack Contract: v1
+#   control: anthropic-api-4.1
+#   guide: https://howtoharden.com/guides/anthropic-api/#41-monitor-api-usage-and-costs
+#   profile: L1
+#   mode: read-only
+#   requires: ANTHROPIC_ADMIN_KEY(Console admin credential), HTH_STARTING_AT, HTH_ENDING_AT
+# Source: https://platform.claude.com/docs/en/manage-claude/usage-cost-analytics-api
+# Beta analytics-usage-cost-2026-08-24, API 2026-10-21.
+set -euo pipefail
 source "$(dirname "$0")/common.sh"
-
-banner "5.1: Monitor API Usage and Costs"
-require_admin_key
-
-# HTH Guide Excerpt: begin api-usage-report
-# Generate a daily usage report for the past 7 days, grouped by workspace
-START_DATE=$(date -d '7 days ago' '+%Y-%m-%dT00:00:00Z' 2>/dev/null || \
-             date -v-7d '+%Y-%m-%dT00:00:00Z' 2>/dev/null)
-END_DATE=$(date '+%Y-%m-%dT23:59:59Z')
-
-info "Fetching usage report from ${START_DATE} to ${END_DATE}..."
-USAGE=$(anthropic_get "/v1/organizations/usage_report/messages?start_time=${START_DATE}&end_time=${END_DATE}&group_by=workspace&bucket_width=1d") || {
-  fail "5.1 Failed to fetch usage report"
-  summary; exit 0
-}
-
-echo "${USAGE}" | jq -r '.data[] | "  \(.workspace_id // "default") | Input: \(.input_tokens) | Output: \(.output_tokens) | Date: \(.bucket_start_time)"'
-pass "5.1 Usage report retrieved"
-# HTH Guide Excerpt: end api-usage-report
-
-# HTH Guide Excerpt: begin api-cost-report
-# Generate a cost report for the past 30 days, grouped by workspace
-COST_START=$(date -d '30 days ago' '+%Y-%m-%dT00:00:00Z' 2>/dev/null || \
-             date -v-30d '+%Y-%m-%dT00:00:00Z' 2>/dev/null)
-
-info "Fetching cost report from ${COST_START}..."
-COST=$(anthropic_get "/v1/organizations/cost_report?start_time=${COST_START}&end_time=${END_DATE}&group_by=workspace") || {
-  fail "5.1 Failed to fetch cost report"
-  summary; exit 0
-}
-
-echo "${COST}" | jq -r '.data[] | "  \(.workspace_id // "default") | Cost: $\(.cost_usd) | Date: \(.bucket_start_time)"'
-pass "5.1 Cost report retrieved"
-# HTH Guide Excerpt: end api-cost-report
-
-summary
+# HTH Guide Excerpt: begin complete-usage-cost-analytics
+: "${HTH_STARTING_AT:?Set RFC3339 UTC inclusive start}"
+: "${HTH_ENDING_AT:?Set RFC3339 UTC exclusive end, at most 31 days later}"
+for value in "${HTH_STARTING_AT}" "${HTH_ENDING_AT}"; do
+  [[ "${value}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] || exit 2
+done
+ANTHROPIC_VERSION=2026-10-21
+HTH_ANTHROPIC_BETA=analytics-usage-cost-2026-08-24
+evidence=$(anthropic_evidence_dir)
+trap 'rm -f "${evidence}/usage.pending" "${evidence}/cost.pending"' EXIT
+query="starting_at=${HTH_STARTING_AT}&ending_at=${HTH_ENDING_AT}&group_by%5B%5D=workspace_id&time_bucket_width=1d&limit=1000"
+anthropic_report_all "/v1/organizations/analytics/usage?${query}" > "${evidence}/usage.pending"
+anthropic_report_all "/v1/organizations/analytics/cost?${query}" > "${evidence}/cost.pending"
+jq -e 'all(.[]; (.group|type)=="object" and (.usage.total_tokens|type)=="number" and .usage.total_tokens>=0)' "${evidence}/usage.pending" >/dev/null
+jq -e 'all(.[]; (.group|type)=="object" and .cost.currency=="USD" and (.cost.amount|type)=="string" and (.cost.amount|test("^[0-9]+(\\.[0-9]+)?$")))' "${evidence}/cost.pending" >/dev/null
+mv "${evidence}/usage.pending" "${evidence}/usage.json"
+mv "${evidence}/cost.pending" "${evidence}/cost.json"
+printf 'Private, complete analytics: %s. Cost amount is fractional CENTS, not dollars. Empty results are no activity evidence, not a hardening pass.\n' "${evidence}"
+# HTH Guide Excerpt: end complete-usage-cost-analytics

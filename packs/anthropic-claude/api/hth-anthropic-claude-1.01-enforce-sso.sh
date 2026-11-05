@@ -21,23 +21,20 @@ require_admin_key
 # HTH Guide Excerpt: begin api-validate-sso
 # Validate SSO enforcement by listing org members and checking for
 # users who may not have authenticated via SSO.
-# Note: The Admin API does not expose SSO status directly.
+# Note: The member list does not expose SSO status. The separate Compliance effective-settings endpoint can report resolved SSO settings with a read:compliance_org_data key (Enterprise 2.4).
 # This audit lists all members so you can cross-reference with your IdP.
 info "Listing all organization members for SSO cross-reference audit..."
 MEMBERS=$(anthropic_list_all "/v1/organizations/users") || {
   fail "1.1 Failed to list organization users"
   summary; exit 1
 }
-
 MEMBER_COUNT=$(echo "${MEMBERS}" | jq 'length')
 info "Found ${MEMBER_COUNT} organization members"
-
 # Header row printed by hand: `column -N` is util-linux only (BSD/macOS rejects it)
 {
   printf 'NAME\tEMAIL\tROLE\n'
   echo "${MEMBERS}" | jq -r '.[] | "\(.name)\t\(.email)\t\(.role)"'
 } | column -t -s $'\t'
-
 pass "1.1 Member list retrieved — cross-reference with IdP to verify SSO coverage"
 # HTH Guide Excerpt: end api-validate-sso
 

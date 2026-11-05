@@ -8,10 +8,10 @@ platform_slug: "anthropic"
 product: "Claude API & Console"
 tier: "1"
 category: "AI/ML Platform"
-description: "Security hardening for the Claude API and Console — API key scoping and rotation, workload identity federation, workspace segmentation, data residency and retention, and usage/spend monitoring."
-version: "1.1.0"
+description: "Harden Claude API credentials, workspaces, residency, retention, customer-managed keys, Managed Agents and usage governance."
+version: "1.2.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-15"
+last_updated: "2026-11-05"
 ---
 
 ## Overview
@@ -19,6 +19,10 @@ last_updated: "2026-08-15"
 The Claude API (api.anthropic.com) and its admin Console are the developer platform surface of Anthropic — API keys, workspaces, data-residency and retention settings, and spend controls all live here. A compromised or over-scoped API key is the platform's highest-frequency risk; workspace segmentation and workload identity federation are its strongest structural mitigations.
 
 This is a **product guide within the [Anthropic platform](/guides/anthropic-claude/)**. Organization-wide controls (SSO, roles, admin API keys, integration governance) live in the Anthropic **Common Controls** hub; Claude Code controls live in the [Claude Code guide](/guides/claude-code/).
+
+### Research and validation boundary
+
+This refresh used the [source-first candidate ledger](/research/anthropic-source-coverage-2026-11) and public vendor references, including the published Cowork/unified baseline. It did not access a live tenant, change settings or create credentials. Source verification and mocked/native-interface tests do not earn live-validation status. The exact applicable Security Center checklist must be reconciled with an Owner’s current report; the effective-settings schema is a separate evidence surface.
 
 ### Intended Audience
 - Platform engineers integrating the Claude API
@@ -57,7 +61,7 @@ This guide covers Claude API and Console hardening: API key workspace scoping, r
 | SOC 2 | CC6.1, CC6.3 |
 
 #### Description
-Every standard API key in Anthropic Claude is scoped to a single workspace. Leverage this design by creating separate workspaces for different environments (development, staging, production) and teams, ensuring API keys cannot access resources across workspace boundaries.
+Prefer workspace-scoped API keys. Current authentication also supports personal/service-account keys with organization scope; an active key with null legacy `workspace_id` is not sufficient to identify its authority. Inspect `scope` and principal metadata. Leverage this design by creating separate workspaces for different environments (development, staging, production) and teams, ensuring API keys cannot access resources across workspace boundaries.
 
 #### Rationale
 **Why This Matters:**
@@ -92,7 +96,7 @@ Every standard API key in Anthropic Claude is scoped to a single workspace. Leve
 {% include pack-code.html vendor="anthropic-claude" section="2.1" %}
 
 #### Validation & Testing
-1. List all API keys via Admin API — verify each has a workspace assignment
+1. List active keys and inspect `scope.type`, workspace binding, principal and expiration; identify organization-scoped keys separately from Default Workspace keys.
 2. Verify no unnamed keys exist
 3. Test that a key scoped to Workspace A cannot be used with Workspace B resources
 
@@ -151,7 +155,7 @@ Make key lifetime bounded by default: set an **expiration at key creation** and 
 2. Update the dependent application/service to use the new key
 3. Verify the application works with the new key
 4. Disable the old key (set status to `inactive` via Admin API)
-5. After a 7-day grace period, archive the old key
+5. Once replacement is verified, follow the approved key-lifecycle procedure. For post-exposure rotation use the dedicated [How to Rotate](https://howtorotate.com) guidance; do not leave a known-compromised key active for a generic grace period.
 
 **Time to Complete:** ~15 minutes per key (excluding application updates)
 
@@ -160,7 +164,7 @@ Make key lifetime bounded by default: set an **expiration at key creation** and 
 {% include pack-code.html vendor="anthropic-claude" section="2.2" %}
 
 #### Validation & Testing
-1. Run stale key audit script — zero keys older than 90 days
+1. Audit active-key lifetime/expiration and owner policy; a 90-day review threshold is an HTH example, not a vendor-enforced lifetime.
 2. Verify disabled keys return 401 when used
 3. Confirm application functionality with rotated keys
 
@@ -248,7 +252,7 @@ WIF complements (rather than replaces) the workspace scoping in 1.1 and the rota
 
 **Step 4: Migrate the Workload Off the Static Key**
 1. Configure WIF in parallel with the existing `ANTHROPIC_API_KEY`
-2. Smoke-test with `ant auth status` from inside the workload to confirm the SDK is exchanging the federated token (not falling back to the API key)
+2. Inspect `ant auth status` locally to identify the selected source; it is not a health check and can include credential fragments, so keep its output private. Unset key/auth-token/profile overrides before an approved exchange to test actual WIF.
 3. **Unset `ANTHROPIC_API_KEY` everywhere** it is injected (CI secrets, container env, shell profiles). Re-confirm `ant auth status` reports the federation source as winning
 4. Revoke the old API key in **Settings → API keys**
 
@@ -259,10 +263,10 @@ WIF complements (rather than replaces) the workspace scoping in 1.1 and the rota
 {% include pack-code.html vendor="anthropic-claude" section="2.3" %}
 
 #### Validation & Testing
-1. Run the token-exchange script — confirm it returns an `sk-ant-oat01-...` token with the expected `scope` and `expires_in`
+1. Run the pack’s default preflight, which mints no token. Only an explicitly approved exchange (`HTH_EXCHANGE=1`) checks returned scope/lifetime; it prints no token and performs no inference.
 2. From inside the workload, run `ant auth status` — federation should be the winning credential source (not API key)
 3. Trigger a `403` test: temporarily change the federation rule's match block to a non-matching value and confirm the exchange returns `400 invalid_grant`
-4. Confirm the static-key guardrail: the API script in the pack exits non-zero if `ANTHROPIC_API_KEY` is set
+4. Confirm the guardrail runs before token exchange and rejects present `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` and explicit profile variables, including empty strings.
 5. For the GitHub Actions workflow: confirm the job succeeds with no `ANTHROPIC_API_KEY` repo secret configured
 6. Audit the [authentication history](https://platform.claude.com/settings/workload-identity-federation?tab=history) page in the Console after a successful exchange — verify the issuer, rule, and matched claims are what you expect
 
@@ -455,12 +459,12 @@ Assign users to only the workspaces they need. Five workspace roles provide gran
 | CIS Controls | 4.6, 8.5 |
 
 #### Description
-If your organization consumes Claude through **Claude Platform on AWS** (base URL `aws-external-anthropic.{region}.api.aws`, SigV4 service name `aws-external-anthropic`, required `anthropic-workspace-id` header on every call), most of this guide's Admin-API-driven controls do not apply as written and must be re-implemented with AWS-native mechanisms. Only the workspace endpoints (create, get, list, update, archive on `/v1/organizations/workspaces`) exist; organization members, workspace members, invites, API keys, usage reports, cost reports, and rate-limit reports are absent.
+If your organization consumes Claude through **Claude Platform on AWS** (base URL `aws-external-anthropic.{region}.api.aws`, SigV4 service name `aws-external-anthropic`, required `anthropic-workspace-id` header on inference/resource calls (not Admin API requests)), this guide must be mapped to the AWS variant’s IAM and region boundary. The workspace endpoints and newer Usage and Cost Analytics API are available; legacy usage/cost, organization/workspace membership and key-management endpoint parity must not be assumed.
 
 #### Rationale
 **Why This Matters:**
 
-- The §1 key-inventory/rotation validations, §2.2 member listing, and §4.1 usage/cost reporting all call Admin API endpoints that **do not exist** on this platform — running them "successfully" against the wrong org, or assuming their coverage, is a silent audit gap
+- The §1 key-inventory/rotation and §2.2 member-listing packs target the direct Claude API and must not be sent unchanged to the AWS variant. Newer Usage and Cost Analytics has AWS support; configure its regional authentication and routing from the AWS-specific documentation rather than reusing this guide’s fixed-host transport
 - Access control moves to AWS IAM: policies target workspace ARNs (`arn:aws:aws-external-anthropic:{region}:{account-id}:workspace/{workspace-id}`) with actions in the `aws-external-anthropic` namespace, and AWS ships five managed policies (`AnthropicFullAccess`, `AnthropicReadOnlyAccess`, `AnthropicInferenceAccess`, `AnthropicLimitedAccess`, `AnthropicSelfHostedEnvironmentAccess`)
 - Two hardening levers exist here that the first-party API has no equivalent for: denying the `aws-external-anthropic:CallWithBearerToken` IAM action forces SigV4-only authentication (no bearer tokens at all), and where bearer tokens are unavoidable, short-term API keys minted from AWS credentials are capped at 12 hours
 - The AWS region binding **does not pin inference geography** — Anthropic (not AWS) is the inference data processor, and data may route to Anthropic's primary cloud; pinning requires `inference_geo` per request or a workspace `default_inference_geo`
@@ -478,7 +482,7 @@ If your organization consumes Claude through **Claude Platform on AWS** (base UR
 
 **Step 1: Map This Guide's Controls to the AWS Variant**
 
-1. For each Admin-API-driven control in this guide, record its AWS substitute: membership → IAM policies on workspace ARNs; key inventory → short-term keys + `CallWithBearerToken` governance; usage/cost → Console dashboards + CloudTrail
+1. For each Admin-API-driven control in this guide, record its AWS substitute: membership → IAM policies on workspace ARNs; key inventory → short-term keys + `CallWithBearerToken` governance; usage/cost → newer Analytics API per region plus Console/CloudTrail; legacy endpoints are not the substitute
 
 **Step 2: Force SigV4 Where Possible**
 
@@ -585,59 +589,136 @@ Configure data residency at the workspace level to control where Claude processe
 
 **Profile Level:** L2 (Walk)
 
-| Framework | Control |
-|-----------|---------|
-| NIST 800-53 | SI-12 |
-| SOC 2 | P4.1 |
-
 #### Description
-Understand and configure Anthropic's data retention policies. By default, API inputs and outputs are retained for up to 30 days and are not used for model training. Enterprise customers can negotiate custom retention periods or Zero Data Retention (ZDR), where no inputs or outputs are stored after the response is delivered.
+Choose API data handling by feature, model, processor and organization/workspace arrangement. The current API documentation no longer supports a blanket “all inputs and outputs retained for 30 days” or “ZDR deletes all feature state” assertion.
 
 #### Rationale
 **Why This Matters:**
-- Sensitive prompts containing PII, financial data, or intellectual property are retained for 30 days by default
-- ZDR eliminates server-side storage of prompts and completions entirely
-- Custom retention periods allow organizations to balance compliance needs with debugging capabilities
+- Stateful Files, batches, caching, Managed Agents, Console and third-party tools have different storage needs.
+- Covered Models can require 30-day retention even when other conversation traffic is not retained by default.
 
-**Attack Prevented:** Post-breach data exposure, regulatory non-compliance for data minimization
-
-#### Prerequisites
-- Claude Enterprise plan (for custom retention or ZDR)
-- Data classification policy for content sent to Claude
-- Legal review of Anthropic's data handling agreement
+**Attack Prevented:** Sensitive data retained or routed under an arrangement that does not cover the selected feature.
 
 #### ClickOps Implementation
 
-**Step 1: Review Default Retention**
-1. Review Anthropic's usage policy at anthropic.com/policies/usage-policy
-2. Confirm your plan's default retention (API: 30 days, not used for training)
+1. At **Console → Settings**, review the organization’s retention/HIPAA arrangement and workspace configuration with the account team. Use the current API feature eligibility table and model-specific requirements before admitting protected data.
+2. **Changed guidance:** current API docs say conversation content is not retained by default except Covered Models; retain the explicit model/feature exceptions, abuse/legal retention and product-specific TTLs. Do not equate a Messages API route with universal ZDR coverage.
+3. For ZDR, obtain organization-specific enablement and verify supported features; it does not cover Console playground, Managed Agents, consumer products, most Team/Enterprise interfaces or third-party integrations. Commercial Code/API ZDR and Enterprise Code ZDR are separate offerings.
+4. For PHI, use only the signed, enabled HIPAA arrangement’s eligible features and processor; the ordinary API BAA does not blanket-cover Code, Console use, beta features, Bedrock/Google-operated services or Claude Platform on AWS. Self-service agreement acceptance is a separate authorized legal step.
 
-**Step 2: Request Custom Retention (Enterprise)**
-1. Contact your Anthropic account representative
-2. Specify desired retention period or request ZDR
-3. Obtain written confirmation of retention configuration
-
-**Step 3: Implement Data Handling Controls**
-1. Establish guidelines for what data types may be sent to Claude
-2. Implement client-side PII redaction before sending sensitive prompts
-3. Use workspace segmentation to isolate sensitive vs. non-sensitive workloads
-
-**Time to Complete:** ~30 minutes (policy review) + vendor coordination for custom retention
+**Automation:** Unverified — no write handle verified for this setting in the inspected public Admin/Compliance references. Configure it on the documented surface; the effective-settings read pack in [Enterprise 2.4](/guides/claude-enterprise/#24-assess-effective-settings-against-an-explicit-baseline) covers only rows actually returned, not device policy or manual attestations.
 
 #### Validation & Testing
-1. Confirm retention period with Anthropic account team (Enterprise)
-2. Verify client-side PII redaction is in place for sensitive workloads
-3. Review data classification guidelines with engineering team
+1. Review `api_zero_data_retention_enabled` where returned and actual workspace/model/feature eligibility; an org flag does not prove workspace or downstream-tool retention.
+2. Verify the selected processor for Google/Foundry/AWS variants and document exceptions and lifecycle handling for persisted resources.
 
-**Expected result:** Data retention policy documented and aligned with organizational requirements
+**Expected result:** The documented boundary is exercised and any unsupported surface or exception is recorded.
+
+#### Operational Impact
+Some features/models are unavailable under an arrangement. Removing a feature or deleting data is not used as a documentation test; provider and legal holds remain distinct.
 
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **SOC 2** | P4.1 | Privacy — data minimization |
-| **NIST 800-53** | SI-12 | Information management and retention |
-| **ISO 27001** | A.8.10 | Information deletion |
+|-----------|------------|---------------------|
+| CIS Controls | 4.1, 6.8 | Secure configuration and role-based access |
+| NIST 800-53 | AC-6, CM-6, AU-6 | Least privilege, configuration and evidence |
+| SOC 2 | CC6.1, CC7.2 | Access and monitoring |
+
+**Sources:** [platform.claude.com](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention) (checked 2026-11-05).
+
+---
+
+### 3.3 Audit Workspace Encryption Key Boundaries
+
+**Profile Level:** L3 (Run)
+
+#### Description
+For eligible API organizations, configure and audit workspace CMEK bindings only after reviewing irreversible attachment, retention and availability requirements. Enterprise chat CMEK and API workspace encryption are different scopes.
+
+#### Rationale
+**Why This Matters:**
+- The organization-level effective setting does not report an individual workspace’s key binding.
+- A key applies prospectively and cannot be detached/replaced; a KMS outage can make protected data unavailable.
+
+**Attack Prevented:** Misattributed encryption coverage and unauthorized access to persisted workspace data.
+
+#### ClickOps Implementation
+
+1. An organization Admin follows the current **CMEK → Claude Platform** setup and External Keys API reference after account-team enablement. Choose the key service and scope access to the documented encryption compartment.
+2. Review each workspace’s **external_key_id** and **compartment_id**, including which features remain under Anthropic’s keys. The key configuration must be approved before binding; no attachment or deletion is executed by this guide.
+3. Account for the requirement that keyed Platform workspaces retain data and reconcile it with ZDR; rotating key material in KMS does not replace the bound configuration. Preserve availability/recovery and audit key use.
+
+#### Code Implementation
+
+Workspace inventories include native key metadata; the new Terraform recipe deliberately creates no key or binding:
+
+{% include pack-code.html vendor="anthropic-claude" section="3.1" %}
+
+#### Validation & Testing
+1. Use the workspace API/CLI/Terraform inventory and inspect actual key bindings; do not substitute org `cmek_enabled` for workspace evidence.
+2. Verify pre-/post-binding and feature coverage against the current reference, including data stored by integrations and local clients.
+
+**Expected result:** The documented boundary is exercised and any unsupported surface or exception is recorded.
+
+#### Operational Impact
+Deleting a key can render data unrecoverable. Source/schema validation of the inventory is not a successful key binding or a tested recovery procedure.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|------------|---------------------|
+| CIS Controls | 4.1, 6.8 | Secure configuration and role-based access |
+| NIST 800-53 | AC-6, CM-6, AU-6 | Least privilege, configuration and evidence |
+| SOC 2 | CC6.1, CC7.2 | Access and monitoring |
+
+**Sources:** [platform.claude.com](https://platform.claude.com/docs/en/manage-claude/cmek) · [platform.claude.com](https://platform.claude.com/docs/en/api/beta/organization/workspaces/create) (checked 2026-11-05).
+
+---
+
+### 3.4 Limit Managed Agents Tools, Credentials and Runtime Egress
+
+**Profile Level:** L3 (Run)
+
+#### Description
+Treat Claude Managed Agents as a separate beta API runtime. Limit tools and approval policies, vault credentials, environment networking, mounted repositories and session lifecycle; Enterprise chat posture does not configure these agents.
+
+#### Rationale
+**Why This Matters:**
+- Built-in toolsets can enable powerful tools by default; auto is a server policy decision, not a human checkpoint.
+- A shared multiagent session shares its sandbox/files/credentials even if individual agents have different tool lists.
+
+**Attack Prevented:** Prompt-injection-driven writes, credential misuse and exfiltration through autonomous agents.
+
+#### ClickOps Implementation
+
+1. In the Managed Agents Console/API resource configuration, disable toolset defaults and enable only required tools. Set **always_ask** on irreversible external actions, powerful tools receiving relayed end-user text, and MCP writes; auto alone is insufficient where a person must review.
+2. Mount only trusted repositories: repository skills can be loaded as instructions without review. Prefer a narrow custom tool whose application holds and authorizes the downstream credential over a general shell with that credential.
+3. Limit the cloud environment network and web tool domain lists separately; search-result domains do not restrict the sensitive text in the query. For self-hosted sandboxes, enforce equivalent firewall policy and assess worker/custom/MCP code with the same process privileges.
+4. Bound budgets, idle/running sessions, deployment schedules and stored transcripts/memory. IP allowlisting governs the API request, not runtime egress; Managed Agents is not ZDR-eligible and its state persists until deleted.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="anthropic-claude" section="4.2" %}
+
+#### Validation & Testing
+1. Validate serialized agent/environment configuration, enabled-tool set and paused approval handling with harmless fixtures before any deployment.
+2. Test runtime and web/MCP boundaries independently; a client that automatically approves every paused call removes the human gate. Separate sessions/environments/vaults are required for stronger isolation than subagent tool lists.
+
+**Expected result:** The documented boundary is exercised and any unsupported surface or exception is recorded.
+
+#### Operational Impact
+No agent is created, no vault credential is minted and no model is invoked here. The native request example must be combined with a reviewed environment/network/budget and application authorization layer.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|------------|---------------------|
+| CIS Controls | 4.1, 6.8 | Secure configuration and role-based access |
+| NIST 800-53 | AC-6, CM-6, AU-6 | Least privilege, configuration and evidence |
+| SOC 2 | CC6.1, CC7.2 | Access and monitoring |
+
+**Sources:** [platform.claude.com](https://platform.claude.com/docs/en/managed-agents/secure-deployment) · [platform.claude.com](https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes-security) · [platform.claude.com](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention) · [platform.claude.com](https://platform.claude.com/docs/en/manage-claude/ip-allowlisting) (checked 2026-11-05).
 
 ---
 
@@ -647,65 +728,45 @@ Understand and configure Anthropic's data retention policies. By default, API in
 
 **Profile Level:** L1 (Crawl)
 
-| Framework | Control |
-|-----------|---------|
-| NIST 800-53 | AU-6, SI-4 |
-| SOC 2 | CC7.2 |
-
 #### Description
-Use Anthropic's Admin API usage and cost reporting endpoints to monitor token consumption, request patterns, and spending across workspaces. The usage API supports 1-minute, 1-hour, and 1-day bucket granularity with filtering and grouping by API key, workspace, model, service tier, context window (e.g. `context_window[]=0-200k`), data residency (`inference_geo`: `global`, `us`, `not_available`), and — behind the `fast-mode-2026-02-01` beta header — speed (`standard`/`fast`).
-
-> **Scope and mechanics (verified 2026-08-15):** this Admin API applies to Claude Console organizations with an `sk-ant-admin01-` key. Claude Enterprise (claude.ai) orgs don't appear in Console and carry no Admin API keys — their usage/cost reporting is the Claude Enterprise Analytics API with an Analytics key; Claude Platform on AWS has no programmatic usage/cost endpoints at all (see 2.3). Bucket caps per request: 1m = 60 default/1,440 max, 1h = 24/168, 1d = 7/31, paginated via `has_more`/`next_page`; polling once per minute is the supported sustained cadence. The cost endpoint is daily-only (`1d`), reports decimal-string cents USD, **excludes Priority Tier** (track via the usage endpoint's `service_tier` = `priority`), and is the only place code-execution costs appear. Models released before February 2026 always report `not_available` for `inference_geo` — those rows are not residency violations. For per-user Claude Code cost attribution, Anthropic's sanctioned path is the Claude Code Analytics API, not per-key usage breakdowns. Every Claude API response also carries an `anthropic-workspace-id` header — log it to attribute traffic and to catch keys running in the wrong workspace (absent on Admin API calls and pre-auth failures like 401s).
+Use the newer Usage and Cost Analytics API for new Console and Enterprise integrations, while recognizing that the legacy Console reports remain available. Collect complete pages with an explicit time range and correct money units.
 
 #### Rationale
 **Why This Matters:**
-- Unusual usage spikes may indicate compromised API keys
-- Cost monitoring prevents unexpected bills from runaway applications
-- Per-workspace usage data enables accurate cost attribution to teams
-- Data is available within ~5 minutes of request completion
+- Wrong parameter names, flat parsing of bucketed responses and ignored pagination silently lose evidence.
+- Costs are decimal strings in fractional cents, not dollars; workspace and actor dimensions have distinct scopes.
 
-**Attack Prevented:** API key abuse, cryptocurrency mining via API, unauthorized bulk data extraction
-
-#### Prerequisites
-- Admin API key provisioned
-- Monitoring infrastructure (Datadog, Grafana, etc.) or cron job for regular checks
+**Attack Prevented:** Unnoticed credential abuse, cost spikes and incomplete activity attribution.
 
 #### ClickOps Implementation
 
-**Step 1: Review Usage Dashboard**
-1. Navigate to: **platform.claude.com** → **Usage**
-2. Review token usage charts, rate limit utilization, and cache rates
-3. Filter by workspace, model, and time period
-
-**Step 2: Review Cost Dashboard**
-1. Navigate to: **platform.claude.com** → **Cost**
-2. Review cost breakdown by workspace and model
-3. Identify any unexpected cost increases
-
-**Step 3: Configure Observability Integration**
-1. Integrate with supported platforms: CloudZero, Datadog, Grafana Cloud, Honeycomb, or Vantage
-2. Set up alerts for anomalous usage patterns
-
-**Time to Complete:** ~15 minutes (dashboard review) + integration setup time
+1. Review **Console → Usage** and **Cost**; Enterprise uses its own organization analytics pages and scoped **read:analytics** credential, not a Console admin key.
+2. For new collectors use **GET /v1/organizations/analytics/usage** and **/cost**, beta **analytics-usage-cost-2026-08-24** with API version **2026-10-21**. Set inclusive `starting_at` and exclusive `ending_at` (at most 31 days) and follow `has_more`/`next_page`.
+3. Group by the actual dimension, e.g. `workspace_id` for Console and product/actor where appropriate. Do not silently exclude deleted/unattributed users or double-count overlapping RBAC groups. On AWS call each region with its native authentication and IAM, not the first-party-key pack.
+4. The legacy report endpoints use `starting_at`/`ending_at`, bracketed group-by and nested bucket `results`; do not use the older pack’s `start_time`, flat `cost_usd` or a first-page-only aggregate.
 
 #### Code Implementation
 
 {% include pack-code.html vendor="anthropic-claude" section="5.1" %}
 
 #### Validation & Testing
-1. Run usage report API script — verify data returns for all active workspaces
-2. Run cost report API script — verify cost data is accurate
-3. Confirm observability integration is receiving data
+1. Run the read-only pack against an approved reporting window and reconcile every page with Console totals; verify decimal fractional-cent conversion before dollar thresholds.
+2. Treat empty reports as no captured activity, not proof of a secure organization. Review unexpected workspace/actor/model/product usage and provider logging gaps.
 
-**Expected result:** Usage and cost data is monitored regularly with alerts for anomalies
+**Expected result:** The documented boundary is exercised and any unsupported surface or exception is recorded.
+
+#### Operational Impact
+No cap is set. Authentication, date/range or access errors must return nonzero; reports contain identity/usage data and are saved privately.
 
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **SOC 2** | CC7.2 | System monitoring |
-| **NIST 800-53** | AU-6, SI-4 | Audit record review; system monitoring |
-| **ISO 27001** | A.12.4.1 | Event logging |
+|-----------|------------|---------------------|
+| CIS Controls | 4.1, 6.8 | Secure configuration and role-based access |
+| NIST 800-53 | AC-6, CM-6, AU-6 | Least privilege, configuration and evidence |
+| SOC 2 | CC6.1, CC7.2 | Access and monitoring |
+
+**Sources:** [platform.claude.com](https://platform.claude.com/docs/en/manage-claude/usage-cost-analytics-api) · [platform.claude.com](https://platform.claude.com/docs/en/manage-claude/usage-cost-api) (checked 2026-11-05).
 
 ---
 
@@ -789,6 +850,7 @@ See the [Anthropic platform hub references](/guides/anthropic-claude/#appendix-b
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-05 | 1.2.0 | ai-drafted | Corrected principal/key scope, WIF preflight and secret handling, API retention and AWS analytics; added workspace CMEK and Managed Agents isolation; fixed complete usage/cost and rate-limit evidence. | Codex |
 | 2026-08-15 | 1.1.0 | ai-drafted | Admin API currency pass. §1.2 rewritten around native key expiration: creation-time presets/custom/Never, the organization maximum-expiration policy that removes Never entirely, `expires_at` auditing (null = finding), 401 at expiry, creator warning emails. §1.3 WIF updated: the Connect-workload wizard as the documented setup path (per-provider tiles, Verify-issuer JWKS dry-run, 15-minute exchange listener, 600s prefill vs the 3600s API default), the grown OAuth scope set (`workspace:inference`, `workspace:manage_tunnels`, Console-only `org:admin` rules targeting admin-role service accounts), the fork-PR wildcard-subject attack with the protected-branch pin, the 2×-remaining-IdP-JWT token-lifetime cap, implicit default-workspace service-account membership, and the OAuth-only WIF Admin API endpoints. §2.1 gains the special-workspace handling (Default Workspace cannot carry limits and reports null `workspace_id`; archiving the auto-created Claude Code workspace disables org-wide Claude Code sign-in) and the prompt-cache isolation platform split. §2.2 corrected: five workspace roles including Workspace Limited Developer, billing-role inheritance, and the offboarding fix — standard workspace keys survive member removal and demand a rotation pass. NEW §2.3: Claude Platform on AWS variant (workspace-endpoints-only Admin API, IAM policies on workspace ARNs, `CallWithBearerToken` denial forcing SigV4, 12-hour short-term keys, CloudTrail data-event logging gap, AWS region does not pin inference geography). §3.1: `inference_geo` model floor (Claude 4.6+; 400 on 4.5-generation). §4.1: expanded dimensions (context window, speed beta, `inference_geo` with the pre-Feb-2026 `not_available` caveat), bucket caps and pagination, cost-endpoint mechanics (daily-only, cents strings, Priority Tier excluded, code-execution only here), and the `anthropic-workspace-id` response header. §4.2: split Rate-limits/Spend-limits tabs and read-only Rate Limits API validation. All ClickOps hosts canonicalized to platform.claude.com. | Claude Code (Opus 5) |
 | 2026-08-03 | 1.0.0 | ai-drafted | Split out of the monolithic Anthropic Claude guide as part of the multi-product platform restructure; carries the API key, workspace, data, and usage controls (formerly sections 2-5) renumbered into four sections. | Claude Code (Sonnet 5) |
 

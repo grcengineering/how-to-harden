@@ -28,14 +28,11 @@ INVITES=$(anthropic_list_all "/v1/organizations/invites") || {
   fail "2.1 Failed to list invites"
   summary; exit 1
 }
-
 TOTAL=$(echo "${INVITES}" | jq 'length')
 PENDING=$(echo "${INVITES}" | jq '[.[] | select(.status == "pending")] | length')
 EXPIRED=$(echo "${INVITES}" | jq '[.[] | select(.status == "expired")] | length')
 ACCEPTED=$(echo "${INVITES}" | jq '[.[] | select(.status == "accepted")] | length')
-
 info "Invites: total=${TOTAL}, pending=${PENDING}, expired=${EXPIRED}, accepted=${ACCEPTED}"
-
 if [[ "${PENDING}" -gt 0 ]]; then
   warn "2.1 ${PENDING} pending invites found — review for stale or unauthorized invitations:"
   echo "${INVITES}" | jq -r '.[] | select(.status == "pending") |
