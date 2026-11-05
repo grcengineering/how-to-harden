@@ -37,8 +37,13 @@ amplitude:
   hardening_docs: "https://amplitude.com/docs/admin"
 
 anthropic-api:
-  product_docs: "https://docs.anthropic.com/"
-  api_docs: "https://docs.anthropic.com/en/api/"
+  product_docs: "https://platform.claude.com/docs/en/home"
+  api_docs: "https://platform.claude.com/docs/en/api/overview"
+  hardening_docs:
+    - label: "API and data retention"
+      url: "https://platform.claude.com/docs/en/manage-claude/api-and-data-retention"
+    - label: "Managed Agents secure deployment"
+      url: "https://platform.claude.com/docs/en/managed-agents/secure-deployment"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
 
 anthropic-claude:
@@ -57,16 +62,21 @@ claude-enterprise:
   hardening_docs:
     - label: "Claude Enterprise Administrator Guide"
       url: "https://claude.com/resources/tutorials/claude-enterprise-administrator-guide"
+    - label: "Enterprise Security Center"
+      url: "https://support.claude.com/en/articles/18246629-review-your-organization-s-security-posture-with-the-security-center"
+    - label: "Desktop device policy"
+      url: "https://support.claude.com/en/articles/12622667-enterprise-configuration-for-claude-desktop"
     - label: "Claude in Chrome Admin Controls"
       url: "https://support.claude.com/en/articles/13065128-claude-in-chrome-admin-controls"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/claude-enterprise"
 
 claude-code:
   product_docs: "https://code.claude.com/docs/"
   hardening_docs:
     - label: "Claude Code Security"
       url: "https://code.claude.com/docs/en/security"
-    - label: "Claude Code IAM & Enterprise Auth"
-      url: "https://code.claude.com/docs/en/iam"
+    - label: "Claude Code permissions and managed policy"
+      url: "https://code.claude.com/docs/en/permissions"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
 
 asana:

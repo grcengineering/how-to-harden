@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH Anthropic Claude Control 3.2: Manage Workspace Membership
 # Profile: L1 | NIST: AC-2, AC-6 | SOC 2: CC6.2, CC6.3
-# https://howtoharden.com/guides/anthropic-claude/#32-manage-workspace-membership
+# https://howtoharden.com/guides/anthropic-api/#22-manage-workspace-membership
 source "$(dirname "$0")/common.sh"
 
 banner "3.2: Manage Workspace Membership"
@@ -21,20 +21,16 @@ if [[ -z "${WORKSPACE_ID}" ]]; then
   info "Set WORKSPACE_ID=<id> and re-run to audit a specific workspace"
   summary; exit 0
 fi
-
 info "Auditing members of workspace ${WORKSPACE_ID}..."
 MEMBERS=$(anthropic_list_all "/v1/organizations/workspaces/${WORKSPACE_ID}/members") || {
   fail "3.2 Failed to list workspace members"
   summary; exit 0
 }
-
 MEMBER_COUNT=$(echo "${MEMBERS}" | jq 'length')
 info "Workspace has ${MEMBER_COUNT} members"
-
 # List members with roles
 echo "${MEMBERS}" | jq -r '.[] | "  \(.user_id)\t\(.workspace_role)"' | \
   column -t -s $'\t' -N "USER_ID,ROLE"
-
 # Flag workspace admins
 ADMIN_COUNT=$(echo "${MEMBERS}" | jq '[.[] | select(.workspace_role == "workspace_admin")] | length')
 if [[ "${ADMIN_COUNT}" -gt 2 ]]; then

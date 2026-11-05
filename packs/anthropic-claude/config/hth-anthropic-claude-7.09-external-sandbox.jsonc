@@ -1,0 +1,18 @@
+// Claude Code 3.2: Vendor-documented devcontainer starting point.
+// Profile: L3 | NIST: SC-39, SC-7 | SOC 2: CC6.1, CC6.8
+// https://howtoharden.com/guides/claude-code/#32-deploy-external-sandbox-tooling
+// Source: https://code.claude.com/docs/en/devcontainer (2026-11-05).
+// A container is not an egress policy. Add reviewed network controls and Code
+// managed policy (3.1); do not mount host secrets or run untrusted repositories.
+// No installer, sandbox creation, token minting or rollback runs from this payload.
+// HTH Guide Excerpt: begin vendor-devcontainer-starting-point
+{
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+  },
+  "containerEnv": {
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  }
+}
+// HTH Guide Excerpt: end vendor-devcontainer-starting-point

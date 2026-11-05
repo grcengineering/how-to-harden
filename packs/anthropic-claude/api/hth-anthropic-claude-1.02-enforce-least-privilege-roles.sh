@@ -33,15 +33,12 @@ MEMBERS=$(anthropic_list_all "/v1/organizations/users") || {
   fail "1.2 Failed to list organization users"
   summary; exit 1
 }
-
 TOTAL=$(echo "${MEMBERS}" | jq 'length')
 info "Role distribution (all roles present, no value dropped):"
 echo "${MEMBERS}" | jq -r 'group_by(.role) | map("  \(.[0].role)=\(length)") | .[]'
-
 # Any role outside the documented enum is worth eyes-on (API drift or new tier).
 # Exact match via IN(): `inside` does substring matching on strings.
 echo "${MEMBERS}" | jq -r '.[] | select(.role | IN("user","claude_code_user","developer","billing","admin","managed","membership_admin","owner","primary_owner") | not) | "  UNDOCUMENTED ROLE: \(.role) — \(.email)"'
-
 # Flag excessive ELEVATED-tier count: admin + owner + primary_owner
 ELEVATED_COUNT=$(echo "${MEMBERS}" | jq '[.[] | select(.role == "admin" or .role == "owner" or .role == "primary_owner")] | length')
 if [[ "${ELEVATED_COUNT}" -gt 3 ]]; then

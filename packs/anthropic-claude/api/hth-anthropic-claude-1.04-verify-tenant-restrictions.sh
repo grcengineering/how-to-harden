@@ -47,7 +47,6 @@ tr_probe() {
   TR_ERROR=$(jq -r '.error.error_code // .error.message // "none"' "${BODY_FILE}" 2>/dev/null || echo "unparseable")
   [[ -n "${TR_ERROR}" ]] || TR_ERROR="no response body"
 }
-
 # 1. A key from an org that is NOT allowlisted must be refused by tenant restriction.
 tr_probe "${HTH_TR_BLOCKED_KEY}"
 if [[ "${TR_CODE}" == "403" && "${TR_ERROR}" == "tenant_restriction_violation" ]]; then
@@ -60,7 +59,6 @@ else
   echo "PRECONDITION: inconclusive — HTTP ${TR_CODE} (${TR_ERROR}); check the key and that this host routes through the proxy" >&2
   exit 2
 fi
-
 # 2. Optional: a key from an allowlisted org must still get through.
 if [[ -n "${HTH_TR_ALLOWED_KEY:-}" ]]; then
   tr_probe "${HTH_TR_ALLOWED_KEY}"

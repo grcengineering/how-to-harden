@@ -23,7 +23,6 @@ ORG_INFO=$(anthropic_get "/v1/organizations/me") || {
   fail "1.3 Admin key is invalid or expired"
   summary; exit 1
 }
-
 ORG_NAME=$(echo "${ORG_INFO}" | jq -r '.name')
 ORG_TYPE=$(echo "${ORG_INFO}" | jq -r '.type')
 info "Organization: ${ORG_NAME} (type: ${ORG_TYPE})"
