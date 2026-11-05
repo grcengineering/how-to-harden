@@ -1122,6 +1122,8 @@ tailscale:
       url: "https://tailscale.com/docs/reference/best-practices/security"
     - label: "Grants and Policy Syntax"
       url: "https://tailscale.com/docs/reference/syntax/policy-file"
+    - label: "Secure Node State Storage"
+      url: "https://tailscale.com/docs/features/secure-node-state-storage"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/tailscale"
 
 deepwiki:

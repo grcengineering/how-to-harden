@@ -1,0 +1,17 @@
+// HTH Pack Contract: v1
+//   control: tailscale-4.4
+//   guide: https://howtoharden.com/guides/tailscale/#44-restrict-client-inbound-and-management-exposure
+//   profile: L1
+//   mode: mutating
+//   requires: complete reviewed policy, supported clients, approved alternative management path
+// HTH Tailscale 4.4 — Restrict Client Inbound and Management Exposure; NIST CM-7, SC-7; SOC 2 CC6.6
+// Source: https://tailscale.com/docs/features/client/device-web-interface (available; 2026-11-05)
+// Merge into the complete nodeAttrs list. This targets member-owned devices only;
+// review tagged hosts separately. Preserve an alternative management path.
+// HTH Guide Excerpt: begin disable-client-web-interface
+{
+  "nodeAttrs": [
+    {"target": ["autogroup:member"], "attr": ["disable-web-client"]}
+  ]
+}
+// HTH Guide Excerpt: end disable-client-web-interface

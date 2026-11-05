@@ -24,6 +24,9 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install pyyaml
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.4'
       - run: make lint-content
       - name: Factory pack safety tests (offline)
         run: make test-factory-packs
@@ -57,6 +60,41 @@ jobs:
       - name: Whole corpus (advisory — coverage + debt visibility)
         run: bash scripts/validate-packs.sh --all
         continue-on-error: true
+
+  # Runs plans against the real pinned schema with a mocked provider, never a tailnet.
+  tailscale-terraform:
+    name: Tailscale Terraform Safety
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: '1.17.1'
+          terraform_wrapper: false
+      - run: terraform -chdir=packs/tailscale/terraform fmt -check -recursive
+      - run: terraform -chdir=packs/tailscale/terraform init -backend=false -input=false
+      - run: terraform -chdir=packs/tailscale/terraform validate
+      - run: terraform -chdir=packs/tailscale/terraform test
+
+  tailscale-sdk:
+    name: Tailscale SDK Safety
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: packs/tailscale/sdk/go.mod
+          cache: false
+      - name: Download pinned SDK dependencies
+        working-directory: packs/tailscale/sdk
+        run: go mod download all
+      - name: Test constrained SDK transport (offline)
+        working-directory: packs/tailscale/sdk
+        run: go test -count=1 -v ./...
 
   # ─── Build Verification (pack sync + Jekyll) ───────────────────────────────
   test-build:

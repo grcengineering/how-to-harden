@@ -45,7 +45,7 @@ hth_cli() {
   command -v tailscale >/dev/null 2>&1 || hth_unknown 'install an approved Tailscale client first'
   # Only fixed read operations may reach the first-party CLI.
   case "$*" in
-    'lock status'|'funnel status --json'|'version --json') ;;
+    'lock status'|'funnel status --json'|'version --json'|'serve status --json'|'syspolicy list --json'|'get --json shields-up'|'get --json webclient'|'drive list'|'dns status --json') ;;
     *) hth_unknown 'unsupported CLI operation' ;;
   esac
   if ! tailscale "$@" > "$HTH_TEMP/cli" 2> "$HTH_TEMP/cli-error"; then

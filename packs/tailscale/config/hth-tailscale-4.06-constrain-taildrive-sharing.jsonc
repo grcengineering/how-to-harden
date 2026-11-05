@@ -1,0 +1,26 @@
+// HTH Pack Contract: v1
+//   control: tailscale-4.6
+//   guide: https://howtoharden.com/guides/tailscale/#46-constrain-taildrop-and-taildrive-file-sharing
+//   profile: L2
+//   mode: mutating
+//   requires: approved alpha Taildrive deployment, existing group:admins, reviewed fileserver tag/share, complete policy
+// HTH Tailscale 4.6 — Constrain Taildrop and Taildrive File Sharing; NIST AC-3, AC-4; SOC 2 CC6.6
+// Source: https://tailscale.com/docs/features/taildrive (alpha; 2026-11-05)
+// Approved-use example only. If sharing is unnecessary, remove its capability
+// rather than enabling this fragment. Replace overlapping broad application grants.
+// HTH Guide Excerpt: begin constrain-taildrive-sharing
+{
+  "tagOwners": {"tag:fileserver": ["group:admins"]},
+  "nodeAttrs": [
+    {"target": ["tag:fileserver"], "attr": ["drive:share"]},
+    {"target": ["group:admins"], "attr": ["drive:access"]}
+  ],
+  "grants": [
+    {
+      "src": ["group:admins"],
+      "dst": ["tag:fileserver"],
+      "app": {"tailscale.com/cap/drive": [{"shares": ["approved-docs"], "access": "ro"}]}
+    }
+  ]
+}
+// HTH Guide Excerpt: end constrain-taildrive-sharing

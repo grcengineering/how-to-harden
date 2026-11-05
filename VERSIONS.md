@@ -265,7 +265,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Sentry](docs/_guides/sentry.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Shopify Plus](docs/_guides/shopify.md) | v0.3.0 | ai-drafted | 2026-09-25 |
 | [Square](docs/_guides/square.md) | v0.3.1 | ai-drafted · ai-validated | 2026-09-30 |
-| [Tailscale](docs/_guides/tailscale.md) | v0.1.0 | ai-drafted | 2026-11-04 |
+| [Tailscale](docs/_guides/tailscale.md) | v0.2.0 | ai-drafted | 2026-11-05 |
 | [Tenable](docs/_guides/tenable.md) | v0.2.2 | ai-drafted | 2026-08-08 |
 | [Twilio](docs/_guides/twilio.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [UKG Pro](docs/_guides/ukg.md) | v0.2.0 | ai-drafted | 2026-08-08 |
