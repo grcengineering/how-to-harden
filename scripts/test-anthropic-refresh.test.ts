@@ -334,3 +334,25 @@ test('each standalone Python WIF excerpt rejects empty shadow credentials/profil
     const r=Bun.spawnSync(['python3','-c',excerpt],{env:{...cleanEnv(),[variable]:''},timeout:10000});expect(r.exitCode).not.toBe(0);expect(r.stderr.toString()).toContain(variable);expect(r.stderr.toString()).not.toContain('ModuleNotFoundError');
   }
 });
+
+describe('recording singleton is separate from effective settings and native posture',()=>{
+  test('REST records enabled/disabled distinctly and unknown never passes',()=>{
+    for(const [body,exit]of [[{type:'compliance_settings',state:{type:'enabled'}},0],[{type:'compliance_settings',state:{type:'disabled'}},1],[{type:'compliance_settings',state:{type:'future'}},2],[{type:'compliance_settings'},2]] as const){
+      const m=mock([body]);const r=run('packs/claude-enterprise/api/hth-claude-enterprise-2.02-recording-state.sh',m.env);expect(r.exitCode).toBe(exit);expect(readFileSync(join(m.dir,'args.0'),'utf8')).toContain('/v1/organizations/compliance_settings');expect(readFileSync(join(m.dir,'args.0'),'utf8')).not.toContain('/v1/compliance/organizations/');
+    }
+  });
+  test('actual official SDK calls the recording singleton, not effective-setting or posture endpoints',async()=>{
+    const {recordingState}=await import('../packs/claude-enterprise/sdk/hth-claude-enterprise-2.02-recording-state.js');const calls:Request[]=[];
+    const r=await recordingState('sk-ant-fixture',async(input:any,init:any)=>{calls.push(new Request(input,init));return Response.json({type:'compliance_settings',state:{type:'disabled'}});});
+    expect(r.state.type).toBe('disabled');expect(new URL(calls[0].url).pathname).toBe('/v1/organizations/compliance_settings');expect(calls[0].method).toBe('GET');
+    await expect(recordingState('sk-ant-fixture',async()=>Response.json({type:'compliance_settings',state:{type:'future'}}))).rejects.toThrow();
+  });
+  test('native CLI uses retrieve without list pagination flags and validates singleton state',()=>{
+    for(const state of ['enabled','disabled','future']){
+      const dir=mkdtempSync(join(tmpdir(),'hth-ant-recording-'));writeFileSync(join(dir,'fixture'),JSON.stringify({type:'compliance_settings',state:{type:state}}));
+      writeFileSync(join(dir,'ant'),'#!/usr/bin/env bash\ncat >/dev/null\nprintf "%s\\n" "$@" > "$MOCK_DIR/args"\ncat "$MOCK_DIR/fixture"\n',{mode:0o700});
+      const r=run('packs/claude-enterprise/cli/hth-claude-enterprise-2.02-recording-state.sh',{PATH:`${dir}:${process.env.PATH}`,MOCK_DIR:dir,ANTHROPIC_ADMIN_KEY:'sk-ant-fixture'});
+      expect(r.exitCode===0).toBe(state==='enabled');const args=readFileSync(join(dir,'args'),'utf8');expect(args).toContain('organization:compliance-settings\nretrieve');expect(args).not.toContain('--max-items');
+    }
+  });
+});

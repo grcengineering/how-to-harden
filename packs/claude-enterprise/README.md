@@ -8,6 +8,7 @@ These packs support the [Enterprise guide](https://howtoharden.com/guides/claude
 | CLI / SDK 1.03 | Native official `ant` / `@anthropic-ai/sdk` membership reads |
 | API 1.04 | Read target by default; optional exact-user-confirmed sign-out needs `write:members` and the documented beta |
 | API 2.01 | Bounded child-org Activity Feed export; existing `read:compliance_activities` key |
+| API / CLI / SDK 2.02 | Native Compliance recording singleton; existing authorized admin credential, minimum selectable Enterprise scope unverified; never creates/broadens a key |
 | API 2.04 | Effective settings compared with an explicit operator baseline; existing `read:compliance_org_data` key, per-parent feature enablement |
 | Config 3.06 | Emit macOS Desktop profile or Windows HKLM policy; no installation or tenant change |
 | API 4.01 | Complete effective monthly spend-limit read; `read:spend_limits` |

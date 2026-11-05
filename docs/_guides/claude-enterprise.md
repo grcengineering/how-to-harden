@@ -332,13 +332,16 @@ Use the Compliance API (`/v1/compliance/activities` plus directory, effective-se
 
 #### Code Implementation
 
-Use the activity pack in [2.1](#21-export-and-retain-audit-logs) and the settings pack in [2.4](#24-assess-effective-settings-against-an-explicit-baseline) with separately scoped existing keys. No credential is created or recording switch changed by these packs.
+{% include pack-code.html vendor="claude-enterprise" section="2.2" %}
+
+The native singleton [Compliance Settings API](https://platform.claude.com/docs/en/api/http/organization/compliance_settings/retrieve) and official CLI/SDK read recording state, including inherited parent configuration. This is **separate** from the effective-settings list in 2.4 and native Security Center results. The response has no organization ID: independently confirm which organization the existing credential represents. The public reference documents a POST as well; enabling begins future capture, disabling stops it except Access Transparency, and Access Transparency provisioning can re-enable it. These packs only read. The exact minimum selectable Enterprise scope for this singleton was not specified in the inspected scope table; verify existing authorization and do not assume a content-read key or a 403 proves recording is off. No key is created or broadened to test it. Use the separately scoped activity exporter in 2.1 to verify delivery and known gaps.
 
 #### Validation & Testing
 1. A read-scoped key is refused on delete endpoints — the `403` body lists held vs required scopes
 2. Activity feed events arrive in your tooling for a test conversation
 3. Confirm a local Claude Code session run under an Enterprise-signed-in account appears in the session endpoints
-4. On suspected key leak: delete the key, then audit the feed with `activity_types[]=compliance_api_accessed`, matching `actor.type` `api_actor` and `actor.api_key_id` to the compromised key
+4. Read the native recording singleton and verify `state.type` is `enabled`; reconcile parent inheritance and the actual credential organization. This does not establish historic capture or downstream delivery.
+5. On suspected key leak: delete the key, then audit the feed with `activity_types[]=compliance_api_accessed`, matching `actor.type` `api_actor` and `actor.api_key_id` to the compromised key
 
 **Expected result:** Continuous programmatic audit with scope-minimal keys, recording provably on, and key lifecycle tied to offboarding. ([Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api) · [Access setup](https://platform.claude.com/docs/en/manage-claude/compliance-api-access) · [Admin key scopes](https://platform.claude.com/docs/en/manage-claude/admin-api-keys))
 
