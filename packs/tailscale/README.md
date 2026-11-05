@@ -127,7 +127,7 @@ Use `TF_VAR_hth_profile_level=2` for route/log management. Do not set the shell 
 
 ## SDK and SIEM
 
-The SDK is `tailscale.com/client/tailscale/v2` 2.12.0 and requires Go 1.24+. The older `tailscale-client-go` implementation is unmaintained. Run `go mod download` using normal checksum verification, then `go run .` from `sdk/` with the same injected token/tailnet/output variables. The device collector does not reserialize a tailnet policy through the SDK’s typed ACL structure, which could drop fields the SDK schema does not represent.
+The SDK is `tailscale.com/client/tailscale/v2` 2.12.0 and requires Go 1.24+. The older `tailscale-client-go` implementation is unmaintained. Run `go mod download all` using normal checksum verification, then `go run .` from `sdk/` with the same injected token/tailnet/output variables. The explicit `all` initializes archive checksums as well as module metadata on a clean cache. The device collector does not reserialize a tailnet policy through the SDK’s typed ACL structure, which could drop fields the SDK schema does not represent.
 
 For Splunk, extract the **marked query region** of the SPL pack; the surrounding `#` lines are HTH metadata, not SPL. The example `index` and `sourcetype` are operator-selected ingestion names. If importing API exports, turn the `logs` array into individual JSON events first. Confirm field extraction using your actual integration before using the investigation query in an alert.
 
@@ -146,6 +146,7 @@ With pinned dependencies available (Terraform 1.7+ for the mocked-provider tests
 
 ```bash
 cd packs/tailscale/sdk
+go mod download all
 go test ./...
 cd ../terraform
 terraform init -backend=false

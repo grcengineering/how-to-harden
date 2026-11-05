@@ -91,7 +91,7 @@ jobs:
           cache: false
       - name: Download pinned SDK dependencies
         working-directory: packs/tailscale/sdk
-        run: go mod download
+        run: go mod download all
       - name: Test constrained SDK transport (offline)
         working-directory: packs/tailscale/sdk
         run: go test -count=1 -v ./...

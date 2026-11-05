@@ -28,7 +28,7 @@ test-tailscale-packs: ## Exercise Tailscale REST/CLI boundaries and candidate ge
 	@bun test scripts/test-tailscale-refresh.test.ts
 
 test-tailscale-sdk: ## Test the official Go SDK pack with fake HTTP (requires pinned dependencies)
-	@cd packs/tailscale/sdk && go test ./...
+	@cd packs/tailscale/sdk && go mod download all && go test ./...
 
 test-factory-packs: ## Exercise Factory config inputs and mock REST/CLI/SDK boundaries offline
 	@python3 scripts/test-factory-packs.py
