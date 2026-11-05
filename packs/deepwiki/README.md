@@ -48,7 +48,7 @@ The data source uses the provider's `DEVIN_TOKEN` environment variable (differen
 
 The data source reports connected repositories and their `indexing_enabled` flags. It does **not** expose the indexed branch list; use the API pack for that. Sensitive output presentation does not encrypt Terraform state or plan files. Protect both.
 
-The provider's real `devin_repository_indexing` resource is deliberately not included: creating or expanding it starts indexing jobs, and destroying it disables indexing and clears branch configuration. Those changes require a separately approved change plan. Terraform format checks passed. Provider initialization was attempted with backends disabled on 2026-10-30, but the official registry connection timed out; provider-backed validation, plan, and apply were not performed. Schema and source review is not `terraform validate` or a tenant test.
+The provider's real `devin_repository_indexing` resource is deliberately not included: creating or expanding it starts indexing jobs, and destroying it disables indexing and clears branch configuration. Those changes require a separately approved change plan. Terraform format and real provider-backed schema validation pass on 2026-11-05, using pinned `v0.5.0` with backends disabled. This supersedes the unsuccessful October 30 registry attempt for schema validation only. No plan, apply, live credential or tenant test was performed.
 
 ## Offline regression tests
 

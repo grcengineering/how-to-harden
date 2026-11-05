@@ -96,7 +96,7 @@ The source directory is a collection of **independent examples**, not a single m
 
 Use `terraform init` and `terraform validate`, then inspect `terraform plan`. The data-only examples require no apply. Never apply the IP resource unless an independent administrator has proved a recovery route within the proposed allowlist. Back up the existing list first. A missing operator/runner egress can lock you out; removing/destroying this resource can clear restrictions. `prevent_destroy` only protects while its resource block remains present. Do not treat a boolean acknowledgment as proof that recovery works.
 
-Terraform format checks passed. Provider initialization was attempted with backends disabled on 2026-10-30, but the official registry connection timed out; provider-backed validation, plan, and apply were not performed. Schemas were checked against the provider's fetched `v0.5.0` documentation; this is a static check, not runtime validation. State and saved plans can retain tenant metadata even when outputs contain only counts. Store them securely and do not commit them or any secrets.
+Terraform format and real provider-backed schema validation pass for all five independent examples here on 2026-11-05, using pinned `v0.5.0` with backends disabled. This supersedes the unsuccessful October 30 registry attempt for schema validation only. No plan, apply or live credential was used. State and saved plans can retain tenant metadata even when outputs contain only counts. Store them securely and do not commit them or any secrets.
 
 ## November 2026 source-first additions
 

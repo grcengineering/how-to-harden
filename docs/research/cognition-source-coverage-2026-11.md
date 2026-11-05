@@ -230,4 +230,24 @@ Standing-list research was swept for the preceding twelve months, with historica
 
 ## Verification results
 
-Work in progress: results below will be populated from actual local, render and CI runs. No `VERIFIED-LIVE` product surface and no maturity promotion is permitted by this run.
+The refresh retains all original IDs and adds 32 controls, including separate Poke and Federal guides. Authored coverage is distinct from source discovery: the unverified areas above remain open research boundaries.
+
+| Guide | Leveled controls | Controls with a pack include | Distinct pack files | Rendered pack accordions |
+|---|---:|---:|---:|---:|
+| Devin / common | 24 | 10 | 13 | 14 |
+| Devin CLI | 12 | 9 | 12 | 12 |
+| Desktop / Plugins | 15 | 10 | 10 | 10 |
+| DeepWiki | 5 | 4 | 5 | 5 |
+| Poke | 6 | 3 | 3 | 3 |
+| Federal | 8 | 5 | 7 | 7 |
+| **Total** | **70** | **41** | **50** | **51** |
+
+There are 17 new pack files. The shared audit pack renders for two hub controls, explaining the extra accordion. CLI read checks do not establish device enforcement; native fragments and preview emitters require reviewed deployment. The census records documented handles deliberately excluded from generic writers as well as interfaces still unverified.
+
+- **Offline behavior:** 38 Bun tests / 216 assertions pass, plus existing Devin API 42, CLI 17, Desktop 25 and DeepWiki 20: **142 tests**, all successful in the healthy source snapshot. Coverage includes exactly-one-JSON ingress/responses, pagination failures, both Federal cursor spellings/conflicts, transport/redirect failures, profile gates, secret-free argv, exclusive private evidence, explicit Poke sends/tunnels and first-party dispatch. No stub is presented as the actual gated SDK or product runtime.
+- **Terraform:** official pinned v0.5.0 initialized with backends disabled; provider-backed validation passes for all six independent Terraform examples. Format checks pass. No plan, apply or product credential was used. The earlier October registry timeout is historical and was superseded for schema validation, not for live behavior.
+- **Structural/render:** all 140 guides pass the repository lint with zero warnings. Canonical excerpt synchronization succeeds. A real Jekyll build succeeds in 6.237 seconds using cached gems and a compatible validation-only lockfile outside the repository; the repository lockfile is unchanged. ShellCheck and shell syntax checks pass for the new executables. Source/pack counts above were calculated from actual files and include wiring, not inferred from marketing names.
+- **Corpus debt:** the full pack validator still reports the same five unrelated failure groups and six warning groups as the baseline. The extra temporary Federal freshness failure seen during editing is resolved by canonical regeneration. The blocking touched-file gate passes with no failures in the files this branch touched; the full-corpus red exit is never called a clean pass.
+- **Environment and browser:** unrelated checkout-file hydration stalled normal lint/render/index refresh, so a healthy Git archive with the exact staged overlay was used and six family metadata files were copied back canonically. Initial Interceptor tab creation timed out; subsequent reads resolved outcomes, and an independent lane is checking the fresh loopback build. Preliminary checks on the older preview are not final-head browser evidence. Browser results and source/tree comparison are reported with the PR.
+
+No `VERIFIED-LIVE` product surface, real provider plan/apply, live API/CLI/SDK, IdP, license, messaging delivery, tunnel, integration enrollment or SIEM ingestion was exercised. All six guides remain `ai-drafted`; no maturity promotion is earned by these checks.
