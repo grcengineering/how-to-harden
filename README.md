@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Guides: 138](https://img.shields.io/badge/Guides-138-blueviolet)](https://howtoharden.com)
+[![Guides: 141](https://img.shields.io/badge/Guides-141-blueviolet)](https://howtoharden.com)
 [![Code Packs: 91](https://img.shields.io/badge/Code%20Packs-91-orange)](packs/)
 
 **Website:** [howtoharden.com](https://howtoharden.com) | **Organization:** [GRC Engineering](https://grc.engineering)
@@ -29,7 +29,7 @@ This is defense-in-depth done right: **First-party controls you configure** to l
 
 ### 1. Platform-Specific Hardening Guides
 
-Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **138 guides** across 10 categories:
+Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **141 guides** across 10 categories:
 
 | Category | Count | Examples |
 |----------|-------|---------|
@@ -39,7 +39,7 @@ Like CIS Benchmarks, but free, vendor-neutral, and focused on integration contro
 | DevOps | 17 | GitHub, GitLab, Jenkins, Buildkite, SpaceXAI (Cursor) |
 | Identity | 13 | Okta, Auth0, Microsoft Entra ID, Duo |
 | HR/Finance | 11 | BambooHR, ADP, Workday, Stripe |
-| AI/ML Platform | 16 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots, Ona), SpaceXAI (Grok Bot), Cognition (Devin Cloud, CLI, Desktop, DeepWiki), Factory (Droid), LangChain |
+| AI/ML Platform | 19 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots, Ona), SpaceXAI (Grok Bot), Cognition (Devin Cloud, CLI, Desktop, DeepWiki), Factory (Droid common controls, HumanLayer, Mentlio, Fenic), LangChain |
 | Marketing | 9 | HubSpot, Braze, SendGrid, Twilio |
 | IT Operations | 6 | ServiceNow, Jamf, PagerDuty, Microsoft (Intune, Windows 11) |
 | IaC | 2 | Terraform Cloud, Pulumi |

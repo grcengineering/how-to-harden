@@ -1,6 +1,6 @@
 # Factory Code Pack
 
-23 packs support sixteen of the nineteen controls in the [Factory hardening guide](https://howtoharden.com/guides/factory/). They use documented Factory organization settings, REST reads, the first-party Droid CLI and the official Python SDK. Domain/SSO setup, SCM installation associations and managed connector availability retain their documented console/IdP/SCM workflows.
+26 packs support eighteen of the twenty-four controls in the [Factory common-controls guide](https://howtoharden.com/guides/factory/). They use documented Factory organization settings, REST reads, the first-party Droid CLI and the official Python SDK. Identity, SCM associations, managed connectors, native credential review, Delegations and App Automations retain their documented manual workflows and explicit source limits. The separate [HumanLayer pack](../humanlayer/) does not inherit Factory policy or credentials; Mentlio has no verified public executable administration contract in this refresh.
 
 **Validation scope:** documentation checks and offline mocks only. No Factory tenant, IdP, live SDK catalog, policy engine or sandbox was exercised. The guide remains `ai-drafted`.
 
@@ -8,16 +8,16 @@
 
 | Type | Files | Purpose |
 |------|-------|---------|
-| `config/` | 11 JSONC fragments, 3 shell generators | Organization policy candidates; generators print JSON without installing it. |
-| `api/` | 3 verification scripts | Member inventory, workload-key metadata and managed-settings revision history. |
-| `cli/` | 5 verification scripts | Candidate/resolved permission previews, MCP/approval inventory, installed plugins, available tools and visible computers. |
+| `config/` | 12 JSONC fragments, 3 shell generators | Organization policy candidates; generators print JSON without installing it. |
+| `api/` | 4 verification scripts | Member inventory, workload-key metadata, Computer secret names and managed-settings revision history. |
+| `cli/` | 6 verification scripts | Candidate/resolved permission previews, MCP/approval inventory, installed plugins, available tools, visible Computers and client version/update checks. |
 | `sdk/` | 1 Python verification script | Compare the selectable model catalog with reviewed model IDs, without opening a session or making a model call. |
 
 `common.sh` and `api/common.sh` are shared helpers, not additional control packs. Download the whole directory if running a shell pack. No Terraform provider, GraphQL endpoint, general audit-log export route, SIEM table or deprecated scanner definitions are fabricated.
 
 ## Safe use
 
-Run scripts explicitly with Bash or Python from a trusted checkout. Use an approved, supported Droid release. Native permission rules additionally need organization rollout activation. Documentation was checked across 2026-10-30 and 2026-10-31; no installed Factory version was tested.
+Run scripts explicitly with Bash or Python from a trusted checkout. Use an approved, supported Droid release. Native permission rules additionally need organization rollout activation. The initial 2026-10-30–31 evidence is historical; the 2026-11-05 source-first refresh is recorded separately. No installed Factory version was tested.
 
 All scripts validate `HTH_PROFILE_LEVEL` (1–4, default 1) and refuse to run below their minimum. JSONC templates have a fixed profile in the header and no runtime gate. Inspect each fragment before deploying it; do not bulk-apply every pack.
 
@@ -33,11 +33,13 @@ Scripts use `jq`, Python 3 and Bash; API scripts also use `curl`. The live Pytho
 |------|-------------------------------------|--------|
 | API 1.2 | `FACTORY_API_KEY`, `FACTORY_MEMBERS_OUTPUT` | Complete paginated user inventory; does not establish roles or SCIM ownership. |
 | API 1.3 | Human Manager/Owner `FACTORY_API_KEY`, `FACTORY_KEYS_OUTPUT` | Service accounts and key metadata, including revoked/expired records; no credential creation or revocation. |
+| API 4.5 | Authorized organization `FACTORY_API_KEY`, `FACTORY_SECRET_NAMES_OUTPUT` | Organization Computer secret names only; no plaintext, personal overrides, running-process access proof or writes. |
 | API 5.2 | Authorized human admin `FACTORY_API_KEY`, `FACTORY_HISTORY_OUTPUT` | Complete paginated settings history, not the full organization audit log or effective device policy. |
 | CLI 2.2 | `FACTORY_PROJECT_DIR`, `FACTORY_SETTINGS_FILE`, `FACTORY_RULE_REPORT_OUTPUT` | Candidate and resolved JSON previews for `git push origin main`; the command is never executed. |
 | CLI 3.1 | `FACTORY_PROJECT_DIR`, `FACTORY_MCP_OUTPUT` | Private server and persistent-approval inventory. Runtime components can load; use a trusted managed project. |
 | CLI 3.2 | `FACTORY_PROJECT_DIR`, `FACTORY_PLUGINS_OUTPUT` | Private installed-plugin list; installation is not effective enablement. |
 | CLI 2.5 | `FACTORY_PROJECT_DIR`, `FACTORY_TOOLS_OUTPUT` | Available tools from `droid exec --list-tools`; exits without a model task. |
+| CLI 2.7 | `FACTORY_PROJECT_DIR`, `FACTORY_VERSION_OUTPUT` | Binary path, `--version` and `update --check`; no installation or daemon restart. A distribution-disabled/failed update check is unknown. |
 | CLI 4.4 | `FACTORY_PROJECT_DIR`, `FACTORY_COMPUTERS_OUTPUT` | Computers visible to the authenticated identity; no provisioning/removal. |
 | Config 4.1 | `FACTORY_ALLOWED_IPS_FILE` | JSON source-IPv4 policy fragment; no defaults, no automatic deployment. |
 | Config 4.2 | `FACTORY_APPROVED_MODEL_IDS_FILE` | JSON model allowlist, no user BYOK or automatic future-model admission; separate image-generation disablement. |
@@ -82,15 +84,19 @@ Do not pipe a generator directly into a managed-policy location. The source-IP g
 - Native rules match ordered tokens, not every equivalent command. `git -C /repo push` is intentionally a nonmatch for the sample `git push` prefix. Checker exit 0 is independent of the preview decision and does not enable enforcement.
 - Sandbox reads default to allowed except `denyRead`; Factory/WorkOS domains remain permitted. Whole-process behavior depends on host support. The sample GitHub domain list needs review for each workflow.
 - MCP allowlisting is disabled unless `enabled` is true. Remote matchers constrain hostnames, not scheme, port or path; broad stdio launcher matchers can admit unrelated packages.
-- Strict plugin policy can disable Factory defaults. Organization-added marketplaces remain admitted, and removed policy can reactivate previously installed plugins.
+- Strict plugin policy can disable Factory defaults. Organization-added marketplaces remain admitted, and removed policy can reactivate previously installed plugins. Installed provenance enforcement has a separate rollout and older relative-only policies can leave installed plugins active. A marketplace SHA and mutable npm dependency resolution are different boundaries.
 - Managed-hook loading policy does not protect a user-writable script or make nonblocking hook errors fail closed. Organization-enabled plugin hooks remain eligible.
 - Model-policy IDs do not govern image models. Unknown IDs may be dropped; verify the resolved catalog. The starter disables user BYOK and does not configure a private inference gateway.
 - Customer telemetry settings do not disable Factory's own collector. Aggregate metadata still includes session/repository/tool information. Raw content opt-in has no secret or PII redaction.
+- The update-policy fragment leaves org update suppression off. Package defaults and the launching environment still matter; it does not force an npm or locally disabled updater to run.
+- Computer secrets are account-scoped runtime values, with personal overrides; the Environment editor has no per-Environment secret fields. They are unavailable during builds. Existing processes need refresh/restart after changes; a names inventory proves neither injection nor revocation.
+- The general audit API is announced but its exact export contract was not established. Settings history is not a substitute. App Automations, CI Automations, Delegations and personal connectors also have distinct contracts.
 
 ## Offline verification
 
 ```bash
 python3 scripts/test-factory-packs.py
+bun test scripts/test-factory-refresh.test.ts
 bash scripts/sync-packs-to-data.sh
 bash scripts/validate-guides.sh
 bash scripts/validate-packs.sh factory
@@ -98,4 +104,4 @@ shellcheck -x -P SCRIPTDIR packs/factory/common.sh packs/factory/api/*.sh \
   packs/factory/cli/*.sh packs/factory/config/*.sh
 ```
 
-The pack validator still scans the full corpus even with a vendor argument; that argument scopes the coverage report. Compare pre-existing findings with the baseline and read the touched-file verdict after a local commit. See [source evidence](../../docs/research/factory-source-evidence.md) for per-control surfaces and the [validation report](../../docs/research/factory-validation.md) for the actual results and untested live behavior.
+The pack validator still scans the full corpus even with a vendor argument; that argument scopes the coverage report. Compare pre-existing findings with the baseline and read the touched-file verdict after a local commit. See [fresh source coverage](../../docs/research/factory-source-coverage.md) and [refresh validation](../../docs/research/factory-refresh-validation.md). The [initial source evidence](../../docs/research/factory-source-evidence.md) and [initial validation report](../../docs/research/factory-validation.md) remain historical records.
