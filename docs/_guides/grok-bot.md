@@ -94,6 +94,8 @@ Section 8 is an unleveled reference section. It covers risks with no admin contr
 - **Runbook packs:** the 7.1 and 7.2 packs are runbook actions, not checks, and their dry runs exit 0
 - **HTTP 401 and 403:** the packs treat both as "not available to this team/plan", because Cursor's docs contradict themselves on Admin API reach for Teams (8.6)
 
+The shared API transport pins the production HTTPS origin, disables user curl configuration, bounds connection/request time and response size, refuses unsafe credential representations and suppresses raw error bodies. Its explicit loopback test escape accepts only a synthetic fixture key. These are pack safeguards, not evidence that the tenant controls are configured; see the [pack README](https://github.com/grcengineering/how-to-harden/blob/main/packs/grok-bot/README.md).
+
 ### Scope
 This guide covers:
 
@@ -1647,7 +1649,10 @@ Review X Chat, public `@bot` requests and file export as separate paths into and
 
 #### ClickOps Implementation
 1. Review the Grok-to-X account link and the main Bot used for tagged requests. `@bot` starts a task on that Bot; it is different from `@grok`. Confirm every current entrypoint against the app’s documented [overview](https://docs.x.ai/grok-bot/overview) and [X tag behavior](https://docs.x.ai/grok-bot/tag-on-x).
+   - The official [X plugin help](https://help.x.com/en/using-x/about-bot) warns that connecting may create an X developer account. Inventory that separate account and its app/user credentials before enabling the plugin.
+   - [X Chat connection](https://cursor.com/help/grok-bot/x-chat) is rolling out and currently supports personal accounts; connecting there excludes managed-domain emails, Cursor team accounts and legacy request-based plans. Verify the actual linked Grok/Cursor account rather than assuming the same email identifies the intended Bot.
 2. Keep drafts and action approvals enabled. Treat post text, quoted material, web pages and email as data rather than permission to act. Public tag confirmation is not proof that private work/results are public.
+   - X separately controls training use for Bot interactions in X Chat. Review [Grok 2.2](/guides/grok/#22-review-consumer-training-and-linked-sign-in-choices); Cursor Privacy Mode is not proof of that X setting.
 3. Before exporting results, review the destination’s recipients and source-service permissions. Drive exports can create a new copy; OneDrive overwrite needs explicit instruction. Revoke any resulting public/shared links separately.
 4. When containing an incident, pause routines and revoke source sessions/grants as well as removing the entrypoint; follow 7.2 for running work and persistent computer state.
 

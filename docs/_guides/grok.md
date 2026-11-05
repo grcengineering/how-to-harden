@@ -30,7 +30,7 @@ Apply L1 (Crawl) controls first, then L2 (Walk) for sensitive workloads and L3 (
 
 ### Scope
 
-Covers consumer account/data choices and Grok Business/Enterprise organizations, licenses, workspaces and connectors. Developer API/PromptIDE, Grok Bot and Build have separate guides. Grokipedia is a discovered consumer service without a fetched enterprise configuration reference; no tenant controls are invented for it. Government and negotiated deployments require deployment-specific evidence.
+Covers consumer account/data choices and Grok Business/Enterprise organizations, licenses, workspaces and connectors. Developer API/PromptIDE, Grok Bot and Build have separate guides. Grokipedia is a discovered consumer service without a fetched enterprise configuration reference; no tenant controls are invented for it. Government and negotiated deployments require deployment-specific evidence. Full X social/account/developer and standalone X Chat administration remain uncovered external operational scope; the [current FAQ](https://docs.x.ai/grok/faq) distinguishes X operations from SpaceXSI. Grok-on-X data choices and AI entrypoints are covered here and in the Bot guide, without claiming comprehensive X hardening.
 
 ## Table of Contents
 
@@ -214,6 +214,10 @@ Review personal Grok data controls and linked sign-in methods separately from en
 #### ClickOps Implementation
 1. Use **Grok → Profile → Settings → Data Controls** to inspect the account’s current data choices; review the linked sign-in methods at **accounts.x.ai**.
 2. Use the exact web/mobile training switch described in current privacy help. Verify personal choices separately from the business contract and X account.
+3. For Grok on X, follow **X settings → Privacy and safety → Data sharing and personalization → Grok & Third-party Collaborators**. Disable the training and personalization choices when organizational policy requires. X documents this training choice for Bot interactions in X Chat too.
+4. Review AI participants before sharing sensitive group messages: adding `@Grok` to an encrypted X Chat group gives X and the AI provider access to subsequent messages until removal. Removing it is not evidence of erasing prior processing.
+
+[X-specific configuration reference](https://help.x.com/en/using-x/about-grok) (fetched 2026-11-05); these settings are independent of Grok web/mobile, API ZDR and Cursor policy.
 
 [First-party configuration reference](https://x.ai/legal/privacy-policy) (fetched 2026-11-05).
 

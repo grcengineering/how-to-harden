@@ -22,8 +22,8 @@
 # Bugbot APIs accept Basic Authentication. The Cloud Agents API accepts Basic or
 # Bearer authentication." The key is the username and the password is empty.
 # Bearer is documented for the Cloud Agents API only, so it is not used here.
-# The key reaches curl as a config line on stdin (`-K -`): it is never a command
-# line argument, never part of a URL, and never echoed.
+# The base64 Basic credential reaches curl as a config line on stdin (`-K -`):
+# neither it nor the raw key is a command argument, URL component or log value.
 #
 # ── TRAP B: two key types, never interchangeable ─────────────────────────────
 # "Organization endpoints require Organization API keys. Team endpoints require
@@ -89,9 +89,25 @@
 set -euo pipefail
 
 CURSOR_API_BASE="${CURSOR_API_BASE:-https://api.cursor.com}"
+GB_CURL_PROTOCOLS="=https"
+if [ "${CURSOR_API_BASE}" != "https://api.cursor.com" ]; then
+  # Offline fixtures are an explicit separate boundary, never an alternate
+  # production endpoint. Only a literal loopback address and synthetic key work.
+  gb_fixture_port="${CURSOR_API_BASE#http://127.0.0.1:}"
+  case "${gb_fixture_port}" in ''|*[!0-9]*) gb_fixture_port=0 ;; esac
+  if [ "${HTH_LOOPBACK_FIXTURE:-0}" != "1" ] \
+     || [ "${CURSOR_API_BASE#http://127.0.0.1:}" = "${CURSOR_API_BASE}" ] \
+     || [ "${#gb_fixture_port}" -gt 5 ] \
+     || [ "${gb_fixture_port}" -lt 1 ] || [ "${gb_fixture_port}" -gt 65535 ]; then
+    echo "PRECONDITION: CURSOR_API_BASE must be https://api.cursor.com; tests may explicitly use HTH_LOOPBACK_FIXTURE=1 with http://127.0.0.1:<port> and the synthetic fixture key" >&2
+    exit 2
+  fi
+  GB_CURL_PROTOCOLS="=http"
+fi
 
 command -v curl >/dev/null 2>&1 || { echo "PRECONDITION: curl not found" >&2; exit 2; }
 command -v jq   >/dev/null 2>&1 || { echo "PRECONDITION: jq not found" >&2; exit 2; }
+command -v base64 >/dev/null 2>&1 || { echo "PRECONDITION: base64 not found" >&2; exit 2; }
 
 GB_TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/hth-grok-bot.XXXXXX")"
 trap 'rm -rf "${GB_TMP_DIR}"' EXIT
@@ -108,19 +124,31 @@ gb_tmp() { mktemp "${GB_TMP_DIR}/$1.XXXXXX"; }
 
 # ── Keys ─────────────────────────────────────────────────────────────────────
 gb_require_key() { # gb_require_key team|org
+  local key LC_ALL=C
   case "$1" in
     team)
       if [ -z "${CURSOR_ADMIN_API_KEY:-}" ]; then
         echo "PRECONDITION: set CURSOR_ADMIN_API_KEY — a Cursor Team API key (cursor.com/dashboard > API Keys); read:* verifies /grok-bot/* routes, admin:* is needed to enforce and for /teams/* routes (TRAP E)" >&2
         exit 2
-      fi ;;
+      fi
+      key="${CURSOR_ADMIN_API_KEY}" ;;
     org)
       if [ -z "${CURSOR_ORG_API_KEY:-}" ]; then
         echo "PRECONDITION: set CURSOR_ORG_API_KEY — a Cursor Organization API key (admin:* for Grok Bot computer operations; auditlogs:read or admin:* for the organization audit feed; members:read or admin:* to list members)" >&2
         exit 2
-      fi ;;
+      fi
+      key="${CURSOR_ORG_API_KEY}" ;;
     *) echo "PRECONDITION: unknown key kind '$1'" >&2; exit 2 ;;
   esac
+  case "${key}" in
+    *[![:graph:]]*|*:*|*\"*|*\\*)
+      echo "PRECONDITION: API key contains an unsafe credential representation; whitespace, control characters, colon, quotes and backslash are refused" >&2
+      exit 2 ;;
+  esac
+  if [ "${GB_CURL_PROTOCOLS}" = "=http" ] && [ "${key}" != "HTH_SYNTHETIC_FIXTURE_KEY" ]; then
+    echo "PRECONDITION: loopback fixtures accept only HTH_SYNTHETIC_FIXTURE_KEY, never a vendor credential" >&2
+    exit 2
+  fi
 }
 
 gb_require_team_id() {
@@ -134,21 +162,35 @@ gb_require_team_id() {
 # ── HTTP ─────────────────────────────────────────────────────────────────────
 # _gb_send <team|org> <path> [curl args...]
 # Sets GB_CODE (000 when no HTTP response arrived) and leaves the body in
-# GB_BODY_FILE. The key is piped to curl as a config line (TRAP A).
+# GB_BODY_FILE. Basic auth is base64-encoded before piping its config to curl;
+# neither the raw key nor the encoded credential is a process argument.
 _gb_send() {
-  local kind="$1" path="$2" key rc attempt=0
+  local kind="$1" path="$2" key encoded rc attempt=0 LC_ALL=C
   shift 2
+  case "${path}" in
+    //*) echo "PRECONDITION: API path must be relative to the fixed origin" >&2; exit 2 ;;
+    /*) ;;
+    *) echo "PRECONDITION: API path must start with /" >&2; exit 2 ;;
+  esac
+  case "${path}" in
+    *[![:graph:]]*|*\#*) echo "PRECONDITION: unsafe API path representation" >&2; exit 2 ;;
+  esac
   gb_require_key "${kind}"
   GB_KIND="${kind}"
   if [ "${kind}" = "team" ]; then key="${CURSOR_ADMIN_API_KEY}"; else key="${CURSOR_ORG_API_KEY}"; fi
+  encoded=$(printf '%s:' "${key}" | base64 | tr -d '\r\n')
   while :; do
     : > "${GB_BODY_FILE}"
     set +e
-    GB_CODE=$(printf 'user = "%s:"\n' "${key}" \
-      | curl -sS -K - -o "${GB_BODY_FILE}" -w '%{http_code}' "$@" "${CURSOR_API_BASE}${path}" 2>/dev/null)
+    GB_CODE=$(printf 'header = "Authorization: Basic %s"\n' "${encoded}" \
+      | curl -q -sS --globoff --connect-timeout 10 --max-time 30 \
+          --max-filesize 10485760 --max-redirs 0 \
+          --proto "${GB_CURL_PROTOCOLS}" --proto-redir '=https' \
+          -K - -o "${GB_BODY_FILE}" -w '%{http_code}' "$@" "${CURSOR_API_BASE}${path}" 2>/dev/null)
     rc=$?
     set -e
     if [ "${rc}" -ne 0 ]; then GB_CODE="000"; fi
+    case "${GB_CODE}" in [0-9][0-9][0-9]) ;; *) GB_CODE="000" ;; esac
     if [ "${GB_CODE}" = "429" ] && [ "${attempt}" -lt 1 ]; then
       attempt=$((attempt + 1))
       echo "  (HTTP 429 on ${path}: waiting the documented Retry-After of 60 s, once)" >&2
@@ -180,12 +222,11 @@ gb_post() {
 # route that was called (TRAP C, E, F) and exits: 2 (precondition) normally, 1
 # when this is the enforce phase and verify already found something.
 gb_require() {
-  local label="$1" c msg path hint="" tag="PRECONDITION"
+  local label="$1" c path hint="" tag="PRECONDITION"
   shift
   for c in "$@"; do
     if [ "${GB_CODE}" = "${c}" ]; then return 0; fi
   done
-  msg=$(jq -r '(.message // .error // empty) | tostring' "${GB_BODY_FILE}" 2>/dev/null | head -c 300 || true)
   path="${label#* }"   # "<METHOD> <path>" -> "<path>"; labels without a method keep their text
   if [ "${GB_PHASE}" = "enforce" ] && [ "${GB_FINDINGS}" -gt 0 ]; then tag="FAILED"; fi
   case "${GB_KIND}:${GB_CODE}" in
@@ -210,7 +251,7 @@ gb_require() {
       esac ;;
     org:403)
       case "${path}" in
-        */grok-bot/*)                hint="Grok Bot computer operations are not turned on for this team (the account team enables them per team)." ;;
+        */grok-bot/*)                hint="computer operations unavailable to this credential/team; confirm current Enterprise availability and organization linkage." ;;
         /organizations/audit-logs*)  hint="the teamId is not linked to this organization, or the key's scope does not cover the audit feed." ;;
         *)                           hint="the key's scope does not cover this route." ;;
       esac ;;
@@ -229,7 +270,7 @@ gb_require() {
     *:503)
       hint="temporarily unavailable; retry the same request." ;;
   esac
-  echo "${tag}: ${label} returned HTTP ${GB_CODE}${msg:+ (${msg})}${hint:+ — ${hint}}" >&2
+  echo "${tag}: ${label} returned HTTP ${GB_CODE}; response body suppressed${hint:+ — ${hint}}" >&2
   if [ "${tag}" = "FAILED" ]; then
     echo "FAILED: enforcement did not complete — verify found ${GB_FINDINGS} finding(s) before this request; re-run verify to read the current state" >&2
     exit 1

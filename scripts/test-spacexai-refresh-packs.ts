@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // Synthetic transport and shell-boundary regression tests. Never calls vendor APIs.
 import {test,expect,afterEach,afterAll} from 'bun:test';
-import {mkdtempSync,writeFileSync,rmSync,readdirSync} from 'node:fs';
+import {mkdtempSync,writeFileSync,rmSync,readdirSync,readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {get,pages,required} from '../packs/grok-api/api/common';
@@ -113,5 +113,55 @@ test('published Bash entrypoints execute their adjacent helpers and fail before 
     expect(result.exitCode).toBe(3);
     expect(JSON.parse(result.stdout.toString())).toMatchObject({status:'UNKNOWN'});
     expect(result.stderr.toString()).not.toContain('syntax error');
+  }
+});
+function transportShell(body:string,extra:Record<string,string>={}){
+  const fixture=mkdtempSync(join(temp,'transport-'));
+  const curl=join(fixture,'curl');
+  writeFileSync(curl,`#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\\n' "$@" > "$HTH_FIXTURE_DIR/args"
+cat > "$HTH_FIXTURE_DIR/config"
+out=''
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = -o ]; then out="$2"; shift 2; else shift; fi
+done
+printf '%s' "$HTH_FIXTURE_RESPONSE" > "$out"
+printf '%s' "$HTH_FIXTURE_CODE"
+exit "$HTH_FIXTURE_CURL_EXIT"
+`,{mode:0o700});
+  const result=Bun.spawnSync(['bash','-c',`source "$1"\n${body}`,'hth',join(root,'packs/grok-bot/api/common.sh')],{cwd:root,env:{PATH:`${fixture}:${process.env.PATH}`,TMPDIR:temp,CURSOR_ADMIN_API_KEY:privateText,CURSOR_ORG_API_KEY:privateText,HTH_FIXTURE_DIR:fixture,HTH_FIXTURE_CODE:'200',HTH_FIXTURE_CURL_EXIT:'0',HTH_FIXTURE_RESPONSE:'{}',...extra}});
+  const captured=(name:string)=>Bun.file(join(fixture,name)).size?readFileSync(join(fixture,name),'utf8'):'';
+  return {result,args:captured('args').trim().split('\n').filter(Boolean),config:captured('config')};
+}
+test('Bot transport pins origin, suppresses curlrc, bounds requests and keeps Basic credentials out of argv',()=>{
+  const {result,args,config}=transportShell('gb_get team /grok-bot/capabilities; gb_require "GET /grok-bot/capabilities" 200');
+  expect(result.exitCode).toBe(0);expect(args[0]).toBe('-q');expect(args.at(-1)).toBe('https://api.cursor.com/grok-bot/capabilities');
+  for(const [flag,value] of [['--connect-timeout','10'],['--max-time','30'],['--max-filesize','10485760'],['--max-redirs','0'],['--proto','=https'],['--proto-redir','=https']])expect(args[args.indexOf(flag)+1]).toBe(value);
+  expect(args).toContain('--globoff');expect(args).not.toContain('-L');expect(args.join(' ')).not.toContain(privateText);
+  expect(config).toBe(`header = "Authorization: Basic ${Buffer.from(`${privateText}:`).toString('base64')}"\n`);
+});
+test('Bot transport refuses unsafe origins, paths and credential representations before curl',()=>{
+  for(const base of ['http://api.cursor.com','https://api.cursor.com/','https://api.cursor.com.evil.test','https://user@api.cursor.com','https://api.cursor.com:444','http://127.0.0.1:8080','file:///tmp/secret']){
+    const {result,args}=transportShell('gb_get team /grok-bot/capabilities',{CURSOR_API_BASE:base});expect(result.exitCode).toBe(2);expect(args).toEqual([]);expect(result.stderr.toString()).not.toContain(privateText);
+  }
+  for(const key of ['bad\nheader','bad\rheader','bad key','bad"quote','bad\\escape','bad:password'])for(const kind of ['team','org']){
+    const {result,args}=transportShell(`gb_get ${kind} /grok-bot/capabilities`,{CURSOR_ADMIN_API_KEY:key,CURSOR_ORG_API_KEY:key});expect(result.exitCode).toBe(2);expect(args).toEqual([]);expect(result.stderr.toString()).not.toContain(key);
+  }
+  for(const path of ['https://evil.test','//evil.test','/x\nheader','/x#fragment']){
+    const {result,args}=transportShell('gb_get team "$HTH_TEST_PATH"',{HTH_TEST_PATH:path});expect(result.exitCode).toBe(2);expect(args).toEqual([]);
+  }
+});
+test('Bot loopback fixture escape requires an explicit flag, literal valid port and synthetic key',()=>{
+  for(const base of ['http://localhost:8080','http://0.0.0.0:8080','http://127.0.0.1:0','http://127.0.0.1:65536','http://127.0.0.1:8080/path']){
+    const {result,args}=transportShell('gb_get team /fixture',{CURSOR_API_BASE:base,HTH_LOOPBACK_FIXTURE:'1',CURSOR_ADMIN_API_KEY:'HTH_SYNTHETIC_FIXTURE_KEY'});expect(result.exitCode).toBe(2);expect(args).toEqual([]);
+  }
+  const refused=transportShell('gb_get team /fixture',{CURSOR_API_BASE:'http://127.0.0.1:8080',HTH_LOOPBACK_FIXTURE:'1'});expect(refused.result.exitCode).toBe(2);expect(refused.args).toEqual([]);
+  const {result,args}=transportShell('gb_get team /fixture',{CURSOR_API_BASE:'http://127.0.0.1:8080',HTH_LOOPBACK_FIXTURE:'1',CURSOR_ADMIN_API_KEY:'HTH_SYNTHETIC_FIXTURE_KEY'});expect(result.exitCode).toBe(0);expect(args.at(-1)).toBe('http://127.0.0.1:8080/fixture');expect(args[args.indexOf('--proto')+1]).toBe('=http');
+});
+test('Bot HTTP/redirect/transport failures suppress raw response text and preserve failed-action exit status',()=>{
+  for(const [code,curlExit,phase,findings,exit] of [['403','0','verify','0',2],['302','0','verify','0',2],['200','28','verify','0',2],['403','0','enforce','1',1]] as const){
+    const {result}=transportShell('GB_PHASE="$HTH_TEST_PHASE"; GB_FINDINGS="$HTH_TEST_FINDINGS"; gb_get team /grok-bot/capabilities; gb_require "GET /grok-bot/capabilities" 200',{HTH_FIXTURE_CODE:code,HTH_FIXTURE_CURL_EXIT:curlExit,HTH_FIXTURE_RESPONSE:JSON.stringify({message:privateText,error:privateText}),HTH_TEST_PHASE:phase,HTH_TEST_FINDINGS:findings});
+    expect(result.exitCode).toBe(exit);expect(result.stderr.toString()).toContain('response body suppressed');expect(result.stderr.toString()+result.stdout.toString()).not.toContain(privateText);
   }
 });

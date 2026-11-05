@@ -197,7 +197,7 @@ terminate_computers() {
     exit 2
   fi
   if [ "${GB_CODE}" = "400" ]; then
-    echo "PRECONDITION: POST .../grok-bot/operations returned 400 ($(jq -r '(.message // .error // "no message") | tostring' "${GB_BODY_FILE}" | head -c 300)) — NOTHING STARTED, no computer was terminated." >&2
+    echo "PRECONDITION: POST .../grok-bot/operations returned 400; response body suppressed — NOTHING STARTED, no computer was terminated." >&2
     echo "  Documented causes: a listed member is no longer a current member of the team (for example removed by SCIM or the dashboard after the list was read) or never signed in to Cursor, or the body is malformed or too large (TRAP 3)." >&2
     echo "  Remedies: re-run (the member list is re-read every run); narrow with HTH_CONTAIN_EMAILS; or use Grok Bot Computers > Manage > select members > Terminate VMs in the dashboard." >&2
     if [ "${DO_DISABLE}" -eq 1 ]; then
