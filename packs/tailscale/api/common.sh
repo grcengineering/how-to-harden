@@ -21,6 +21,9 @@ hth_request() {
   local -a arguments=(--header "Accept: ${accept}")
   case "${method}:${path}" in
     GET:/api/v2/tailnet/"$HTH_TAILNET"/users|GET:/api/v2/tailnet/"$HTH_TAILNET"/settings|GET:/api/v2/tailnet/"$HTH_TAILNET"/devices\?fields=all|GET:/api/v2/tailnet/"$HTH_TAILNET"/acl|GET:/api/v2/tailnet/"$HTH_TAILNET"/keys|GET:/api/v2/tailnet/"$HTH_TAILNET"/keys/*|GET:/api/v2/device/*/routes|GET:/api/v2/tailnet/"$HTH_TAILNET"/logging/configuration\?*|GET:/api/v2/tailnet/"$HTH_TAILNET"/logging/configuration/status|GET:/api/v2/tailnet/"$HTH_TAILNET"/logging/network/status) ;;
+    GET:/api/v2/device/*/attributes)
+      [[ "$path" =~ ^/api/v2/device/[A-Za-z0-9_-]{1,128}/attributes$ ]] || hth_unknown 'invalid device attribute path' ;;
+    GET:/api/v2/tailnet/"$HTH_TAILNET"/dns/nameservers|GET:/api/v2/tailnet/"$HTH_TAILNET"/dns/preferences|GET:/api/v2/tailnet/"$HTH_TAILNET"/dns/searchpaths|GET:/api/v2/tailnet/"$HTH_TAILNET"/dns/split-dns) ;;
     POST:/api/v2/tailnet/"$HTH_TAILNET"/acl/validate)
       [[ -f "$body" ]] || hth_unknown 'missing candidate policy'
       arguments+=(--header 'Content-Type: application/hujson' --data-binary "@${body}") ;;

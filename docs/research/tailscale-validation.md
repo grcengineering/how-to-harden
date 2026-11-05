@@ -1,5 +1,7 @@
 # Tailscale local verification report
 
+**Historical snapshot:** this records the initial 2026-11-04 authoring pass. See [refresh verification](tailscale-refresh-validation.md) and the [source-first reconciliation](tailscale-source-coverage.md) for the current guide and packs. The counts and results below remain historical evidence.
+
 Date: **2026-11-04 UTC**. Branch: `feat/tailscale-hardening-guide`. Base: `bf8172c` (`origin/main` when the isolated checkout was prepared). Subject: the standalone Tailscale guide, eighteen controls and 27 source packs across six implementation types.
 
 **No tenants declared — Tier 0+1 only.** `VERIFIED-LIVE = 0`. The guide remains exactly `["ai-drafted"]`; no live-validation or review badge was added. During this local verification stage, no push, publication, pull request, Tailscale setting change, node enrollment, credential creation or credentialed product request occurred.

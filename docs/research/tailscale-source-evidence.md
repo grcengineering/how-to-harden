@@ -1,5 +1,7 @@
 # Tailscale source and automation evidence
 
+**Historical snapshot:** this records the initial 2026-11-04 authoring pass. The current source-first reconciliation is [tailscale-source-coverage.md](tailscale-source-coverage.md), with [refresh verification](tailscale-refresh-validation.md). The counts and conclusions below describe that initial pass.
+
 Research date: **2026-11-04 UTC**. Subject: core Tailscale tailnet administration; eighteen controls and 27 packs. **No tenants declared — Tier 0+1 only.** Every control is documentation-level `DRIFT-CHECKED-ONLY`; `VERIFIED-LIVE = 0`. This source ledger is not a product test result.
 
 ## Placement and scope

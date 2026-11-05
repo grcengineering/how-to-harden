@@ -25,6 +25,7 @@ test-all: lint test-build test-cognition-packs test-factory-packs test-tailscale
 
 test-tailscale-packs: ## Exercise Tailscale REST/CLI boundaries and candidate generation offline
 	@python3 scripts/test-tailscale-packs.py
+	@bun test scripts/test-tailscale-refresh.test.ts
 
 test-tailscale-sdk: ## Test the official Go SDK pack with fake HTTP (requires pinned dependencies)
 	@cd packs/tailscale/sdk && go test ./...

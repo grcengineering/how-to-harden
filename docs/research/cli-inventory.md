@@ -147,7 +147,7 @@
 | 126 | Devin Desktop | Vendor-Adjacent | bundled Devin Local / optional `devin` CLI | Desktop command palette; enterprise may disable installation | No Desktop policy-admin CLI — IDE managed policies/configuration and enterprise UI; Cascade and Devin Local have different controls (verified 2026-10-29) | https://docs.devin.ai/desktop/controls |
 | 127 | DeepWiki | None | — | — | Public/private MCP and Devin repository-indexing API/Terraform; no standalone first-party DeepWiki CLI documented (verified 2026-10-29) | https://docs.devin.ai/work-with-devin/deepwiki-mcp |
 | 128 | Factory | GA-Official | `droid` | Approved pinned installer/version from CLI reference | Partial — runtime permission checks, MCP approvals and plugin inventory; organization identity and managed policy use console/config/REST | https://docs.factory.com/droid-cli/cli-reference |
-| 129 | Tailscale | GA-Official | `tailscale` | Approved first-party client package/release | Partial — client preferences, Tailnet Lock, Serve/Funnel and local status/version; central identity and policy administration use console/REST/Terraform (verified 2026-11-04) | https://tailscale.com/docs/reference/tailscale-cli |
+| 129 | Tailscale | GA-Official | `tailscale`, `tailscaled` | Approved first-party client package/release | Partial — client preferences, system-policy diagnostics, daemon flags, Tailnet Lock, Serve/Funnel, Taildrive, DNS and local status/version; central identity/policy administration uses console/REST/Terraform. Per-command platform/version support matters (checked 2026-11-05). | https://tailscale.com/docs/reference/tailscale-cli |
 
 ---
 
