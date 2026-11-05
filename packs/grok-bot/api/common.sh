@@ -77,19 +77,12 @@
 # response body only. Those writes accept any 2xx (gb_require_2xx), and every
 # enforce run re-reads state with a fresh GET before it reports success.
 #
-# ── TRAP I: exit 0 is "no finding the API can see", not always "compliant" ───
-# Several controls are partly invisible to every API (group Grok Bot tabs, Team
-# Secrets, the OpenTelemetry destination, anything changed before an audit
-# window). A pack that cannot see part of its control sets GB_UNPROVEN, and
-# gb_exit then prints "RESULT: no finding in what the API can read; NOT proven:
-# …" instead of "RESULT: compliant". The exit code stays 0, because such a pack
-# could otherwise never pass, but the result line never overclaims.
-#
-# Exit codes for the verify/enforce packs (everything that runs gb_main):
-#   0 no finding in what the API can read ("compliant" only when GB_UNPROVEN is
-#     empty) | 1 finding, failed action, a dry run that would change something,
-#     or a request refused during enforce after a finding (TRAP C) |
-#   2 precondition (nothing was judged)
+# ── TRAP I: incomplete evidence is UNKNOWN, never a passing check ───────────
+# A pack sets GB_UNPROVEN when an API cannot see part of its control. With no
+# API-visible finding, gb_exit prints RESULT: UNKNOWN and exits 3. Findings
+# still exit 1. A readable subset cannot establish whole-control compliance.
+# Exit codes for verify/enforce: 0 checked surface has no finding/gap;
+# 1 finding/failed action/planned change; 2 precondition; 3 UNKNOWN.
 # The 7.01 and 7.02 packs are runbook ACTIONS, not checks: their dry runs exit 0,
 # and their own headers give their codes.
 
@@ -303,8 +296,8 @@ gb_exit() {
     exit 1
   fi
   if [ -n "${GB_UNPROVEN}" ]; then
-    echo "RESULT: no finding in what the API can read; NOT proven: ${GB_UNPROVEN}"
-    exit 0
+    echo "RESULT: UNKNOWN; NOT proven: ${GB_UNPROVEN}"
+    exit 3
   fi
   echo "RESULT: compliant"
   exit 0
@@ -322,7 +315,8 @@ gb_main() {
   if [ "${GB_MODE}" = "verify" ] || [ -z "${enforce_fn}" ]; then gb_exit; fi
   if [ "${GB_FINDINGS}" -eq 0 ]; then
     if [ -n "${GB_UNPROVEN}" ]; then
-      echo "ENFORCE: no API-visible finding — nothing to change. NOT proven: ${GB_UNPROVEN}"
+      echo "RESULT: UNKNOWN; no API-visible finding to change; NOT proven: ${GB_UNPROVEN}"
+      exit 3
     else
       echo "ENFORCE: already compliant — nothing to change."
     fi
@@ -444,10 +438,11 @@ gb_org_members() {
 # First choice: GET /teams/model-access/configuration returns `teamId`, the
 # "Integer team ID implied by the API key" (models:read or admin:*; the route is
 # documented for "Teams with model access control enabled"). Where it is not
-# readable, the Team key's active members must equal the Organization API's
-# members of CURSOR_TEAM_ID. Anything else stops with exit 2.
+# readable, stop UNKNOWN. Equal membership cannot establish identity: distinct
+# teams may contain exactly the same people. Never substitute email sets for a
+# stable team identifier before a mutation.
 gb_require_team_key_matches() {
-  local key_team cfg_code members team_emails org_emails
+  local key_team cfg_code
   gb_require_team_id
   gb_get team /teams/model-access/configuration
   cfg_code="${GB_CODE}"
@@ -460,19 +455,8 @@ gb_require_team_key_matches() {
     echo "  Team key belongs to team ${key_team} (GET /teams/model-access/configuration)"
     return 0
   fi
-  gb_get team /teams/members
-  gb_require "GET /teams/members" 200
-  gb_shape '(.teamMembers | type == "array")
-            and all(.teamMembers[]; (.email | type == "string") and (.isRemoved | type == "boolean"))' "GET /teams/members"
-  team_emails=$(jq -c '[.teamMembers[] | select(.isRemoved == false) | .email | ascii_downcase] | unique' "${GB_BODY_FILE}")
-  members="$(gb_tmp keycheck)"
-  gb_org_members "${members}"
-  org_emails=$(jq -s -c '[.[].email | ascii_downcase] | unique' "${members}")
-  if [ "${team_emails}" = "[]" ] || [ "${team_emails}" != "${org_emails}" ]; then
-    echo "PRECONDITION: cannot prove CURSOR_ADMIN_API_KEY belongs to team ${CURSOR_TEAM_ID}: GET /teams/model-access/configuration returned HTTP ${cfg_code} without a teamId, and the Team key's active members differ from the Organization API's members of team ${CURSOR_TEAM_ID}" >&2
-    exit 2
-  fi
-  echo "  Team key's active members match team ${CURSOR_TEAM_ID} (model-access configuration not readable: HTTP ${cfg_code})"
+  echo "RESULT: UNKNOWN; cannot prove Team key identity: GET /teams/model-access/configuration returned HTTP ${cfg_code} without an authoritative teamId. No cross-plane action is permitted; matching memberships are not identity evidence." >&2
+  exit 3
 }
 
 # gb_uuid <resume-variable-name> — operationId for a computer operation. The API

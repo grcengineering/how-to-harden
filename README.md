@@ -29,17 +29,17 @@ This is defense-in-depth done right: **First-party controls you configure** to l
 
 ### 1. Platform-Specific Hardening Guides
 
-Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **138 guides** across 10 categories:
+Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **143 guides** across 10 categories:
 
 | Category | Count | Examples |
 |----------|-------|---------|
 | Productivity | 25 | Slack, Airtable, Asana, Notion |
 | Security | 22 | CrowdStrike, Snyk, Wiz, Zscaler, Tailscale |
 | Data | 17 | Snowflake, Databricks, MongoDB Atlas |
-| DevOps | 17 | GitHub, GitLab, Jenkins, Buildkite, SpaceXAI (Cursor) |
+| DevOps | 20 | GitHub, GitLab, Jenkins, Buildkite, SpaceXSI (Cursor, Cloud Agents, Origin, Grok Build) |
 | Identity | 13 | Okta, Auth0, Microsoft Entra ID, Duo |
 | HR/Finance | 11 | BambooHR, ADP, Workday, Stripe |
-| AI/ML Platform | 16 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots, Ona), SpaceXAI (Grok Bot), Cognition (Devin Cloud, CLI, Desktop, DeepWiki), Factory (Droid), LangChain |
+| AI/ML Platform | 18 | Anthropic (Claude Enterprise, Claude Code, API), OpenAI (ChatGPT Enterprise, ChatGPT Dots, Ona), SpaceXSI (Grok, API, Bot), Cognition (Devin Cloud, CLI, Desktop, DeepWiki), Factory (Droid), LangChain |
 | Marketing | 9 | HubSpot, Braze, SendGrid, Twilio |
 | IT Operations | 6 | ServiceNow, Jamf, PagerDuty, Microsoft (Intune, Windows 11) |
 | IaC | 2 | Terraform Cloud, Pulumi |
