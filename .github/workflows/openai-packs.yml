@@ -24,7 +24,7 @@ jobs:
             (cd "packs/$sdk/sdk" && bun install --frozen-lockfile --ignore-scripts)
           done
       - name: Run offline contracts and actual SDK serialization/filter tests
-        run: bun test scripts/test-openai-workspace-refresh.test.ts scripts/test-openai-api-refresh.test.ts scripts/test-openai-ads-refresh.test.ts scripts/test-statsig-packs.test.ts scripts/test-ona-transport.test.ts
+        run: bun test scripts/test-openai-workspace-refresh.test.ts scripts/test-openai-api-refresh.test.ts scripts/test-openai-ads-refresh.test.ts scripts/test-statsig-packs.test.ts scripts/test-ona-transport.test.ts scripts/test-ona-terraform-validation.test.ts
 
   api-terraform:
     name: OpenAI API Terraform schema
@@ -44,6 +44,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.4'
       - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
         with:
           terraform_version: '1.17.1'
@@ -55,14 +58,7 @@ jobs:
         run: |
           export TF_PLUGIN_CACHE_DIR="$RUNNER_TEMP/ona-provider-cache"
           mkdir -p "$TF_PLUGIN_CACHE_DIR"
-          for recipe in packs/ona/terraform/hth-*.tf; do
-            module="$(mktemp -d "$RUNNER_TEMP/ona-schema.XXXXXX")"
-            cp packs/ona/terraform/versions.tf "$module/versions.tf"
-            cp "$recipe" "$module/recipe.tf"
-            echo "Validating $(basename "$recipe")"
-            terraform -chdir="$module" init -backend=false -input=false
-            terraform -chdir="$module" validate
-          done
+          bun scripts/validate-ona-terraform.ts
 
   statsig-terraform:
     name: Statsig Terraform mocked plans

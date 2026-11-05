@@ -29,7 +29,7 @@ Prism is covered as a separate personal-account service with an announced Januar
 
 ## Executed offline checks
 
-All five Bun suites passed together: **65 tests, 0 failures, 1,256 assertions**. Tests use synthetic credentials and mocked HTTP/loopback fixtures, never product credentials or a tenant.
+The initial five Bun suites passed together at `f200c1c`: **65 tests, 0 failures, 1,256 assertions**. Tests use synthetic credentials and mocked HTTP/loopback fixtures, never product credentials or a tenant.
 
 | Component | Tests / assertions | Meaningful checks |
 |-----------|--------------------|-------------------|
@@ -57,5 +57,7 @@ The final report below is completed from the generated artifacts and browser obs
 - Public-site post-deployment verification is **pending maintainer merge and deployment**; a local build of this draft branch is not the public site.
 
 ## Remaining validation limits
+
+Follow-up CI diagnosis: the published Ona 0.5.1 provider validated the first 15 independent recipes, then reproduced the previously documented 4.3 unknown-client-ID validation artifact. The [Ona source ledger](/research/ona-source-coverage/#native-provider-validation-follow-up) records the immutable implementation and corrective gate. Six focused gate regressions passed with 38 assertions; all six offline suites passed together with **71 tests, zero failures and 1,294 assertions**. Actionlint and all 11 workflow shell bodies passed. The replacement gate aggregates every recipe, accepts only the precise direct-root diagnostic for 4.3, and requires native positive/empty-ID child-module checks with synthetic literal inputs. Its actual native Linux result remains pending CI; these local fixtures do not establish a vendor schema pass.
 
 Tenant edition/rollout, SSO/SCIM recovery, personal/work identity separation, actual managed requirements across every runtime, cloud versus device policy, connected-service permissions, retention/region enforcement, live audit attribution and production SIEM fields were not exercised. Current public ChatGPT/Dots policy-write schemas, Frontier administration, Prism automation, some partner-specific integration scopes/revocation/replay contracts, and Statsig audit REST/export remain explicit research gaps rather than invented controls or claims of absence. API Admin keys/events do not verify ChatGPT Enterprise policy. No product setting, integration, credential, account or live environment was changed.
