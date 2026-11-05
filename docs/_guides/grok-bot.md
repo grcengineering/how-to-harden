@@ -3,25 +3,25 @@ layout: guide
 title: "Grok Bot Hardening Guide"
 vendor: "Grok Bot"
 slug: "grok-bot"
-platform: "SpaceXAI"
+platform: "SpaceXSI"
 platform_slug: "spacexai"
 product: "Grok Bot"
 tier: "1"
 category: "AI/ML Platform"
-description: "AI agent hardening for SpaceXAI's Grok Bot: group-scoped access, connector and egress limits, enforced Auto-review, Team Bot governance, action recording, and hosted-computer lifecycle"
-version: "0.1.1"
+description: "AI agent hardening for SpaceXSI's Grok Bot: group-scoped access, connector and egress limits, enforced Auto-review, Team Bot governance, action recording, and hosted-computer lifecycle"
+version: "0.2.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-10-10"
+last_updated: "2026-11-05"
 ---
 
 
-**Product Editions Covered:** Grok Bot on Cursor Enterprise (full admin surface) and self-serve Cursor Teams (partial admin surface). Individual Cursor Pro, Pro+ and Ultra accounts, linked SuperGrok, SuperGrok Plus, SuperGrok Heavy and X Premium+ accounts, and self-serve Grok Business seats have member settings only, apart from Grok Business seat assignment (1.3). Grok Enterprise has no documented admin controls.
+**Product Editions Covered:** Current The X Subscription Premium, Super and Ultra for individuals/team seats; legacy paid Cursor and linked SuperGrok/X grants; Cursor Enterprise (full documented admin surface) and self-serve Cursor Teams (partial admin surface). [Current Bot overview](https://docs.x.ai/grok-bot/overview) and [feature matrix](https://cursor.com/pricing) supersede historical launch entitlements. Individual Cursor Pro, Pro+ and Ultra accounts, linked SuperGrok, SuperGrok Plus, SuperGrok Heavy and X Premium+ accounts, and self-serve Grok Business seats have member settings only, apart from Grok Business seat assignment (1.3). Grok Enterprise workspace SSO/SCIM and connector controls are documented separately in the [Grok guide](/guides/grok/); they do not establish a Cursor Bot policy inheritance.
 
 ---
 
 ## Overview
 
-This is a **product guide within the [SpaceXAI platform](/guides/cursor/)**. Grok Bot inherits the Cursor team's org-wide controls, which live in the SpaceXAI **Common Controls** hub, the [Cursor Hardening Guide](/guides/cursor/), and are not repeated here. Those inherited controls are:
+This is a **product guide within the [SpaceXSI platform](/guides/cursor/)**. Grok Bot inherits the Cursor team's org-wide controls, which live in the SpaceXSI **Common Controls** hub, the [Cursor Hardening Guide](/guides/cursor/), and are not repeated here. Those inherited controls are:
 
 - SSO ([cursor 1.3](/guides/cursor/#13-configure-sso-with-samloidc-teams-and-enterprise))
 - SCIM ([cursor 1.4](/guides/cursor/#14-enable-scim-provisioning-enterprise))
@@ -34,13 +34,13 @@ This is a **product guide within the [SpaceXAI platform](/guides/cursor/)**. Gro
 
 Privacy Mode (Legacy) blocks Grok Bot entirely. The cursor 10.1 pack already pulls every audit event; control 6.2 here covers only the Grok Bot event set.
 
-**What Grok Bot is.** In SpaceXAI's words, "Grok Bot is a computer-use agent that operates applications, browsers, and development environments. It runs in Cursor's cloud, and each user's work executes on a dedicated cloud computer. The desktop and mobile apps are thin clients for chat, review, and approvals" ([Grok Bot for teams and enterprises](https://docs.x.ai/grok-bot/teams-and-enterprises)).
+**What Grok Bot is.** In the vendor’s words, "Grok Bot is a computer-use agent that operates applications, browsers, and development environments. It runs in Cursor's cloud, and each user's work executes on a dedicated cloud computer. The desktop and mobile apps are thin clients for chat, review, and approvals" ([Grok Bot for teams and enterprises](https://docs.x.ai/grok-bot/teams-and-enterprises)).
 
 - **One computer per user:** each user gets one persistent computer, a dedicated Firecracker microVM. Every Bot that user runs shares it, including its files, signed-in browser sessions and command-line credentials
 - **Reach:** Bots reach company systems through connectors, which appear as plugins and use the member's accounts
 - **Unattended work:** Bots keep working while the member's laptop is closed. They run unattended routines on schedules, Slack triggers and webhooks, and members can tag them on X
 - **Handoffs:** Bots can hand coding work to Cursor Cloud Agents and, with permission, run commands on the member's own machine
-- **Team Bots:** one Bot, along with its plugins, secrets and team memory, is shared with a whole team and with Slack
+- **Shared Bots:** selected teammates or a team can use a Bot; Slack channel/group requests use its shared computer, while a direct message uses the requester’s private computer (5.2)
 
 **Launch and status.**
 
@@ -51,16 +51,11 @@ Privacy Mode (Legacy) blocks Grok Bot entirely. The cursor 10.1 pack already pul
 
 The two August posts disagree about which plans were included at launch. Treat Cursor's [plans page](https://cursor.com/help/grok-bot/plans) as the canonical matrix, except where section 8.6 records that it disagrees with Cursor's other pages. The current documentation pages, the Admin API's Grok Bot section and the Organization API's computer operations carry no beta or GA label.
 
-**Who administers it.** Grok Bot is a SpaceXAI product that runs in Cursor's cloud on Cursor accounts. SpaceXAI is the brand of xAI, which SpaceX acquired on February 2, 2026 ([SpaceX Form 10-Q](https://www.sec.gov/Archives/edgar/data/1181412/000162828026052535/spcx-20260630.htm)). This guide keeps the name xAI where it names docs.x.ai, the xAI API and SDK, and xAI-era sources.
+**Who administers it.** Current first-party pages use **SpaceXSI** and name SpaceX SuperIntelligence LLC in the [consumer terms](https://x.ai/legal/terms-of-service). Cursor separately confirmed its completed acquisition by SpaceX on [August 14](https://cursor.com/blog/joining-spacex). The historical platform URL remains `spacexai`; these facts do not establish a single interchangeable tenant or API.
 
-- **Cursor holds the product settings:** every Grok Bot product setting lives in the Cursor dashboard, the Cursor Admin API and the Cursor Organization API. docs.x.ai mirrors the Grok Bot pages and links back to the Cursor dashboard
-- **Three levers live elsewhere:** Grok Business seat assignment in console.x.ai (1.3), the IdP rules (1.2) and Google Workspace app approval (2.2). Cursor's own teams page says the same: "A few live in Team Settings, your Team Marketplace, or your identity provider" ([Cursor: Grok Bot for teams](https://cursor.com/docs/grok-bot/teams))
+Cursor team/organization settings administer the hosted Bot. Grok Business licensing, IdP rules, source-service consent and Slack workspace app approval are separate authorities. Grok chat, the xAI developer API and Build have [separate guides](/guides/cursor/#products-in-this-platform). Bot entrypoints in Slack, X Chat and `@bot` on X are covered here; `@grok` is a separate service.
 
-This guide calls the Cursor side "Cursor (the Grok Bot admin plane)". Cursor's maker, Anysphere, Inc., became a SpaceX subsidiary on August 14, 2026 ([Cursor is now a part of SpaceX](https://cursor.com/blog/joining-spacex)), so this guide is a product guide in the SpaceXAI platform and the Cursor guide is that platform's Common Controls hub. Grok chat on grok.com and the `@grok` chatbot on X are different products and out of scope.
-
-**How this guide was produced.** This guide is **AI-drafted** from vendor documentation fetched on 2026-10-08, with corrections re-checked against the vendor pages on 2026-10-09. No Cursor dashboard, Grok Bot app or tenant was observed, and nothing here has been applied, validated or reviewed by a person.
-
-Every console path is transcribed from documentation. xAI's and Cursor's doc trees sometimes use different labels for the same control. Where they do, the control says so, and section 8.6 lists every conflict to confirm live before rollout.
+**How this guide was produced.** Refreshed from current first-party source bodies on 2026-11-05 using the [source-first reconciliation](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/spacexai-source-coverage.md). **No tenants declared — Tier 0+1 only; VERIFIED-LIVE = 0.** ClickOps paths are documented, not observed in a signed-in tenant. Maturity remains AI-drafted. The console sometimes retains the older **Team Bots** label; this guide preserves existing control anchors and calls the current product Shared Bots.
 
 ### Editions Covered
 
@@ -71,7 +66,7 @@ Every console path is transcribed from documentation. xAI's and Cursor's doc tre
 | **Cursor Pro / Pro+ / Ultra** | Included | Member settings only |
 | **Linked SuperGrok, SuperGrok Plus, SuperGrok Heavy, X Premium+** | Usage grant on a Cursor account | Member settings only; the link has no documented admin control |
 | **Grok Business (self-serve) seat** | Through Sign in with Grok | Seat assignment in console.x.ai is the only lever (1.3) |
-| **Grok Enterprise** | Through the account manager | None documented |
+| **Grok Enterprise** | Through the account manager | Bot-specific policy inheritance unverified; workspace controls are in the [Grok guide](/guides/grok/) |
 
 Grok Bot stays off for teams on Privacy Mode (Legacy) or a legacy request-based plan. Whether Teams-plan Admin API keys can call the Grok Bot write routes is contradictory in Cursor's own documentation (section 8.6). Appendix A maps every control to the plans that can apply it.
 
@@ -92,11 +87,14 @@ Section 8 is an unleveled reference section. It covers risks with no admin contr
 
 **How the packs behave.** Every API pack verifies first and writes only with `enforce --apply`, followed by a fresh read.
 
-- **Exit 0:** no finding in what the API can read. A pack that cannot see part of its control says so on the result line ("NOT proven: …") instead of printing "compliant", so exit 0 is not a compliant tenant on its own; the dashboard checks in each control's Validation steps still apply
+- **Exit 0:** no API-visible finding and no declared visibility gap. This is evidence only for the checked surface
+- **Exit 3 / UNKNOWN:** partial visibility, unavailable authoritative team identity, or another unproven part. A clean readable subset cannot pass the whole control
 - **Exit 1:** a finding, a failed action, a dry run that would change something, or a write refused after verify had already found the tenant non-compliant
 - **Exit 2:** a precondition; nothing was judged
 - **Runbook packs:** the 7.1 and 7.2 packs are runbook actions, not checks, and their dry runs exit 0
 - **HTTP 401 and 403:** the packs treat both as "not available to this team/plan", because Cursor's docs contradict themselves on Admin API reach for Teams (8.6)
+
+The shared API transport pins the production HTTPS origin, disables user curl configuration, bounds connection/request time and response size, refuses unsafe credential representations and suppresses raw error bodies. Its explicit loopback test escape accepts only a synthetic fixture key. These are pack safeguards, not evidence that the tenant controls are configured; see the [pack README](https://github.com/grcengineering/how-to-harden/blob/main/packs/grok-bot/README.md).
 
 ### Scope
 This guide covers:
@@ -106,7 +104,7 @@ This guide covers:
 - the IdP sign-in rule the vendor documents for the Bot's computer browser
 - Google Workspace approval of the Grok OAuth app that Grok Bot's Google plugins sign in as
 
-Cursor-wide controls are in the Cursor guide. Okta, Entra ID, Google Workspace and Slack settings beyond the specific rules named here belong to those products' own guides. Grok chat, the `@grok` chatbot on X, the xAI API platform and the Grok Build coding agent are out of scope.
+Cursor-wide controls are in the Cursor guide. Okta, Entra ID, Google Workspace and Slack settings beyond the specific rules named here belong to those products' own guides. Grok chat, the `@grok` chatbot on X, the xAI API platform and Grok Build have separate product coverage. X Chat and `@bot` requests that start this Bot are in scope.
 
 ### Why Grok Bot Needs Its Own Hardening
 
@@ -220,7 +218,7 @@ The verify region reads `GET /grok-bot/access` (mode `all` or `limited`, plus th
 | **ISO 27001:2022** | A.5.15 | Access control |
 | **ISO 27001:2022** | A.5.18 | Access rights |
 | **OWASP Agentic 2026** | ASI03 | Identity & Privilege Abuse |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -356,7 +354,7 @@ The Okta Policies API and Microsoft Graph Conditional Access routes were not cen
 | **ISO 27001:2022** | A.8.5 | Secure authentication |
 | **CISA SCuBA** | MS.AAD.3.1v1 | Phishing-resistant MFA for all users (labeled compatibility exception) |
 | **CISA SCuBA** | MS.AAD.3.7v1 | Managed devices required for authentication (labeled compatibility exception) |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -431,7 +429,7 @@ Steps are transcribed from [Grok Business management](https://docs.x.ai/grok/man
 | **SOC 2** | CC6.3 | Role-based access, modification and removal |
 | **ISO 27001:2022** | A.5.18 | Access rights |
 | **ISO 27001:2022** | A.5.23 | Information security for use of cloud services |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -532,7 +530,7 @@ The pack is Enterprise only, because audit logs are an Enterprise feature. For t
 | **ISO 27001:2022** | A.5.19 | Information security in supplier relationships |
 | **ISO 27001:2022** | A.5.23 | Information security for use of cloud services |
 | **OWASP Agentic 2026** | ASI02 | Tool Misuse |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -617,7 +615,7 @@ Cursor's own help says to add the app named Grok and "Set Grok to **Trusted** fo
 | **SOC 2** | CC6.1 | Logical access security |
 | **ISO 27001:2022** | A.5.15 | Access control |
 | **ISO 27001:2022** | A.5.23 | Information security for use of cloud services |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -683,7 +681,7 @@ Turn off the team-wide **Cloud Agents** switch, which is on by default, unless t
 | **SOC 2** | CC6.1 | Logical access security |
 | **ISO 27001:2022** | A.8.9 | Configuration management |
 | **OWASP Agentic 2026** | ASI02 | Tool Misuse |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -762,7 +760,44 @@ Set the team **Execution on Local Computer** ceiling to **Never allow** unless B
 | **ISO 27001:2022** | A.8.9 | Configuration management |
 | **OWASP Agentic 2026** | ASI02 | Tool Misuse |
 | **OWASP Agentic 2026** | ASI05 | Unexpected Code Execution |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
+
+---
+
+### 2.5 Limit Account-Wide Vault and Computer Authority
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | IA-5, AC-6 |
+
+#### Description
+Treat Vault entries, browser sessions, CLI credentials and computer files as account-wide authority. Separate Bots and screens do not isolate them. Shared Bots use separate Secrets available to everyone with access to that shared Bot.
+
+#### Rationale
+**Why This Matters:**
+- A different Bot can reuse a credential or file left by another task. Saved payment cards have no per-use approval setting.
+
+**Attack Prevented:** Cross-task credential reuse and payments made without the required approval.
+
+#### ClickOps Implementation
+1. In the Bot app, open **Settings → Vault** (version 0.75.2 or later). Remove unnecessary entries; there is no per-Bot item restriction. Do not save a payment card when every payment must receive human approval.
+2. Review computer browser sign-ins, CLI credentials and files across all Bots. Sign out and revoke source credentials that are no longer needed.
+3. Review **Shared Bot → Setup → Secrets** with the owner/Managers. Use narrowly scoped source accounts; everyone using that Bot can use its shared authority.
+
+[First-party configuration reference](https://docs.x.ai/grok-bot/vault) (fetched 2026-11-05).
+
+**Automation:** GUI/member configuration only in the fetched references. No setting-specific REST, GraphQL, Terraform resource/data source, administrative CLI, SDK or managed-policy write was established; do not fabricate one from Cursor’s similarly named controls ([source](https://docs.x.ai/grok-bot/vault), 2026-11-05).
+
+#### Validation & Testing
+Review with synthetic credentials in a dedicated pilot; inventory both Vault and computer/browser state. Deleting a Bot does not remove its computer’s cookies, files or source-service grants. See [computer and apps](https://docs.x.ai/grok-bot/computer-and-apps). Documentation and offline checks do not establish live tenant enforcement.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | IA-5, AC-6; thematic mapping, not certification |
 
 ---
 
@@ -863,7 +898,7 @@ What the pack does:
 | **ISO 27001:2022** | A.8.20 | Networks security |
 | **ISO 27001:2022** | A.8.22 | Segregation of networks |
 | **OWASP Agentic 2026** | ASI01 | Agent Goal Hijack |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -937,7 +972,7 @@ Turn off **Allow Local Egress** for the team, and confirm that no group's Grok B
 | **SOC 2** | CC6.6 | Logical access security against threats from outside system boundaries |
 | **ISO 27001:2022** | A.8.20 | Networks security |
 | **ISO 27001:2022** | A.8.22 | Segregation of networks |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -994,7 +1029,7 @@ Treat Team Setup manifests and Group Setup Scripts as fleet-wide privileged code
 2. Reference the secret by name from the script's environment, and remove any literal value from manifest text
 
 **Step 3: Roll out**
-1. **Organization admins (Enterprise):** **Grok Bot** → **Bot Computers** → **Manage Bot Computers** → **Manage** → select members → **Manage selected** → **Recreate VMs** → confirm **Recreate VMs**
+1. **Organization admins (Enterprise):** **Grok Bot** → **Bot Computers** → **Manage Member Computers and Data** → **Manage** → select members → **Manage selected** → **Recreate VMs** → confirm **Recreate VMs**
 2. Otherwise a member reset or the roughly daily refresh picks up changes
 3. If the Grok Bot page shows the banner "Restart VMs to apply changed settings", team admins can select **Restart all VMs** → **Recreate VMs**. The banner is documented only as appearing "after some changes to team settings"
 4. A recreate removes apps members installed themselves, and sign-in sessions, including the networking client's login, may need re-establishing
@@ -1045,7 +1080,81 @@ No audit event is documented for Team Secrets add, replace or delete; `cloud_age
 | **ISO 27001:2022** | A.8.9 | Configuration management |
 | **ISO 27001:2022** | A.8.32 | Change management |
 | **ISO 27001:2022** | A.5.17 | Authentication information |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
+
+---
+
+### 3.4 Extend Network Controls to Backend MCP Apps
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | SC-7, AC-4 |
+
+#### Description
+Enable the separate Enterprise backend-MCP network switch where required. A blocked connector does not block its website; apply the computer network policy too.
+
+#### Rationale
+**Why This Matters:**
+- OAuth tokens for supported apps live on the connector backend, outside the computer. A computer-only egress rule does not cover that path.
+
+**Attack Prevented:** Exfiltration through an allowed backend app or a signed-in website that bypasses connector policy.
+
+#### ClickOps Implementation
+1. Open **Cursor dashboard → Grok Bot → Network**. Configure a restrictive, locked policy as in 3.1.
+2. Enable **Apply to MCP servers**, which is **off by default**. Review effects on backend apps such as GitHub, X and Origin.
+3. Treat command-based MCP servers on the computer separately. Review both the connector policy and the website destination; disabling one is not evidence the other is blocked.
+
+[First-party configuration reference](https://docs.x.ai/grok-bot/teams-and-enterprises) (fetched 2026-11-05).
+
+**Automation:** GUI/member configuration only in the fetched references. No setting-specific REST, GraphQL, Terraform resource/data source, administrative CLI, SDK or managed-policy write was established; do not fabricate one from Cursor’s similarly named controls ([source](https://cursor.com/docs/account/teams/admin-api#grok-bot), 2026-11-05).
+
+#### Validation & Testing
+Confirm the switch in the dashboard and test a benign backend request and website access separately. The current network API exposes egressMode, allowlist and locked; it does not expose this switch. The 3.1 pack therefore returns UNKNOWN for this additional coverage. Documentation and offline checks do not establish live tenant enforcement.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | SC-7, AC-4; thematic mapping, not certification |
+
+---
+
+### 3.5 Remove Unnecessary Sudo on Hosted Computers
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | AC-6, CM-6 |
+
+#### Description
+Disable privileged package/system changes for approved cohorts that do not need them. The Enterprise **Allow Sudo on Bot Computers** setting is on by default.
+
+#### Rationale
+**Why This Matters:**
+- A privileged agent command increases the impact of a malicious dependency, browser instruction or setup script.
+
+**Attack Prevented:** Privilege escalation and persistent changes to the hosted operating environment.
+
+#### ClickOps Implementation
+1. Open **Cursor dashboard → Grok Bot → Bot Computers**. Turn **Allow Sudo on Bot Computers** off for the intended team.
+2. Restart existing computers to apply the change; review setup scripts and dependencies before rollout. Do not assume a change affects already-running computers.
+3. Keep any exception scoped, reviewed and recorded alongside Team Setup and Team Secrets (3.3).
+
+[First-party configuration reference](https://docs.x.ai/grok-bot/teams-and-enterprises) (fetched 2026-11-05).
+
+**Automation:** GUI/member configuration only in the fetched references. No setting-specific REST, GraphQL, Terraform resource/data source, administrative CLI, SDK or managed-policy write was established; do not fabricate one from Cursor’s similarly named controls ([source](https://docs.x.ai/grok-bot/teams-and-enterprises), 2026-11-05).
+
+#### Validation & Testing
+On a pilot computer after restart, verify a harmless privileged operation is refused and necessary workflows still run. Verify existing computers individually; the API capability read cannot prove sudo policy. Documentation and offline checks do not establish live tenant enforcement.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | AC-6, CM-6; thematic mapping, not certification |
 
 ---
 
@@ -1152,7 +1261,7 @@ What the pack does:
 | **OWASP Agentic 2026** | ASI01 | Agent Goal Hijack |
 | **OWASP Agentic 2026** | ASI09 | Human-Agent Trust Exploitation |
 | **OWASP LLM Top 10 (2025)** | LLM06:2025 | Excessive Agency |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -1228,7 +1337,7 @@ What the pack does:
 | **SOC 2** | CC2.2 | Internal communication of information security responsibilities |
 | **SOC 2** | CC6.1 | Logical access security |
 | **ISO 27001:2022** | A.5.10 | Acceptable use of information and other associated assets |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -1293,7 +1402,7 @@ What the pack reads:
 - **The network lock:** it also reports `locked` from `GET /grok-bot/network`, which is readable on every plan
 - **Organization scope:** with `HTH_AUDIT_SCOPE=org` it requires `CURSOR_TEAM_ID`, so events from other linked teams are not mixed into the one team whose lock it checks
 
-**What it cannot see:** the pack detects changes, not current state. An override set before the window cannot be seen through any API, so exit 0 is not a compliant tenant and the dashboard review in Validation step 1 is still required.
+**What it cannot see:** the pack detects changes, not current state. An override set before the window cannot be established through this API. With no visible finding the pack reports **UNKNOWN (exit 3)**; the dashboard review in Validation step 1 is still required.
 
 - `setting_name` values are not enumerated, so whether group network-policy and group Auto-review-rule edits land in `grok_bot_group_settings` is undocumented
 - Payloads never carry Group Rule or Setup Script text
@@ -1321,7 +1430,46 @@ What the pack reads:
 | **SOC 2** | CC7.2 | Monitoring of system components for anomalies |
 | **SOC 2** | CC8.1 | Change management |
 | **ISO 27001:2022** | A.8.9 | Configuration management |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
+
+---
+
+### 4.4 Gate Model Requests with Verified Inference Hooks
+
+**Profile Level:** L3 (Run)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | SI-10, AC-4, AU-12 |
+
+#### Description
+For eligible Enterprise beta teams, use Inference Hooks to inspect signed prompt frames before the next model request. This exports conversation material to your receiver and requires a separate data-handling review. It is not a tool-action gate or an undo mechanism.
+
+#### Rationale
+**Why This Matters:**
+- Shadow mode does not block. Failure policy, partial sampling, an open circuit and configuration unavailability can permit uninspected requests.
+
+**Attack Prevented:** Unreviewed model requests containing restricted data, within the documented interception and failure limits.
+
+#### ClickOps Implementation
+1. As a team admin, open **Cursor dashboard → Grok Bot → Security & Compliance → Inference Hooks**. Configure a public HTTPS receiver, signing secret and reviewed timeout. Begin in **Shadow** to measure false positives, then deliberately select blocking mode, **100%** sampling and the appropriate fail-closed policy. Configuration unavailability and the emergency kill switch can still bypass hooks.
+2. Verify Standard Webhooks signatures over **id.timestamp.raw body** using the decoded `whsec_` secret; check timestamp freshness and deduplicate delivery IDs. Verify before parsing or retaining data. Rotate signing secrets with a coordinated receiver update and circuit reset.
+3. Limit receiver access/retention: frames include conversation text, attachments and tool arguments/results. Hidden reasoning, system definitions and ancillary model calls are outside this hook. A Bot-level session ID is not a chat ID; an unlinked Slack actor can have a null ID.
+4. Monitor deny/failure/configuration/signing-secret/circuit audit events. Allow decisions have no event. The timeout/retry and circuit settings require deliberate outage testing. Avoid secrets in the denial reason: Slack may display it.
+5. In Slack, a linked teammate authorized for the Bot can **Reset** or **Remove** a blocked request; this differs from requester-only action approvals. The original Slack message remains. Reset does not stop Cloud Agents/background commands or erase persistent disk, routines or memory.
+
+[First-party configuration reference](https://docs.x.ai/grok-bot/inference-hooks) (fetched 2026-11-05).
+
+**Automation:** GUI/member configuration only in the fetched references. No setting-specific REST, GraphQL, Terraform resource/data source, administrative CLI, SDK or managed-policy write was established; do not fabricate one from Cursor’s similarly named controls ([source](https://docs.x.ai/grok-bot/inference-hooks), 2026-11-05).
+
+#### Validation & Testing
+Use synthetic signed frames to test malformed signatures, stale timestamps, replay, timeout, 5xx, oversized input, sampled requests and circuit recovery. Confirm channel/DM denial visibility and teammate Reset/Remove privileges with a pilot. Record the residual fail-open configuration path; do not label this universal DLP. Documentation and offline checks do not establish live tenant enforcement.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | SI-10, AC-4, AU-12; thematic mapping, not certification |
 
 ---
 
@@ -1395,7 +1543,7 @@ Turn the team's public template sharing policy off, so sharing stays team-only. 
 | **SOC 2** | CC6.1 | Logical access security |
 | **SOC 2** | C1.1 | Identification and maintenance of confidential information |
 | **ISO 27001:2022** | A.5.14 | Information transfer |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -1405,99 +1553,158 @@ Turn the team's public template sharing policy off, so sharing stays team-only. 
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls v8 | 3.3, 6.8 |
-| NIST 800-53 | AC-6, AC-21, IA-5 |
-| OWASP Agentic 2026 | ASI01, ASI06, ASI07 |
+| NIST SP 800-53 | AC-6, AC-21, IA-5 |
 
 #### Description
-Govern which Team Bots exist, who reaches them and which credentials they carry. A Team Bot shares one member's plugins, secrets, skills, files and team memory with every teammate and with Slack, and admins cannot change any of that.
-
-**Status:** Team Bots are in public beta on Teams and Enterprise ([xAI launch post](https://x.ai/news/team-bots), 2026-09-28); the docs pages carry no beta label, and Cursor's help notes Team Bots may not yet be on for every team.
-
-- **What is shared:** "The Bot can use every secret in any teammate's conversation", and a plugin configured with a key is "The Bot's own credential, the same for everyone" ([Team Bots](https://docs.x.ai/grok-bot/team-bots)). Slack channels, group DMs and threads use "One shared computer for that Bot", and posts from Slack workflows and other apps are exempt from the account-linking requirement
-- **Bot-to-Bot traffic:** a teammate's published Team Bot can be added to a group chat, and a Bot can "message another Bot to hand off work". Of stopping that, Cursor says "There is no switch for this"; the only lever is an instruction in the group's or the Bot's description, such as "Don't message other Bots. Ask me first." ([Cursor help: group chats](https://cursor.com/help/grok-bot/group-chats))
-- **Who can change a Team Bot:** xAI says "Only the Bot's owner and its managers change its plugins, secrets, skills, and files"; Cursor's help says only the owner can change a Team Bot (8.6)
-- **What admins cannot do:** change those settings, or call a Team Bot API. No documented admin control disables Team Bot creation (as of 2026-10-09)
-- **The admin levers:** Manage Team Bots (default assignment and delete), Slack's own app approval, the connector policy (2.1), Team Rules (4.2) and, on Enterprise, Enforce Auto-review (4.1)
-
-Require owners to use "scoped, read-only service-account keys instead of personal credentials", and to choose Remote HTTPS rather than a Command custom MCP server when secrets are involved.
+Review current Shared Bots (formerly Team Bots) as shared principals with distinct requester, computer and app authority. Preserve least privilege across owner, Managers, Collaborators and Slack users.
 
 #### Rationale
 **Why This Matters:**
-- A Team Bot turns one member's credentials and memory into a team-wide, Slack-reachable agent, and its team memory "is read by every teammate's conversation" ([Team Bots](https://docs.x.ai/grok-bot/team-bots))
-- Auto Review "doesn't review every side effect. Memory writes and most settings changes are examples" ([Cursor: Grok Bot security](https://cursor.com/docs/grok-bot/security)), so a poisoned team memory is not caught at write time
-- On self-serve Teams, Enforce Auto-review does not exist, so Team Bots in teammates' chats and Slack always run without Auto-review where nobody can approve. On Enterprise, a group can also lift enforcement with **Don't enforce for this group**
+- Channel/thread/group-DM work runs on the shared computer and can use owner/Manager-configured apps, Secrets and files. A direct message usually uses the requester’s private computer. Access to one shared Bot is not isolation of its shared credentials.
 
-**Attack Prevented:** Indirect prompt injection from Slack content hijacking a shared Team Bot to exfiltrate shared data (OWASP Agentic ASI01 Agent Goal Hijack), poisoned team memory that every teammate's conversation reads (ASI06 Memory & Context Poisoning), and instructions relayed to a Team Bot by other Bots or by Slack workflow and app posts that skip account linking (ASI07 Insecure Inter-Agent Communication). The levers here limit which Team Bots exist and who reaches them; nothing stops Bot-to-Bot messaging itself
-
-**Real-World Incidents:**
-- **PromptArmor (August 2024):** an injection posted in a public Slack channel made Slack AI exfiltrate data from private channels the attacker was not in. Team Bots answer channel threads and workflow posts on one shared computer ([PromptArmor](https://www.promptarmor.com/resources/data-exfiltration-from-slack-ai-via-indirect-prompt-injection))
-- **Radware ZombieAgent (Zvika Babo, 2026-01-08):** instructions written into ChatGPT's memory persisted across new chats and kept exfiltrating later conversations. This is the risk class for Team Bot team memory, which Auto Review does not review ([Radware](https://www.radware.com/blog/threat-intelligence/zombieagent/); read in a real browser on 2026-10-08)
-
-#### Prerequisites
-- Cursor Teams or Enterprise with Team Bots turned on for the team
-- Slack workspace app approval kept on ([slack 3.1](/guides/slack/#31-restrict-app-installation-and-approval))
+**Attack Prevented:** Shared credential abuse and disclosure of private-app results into broader Slack conversations.
 
 #### ClickOps Implementation
+1. In **Bot → Share this Bot → Who has access**, prefer named invitees over an entire team. Review owner, **Manager** and **Collaborator** roles. Owners and Managers retain access; Managers can change shared apps, Secrets, files and setup. Only the owner can delete through the shared-Bot member interface; an authorized admin can separately delete a team Bot in the dashboard.
+2. In **Cursor dashboard → Grok Bot → Manage Team Bots**, review assigned Bots and remove unnecessary default assignments. Reconcile this admin list with each owner’s access/Manager list; the audit inventory below cannot establish current membership.
+3. Owner/Manager: use **Bring to your team’s Slack → Connect** only in an approved workspace and narrowly intended channels. Keep Slack workspace app approval enabled. This shared-Bot Slack app is separate from a user’s connected Slack app and the user’s **Link account** flow. Do not infer OAuth scopes from another Slack integration’s documentation.
+4. Review any request to use a requester’s personal connected apps: **Allow once**, **Always for this Bot**, **Always for all Bots**, or **Skip** have different persistence. Clear unnecessary saved consent in **Settings → General → Shared Bots → Clear connector preferences**.
+5. Confirm that only the original Slack requester can approve an action card. That approval boundary does not restrict hook Reset/Remove (4.4). Review the full thread audience before exporting a file or returning connected-app data.
+6. A shared Bot can hand work to the requester’s other Bots and return their replies to the originating Slack thread. Reconcile the target Bot’s apps/computer and the thread audience before allowing that path.
 
-**Step 1: Set default assignment for each Team Bot**
-1. Navigate to: **Cursor dashboard** (https://cursor.com/dashboard/bot) → **Grok Bot** page → **Team Bots** → **Manage Team Bots** ([Team Bots: Add Team Bots for members by default](https://docs.x.ai/grok-bot/team-bots#add-team-bots-for-members-by-default))
-2. For each Team Bot, choose **All team**, **None** or specific groups. Groups come from **Members & Groups**
-3. Assignment only controls whose sidebar the Bot is forced into; those members see "Required by your admin. You can't turn this off." **None** does not restrict access: after a Bot is published, any teammate can still add it from **New** → **Team Bots**, from search, or from a link ([Cursor help: Team Bots](https://cursor.com/help/grok-bot/team-bots)). To remove an unapproved Bot, delete it (Step 2)
-
-**Step 2: Delete unapproved Team Bots**
-1. In **Manage Team Bots**, choose the trash icon on the Bot's row → type the Bot's exact name → **Delete** ([Team Bots: Delete a Team Bot as an admin](https://docs.x.ai/grok-bot/team-bots#delete-a-team-bot-as-an-admin))
-2. Deleting removes the Bot's Slack app. "If the Slack app can't be removed, a Slack workspace admin can remove it in Slack"
-
-**Step 3: Keep Slack's gate on**
-1. Keep workspace app approval on in Slack, so Team Bot setup stops at **Awaiting admin approval** until a Slack admin approves the Team Bot's app
-
-**Step 4: Narrow who can create Team Bots (Enterprise)**
-1. No documented admin control disables Team Bot creation (as of 2026-10-09). On Enterprise, Manage Group Access (1.1) limits it indirectly by limiting who has Grok Bot at all. Ask your Cursor account team whether Team Bots can be kept off for a team
-
-**Step 5: Keep each Team Bot's managers to a minimum (owner action)**
-1. In the Bot's details → **Setup** → **Managers**, the owner removes anyone who no longer needs to change the Bot: trash icon (**Remove manager**) → **Remove**
-2. A manager "can change the Bot's setup, like its profile, skills, plugins, secrets, and Slack app", while "Publishing, unpublishing, and deleting the Bot stay with" the owner ([Team Bots: Add managers](https://docs.x.ai/grok-bot/team-bots#add-managers))
-3. As an HTH process recommendation, because no audit event records manager changes, have each owner attest their Managers list at every Team Bot review. No page documents an admin view of a Bot's managers
+[First-party configuration reference](https://docs.x.ai/grok-bot/shared-bots) (fetched 2026-11-05).
 
 #### Code Implementation
 
-**Automation:** ClickOps only — Cursor (the Grok Bot admin plane) exposes no write interface for this setting ([Admin API, Grok Bot](https://cursor.com/docs/account/teams/admin-api#grok-bot), 2026-10-08). The Grok Bot section has no Team Bot route, no capabilities field toggles Team Bots, and Manage Team Bots and admin delete are dashboard-only. The pack below is read-only verification.
-
-The pack is an inventory, Enterprise only because audit logs are an Enterprise feature.
-
-- **Events:** from `GET /teams/audit-logs`, it pulls `grok_bot_created` (with `source` `direct`, `template`, `agent_sdk` or `system`), `grok_bot_lifecycle` (including `published`, `unpublished` and `delete`), `grok_bot_skill` and `slack_account_link`
-- **Organization-wide variant:** `GET /organizations/audit-logs` with an Organization key holding `auditlogs:read`
-- **Detection:** a Sigma rule alerts on `grok_bot_lifecycle` with action `published`
-- **Not audited:** no documented audit event covers Manage Team Bots default assignment, adding or removing managers, Team Bot secrets, plugins or files, or the creation and removal of a Team Bot's Slack app
-- **Plugin claim:** the [Grok Bot changelog](https://x.ai/changelog/bot) V0.57.0 says audit logs now record plugins, but the event table has no Grok Bot plugin event (8.6)
+**Automation:** No current shared-Bot access, Manager, Secret or Slack-app configuration route was established in the fetched Admin API/provider/CLI references. The existing audit pack is historical evidence, not a current-state access check. It pulls documented lifecycle, skill and Slack-link events; absent events cannot prove absence of an installed app or credential.
 
 {% include pack-code.html vendor="grok-bot" section="5.2" %}
 
 #### Validation & Testing
-1. **Manage Team Bots** lists only approved Team Bots with the intended assignment. This half can only be checked in the dashboard
-2. Every `grok_bot_lifecycle` `published` event maps to an approved request
-3. Slack's app list shows Team Bot apps only for approved Bots
-
-**Expected result:** Every Team Bot is approved, assigned deliberately, and visible in Slack only through an approved app.
+Review both the shared-Bot ACL and Slack app installation/channel audience. Pilot DM versus channel execution with synthetic files, personal-app consent clearing, requester-only approvals and Bot handoffs. Document any unavailable admin view as UNKNOWN. Deletion is irreversible for all teammates’ chats and routines. Documentation and offline checks do not establish live tenant enforcement.
 
 #### Compliance Mappings
 
-| Framework | Control ID | Control Description |
-|-----------|-----------|---------------------|
-| **CIS Controls v8** | 3.3 | Configure Data Access Control Lists |
-| **CIS Controls v8** | 6.8 | Define and Maintain Role-Based Access Control |
-| **NIST 800-53** | AC-6 | Least Privilege |
-| **NIST 800-53** | AC-21 | Information Sharing |
-| **NIST 800-53** | IA-5 | Authenticator Management |
-| **SOC 2** | CC6.1 | Logical access security |
-| **SOC 2** | CC6.3 | Role-based access, modification and removal |
-| **ISO 27001:2022** | A.5.15 | Access control |
-| **ISO 27001:2022** | A.5.17 | Authentication information |
-| **OWASP Agentic 2026** | ASI01 | Agent Goal Hijack |
-| **OWASP Agentic 2026** | ASI06 | Memory & Context Poisoning |
-| **OWASP Agentic 2026** | ASI07 | Insecure Inter-Agent Communication |
-| **Product benchmark** | — | No product benchmark exists yet |
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | AC-6, AC-21, IA-5; thematic mapping, not certification |
+
+---
+
+### 5.3 Constrain Slack, Schedule and Webhook Routines
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | AC-6, IA-5, AU-12 |
+
+#### Description
+Inventory each Bot’s routines, owning Cursor identity, connected trigger identity and resulting action authority. Restrict unattended triggers and retire them explicitly.
+
+#### Rationale
+**Why This Matters:**
+- A Slack-connected user app, a shared-Bot Slack app, account linking and a routine trigger are separate grants. A trigger can start work even when no one is actively watching.
+
+**Attack Prevented:** Unattended actions induced by broad Slack triggers or leaked webhook bearer keys.
+
+#### ClickOps Implementation
+1. Open **Bot name → Details → Routines**. Review the creator, enabled state, schedule and trigger scope. Prefer a specific channel/phrase/mention over **any message**, all-channel or reaction triggers unless needed. Vendor-supported triggers include reaction and any-message; do not assume an @mention is required.
+2. Review the Slack user account connected for each trigger separately from the Bot’s owning Cursor account and shared Slack installation. Confirm the account can legitimately read the monitored channel.
+3. Treat a routine webhook’s `key` as a bearer secret. Keep it out of URLs in logs, source and chat; rotate/recreate a leaked trigger. A `200` means accepted, not successful completion.
+4. Pause a routine using its switch in **Details → Routines**, or delete it. Disconnecting one app or removing a Slack entrypoint does not establish that all schedules/webhooks stopped. A routine that replies into Slack can continue following that thread without another @mention.
+5. Review reusable skills before publishing them to the team; publishing or syncing a skill can change later unattended tasks.
+
+[First-party configuration reference](https://docs.x.ai/grok-bot/skills-routines-and-automations) (fetched 2026-11-05).
+
+**Automation:** GUI/member configuration only in the fetched references. No setting-specific REST, GraphQL, Terraform resource/data source, administrative CLI, SDK or managed-policy write was established; do not fabricate one from Cursor’s similarly named controls ([source](https://docs.x.ai/grok-bot/skills-routines-and-automations), 2026-11-05).
+
+#### Validation & Testing
+Inventory every creator’s routines and correlate the documented routine audit/OTel events in 6.2. Use synthetic trigger events in a pilot and confirm pause prevents new work. No documented admin routine inventory means missing creator evidence remains UNKNOWN. Documentation and offline checks do not establish live tenant enforcement.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | AC-6, IA-5, AU-12; thematic mapping, not certification |
+
+---
+
+### 5.4 Review X Entry Points and Result Destinations
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | AC-4, AC-21 |
+
+#### Description
+Review X Chat, public `@bot` requests and file export as separate paths into and out of the personal main Bot. A public instruction can start authenticated work.
+
+#### Rationale
+**Why This Matters:**
+- An X post, quoted content or inbound message is untrusted input; it does not grant authority to use a private connected account or disclose results.
+
+**Attack Prevented:** Cross-channel prompt injection and data returned to an unintended public or shared audience.
+
+#### ClickOps Implementation
+1. Review the Grok-to-X account link and the main Bot used for tagged requests. `@bot` starts a task on that Bot; it is different from `@grok`. Confirm every current entrypoint against the app’s documented [overview](https://docs.x.ai/grok-bot/overview) and [X tag behavior](https://docs.x.ai/grok-bot/tag-on-x).
+   - The official [X plugin help](https://help.x.com/en/using-x/about-bot) warns that connecting may create an X developer account. Inventory that separate account and its app/user credentials before enabling the plugin.
+   - [X Chat connection](https://cursor.com/help/grok-bot/x-chat) is rolling out and currently supports personal accounts; connecting there excludes managed-domain emails, Cursor team accounts and legacy request-based plans. Verify the actual linked Grok/Cursor account rather than assuming the same email identifies the intended Bot.
+2. Keep drafts and action approvals enabled. Treat post text, quoted material, web pages and email as data rather than permission to act. Public tag confirmation is not proof that private work/results are public.
+   - X separately controls training use for Bot interactions in X Chat. Review [Grok 2.2](/guides/grok/#22-review-consumer-training-and-linked-sign-in-choices); Cursor Privacy Mode is not proof of that X setting.
+3. Before exporting results, review the destination’s recipients and source-service permissions. Drive exports can create a new copy; OneDrive overwrite needs explicit instruction. Revoke any resulting public/shared links separately.
+4. When containing an incident, pause routines and revoke source sessions/grants as well as removing the entrypoint; follow 7.2 for running work and persistent computer state.
+
+[First-party configuration reference](https://docs.x.ai/grok-bot/tag-on-x) (fetched 2026-11-05).
+
+**Automation:** GUI/member configuration only in the fetched references. No setting-specific REST, GraphQL, Terraform resource/data source, administrative CLI, SDK or managed-policy write was established; do not fabricate one from Cursor’s similarly named controls ([source](https://docs.x.ai/grok-bot/tag-on-x), 2026-11-05).
+
+#### Validation & Testing
+Pilot entrypoints with non-sensitive content and verify task owner, approval recipient and result audience. X Chat’s exact tenant policy/API surface was not established; retain that as unverified rather than importing Slack settings. Review [files/results](https://docs.x.ai/grok-bot/files-and-results). Documentation and offline checks do not establish live tenant enforcement.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | AC-4, AC-21; thematic mapping, not certification |
+
+---
+
+### 5.5 Limit Page Sharing and Revoke Existing Shares
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | AC-21, AC-3 |
+
+#### Description
+Choose the permitted audience for Bot Pages separately from Bot template sharing and shared-Bot access. Tightening future sharing does not revoke existing Pages.
+
+#### Rationale
+**Why This Matters:**
+- The current Page sharing control defaults to anyone on the team; old shared output remains shared after the policy is narrowed.
+
+**Attack Prevented:** Unintended access to generated Pages and persistent shared output.
+
+#### ClickOps Implementation
+1. On the **Cursor dashboard → Grok Bot** page, open **Sharing → Page sharing** when Pages has reached the team. Choose **Specific teammates** or **Off** where appropriate instead of **Anyone on the team**.
+2. Review existing shared Pages with their owners and revoke unnecessary access separately; do not treat a policy change as retroactive removal.
+3. Reconcile Page audience with connected-app source permissions, Slack thread recipients and the underlying shared-Bot grants in 5.2.
+
+[Current first-party configuration](https://docs.x.ai/grok-bot/teams-and-enterprises), fetched 2026-11-05.
+
+**Automation:** The fetched references establish the configuration path above. A setting-specific REST/GraphQL/provider/CLI/SDK or managed-policy write was not established; no field is inferred from a similarly named product. This is a bounded automation gap, not verified global absence.
+
+#### Validation & Testing
+Verify both new sharing and an already-shared pilot Page. If the control has not reached the tenant, record it as unavailable and verify the output audience manually. No live tenant was exercised; unobserved enforcement remains unverified.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | AC-21, AC-3; thematic, not certification |
 
 ---
 
@@ -1611,7 +1818,7 @@ On the wire, records arrive as OTLP/HTTP binary protobuf POSTed to `<base>/v1/lo
 | **ISO 27001:2022** | A.8.15 | Logging |
 | **ISO 27001:2022** | A.8.16 | Monitoring activities |
 | **OWASP Agentic 2026** | ASI10 | Rogue Agents |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -1703,7 +1910,7 @@ The pack calls `GET /teams/audit-logs` ([Admin API: audit logs](https://cursor.c
 | **SOC 2** | CC7.2 | Monitoring of system components for anomalies |
 | **ISO 27001:2022** | A.8.15 | Logging |
 | **ISO 27001:2022** | A.8.16 | Monitoring activities |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -1720,6 +1927,8 @@ The pack calls `GET /teams/audit-logs` ([Admin API: audit logs](https://cursor.c
 
 #### Description
 Offboard in three steps, in order: on Enterprise, delete the member's computer data while they are still on the team; remove their access on every team linked to the organization; then revoke their IdP sessions.
+
+**Choose the deletion scope first:** [current computer management](https://docs.x.ai/grok-bot/computers) distinguishes **Delete VMs and Data** (computer and durable disk; Bots and conversations remain) from **Delete All Grok Bot Data** (also Bots, chats, memory, routines, connected apps, inboxes and files across every team, including shared Bots). Both are irreversible and leave Cursor membership intact. The existing pack performs only the computer-and-disk action; it does not establish complete Bot-data erasure.
 
 **Why terminating is not enough:** terminating a computer, manually or automatically, ends current work but keeps the durable disk with the member's Bots, files and logins: "None of these remove access" ([Grok Bot for teams and enterprises](https://docs.x.ai/grok-bot/teams-and-enterprises)).
 
@@ -1738,20 +1947,19 @@ Offboard in three steps, in order: on Enterprise, delete the member's computer d
 **Attack Prevented:** Orphaned standing sessions and credentials on a departed member's hosted computer
 
 #### Prerequisites
-- **Enterprise:** an organization admin for **Manage Bot Computers**, or an Organization API key with `admin:*` and computer operations turned on for the team by the account team
+- **Enterprise:** an organization admin or Enterprise team admin for **Manage Member Computers and Data**. API operations need an Organization API key with `admin:*`; confirm availability before the maintenance window
 - **Self-serve Teams:** admins have no documented data-deletion path, because Manage Bot Computers is Enterprise only. Individual-plan users delete through Cursor's account settings flow under the applicable Cursor terms
-- **Team Bots the leaver owns:** the Team Bots docs do not say what happens to a Team Bot when its owner leaves the team, and they offer no ownership transfer. Managers can change a Bot's setup, but "Publishing, unpublishing, and deleting the Bot stay with" the owner ([Team Bots](https://docs.x.ai/grok-bot/team-bots))
-- **Owner dependencies:** several parts of a Team Bot depend on the owner. Its Slack setup "uses the owner's Slack connection", and Slack posts from unlinked senders "count against the owner"
-- **Before removing a member:** list the Team Bots they own in Manage Team Bots, and have the owner delete each one or delete it as an admin (trash icon, type the exact name, **Delete**). Admin deletion also removes the Bot's Slack app; "If the Slack app can't be removed, a Slack workspace admin can remove it in Slack."
-- **Do not rely on Unpublish:** only the owner can publish again, so a Bot unpublished by a departing owner can afterwards only be deleted (5.2, 8.6)
+- **Shared Bots the leaver owns:** inventory them through **Shared Bots → Manage Shared Bots**. Resolve continued ownership with the vendor or approve deletion before offboarding; no documented ownership-transfer flow was established. Managers can edit shared resources, while owner deletion removes teammates' chats and routines irreversibly ([Shared Bots](https://docs.x.ai/grok-bot/shared-bots))
+- **Owner dependencies:** owner-added apps and secrets are available to the shared Bot's users. Unlinked Slack app/workflow posts consume owner usage. Review the Slack app, personal account linking, routines and Bot-to-Bot handoffs separately (5.2–5.4)
+- **Before removing a member:** review and remove their shared Bots through the documented owner/admin paths in 5.2, checking the Slack workspace app list. Removing Bot access or hiding a sidebar entry does not revoke source-service credentials
 
 #### ClickOps Implementation
 
 Run the steps in this order.
 
 **Step 1: Delete the data first, while the member is still on the team (Enterprise, organization admins)**
-1. Navigate to: **Cursor dashboard** → **Grok Bot** → **Bot Computers** → **Manage Bot Computers** → **Manage**
-2. Search for and check the member → **Manage selected** → **Delete VMs and Data**
+1. Navigate to: **Cursor dashboard** → **Grok Bot → Security & Compliance → Manage Member Computers and Data → Manage**
+2. Search for and check the member → **Manage selected** → choose the deletion scope reviewed above. **Delete VMs and Data** is limited to computer/disk; **Delete All Grok Bot Data** is the broader cross-team erase, capped at 100 members
 3. Watch the progress card until the member's row is complete, then select **Done**. A dashboard start where no selected member is still on the team shows **Not Started**
 
 **Step 2: Remove access**
@@ -1770,7 +1978,7 @@ The dashboard path is transcribed from [Manage Grok Bot computers](https://docs.
 
 The pack is dry-run by default. Its sequence:
 
-1. **Same-team proof:** before anything irreversible, in both modes, it proves the two keys point at the same team. The Team key's `GET /teams/model-access/configuration` returns the "Integer team ID implied by the API key"; where that route is not available, the pack compares the Team key's active members with the Organization API's members of `CURSOR_TEAM_ID`
+1. **Same-team proof:** before anything irreversible, in both modes, it proves the two keys point at the same team. The Team key's `GET /teams/model-access/configuration` returns the "Integer team ID implied by the API key"; where that route is not available, the pack returns **UNKNOWN (exit 3)** and refuses mutation. Matching member email sets are not proof of team identity
 2. **Leaver check:** it requires the leaver to be an active member on the Team key's team, so remove-member cannot fail after the delete
 3. **Numeric id:** it resolves the member's numeric id with `GET /organizations/members?teamId=`
 4. **Delete:** it starts `delete_vm_and_data` through `POST /organizations/teams/:teamId/grok-bot/operations` with a fresh `operationId`
@@ -1779,11 +1987,13 @@ The pack is dry-run by default. Its sequence:
 
 The Organization API notes:
 
-- Operations are turned on per team by the account team, and every route returns 403 until then
+- Current Organization API documentation lists Enterprise availability. The older account-team enablement/403 note is historical; confirm the actual tenant's availability rather than assuming that older gate still applies
 - Only an Organization key with `admin:*` works; other scopes return 401
 - A queued operation returns 202, and 409 means another operation is running. Retrying with the same `operationId` returns the existing operation whatever its action: "Cursor doesn't compare the rest of the body on a retry, so generate a new UUID for every new operation". The pack resumes only through its own variable, `HTH_OFFBOARD_OPERATION_ID`, so an id exported for a 7.2 terminate can never stand in for a delete
 - `userIds` are numeric ids from `GET /organizations/members?teamId=`, not the encoded `user_…` ids from `/teams/members`
 - `delete_vm_and_data` is capped at 1,000 members and cannot be undone. `items[]` is null for operations of more than 1,000 members
+
+The same native API now documents `delete_grok_bot_data` (maximum 100 members) for the broader erase. This pack intentionally retains `delete_vm_and_data`; choose and review the broader native action separately, then verify its matching action and per-member results before removing membership.
 
 **Remove-member:** `POST /teams/remove-member` ([Admin API](https://cursor.com/docs/account/teams/admin-api)) is Enterprise only and takes a Team key. It takes an encoded `user_…` id or an email, never both, and at least one paid member and one admin must remain.
 
@@ -1819,7 +2029,7 @@ Per-member proof of the delete comes from the operation's `items[]`.
 | **ISO 27001:2022** | A.5.18 | Access rights |
 | **ISO 27001:2022** | A.6.5 | Responsibilities after termination or change of employment |
 | **ISO 27001:2022** | A.8.10 | Information deletion |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -1846,7 +2056,7 @@ Write and rehearse a runbook for a hijacked Bot or a vendor-side incident, in fi
    - For a hijacked Team Bot, an admin can delete it from **Manage Team Bots** (trash icon, type the exact name, **Delete**), which removes the Bot "for your whole team: teammates lose it, along with their chats and routines on it. This can't be undone."
    - Only its member can delete a personal Bot, and deleting a Bot removes its routines
 4. Revoke IdP sessions, and revoke plugin authorization at each source service
-5. Choose between Recreate, which keeps files and logins, and **Delete VMs and Data**, which is a true reset
+5. Choose between Recreate, which keeps files and logins, and **Delete VMs and Data**, which deletes durable computer data while Bots and chats remain
 
 Keep two keys ready:
 
@@ -1926,7 +2136,7 @@ Detection:
 | **SOC 2** | CC7.4 | Incident response |
 | **ISO 27001:2022** | A.5.24 | Information security incident management planning and preparation |
 | **ISO 27001:2022** | A.5.26 | Response to information security incidents |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
@@ -1991,13 +2201,17 @@ Turn on **Terminate Inactive Computers**, which terminates a member's computer a
 | **NIST 800-53** | CM-2 | Baseline Configuration |
 | **SOC 2** | CC8.1 | Change management |
 | **ISO 27001:2022** | A.8.9 | Configuration management |
-| **Product benchmark** | — | No product benchmark exists yet |
+| **Product benchmark** | — | No product-specific benchmark established by this refresh |
 
 ---
 
+**Current lifecycle distinction:** **Delete VMs and Data** removes the selected members’ durable computers, not their Bots/chats. The separate **Delete All Grok Bot Data** is broader: it irreversibly removes Bots (including shared Bots), chats, memory, routines, computer data, connected apps/inbox and files across the selected users’ teams. It has a 100-user limit; computer-only deletion has a 1,000-user limit. Neither operation removes Cursor accounts/team membership. Confirm the exact operation before approval; this guide’s existing packs do not substitute one for the other ([current computer operations](https://docs.x.ai/grok-bot/computers)).
+
+For Shared Bots, owner deletion removes every teammate’s chats/routines and cannot be undone. Removing a Slack app, resetting a blocked prompt or terminating a VM does not erase durable credentials or stop separately launched Cloud Agents. Containment must include Slack installation/link grants, personal-app consent, routines/webhooks, downstream Cloud Agents, source OAuth/browser/CLI credentials and stored data, each at its own authority.
+
 ## 8. Known Gaps and Member Guidance
 
-This section is reference material, not a set of controls, and it adds no cheat-sheet rows. It records the risks the vendor documents but gives admins no control over, the documentation conflicts this guide could not resolve without a live tenant, and the member-level settings that matter.
+This unleveled reference preserves historical conflicts and current residual gaps. New native controls are covered in the leveled sections; a conflict here is not evidence that the current product lacks all controls.
 
 ### 8.1 Surfaces With No Admin Control
 
@@ -2015,7 +2229,7 @@ This section is reference material, not a set of controls, and it adds no cheat-
 
 The vendor documents these as absences. They are design gaps to weigh in a risk assessment, not settings to configure ([Grok Bot security](https://docs.x.ai/grok-bot/security), [Grok Bot security FAQ](https://docs.x.ai/grok-bot/security-faq)).
 
-- **No DLP hooks:** "Dedicated data loss prevention hooks are not available."
+- **Bounded Inference Hooks now exist:** Enterprise beta pre-model hooks are covered in 4.4. They do not establish universal DLP or prevention of an already-started action.
 - **No customer telemetry or EDR feed:** Grok Bot "does not ship a built-in customer-facing telemetry or EDR feed". Team Setup (3.3) is the path to install your own
 - **Shared egress:** static egress IPs are shared across all Grok Bot customers, and dedicated per-customer IPs are not available
 - **Residency:** computers run in the United States, but outside Cursor's US-only data residency program by default
@@ -2023,9 +2237,9 @@ The vendor documents these as absences. They are design gaps to weigh in a risk 
 - **Hosting:** there is no on-premises, in-perimeter or bring-your-own-image deployment
 - **Identity:** Bots act as the signed-in member rather than as distinct agent principals, and all of a user's Bots share one computer. "Do not use separate Bots as a security boundary." ([Approvals, security, and privacy](https://docs.x.ai/grok-bot/approvals-security-and-privacy))
 
-### 8.3 Changelog-Only Capabilities
+### 8.3 Changelog and Historical Capability Notes
 
-These appear in the [Grok Bot changelog](https://x.ai/changelog/bot) and have no admin control (see Appendix B on how the changelog was read).
+These historical [changelog](https://x.ai/changelog/bot) notes require current-state confirmation. Vault, Shared Bots, routines, backend MCP and Inference Hooks now have configuration references in 2.5, 3.4–3.5, 4.4 and 5.2–5.4. Payment cards still lack a per-use approval setting (2.5).
 
 - **V0.30.0 and V0.33.0:** Link purchases on approval, and Pay with Link
 - **V0.53.0:** 1Password Auto fill
@@ -2036,8 +2250,8 @@ These appear in the [Grok Bot changelog](https://x.ai/changelog/bot) and have no
 
 - **Self-serve Grok Business seats (1.3):** seat removal is the only documented lever. It is undocumented which Cursor team such a user lands in, and whether domain-verified SSO or the MDM allowed-team-ID policy applies to a Sign in with Grok session
 - **Personal SuperGrok, SuperGrok Plus, SuperGrok Heavy and X Premium+ links:** no documented admin control, and such a link "can't be unlinked or moved" to a different Cursor account once created ([SuperGrok and Grok Bot](https://cursor.com/help/grok-bot/supergrok))
-- **Grok Enterprise:** access goes through the account manager, with no documented controls
-- **Sign-in domains:** Cursor sign-in is moving to accounts.x.ai and accounts.spacex.ai, and the fallback is retired on October 30 ([Sign-in domains](https://cursor.com/help/troubleshooting/sign-in-domains); the page gives no year, and was read on 2026-10-09, so this is presumably October 30, 2026). Update proxy allowlists ([cursor 9.2](/guides/cursor/#92-configure-network-allowlisting))
+- **Grok Enterprise:** workspace SSO/SCIM and connector controls now have separate [Grok coverage](/guides/grok/); their inheritance into a Cursor Bot remains unverified
+- **Sign-in domains:** current documentation moves sign-in to **accounts.spacexsi.com** and lists **November 30** as fallback retirement (year unstated). Minimum auth hosts also include auth.grok.com, auth.grokusercontent.com and auth.grokipedia.com; existing sessions/SSO configuration stay in place ([Sign-in domains](https://cursor.com/help/troubleshooting/sign-in-domains)). Update proxy allowlists ([cursor 9.2](/guides/cursor/#92-configure-network-allowlisting))
 
 ### 8.5 Audit Coverage Holes
 
@@ -2080,7 +2294,7 @@ Whether `team_rule` covers Grok-Bot-scoped rules is inferred rather than documen
 | **Action Recording and the Audit Log** | Changelog V0.30.0 says recordings go to the audit log; the current docs say they do not | Current docs win (6.1) |
 | **Launch plan list** | The 2026-08-11 launch post already lists plans that the 2026-08-26 post says were added that day | Cursor's plans page is canonical (Overview) |
 | **UI labels** | Bot Computers → Manage Bot Computers (xAI) vs Grok Bot Computers (Cursor); Terminate Inactive Computers "just above" vs "below" (7.3); Route traffic through this computer vs Route egress through this desktop, with different locked messages (3.2); Settings → Computer → Computers (xAI) vs Settings > Computer > Execution on this computer (Cursor) for the member's local-execution setting (2.4); Settings → General → Auto-review vs the General > Bot section of Cursor's settings page, and "Custom Rules" (4.1); Team Marketplace vs Teams Marketplace vs Connect Apps (2.1); Team Bots → Manage Team Bots (xAI) vs Manage Team Bots → Manage (Cursor), with Cursor help listing no **None** option (5.2); "Allow Cloud Agents" on a group tab is described only in prose (2.3); no documented labels for Team Rules (4.2) or public template sharing (5.1); Members & Groups vs Members > Groups (4.3) | Transcribe each live before rollout |
-| **Terraform** | cursor/cursor 0.8.0 was published on 2026-10-08, the day of this census, and has no Grok Bot resources ([registry](https://registry.terraform.io/v1/providers/cursor/cursor)) | Recheck at publish; any new resource changes the automation verdicts |
+| **Terraform** | Current first-party [cursor/cursor v0.8.0 registration and schemas](https://github.com/cursor/terraform-provider-cursor/tree/v0.8.0/docs) expose Origin and workflow resources/data sources, with no Bot policy resource found. GitHub release evidence was fetched; registry retrieval was unavailable | Recheck at publish; any new resource changes the automation verdicts |
 
 ### 8.7 Member Guidance
 
@@ -2099,7 +2313,7 @@ These are member-level settings, not admin controls. Put them in your acceptable
 
 ## 9. Compliance Quick Reference
 
-No product benchmark exists yet for Grok Bot. The mappings below are control-family mappings, not benchmark equivalents.
+No product-specific benchmark established by this refresh for Grok Bot. The mappings below are control-family mappings, not benchmark equivalents.
 
 - **CIS:** the research pass found no CIS Benchmark for xAI, Grok, Grok Bot or Cursor. CIS's only AI benchmark, MCP Server (1.0.0), is partially relevant to connectors but is not product coverage. The cisecurity.org catalog is a JavaScript shell to fetchers, so re-check it in a real browser before relying on this
 - **DISA:** the public STIG Document Library ([cyber.mil/stigs/downloads](https://www.cyber.mil/stigs/downloads); the page is rendered by JavaScript and was checked in a real browser on 2026-10-09) lists no xAI, Grok or Cursor STIG. Searches for Grok, xAI and Cursor returned no results, while control searches for Kubernetes and Cisco returned 4 and 13. Documents limited to DoD CAC holders were not checked
@@ -2340,7 +2554,7 @@ Grok Enterprise has no documented Grok Bot controls; access goes through the acc
 - [Sign-in domains](https://cursor.com/help/troubleshooting/sign-in-domains)
 
 **Automation surface census (all fetched 2026-10-08):**
-- [Terraform registry: cursor/cursor](https://registry.terraform.io/v1/providers/cursor/cursor): 0.8.0 has only `origin_*` and `platform_workflow` resources and data sources, nothing for Grok Bot
+- [Terraform registry: cursor/cursor](https://registry.terraform.io/v1/providers/cursor/cursor): v0.8.0 native resources/data sources cover Origin and platform workflows; no Grok Bot policy resource was found in the pinned registration
 - [Terraform registry: xai namespace](https://registry.terraform.io/v2/providers?filter%5Bnamespace%5D=xai): zero providers (the spacexai namespace is also empty)
 - [okta/okta 7.0.0: okta_app_signon_policy_rule](https://registry.terraform.io/v2/provider-docs/13337260), [okta_app_signon_policy data source](https://registry.terraform.io/v2/provider-docs/13337141), [okta_app_sign_on_policy_rule data source](https://registry.terraform.io/v2/provider-docs/13337140) and [okta_everyone_group data source](https://registry.terraform.io/v2/provider-docs/13337178), used by the 1.2 pack
 - [Terraform: checks](https://developer.hashicorp.com/terraform/language/checks) ("Terraform reports a warning and continues") and [custom conditions](https://developer.hashicorp.com/terraform/language/expressions/custom-conditions) (a failed postcondition stops the operation), which decide how the 1.2 read-back fails
@@ -2394,6 +2608,7 @@ Grok Enterprise has no documented Grok Bot controls; access goes through the acc
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-05 | 0.2.0 | ai-drafted | Source-first product-plane refresh; seven new controls for Vault/computer authority, backend MCP, sudo, Enterprise beta Inference Hooks, unattended routines, X/result entrypoints and Page sharing; corrected current Shared Bot/Slack authority and lifecycle; authoritative team ID required before destructive operations; partial evidence returns UNKNOWN/exit 3. Tier 0+1 only, no live tenant validation | Codex |
 | 2026-10-10 | 0.1.1 | ai-drafted | Became a product guide in the new SpaceXAI platform (`product: "Grok Bot"`, vendor `Grok Bot`) with the standard pointer to the Cursor Common Controls hub; replaced the standalone-guide rationale, which no longer holds since SpaceX acquired Cursor's maker on 2026-08-14; brand references updated from xAI to SpaceXAI where they name the company (SpaceX 10-Q cited). No control changed | Claude Code (Opus 5.5) |
 | 2026-10-09 | 0.1.0 | ai-drafted | Initial guide: 20 controls in 7 sections (access and identity, agent reach and connected apps, hosted computer and network, autonomy and approvals, sharing and Team Bots, monitoring and audit, lifecycle and containment), plus an unleveled Known Gaps and Member Guidance section, Compliance Quick Reference, plan availability and references. 17 controls carry Code Pack includes (16 api and 1 terraform, plus 13 Sigma rules); 1.3, 2.2 and 7.3 carry evidenced ClickOps-only verdicts, and 2.1, 4.3, 5.2 and 6.2 enforce through ClickOps with read-only packs. Drafted from vendor documentation fetched 2026-10-08 and corrected after an independent review against pages re-fetched 2026-10-09; no tenant was observed | Claude Code (Opus 5.5) |
 

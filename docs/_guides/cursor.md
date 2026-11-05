@@ -1,21 +1,21 @@
 ---
 layout: guide
 title: "Cursor Hardening Guide"
-vendor: "SpaceXAI"
+vendor: "SpaceXSI"
 slug: "cursor"
-platform: "SpaceXAI"
+platform: "SpaceXSI"
 platform_slug: "spacexai"
 product: "Common Controls"
 tier: "1"
 category: "DevOps"
 description: "AI code editor security hardening for code privacy, MCP security, agent sandboxing, API key management, and workspace trust"
-version: "0.5.2"
+version: "0.6.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-10-10"
+last_updated: "2026-11-05"
 ---
 
 
-**Product Editions Covered:** Cursor Hobby (free), Cursor Individual (Pro, Pro+, Ultra), Cursor Teams, Cursor Enterprise
+**Product Editions Covered:** Current The X Subscription Free, Plus, Premium, Super and Ultra; Teams and Enterprise; retained legacy Cursor Hobby/Pro/Pro+/Ultra references where the configuration docs still use them. Current [feature matrix](https://cursor.com/pricing) places Cloud Agents, Origin, Bugbot and Grok Bot at Premium and above (or eligible teams). An entitlement is not proof that a specific Enterprise admin policy exists on that plan.
 
 ---
 
@@ -27,7 +27,11 @@ The threat landscape for AI code editors evolved rapidly in 2025-2026. Seven CVE
 
 This guide provides comprehensive hardening controls informed by vendor documentation, CVE analysis, security researcher disclosures, and industry frameworks including the OWASP Top 10 for LLM Applications (2025), the OWASP Top 10 for Agentic Applications (2026), NIST AI RMF, NIST SP 800-218A, and MITRE ATLAS v5.
 
-This guide is the **Common Controls hub of the SpaceXAI platform**. Cursor's maker, Anysphere, Inc., became a wholly owned subsidiary of SpaceX on August 14, 2026 ([Cursor is now a part of SpaceX](https://cursor.com/blog/joining-spacex)), and SpaceX's AI business publishes under the SpaceXAI brand, whose own site says Cursor "became part of SpaceXAI on August 14" ([x.ai](https://x.ai/news/grok-bot-customer-support)). Cursor keeps its own brand, plans and terms, still contracted through Anysphere, Inc. The Cursor team controls in this guide (SSO, SCIM, Privacy Mode, MCP allowlists, Cloud Agent settings, network allowlisting, audit-log export and spend controls) are also the org-wide controls that Grok Bot, SpaceXAI's computer-use agent, inherits when it runs on a Cursor team. Product-specific controls live in product guides, listed in [Products in This Platform](#products-in-this-platform).
+This guide is the **Common Controls index for the SpaceXSI family** and the hardening guide for the **Cursor account, team and desktop/Agent plane**. Current [first-party terms](https://x.ai/legal/terms-of-service) name SpaceX SuperIntelligence LLC; Cursor confirmed its [completed SpaceX acquisition](https://cursor.com/blog/joining-spacex). The historical `spacexai` URL stays stable. Cursor retains its own plans and Anysphere contracting terms.
+
+**Inheritance is explicit, not family-wide.** Cursor team identity, Privacy Mode, connector policy and audits govern Grok Bots only where documented. Cloud Agents and Origin combine Cursor account identity with their own execution, grants, credentials and data settings. Grok Business/Enterprise and the developer API use console.x.ai; Build has native root-owned policy. A Cursor team key, hook, SSO domain or model policy does not configure those other planes.
+
+This refresh is **AI-drafted, Tier 0+1 only; VERIFIED-LIVE = 0**. The [source-first inventory](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/spacexai-source-coverage.md) records current products, candidates, automation surfaces, source conflicts and explicit gaps. Existing control IDs and URLs are preserved.
 
 ### Intended Audience
 - Security engineers evaluating AI coding tools
@@ -45,7 +49,7 @@ This guide covers Cursor-specific security configurations including AI privacy s
 
 ### Why This Guide Exists
 
-**No CIS Benchmark or equivalent standard exists for AI code editors.** As AI coding assistants become mission-critical development tools with autonomous agent capabilities, securing them is essential to:
+No product-specific Cursor benchmark was established by the bounded CIS/DISA/SCuBA search for this refresh. CIS has an AI benchmark listing whose body/version was not retrieved; this guide does not claim an absence of AI benchmarks. As AI coding assistants become mission-critical development tools with autonomous agent capabilities, securing them is essential to:
 - Prevent proprietary code leakage to third-party AI providers
 - Protect API keys and credentials from exposure via AI context
 - Defend against prompt injection attacks through MCP servers, rules files, and repository content
@@ -70,18 +74,25 @@ This guide covers Cursor-specific security configurations including AI privacy s
 10. [Monitoring & Audit Logging](#10-monitoring--audit-logging)
 11. [Organization & Team Controls](#11-organization--team-controls)
 
-**Product guides:** [Grok Bot](/guides/grok-bot/)
+**Product guides:** see the [current product map](#products-in-this-platform).
 
 ---
 
 ## Products in This Platform
 
-SpaceXAI is a multi-product platform. This guide is the **Common Controls hub**, holding the Cursor team-wide controls. Product-specific controls live in their own guides:
+The family name groups products; it does not create a common security tenant. Use each product’s native plane:
 
-| Product | Guide | Covers |
-|---------|-------|--------|
-| **Common Controls** (this guide) | — | Cursor team SSO and SCIM, Privacy Mode and model governance, API-key handling and spend, MCP allowlists and tool protection, agent auto-run, sandbox and Cloud Agent posture, rules-file and workspace trust, extensions, network allowlisting and telemetry, usage and audit logging, Teams/Enterprise policy, MDM and hooks |
-| **Grok Bot** | [Grok Bot guide](/guides/grok-bot/) | Group-scoped Grok Bot access, connector and egress limits, enforced Auto-review, Team Bot governance, action recording, and the lifecycle of each member's hosted computer |
+| Product | Guide | Native controls and inheritance |
+|---------|-------|---------------------------------|
+| **Common Controls / Cursor** (this guide) | — | Cursor account/team SSO, SCIM, Privacy Mode, model/MCP policies, desktop/CLI sandbox, extensions, network and audits. Inheritance is limited to documented Cursor-backed features |
+| **Grok Bot** | [Bot guide](/guides/grok-bot/) | Cursor-backed hosted computers, shared Bots, Vault, Slack/X entrypoints, routines, approvals, inference hooks and containment; source app/Slack consent stays separate |
+| **Grok** | [Grok guide](/guides/grok/) | Web/mobile Chat, consumer Imagine/Voice and Business/Enterprise workspaces, organization SSO/SCIM, connectors and SharePoint/MCP; console.x.ai, not Cursor team policies |
+| **Grok developer API** | [API guide](/guides/grok-api/) | Inference/management keys, PromptIDE/playground, image/video/Voice/SIP features, Files/Collections, tool authority, ZDR, region/mTLS and audit; feature-specific gaps remain explicit |
+| **Grok Build** | [Build guide](/guides/grok-build/) | Official Grok CLI permissions, sandbox, MCP/extensions/hooks, team pinning, retention and hosted Build privacy boundary; CLI managed policy is not a hosted-app admin setting |
+| **Cursor Cloud Agents** | [Cloud guide](/guides/cursor-cloud-agents/) | Hosted/self-hosted workers, Builds/Apps, Automations, Bugbot, Security/Approval Agents, Rollouts and Agent SDK execution; own egress, OIDC, credentials and retention |
+| **Cursor Origin** | [Origin guide](/guides/cursor-origin/) | Early-beta repositories, namespace grants, rulesets, mirrors, apps/tokens, signed webhooks, SSH authorities and inbound IP policy |
+
+**Explicit gaps:** Grokipedia is named in consumer terms but no native enterprise administration configuration source was established. Government, negotiated and partner-hosted deployments require their own contract/control evidence. Grok Studio is unsupported in the current FAQ. Graphite’s fetched announcements describe a definitive agreement; they do not establish a completed acquisition. X operational account controls belong to X; Grok’s current FAQ says SpaceXSI lacks operational oversight of X. See the [reconciliation ledger](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/spacexai-source-coverage.md) for those dispositions.
 
 ---
 
@@ -344,7 +355,7 @@ SCIM itself is configured in the dashboard and the IdP; the Admin API has no SCI
 **NIST 800-53:** SC-4
 
 #### Description
-Configure Cursor's Privacy Mode to prevent code from being stored or used for training by Cursor and its AI model providers. When enabled, Cursor maintains zero data retention (ZDR) agreements with all of its model providers, so providers do not store or train on your code — Cursor's data-use page names SpaceXAI, OpenAI, Anthropic, and Meta. Providers may still run risk classifiers and retain prompts that trip abuse detection, and non-ZDR models are flagged or require admin opt-in. Privacy Mode is on by default for Enterprise teams.
+Enforce Cursor's Privacy Mode to prevent training/product-improvement use and apply the documented provider ZDR agreements for eligible Cursor-routed requests. Cursor can still store code for features such as Cloud Agents and Team Rules. BYOK, restricted models and the Cyber option (2.6) require separate retention review. Providers may still run risk classifiers and retain prompts that trip abuse detection, and non-ZDR models are flagged or require admin opt-in. Privacy Mode is on by default for Enterprise teams.
 
 #### Rationale
 **Why This Matters:**
@@ -490,7 +501,7 @@ Cursor Router (shipped 2026-07-22) is the model routing system behind **Auto**: 
 
 **Step 3: Allow or block underlying models with Model Access Control (Enterprise)**
 1. Model allow/block is **Model Access Control** in **Team Settings → Models**, a separate setting the router respects — the router routes around a blocked model
-2. Block models your vendor-review process has not approved
+2. Set the strict baseline here, then review **Organization → Groups → [group] → Models**. Current model permissions combine as a **union**: a team or any Organization Group allow is sufficient, so a restrictive group cannot revoke an allow elsewhere. BYOK controls exist only on the team baseline. Block unapproved models at every allowing source ([current configuration](https://cursor.com/docs/enterprise/model-and-integration-management))
 3. Where US-only data residency is in force (2.1), block model families that Cursor does not run in-region, or residency is bypassable by model choice
 4. Keep restricted models that require explicit retention approval blocked until that approval is recorded
 5. Do not over-block: Cursor warns that "blocking too many models reduces routing quality and can disable the router," and documents Grok 4.6 as required for the router to work. Organization Groups can also widen model access for their members (team and group access combine, most permissive wins), so review group settings too
@@ -652,6 +663,80 @@ Options:
 | **ITAR** | Data Sovereignty | Inference stays on infrastructure you control; pair with data residency for Cursor's backend |
 | **FedRAMP** | SC-7 | Boundary protection |
 | **NIST AI RMF** | GOVERN 1.4 | AI deployment controls |
+
+---
+
+### 2.5 Limit Shared Transcript and Canvas Exposure
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | AC-21, SI-12 |
+
+#### Description
+Review public/shared conversations and canvases independently of Privacy Mode. Use Enterprise shared-transcript retention for historical links; it is off by default.
+
+#### Rationale
+**Why This Matters:**
+- Disabling training does not revoke a published share link. An indefinite transcript can expose prompts, code and connected content long after a task ends.
+
+**Attack Prevented:** Long-lived disclosure through published conversation or canvas links.
+
+#### ClickOps Implementation
+1. Review **Dashboard → Shared chats** and shared canvases; remove links and content that no longer have an approved audience.
+2. On Enterprise, open **Team Settings → Sharing → Shared transcript retention** and select the shortest suitable documented window (**30–365 days**). Confirm the setting is enabled.
+3. Review account and enterprise-termination deletion separately; Cloud Agent transcripts/snapshots have their own lifecycle in the [Cloud guide](/guides/cursor-cloud-agents/#51-set-conversation-retention-and-review-customer-managed-keys).
+
+[Current first-party configuration](https://cursor.com/docs/enterprise/security-hardening), fetched 2026-11-05.
+
+**Automation:** The fetched references establish the configuration path above. A setting-specific REST/GraphQL/provider/CLI/SDK or managed-policy write was not established; no field is inferred from a similarly named product. This is a bounded automation gap, not verified global absence.
+
+#### Validation & Testing
+Verify an expired pilot transcript link stops working, then review current canvases/share links separately; the documented policy is for shared transcripts, not every stored object. A signed-in dashboard was unavailable during research. No live tenant was exercised; unobserved enforcement remains unverified.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | AC-21, SI-12; thematic, not certification |
+
+---
+
+### 2.6 Isolate Cyber-Verified Model Retention Exceptions
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | AC-6, SA-9, SI-12 |
+
+#### Description
+Keep the Cyber option off unless a narrowly approved Organization Group requires it and has accepted the provider’s separate terms. These requests cannot honor normal Cursor Privacy Mode/ZDR.
+
+#### Rationale
+**Why This Matters:**
+- The option applies to eligible model requests for the approved group; other requests retain their normal policy. A team Privacy Mode switch cannot prove retention for this exception.
+
+**Attack Prevented:** Unapproved processing of sensitive code under a separate provider retention agreement.
+
+#### ClickOps Implementation
+1. As an organization admin, open **Organization → Groups → [approved group] → Cyber Safeguards Models Settings**. These are Organization Groups, not billing or SCIM directory groups.
+2. Review group membership, approval status and the **Cyber** option in that group’s model-access settings. Keep access limited and do not apply/agree to terms without the organization’s authorization.
+3. Document the provider-retention exception for any enabled eligible model. Review the union of model grants in 2.2; enabling this option does not turn off Privacy Mode for the entire account.
+
+[Current first-party configuration](https://cursor.com/docs/account/enterprise/cyber-safeguards), fetched 2026-11-05.
+
+**Automation:** The fetched references establish the configuration path above. A setting-specific REST/GraphQL/provider/CLI/SDK or managed-policy write was not established; no field is inferred from a similarly named product. This is a bounded automation gap, not verified global absence.
+
+#### Validation & Testing
+Confirm which users and model requests use Cyber and reconcile them to the approved data-handling exception. Generic Privacy Mode audit evidence cannot close this check. No live tenant was exercised; unobserved enforcement remains unverified.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | AC-6, SA-9, SI-12; thematic, not certification |
 
 ---
 
@@ -932,6 +1017,43 @@ Enable MCP Tool Protection to require explicit user approval before any MCP tool
 | **NIST 800-53** | AC-6 | Least privilege |
 | **OWASP Agentic** | ASI02 | Tool misuse |
 | **OWASP Agentic** | ASI03 | Identity and privilege abuse |
+
+---
+
+### 4.3 Restrict Each MCP Server’s Network Reach
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | SC-7, AC-4 |
+
+#### Description
+Apply native per-server network policy as well as the MCP allowlist and tool list. A permitted server can otherwise have wider egress than its intended task.
+
+#### Rationale
+**Why This Matters:**
+- Remote URL servers and local command servers use different controls; an empty tool list allows all tools. A server allowlist alone does not limit every downstream destination.
+
+**Attack Prevented:** Exfiltration and lateral access through a trusted but overprivileged MCP server.
+
+#### ClickOps Implementation
+1. Open the team dashboard’s **MCP Configuration**. For each approved server, restrict **Tools** explicitly.
+2. Review a remote URL server’s exact approved URL pattern. For local command/stdio servers, choose **Deny all** or a reviewed **Allowlist** network mode where possible; **Allow all** and **No sandbox** leave broader reach.
+3. Review command path/argument matching with the actual resolved executable path. Grok Bot’s separate **Apply to MCP servers** switch is covered in [Bot3.4](/guides/grok-bot/#34-extend-network-controls-to-backend-mcp-apps); changing one does not configure the other.
+
+[Current first-party configuration](https://cursor.com/docs/enterprise/model-and-integration-management), fetched 2026-11-05.
+
+**Automation:** The fetched references establish the configuration path above. A setting-specific REST/GraphQL/provider/CLI/SDK or managed-policy write was not established; no field is inferred from a similarly named product. This is a bounded automation gap, not verified global absence.
+
+#### Validation & Testing
+Use a benign pilot server to verify allowed/denied tool names and destinations. Confirm server type and effective policy, including stdio subprocesses; do not treat a URL match as a universal egress firewall. No live tenant was exercised; unobserved enforcement remains unverified.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | SC-7, AC-4; thematic, not certification |
 
 ---
 
@@ -1441,6 +1563,84 @@ Cursor exposes extension allowlisting two ways, and the interaction matters:
 
 ---
 
+### 8.2 Delay and Verify Extension Installations
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | CM-6, SI-2, SI-7 |
+
+#### Description
+Set a reviewed Marketplace installation cooldown and require extension signatures where Enterprise offers the policy. Keep the extension allowlist and supported client updates in 8.1.
+
+#### Rationale
+**Why This Matters:**
+- A trusted publisher can ship a malicious update. Cursor’s October 29 [Claude Code extension notice](https://cursor.com/blog/claude-code-extension-security-notice) describes compromised Windows/macOS packages; uninstall alone does not establish host recovery.
+
+**Attack Prevented:** Rapid installation of compromised extension releases and unsigned extension packages.
+
+#### ClickOps Implementation
+1. Open **Team settings → Security & automation → Marketplace Install Cooldown**. Set a reviewed number of hours; **0 disables** the cooldown. A team setting overrides user `extensions.installCooldownHours`.
+2. On eligible Enterprise teams, enable **Require Extension Signature Verification**. Review exceptions and updates alongside the allowlist in 8.1.
+3. For affected hosts follow the vendor’s incident-specific investigation/remediation guidance and your host response process. A cooldown reduces exposure; it cannot repair an already-compromised host.
+
+[First-party configuration reference](https://cursor.com/help/customization/extensions) (fetched 2026-11-05).
+
+#### Code Implementation
+
+The pack prepares the documented user setting; team policy overrides it. The team cooldown and signature requirement remain dashboard settings: no verified management API/provider field was found for those switches.
+
+{% include pack-code.html vendor="cursor" section="8.2" %}
+
+#### Validation & Testing
+Confirm the effective managed/team policy and a delayed synthetic extension installation in a pilot. Verify signature rejection on the supported client. No new undocumented MDM key or Admin API field is inferred. Documentation and offline checks do not establish live tenant enforcement.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | CM-6, SI-2, SI-7; thematic mapping, not certification |
+
+---
+
+### 8.3 Govern Plugin Publication and Personal Skill Sync
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | CM-6, SI-7, AC-6 |
+
+#### Description
+Review plugins as bundles of scripts, skills, rules, hooks, subagents and MCP authority. Separately govern publishing personal skills to a team and syncing private skills for Cloud Agents.
+
+#### Rationale
+**Why This Matters:**
+- Publishing stores a team-hosted copy. Disabling future member publication leaves existing skills available and their authors able to update/unpublish them.
+
+**Attack Prevented:** Persistent malicious instructions or expanded tool authority propagated through shared add-ons.
+
+#### ClickOps Implementation
+1. Open **Dashboard → Plugins & MCPs → Default team marketplace → Marketplace Settings → Allow Members to Publish**. It is on by default; disable it if only admins should publish new skills. Review existing publications and installation modes separately.
+2. In **Team Settings → Security & Identity → Sync Skills for Cloud Agents**, turn off sync if personal cloud skill copies are not approved. Members opt in at **Settings → Agents → Context and Tools** only when the team permits it.
+3. Inspect the source of each approved plugin and every bundled permission. Public marketplace review does not approve your private inputs/credentials. Published skills load through the plugin; private sync covers only **~/.cursor/skills/** and not automation runs, even **Run as Me**. Use reviewed repository skills for those runs.
+
+[Current first-party configuration](https://cursor.com/docs/plugins), fetched 2026-11-05.
+
+**Automation:** The fetched references establish the configuration path above. A setting-specific REST/GraphQL/provider/CLI/SDK or managed-policy write was not established; no field is inferred from a similarly named product. This is a bounded automation gap, not verified global absence.
+
+#### Validation & Testing
+Review existing artifacts after changing the switches. Confirm private sync and team publication are distinct in [native skill configuration](https://cursor.com/docs/skills); verify a pilot user cannot create a new unapproved publication. No live tenant was exercised; unobserved enforcement remains unverified.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | CM-6, SI-7, AC-6; thematic, not certification |
+
+---
+
 ## 9. Network & Telemetry Controls
 
 ### 9.1 Disable Telemetry and Crash Reporting
@@ -1535,6 +1735,8 @@ These steps are carried out in your own egress control (firewall, secure web gat
 **Step 4: Verify the rule**
 1. Run the Code Pack below while Cursor is open and compare its connection snapshot with your firewall or proxy log
 2. Confirm no allowed connection goes to a host outside the list and that denied attempts to provider APIs are logged
+
+**Current sign-in migration (2026-11-05):** add **accounts.spacexsi.com**, **auth.grok.com**, **auth.grokusercontent.com** and **auth.grokipedia.com** to the approved auth path. The documented fallback retires **November 30**; the page does not specify a year. Existing sessions remain, and SSO ACS/IdP tiles do not require a change. Keep required Cursor service/VM hosts; do not replace them with only auth hosts ([first-party migration instructions](https://cursor.com/help/troubleshooting/sign-in-domains)).
 
 #### Code Implementation
 
@@ -1852,6 +2054,43 @@ The Code Pack below installs a project `beforeShellExecution` hook registered wi
 
 ---
 
+### 11.4 Restrict Tenants at the Managed Network Boundary
+
+**Profile Level:** L3 (Run)
+
+| Framework | Control |
+|-----------|---------|
+| NIST SP 800-53 | AC-3, SC-7 |
+
+#### Description
+Inject the documented tenant header on managed traffic when policy requires Cursor access only through approved organizations/teams. Combine it with device Allowed Team IDs; each operates at a different boundary.
+
+#### Rationale
+**Why This Matters:**
+- This restriction is request-local. Without the header there is no restriction from this mechanism, and the same account off-network is unaffected.
+
+**Attack Prevented:** Use of personal or unapproved tenants through the controlled network path.
+
+#### ClickOps Implementation
+1. There is **no dashboard switch**. Copy numeric team IDs from **Team Settings → Team ID**; numeric organization IDs come from an audit event that actually records one, not the public `org_` identifier.
+2. Configure a reviewed TLS-terminating proxy to inject **x-cursor-allowed-tenants** on **api2.cursor.sh** (including sign-in/API/CLI) and **cursor.com**. Use the documented `v1.orgs=...;teams=...` format; ensure clients cannot strip or replace the injected header.
+3. Review each list: IDs within one copy are alternatives, while multiple header copies intersect. Explicitly test service/team/org keys and a selected team. Keep the device restriction in 11.2 for off-network use.
+
+[First-party configuration reference](https://cursor.com/docs/enterprise/tenancy-restriction) (fetched 2026-11-05).
+
+**Automation:** Native HTTP-header configuration at the organization’s proxy; no Cursor GUI/REST/GraphQL/provider/CLI write controls this policy. Proxy configuration depends on the deployed product and is not invented here. A malformed/blank header is refused; an absent header is permitted by this mechanism.
+
+#### Validation & Testing
+Test allowed and disallowed pilot accounts through both desktop/CLI API and website paths. Check the documented tenant_restriction_violation result, including refresh responses that can be HTTP 200 with shouldLogout. Recheck off-network exposure separately. Documentation and offline checks do not establish live tenant enforcement.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | AC-3, SC-7; thematic mapping, not certification |
+
+---
+
 ## Appendix A: Edition Compatibility
 
 Plan names and tiers follow [cursor.com/pricing](https://cursor.com/pricing) and Cursor's plan documentation, read 2026-09-24. The Individual tier (Pro, Pro+, Ultra) is where MCP, hooks and Cloud Agents begin — Hobby does not list them.
@@ -2029,6 +2268,7 @@ Plan names and tiers follow [cursor.com/pricing](https://cursor.com/pricing) and
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-05 | 0.6.0 | ai-drafted | Source-first current family/product map with explicit admin-plane inheritance; new extension cooldown/signature, request-local tenant restriction, shared transcript retention, Cyber model retention exception, per-MCP egress and skill publication/sync controls; current SpaceXSI display name with stable URL/anchors; five separate new native-plane guides plus refreshed Bot. Tier 0+1 only; no live validation | Codex |
 | 2026-10-10 | 0.5.2 | ai-drafted | Became the Common Controls hub of the new SpaceXAI multi-product platform (`platform: "SpaceXAI"`, `platform_slug: "spacexai"`, `product: "Common Controls"`, vendor `SpaceXAI`) after SpaceX completed its acquisition of Anysphere on 2026-08-14. Overview names the company chain with first-party citations; added the Products in This Platform table and a Grok Bot product-guide link. No control changed or was renumbered | Claude Code (Opus 5.5) |
 | 2026-10-04 | 0.5.1 | ai-drafted | validate-hth-guide live run against a signed-in Free (Hobby) account on the cursor.com dashboard; 0 surfaces VERIFIED-LIVE (Cursor app not installed, no Teams/Enterprise team or Admin API key), so maturity is unchanged. Corrected from the live dashboard: 1.2 rewritten — `cursor.com/settings/security` is a 404 and Cursor has no account MFA setting, so MFA is enforced at the Google/GitHub sign-in or the SSO IdP; 2.1 adds the web path Dashboard → Settings → Privacy → Privacy Mode, replaces the "volatile memory… discarded" bullet with the dashboard's own "Code may be stored for Cloud Agent, Team Rules, and other features", and documents the per-account Restricted and Early-Access Models acknowledgement; 1.1 notes the signed-in redirect to the dashboard; 9.2 gains its missing ClickOps section. Code: 4.2 and 5.1 packs now exit 2 (not assessed) instead of passing when no `permissions.json` exists | Claude Code (Opus 5.5) |
 | 2026-09-25 | 0.5.0 | ai-drafted | validate-hth-guide Phase 5 fix pass plus its independent-audit response (no live surface verified — Hobby account behind a sign-in wall, Cursor app not installed — so maturity is unchanged). Corrected against current vendor docs: 1.1 sign-in methods are email magic link, Google, or GitHub (not email/password); 1.3 SSO is Teams and Enterprise, dashboard path, and domain verification is the enforcement (no toggle); 1.4 SCIM wizard path and roles; 2.1 provider list, Privacy Mode wording, Enterprise default, team path; 2.2 router availability and defaults, Model Access Control, Impose Auto; 2.3 `.cursorignore` does not cover terminal/MCP tools, hierarchical/global ignore, removed `.cursorindexingignore`; 2.4 requests still transit Cursor's backend; 3.2/3.3 Anthropic console moved to platform.claude.com; 4.1 MCP Configuration path; 4.2 MCP follows Run Modes, file protections; 5.1 Auto-review default since 3.6; 5.2 documented sandbox and `sandbox.json`; 5.3 Cloud Agents never prompt; 10.1 audit log always on (Enterprise), streaming on request, stale caveat replaced; 11.2 Linux `policy.json`, no Privacy Mode policy; 11.3 `failClosed`; Appendix A rebuilt on Hobby/Individual/Teams/Enterprise; CVE-2025-64106 citation replaced with the vendor advisory. Code: new api/ packs (1.4, 2.1, 2.2, 3.3, 10.1, 11.1) on the Cursor Admin API, new config/ packs (4.2, 5.2, 7.2, 10.2, 11.2, 11.3); fixed fail-open or destructive packs (2.3 overwrite, 3.1 placeholder append, 3.2 key clobber, 4.1 secret printing, 6.1 BSD-grep fail-open, 8.1/10.1 exit 0 on no data); every api/ pack now exits 2 on an HTTP 200 whose body lacks the documented response shape (and 1.4, 3.3, 11.1 on zero members) instead of passing on nothing, and 8.1 no longer trusts a `cursor` CLI that fails; removed undocumented settings keys (2.1, 5.1, 9.1, 9.2); every pack carries an HTH Pack Contract v1 header; `**Automation:**` verdicts added to 1.1, 1.2, 1.3, 2.4, 5.3 | Claude Code (Opus 5.5) |

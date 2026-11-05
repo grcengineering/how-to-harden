@@ -52,10 +52,9 @@
 # CURSOR_ADMIN_API_KEY, so org scope requires CURSOR_TEAM_ID (that same team)
 # and the pull is narrowed to it.
 #
-# Exit codes: 0 network locked and no group change in the window — NOT a
-# compliance verdict: group tab state is dashboard-only, and the RESULT line says
-# so (TRAP 1) | 1 findings (review each) | 2 precondition (missing key, plan
-# without audit logs, bad shape, org scope without CURSOR_TEAM_ID)
+# Exit codes: 3 UNKNOWN when part of the control cannot be observed;
+# 1 finding, planned change or failed action; 2 precondition. A readable subset
+# cannot establish whole-control compliance (see common.sh, TRAP I).
 # =============================================================================
 
 set -euo pipefail

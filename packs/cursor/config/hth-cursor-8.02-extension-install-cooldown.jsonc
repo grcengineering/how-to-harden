@@ -1,0 +1,14 @@
+// HTH Pack Contract: v1
+// control: cursor-8.2
+// guide: https://howtoharden.com/guides/cursor/#82-delay-and-verify-extension-installations
+// profile: L2
+// mode: read-only
+// requires: Cursor; reviewed user settings merge; team policy takes precedence
+// Source: https://cursor.com/help/customization/extensions (2026-11-05).
+// Prepare a reviewed merge into user settings.json; never overwrite the file.
+// This sets the user cooldown only. It does not set the team policy or signature requirement.
+// HTH Guide Excerpt: begin extension-cooldown
+{
+  "extensions.installCooldownHours": 48
+}
+// HTH Guide Excerpt: end extension-cooldown

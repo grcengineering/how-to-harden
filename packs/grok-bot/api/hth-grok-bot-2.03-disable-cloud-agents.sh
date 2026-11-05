@@ -36,9 +36,9 @@
 # "Omitted fields stay unchanged", `enabled` is read-only (sending it returns
 # 400), and an empty PATCH returns 400. The body carries exactly one field.
 #
-# Exit codes: 0 team baseline off (the RESULT line names the group tabs as not
-# proven, TRAP 1) | 1 finding, dry run with changes, or a write refused after a
-# finding | 2 precondition
+# Exit codes: 3 UNKNOWN when part of the control cannot be observed;
+# 1 finding, planned change or failed action; 2 precondition. A readable subset
+# cannot establish whole-control compliance (see common.sh, TRAP I).
 # =============================================================================
 
 set -euo pipefail

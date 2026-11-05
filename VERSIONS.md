@@ -175,7 +175,9 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.2.0 | ai-drafted | 2026-08-15 |
 | [Cloudflare Zero Trust](docs/_guides/cloudflare.md) | v0.2.3 | ai-drafted · ai-validated | 2026-09-25 |
 | [CrowdStrike Falcon](docs/_guides/crowdstrike.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Cursor](docs/_guides/cursor.md) | v0.5.2 | ai-drafted | 2026-10-10 |
+| [Cursor / SpaceXSI Common Controls](docs/_guides/cursor.md) | v0.6.0 | ai-drafted | 2026-11-05 |
+| [Cursor Cloud Agents](docs/_guides/cursor-cloud-agents.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [Cursor Origin](docs/_guides/cursor-origin.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Datadog](docs/_guides/datadog.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Devin & Cognition](docs/_guides/devin.md) | v0.2.0 | ai-drafted | 2026-11-05 |
 | [GitHub](docs/_guides/github.md) | v0.7.2 | ai-drafted · ai-validated | 2026-09-24 |
@@ -183,7 +185,10 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Google Chat](docs/_guides/google-chat.md) | v0.3.0 | ai-drafted | 2026-08-12 |
 | [Google Drive](docs/_guides/google-drive.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Google Workspace](docs/_guides/google-workspace.md) | v0.4.1 | ai-drafted | 2026-08-08 |
-| [Grok Bot](docs/_guides/grok-bot.md) | v0.1.1 | ai-drafted | 2026-10-10 |
+| [Grok](docs/_guides/grok.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [Grok API](docs/_guides/grok-api.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [Grok Bot](docs/_guides/grok-bot.md) | v0.2.0 | ai-drafted | 2026-11-05 |
+| [Grok Build](docs/_guides/grok-build.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [HashiCorp Vault](docs/_guides/hashicorp-vault.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Idira (formerly CyberArk)](docs/_guides/cyberark.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [LangChain](docs/_guides/langchain.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
