@@ -66,9 +66,9 @@
 # or number, then letters, numbers, ., _, or -". Script text is never logged in
 # audit events (grok_bot_team_setup_manifest records ids, revision and counts).
 #
-# Exit codes: 0 no finding in the team manifests (the RESULT line names Team
-# Secrets and group Setup Scripts as not proven, TRAP 2) | 1 finding, dry run
-# with changes, or a write refused after a finding | 2 precondition
+# Exit codes: 3 UNKNOWN when part of the control cannot be observed;
+# 1 finding, planned change or failed action; 2 precondition. A readable subset
+# cannot establish whole-control compliance (see common.sh, TRAP I).
 # =============================================================================
 
 set -euo pipefail

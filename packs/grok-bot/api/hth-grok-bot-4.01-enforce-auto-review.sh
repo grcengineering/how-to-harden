@@ -57,9 +57,9 @@
 # An empty `block` list alone is NOT flagged: which list is "Ask first" is only
 # inferred.
 #
-# Exit codes: 0 team lock on with team rules (the RESULT line names group
-# opt-outs as not proven, TRAP 4) | 1 finding, dry run with changes, or a write
-# refused after a finding | 2 precondition
+# Exit codes: 3 UNKNOWN when part of the control cannot be observed;
+# 1 finding, planned change or failed action; 2 precondition. A readable subset
+# cannot establish whole-control compliance (see common.sh, TRAP I).
 # =============================================================================
 
 set -euo pipefail

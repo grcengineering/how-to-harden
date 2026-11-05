@@ -49,10 +49,9 @@
 # retention period. A connector allowed before the window is invisible here;
 # only the dashboard shows current state.
 #
-# Exit codes: 0 no connector-policy change in the window (the RESULT line says
-# what stays unproven: policy set before the window and the current marketplace
-# state) | 1 changes found (review each) | 2 precondition (missing key, plan
-# without audit logs, bad shape)
+# Exit codes: 3 UNKNOWN when part of the control cannot be observed;
+# 1 finding, planned change or failed action; 2 precondition. A readable subset
+# cannot establish whole-control compliance (see common.sh, TRAP I).
 # =============================================================================
 
 set -euo pipefail

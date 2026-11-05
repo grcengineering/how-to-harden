@@ -47,9 +47,9 @@
 # identified actor. Field paths here are the Admin API pull's event_data; a
 # streamed event nests the same fields under a key named after the event type.
 #
-# Exit codes: 0 no unapproved publish in the window (the RESULT line names what
-# stays unproven, TRAP 1 and TRAP 2) | 1 publishes to review | 2 precondition
-# (missing key, plan without audit logs, bad shape)
+# Exit codes: 3 UNKNOWN when part of the control cannot be observed;
+# 1 finding, planned change or failed action; 2 precondition. A readable subset
+# cannot establish whole-control compliance (see common.sh, TRAP I).
 # =============================================================================
 
 set -euo pipefail
