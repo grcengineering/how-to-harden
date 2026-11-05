@@ -406,7 +406,7 @@ Owner access and beta availability are prerequisites. The PDF and dashboard are 
 **Profile Level:** L2 (Walk)
 
 #### Description
-Read the organization’s resolved settings and compare only named, typed requirements from an approved organizational baseline. This is an HTH assessment, not Anthropic’s native Security Center score or a claim to have reconstructed its private checklist.
+Read the organization’s resolved settings and compare only named, typed requirements from an approved organizational baseline. This is an HTH assessment, not Anthropic’s native Security Center score or a claim to have reconstructed its complete applicable checklist.
 
 #### Rationale
 **Why This Matters:**
