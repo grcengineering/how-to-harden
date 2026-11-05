@@ -8,35 +8,54 @@ platform_slug: "openai"
 product: "Common Controls"
 tier: "1"
 category: "AI/ML Platform"
-description: "Enterprise AI security hardening for ChatGPT, SSO configuration, data privacy, admin controls, and workspace agent governance"
-version: "0.3.2"
+description: "ChatGPT workspace identity, sharing, data, plugins, integration and agent governance with explicit product boundaries"
+version: "0.4.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-10-10"
+last_updated: "2026-11-05"
 ---
 
 ## Overview
 
-ChatGPT Enterprise is OpenAI's enterprise-grade AI assistant serving organizations that require enhanced security, privacy, and administrative controls. With AI adoption accelerating across enterprises, properly securing ChatGPT Enterprise is critical to prevent data leakage, maintain compliance, and ensure responsible AI usage. Unlike consumer versions, Enterprise provides SOC 2 Type II compliance, data isolation, and guarantees that prompts and outputs are not used for model training.
+This is the OpenAI platform’s common-controls hub. Its settings govern eligible **ChatGPT workspaces**, with tenant identity controls only where the selected product supports them. OpenAI is a shared owner, not one security control plane: ChatGPT membership, API organization/projects, Ads accounts, local/device policy, Codex Cloud, source systems, Ona and Statsig each require their own configuration. No product inherits a control merely because it appears on this platform.
 
-On April 22, 2026, OpenAI announced **[Workspace Agents in ChatGPT](https://openai.com/index/introducing-workspace-agents-in-chatgpt/)** — cloud-resident agents that can connect to enterprise apps (Slack, Google Drive, SharePoint, Gmail, Calendar, GitHub, Jira, Confluence, and others), run on schedules, and complete multi-step workflows on a user's behalf. Workspace agents are an evolution of custom GPTs and inherit a substantially broader risk surface because they can take **actions** in connected systems, not just answer questions. OpenAI's *Workspace Agents Security Overview* PDF (April 29, 2026) was the original authoritative reference for the security model but **has since been removed (the URL now returns HTTP 404)**; the canonical enterprise admin documentation now lives at **[learn.chatgpt.com/docs/enterprise](https://learn.chatgpt.com/docs/enterprise/governance.md)** (Administration, Governance, Compliance API, Roles and workspace permissions, Apps and connectors) with developer surfaces at **[developers.openai.com](https://developers.openai.com/workspace-agents/authentication.md)**. Claims in Section 6 that traced only to the retired PDF are annotated accordingly.
+**Intended audience:** workspace/global administrators, security engineers, connected-service owners and integration developers. **Profiles:** L1 (Crawl) for essential controls, L2 (Walk) for sensitive environments, L3 (Run) for regulated requirements. **Scope:** current official customer controls reviewed 2026-11-05, with edition and runtime limitations below. No live tenant was accessed and no maturity promotion is claimed.
 
-This guide is the **Common Controls hub of the OpenAI platform**: the ChatGPT workspace-wide controls (identity, RBAC, data retention, EKM, app and GPT governance, audit and Compliance Platform logging, workspace agents) that every ChatGPT product inherits. Product-specific controls live in product guides, listed in [Products in This Platform](#products-in-this-platform). The platform also holds Ona, which OpenAI acquired in 2026; Ona keeps its own console and does not inherit the ChatGPT controls here.
+## Products in This Platform
+
+| Product / surface | Guide or disposition | Control boundary |
+|-------------------|----------------------|------------------|
+| ChatGPT Enterprise and common workspace controls | This guide | Enterprise/Edu identity, permissions, GPTs/plugins, sharing, data, supported logging and agents; verify edition eligibility |
+| ChatGPT Work, Codex desktop/CLI/IDE/Cloud and Codex Security | [Work and Codex](/guides/chatgpt-work-codex/) | Device policy, runtime/network/browser/computer permissions, cloud environments, state and scanning; does not inherit every workspace control |
+| ChatGPT Dots | [Dots](/guides/chatgpt-dots/) | Personal-dot identity, app/channel capabilities, context, audits and lifecycle |
+| OpenAI API Platform, models, Responses/Realtime/media, hosted tools and Agents | [API Platform](/guides/openai-api/) | Separate org/project roles, keys, retention, egress, webhooks and stored application state |
+| Frontier | [Separate deployment; research gap](https://openai.com/business/frontier/) | Current enterprise-agent platform; public configuration/audit contracts unverified, no inherited ChatGPT/API enforcement claim |
+| GPT-Rosalind life-sciences workflow | Common 1.4 and approved Work/Codex/API scope | Research/Discovery access, workspace roles and separately approved API access |
+| Ads Manager / Ads API | [Ads](/guides/openai-ads/) | Distinct ad-account roles, keys, OAuth, assets and audit; shared tenant SSO only when configured |
+| Ona, formerly Gitpod | [Ona](/guides/ona/) | Acquired 2026-08-10; separate Ona console, runners, API/CLI, native policies and contract |
+| Prism / former Crixet | Common 2.7 and personal-account controls | Active pending announced January 1, 2027 shutdown; distinct sharing, Zotero and export lifecycle |
+| Statsig | [Statsig](/guides/statsig/) | Current OpenAI family; separate experimentation/configuration service, identity, keys and telemetry |
+| ChatGPT Business, Edu, Teachers and Healthcare | [Edition and workflow boundaries](#edition-and-workflow-boundaries) | Apply only supported controls; clinical and district-specific configuration called out |
+| Free/Go/Plus/Pro, Health and Clinicians | [Individual accounts](#individual-accounts-and-healthcare-boundaries) | Individual account/training/memory/connection controls; no automatic Enterprise admin inheritance |
+| Space, projects, Sites, plugins, Company Knowledge, search/research, image, voice, meetings and scheduled/team tasks | This guide’s sharing, app/data and task controls | Features of ChatGPT; sources/settings and saved copies may differ. Work/Codex runtime controls are separate |
+| Sign in with ChatGPT | [5.6](#56-bind-sign-in-with-chatgpt-transactions-and-relying-party-sessions), [5.7](#57-verify-signed-account-security-logout-notifications) | Limited partner trial; relying-party authentication/session implementation, not project policy |
+| Plugin/Apps SDK and Agentic Commerce developer integrations | [5.8](#58-enforce-plugin-and-apps-sdk-authorization-on-every-tool-call), [5.9](#59-protect-agentic-commerce-credentials-and-transaction-boundaries) | Developer application authorization, provider credentials and transaction boundaries; no native universal workspace toggle |
+| Atlas, Sora and Neptune SaaS | Lifecycle records in the source inventory | Retired/announced shutdown; no new active-product guide fabricated |
+| Pierre / Code Storage / Trees / Diffs / Highlights | [Pending acquisition](https://openai.com/index/openai-to-acquire-pierre/) announced 2026-11-04 | Companies remain independent until closing; no OpenAI policy inheritance |
+| TBPN | Media acquisition; excluded from hardening settings | No documented customer SaaS security configuration plane |
+
+**Product guides:** [Dots](/guides/chatgpt-dots/) · [Work and Codex](/guides/chatgpt-work-codex/) · [API Platform](/guides/openai-api/) · [Ads](/guides/openai-ads/) · [Ona](/guides/ona/) · [Statsig](/guides/statsig/)
 
 ### Intended Audience
-- Security engineers managing AI tools
-- IT administrators configuring ChatGPT Enterprise
-- GRC professionals assessing AI compliance
-- Third-party risk managers evaluating AI tools
+
+Workspace and identity administrators, security engineers, integration owners and developers responsible for ChatGPT data and delegated actions.
 
 ### How to Use This Guide
-- **L1 (Crawl):** Essential controls for all organizations
-- **L2 (Walk):** Enhanced controls for security-sensitive environments
-- **L3 (Run):** Strictest controls for regulated industries
+
+Apply L1 (Crawl) controls first; use L2 (Walk) for sensitive workflows and L3 (Run) where contractual or regulated requirements apply. Follow the product links and verify each control’s edition/runtime conditions.
 
 ### Scope
-This guide covers ChatGPT Enterprise security configurations including SSO/SAML, user management, data privacy controls, GPT restrictions, and compliance settings.
 
----
+Eligible ChatGPT workspace identity, data, sharing, plugins, agent governance and developer integration boundaries. API Platform, Ads, installed executors, Ona and Statsig retain the separate control planes described below.
 
 ## Table of Contents
 
@@ -48,20 +67,6 @@ This guide covers ChatGPT Enterprise security configurations including SSO/SAML,
 6. [Workspace Agents Hardening](#6-workspace-agents-hardening)
 7. [Compliance Quick Reference](#7-compliance-quick-reference)
 
-**Product guides:** [ChatGPT Dots](/guides/chatgpt-dots/) · [Ona](/guides/ona/)
-
----
-
-## Products in This Platform
-
-OpenAI is a multi-product platform. This guide is the **Common Controls hub**, holding the ChatGPT workspace-wide controls. Product-specific controls live in their own guides:
-
-| Product | Guide | Covers |
-|---------|-------|--------|
-| **Common Controls** (this guide) | — | SSO, MFA and SCIM, role-based access, data privacy, retention and EKM, acceptable use, GPT, app and custom-instruction controls, usage analytics, Purview and audit-trail review, integration risk, workspace agents (including Compliance Platform logs to SIEM) |
-| **ChatGPT Dots** | [ChatGPT Dots guide](/guides/chatgpt-dots/) | Dots enablement and RBAC, owner-account protection, connected apps and Slack/Teams participation, cloud computer and local access, custom rules and Agent Security policy, memory and residency, audit coverage, revoke/pause/reset |
-| **Ona** | [Ona guide](/guides/ona/) | Ona (formerly Gitpod), which OpenAI acquired in August 2026 and which is still administered in its own console: OIDC SSO and SCIM, roles and tokens, Veto and command deny lists, MCP and SCM-tool governance, environment and network policy, secrets, self-hosted runners, audit logging. The ChatGPT controls in this hub do not configure it |
-
 ---
 
 ## 1. Authentication & Access Controls
@@ -72,61 +77,35 @@ OpenAI is a multi-product platform. This guide is the **Common Controls hub**, h
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 6.3, 12.5 |
-| NIST 800-53 | IA-2, IA-8 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Configure SAML-based SSO to authenticate ChatGPT Enterprise users through your corporate identity provider (Okta, Azure AD, OneLogin). This centralizes authentication and enables MFA enforcement.
+
+Configure identity in the correct OpenAI tenant and then require the intended product’s SSO policy. A shared identity-provider connection does not automatically enable SSO for ChatGPT, API Platform or Ads, or grant product membership.
 
 #### Rationale
+
 **Why This Matters:**
-- Centralizes authentication and user lifecycle management
-- Enables Conditional Access and MFA through IdP
-- Automatic deprovisioning when users leave organization
-- Eliminates standalone ChatGPT passwords
 
-**Attack Prevented:** Credential theft, unauthorized access, orphaned accounts
+- Optional or alternate sign-in can bypass IdP MFA and device policies.
+- Changing a shared connection can affect multiple products and recovery paths.
 
-#### Prerequisites
-- ChatGPT Enterprise subscription
-- SAML 2.0 compatible identity provider
-- Workspace Owner access
+**Attack Prevented:** Unauthorized alternate sign-in and identity migration lockout.
 
 #### ClickOps Implementation
 
-**Step 1: Access SSO Settings**
-1. Navigate to: **ChatGPT Admin Console** → **Settings** → **Authentication**
-2. Click **Configure SSO**
+1. As a tenant global admin, open **Admin Console > Access > Domains / Single Sign-On**. Standalone Business owners use **Workspace settings > Identity & access**; follow the Console link if settings are read-only.
+2. Verify the intended domain and use **Set up SSO** from the live flow to obtain connection-specific values. Configure the IdP with those values and test while SSO is Optional where offered.
+3. Set the ChatGPT product sign-in policy to Required only after representative and recovery-admin tests. Off disables SSO; it does not mean optional. Review API and Ads product policies separately.
 
-**Step 2: Configure SAML**
-1. Enter Identity Provider details:
-   - **SSO URL:** Your IdP's SSO endpoint
-   - **Entity ID:** IdP entity ID
-   - **Certificate:** X.509 certificate from IdP
-2. Download ChatGPT's Service Provider metadata for IdP configuration
-3. Map user attributes (email, name)
-
-**Step 3: Configure IdP (Example: Okta)**
-1. In Okta Admin: **Applications** → **Add Application**
-2. Select SAML 2.0 integration
-3. Enter ChatGPT's ACS URL and Entity ID
-4. Configure attribute statements:
-   - email → user.email
-   - name → user.displayName
-5. Assign users/groups
-
-**Step 4: Enable SSO Enforcement**
-1. Return to ChatGPT Authentication settings
-2. Enable **Require SSO for all users**
-3. Test login before enforcing
-
-**Time to Complete:** ~1 hour
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
 
 #### Validation & Testing
-1. Test SSO sign-in through IdP
-2. Verify MFA is enforced (via IdP)
-3. Confirm direct password login is disabled
-4. Test user deprovisioning from IdP
+
+Test the intended work account, alternate permitted sign-in, recovery procedure and each affected product. Retain a separate authorized recovery path before changing an existing connection.
+
+**Sources:** [Configuration guidance](https://help.openai.com/en/articles/9534785-single-sign-on-sso-setup-for-openai-products)
 
 ---
 
@@ -136,31 +115,35 @@ Configure SAML-based SSO to authenticate ChatGPT Enterprise users through your c
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 6.5 |
-| NIST 800-53 | IA-2(1) |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Enforce multi-factor authentication for all ChatGPT Enterprise users. With SSO, MFA should be enforced through your identity provider. For non-SSO deployments, enable ChatGPT's native TOTP-based MFA.
+
+Require MFA through the identity provider and require its sign-in path. OpenAI currently has no native workspace-level or API-organization-level MFA enforcement. Individual enrollment is a useful account control, not proof that all workspace members have MFA.
 
 #### Rationale
-**Why This Matters:**
-- Passwords alone are routinely phished, reused, and stolen; a second factor stops an attacker who already holds valid credentials
-- ChatGPT Enterprise accounts hold conversation history, uploaded files, and connected-app access — a single takeover can expose all of it
-- Enforcing MFA at the IdP applies one consistent policy across every SaaS app, including ChatGPT, rather than relying on per-app toggles
 
-**Attack Prevented:** Credential stuffing, password reuse, phishing, account takeover
+**Why This Matters:**
+
+- A compromised privileged account exposes connected services and retained content.
+- Enabling MFA does not invalidate existing sessions.
+
+**Attack Prevented:** Credential reuse, phishing and persistent unauthorized sessions.
 
 #### ClickOps Implementation
 
-**Option A: MFA via SSO (Recommended)**
-1. Configure MFA in your identity provider
-2. Create Conditional Access policy requiring MFA for ChatGPT app
-3. All ChatGPT access will require MFA through IdP
+1. In your **identity provider’s ChatGPT application policy**, require the organization’s approved MFA and conditional access, then verify required SSO under 1.1.
+2. For permitted individual accounts open **Settings > Security and login > Multi-factor authentication** and enroll a supported method and recovery plan. Available methods vary by account/device.
+3. After suspected compromise use **Security and login > Log out of all devices** as well as credential/token and connected-service revocation. Session logout may take up to 30 minutes.
 
-**Option B: Native MFA (Non-SSO)**
-1. Navigate to: **Admin Console** → **Settings** → **Authentication**
-2. Enable **Require multi-factor authentication**
-3. Users will be prompted to enroll in TOTP-based MFA
+**Automation:** No native workspace/org MFA enforcement is currently documented. IdP policy enforces the required sign-in route; OpenAI account enrollment and session logout are separate user controls. IdP automation belongs to the identity provider.
+
+#### Validation & Testing
+
+Use a disposable member to prove the required IdP MFA challenge. Check direct sign-in and existing sessions separately; do not rely on a nonexistent Require MFA workspace toggle.
+
+**Sources:** [Configuration guidance](https://help.openai.com/en/articles/7967234-managing-multi-factor-authentication-mfa)
 
 ---
 
@@ -170,39 +153,35 @@ Enforce multi-factor authentication for all ChatGPT Enterprise users. With SSO, 
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 5.3 |
-| NIST 800-53 | AC-2 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Enable SCIM (System for Cross-domain Identity Management) for automatic user provisioning and deprovisioning synced with your identity provider.
+
+Choose tenant-wide or product-level SCIM deliberately and synchronize only intended groups. SCIM provisions membership; SSO authenticates. Directory membership does not confer connected-service access.
 
 #### Rationale
-**Why This Matters:**
-- Automatic user lifecycle management
-- Immediate deprovisioning when employees leave
-- Eliminates orphaned accounts
-- Ensures consistent group memberships
 
-**Attack Prevented:** Orphaned-account exploitation after offboarding, stale access via manual deprovisioning gaps, group-membership drift.
+**Why This Matters:**
+
+- Direct invitations and alternate group grants can retain access after a directory change.
+- Replacing a working provisioning scope can affect multiple products.
+
+**Attack Prevented:** Orphaned accounts and unintended cross-product provisioning.
 
 #### ClickOps Implementation
 
-**Step 1: Enable SCIM**
-1. Navigate to: **Admin Console** → **Settings** → **User provisioning**
-2. Click **Enable SCIM**
-3. Copy the SCIM endpoint URL and generate API token
+1. For tenant-wide sync, a global admin opens **Admin Console > Global settings > Access > Directory > Enable Directory Sync (SCIM)**, then **Manage directory > Manage product access**. Assign pilot groups to intended workspaces/products.
+2. For eligible workspace-only sync, an owner opens **Workspace settings > Identity & access > Directory Sync** and chooses **Use SCIM only for this workspace**. Coordinate existing tenant/product sync with the account team before migration.
+3. For Teachers district tenants sync verified staff only, never student groups, and review direct/domain joins separately. Standalone Business does not include SCIM. API organization membership remains an API product boundary.
 
-**Step 2: Configure IdP**
-1. In your IdP, configure SCIM integration
-2. Enter ChatGPT's SCIM endpoint URL
-3. Enter the API token for authentication
-4. Enable provisioning actions:
-   - Create users
-   - Update users
-   - Deactivate users
-5. Map user attributes
+**Automation:** SCIM is a documented provisioning protocol; use the endpoint and credential issued for the actual tenant/product. This review did not verify its current schema and cannot safely provide a generic token or guessed provisioning request.
 
-**Time to Complete:** ~30 minutes
+#### Validation & Testing
+
+Remove a disposable user’s provider assignment, verify successful sync and effective workspace removal, then check direct memberships, other groups, active dots/tasks and source authorizations separately.
+
+**Sources:** [Configuration guidance](https://help.openai.com/en/articles/10011769-scim-provisioning-and-management) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/groups-and-provisioning) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/user-lifecycle)
 
 ---
 
@@ -212,39 +191,76 @@ Enable SCIM (System for Cross-domain Identity Management) for automatic user pro
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 5.4 |
-| NIST 800-53 | AC-6(1) |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Configure role-based access using ChatGPT Enterprise's three role types: Owner, Admin, and Member. Limit Owner and Admin roles to essential personnel.
+
+Review seats, built-in administrative roles, custom feature roles, direct assignments and groups independently. Owners, Admins, Members and Analytics Viewers have different authority. Ordinary role On grants are additive; Off does not revoke another role’s grant.
 
 #### Rationale
-**Why This Matters:**
-- Owners have full access to all settings and data
-- Excessive admin privileges increase risk
-- Members should be the default role for most users
 
-**Attack Prevented:** Privilege escalation via over-assigned admin roles, full-workspace takeover from a single compromised Owner account.
+**Why This Matters:**
+
+- A seat or feature role is not an administrative role.
+- An overlooked group or direct grant can defeat a restrictive workspace default.
+
+**Attack Prevented:** Excess administrative privileges and additive-role bypass.
 
 #### ClickOps Implementation
 
-**Step 1: Review Current Roles**
-1. Navigate to: **Admin Console** → **Members**
-2. Review current role assignments
-3. Document Owners and Admins
+1. In **Admin Console > Members**, review Owners/Admins, Analytics Viewers, seat eligibility and delegated group management. Keep privileged access with accountable administrators.
+2. In **Permissions & roles**, set a restrictive workspace default and grant reviewed features through targeted custom roles/groups. Inspect every direct and group assignment.
+3. Check Lockdown Mode, seat, plan and product restrictions separately; workspace roles do not grant repository access, API project membership or local runtime permissions.
 
-**Step 2: Implement Least Privilege**
-1. Maintain minimum Owners (1-2 maximum)
-2. Assign Admin role only for user management needs
-3. Use Member role for all regular users
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
 
-**Role Definitions:**
 
-| Role | Capabilities |
-|------|-------------|
-| **Owner** | Full workspace control, billing, SSO configuration |
-| **Admin** | User management, usage insights, settings |
-| **Member** | Standard ChatGPT access, no admin functions |
+**GPT-Rosalind:** In the approved workspace, an Owner uses **Groups**, then **Permissions & roles > Custom roles**, to grant approved users **Life Sciences** and required **Skills/Codex** permissions. Keep the default member model grant Off and reconcile additive roles. Research and Discovery approvals differ; API needs separate approval. GPT-6 Rosalind Research uses Work/Codex and has a separate, initially off two-week Admin Preview. Business and Academic Plan follow their approval-specific access paths. Plugin installation alone grants no model access. [Current setup](https://help.openai.com/en/articles/20001193-gpt-rosalind-for-life-sciences-research).
+
+#### Validation & Testing
+
+Test an allowed and denied member with realistic multiple-role membership. Preserve exported assignments and the effective access result; an audit log of role changes is not a complete current role inventory.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/roles-and-workspace-permissions) · [Supporting documentation](https://help.openai.com/en/articles/8266401-managing-members-workspace-roles-and-seats-in-chatgpt-enterprise-and-edu)
+
+---
+
+### 1.5 Apply Lockdown Mode to sensitive member populations
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
+
+#### Description
+
+Use a managed Lockdown Mode role where reduced live egress is required. It restricts supported capabilities but does not prevent all prompt injection or govern Codex networking, memory, training or all managed apps.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Untrusted content can request outbound disclosure through a legitimate tool.
+- A normal feature grant does not override a Lockdown role restriction.
+
+**Attack Prevented:** Prompt-injection-driven exfiltration through supported outbound capabilities.
+
+#### ClickOps Implementation
+
+1. In **Workspace settings > Permissions & roles > Custom roles**, create/designate the supported **Lockdown Mode** role and assign the intended members/groups.
+2. Review each trusted app and action retained for that role. Avoid untrusted apps and broad external write visibility; source data access remains independently authorized.
+3. Test required workflows, live versus cached browsing, agent mode, deep research and Canvas networking. Personal/self-serve account per-chat disable behavior is separate from managed-role restrictions.
+
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
+
+#### Validation & Testing
+
+Use disposable prompts and destinations to verify blocked egress and approved reads. Verify memory/sharing/training and Codex networking separately.
+
+**Sources:** [Configuration guidance](https://help.openai.com/en/articles/20001061-lockdown-mode) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/roles-and-workspace-permissions)
 
 ---
 
@@ -256,36 +272,35 @@ Configure role-based access using ChatGPT Enterprise's three role types: Owner, 
 
 | Framework | Control |
 |-----------|---------|
-| NIST 800-53 | SC-8, SC-28 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-ChatGPT Enterprise provides specific data privacy guarantees that differentiate it from consumer versions. Understanding these guarantees is essential for risk assessment.
+
+Approve data use by the actual product, workspace contract and content category. Business, Enterprise, Edu and Healthcare content is excluded from model training by default; personal accounts and third-party integrations have separate settings and terms.
 
 #### Rationale
+
 **Why This Matters:**
-- Risk and compliance teams cannot approve a tool whose data handling they have not validated against the contractual guarantees
-- The commitment that inputs and outputs are excluded from model training is what makes Enterprise acceptable for confidential workloads where the consumer edition is not
-- Documenting the encryption, ownership, and retention commitments gives auditors the evidence trail required for SOC 2, ISO 27001, and vendor reviews
 
-**Attack Prevented:** Inadvertent data-for-training leakage, unmanaged shadow use of consumer ChatGPT, compliance gaps from unverified vendor claims
+- A privacy promise does not configure retention, source authorization or an integration’s processing region.
+- Local Work/Codex execution still sends selected context to OpenAI.
 
-#### Key Privacy Features
+**Attack Prevented:** Submission through an unapproved account or processing boundary.
 
-| Feature | ChatGPT Enterprise | ChatGPT Consumer |
-|---------|-------------------|------------------|
-| **Training on Data** | ❌ Not used for training | ✅ May be used |
-| **Data Encryption at Rest** | ✅ AES-256 | ✅ AES-256 |
-| **Data Encryption in Transit** | ✅ TLS 1.2+ | ✅ TLS 1.2+ |
-| **SOC 2 Type II** | ✅ Certified | ❌ Not applicable |
-| **Enterprise Key Management** | ✅ Available | ❌ Not available |
-| **Data Retention Control** | ✅ Configurable | ❌ Standard retention |
+#### ClickOps Implementation
 
-#### Data Guarantees
-According to OpenAI's Enterprise Privacy commitments:
-- **Inputs and outputs are not used for training** OpenAI models
-- Organizations **retain ownership** of their data
-- Data is encrypted **in transit (TLS 1.2+)** and **at rest (AES-256)**
-- Enterprise customers can configure **data retention periods**
+1. Confirm the selected workspace and product, intended data classes, agreements and any BAA before onboarding. Use approved managed accounts for organization data.
+2. Review **Settings / Workspace settings > Data controls** and the applicable plan’s retention, Memory and sharing settings. Record which controls are admin-managed and which are individual.
+3. Inventory external apps, shared connections, local/client state and cloud snapshots separately; require the receiving service’s appropriate agreement for regulated data.
+
+**Automation:** Contract/edition review is not an executable hardening setting. Implement its actual identity, retention, sharing, app and runtime controls in the corresponding sections.
+
+#### Validation & Testing
+
+Confirm the approved workspace and contract for a representative workflow; verify each downstream recipient. Do not use a compliance certification or training setting as proof that an action is authorized.
+
+**Sources:** [Configuration guidance](https://help.openai.com/en/articles/7730893-data-controls-in-chatgpt) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/chatgpt-work-cloud-security)
 
 ---
 
@@ -295,36 +310,35 @@ According to OpenAI's Enterprise Privacy commitments:
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 3.4 |
-| NIST 800-53 | SI-12, AU-11 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Configure data retention policies to balance compliance requirements with data minimization principles. Shorter retention reduces breach impact.
+
+Set the required workspace retention policy and reconcile chats, files, Space pages, Memory, dots, cloud snapshots and exported logs separately. A single conversation-retention value does not expire every copy.
 
 #### Rationale
-**Why This Matters:**
-- Data that no longer exists cannot be stolen, subpoenaed, or leaked — shorter retention directly shrinks the breach blast radius
-- GDPR mandates data minimization while sectors such as financial services mandate minimum retention; an explicit policy reconciles the two
-- Indefinite conversation storage accumulates sensitive prompts and uploaded files with no expiry, expanding exposure for no business benefit
 
-**Attack Prevented:** Excessive data exposure on breach, retention-policy compliance violations, e-discovery over-collection
+**Why This Matters:**
+
+- Saved files or memory can outlive the chat or source connection.
+- Compliance exports and legal holds introduce independent retention obligations.
+
+**Attack Prevented:** Residual sensitive information after apparent deletion.
 
 #### ClickOps Implementation
 
-**Step 1: Access Retention Settings**
-1. Navigate to: **Admin Console** → **Settings** → **Data controls**
-2. Click **Retention policy**
+1. In the selected workspace’s **Workspace settings > Data controls**, review the retention configuration offered by the plan; coordinate account-team-managed policy changes instead of assuming fixed 30/90-day choices.
+2. Inventory chat/file policy, Space/Library pages and attachments, ChatGPT Memory, dots context/snapshots, delegated tasks and third-party copies. Assign an owner and deletion path for each.
+3. Export required evidence before expiration and apply downstream retention/legal holds to actual received records. A hold on an export is not proof of a hold on all original content.
 
-**Step 2: Configure Retention**
-1. Set conversation retention period:
-   - **Indefinite:** Conversations kept until user deletes
-   - **90 days:** Auto-delete after 90 days
-   - **30 days:** Auto-delete after 30 days (most restrictive)
-2. Consider compliance requirements:
-   - **FINRA:** May require longer retention for audit trails
-   - **GDPR:** Supports data minimization with shorter retention
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
 
-**Time to Complete:** ~15 minutes
+#### Validation & Testing
+
+Use disposable content to verify expiry/deletion in each location. Access revocation and account removal are not deletion tests; record contractual exceptions and any unsupported category.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/chatgpt-space) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/dots-security) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/chatgpt-work-cloud-security) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/compliance-api)
 
 ---
 
@@ -334,34 +348,35 @@ Configure data retention policies to balance compliance requirements with data m
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 3.11 |
-| NIST 800-53 | SC-12, SC-28 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Deploy Enterprise Key Management to use your own encryption keys for ChatGPT data, providing customer-controlled encryption.
+
+Where eligible, use external customer-managed keys and test the lifecycle for supported content. Current EKM documentation supports AWS KMS, GCP and Azure Key Vault; eligibility and onboarding remain account-team dependent.
 
 #### Rationale
+
 **Why This Matters:**
-- Customer-managed keys let your organization revoke OpenAI's access to encrypted data unilaterally, an essential control for highly regulated workloads
-- Key rotation and access logging stay under your governance rather than depending solely on the provider's internal controls
-- Holding the keys enables a cryptographic-shredding response — destroying the key renders the stored data unrecoverable on demand
 
-**Attack Prevented:** Provider-side data exposure, inability to revoke access during an incident, key-management compliance gaps
+- Revocation, rotation and deletion have different operational consequences.
+- Not every product, content copy or integration inherits EKM coverage.
 
-#### Prerequisites
-- ChatGPT Enterprise with EKM add-on
-- AWS KMS or compatible key management system
+**Attack Prevented:** Uncontrolled access to supported encrypted content and unsafe key lifecycle changes.
 
 #### ClickOps Implementation
 
-**Step 1: Contact OpenAI**
-1. Work with your OpenAI account team to enable EKM
-2. Receive EKM configuration instructions
+1. Work with the OpenAI account representative to confirm the workspace, eligible content categories and chosen KMS provider before activation. Follow its current provider-specific integration procedure.
+2. In your **KMS administration console**, grant only the vendor-documented identity and operations. Record ownership, availability, access logs and recovery arrangements.
+3. Plan test rotation and controlled revocation with the account team, including separately stored snapshots, data exports and integration copies. Do not describe key destruction as an immediate universal purge.
 
-**Step 2: Configure Key Management**
-1. Create encryption key in your KMS
-2. Configure key policy for OpenAI access
-3. Provide key ARN to OpenAI for configuration
+**Automation:** KMS configuration and an EKM Management API are documented, but the ChatGPT current external-key contract was not fetched successfully in this review. Treat API automation as unverified; do not reuse API project key endpoints as workspace EKM configuration.
+
+#### Validation & Testing
+
+Validate the supported-content behavior and KMS access logs through the documented onboarding/lifecycle checks. Test recovery on disposable data before a production revocation.
+
+**Sources:** [Configuration guidance](https://help.openai.com/en/articles/20000943-openai-enterprise-key-management-ekm-overview) · [Supporting documentation](https://help.openai.com/en/articles/20000957-ekm-kms-key-lifecycle)
 
 ---
 
@@ -371,41 +386,150 @@ Deploy Enterprise Key Management to use your own encryption keys for ChatGPT dat
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 3.2 |
-| NIST 800-53 | PL-4 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Create and enforce acceptable use policies that define what data can and cannot be submitted to ChatGPT Enterprise.
+
+Define approved data classes and workflows using enforceable identity, app, sharing, runtime and guardrail controls. Written instructions alone do not create a product security boundary.
 
 #### Rationale
+
 **Why This Matters:**
-- Users may inadvertently submit sensitive data
-- Even with Enterprise privacy, minimizing exposure is safest
-- Clear policies set expectations and enable enforcement
 
-**Attack Prevented:** Inadvertent disclosure of PII/PHI/credentials into prompts, unenforceable shadow use, compliance violations from ungoverned data submission.
+- Users need clear guidance on connected accounts, intended recipients and unattended actions.
+- A generic ban or policy prompt cannot replace authorization in the receiving system.
 
-#### Policy Recommendations
+**Attack Prevented:** Unapproved data submission and overbroad delegated actions.
 
-**Prohibited Data Types:**
-- Personally Identifiable Information (PII)
-- Protected Health Information (PHI)
-- Payment Card Industry (PCI) data
-- Credentials, API keys, passwords
-- Proprietary source code (without approval)
-- Trade secrets and confidential business records
+#### ClickOps Implementation
 
-**Approved Use Cases:**
-- General research and information gathering
-- Writing assistance (non-confidential content)
-- Code explanation and debugging (sanitized)
-- Brainstorming and ideation
+1. Document approved workspace/product/data combinations, permitted recipients, regulated-use agreements and an accountable owner for each workflow.
+2. During onboarding require review of **connected accounts**, **sharing audiences**, action approvals and the applicable workspace roles. Teach users to distinguish drafting from authorizing a send.
+3. For prompt-text inspection where eligible, follow [Work/Codex 4.2](/guides/chatgpt-work-codex/#42-test-external-prompt-guardrails-and-choose-failure-behavior). Its coverage does not include every file, tool result or API credential route.
 
-#### Implementation
-1. Document acceptable use policy
-2. Require user acknowledgment during onboarding
-3. Include in security awareness training
-4. Integrate with DLP tools if available
+**Automation:** The policy document is organizational governance. Its enforceable settings are covered by the product-specific controls; no native universal acceptable-use JSON policy is documented.
+
+#### Validation & Testing
+
+Rehearse a harmless draft, approved send and unauthorized recipient with the intended identity; confirm the actual product controls stop the prohibited path.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/admin-setup) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/apps-and-connectors) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/prisma-airs)
+
+---
+
+### 2.5 Restrict Space, project and Site sharing audiences
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
+
+#### Description
+
+Treat source file access, copied summaries, project membership, Space pages and published Sites as distinct disclosure boundaries. Disabling new sharing can leave existing access intact.
+
+#### Rationale
+
+**Why This Matters:**
+
+- A summary can expose source content to a broader destination audience.
+- UI-hidden records and unpublished edits are not authorization controls.
+
+**Attack Prevented:** External publication and cross-audience data disclosure.
+
+#### ClickOps Implementation
+
+1. In **Permissions & roles**, review project sharing and **Share Library files and folders**. Disabling the latter blocks new shares/permission changes, not existing access; review current shares explicitly.
+2. Review each **Space page / project > Share** audience and separately stored attachments. Shared projects use project-only memory; members can see the shared project content according to its permissions.
+3. In **Admin Console > Sites**, restrict create/publish, external invitation, public access and plugin use independently. Review additive audience grants and editor publication rights. Connected Sites must authorize records server-side under each visitor’s account; test as a non-owner.
+
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
+
+#### Validation & Testing
+
+Test internal, unauthorized, external and public access with disposable content. Check old shares, copied snapshots and Site record requests; deleting chats/projects does not necessarily delete Space files.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/chatgpt-space) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/sites) · [Supporting documentation](https://help.openai.com/en/articles/10169521-projects-in-chatgpt)
+
+---
+
+### 2.6 Limit personal Health connections and retained copies
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-3, AC-4, IA-2 |
+| CIS Controls v8 | 3.3, 6.1 |
+
+#### Description
+
+Health uses personal medical and Apple Health data in eligible chats when allowed. It is separate from Healthcare and the legacy Health Project.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Synced records can inform ordinary chats; legacy project isolation does not describe the new Health tab.
+- Authentication, source access and the final recipient need independent checks.
+
+**Attack Prevented:** Unauthorized disclosure and integration credential misuse.
+
+#### ClickOps Implementation
+
+1. In **Settings > Plugins > Health**, choose the required permission; new connections follow global plugin permissions, whose unchanged default is Allow low-risk actions.
+2. In **Health > Accounts** connect only intended records. For Apple Health, choose the approved categories on iPhone. Review Memory under **Settings > Personalization** or use Temporary Chat/project-only memory.
+3. To retire a source use **Health > Accounts > account > Remove account**, or **Health > … > Apple Health > Disconnect**. Synced source data is deleted within 30 days; delete retained conversations and memories separately.
+
+**Automation:** Member settings are documented; no managed Enterprise policy or current public Health admin API was verified.
+
+#### Validation & Testing
+
+Test with disposable data and confirm revocation in Health and the source. Review conversations, memory and legacy project copies independently.
+
+**Sources:** [Configuration guidance](https://help.openai.com/en/articles/20001036-health-in-chatgpt)
+
+---
+
+### 2.7 Restrict Prism collaboration and preserve controlled exports
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls v8 | 3.3, 6.8 |
+| NIST 800-53 | AC-3, CP-9 |
+
+#### Description
+
+Review Prism separately from managed workspaces. The current personal-account product is scheduled to shut down January 1, 2027; Enterprise settings do not establish its data protections.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Its FAQ rules out strict ZDR and gives no committed privacy-mode or EU-only residency timeline.
+- Link viewers and named editors have different access; exported files can outlive Prism and need a new collaboration boundary.
+
+**Attack Prevented:** Unintended manuscript disclosure and loss of access controls or recoverable research at retirement.
+
+#### ClickOps Implementation
+
+1. Check eligibility before approving sensitive work: the current FAQ permits personal plans only for people who are not and have not been Business/Enterprise members. Review personal model-improvement choices and applicable agreements.
+2. Review every collaborator and view link; accountless editable links are unsupported. Editors require collaborator accounts. Review individual Zotero library access separately; group libraries are unsupported and account unlink/relink can require Support.
+3. Export through **Settings > Data Controls > Export all projects (zip) > Download zip**, or the project-title menu **Export (zip)**. Protect archives and conversation JSON, check export-errors.json and verify a backup before shutdown. Preserve needed history/comments separately; re-establish collaborator permissions and Zotero in the destination. Prism data deletion after shutdown is irreversible.
+4. Before compiling imported LaTeX in Codex, review build files, selected folder, tools and approvals using the Work/Codex guide. An exported folder does not recreate Prism live collaboration or serve as its own backup.
+
+**Automation:** The documented UI exports are verified. Current public Prism administration APIs, Terraform, CLI, SDK, managed configuration and audit contracts were not verified; no private browser route is presented as supported automation.
+
+#### Validation & Testing
+
+Use a nonsensitive project to verify viewer/editor access and export completeness. Check that the approved destination has the intended collaborators, private storage and working recovery path.
+
+**Sources:** [Current Prism FAQ](https://help.openai.com/en/articles/20001050-troubleshooting-prism) · [Shutdown notice](https://openai.com/index/introducing-prism/) · [Migration](https://help.openai.com/en/articles/20001615-prism-to-codex-migration-guide)
 
 ---
 
@@ -417,38 +541,35 @@ Create and enforce acceptable use policies that define what data can and cannot 
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 2.5 |
-| NIST 800-53 | AC-3, CM-7 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Control which third-party extensions can run in your organization. The admin model has moved on from "GPTs / Apps / Plugins" console pages: the current model governs **plugins, bundled skills, and connectors** across **six named control boundaries** — ChatGPT workspace, Local clients, Codex cloud, Platform API, Plugins, and Connected systems — managed at `chatgpt.com/admin/settings` and `chatgpt.com/admin/ca` ("Workspace apps"). Sources: [Apps and connectors](https://learn.chatgpt.com/docs/enterprise/apps-and-connectors.md), [Roles and workspace permissions](https://learn.chatgpt.com/docs/enterprise/roles-and-workspace-permissions.md).
+
+Govern custom GPT creation, third-party access, sharing, action domains and ownership separately from plugins. GPT builders may use apps or custom actions, not both in the same GPT. Migration to plugins requires a fresh access review.
 
 #### Rationale
-**Why This Matters:**
-- Third-party plugins and connectors may have different data handling practices than your workspace's contractual guarantees
-- Extensions can access conversation data and connected-system data based on their configuration
-- Restricting to an approved allowlist reduces data exposure risk across all six control boundaries, not just the chat surface
 
-**Attack Prevented:** Data exfiltration through unvetted third-party extensions, unapproved conversation-data access, shadow extension sprawl.
+**Why This Matters:**
+
+- GPT instructions and custom actions can introduce a new data recipient.
+- An action-domain allowlist does not authenticate an API or authorize the user.
+
+**Attack Prevented:** Unvetted GPT use and custom-action disclosure.
 
 #### ClickOps Implementation
 
-**Step 1: Access Workspace App Controls**
-1. Navigate to: `chatgpt.com/admin/settings` and `chatgpt.com/admin/ca` (**Workspace apps**)
-2. Review the enablement state of plugins, bundled skills, and connectors for each control boundary
+1. In **Workspace settings > Permissions & roles**, review GPT creation, access and sharing for the workspace default and custom roles. Restrict outside-workspace sharing where offered.
+2. Review **GPT actions** domain restrictions and admit only approved external API domains. With no allowed domains custom GPT actions cannot execute. Review authentication and provider permissions separately.
+3. Open workspace **GPT management**, review builder, actions, access and assigned/unassigned ownership; reassign or remove orphaned GPTs. Re-review replacement plugins before migration.
 
-**Step 2: Configure Extension Policies**
-1. **Third-party plugins/connectors:** keep disabled by default; enable per-item with a documented business case
-2. **Organization-built items:** enable only what your teams actually publish and maintain
-3. Apply the same decision to each boundary where the extension can run (workspace, local clients, Codex cloud)
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
 
-**Step 3: Allowlist Approved Extensions (if needed)**
-1. If specific third-party extensions are required:
-   - Review the vendor's privacy policy and data handling
-   - Add to the approved list
-   - Document business justification
+#### Validation & Testing
 
-**Time to Complete:** ~15 minutes
+As a representative member test an unapproved GPT/action domain and a permitted workflow. Verify sharing audiences and source authorization independently.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/gpts-and-sharing) · [Supporting documentation](https://help.openai.com/en/articles/8555535-managing-gpt-access-in-enterprise-and-edu-workspaces)
 
 ---
 
@@ -458,69 +579,110 @@ Control which third-party extensions can run in your organization. The admin mod
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 2.5 |
-| NIST 800-53 | AC-3 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Control which ChatGPT features and integrations are available to users. All apps are disabled by default in Enterprise.
 
-> **Console model change:** apps are now governed under the **plugins + bundled skills + connectors** model at `chatgpt.com/admin/settings` / `chatgpt.com/admin/ca` ("Workspace apps"). Per-app **Action control** and the **newly-added-actions** deny toggle survive but have moved into this surface. Source: [Apps and connectors](https://learn.chatgpt.com/docs/enterprise/apps-and-connectors.md).
+Review plugin installation, included app access, existing/new tools, confirmation and content restrictions as separate decisions. Disabling an app does not necessarily uninstall its plugin or remove skill-only capabilities.
 
 #### Rationale
-**Why This Matters:**
-- Each enabled capability — web browsing, code interpreter, file uploads — adds an independent data-exposure or execution surface that must be justified
-- Web browsing can send internal queries to external sites and file uploads move sensitive documents into the platform; both warrant deliberate approval
-- Enabling only the features the business actually needs keeps the attack surface minimal and the data flows auditable
 
-**Attack Prevented:** Data exfiltration through outbound browsing, oversharing via uploads, unnecessary code-execution surface
+**Why This Matters:**
+
+- An installed plugin is not an authorization grant in its source system.
+- New actions or additive role grants can silently widen an established workflow.
+
+**Attack Prevented:** Unapproved tools, overbroad app writes and source-data disclosure.
 
 #### ClickOps Implementation
 
-**Step 1: Access App Settings**
-1. Navigate to: **Admin Console** → **Settings** → **Apps**
+1. Open **Admin Console > selected workspace > Plugins** (or **Manage Legacy Apps** where retained). Set workspace installation and role-specific availability for approved plugins.
+2. Review each included app’s **App access**, **Tools / Actions**, **New tools / New actions**, and **Permissions**. Default to approved read actions; turn off automatic admission of new write tools where available.
+3. Review supported **Safety & Security Controls** for content access, including source/resource and sensitivity-label exclusions. Verify company-domain connection restrictions separately: activation affects new connections and does not revoke existing ones.
 
-**Step 2: Configure App Access**
-1. Review each app category:
-   - **Code Interpreter:** Enable/disable code execution
-   - **Web Browsing:** Enable/disable internet access
-   - **Image Generation (DALL-E):** Enable/disable image creation
-   - **File Uploads:** Enable/disable file analysis
-2. Enable only features required for business use
-3. Consider security implications of each:
-   - Web browsing may expose queries externally
-   - File uploads increase data exposure surface
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
+
+#### Validation & Testing
+
+Use a member with all assigned roles to test an allowed and restricted source, read/write action and new tool. In Healthcare review its distinct defaults; Business apps are enabled by default and role-level controls differ.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/apps-and-connectors) · [Supporting documentation](https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-for-plugins-and-apps)
 
 ---
 
 ### 3.3 Configure Custom Instructions
 
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
+
+#### Description
+
+Use custom instructions for workflow guidance and keep secrets out of them. They do not override authorization or guarantee action approval. Relevant instruction content can be shared with third-party plugins.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Persistent instruction text can become another disclosure source.
+- A model instruction cannot revoke an underlying tool’s authority.
+
+**Attack Prevented:** Persistent sensitive prompt leakage and reliance on unenforceable instructions.
+
+#### ClickOps Implementation
+
+1. For individual web/desktop accounts open **Settings > Personalization > Enable customization**; mobile uses **Settings > Customize ChatGPT**. Review or remove sensitive instructions.
+2. Place security requirements in enforceable workspace/native controls, and keep instructions to approved workflow context. Review plugin recipients before including confidential text.
+
+**Automation:** Member personalization is documented. A universal administrator-enforced custom-instruction policy/write contract was not verified; do not invent an admin menu or policy JSON.
+
+#### Validation & Testing
+
+Check future chats after editing/disabling and inspect relevant permitted tool inputs with disposable text. Do not treat a natural-language refusal as a product-enforced deny.
+
+**Sources:** [Configuration guidance](https://help.openai.com/en/articles/8096356-chatgpt-custom-instructions)
+
+---
+
+### 3.4 Control plugin publishing, custom MCP and skill supply chains
+
 **Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 3.2 |
-| NIST 800-53 | PL-4 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Set organization-wide custom instructions that apply to all conversations, embedding security reminders and usage guidelines.
+
+Grant plugin creation, upload, custom-MCP, share and publish permissions separately from use. Review executable content, manifests, sources and updates before workspace distribution.
 
 #### Rationale
-**Why This Matters:**
-- Workspace-wide instructions deliver consistent security guidance at the point of use, when users are most likely to act on it
-- Embedding reminders not to paste secrets, PII, or proprietary code reinforces the acceptable-use policy in every session automatically
-- Centrally managed instructions cannot be quietly disabled by individual users, unlike one-time training
 
-**Attack Prevented:** Inadvertent disclosure of sensitive data, inconsistent user behavior, acceptable-use policy drift
+**Why This Matters:**
+
+- A trusted-looking skill can carry tool instructions or executable dependencies.
+- Disabling an underlying app need not remove bundled skills or a plugin installation.
+
+**Attack Prevented:** Malicious workspace extension distribution and supply-chain persistence.
 
 #### ClickOps Implementation
 
-**Step 1: Access Custom Instructions**
-1. Navigate to: **Admin Console** → **Settings** → **Custom instructions**
+1. In **Permissions & roles**, search **plugins** and restrict **Upload plugins**, **Upload plugins with custom MCP servers**, **Create plugins with MCPs**, **Share plugins**, and **Publish plugins to workspace** to reviewed maintainers.
+2. In **Admin Console > Plugins**, review source, owner, skills, included apps/MCP, hooks and intended audience before availability/install changes. Review GitHub import/sync permissions and updates if used.
+3. For local marketplace and MCP enforcement use [Work/Codex 2.5](/guides/chatgpt-work-codex/#25-admit-trusted-mcp-servers-plugins-and-marketplaces). Workspace and local plugin policies have distinct coverage.
 
-**Step 2: Configure Organization Instructions**
-1. Add security-aware instructions such as:
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
 
-2. Save and apply to all users
+#### Validation & Testing
+
+Test that a user can use an approved plugin while being unable to upload/publish an unapproved one. Review an update before sync and prove revocation in each applicable runtime.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/apps-and-connectors) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/plugin-management) · [Supporting documentation](https://learn.chatgpt.com/docs/plugins)
 
 ---
 
@@ -532,34 +694,35 @@ Set organization-wide custom instructions that apply to all conversations, embed
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 8.2 |
-| NIST 800-53 | AU-2, AU-6 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Monitor ChatGPT Enterprise usage through the admin console analytics dashboard for security visibility and compliance reporting.
+
+Use analytics to track adoption and credits, not to establish authorization or reconstruct every action. Workspace reporting, Codex reporting and supported product usage have different measures.
 
 #### Rationale
-**Why This Matters:**
-- You cannot detect misuse or anomalous activity in a tool you are not watching; analytics establish the baseline of normal behavior
-- Sudden spikes in message volume, accounts created outside provisioning, or unexpected feature usage are early indicators of compromise or policy violation
-- Exported usage data is the evidence auditors expect that the deployment is actively monitored, not merely configured
 
-**Attack Prevented:** Undetected account abuse, shadow usage, unmonitored data movement
+**Why This Matters:**
+
+- A usage count cannot show who authorized an action or whether it succeeded.
+- Workspace credit controls do not set API Platform billing limits.
+
+**Attack Prevented:** Unnoticed adoption/spend and inaccurate audit conclusions.
 
 #### ClickOps Implementation
 
-**Step 1: Access Analytics**
-1. Navigate to: **Admin Console** → **Analytics**
+1. Open **Workspace analytics** at **chatgpt.com/admin/usage** and grant the minimum supported reporting role, such as Analytics Viewer.
+2. Use the **Analytics API** reference for programmatic reporting. Dots usage identifies client_id DOTS; delegated Work/Codex usage appears under those products.
+3. Review eligible workspace **usage limits and spend controls** separately from feature roles and API Platform project budgets. Record reporting delays and actual pause/limit behavior.
 
-**Step 2: Review Key Metrics**
-- Active users over time
-- Message volume
-- Feature usage (code interpreter, web browsing, etc.)
-- User adoption trends
+**Automation:** Analytics API reads are documented; current full schema/pagination was unavailable in the public Admin reference during this review. Existing historical APIs are not promoted to current verified contracts.
 
-**Step 3: Export for Compliance**
-1. Export usage data for compliance audits
-2. Integrate with enterprise reporting tools
+#### Validation & Testing
+
+Compare harmless representative activity with the dashboard/API for the intended date and client. Investigate actions using Compliance and receiving-service logs instead.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/governance) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/analytics-api) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/usage-limits) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/dots-admin-guide)
 
 ---
 
@@ -569,31 +732,35 @@ Monitor ChatGPT Enterprise usage through the admin console analytics dashboard f
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 3.1 |
-| NIST 800-53 | SC-8 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-For organizations using Microsoft 365, integrate ChatGPT Enterprise with Microsoft Purview for advanced data governance and compliance controls.
+
+Where licensed, use a supported Compliance Platform partner integration to govern received ChatGPT records. A downstream connector is not a universal inline ChatGPT DLP control.
 
 #### Rationale
+
 **Why This Matters:**
-- Purview extends your existing M365 sensitivity labels and DLP policies to AI interactions, closing the gap where ChatGPT would otherwise be an ungoverned data channel
-- A single governance plane across email, files, and AI prevents the inconsistent rules that attackers and careless users exploit
-- Centralizing AI activity in the Purview compliance dashboard supports investigations and regulatory reporting from one place
 
-**Attack Prevented:** Sensitive data leaving M365 governance, DLP blind spots in AI chats, fragmented compliance reporting
+- Partial or delayed ingestion can leave audit and e-discovery gaps.
+- Downloaded messages and app results need their own access, retention and legal-hold controls.
 
-#### Prerequisites
-- Microsoft 365 E5 or Purview add-on
-- ChatGPT Enterprise
+**Attack Prevented:** Unretained evidence and overbroad downstream access.
 
-#### Implementation
-1. Configure Purview connector for ChatGPT
-2. Apply sensitivity labels to ChatGPT content
-3. Enable DLP policies for AI interactions
-4. Review Purview compliance dashboard for AI activity
+#### ClickOps Implementation
 
-> **Partner ecosystem:** Purview is now one of **18 named Compliance Platform partner integrations** with per-partner setup guides — Concentric AI, CrowdStrike, Cyberhaven, Enkrypt AI, Forcepoint, Global Relay, Microsoft Purview, Netskope, Palo Alto Networks, Relativity, Smarsh, Teleskope, Tenable (formerly Apex Security), Theta Lake, TrojAI, Varonis, Zenity, and Zscaler. If your DLP/SIEM/eDiscovery stack is on this list, use the vendor's supported integration rather than a custom puller. Source: [OpenAI Compliance Platform](https://help.openai.com/en/articles/9261474-compliance-api-for-chatgpt-enterprise-edu-and-chatgpt-for-teachers).
+1. Start with the **OpenAI Compliance Platform > Microsoft** partner setup links and the current licensed Purview procedure. Scope a ChatGPT workspace Admin key to the integration’s required logs.
+2. In the **Purview administration console**, configure the supported connector and intended retention/discovery policies according to that integration. Do not assume an obsolete ChatGPT Integrations toggle exists.
+3. Review connector health, record coverage, identities and downstream access. Source-side Microsoft sensitivity-label exclusions are separate app controls under 3.2.
+
+**Automation:** OpenAI documents supported partner integrations. This review verifies the OpenAI handoff and export boundary, not a tenant’s licensed Purview configuration; follow the partner’s current implementation contract.
+
+#### Validation & Testing
+
+Generate harmless identifiable test records and prove arrival, search/access and expiry/hold behavior in the configured downstream system. Record excluded event categories and delay.
+
+**Sources:** [Configuration guidance](https://help.openai.com/en/articles/9261474-openai-compliance-platform-for-enterprise-and-edu-customers) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/compliance-api)
 
 ---
 
@@ -603,36 +770,35 @@ For organizations using Microsoft 365, integrate ChatGPT Enterprise with Microso
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 8.11 |
-| NIST 800-53 | AU-6, AU-7 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
-Establish regular audit trail reviews to detect policy violations, unusual usage patterns, and potential security incidents.
+
+Use workspace-scoped ChatGPT Admin keys and Compliance records for ChatGPT investigations. API Platform /organization/audit_logs, API Admin keys and API organization roles do not verify ChatGPT policy.
 
 #### Rationale
+
 **Why This Matters:**
-- Logs and analytics only add value when someone reviews them on a cadence; an unread audit trail catches nothing
-- Scheduled weekly, monthly, and quarterly reviews surface drift — new admins, stale SSO/SCIM config, retention violations — before it becomes an incident
-- A documented review rhythm is itself an auditable control that demonstrates continuous oversight to assessors
 
-**Attack Prevented:** Undetected privilege creep, configuration drift, slow incident discovery
+- A sampled change log cannot prove the complete effective state.
+- Conversation visibility alone omits some tool detail, approvals and receiving-system outcomes.
 
-#### Implementation
+**Attack Prevented:** Undetected governance changes and incomplete incident evidence.
 
-**Weekly Reviews:**
-- Review analytics for unusual activity spikes
-- Check for new user additions outside normal provisioning
-- Monitor feature usage trends
+#### ClickOps Implementation
 
-**Monthly Reviews:**
-- Audit admin role assignments
-- Review SSO/SCIM configuration integrity
-- Validate retention policy compliance
+1. In **Admin Console > selected workspace > Credentials > Admin keys**, select supported minimum custom log permissions. Only owners can grant broad compliance or Conversation messages access where supported.
+2. Continuously export required records before the **30-day** Compliance Logs Platform retention window. Use 6.6 for a private resumable export.
+3. Review role/app/policy/lifecycle changes alongside current configuration inventories and receiving-service evidence. Record missing fields/event coverage rather than manufacturing a clean result from an empty export.
 
-**Quarterly Reviews:**
-- Comprehensive access review
-- Policy compliance assessment
-- Update acceptable use policies as needed
+**Automation:** Current workspace list/download reads are verified from the current official downloader and implemented at 6.6. Exact event schemas and every admin-write contract remain unverified until the current reference/tenant export is available.
+
+#### Validation & Testing
+
+Trace a harmless governance/action test through actual emitted records, verify attribution and check the destination outcome. Protect export content, keys, checkpoints and backups.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/compliance-api) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/dots-admin-guide)
 
 ---
 
@@ -640,59 +806,279 @@ Establish regular audit trail reviews to detect policy violations, unusual usage
 
 ### 5.1 Integration Risk Assessment
 
-| Risk Factor | Low | Medium | High |
-|-------------|-----|--------|------|
-| **Data Exposure** | No conversation access | Limited conversation access | Full conversation access |
-| **External Services** | No external calls | Limited external APIs | Full internet access |
-| **Data Persistence** | No data storage | Temporary storage | Permanent storage |
+Review the authenticated actor, allowed source resources/actions, output audience, approved runtime, retained copies and separate revocation paths. A shared owner or install button does not collapse these boundaries.
 
 ### 5.2 Approved Integration Patterns
 
-#### Identity Provider Integration (Recommended)
-**Data Access:** Authentication only
-**Controls:**
-- ✅ Configure SAML SSO
-- ✅ Enable SCIM provisioning
-- ✅ Apply IdP Conditional Access policies
+Use narrowly scoped personal or company identities, reviewed app actions and explicit audience/approval limits. Test denials and offboarding at both ChatGPT and the connected service.
 
-#### Microsoft Purview Integration (Recommended for M365)
-**Data Access:** Metadata and classification
-**Controls:**
-- ✅ Apply sensitivity labels
-- ✅ Enable DLP scanning
-- ✅ Review compliance reports
+### 5.3 Scope shared connections and their source identities
 
-#### Compliance Platform Partner Integrations
-**Data Access:** Compliance log events (pull model)
-**Controls:**
-- ✅ Prefer one of OpenAI's 18 supported DLP/SIEM/eDiscovery partner integrations (see [4.2](#42-integrate-with-microsoft-purview)) over custom log pullers where your stack matches
-- ✅ Scope the partner's Compliance API key per Control 6.6 and enforce the IP allowlist
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
+
+#### Description
+
+Workspace connections and team-shared individual connections can give a workflow data access beyond the invoker’s personal account. Separate permission to use a connection from permission to manage it.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Central connections may expose shared-drive, mailbox or repository data to a broader audience.
+- Disconnecting in ChatGPT does not revoke every source grant or delete saved copies.
+
+**Attack Prevented:** Shared-identity privilege escalation and persistent connected data.
+
+#### ClickOps Implementation
+
+1. Open **Admin Console > Workspace connections > +**, use the approved company identity and grant use/manage rights only to intended users, teams or service accounts.
+2. For Drive choose explicit files/shared drives or separately reviewed domain-wide delegation and scopes. Gmail requires a real dedicated mailbox, not a group address. For GitHub this shared-connection flow currently uses a user sign-in, not GitHub App sign-in; Codex Security Cloud uses its own personal connection.
+3. Review source-account rights, requester identity for delegated operations, connection ownership and unattended sign-in limits. During retirement revoke ChatGPT connection and provider grants/sessions, then handle saved outputs separately.
+
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
+
+#### Validation & Testing
+
+Use a member lacking source access to establish exactly what the shared identity exposes. Verify denied resources/actions and both sides of revocation.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/shared-connections) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/teams)
+
+---
+
+### 5.4 Constrain @ChatGPT in Slack and Microsoft Teams
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
+
+#### Description
+
+Treat the organization’s @ChatGPT service-account assistant as distinct from a user’s app connection, a personal dot identity and legacy workspace-agent Slack channels. Its configured connections may exceed the requester’s personal access.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Everyone in the destination conversation can read the assistant’s response.
+- A selected-channel setting does not necessarily block direct messages.
+
+**Attack Prevented:** Cross-channel or shared-connection disclosure and unauthorized chat-triggered actions.
+
+#### ClickOps Implementation
+
+1. In **Admin Console > Agents**, configure the intended @ChatGPT assistant, approved connections and source identity. Grant only the tools/actions appropriate for every permitted audience.
+2. Have the Slack/Teams administrator install/approve the required app and permissions in the intended workspace/tenant. Check Enterprise Grid/workspace scope, private/external channels and direct-message reach. ChatGPT enablement alone does not install the source app.
+3. Restrict allowed surfaces/channels, review member and guest audiences, and verify existing installations after app-permission changes. New requested permissions do not by themselves stop an old installation.
+
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
+
+#### Validation & Testing
+
+Test approved channel, denied channel, DM and an external/guest audience with disposable data. Compare the source identity, ChatGPT request and actual destination result; revoke every identity separately at offboarding.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/chatgpt-slack-and-teams) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/shared-connections) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/dots-admin-guide)
+
+---
+
+### 5.5 Restrict Team Tasks, membership and unattended writes
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
+
+#### Description
+
+Teams are distinct from SCIM groups. Team Tasks run in the cloud as a team service account with configured connections; members may see earlier runs/files and tasks have no independent run-level access restriction.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Inviting a teammate can disclose historical outputs and central connection access.
+- Pausing/deleting a task prevents future triggers but does not reliably interrupt an active run.
+
+**Attack Prevented:** Persistent unattended writes and historical team data disclosure.
+
+#### ClickOps Implementation
+
+1. In **Permissions & roles**, restrict **Create teams** and **Create and manage team tasks**. Review team membership and connection resources before enabling unattended work.
+2. In **Settings > Teams**, review owners, member invites/removals and same-workspace join links. In **Scheduled > task > Team**, verify the team, connection identity, allowed actions and audience before publishing.
+3. During offboarding transfer ownership first, review connections the new owner cannot use, pause future schedules/events and separately cancel active work. In Healthcare do not use non-BAA-covered event-triggered tasks with PHI.
+
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
+
+#### Validation & Testing
+
+Test read/write approval, invitation access to prior runs, future-trigger pause and an already active run. Verify connection access after ownership transfer and compare actual Compliance coverage.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/teams) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/shared-connections) · [Supporting documentation](https://help.openai.com/en/articles/10291617-scheduled-tasks-in-chatgpt)
+
+---
+
+### 5.6 Bind Sign in with ChatGPT transactions and relying-party sessions
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
+
+#### Description
+
+For selected commercial partners in the limited Sign in with ChatGPT trial, enforce the relying party’s OAuth/OIDC transaction and session security. This is an application integration, not ChatGPT workspace or API project administration.
+
+#### Rationale
+
+**Why This Matters:**
+
+- A successful callback is unsafe unless it is bound to the browser’s initiating transaction.
+- Unvalidated identity claims can create account confusion or session substitution.
+
+**Attack Prevented:** Login CSRF, code injection and identity/session confusion.
+
+#### ClickOps Implementation
+
+1. Through the approved partner’s **Request an OAuth client** process, register exact production callback URLs and obtain the environment-specific client/discovery configuration. Trial access does not imply general product availability.
+2. In the relying-party backend, generate one-time state, nonce and PKCE S256 verifier/challenge, bind them atomically to the initiating session, set short expiry and consume once. Never accept a callback-selected redirect or verifier.
+3. Exchange the code server-side and validate issuer, signature/JWKS, audience, expiry and nonce before binding the verified subject to an application session. Store verified issuer/client/sub and sid for security notifications.
+
+**Automation:** Protocol/native application implementation is documented; the storage/session framework and partner registration are deployment-specific. No generic policy file can enforce atomic transaction/session behavior; application tests are required.
+
+#### Validation & Testing
+
+Test wrong/replayed/expired state, wrong nonce/audience/issuer and callback mismatch with offline fixtures and the approved partner test environment. Confirm the browser session receives only the identity from its own transaction.
+
+**Sources:** [Configuration guidance](https://developers.openai.com/siwc/website)
+
+---
+
+### 5.7 Verify signed account-security logout notifications
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
+
+#### Description
+
+A Sign in with ChatGPT relying party must verify signed OIDC back-channel Logout Tokens and revoke exactly the matching local sessions and renewable credentials. The token is a logout instruction, not a login credential.
+
+#### Rationale
+
+**Why This Matters:**
+
+- An unknown session ID must not cause a user-wide logout.
+- Replay or token-selected key URLs can undermine a security notification endpoint.
+
+**Attack Prevented:** Forged logout, session confusion and failure to revoke compromised sessions.
+
+#### ClickOps Implementation
+
+1. Configure a public HTTPS backend endpoint accepting exactly one nonempty logout_token form field without requiring a browser login. Use fixed configured OpenAI discovery/JWKS and support key rotation; ignore token-supplied key URLs.
+2. Verify signature, issuer, audience, iat/exp (maximum 120 seconds), jti and the logout event, reject nonce, and enforce atomic replay detection. Invalid tokens return 400 without changing sessions.
+3. With sid revoke only issuer/client/sid matches and verify optional sub. Unknown sid must not fall back to user logout. Without sid revoke issuer/client/sub sessions. Enforce revocation across all application servers; duplicate or no-match valid notifications can return 200/204.
+
+**Automation:** The protocol and first-party example are documented; durable replay and session revocation need the relying party’s actual datastore. A snippet without that transaction boundary would be misleading, so no pseudo logout pack is supplied.
+
+#### Validation & Testing
+
+Use signed offline fixtures to test bad signatures/claims, expired and replayed tokens, unknown sid and subject mismatch, then prove exact-session and user-wide revocation in the application’s session store.
+
+**Sources:** [Configuration guidance](https://developers.openai.com/siwc/account-security-notification)
+
+---
+
+### 5.8 Enforce plugin and Apps SDK authorization on every tool call
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-3, AC-4, IA-2 |
+| CIS Controls v8 | 3.3, 6.1 |
+
+#### Description
+
+Plugin/MCP developers must implement resource authorization in their own backend. Client metadata, tool annotations and workspace installation do not enforce access to customer-specific data or writes.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Anonymous tools must not expose authenticated data and OAuth discovery is not a substitute for server authorization.
+- Authentication, source access and the final recipient need independent checks.
+
+**Attack Prevented:** Unauthorized disclosure and integration credential misuse.
+
+#### ClickOps Implementation
+
+1. In the integration’s **authorization-server registration/configuration**, configure OAuth 2.1 with PKCE S256 and correct discovery, resource and client-registration metadata. Use the actual ChatGPT/Codex callback and supported CIMD, DCR or predefined-client flow.
+2. At the MCP resource server verify token signature, issuer, intended audience/resource, expiry and required scopes for every invocation. Bind the verified identity to application authorization; never trust a model-supplied user ID.
+3. Publish matching per-tool securitySchemes and protected-resource metadata. Return the documented runtime auth challenge when authorization is missing; review scopes, linked identity and provider revocation separately.
+
+**Automation:** OAuth metadata, tool declarations and backend checks are documented. Native application wiring depends on the server/IdP; a static manifest alone cannot implement authorization. No universal ChatGPT policy is supplied.
+
+#### Validation & Testing
+
+Test expired/wrong-audience/wrong-scope credentials, cross-user resource IDs and unauthenticated writes. Confirm the server denies them even if a tool advertises broader access.
+
+**Sources:** [Configuration guidance](https://developers.openai.com/plugins/build/auth)
+
+---
+
+### 5.9 Protect Agentic Commerce credentials and transaction boundaries
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-3, AC-4, IA-2 |
+| CIS Controls v8 | 3.3, 6.1 |
+
+#### Description
+
+Merchant and payment-provider implementations own checkout authorization, transaction integrity and payment-data handling. These controls are separate from API project credentials and API Platform webhook signatures.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Duplicate or altered payment requests can create financial side effects; direct card-data handling changes PCI scope.
+- Authentication, source access and the final recipient need independent checks.
+
+**Attack Prevented:** Unauthorized disclosure and integration credential misuse.
+
+#### ClickOps Implementation
+
+1. In the merchant/PSP **production integration configuration**, use TLS 1.2+ on port 443, reviewed credentials and required API version. Keep secrets/payment data out of repository logs and use the approved provider sandbox for launch tests.
+2. Enforce Idempotency-Key across create/complete requests: identical retries return the same outcome and mismatched parameters produce 409. Verify order-created/updated webhook HMAC using the commerce contract, not the API Platform unwrap helper.
+3. For delegated payment enforce single-use tokens, approved maximum amount and expiry, and the specified canonical JSON/detached signature. Review actual cardholder-data handling with the PSP/assessor before production; OpenAI is not the merchant of record.
+
+**Automation:** Protocol/native merchant configuration is documented. Replay/idempotency enforcement needs the merchant’s actual datastore and PSP. No placeholder payment processor or production transaction is included.
+
+#### Validation & Testing
+
+In the provider sandbox test duplicate/mismatched idempotency, invalid/replayed/expired tokens, amount limits and invalid webhook signatures. Confirm no duplicate charge/order or unauthorized state change.
+
+**Sources:** [Configuration guidance](https://developers.openai.com/commerce/guides/production) · [Supporting documentation](https://developers.openai.com/commerce/specs/payment)
 
 ---
 
 ## 6. Workspace Agents Hardening
-
-**Workspace agents** are cloud-resident agents introduced by OpenAI on **April 22, 2026** as the successor to custom GPTs. They help teams turn repeatable work into shared agents that gather context, follow team processes, take action across approved tools, and keep work moving in ChatGPT or Slack. Agents can run in the cloud on schedules, use connected apps and files, and ask for approval when needed.
-
-> **Source note:** OpenAI's *Workspace Agents Security Overview* PDF (April 29, 2026) — previously this section's primary source — **now returns HTTP 404 and is no longer re-verifiable**. Claims in this section that traced only to that PDF (the five RBAC dimensions, ~10-minute log windows, p99 < 30 minutes, at-least-once delivery, the per-event-family names, the six-step pre-launch checklist) are annotated where they appear. The live authoritative docs are [learn.chatgpt.com/docs/enterprise](https://learn.chatgpt.com/docs/enterprise/governance.md) and the [workspace agents help article](https://help.openai.com/en/articles/20001143-chatgpt-workspace-agents-for-enterprise-and-business).
-
-> **Status update (2026-08):** workspace agents are **no longer described as a research preview**. OpenAI's current help documentation describes a shipped feature set — templates, an agent builder, Preview, schedules, ChatGPT/Slack/API channels, a Team directory, and "Publish to [organization] directory" — and states the feature is **off by default at launch for ChatGPT Enterprise workspaces**. Note also: **disabling Workspace Agents for a user or role also disables the Workspace Agents plugin in Codex** — there is no separate Codex-only toggle. Source: [ChatGPT workspace agents for Enterprise and Business](https://help.openai.com/en/articles/20001143-chatgpt-workspace-agents-for-enterprise-and-business).
-
-> **Dots are covered separately.** ChatGPT dots (always-on personal agents with their own cloud computer, launched 2026-09-29) have their own permissions and admin surface. See the [ChatGPT Dots product guide](/guides/chatgpt-dots/).
-
-The full set of governance controls in this section (RBAC, app/action controls, Compliance Platform export) is available on **ChatGPT Enterprise and Edu**; Business and Teachers tiers have a more limited admin surface. The feature is **disabled by default** at the workspace level; admins must enable it per role.
-
-### Why Workspace Agents Need Their Own Hardening Section
-
-Unlike chat conversations, workspace agents combine three properties that map directly onto Simon Willison's [lethal trifecta](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/):
-
-1. **Access to private data** — through connected apps such as Gmail, Drive, SharePoint, Salesforce, Notion.
-2. **Exposure to untrusted content** — agents read emails, documents, calendar invites, Slack messages, and web pages that may contain hidden injection payloads.
-3. **External communication ability** — agents can send email, post to Slack, create calendar invites, write to CRM records, and invoke arbitrary remote tools via MCP.
-
-Every confirmed exfiltration PoC against AI agents in the past 12 months — **ShadowLeak** (Radware, 2025), **AgentFlayer** (Zenity Labs, Black Hat USA 2025), **ZombieAgent** (Radware, September 2025), and **GeminiJack** (Noma Security, January 2026) — exploited an architecture identical to what workspace agents inherit. The defensive posture is therefore **deny-by-default and approval-gated**, not "trust the model layer."
-
----
 
 ### 6.1 Keep Workspace Agents Disabled Until Governance Is in Place
 
@@ -700,57 +1086,34 @@ Every confirmed exfiltration PoC against AI agents in the past 12 months — **S
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 4.1, 4.7 |
-| NIST 800-53 | CM-7, AC-3 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
 
-Workspace agents are disabled by default in new and existing Enterprise/Edu workspaces. Do not enable them workspace-wide until RBAC roles, connector posture, approval policies, and Compliance Platform ingestion are all in place. OpenAI's RBAC surface for agents has **five distinct dimensions** — controlling who can use agents, build agents, publish agents, publish agents with shared connections, and enable the Slack bot for agents. *(The five-dimension enumeration traces to the retired security-overview PDF — verify the current toggle set against your workspace's role settings and the live [roles and workspace permissions doc](https://learn.chatgpt.com/docs/enterprise/roles-and-workspace-permissions.md).)* Build a role mapping that separates all five, with the **publish-with-shared-connections** permission reserved for the narrowest possible group because it is the only setting that lets an agent run with one set of credentials on behalf of many users.
+Enable workspace-agent creation/use only for a reviewed audience after connection, action, sharing and owner lifecycle decisions. Current permission labels and available surfaces vary by workspace and migration.
 
 #### Rationale
 
 **Why This Matters:**
-- Agent build privileges proliferate faster than governance reviews can keep up
-- "Publish with shared connections" is the highest-risk privilege — it grants every runner of that agent the union of the shared connection's scopes, regardless of the runner's personal entitlements
-- Once the feature is on, suspending it for the whole workspace breaks legitimate work; deny-by-default avoids that trap
 
-**Attack Prevented:** Shadow AI / agent sprawl, orphan agents owned by departed users, premature exposure of the lethal-trifecta surface
+- An agent can combine private reads, untrusted content and external writes.
+- A role-change audit sample is not evidence of effective agent permission.
 
-**Real-World Pattern:** Custom GPT proliferation in the 2023–2024 period — many enterprises ended up with hundreds of internal GPTs and no inventory; workspace agents inherit the same failure mode plus the ability to take actions.
+**Attack Prevented:** Unreviewed autonomous workflows and excessive builder/publisher access.
 
 #### ClickOps Implementation
 
-**Step 1: Confirm the feature is off**
+1. In **Admin > Permissions & roles**, review the current **Workspace agents** access and relevant create/share/publish permissions offered for the workspace. Keep the workspace default restrictive and inspect all additive role/group grants.
+2. Approve a named owner, source identities, allowed actions, recipients, schedules/triggers, evidence and a retirement path before enabling the audience. Check Team Tasks, @ChatGPT, dots and Work product gates separately.
 
-1. Navigate to: **Workspace settings** → **Members** → **Roles**
-2. Confirm no existing role has any of the five agent feature toggles enabled
-3. If any role does, document the role and the affected user count before proceeding
-
-**Step 2: Create three dedicated RBAC roles**
-
-1. Create `agents-run` — `use_agents: enabled`; build, publish, publish-with-shared-connections, and Slack-bot disabled
-2. Create `agents-build` — adds `build_agents: enabled`
-3. Create `agents-admin` — adds `publish_agents: enabled` plus `enable_slack_bot: enabled`
-4. **Withhold** `publish_agents_with_shared_connections` from all three roles initially — grant it only to a named subset of `agents-admin` users when a specific shared-connection agent has been approved through CAB
-5. Map each role to a SCIM-provisioned group in your identity provider — no direct user assignments
-
-**Step 3: Defer workspace-level enablement**
-
-1. Do not enable the agent feature workspace-wide until controls 6.2 (connector posture), 6.3 (approval policy), and 6.6 (Compliance Platform ingestion) are all in place
-
-**Time to Complete:** ~30 minutes plus IdP group provisioning lead time
-
-#### Code Implementation
-
-{% include pack-code.html vendor="chatgpt-enterprise" section="6.1" %}
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
 
 #### Validation & Testing
 
-1. Pull the role roster and confirm the three roles exist with the expected feature toggles
-2. In the Global Admin Console, confirm the `Agents` section shows no published agents
-3. Sample a user without any of the three roles and confirm the `Agents` sidebar entry is not visible
+Test one denied member and the intended builder/user against the actual workspace controls. Record labels and effective rights; do not infer agent RBAC from USER_LOG samples.
 
-**Expected result:** Three roles defined, all SCIM-mapped, zero agents published, the agent feature invisible to non-role users.
+**Sources:** [Configuration guidance](https://developers.openai.com/workspace-agents/authentication) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/roles-and-workspace-permissions) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/teams)
 
 ---
 
@@ -760,111 +1123,72 @@ Workspace agents are disabled by default in new and existing Enterprise/Edu work
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 3.3, 6.8 |
-| NIST 800-53 | AC-3, AC-6, CM-7 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
 
-OpenAI exposes three values at **Workspace settings** → **Apps** → **{App}** → **Action control**: `allow_all`, `read_only`, and `custom`. All apps are disabled by default. When you enable an app, default it to `read_only` and use `custom` only to allow specific write actions with a documented business case. Never use `allow_all` on a workspace that hosts agents.
+Constrain source permissions and allowed app actions before agent use. Read-only plugin settings do not prevent writes through a signed-in browser or separately connected computer.
 
 #### Rationale
 
 **Why This Matters:**
-- OAuth scopes are negotiated at the provider level (Google, Microsoft, Salesforce); they are coarse and cannot be reduced per-action
-- The OpenAI Action control toggle is the only granular write-prevention layer between an injected agent and a connected system
-- **AgentFlayer** (Zenity Labs, Black Hat USA 2025) demonstrated that hidden 1-pixel instructions in a Google Drive document caused an agent with broad Drive access to traverse a victim's drive and exfiltrate API keys
 
-**Attack Prevented:** Cross-connector data exfiltration, runaway write actions triggered by indirect prompt injection, accidental destructive operations from a faulty agent build
+- An agent can take an action through a different enabled route.
+- OAuth consent and workspace app availability do not establish least privilege.
+
+**Attack Prevented:** Overbroad source access and alternate-route writes.
 
 #### ClickOps Implementation
 
-**Step 1: Audit currently enabled apps**
+1. In **Admin Console > Plugins > included app > Tools / Actions**, permit reviewed read actions and deny unneeded existing/new write tools.
+2. In the **connected service’s account/app administration**, scope the actual identity, repositories/resources and consent. Review shared accounts and browser/local access separately.
 
-1. Navigate to: **Workspace settings** → **Apps**
-2. List every app whose status is `Enabled`
-3. For each enabled app, open the app and review its current `Action control` setting
-
-**Step 2: Apply the read-only baseline**
-
-1. For every enabled app, set `Action control` to `read_only` unless there is a documented and approved write workflow
-2. Set `Newly added actions` to `Deny` (or the equivalent "deny by default for new actions" toggle)
-3. For Slack, use `custom`: allow `search` and `read_channel`; deny `post_to_channel`, `dm_external`, `post_to_dm`
-
-**Step 3: Document exceptions**
-
-1. Any app with `custom` or `allow_all` must have a CAB ticket containing the business case, the approver, and a review date no more than 90 days out
-
-**Time to Complete:** ~1 hour per enabled app
-
-#### Code Implementation
-
-{% include pack-code.html vendor="chatgpt-enterprise" section="6.2" %}
+**Automation:** The documented console path is verified. The current public ChatGPT Admin schema did not load during this review, so API writes and corresponding CLI/SDK/provider coverage for this setting remain unverified. API Platform organization/project endpoints do not configure it.
 
 #### Validation & Testing
 
-1. Export the app list and confirm every entry is either `disabled` or `read_only` (or a `custom` entry with a CAB ticket)
-2. Have an `agents-build` user attempt to construct an agent that performs a write on a `read_only` app; the action should be unavailable in the Builder
+Attempt the prohibited write through each enabled app/browser/computer route with disposable data. Confirm denial at the relevant product and source system.
 
-#### Monitoring & Maintenance
-
-- Quarterly: re-attest each enabled app's action control
-- On every CAB-approved exception: schedule a review date and a Sigma alert (see 6.4) on the resulting grant event
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/apps-and-connectors) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/shared-connections) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/dots-security)
 
 ---
 
 ### 6.3 Require Human Approval for Sensitive Agent Actions
 
-**Profile Level:** L1 (Crawl)
+**Profile Level:** L2 (Walk)
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 6.7 |
-| NIST 800-53 | AC-3(2), CM-3 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
 
-Per OpenAI's security overview, *"write-capable actions default to requiring human approval, providing write-action safety control, with flexibility for authors to configure approval behavior."* The default is therefore deny-on-write — the hardening posture is to **preserve that default** during agent publish review, never relax it for "convenience," and define the explicit list of action categories that no agent may unbind. Agents-admin reviewers must reject any agent that disables approval on the categories below.
+Configure app confirmation and runtime approvals for the actual action path. Natural-language owner instructions and automated review are additional safeguards, not proof that every consequential action requires a human click.
 
 #### Rationale
 
 **Why This Matters:**
-- Model-layer prompt-injection defenses are probabilistic; Anthropic's best result is ~1% browser-agent attack success after RL training, and OpenAI's own [Atlas hardening post](https://openai.com/index/hardening-atlas-against-prompt-injection/) concedes it *"may never be fully solved"*
-- The only deterministic mitigation against an injected agent issuing a malicious write is a separate human signing off on that write
-- **CVE-2026-21520** (Microsoft Copilot Studio, "ShareLeak") showed that confirm-before-act gates are bypassable when poorly scoped; the gate must trigger on the action category, not just on a "looks-sensitive" heuristic
 
-**Attack Prevented:** Indirect-prompt-injection-driven email exfiltration, calendar-invite data leaks, CRM record poisoning, code-push backdoors
+- Scheduled authorizations can permit unattended sends.
+- Approval settings have runtime and tool-specific coverage.
+
+**Attack Prevented:** Unreviewed consequential actions and overclaimed approval gates.
 
 #### ClickOps Implementation
 
-**Step 1: Define the required-approval action list**
+1. In **Plugins > app > Permissions**, select the supported confirmation setting for sensitive actions; restrict the tools themselves where approval coverage is insufficient.
+2. For supported orchestrator/command workflows review **Agent Security > Global > Requirements > Allowed approval policies** and execution-specific requirements; see the Work/Codex guide.
+3. Test scheduled/event-triggered authorizations, browser and desktop actions independently. Disable the unsupported path if the organization requires a stronger approval gate.
 
-The minimum list every published agent must gate behind human approval:
-
-- Send email (any external recipient)
-- Create calendar invite for external attendees
-- Salesforce / CRM record create / update / delete
-- SharePoint or Drive bulk write or any delete
-- GitHub push / merge / release
-- Slack post to channel or DM to external recipient
-- First invocation of any MCP tool
-- Any financial transaction
-
-**Step 2: Enforce during the publish workflow**
-
-1. In `Global Admin Console` → `Agents` → an agent that is pending publish, open its action map
-2. Reject the publish if any of the above categories appears without an approval gate
-3. Require the agents-admin to record the approver email and the agent ID in a published-agents register
-
-**Time to Complete:** ~15 minutes per agent during publish review
-
-#### Code Implementation
-
-{% include pack-code.html vendor="chatgpt-enterprise" section="6.3" %}
+**Automation:** App confirmation and native managed requirements are documented. The removed universal approval-policy JSONC was not a native interface; implement the actual app/runtime controls and verify their coverage.
 
 #### Validation & Testing
 
-1. Build a test agent that attempts to send email without an approval gate; the publish should be blocked
-2. Approve the agent with the gate in place and confirm the agent run halts at the send step and waits for approver acknowledgement
+Use harmless writes to verify exactly when a human is asked, what was authorized and the receiving-system outcome. Record automated-review and hook failure limits.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/apps-and-connectors) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/agent-security) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/dots-security)
 
 ---
 
@@ -874,47 +1198,35 @@ The minimum list every published agent must gate behind human approval:
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 8.11 |
-| NIST 800-53 | SI-4(2), SI-4(24) |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
 
-A workspace agent crosses the lethal-trifecta threshold the moment its connected app set intersects all three categories: private-data read, untrusted-content ingest, and external-send. Inventory every agent and flag the trifecta cases. Separately, fire a high-severity alert on every first invocation of a custom MCP tool — custom MCP servers extend the trust boundary beyond OpenAI's vetted catalog.
+Review workflows that combine private data, untrusted inputs and external actions. Use current configuration inventories and supported audit records; a plugin catalog is a review lead, not a member entitlement or trifecta detector.
 
 #### Rationale
 
 **Why This Matters:**
-- The trifecta is the *architectural* precondition for every published agent exfiltration PoC; eliminating it eliminates the vulnerability class
-- Custom MCP tools are bring-your-own-code; their first call is the most informative observation because the agent is exercising a capability that has not yet been seen in production
-- OpenAI quote: *"Conversations involving agent tasks will appear in Compliance API logs, but individual agent actions (such as virtual computer usage, app requests, chain of thought) will not."* — the SIEM rules in this section are therefore your only continuous visibility into per-step capability changes
 
-**Attack Prevented:** Architectural exfiltration paths, undocumented MCP tool capability, post-publish scope expansion that bypasses the publish review
+- A newly granted tool can expand an established workflow’s trust boundary.
+- Unknown schemas and missing log values cannot produce a trustworthy clean result.
+
+**Attack Prevented:** Cross-source prompt injection and unnoticed tool expansion.
 
 #### ClickOps Implementation
 
-**Step 1: Export the agent inventory**
+1. Open **Admin Console > Plugins > Public > Export CSV** to review the public catalog metadata, included apps and skills. It may be 48 hours old and excludes workspace-created plugins and member entitlements.
+2. Combine it with actual agent/team/dot inventory, owners, source permissions, app tools and recipients. Review custom MCP tools and high-risk combinations manually.
+3. Use current emitted APP_MCP_CALL/RESULT or other documented product records only where applicable. Establish a per-identity/tool baseline in the SIEM and test it before alerting; do not invent event names or treat a Sigma selection as first-seen correlation.
 
-1. Navigate to: **Global Admin Console** → **Agents**
-2. Export the full agent list to CSV (columns: `agent_id`, `agent_name`, `owner_email`, `connected_apps`)
-
-**Step 2: Classify each agent**
-
-1. Mark each agent whose `connected_apps` includes any of:
-   - Private-data: Gmail, Drive, Calendar, Docs, SharePoint, OneDrive, Outlook, Salesforce, Notion, Confluence, Jira, GitHub, GitLab, Box, Dropbox
-   - Untrusted-content: Gmail, Outlook, Slack, Calendar, Web Search, Browser, Notion, Confluence, Jira
-   - External-send: Gmail, Outlook, Slack, Calendar, Web Search, Browser, GitHub, GitLab, Salesforce
-2. Any agent that appears in all three lists is a trifecta agent — require either app-set reduction or full human-in-the-loop approval on every external-send step
-
-**Time to Complete:** ~30 minutes for the first inventory, then 5 minutes per new agent at publish
-
-#### Code Implementation
-
-{% include pack-code.html vendor="chatgpt-enterprise" section="6.4" %}
+**Automation:** Current public catalog export and product logs are documented, but no current public complete agent-permission CSV/API contract was verified. The fabricated CSV detector and placeholder Sigma rules were removed; first-use correlation remains deployment-specific.
 
 #### Validation & Testing
 
-1. Run the trifecta detection script against your exported agent inventory; confirm zero unapproved trifecta agents
-2. Have a builder add an MCP tool to a test agent in Preview; confirm the first-use Sigma rule fires in your SIEM
+Use a disposable tool change to prove the inventory and record actually identify the actor/tool. Missing inventory or schema means incomplete review, not No trifecta detected.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/apps-and-connectors) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/dots-security) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/compliance-api)
 
 ---
 
@@ -924,46 +1236,35 @@ A workspace agent crosses the lethal-trifecta threshold the moment its connected
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 17.7 |
-| NIST 800-53 | IR-4(1), CM-3 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
 
-OpenAI documents agent suspension as a first-class admin action: *"Admins can also suspend agents if needed."* Build the suspension runbook before the first incident — define who can suspend, what evidence is collected, what users are notified, and how the suspension is reversed.
+Maintain a containment procedure for each actual product. Pause future work and revoke identities while separately checking active/delegated runs, schedules, source sessions and completed external actions.
 
 #### Rationale
 
 **Why This Matters:**
-- The Global Admin Console → Agents → Suspend action is the kill-switch; latency matters during an active exfiltration
-- Without a documented runbook, the suspension decision drifts to whoever happens to be on call, which is rarely the right person
-- A suspension event is also a high-confidence detection signal — Sigma rule 6.5 surfaces every suspension to the GRC oncall
 
-**Attack Prevented:** Continued exfiltration after compromise is identified, post-suspension confusion and reversal, lack of forensic evidence
+- A generic no-op script cannot suspend an agent.
+- Pausing future triggers does not establish that an active task or external side effect stopped.
+
+**Attack Prevented:** Continued autonomous access during an incident.
 
 #### ClickOps Implementation
 
-**Step 1: Document the runbook**
+1. For personal dots use **Admin Console > Dots > dot > Pause** and verify inventory state. For Team Tasks use **Scheduled > task > Pause** and cancel active/delegated work separately.
+2. For legacy workspace agents use the current agent management controls actually offered; if suspension is unavailable or unverified, revoke the applicable product access and source grants and escalate through the organization’s incident process.
+3. Preserve task IDs, source/action evidence and timestamps, revoke connected tokens/sessions/devices, then verify destination changes. Reverse completed actions through the receiving service when possible.
 
-1. Suspension authority: anyone in the `agents-admin` role plus the security incident commander
-2. Triggering signals: trifecta detection (6.4), Sigma alert on suspension by an unexpected admin, anomalous Compliance API event
-3. Required evidence capture before suspension: agent ID, owner, connected apps list, last 10 runs from the Compliance API, builder configuration screenshot
-4. Notification list: agent owner, agents-admin chat channel, GRC oncall, security incident commander
-
-**Step 2: Drill the runbook**
-
-1. Suspend a non-production test agent quarterly
-2. Time the full suspension-to-evidence-capture cycle; target under 15 minutes
-3. After suspension, restore the agent and confirm it resumes correctly
-
-**Time to Complete:** ~2 hours to document; ~30 minutes per quarterly drill
-
-#### Code Implementation
-
-{% include pack-code.html vendor="chatgpt-enterprise" section="6.5" %}
+**Automation:** Verified product-specific console paths above; current generic workspace-agent suspension API was not verified. The prior no-op suspend pack and placeholder event rule were invalidated and removed.
 
 #### Validation & Testing
 
-1. The quarterly drill is the validation — confirm under-15-minute suspension-to-evidence latency and successful restore
+Rehearse future, active and delegated tasks with disposable data, verify source revocation and measure reporting delay. Do not report successful containment from a printed manual prompt.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/dots-admin-guide) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/dots-security) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/teams) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/user-lifecycle)
 
 ---
 
@@ -973,49 +1274,27 @@ OpenAI documents agent suspension as a first-class admin action: *"Admins can al
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 8.2, 8.10 |
-| NIST 800-53 | AU-6, AU-11, AU-12 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
 
-The OpenAI **Compliance Logs Platform** is designed specifically for compliance needs and exposes **immutable, append-only JSONL log files on a pull model**, retained for **30 days** ([Compliance Platform article](https://help.openai.com/en/articles/9261474-compliance-api-for-chatgpt-enterprise-edu-and-chatgpt-for-teachers)). Documented API surface ([Logs Platform cookbook](https://developers.openai.com/cookbook/examples/chatgpt/compliance_api/logs_platform)):
-
-- Base: `https://api.chatgpt.com/v1/compliance`, authenticated with `Authorization: Bearer $COMPLIANCE_API_KEY`
-- List: `/{workspaces|organizations}/{principal_id}/logs` with `limit`, `event_type`, and `after` parameters; responses carry `data[].id`, `has_more`, `last_end_time`
-- Download: `/{scope}/{principal_id}/logs/{id}`
-- Two complementary access patterns: the **Compliance Logs Platform** (immutable append-only log events) and the **Stateful Compliance API** (state at time of request)
-
-> **Provenance note:** the previously cited delivery-timing specs — ~10-minute log windows, p99 under 30 minutes, at-least-once delivery with `event_id` deduplication — and the per-event-family names (agent lifecycle, run creation/completion/failure, connector call requested/completed, connector OAuth resolution, skill use, trigger and memory events) trace only to the **retired security-overview PDF** and are no longer publicly verifiable. OpenAI states the **authenticated Admin API reference owns event coverage, schemas, permissions, filters, retention, and request behavior** — confirm all event types and schemas at `chatgpt.com/admin/api-reference` (Enterprise/Edu login required) before building detections. The only publicly documented `event_type` value is `AUTH_LOG`. Sources: [Compliance API doc](https://learn.chatgpt.com/docs/enterprise/compliance-api.md), [Governance doc](https://learn.chatgpt.com/docs/enterprise/governance.md).
+Continuously export the ChatGPT workspace log families authorized by the Admin key. Preserve complete files and advance checkpoints only after every page/file succeeds. This is a pull exporter, not an assertion of real-time or complete agent coverage.
 
 #### Rationale
 
 **Why This Matters:**
-- Continuous export is mandatory for SOX, HIPAA, PCI scope and for retention beyond the platform's **30-day** window — the short retention is exactly what makes the continuous puller mandatory rather than optional
-- OpenAI explicitly frames SIEM as a supported destination: the Compliance Platform "provides access to logs and metadata from your ChatGPT workspace that you can connect with your eDiscovery, DLP, or SIEM tools"
-- Downstream SIEM rules should deduplicate on the log/event identifier — confirm the delivery contract in the tenant Admin API reference before tuning alert thresholds
 
-**Attack Prevented:** Audit-trail gaps, missed lateral movement signals during longer dwell times, inability to support a post-incident forensic timeline
+- The platform retains logs for 30 days.
+- Advancing on a partial download can permanently skip evidence.
+
+**Attack Prevented:** Audit gaps, checkpoint data loss and sensitive export disclosure.
 
 #### ClickOps Implementation
 
-**Step 1: Provision a Compliance API key**
-
-1. Sign in to the Global Admin Console at [admin.openai.com](https://admin.openai.com)
-2. Navigate to **API keys** and generate a `Compliance API key`, scoped to your workspace or organization
-3. Note the IP allowlist requirement: per OpenAI, IP allowlist is *"always enforced for Compliance API traffic"* — add your puller's egress IPs first
-
-**Step 2: Deploy the continuous puller**
-
-1. Deploy the bash script in 6.6 (or one of the 18 supported partner integrations — see [4.2](#42-integrate-with-microsoft-purview)) on a scheduled job; **every 15 minutes** is a sensible cadence well inside the **30-day retention window**
-2. Deduplicate on the log/event identifier at the consumer (confirm the delivery contract in the tenant Admin API reference)
-3. Persist each downloaded JSONL log file to an immutable bucket (S3 Object Lock, GCS retention policy, Azure Blob immutability) with a retention setting that matches your compliance scope (1 year for PCI, 6 years for HIPAA, 7 years for SOX) — the platform itself only retains **30 days**
-
-**Step 3: Wire the SIEM**
-
-1. Forward the bucket contents to Splunk (universal forwarder), Microsoft Sentinel (Custom Logs DCR), Google Chronicle, or your existing platform
-2. Deploy the three Sigma rules — first MCP tool call and post-publish scope expansion (both keyed to 6.4) and agent suspension (6.5) — and confirm they fire against historical events
-
-**Time to Complete:** ~4 hours including initial backfill
+1. Create a minimum-scope workspace key in **Admin Console > Credentials > Admin keys**, using CODEX_LOG for supported Work/dots records and other supported families as required. Broad/conversation grants require an owner.
+2. Run the pack with an approved private output directory, UTC start and explicitly reviewed event families; forward completed JSONL files with the SIEM’s supported ingestion path.
+3. Monitor HTTP failures, malformed pagination, disk failures, freshness and missing families. Keep checkpoints and exports private, deduplicate by file ID and set downstream retention.
 
 #### Code Implementation
 
@@ -1023,18 +1302,9 @@ The OpenAI **Compliance Logs Platform** is designed specifically for compliance 
 
 #### Validation & Testing
 
-1. After 24 hours, confirm the SIEM has ingested events from each event type
-2. Generate a test agent suspension and confirm Sigma 6.5 fires within the alerting SLA
-3. Quarterly: restore a sample log file from the immutable bucket and confirm the JSONL parses cleanly
+Use fixtures to verify multiple pages, failed download/resume, malformed responses and private outputs. In the tenant prove actual log families and downstream arrival with a harmless test; an empty pull is not an audit pass.
 
-#### Operational Impact
-
-| Aspect | Impact Level | Details |
-|--------|-------------|---------|
-| **User Experience** | None | Logging is server-side |
-| **System Performance** | Low | One scheduled pull every 15 minutes per event type |
-| **Maintenance Burden** | Medium | Watch for new OpenAI event types. **Completed removal:** the new conversations logs system shipped **2026-03-05** and the legacy stateful conversations route was **removed on 2026-06-05** — verify no consumer still calls the removed route ([migration reference](https://help.openai.com/en/articles/9261474-compliance-api-for-chatgpt-enterprise-edu-and-chatgpt-for-teachers)) |
-| **Rollback Difficulty** | Easy | Disabling the puller stops ingestion; archived logs remain |
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/compliance-api) · [Supporting documentation](https://developers.openai.com/downloads/compliance-api/download_compliance_files.sh)
 
 ---
 
@@ -1044,64 +1314,35 @@ The OpenAI **Compliance Logs Platform** is designed specifically for compliance 
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 4.1, 6.8 |
-| NIST 800-53 | CM-2, CM-3, CM-6 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
 
-OpenAI published a six-step pre-launch checklist in its *Workspace Agents Security Overview* PDF, on the reasoning that many workspace agent settings use controls already set up in an organization's workspace, and reviewing them before launch reduces IT escalations. *(That PDF has since been removed — the checklist below is preserved from it and remains sound practice, but cross-check each step against the live [admin rollout guidance](https://learn.chatgpt.com/docs/enterprise/governance.md).)* Treat the checklist as a publish gate — no agent goes live in your workspace until every step is signed off by `agents-admin`.
+Record a reviewable release decision with owner, audience, identities, tools, destinations, approval behavior, retention, evidence and containment. The checklist is governance, not a native policy object.
 
 #### Rationale
 
 **Why This Matters:**
-- OpenAI's own recommended sequence catches the most common misconfigurations before users start building
-- Most steps map directly onto controls 6.1–6.6 of this guide; running the checklist also validates that those controls are in effect
-- A documented gate per agent publish creates an audit trail you can show to your auditor mapping every published agent to a named approver and an effective date
 
-**Attack Prevented:** Misconfigured early-adopter agents, surprise IT escalations, shadow agents that bypass the broader governance program
+- An undocumented assumption can become a production permission boundary.
+- Ongoing source/tool changes can invalidate a one-time review.
 
-#### ClickOps Implementation — Pre-Launch Checklist
+**Attack Prevented:** Unsafe rollout and unowned agent lifecycle.
 
-Walk the six steps from the OpenAI overview, in order:
+#### ClickOps Implementation
 
-**Step 1: Audit users and groups**
+1. Before enablement, attach configuration evidence for roles, source identities, permitted actions, runtime environments, recipients and data categories to the organization’s change record.
+2. Record all unsupported/unverified paths and require the workflow’s security needs to fit verified controls. Assign a reviewer, re-review trigger and expiry date.
+3. Run harmless end-to-end denial, approval, audit and containment tests for every enabled route. Re-review when plugins, models, connections, owners or runtime policies change.
 
-Ensure that users are added to the workspace and in the right SCIM-provisioned groups. Confirm no orphaned accounts from departed employees, no service accounts in user groups.
-
-**Step 2: Configure custom roles for builders and users**
-
-Apply the five-dimension RBAC mapping from control 6.1. The `publish_agents_with_shared_connections` permission is the highest-risk bit — withhold it until a specific shared-connection agent has been approved through CAB.
-
-**Step 3: Enable approved apps**
-
-Turn on the apps your builders need (OpenAI's documented examples are Slack, Google Drive, SharePoint, Gmail, Calendar, GitHub, Jira, Confluence). For each app:
-
-- Confirm which actions are read-only vs. write-capable
-- Set `Newly added actions` to require admin review (do **not** auto-enable new write actions)
-- Apply the read-only baseline from control 6.2
-
-**Step 4: Make required skills available**
-
-Enable skill permissions for the relevant builder and user groups so agents can use approved, repeatable workflows. Skills package instructions, files, and scripts; treat their enablement as a privileged grant.
-
-**Step 5: Review MCP availability**
-
-If builders need custom MCP servers, enable Developer Mode or approved MCP connectors only for the right builder groups. First invocation of any MCP tool fires the Sigma rule from control 6.4 — confirm SIEM ingestion is live before granting MCP access to any builder.
-
-**Step 6: Confirm Slack setup**
-
-If agents will be deployed to Slack, approve the `ChatGPT Agents` app in Slack and define who can deploy agents to Slack via the `enable_slack_bot` RBAC bit. Note from OpenAI: *"In Slack and other non-interactive surfaces, the agent generally relies on shared/agent-owned or builder-configured app connections because Slack cannot pause the run to authenticate each invoking user."* Slack-deployed agents therefore carry higher inherent risk than ChatGPT-resident agents and warrant extra scrutiny on the approval policy.
-
-**Time to Complete:** ~2 hours for the initial pass; ~10 minutes per subsequent agent publish
-
-#### Code Implementation
-
-{% include pack-code.html vendor="chatgpt-enterprise" section="6.7" %}
+**Automation:** No native checklist JSONC policy exists in the admitted documentation. Use the organization’s change-management system and the real implementation packs for its individual controls.
 
 #### Validation & Testing
 
-1. Walk the checklist for one pilot agent end-to-end; capture screenshots/exports at every step into an evidence folder
-2. Have a non-`agents-admin` user attempt to publish an agent without completing the checklist; confirm the publish workflow surfaces the gate
+A second administrator must be able to reproduce the effective permissions and locate evidence. A completed JSON checklist alone cannot pass deployment.
+
+**Sources:** [Configuration guidance](https://learn.chatgpt.com/docs/enterprise/admin-setup) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/dots-admin-guide) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/teams)
 
 ---
 
@@ -1111,182 +1352,69 @@ If agents will be deployed to Slack, approve the `ChatGPT Agents` app in Slack a
 
 | Framework | Control |
 |-----------|---------|
-| CIS Controls | 5.3, 6.8 |
-| NIST 800-53 | IA-5, AC-3, AU-12 |
+| CIS Controls v8 | 4.1, 6.1 |
+| NIST 800-53 | AC-6, CM-6, AU-6 |
 
 #### Description
 
-Workspace agents can now be triggered **programmatically from outside ChatGPT**: `POST https://api.chatgpt.com/v1/workspace_agents/{agent_id}/trigger`, authenticated with a **"Workspace Agents"-scoped access token**. Enabling this surface requires an admin to enable Workspace agents AND turn on **"Allow users to create personal access tokens"** under **Admin → Permissions & roles**. The API **queues the run and returns 202 Accepted with no body and no run ID**, and the agent's response **cannot be retrieved through the API** — calls are fire-and-forget and invisible to the caller. Keep the PAT toggle off until you have token governance and compensating detection in place. Sources: [Workspace Agents authentication](https://developers.openai.com/workspace-agents/authentication.md), [Trigger runs](https://developers.openai.com/workspace-agents/trigger-runs.md).
+Use dedicated Workspace Agents tokens for published API triggers, with upstream event authentication, per-event idempotency and correct conversation isolation. The trigger is asynchronous; beta status does not return the agent’s response content.
 
 #### Rationale
 
 **Why This Matters:**
-- The PAT toggle converts every permitted user into a potential issuer of long-lived credentials that can start agent runs from any system — CI jobs, cron boxes, third-party SaaS — outside ChatGPT's interactive controls
-- Because the trigger returns **no run ID and no retrievable response**, the caller gets zero feedback — a stolen token can silently queue agent runs, and the only place the activity is visible is the Compliance Platform log stream (Control 6.6)
-- Fire-and-forget triggering pairs badly with agents that hold write-capable connections: an attacker does not need to see the output to profit from the side effects
 
-**Attack Prevented:** Unaccounted-for personal access tokens, silent agent-run triggering with stolen credentials, external automation bypassing interactive approval visibility.
+- A repeated external event can enqueue duplicate actions.
+- Reusing conversation_key across unrelated users can mix context.
+
+**Attack Prevented:** Unauthorized trigger execution, duplicated actions and cross-conversation context exposure.
 
 #### ClickOps Implementation
 
-**Step 1: Default-deny the PAT toggle**
-1. Navigate to: **Admin → Permissions & roles**
-2. Keep **"Allow users to create personal access tokens"** disabled until a documented use case exists
-3. When enabling, restrict to the narrowest role that needs API triggering
+1. In **Admin > Permissions & roles**, review **Allow users to create personal access tokens** and Workspace agents eligibility. In **Admin > Access tokens** provision only the **Workspace Agents** scope and store the token securely.
+2. In the calling backend authenticate the upstream event, map it to the intended published agtch_ trigger and conversation, and reuse Idempotency-Key only for retries of the same event. Do not accept an arbitrary user-supplied trigger or conversation key.
+3. If using beta run tracking, send the documented beta header on the authorized trigger call and persist the returned apirun_ ID. Use the read-only pack to inspect status; queued/suspended/completed do not prove an external write outcome or return response content.
 
-**Step 2: Govern issued tokens**
-1. Register every issued Workspace Agents token in your credential inventory with owner, purpose, and rotation date
-2. Rotate on a fixed schedule and revoke immediately on personnel change
-3. Prohibit embedding tokens in source code or shared automation configs — vault them
+#### Code Implementation
 
-**Step 3: Compensating detection**
-1. Ensure Compliance Platform ingestion (Control 6.6) is live **before** the first token is issued — it is the only visibility into API-triggered runs
-2. Alert on agent runs for agents whose owners have not registered an API-trigger use case
+{% include pack-code.html vendor="chatgpt-enterprise" section="6.8" %}
 
 #### Validation & Testing
 
-1. With the toggle off, confirm a user cannot mint a personal access token
-2. After enabling for a pilot role, trigger a test agent via the API and confirm the run appears in your SIEM via the Compliance Platform export
+With approved disposable triggers test invalid/revoked scope, event replay, conversation separation and failure/conflict behavior. The supplied status-read fixture never triggers a live run.
+
+**Sources:** [Configuration guidance](https://developers.openai.com/workspace-agents/authentication) · [Supporting documentation](https://developers.openai.com/workspace-agents/trigger-runs)
 
 ---
+
+## Edition and workflow boundaries
+
+**Enterprise and Edu:** use the verified workspace/tenant controls, then check actual entitlement and UI. **Business:** standalone SSO exists; standalone SCIM and Enterprise role-level/compliance capabilities must not be assumed. App availability defaults differ. **Teachers:** district-managed verified U.S. K–12 educators and staff, not students; tenant SCIM must target staff only. Domain joining/direct invites require separate review, and Teachers has no Automatic Account Creation setting. [Teachers guidance](https://help.openai.com/en/articles/12844995-chatgpt-for-teachers), [identity guidance](https://help.openai.com/en/articles/9047883-getting-started-with-openai-identity-and-access-for-managed-workspaces).
+
+**Healthcare:** confirm the BAA covers each enabled workflow. Enable **Trusted clinical search** only for intended roles in **Permissions & roles**. Improved Memory is off by default in Healthcare/Regulated Workspace; enable **Use improved memory** only for approved populations and confirm the current PHI restriction. Event-triggered tasks are not BAA-covered: do not transmit, store or process PHI through them. Epic is organization-activated for eligible Healthcare/HIPAA Enterprise workspaces and uses each clinician’s Epic account; Healthcare Public Data is a different public-source plugin. Neither workspace access nor plugin installation grants patient access. [Healthcare](https://help.openai.com/en/articles/20001046-chatgpt-for-healthcare), [HIPAA functionality](https://help.openai.com/en/articles/20001069-hipaa-eligible-products-and-functionality), [Epic](https://help.openai.com/en/articles/20001490-using-the-epic-plugin-with-chatgpt-and-codex).
+
+### Individual accounts and healthcare boundaries
+
+Free/Go/Plus/Pro use individual **Security and login**, **Data controls**, **Personalization/Memory**, app connections and sharing controls. Review model-improvement, temporary chats, saved files and source-service access; managed-workspace no-training defaults do not establish personal settings. Lockdown Mode availability and per-chat override depend on the account. **Health** is a personal feature with separate health-data and connected-service controls; it is not a Healthcare workspace. **Clinicians** is an individual verified-clinician offering: accept an eligible BAA in **Settings > Agreements** before authorized PHI use, and use Healthcare for a multi-user agreement/central deployment. Third-party GPTs/apps need their own permissions and agreements. [Data controls](https://help.openai.com/en/articles/7730893-data-controls-in-chatgpt), [Health](https://help.openai.com/en/articles/20001036-what-is-chatgpt-health), [Clinicians](https://help.openai.com/en/articles/20001202-chatgpt-for-clinicians).
 
 ## 7. Compliance Quick Reference
 
-### SOC 2 Trust Services Criteria Mapping
+| Control family | Guide sections | Evidence limit |
+|----------------|----------------|----------------|
+| Identity and least privilege — NIST IA-2, AC-2, AC-6 | 1.1–1.5 | Verify effective sign-in and all grants; native MFA enforcement unavailable |
+| Data, keys and sharing — NIST SC-12, SC-28, SI-12, AC-4 | 2.1–2.5 | Contract/content category and downstream copy boundaries differ |
+| Configuration and integrations — NIST CM-6, CM-7, AC-3 | 3.1–3.4, 5.3–5.7 | Source identity and relying-party/session controls remain independent |
+| Audit and incident response — NIST AU-6, AU-12, IR-4 | 4.1–4.3, 6.1–6.8 | Current schema, runtime coverage and receiving-system outcome must be proven |
 
-| Control ID | ChatGPT Control | Guide Section |
-|-----------|-----------------|---------------|
-| CC6.1 | SSO authentication | [1.1](#11-configure-saml-single-sign-on) |
-| CC6.1 | MFA enforcement | [1.2](#12-enable-multi-factor-authentication) |
-| CC6.1 | Workspace agent RBAC | [6.1](#61-keep-workspace-agents-disabled-until-governance-is-in-place) |
-| CC6.2 | Role-based access | [1.4](#14-implement-role-based-access-control) |
-| CC6.6 | Data retention | [2.2](#22-configure-data-retention-policies) |
-| CC7.2 | Usage monitoring | [4.1](#41-enable-usage-analytics) |
-| CC7.2 | Compliance API SIEM export | [6.6](#66-stream-compliance-platform-logs-to-siem) |
-| CC7.4 | Agent approval policy | [6.3](#63-require-human-approval-for-sensitive-agent-actions) |
-
-### NIST 800-53 Rev 5 Mapping
-
-| Control | ChatGPT Control | Guide Section |
-|---------|-----------------|---------------|
-| IA-2 | SAML SSO | [1.1](#11-configure-saml-single-sign-on) |
-| IA-2(1) | MFA | [1.2](#12-enable-multi-factor-authentication) |
-| AC-2 | User provisioning | [1.3](#13-configure-scim-user-provisioning) |
-| AC-3 | Workspace agent RBAC | [6.1](#61-keep-workspace-agents-disabled-until-governance-is-in-place) |
-| AC-3(2) | Agent action approvals | [6.3](#63-require-human-approval-for-sensitive-agent-actions) |
-| AC-6(1) | Least privilege | [1.4](#14-implement-role-based-access-control) |
-| CM-7 | Connector read-only baseline | [6.2](#62-minimize-connector-scopes-and-default-to-read-only) |
-| SC-28 | Data encryption | [2.1](#21-understand-data-privacy-guarantees) |
-| SI-4(2) | Cross-connector exfil detection | [6.4](#64-detect-lethal-trifecta-agents-and-first-use-mcp-tools) |
-| AU-6 | Compliance API SIEM export | [6.6](#66-stream-compliance-platform-logs-to-siem) |
-| IR-4(1) | Agent suspension runbook | [6.5](#65-operationalize-agent-suspension-for-incident-response) |
-
-### GDPR Considerations
-
-| Requirement | ChatGPT Enterprise Support |
-|-------------|---------------------------|
-| Data minimization | Configurable retention policies |
-| Purpose limitation | Acceptable use policies |
-| Data portability | Export functionality |
-| Right to erasure | Conversation deletion |
-| Security of processing | SOC 2, encryption, access controls |
-| Article 22 (automated decisions) | Workspace agent approval gates ensure human is in the loop for actions with legal or significant effect; see [6.3](#63-require-human-approval-for-sensitive-agent-actions) |
-
----
-
-## Appendix A: Edition Comparison
-
-| Feature | ChatGPT Team | ChatGPT Business | ChatGPT Enterprise | ChatGPT Edu |
-|---------|--------------|------------------|-------------------|-------------|
-| SSO/SAML | ❌ | ✅ | ✅ | ✅ |
-| SCIM | ❌ | ✅ | ✅ | ✅ |
-| Data not used for training | ✅ | ✅ | ✅ | ✅ |
-| Enterprise Key Management | ❌ | ❌ | ✅ | ✅ |
-| Admin Console | Basic | Full | Full | Full |
-| Usage Analytics | Basic | Advanced | Advanced | Advanced |
-| SOC 2 Type II | ❌ | ✅ | ✅ | ✅ |
-| Custom data retention | ❌ | ✅ | ✅ | ✅ |
-| Workspace Agents (shipped; off by default at launch) | ❌ | ✅ | ✅ | ✅ |
-| Compliance API for agent logs | ❌ | ❌ | ✅ | ✅ |
-| Granular app action control (per-app read-only) | ❌ | Limited | ✅ | ✅ |
-
----
-
-## Appendix B: References
-
-**Official OpenAI Documentation (learn.chatgpt.com canonical enterprise admin set):**
-- [Administration](https://learn.chatgpt.com/docs/enterprise/administration.md)
-- [Governance](https://learn.chatgpt.com/docs/enterprise/governance.md)
-- [Compliance API and audit events](https://learn.chatgpt.com/docs/enterprise/compliance-api.md)
-- [Groups and provisioning](https://learn.chatgpt.com/docs/enterprise/groups-and-provisioning.md)
-- [Roles and workspace permissions](https://learn.chatgpt.com/docs/enterprise/roles-and-workspace-permissions.md)
-- [Apps and connectors](https://learn.chatgpt.com/docs/enterprise/apps-and-connectors.md)
-- [Doc index (llms.txt)](https://learn.chatgpt.com/llms.txt) — full canonical enterprise doc set, including Managed configuration, Plugin controls, Access tokens, Admin rollout guide, and the ChatGPT Work admin FAQ
-- [ChatGPT Enterprise Help Center](https://help.openai.com/en/collections/5688074-chatgpt-enterprise)
-- [Admin Controls: Security and Compliance in Apps](https://help.openai.com/en/articles/11509118-admin-controls-security-and-compliance-in-apps-enterprise-edu-and-business)
-- [Business Data Privacy, Security, and Compliance](https://openai.com/business-data/)
-
-**Workspace Agents:**
-- *Workspace Agents Security Overview* (PDF, April 29, 2026) — **removed; the URL now returns HTTP 404.** Retained here as a historical citation only; use the learn.chatgpt.com doc set above.
-- [Introducing Workspace Agents in ChatGPT](https://openai.com/index/introducing-workspace-agents-in-chatgpt/) — April 22, 2026 announcement
-- [Workspace Agents for Enterprise and Business](https://help.openai.com/en/articles/20001143-chatgpt-workspace-agents-for-enterprise-and-business)
-- [Workspace Agents authentication (access tokens)](https://developers.openai.com/workspace-agents/authentication.md)
-- [Workspace Agents trigger runs API](https://developers.openai.com/workspace-agents/trigger-runs.md)
-- [ChatGPT Agent (underlying technology)](https://help.openai.com/en/articles/11752874-chatgpt-agent)
-- [Workspace Agents App in Slack](https://help.openai.com/en/articles/20001199-chatgpt-agents-app-in-slack)
-- [Global Admin Console](https://help.openai.com/en/articles/12289294-global-admin-console)
-- [RBAC for ChatGPT](https://help.openai.com/en/articles/11750701-rbac)
-- [Developer Mode Apps and Full MCP Connectors (beta)](https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta)
-- [Building Workspace Agents — OpenAI Cookbook](https://developers.openai.com/cookbook/articles/chatgpt-agents-sales-meeting-prep)
-- [Designing Agents to Resist Prompt Injection](https://openai.com/index/designing-agents-to-resist-prompt-injection/)
-- [Hardening Atlas Against Prompt Injection](https://openai.com/index/hardening-atlas-against-prompt-injection/) — note: this page returns HTTP 403 to automated fetchers; verify in a real browser
-
-**Compliance API:**
-- [OpenAI Compliance Platform for Enterprise and Edu Customers](https://help.openai.com/en/articles/9261474-compliance-api-for-chatgpt-enterprise-edu-and-chatgpt-for-teachers)
-- [Compliance Logs Platform Quickstart — OpenAI Cookbook](https://developers.openai.com/cookbook/examples/chatgpt/compliance_api/logs_platform)
-- Tenant Admin API reference (event schemas, login-gated): `chatgpt.com/admin/api-reference`
-
-**API Documentation:**
-- [OpenAI API Reference](https://platform.openai.com/docs/api-reference/introduction)
-- [Official Python SDK](https://github.com/openai/openai-python)
-- [Official Node.js/TypeScript SDK](https://platform.openai.com/docs/libraries)
-- [Agents SDK](https://developers.openai.com/api/docs/guides/agents-sdk)
-- [Tools, Connectors, and MCP](https://developers.openai.com/api/docs/guides/tools-connectors-mcp)
-
-**Compliance Frameworks:**
-- SOC 2 Type II (Security, Availability, Confidentiality, Privacy), ISO 27001:2022, ISO 27017, ISO 27018, ISO 27701 — audit reports available to customers under NDA via your OpenAI account team
-
-**Security Research on AI Agents:**
-- [The Lethal Trifecta — Simon Willison, June 2025](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/) — the architectural pattern behind every confirmed agent exfiltration PoC
-- [AgentFlayer: ChatGPT Connectors 0-click — Zenity Labs, Black Hat USA 2025](https://labs.zenity.io/p/agentflayer-chatgpt-connectors-0click-attack-5b41)
-- [OWASP Top 10 for LLM Applications (LLM01: Prompt Injection)](https://genai.owasp.org/llmrisk/llm01-prompt-injection/)
-- [Embrace The Red — Johann Rehberger's prompt-injection research](https://embracethered.com/blog/)
-
-**Security Incidents:**
-- **March 2023 — Redis library bug exposed chat titles and payment info.** A bug in the open-source Redis client library allowed some users to see other users' chat history titles and first messages. Payment information of approximately 1.2% of ChatGPT Plus subscribers was also briefly exposed. ([OpenAI Disclosure](https://openai.com/index/march-20-chatgpt-outage/))
-- **November 2025 — Vendor (Mixpanel) breach exposed limited business customer data.** Attackers breached OpenAI's third-party analytics vendor Mixpanel, stealing names, emails, locations, and technical system details of business customers. No chat data, API keys, credentials, or payment details were compromised. OpenAI suspended the relationship with Mixpanel and initiated broader vendor security reviews. ([OpenAI Disclosure](https://openai.com/index/mixpanel-incident/))
-- **2025 (patched 2026-02-20) — ShadowLeak.** Radware disclosed a zero-click indirect prompt injection against the Deep Research agent. Hidden HTML in an inbound Gmail message caused the agent to exfiltrate inbox contents from OpenAI's cloud infrastructure, invisible to local DLP. Patched. ([Radware advisory via Infosecurity Magazine](https://www.infosecurity-magazine.com/news/vulnerability-chatgpt-agent-gmail/))
-- **September 2025 (patched mid-December 2025) — ZombieAgent.** Radware disclosed a persistent indirect-prompt-injection attack that planted rules into ChatGPT memory; every subsequent session re-triggered exfiltration. Bypassed dynamic-URL filters via a pre-built static URL dictionary. ([Coverage via The Hacker News](https://thehackernews.com/2026/03/openai-patches-chatgpt-data.html))
-
----
+These are mappings to control objectives, not claims of certification. The [source-first inventory](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/openai-source-coverage.md) separates verified settings, unavailable features and unverified contracts. The current public Admin API schema could not be loaded in this run; no current absence claim is inferred. Existing fake JSONC/no-op and placeholder detection packs were invalidated; the actual native Work/Codex packs and current Compliance/trigger status reads replace those claims.
 
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-05 | 0.4.0 | ai-drafted | Source-first platform map; correct tenant identity/native MFA, sharing, plugin and integration controls; add Lockdown, Space/Sites, shared connections, Slack/Teams, Team Tasks and SIWC. Preserve control IDs/headings; replace invalidated pseudo-policies/no-op packs and 6.6 collision with current export/status reads. No live validation. | Codex |
 | 2026-10-10 | 0.3.2 | ai-drafted | Added Ona, acquired by OpenAI in August 2026, to the Products in This Platform table and the product-guide line, stating that the ChatGPT controls here do not configure it. No control changed | Claude Code (Opus 5.5) |
 | 2026-10-09 | 0.3.1 | ai-drafted | Became the Common Controls hub of the new OpenAI multi-product platform (`platform: "OpenAI"`, `product: "Common Controls"`): added a Products in This Platform table linking the ChatGPT Dots product guide, and a dots pointer in Section 6. No control changed. | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.3.0 | ai-drafted | Currency pass: re-sourced Section 6 off the removed Workspace Agents Security Overview PDF (annotated PDF-only claims; cited live learn.chatgpt.com / developers.openai.com docs); rewrote 3.1/3.2 for the plugins + bundled skills + connectors model and six control boundaries; new control 6.8 (Workspace Agents trigger API + PAT governance); workspace agents no longer "research preview"; added 30-day Compliance Platform retention and endpoint surface to 6.6; converted the stateful-route deprecation to a completed removal (removed 2026-06-05); added the 18-partner Compliance Platform ecosystem to 4.2/5.2; fixed 1.3/1.4/2.4/3.1 cheat-parser misses; fixed 6.6 duplicate pack includes and two broken compliance-table anchors; migrated Appendix B to the learn.chatgpt.com canonical set, fixed the Compliance API slug, purged trust-center links; rewrote the three Sigma rules in schema-agnostic form with login-gated schema warnings | Claude Code (Fable 5) |
 | 2026-05-14 | 0.2.1 | ai-drafted | Reconciled Section 6 against OpenAI's *Workspace Agents Security Overview* (April 29, 2026). Added the fifth RBAC dimension `publish_agents_with_shared_connections` (6.1). Replaced reconstructed event-type list with the PDF's authoritative agent lifecycle / run / connector-call / OAuth-resolution / skill / trigger / memory event families (6.6). Added Logs Platform technical specs (~10-min windows, p99 < 30 min, at-least-once, event_id dedup). Added control 6.7 implementing OpenAI's six-step pre-launch checklist. Updated Sigma rules and the SIEM-streaming and trifecta-detection scripts with PDF-verified event names and app catalog. New pack file: `config/hth-chatgpt-enterprise-6.07-prelaunch-checklist.jsonc`. | Claude Code (Opus 4.7) |
 | 2026-05-14 | 0.2.0 | ai-drafted | [SECURITY] Added Section 6 Workspace Agents Hardening (6 controls covering RBAC, connector posture, approval policy, lethal-trifecta detection, suspension runbook, Compliance API SIEM export). Added Code Packs under `packs/chatgpt-enterprise/` (api, config, siem/sigma). Updated NIST and GDPR mappings. Expanded References with workspace agent, Compliance API, and agent-security research links. | Claude Code (Opus 4.7) |
 | 2025-02-05 | 0.1.0 | ai-drafted | Initial guide with SSO, data privacy, GPT controls, and compliance | Claude Code (Opus 4.5) |
-
----
-
-## Contributing
-
-Found an issue or want to improve this guide?
-
-- **Report outdated information:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `content-outdated`
-- **Propose new controls:** [Open an issue](https://github.com/grcengineering/how-to-harden/issues) with tag `new-control`
-- **Submit improvements:** See [Contributing Guide](/contributing/)

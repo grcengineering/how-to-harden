@@ -1,0 +1,6 @@
+{
+  "name": "hth-statsig-sdk-examples",
+  "private": true,
+  "type": "module",
+  "dependencies": { "@statsig/web-analytics": "3.33.7" }
+}

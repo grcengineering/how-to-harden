@@ -1,3 +1,5 @@
+# Stable schema reconciliation: https://github.com/gitpod-io/terraform-provider-ona/tree/v0.5.1/docs
+# Source review is not provider apply/tenant validation.
 # =============================================================================
 # HTH Pack Contract: v1
 #   control: ona-5.1
@@ -11,10 +13,10 @@
 # Frameworks: CIS Controls 12.2 | NIST 800-53 SC-7, SA-9 | SOC 2 CC6.6
 # Source: https://howtoharden.com/guides/ona/#51-run-self-hosted-runners-for-sensitive-source-code
 #
-# PROVIDER BLOCK LIVES IN hth-ona-1.01-configure-sso.tf.
+# Shared provider configuration: copy versions.tf once into the module.
 #
-# Transcribed from registry docs fetched 2026-08-19:
-#   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/runner                (doc 13236804)
+# Original schema transcribed 2026-08-19; current stable source re-read 2026-11-05:
+#   https://registry.terraform.io/providers/gitpod-io/ona/0.5.1/docs/resources/runner                (doc 13236804)
 #   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/runner_token          (doc 13236807)
 #   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/data-sources/runners          (doc 13236828)
 #   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/organization_policies (doc 13236800)

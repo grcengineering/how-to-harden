@@ -1,3 +1,5 @@
+# Stable schema reconciliation: https://github.com/gitpod-io/terraform-provider-ona/tree/v0.5.1/docs
+# Source review is not provider apply/tenant validation.
 # =============================================================================
 # HTH Pack Contract: v1
 #   control: ona-2.1
@@ -11,10 +13,10 @@
 # Frameworks: CIS Controls 2.5, 2.7 | NIST 800-53 CM-7, SI-3 | NIST AI RMF MANAGE-2.3
 # Source: https://howtoharden.com/guides/ona/#21-enforce-an-executable-policy-with-veto
 #
-# PROVIDER BLOCK LIVES IN hth-ona-1.01-configure-sso.tf.
+# Shared provider configuration: copy versions.tf once into the module.
 #
-# Transcribed from registry docs fetched 2026-08-19:
-#   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/security_policy        (doc 13236811)
+# Original schema transcribed 2026-08-19; current stable source re-read 2026-11-05:
+#   https://registry.terraform.io/providers/gitpod-io/ona/0.5.1/docs/resources/security_policy        (doc 13236811)
 #   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/organization_policies  (doc 13236800)
 #   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/data-sources/security_policies (doc 13236829)
 # all for provider-version 105656 = 0.4.0-beta.1.
@@ -28,6 +30,8 @@
 # only surface that keeps those two in one plan, so the failure mode below cannot
 # hide.
 #
+# Runtime limits: hash failure is fail-open; safelisted/unresolved selectors do not enforce.
+# Restart environments after default assignment; audit events report matches only.
 # TRAPS
 #  1. A CREATED POLICY IS INERT UNTIL ASSIGNED. Verbatim from the API reference:
 #     "Creation stores an inactive definition; assigning it as the organization
@@ -87,13 +91,13 @@ variable "veto_policy_name" {
 }
 
 variable "veto_default_effect" {
-  description = "Default effect for executables not matched by a rule. One of allow, block, audit. Start at allow."
+  description = "Default effect for executables not matched by a rule. The current public Veto Exec contract requires allow."
   type        = string
   default     = "allow"
 
   validation {
-    condition     = contains(["allow", "block", "audit"], var.veto_default_effect)
-    error_message = "veto_default_effect must be one of: allow, block, audit."
+    condition     = var.veto_default_effect == "allow"
+    error_message = "Current public Veto Exec default must be allow."
   }
 }
 
