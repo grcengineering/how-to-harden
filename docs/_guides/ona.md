@@ -9,14 +9,14 @@ product: "Ona"
 tier: "2"
 category: "AI/ML Platform"
 description: "Security hardening for Ona (formerly Gitpod) — the cloud platform for autonomous AI software-engineering agents: SSO/SCIM identity, agent guardrails (Veto, command deny list, MCP), environment and network policy, secrets, self-hosted runners, and audit logging."
-version: "0.2.2"
+version: "0.3.0"
 maturity: ["ai-drafted", "ai-validated"]
-last_updated: "2026-10-10"
+last_updated: "2026-11-05"
 ---
 
 ## Overview
 
-This is a **product guide within the [OpenAI platform](/guides/chatgpt-enterprise/)**. OpenAI announced its acquisition of Ona on June 11, 2026 ([OpenAI to acquire Ona](https://openai.com/index/openai-to-acquire-ona/)), and Ona reports that the transaction closed on August 10, 2026 ([Ona joins OpenAI](https://ona.com/stories/ona-joins-openai)). Ona is still administered in its own console (`app.gitpod.io`), under its own SSO, SCIM and contract (Gitpod GmbH), so the ChatGPT workspace controls in the OpenAI **Common Controls** hub, the [ChatGPT Enterprise guide](/guides/chatgpt-enterprise/), do not configure it: every control an Ona administrator needs is in this guide. New customer sign-up is closed. Existing customers, new members of existing organizations and Enterprise deployments on AWS or GCP continue, and new users are pointed to OpenAI's Codex ([Ona quickstart](https://ona.com/docs/ona/quickstart)).
+This is a **product guide within the [OpenAI platform](/guides/chatgpt-enterprise/)**. OpenAI announced its acquisition of Ona on June 11, 2026 ([OpenAI to acquire Ona](https://openai.com/index/openai-to-acquire-ona/)), and Ona reports that the transaction closed on August 10, 2026 ([Ona joins OpenAI](https://ona.com/stories/ona-joins-openai)). Ona is still administered in its own console (`app.gitpod.io`), under its own SSO, SCIM and contract (Gitpod GmbH), so the ChatGPT workspace controls in the OpenAI **Common Controls** hub, the [ChatGPT Enterprise guide](/guides/chatgpt-enterprise/), do not configure it: Ona’s documented customer controls are covered in this guide, with source and verification limits recorded below. New customer sign-up is closed. Existing customers, new members of existing organizations and Enterprise deployments on AWS or GCP continue, and new users are pointed to OpenAI's Codex ([Ona quickstart](https://ona.com/docs/ona/quickstart)).
 
 Ona (formerly Gitpod) runs autonomous AI software-engineering agents in cloud development environments with access to source code, credentials, package registries, and outbound network. That capability profile makes it a first-class security surface: an over-permissioned agent, a poisoned dev environment, or a leaked scoped credential can read or exfiltrate an entire codebase, and the platform's own history of session/origin/token-boundary vulnerabilities (five Gitpod-era CVEs, one critical workspace-takeover) shows the blast radius is real.
 
@@ -36,12 +36,11 @@ This guide hardens Ona's admin surfaces: identity (OIDC SSO, SCIM, roles), agent
 - **L3 (Run):** Strictest controls for regulated industries
 
 ### Scope
-This guide covers Ona organization administration: OIDC SSO and SCIM provisioning, roles and groups, service-account and token hygiene, the Veto executable-policy engine and agent command deny lists, MCP and SCM-tool governance, automation limits, port-admission and in-environment browser policy, environment lifetime/retention, dotfiles supply-chain risk, secrets scoping, OIDC workload identity, repository-access scoping, self-hosted runners, and audit logging. Model-behavior configuration (prompts, agent reasoning) is out of scope.
+This guide covers Ona organization administration: OIDC SSO and SCIM provisioning, roles and groups, service-account and token hygiene, the Veto executable-policy engine and agent command deny lists, MCP and SCM-tool governance, automation limits, port-admission and in-environment browser policy, environment lifetime/retention, dotfiles supply-chain risk, secrets scoping, OIDC workload identity, repository-access scoping, self-hosted runners, and audit logging. Prompt-writing advice is out of scope; administrator model availability, reasoning/speed limits, Goal mode and executable skill/configuration governance are in scope.
 
-> **How the console is laid out (verified live, 2026-08-19).** Ona's own docs give inconsistent locations for the policy surface, so every navigation path in this guide was read off the live console rather than transcribed from the docs. The console served at `app.gitpod.io`; **Settings** is one page with a sidebar grouped as **Organization** (General, Terms of Service, Members, Integrations, Billing, Cost & Budgets), **Infrastructure** (All Environments, Runners, Secrets, Policies, Security), **Agents** (Policies, Skills), and **Login & Identity** (Login Configuration, SCIM, OIDC Tokens); personal settings live under the user menu → **Account**. Many controls below are Enterprise-gated (the page renders, the toggle is locked behind "Upgrade") — the paths still hold.
+> **Evidence and navigation:** Remaining console badges retain the 2026-08-19 tenant observations, not a November live check. The former API packs were exercised on that date; their changed transport is checked with offline fixtures only, so their live badges are removed. Historical results remain in Git history. Current documentation describes newer Settings locations for SCIM, Veto and browser policy; changed instructions below have no carried-forward console badge. The [source-first reconciliation](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/ona-source-coverage.md) covers every stable-provider resource/data source, programmatic surface and source-derived feature candidate. No product account or credential was accessed during this refresh.
 >
-> **Hosts and names.** `app.ona.com` and `app.gitpod.io` are both live: `https://app.ona.com/api` answers **308** to `https://app.gitpod.io/api` (and `curl -L` drops the bearer token on that cross-host hop), the OIDC issuer (`iss`) is `https://app.gitpod.io`, and the API namespace remains `gitpod.v1.*` — none of that is legacy debris, so do not "correct" it. Audit-log retention and the LLM training-use posture remain undocumented — treat them as open questions with your Ona account team.
-
+> **Hosts and names:** the current [Connect API reference](https://ona.com/docs/api-reference) documents app.ona.com/api and same-domain tokens. Historical audit packs use app.gitpod.io/api after observing a cross-origin redirect in August. Confirm the approved tenant/custom-domain origin before running them; do not forward a bearer token across origins or infer current routing from that historical result. API names remain gitpod.v1.*. Audit retention and model-data commitments require actual contract/source verification.
 ---
 
 ## Table of Contents
@@ -140,10 +139,10 @@ Enable SCIM provisioning against your IdP, then enable the **Restrict account cr
 #### Prerequisites
 - An active SSO provider (1.1) — the SCIM restriction toggle stays disabled until SCIM is configured and enabled
 
-#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path corrected against the live console" date="2026-08-19" %}
+#### ClickOps Implementation
 
 **Step 1: Configure SCIM**
-1. Navigate to: **Settings** → **Login & Identity** → **SCIM** → **Configuration** → **Set up SCIM**
+1. Open **Organization Settings > Login and Security > SCIM Provisioning** and link an active SSO configuration. Current documentation calls SCIM Enterprise beta; verify tenant availability.
 2. Generate the SCIM endpoint and bearer token. **The token is shown once and is unrecoverable** — store it in your secrets manager immediately.
 3. Configure the SCIM integration in your IdP with the endpoint and token. (An SCIM configuration created through the API is stored disabled until `UpdateSCIMConfiguration` sets `enabled: true`.)
 
@@ -154,7 +153,9 @@ Enable SCIM provisioning against your IdP, then enable the **Restrict account cr
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="1.2" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="1.2" %}
+
+**Current scope:** each SCIM token manages only groups created by its configuration and users owned by the linked SSO configuration. Configurations linked to the same SSO share that user scope; cross-scope requests return 404. In **Settings > Organization > Policies**, enable **Restrict Account Creation to SCIM** only after active SSO and linked/enabled SCIM are configured. It restricts new sign-ins; existing members retain access and need separate review. [SCIM scope](https://ona.com/docs/ona/scim/overview) · [Restriction](https://ona.com/docs/ona/organizations/policies/scim-account-restriction).
 
 #### Validation & Testing
 1. Remove a test user from the IdP and confirm deprovisioning in Ona
@@ -206,7 +207,9 @@ Use Ona's delegated organization roles (Runners Admin, Projects Admin, Groups Ad
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="1.3" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="1.3" %}
+
+**Groups and teams:** current Enterprise teams support reporting/cost targets, not access control. Use groups for runner/project/Automation permissions; do not treat a team membership as an ACL. [Manage teams](https://ona.com/docs/ona/organizations/teams).
 
 #### Validation & Testing
 1. A Runners Admin cannot change identity or policy settings
@@ -259,7 +262,7 @@ Constrain machine credentials: never issue service-account tokens with **indefin
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="1.4" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="1.4" %}
 
 #### Validation & Testing
 1. No service account carries an indefinite token
@@ -339,11 +342,10 @@ Review the organization's invitation surface: the shareable invite link, email i
 | NIST AI RMF | MANAGE-2.3 |
 
 #### Description
-Use Veto — Ona's Linux Security Module that "runs as a Linux Security Module (LSM) inside the environment kernel, below the agent"; per Ona, "the LLM cannot bypass or disable it" and the agent cannot unload it, modify its configuration, or observe whether an action was flagged — to define an executable policy. Veto Exec rules match by absolute path (`/usr/bin/curl`) or bare name (`npx`), resolve to SHA-256 content identity (rename- and symlink-resistant), and block execution AND read/copy/modify of the target.
-
+Use Veto Exec to audit or block selected executables through kernel-level enforcement. Absolute paths and bare names resolve to content identity, resisting rename/symlink bypass for materialized rules. This is not an absolute execution guarantee: hash failures fail open, safelisted runtime binaries cannot be blocked, and unresolved selectors do not enforce.
 #### Rationale
 **Why This Matters:**
-- Guardrails defined in the agent's own context can be reasoned around; a kernel LSM below the agent cannot be evaded by the agent
+- Kernel policy is enforced below the agent, with documented safelist, discovery and hash-failure limits
 - SHA-256 content identity defeats the rename/symlink tricks an agent (or injected instruction) would use to dodge a name-based block
 - Blocking read/copy/modify — not just exec — stops an agent from staging a renamed copy of a blocked tool
 
@@ -355,7 +357,7 @@ Use Veto — Ona's Linux Security Module that "runs as a Linux Security Module (
 #### ClickOps Implementation
 
 **Step 1: Define Veto Executable Rules**
-1. Navigate to: **Settings** → **Infrastructure** → **Security** (Enterprise tier — on lower tiers the page shows only the security-agents section)
+1. Navigate to: **Settings > Security > Veto Executables** (Enterprise tier — on lower tiers the page shows only the security-agents section)
 2. Add rules by absolute path or bare name (`.`/`..`/relative paths are rejected); leave **Block** unchecked to audit a rule or check it to block execution (`EFFECT_AUDIT` / `EFFECT_BLOCK` in the YAML/API)
 3. Leave the default effect at allow (`defaultEffect` omitted or `EFFECT_ALLOW`) and block specific high-risk binaries; start in audit, then move to block once the audit trail is clean
 4. Ona runtime binaries are on a server-populated **safelist** (`vetoExecPolicy.safelist`, output-only) and cannot be blocked — a rule naming one silently does not take effect
@@ -368,10 +370,12 @@ Use Veto — Ona's Linux Security Module that "runs as a Linux Security Module (
 
 {% include pack-code.html vendor="ona" section="2.1" %}
 
+**Enforcement and recovery:** creation stores an inactive definition; default assignment runs the authoritative materializability check. New environments and restarted environments pick up the changed default; running environments keep the previous policy. Start with audit rules, then test block and mixed Audit/Block rules after restart. Leave the unmatched default at allow; the public Veto contract permits only Audit/Block rules. Clearing the default removes every control in that SecurityPolicy, including unrelated sections.
+
 #### Validation & Testing
 1. In audit mode, confirm the intended binaries appear as `AUDIT_LOG_ENTRY_KIND_ENVIRONMENT_VETO` audit events ([6.1](#61-enable-audit-logging-and-siem-streaming)) — Veto Exec enforcement entries are in preview and appear only for organizations where that preview is enabled
 2. In block mode, an agent attempt to run a blocked binary fails and is logged
-3. A renamed copy of a blocked binary is still blocked (content-identity check)
+3. Test a renamed copy of identical bytes and separately test missing selectors, safelisted files and the documented fail-open hash failure boundary. Audit logs report only matched Veto events, not every executable invocation.
 
 **Expected result:** Kernel-enforced executable policy on agent environments. ([Veto](https://ona.com/docs/ona/guardrails/veto.md) · [Executable deny list](https://ona.com/docs/ona/organizations/policies/executable-deny-list.md))
 
@@ -395,7 +399,7 @@ Use Veto — Ona's Linux Security Module that "runs as a Linux Security Module (
 | NIST AI RMF | MANAGE-2.3 |
 
 #### Description
-Block dangerous agent-issued bash commands with wildcard patterns (e.g., `shutdown`, `shutdown*`, `rm *`). This applies to commands the AGENT runs, not to a user's own terminal, and takes effect for new sessions.
+Block dangerous agent-issued bash commands with wildcard patterns (e.g., `shutdown`, `shutdown*`, `rm *`). This applies to commands the agent runs, not a user’s manual terminal, and takes effect for new/restarted sessions. Slash commands become prompts rather than being blocked by the list; agent bash execution is filtered separately.
 
 #### Rationale
 **Why This Matters:**
@@ -416,7 +420,7 @@ Block dangerous agent-issued bash commands with wildcard patterns (e.g., `shutdo
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="2.2" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="2.2" %}
 
 #### Validation & Testing
 1. Start a new agent session and confirm a denied command is refused
@@ -464,7 +468,7 @@ Decide organization policy on Model Context Protocol (MCP) servers. Org owners c
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="2.3" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="2.3" %}
 
 #### Validation & Testing
 1. With MCP disabled, an agent in a repo carrying `.ona/mcp-config.json` does not load the external server
@@ -490,8 +494,7 @@ Decide organization policy on Model Context Protocol (MCP) servers. Org owners c
 | NIST 800-53 | AC-3, CM-7 |
 
 #### Description
-Scope what agents can do against source-control hosts and which model providers they use. The SCM-tools policy chooses whether agents get PR/issue API tools (vs. git commands only), for all members / a specific group / disabled. Provider governance is narrower than it once was: on Ona Cloud, OpenAI model access for Codex Agent is the default; **Ona Agent and Ona-managed Anthropic model access are no longer available on Ona Cloud**; customer-managed runners require Ona Intelligence or an approved OpenAI-compatible provider; custom token providers (BYOK) are available by exception to Enterprise customers; and the AWS Bedrock Runtime, Google Vertex AI, and direct Anthropic API integrations are deprecated and maintenance-only.
-
+Scope what agents can do against source-control hosts and which model providers they use. The SCM-tools policy chooses whether agents get PR/issue API tools (vs. git commands only), for all members / a specific group / disabled. On Ona Cloud, OpenAI model access for Codex Agent is provided by default. Supported customer-managed runners use Ona Intelligence or an approved OpenAI-compatible provider. Current direct OpenAI, AWS Bedrock Runtime and Bedrock Mantle routes support documented Codex models; the former blanket Bedrock deprecation claim is withdrawn. Custom token-provider exceptions and legacy integrations require the actual Enterprise support/contract.
 #### Rationale
 **Why This Matters:**
 - Disabling SCM API tools limits an agent to git operations, removing its ability to open/merge PRs or manipulate issues autonomously where that is not intended
@@ -500,7 +503,7 @@ Scope what agents can do against source-control hosts and which model providers 
 
 **Attack Prevented:** Autonomous repository manipulation via SCM API tools; unintended code/prompt egress to an unassessed model backend
 
-#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path observed live" date="2026-08-19" %}
+#### ClickOps Implementation
 
 **Step 1: Scope SCM Tools**
 1. Navigate to: **Settings** → **Agents** → **Policies** → **Agent capabilities** → **Source Code Management Tools (SCM)** → **Restrict access to**
@@ -508,13 +511,15 @@ Scope what agents can do against source-control hosts and which model providers 
 
 **Step 2: Govern Model Providers**
 1. On the same page, **Agents available** governs which agents and which Codex models, reasoning-effort ceilings, and service tiers members may use (`agentPolicy.allowedAgentIds`, `codexModelPolicy.modelStates`, `allowedCodexReasoningEfforts`, `allowedCodexServiceTiers`)
-2. Review the [LLM providers documentation](https://ona.com/docs/ona/agents/llm-providers/overview.md); for regulated data, confirm the training-use and residency posture with your Ona account team (undocumented as of this writing) and treat any remaining BYOK/self-managed backend as an Enterprise exception to request, not a menu to pick from
+2. Review the [current model routes](https://ona.com/docs/ona/agents/llm-providers/overview) and each runner’s configuration. Check provider credentials, account/region/model availability, endpoints and prompt-data commitments. Existing environments need a compatible installed agent; saved conversation/Automation selections do not automatically change.
 
 **Time to Complete:** ~30 minutes
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="2.4" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="2.4" %}
+
+**Model defaults:** `allowed_agent_ids = []` means all agents; omitted/unlisted `codex_model_states` entries, including future models, are allowed. An empty map clears overrides, not denies all. Current provider maps model availability; UI reasoning-effort, Fast mode and Goal mode must be checked separately. [Codex controls](https://ona.com/docs/ona/agents/codex).
 
 #### Validation & Testing
 1. With SCM tools disabled, an agent cannot open a PR via API
@@ -557,9 +562,13 @@ Set the automation guardrails that cap how much autonomous work members can run:
 1. Navigate to: **Settings** → **Agents** → **Policies** → **Automations** — **Note:** automation organization policy controls are in preview and available only to selected Enterprise organizations; the section is absent on other tiers
 2. Set active automations per member (default 5, Enterprise maximum 50), projects per automation (up to 100), and concurrent actions (up to 25 on Enterprise) to values matched to your risk tolerance
 
-**Automation:** ClickOps only — Ona exposes no write interface for this setting ([Automation guardrails](https://ona.com/docs/ona/automations/guardrails.md), 2026-08-19). The limits are visible on the `GetOrganizationPolicies` read path as `agentPolicy.automationPolicy{maxAutomationsPerUser, maxParallelActions, maxProjectsPerAutomation}` (observed live), but that field is undocumented and no method sets it.
+**Automation:** the organization-wide preview limits have an unverified public write contract; a historical GetOrganizationPolicies response is not proof of a current setter. Per-Automation action limits, triggers, executor and Codex settings have a verified native Terraform resource and are included below. Do not confuse these with organization policy.
+
+{% include pack-code.html vendor="ona" section="2.5" %}
 
 **Time to Complete:** ~15 minutes
+
+**Current limits:** selected Enterprise organizations can set limits in **Settings > Agents > Policies > Automations**. Active ownership defaults to 5 per member (maximum 50); maximum explicit projects is 1,000 and concurrent actions 25. Organization Admins and Automations Admins bypass organization-configured limits, while plan/API limits still apply. Lowering ownership does not alter existing Automations; project limits concern explicit selections, not search/repository-URL contexts. Per-action timeout stops the action. [Current guardrails](https://ona.com/docs/ona/automations/guardrails).
 
 #### Validation & Testing
 1. A non-admin member is blocked from exceeding the active-automation cap
@@ -610,7 +619,7 @@ For regulated or high-sensitivity estates, enable the CrowdStrike Falcon integra
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="2.6" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="2.6" %}
 
 #### Validation & Testing
 1. Confirm the falcon-sensor is present in a newly created environment
@@ -624,6 +633,84 @@ For regulated or high-sensitivity estates, enable the CrowdStrike Falcon integra
 |-----------|-----------|---------------------|
 | **NIST 800-53** | SI-3 | Malicious code protection |
 | **NIST 800-53** | SI-4 | System monitoring |
+
+---
+
+### 2.7 Restrict Codex Goal mode and linked model identities
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-6, CM-6, SI-12 |
+| CIS Controls v8 | 4.1, 6.1 |
+
+#### Description
+
+Disable open-ended Goal mode for populations that do not require it, and govern Codex model identity/routing separately from the Ona environment. Goal mode is enabled by default and keeps working toward a goal until achieved.
+
+#### Rationale
+
+**Why This Matters:**
+
+- A long-running goal increases execution and credential exposure.
+- A linked ChatGPT plan changes model access/billing, not environment authorization.
+
+**Attack Prevented:** Unbounded agent activity and unreviewed model routes.
+
+#### ClickOps Implementation
+
+1. In **Organization Settings > Agents > Codex**, disable **Goal mode** where unnecessary. Review each model, reasoning ceiling and Fast mode separately.
+2. For approved Core Ona Cloud use, the admin enables Codex in **Organization Settings > Integrations**, then the user connects through **User Settings > Integrations > Codex**. Service-account connections live under **Members > Service Accounts > account > Integrations**.
+3. Inventory active conversations/Automations and installed agent versions. Disconnecting ChatGPT model access falls back to organization model access; cancel tasks/revoke runtime/source rights separately.
+
+**Automation:** Current console controls are verified from documentation. A public Goal/reasoning/speed write contract was not verified; the existing 2.4 Terraform model map covers a narrower setting.
+
+#### Validation & Testing
+
+On a controlled deployment, verify Goal requests are rejected when disabled while ordinary Codex remains available. Confirm actual model route and active execution after disconnect; do not treat it as a kill switch.
+
+**Sources:** [Primary reference](https://ona.com/docs/ona/agents/codex) · [Supporting reference](https://ona.com/docs/ona/integrations/configure-codex)
+
+---
+
+### 2.8 Restrict shared Automations and verify the executing identity
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-6, CM-6, SI-12 |
+| CIS Controls v8 | 4.1, 6.1 |
+
+#### Description
+
+Grant only the role needed for each shared Automation and check the actual executor and SCM identity. General Access Everyone grants every organization member Executor access.
+
+#### Rationale
+
+**Why This Matters:**
+
+- A prebuilt workflow can run with a different invoker’s permissions.
+- A single-Automation Admin and organization Automations Admin have different authority.
+
+**Attack Prevented:** Unapproved automation invocation and confused execution identity.
+
+#### ClickOps Implementation
+
+1. As an organization admin, open the Automation’s **Share** dialog and choose **Only groups and users with access** for sensitive workflows. Enterprise supports specific groups/users; Core supports General Access.
+2. Use Viewer for history, Executor for run/own executions and Admin only for maintainers. The current page says only organization admins can share, despite its broader Admin table description; verify tenant behavior.
+3. Check manual invocation identity/SCM and any explicit service-account executor for scheduled/webhook runs. Removing an executor block retains the remote resolved executor; it is not a clear operation. Review triggers, run history and source credentials independently.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="2.8" %}
+
+#### Validation & Testing
+
+Test a Viewer/Executor boundary and the actual commit/PR actor with harmless data. Removing a share revokes access; past runs remain visible to admins and prior external effects remain.
+
+**Sources:** [Primary reference](https://ona.com/docs/ona/automations/sharing-automations) · [Supporting reference](https://raw.githubusercontent.com/gitpod-io/terraform-provider-ona/v0.5.1/docs/resources/automation.md)
 
 ---
 
@@ -662,7 +749,9 @@ Cap how widely environment ports can be exposed. Admission levels run `creator_o
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="3.1" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="3.1" %}
+
+**CLI fallback:** current `ona environment port open` implicitly requests creator-only but may fall back to public on an older runner with a warning. Use explicit `--admission creator_only` to fail closed; verify the effective admission level on the actual runner. IDE-managed forwarding and the built-in browser are separate paths. [Current CLI](https://ona.com/docs/ona/integrations/cli).
 
 #### Validation & Testing
 1. A member attempting to expose a port above the cap sees "restricted by policy"
@@ -699,17 +788,19 @@ Govern the built-in environment web browser and the agent's browse-web skill, wh
 
 **Attack Prevented:** Prompt injection via agent web browsing and access to environment-local services
 
-#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console path and toggle label corrected against the live console" date="2026-08-19" %}
+#### ClickOps Implementation
 
 **Step 1: Review the Browser Policy**
-1. Navigate to: **Settings** → **Infrastructure** → **Policies** → **Environment access** → **Web browser** ("Allow members to open the built-in browser panel. VS Code Browser is not affected.")
+1. Open **Settings > Organization > Policies > Allow Web Browser in Environments**. Current documentation lists this Enterprise control; availability depends on the supervisor/browser controller.
 2. On Enterprise, disable it where agents have no legitimate browsing need (API/Terraform: `webBrowserDisabled: true`); where enabled, treat browsed content as untrusted agent input and pair with command/executable guardrails (2.1, 2.2)
 
 **Time to Complete:** ~15 minutes
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="3.2" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="3.2" %}
+
+**Separate paths:** disabling the managed browser hides browser actions and the browse-web skill; it does not disable port sharing, VS Code Browser or editor access. Protected-port previews authenticate only the authoritative port origin without changing admission. Keep those controls separate. [Current browser reference](https://ona.com/docs/ona/integrations/web-browser).
 
 #### Validation & Testing
 1. With the browser disabled, the agent's browse-web skill is unavailable
@@ -760,7 +851,7 @@ Bound how long environments live and linger: set a maximum environment lifetime 
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="3.3" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="3.3" %}
 
 #### Validation & Testing
 1. An expired environment cannot be restarted under strict enforcement
@@ -807,7 +898,7 @@ Limit who can spin up blank environments with the **Only admins can start from s
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="3.4" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="3.4" %}
 
 #### Validation & Testing
 1. A non-admin member cannot create a from-scratch environment and must use a project
@@ -850,7 +941,7 @@ Ona clones a user's configured dotfiles repository (user menu → **Account** �
 2. Use the **command deny list** ([2.2](#22-configure-the-agent-command-deny-list)) for destructive/exfil patterns
 3. Publish a policy requiring dotfiles repositories to be organization-controlled and reviewed; monitor for dotfiles-driven execution in audit logs ([6.1](#61-enable-audit-logging-and-siem-streaming))
 
-**Automation:** ClickOps only — Ona exposes no write interface for this setting at the organization level ([Dotfiles](https://ona.com/docs/ona/configuration/dotfiles/overview.md), 2026-08-19); the only surfaces are per-user (`UserService/SetDotfilesConfiguration`, `ona user dotfiles set`).
+**Automation:** the current organization-wide dotfiles write contract is unverified; documented per-user configuration does not establish an organization enforcement control. Historical documentation described no organization setter ([Dotfiles](https://ona.com/docs/ona/configuration/dotfiles/overview.md), 2026-08-19); the only surfaces are per-user (`UserService/SetDotfilesConfiguration`, `ona user dotfiles set`).
 
 **Time to Complete:** ~30 minutes (plus the Veto/command-deny setup they depend on)
 
@@ -866,6 +957,44 @@ Ona clones a user's configured dotfiles repository (user menu → **Account** �
 |-----------|-----------|---------------------|
 | **NIST 800-53** | SI-3 | Malicious code protection |
 | **NIST 800-53** | CM-7 | Least functionality |
+
+---
+
+### 3.6 Limit retained disks, prebuild snapshots and copied secrets
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-6, CM-6, SI-12 |
+| CIS Controls v8 | 4.1, 6.1 |
+
+#### Description
+
+Treat stopped and archived environments as retained disks. Prebuilds snapshot the entire Dev Container filesystem, including installed dependencies, build artifacts and files; a rebuild is not a clean erasure of all state.
+
+#### Rationale
+
+**Why This Matters:**
+
+- A setup-time credential can be copied into future environments through a snapshot.
+- Repository and explicit bind mounts survive a Dev Container rebuild.
+
+**Attack Prevented:** Cross-task secret persistence and residual sensitive source data.
+
+#### ClickOps Implementation
+
+1. Use a fresh environment per agent task where appropriate. Apply the lifetime/archive/delete controls in3.3 and review every prebuild’s build context and setup scripts.
+2. Keep secrets out of generated files, shell history, image layers and prebuild outputs. Review `/workspaces`, `/home/gitpod`, added mounts and installed tools.
+3. Delete retired environments through the supported lifecycle rather than only stopping/archiving. Revoke source/model credentials and handle exported files, registry images and cloud backups separately.
+
+**Automation:** Existing lifecycle Terraform/API controls are in3.3. Snapshot/content inspection is specific to the approved build and storage owner; no invented universal purge command is provided.
+
+#### Validation & Testing
+
+Use a harmless marker in a disposable environment and verify behavior after stop/start, rebuild and a new prebuild-based environment. Record the actual data owners and deletion contract.
+
+**Sources:** [Primary reference](https://ona.com/docs/ona/environments/persistent-storage) · [Supporting reference](https://ona.com/docs/ona/environments/archive-auto-delete)
 
 ---
 
@@ -903,7 +1032,7 @@ Use the tightest secret scope (user > project > organization precedence) and tre
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="4.1" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="4.1" %}
 
 #### Validation & Testing
 1. A project-scoped secret is not visible to environments outside that project
@@ -951,7 +1080,7 @@ Instead of storing long-lived cloud credentials as secrets, use Ona's OIDC workl
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="4.2" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="4.2" %}
 
 #### Validation & Testing
 1. An agent obtains short-lived cloud credentials via token exchange with no stored long-lived key
@@ -999,7 +1128,7 @@ Configure per-runner repository access deliberately. The GitHub integration requ
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="4.3" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="4.3" %}
 
 #### Validation & Testing
 1. Deleting an unused integration removes its stored credentials (access no longer works)
@@ -1013,6 +1142,96 @@ Configure per-runner repository access deliberately. The GitHub integration requ
 |-----------|-----------|---------------------|
 | **NIST 800-53** | AC-3 | Access enforcement |
 | **NIST 800-53** | AC-6 | Least privilege |
+
+---
+
+### 4.4 Approve integration scopes, trigger identities and offboarding
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-3, AC-6, CM-6 |
+| CIS Controls v8 | 4.1, 6.1 |
+
+#### Description
+
+Require organization enablement and approved user/source authorization for each integration. Trigger identity, source permissions and retained results need separate review; enabling an integration is not authorization for arbitrary agent writes.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Slack/PR requests can launch repository execution under the linked user.
+- Knowledge integrations can expose private documents or write back into source systems.
+
+**Attack Prevented:** Confused deputy execution, excessive source scopes and orphaned authorizations.
+
+#### ClickOps Implementation
+
+1. Use **Organization Settings > Integrations** to admit only approved integrations; users authenticate through **User Settings > Integrations**. Inspect the actual consent scopes and source ACLs rather than assuming read-only access.
+2. For Slack, review app installation/workspace approval, linked-user identity and project permissions. The initiating user owns the session thread; edited messages do not change a running prompt, and a pending request can resume after connection.
+3. For GitHub mentions, restrict App repositories and require the matching Ona project. The agent uses the linked user; App replies and user-attributed commits differ. Fork PRs are ignored.
+4. On offboarding, disable/remove the integration, revoke source OAuth/App installation as appropriate, cancel independent running sessions/triggers and handle retained files/results. Current exact replay windows and revoke API contracts were not verified; test actual source outcomes.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="4.4" %}
+
+
+| Integration | Specific source/identity boundary |
+|-------------|-----------------------------------|
+| Atlassian | Admin enables integration and Atlassian admin allowlists the Ona domain under AI settings > Rovo MCP server; user authorizes Jira/Confluence permissions, including issue writes. [Reference](https://ona.com/docs/ona/integrations/configure-atlassian). |
+| Notion | Personal authorization selects pages/databases; documented tools can create/update pages as well as read. [Reference](https://ona.com/docs/ona/integrations/configure-notion). |
+| Sentry | Select approved projects; stack traces, affected users and monitoring events can contain sensitive data. [Reference](https://ona.com/docs/ona/integrations/configure-sentry). |
+| Granola | Browser OAuth grants meeting-note/transcript access; review the actual meetings/data consent. [Reference](https://ona.com/docs/ona/integrations/configure-granola). |
+| GitHub Apps | Review every organization installation and selected repositories. Removing the Ona integration does not uninstall/delete an organization-owned GitHub App. [Provider reference](https://raw.githubusercontent.com/gitpod-io/terraform-provider-ona/v0.5.1/docs/resources/github_app_integration.md). |
+
+#### Validation & Testing
+
+Test a harmless task from an approved and an unauthorized identity, inspect execution and source actor, then verify containment through every active path. Review signature/replay handling for SCM webhooks in6.2.
+
+**Sources:** [Primary reference](https://ona.com/docs/ona/integrations/configure-slack) · [Supporting reference](https://ona.com/docs/ona/integrations/github-pr-mentions) · [Supporting reference](https://raw.githubusercontent.com/gitpod-io/terraform-provider-ona/v0.5.1/docs/resources/integration.md)
+
+---
+
+### 4.5 Review project sharing, executable configuration and skill precedence
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-3, AC-6, CM-6 |
+| CIS Controls v8 | 4.1, 6.1 |
+
+#### Description
+
+Restrict who can change project configuration, Dev Containers, startup tasks, MCP, Automations-as-code and agent instructions. Repository skills override organization skills, which override built-ins; an organization skill is not a mandatory policy.
+
+#### Rationale
+
+**Why This Matters:**
+
+- A repository contributor can influence tools, setup commands and instructions.
+- Project visibility controls discovery/environment creation, not external SCM access.
+
+**Attack Prevented:** Repository-supplied execution and override of approved workflows.
+
+#### ClickOps Implementation
+
+1. Open the project’s **Share** dialog. Enterprise projects default to admin-only; other tiers default to the entire organization. Restrict General Access and grant groups only user/editor/admin rights needed. Admins remain able to see projects.
+2. Require review for `.devcontainer/devcontainer.json`, `.ona/config.yaml`, MCP configuration, AGENTS.md and skill directories in `.ona`, `.claude` and `.agents`. Review referenced images/features/startup commands and external dependencies.
+3. Manage organization skills in **Settings > Agents > Skills** and check actual repository overrides. Scope project secrets and runner access independently; an environment inherits the project’s repository/secrets/configuration.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="ona" section="4.5" %}
+
+#### Validation & Testing
+
+In a disposable project, verify lower-privilege access and the effective skill/configuration selected. An approved organization prompt does not prevent a repository override.
+
+**Sources:** [Primary reference](https://ona.com/docs/ona/projects/project-sharing) · [Supporting reference](https://ona.com/docs/ona/agents/skills) · [Supporting reference](https://ona.com/docs/ona/configuration/devcontainer/overview)
 
 ---
 
@@ -1054,7 +1273,7 @@ For sensitive codebases, run self-hosted runners in your own AWS/GCP VPC rather 
 
 #### Code Implementation
 
-{% include pack-code.html vendor="ona" section="5.1" validated_types="api" mark_status="ai-validated" mark_evidence="API audit pack executed against a live tenant" mark_date="2026-08-19" %}
+{% include pack-code.html vendor="ona" section="5.1" %}
 
 #### Validation & Testing
 1. Confirm source code and SCM credentials remain in your VPC (never transit the management plane)
@@ -1068,6 +1287,82 @@ For sensitive codebases, run self-hosted runners in your own AWS/GCP VPC rather 
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.6 | Boundary protection |
 | **NIST 800-53** | SA-9 | External system services |
+
+---
+
+### 5.2 Protect Terraform state and review provider lifecycle semantics
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | CM-2, IA-5, SI-2 |
+| CIS Controls v8 | 4.1, 6.1 |
+
+#### Description
+
+Use the official gitpod-io/ona provider with an explicit reviewed version, encrypted restricted state and planned credential rotation. A sensitive attribute can still be stored in state; only documented write-only/ephemeral handling excludes it.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Runner registration tokens persist in state despite redaction.
+- Destroy can reset organization policy or alter bound triggers.
+
+**Attack Prevented:** Credential disclosure and destructive configuration drift.
+
+#### ClickOps Implementation
+
+1. Pin the registry-verified 0.5.1 release and Terraform1.14+; run provider validation in Linux amd64/arm64. The setup page still names0.5.0, so reconcile registry/release evidence before upgrades and commit the reviewed lockfile.
+2. Combine adopted snippets into at most one organization_policies singleton and one assigned SecurityPolicy. Import existing objects before managing them; review the reset/delete semantics for each resource and every destroy plan.
+3. Protect state/plans/backups with restricted encrypted storage. Runner tokens are single-use/24-hour and remain in state; use write-only integration/SSO arguments and ephemeral service-account/webhook resources only where documented.
+
+**Automation:** The pack set includes a shared versions.tf and individually reviewed native resources. Backend credentials, state policy and destructive lifecycle choices depend on your infrastructure; no backend or credential is invented.
+
+#### Validation & Testing
+
+Validate in a separate Linux test module with the pinned provider, then review an authorized plan before any future deployment. No plan/apply or credential retrieval occurred here. Removing organization_policies restores the server-defined pre-management configuration.
+
+**Sources:** [Primary reference](https://ona.com/docs/ona/integrations/terraform-provider) · [Supporting reference](https://raw.githubusercontent.com/gitpod-io/terraform-provider-ona/v0.5.1/docs/guides/state-secrets-and-safe-deletion.md)
+
+---
+
+### 5.3 Keep Ona clients current and protect local authentication
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | CM-2, IA-5, SI-2 |
+| CIS Controls v8 | 4.1, 6.1 |
+
+#### Description
+
+Deliver current security updates to Ona Desktop and the CLI, and govern local credentials and editor/SSH connections. The October28 release specifies Desktop20261027.1288 security fixes and macOS13 or later.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Bundled browsers and app dependencies need security updates.
+- CLI browser login stores local credentials and can upgrade limited environment authentication.
+
+**Attack Prevented:** Exploitation of stale clients and excessive locally retained credentials.
+
+#### ClickOps Implementation
+
+1. Inventory the deployed desktop/CLI versions, operating systems and SSH/editor integrations. Deploy a supported desktop security update through the organization’s approved software process.
+2. For future CLI installation, use the documented SLSA-verifying installer or a separately verified package. Verification failure aborts; do not bypass it or remove OS quarantine as a substitute for provenance.
+3. Protect local credential files and host-specific authentication. In-environment CLI starts with limited access; do not run login merely to upgrade its privileges. On offboarding revoke tokens/source sessions and remove approved local credentials through the documented client/OS process.
+
+**Automation:** Current version/provenance and authentication behavior are documented. No native desktop management policy or universal credential deletion interface was verified; use the supported deployment/client process.
+
+#### Validation & Testing
+
+Confirm the installed version and approved update provenance. Inspect only an authorized inventory, not credential contents. A current organization desktop MDM contract was not verified; no profile schema is invented.
+
+**Sources:** [Primary reference](https://ona.com/docs/changelog) · [Supporting reference](https://ona.com/docs/ona/integrations/cli)
 
 ---
 
@@ -1234,9 +1529,9 @@ Source: [NVD keyword search "gitpod"](https://services.nvd.nist.gov/rest/json/cv
 
 **API, CLI, Terraform, SDK:**
 - [API reference](https://ona.com/docs/api-reference.md) · [Organization policies API](https://ona.com/docs/api-reference/generated/organization/get-organization-policies.md) · [Security Policy API](https://ona.com/docs/api-reference/generated/security/create-security-policy.md) · [Audit-log API](https://ona.com/docs/api-reference/generated/event/list-audit-logs.md)
-- [Ona CLI](https://ona.com/docs/ona/integrations/cli.md) · [CLI reference](https://ona.com/docs/ona/reference/cli.md) · [Terraform provider `gitpod-io/ona`](https://ona.com/docs/ona/integrations/terraform-provider.md) (beta, Linux-only packages) · [SDKs](https://ona.com/docs/ona/integrations/sdk.md) · [MCP configuration](https://ona.com/docs/ona/mcp.md)
+- [Ona CLI](https://ona.com/docs/ona/integrations/cli.md) · [CLI reference](https://ona.com/docs/ona/reference/cli.md) · [Terraform provider `gitpod-io/ona`](https://ona.com/docs/ona/integrations/terraform-provider.md) (stable 0.5.1 registry release; Linux-only packages) · [SDKs](https://ona.com/docs/ona/integrations/sdk.md) · [MCP configuration](https://ona.com/docs/ona/mcp.md)
 
-**Hardening Baselines:** none product-specific as of this writing (no CIS Benchmark, DISA STIG, or CISA SCuBA baseline for cloud development environments / coding agents).
+**Hardening baselines:** No product-specific OpenAI/Ona benchmark was identified in the fetched CIS catalog. CISA/DISA lookups were incomplete; see the source ledger for those research limits rather than treating unavailable sources as verified absence.
 
 ---
 
@@ -1244,6 +1539,7 @@ Source: [NVD keyword search "gitpod"](https://services.nvd.nist.gov/rest/json/cv
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-05 | 0.3.0 | ai-drafted · ai-validated | Source-first refresh: current Codex/model/Goal controls, shared Automations and integration actors, persisted snapshots/config/skills, provider 0.5.1/state and desktop updates; corrected Veto limits, SCIM/browser paths and webhook pack direction. Historical unchanged live evidence retained; changed console paths and API transports lose invalidated marks. No new live validation. | Codex |
 | 2026-10-10 | 0.2.2 | ai-drafted · ai-validated | Became a product guide in the OpenAI platform (`platform: "OpenAI"`, `product: "Ona"`) after OpenAI's acquisition closed on 2026-08-10, with a pointer that states Ona is still administered in its own console and does not inherit the hub's ChatGPT controls; notes that new customer sign-up is closed. No control changed, so the status set is unchanged | Claude Code (Opus 5.5) |
 | 2026-08-20 | 0.2.1 | ai-drafted · ai-validated | Added **ai-validated** to this guide's status set, which now reads **ai-drafted** + **ai-validated** — an AI agent exercised this guidance against a live Ona tenant and the guidance survived that contact; no human practitioner has reviewed or applied it, so the guide claims no **ni-** status, and an AI status never substitutes for one. **What was exercised:** all 22 controls walked on the live console (`app.gitpod.io`, a `free_ona` tenant) and 18 read-only `api/` audit packs executed against that tenant, exit codes and sanitized output captured per pack; the OCEAN `ona` source observed live against the same organization. 18 controls carry a per-requirement badge naming what was run for that control. **What was NOT exercised — the badges are absent on purpose:** every `terraform/` pack was only `terraform validate`d inside Docker and was never applied to any organization, so no Terraform path in this guide has been proven to run; the four `cli/` packs were never executed (the `ona` CLI was not installed on the run host); the three mutating packs (`api` 1.01 and 1.05, `cli` 2.01) were deliberately not run, so 1.1 and 1.5 rest on console observation alone; 2.5 and 6.2 are plan-gated to Core+/Enterprise on this tenant and 6.1 has no console surface at all with its API pack returning the Enterprise gate, so all three are unbadged; 2.1 came back PARTIAL because its executables section is Enterprise-gated, so it too is unbadged even though its audit pack ran. Enterprise-gated toggle behaviour throughout remains a documentation claim, not a live one. No control text, control number, or heading changed. | Claude Code (Opus 5) |
 | 2026-08-19 | 0.2.0 | ai-drafted | Live validation pass (validate-hth-guide): every console path re-read off the live console (`app.gitpod.io`; sidebar Organization / Infrastructure / Agents / Login & Identity) — 11 controls needed path corrections (1.2, 1.5, 2.3, 2.6, 3.1–3.4, 4.1, 4.3 wrong; 2.1 partial — its executables section is plan-gated on the tenant walked); 14 doc-drift corrections (`set-default` takes a policy id, MCP toggle lives under Agents → Policies, WatchEvents is not the audit trail, API base `app.gitpod.io`, LLM-provider posture, `ona idp token`, webhook direction, deprecated `OWNER_ONLY`, preview gating for automation limits and Veto audit entries, service-account "no expiry" wording); Code Packs landed for the first time — api (read-only audit scripts, executed against a live tenant), terraform (`gitpod-io/ona`), cli (`ona`), config (Veto policy YAML, MCP `toolDenyList`), and Sigma rules on the audit-log schema; controls with no write surface now carry an explicit Automation verdict (2.5, 3.5); Ona added to the CLI inventory. | Claude Code (Opus 5) † |

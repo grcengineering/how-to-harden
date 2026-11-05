@@ -1,3 +1,5 @@
+# Stable schema reconciliation: https://github.com/gitpod-io/terraform-provider-ona/tree/v0.5.1/docs
+# Source review is not provider apply/tenant validation.
 # =============================================================================
 # HTH Pack Contract: v1
 #   control: ona-4.3
@@ -11,9 +13,9 @@
 # Frameworks: CIS Controls 3.3, 6.8 | NIST 800-53 AC-3, AC-6
 # Source: https://howtoharden.com/guides/ona/#43-scope-repository-access-to-least-privilege
 #
-# PROVIDER BLOCK LIVES IN hth-ona-1.01-configure-sso.tf.
+# Shared provider configuration: copy versions.tf once into the module.
 #
-# Transcribed from https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/scm_integration
+# Transcribed from https://registry.terraform.io/providers/gitpod-io/ona/0.5.1/docs/resources/scm_integration
 # (registry v2 provider-doc 13236809, provider-version 105656 = 0.4.0-beta.1).
 #
 # WHY TERRAFORM FOR THIS CONTROL: SCM integrations are per-runner, they hold

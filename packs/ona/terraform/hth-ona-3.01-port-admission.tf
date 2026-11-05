@@ -1,3 +1,5 @@
+# Stable schema reconciliation: https://github.com/gitpod-io/terraform-provider-ona/tree/v0.5.1/docs
+# Source review is not provider apply/tenant validation.
 # =============================================================================
 # HTH Pack Contract: v1
 #   control: ona-3.1
@@ -11,10 +13,10 @@
 # Frameworks: CIS Controls 4.1, 12.2 | NIST 800-53 AC-3, SC-7 | SOC 2 CC6.6
 # Source: https://howtoharden.com/guides/ona/#31-restrict-port-admission-levels
 #
-# PROVIDER BLOCK LIVES IN hth-ona-1.01-configure-sso.tf.
+# Shared provider configuration: copy versions.tf once into the module.
 #
-# Transcribed from registry docs fetched 2026-08-19:
-#   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/security_policy       (doc 13236811)
+# Original schema transcribed 2026-08-19; current stable source re-read 2026-11-05:
+#   https://registry.terraform.io/providers/gitpod-io/ona/0.5.1/docs/resources/security_policy       (doc 13236811)
 #   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/organization_policies (doc 13236800)
 # both for provider-version 105656 = 0.4.0-beta.1.
 #

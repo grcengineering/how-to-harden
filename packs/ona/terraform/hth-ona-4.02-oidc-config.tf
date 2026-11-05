@@ -1,3 +1,5 @@
+# Stable schema reconciliation: https://github.com/gitpod-io/terraform-provider-ona/tree/v0.5.1/docs
+# Source review is not provider apply/tenant validation.
 # =============================================================================
 # HTH Pack Contract: v1
 #   control: ona-4.2
@@ -11,9 +13,9 @@
 # Frameworks: CIS Controls 3.3, 16.9 | NIST 800-53 IA-5, AC-3
 # Source: https://howtoharden.com/guides/ona/#42-use-oidc-workload-identity-for-keyless-cloud-access
 #
-# PROVIDER BLOCK LIVES IN hth-ona-1.01-configure-sso.tf.
+# Shared provider configuration: copy versions.tf once into the module.
 #
-# Transcribed from https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/oidc_config
+# Transcribed from https://registry.terraform.io/providers/gitpod-io/ona/0.5.1/docs/resources/oidc_config
 # (registry v2 provider-doc 13236798, provider-version 105656 = 0.4.0-beta.1).
 # The full supported-value list below is verbatim from that schema.
 #

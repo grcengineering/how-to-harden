@@ -1,0 +1,75 @@
+name: OpenAI Pack Safety
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [refresh/openai-source-coverage]
+
+permissions:
+  contents: read
+
+jobs:
+  offline-packs:
+    name: OpenAI offline contracts and SDKs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.4'
+      - name: Install isolated locked official SDKs without lifecycle scripts
+        run: |
+          for sdk in openai-api openai-ads statsig; do
+            (cd "packs/$sdk/sdk" && bun install --frozen-lockfile --ignore-scripts)
+          done
+      - name: Run offline contracts and actual SDK serialization/filter tests
+        run: bun test scripts/test-openai-workspace-refresh.test.ts scripts/test-openai-api-refresh.test.ts scripts/test-openai-ads-refresh.test.ts scripts/test-statsig-packs.test.ts scripts/test-ona-transport.test.ts scripts/test-ona-terraform-validation.test.ts
+
+  api-terraform:
+    name: OpenAI API Terraform schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: '1.17.1'
+          terraform_wrapper: false
+      - run: terraform -chdir=packs/openai-api/terraform fmt -check -recursive
+      - run: terraform -chdir=packs/openai-api/terraform init -backend=false -input=false
+      - run: terraform -chdir=packs/openai-api/terraform validate
+
+  ona-terraform:
+    name: Ona stable Linux provider schemas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.4'
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: '1.17.1'
+          terraform_wrapper: false
+      - run: terraform -chdir=packs/ona/terraform fmt -check -recursive
+      - name: Validate independent recipes with the exact Linux-only provider
+        env:
+          TF_IN_AUTOMATION: 'true'
+        run: |
+          export TF_PLUGIN_CACHE_DIR="$RUNNER_TEMP/ona-provider-cache"
+          mkdir -p "$TF_PLUGIN_CACHE_DIR"
+          bun scripts/validate-ona-terraform.ts
+
+  statsig-terraform:
+    name: Statsig Terraform mocked plans
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: '1.17.1'
+          terraform_wrapper: false
+      - run: terraform -chdir=packs/statsig/terraform fmt -check -recursive
+      - run: terraform -chdir=packs/statsig/terraform init -backend=false -input=false
+      - run: terraform -chdir=packs/statsig/terraform validate
+      - run: terraform -chdir=packs/statsig/terraform test
