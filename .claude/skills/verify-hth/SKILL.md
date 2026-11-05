@@ -5,7 +5,13 @@ description: Run the How to Harden verification battery — content lint, cheat-
 
 # Verify HTH
 
-Seven checks, each with a command and an explicit pass condition. ALL must pass before commit. Commands run from repo root; on Windows use Git Bash (`bash ...` — the scripts carry cygpath/UTF-8 shims).
+A source-coverage reconciliation followed by seven structural checks. Complete all applicable checks before commit; a later post-deploy check does not authorize publication. Commands run from repo root; on Windows use Git Bash (`bash ...` — the scripts carry cygpath/UTF-8 shims).
+
+## Check 0 — Reconcile source coverage when content scope changes
+
+For a new guide, full currency pass or newly researched product area, read the [source-first candidate ledger](../_shared/source-discovery.md) independently of the final control list. Verify that relevant candidates are covered by actual guidance, specifically excluded under PHILOSOPHY.md, or reported as gaps/unverified areas. Check client/daemon/system-policy planes when applicable and do not require a GUI to admit a documented control. For a narrow correction, check the affected area only.
+
+**Pass:** the declared scope and candidate dispositions are evidenced, relevant documented gaps within the authorized task are resolved, and remaining research gaps are explicit. No unverified source is labeled absent. Pack/control counts below measure the authored corpus, not discovery completeness. Record this semantic check separately; the lint scripts do not perform it. Skill-only changes exercise the [behavioral cases](../_shared/evals/source-discovery/cases.md) instead of claiming vendor coverage.
 
 ## Check 1 — Repo lint suite
 

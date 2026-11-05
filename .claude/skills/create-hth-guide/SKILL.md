@@ -38,22 +38,22 @@ Know where the guide will live before researching what goes in it. Every guide s
    - the vendor's row in [`docs/research/cli-inventory.md`](../../../docs/research/cli-inventory.md) — **no row means research the vendor and add one**, not "assume no CLI";
    - SDK references, and vendor-native **config files** (agent/daemon `*.cfg`, `*.jsonc`) — for infrastructure products this is often where the real security surface lives, not in the console at all.
 5. **Fetch-verify every URL you intend to cite.** Blocked hosts (403/JS-shell) get a real-browser check. Unverifiable URL = not a source. Record verified URLs with one-line notes.
-6. **Do not stop at the first good source.** Enumerate the vendor's documentation **by product area** (identity, access, agents/runners, data, logging, integrations, billing) and confirm each area was looked at. One excellent hardening page is a starting point, never a finish line — a vendor's security surface is routinely spread across areas that no single page indexes.
-7. **Checkpoint:** you have (a) ≥1 verified Tier 1 hardening/admin doc, (b) a yes/no per Tier 2 body, (c) a short list of verified Tier 3/4 findings, **(d) a fetched-or-"none, verified" answer for each of the six automation surfaces in step 4**. If (a) is empty, STOP — a guide cannot be written without vendor configuration docs; report the gap instead of fabricating. If (d) is unanswered, Phase 2's automation column will be guesswork.
+6. **Discover candidates before choosing controls.** Follow the [shared source-discovery workflow](../_shared/source-discovery.md): enumerate relevant product areas and management planes, follow security-relevant feature/setup links, and keep a source-first candidate ledger. Include client/daemon and system-policy surfaces when they exist; a central policy/provider census does not cover them. Posture attributes and vendor incident explanations can reveal features the main hardening page omits.
+7. **Checkpoint:** you have (a) ≥1 verified Tier 1 configuration doc, (b) an evidenced result or explicit unverified gap per Tier 2 body, (c) a short list of verified Tier 3/4 findings, (d) a status for each applicable automation surface, and **(e) source-derived candidates with scope and evidence**. Use the shared workflow's documented / bounded-absence / not-applicable / unverified distinctions. If (a) is empty, report the source gap instead of fabricating a guide; continue independent research where useful. Unknown evidence is not verified absence.
 
 ## Phase 2 — Control inventory design
 
-1. List candidate controls from the Tier 1 docs: every security-relevant admin setting with its exact console path.
+1. Reconcile the source-first candidate ledger against the proposed controls. Include relevant product-controlled settings regardless of whether they live in a console, client, daemon or system policy. Record a documented implementation path or evidenced no-GUI verdict.
 2. Add controls demanded by Tier 2 baselines (each SCuBA policy / CIS recommendation that maps to a real setting).
 3. Add controls motivated by Tier 3/4 findings — but ONLY where Tier 1 documents an implementable setting for the mitigation.
-4. For each control record: name · console path · profile level (L1 Crawl = everyone, L2 Walk = security-sensitive, L3 Run = regulated, L4 Fly = maximum-assurance, rare) · **automation surfaces (plural)** · source URL(s).
+4. For each control record: name · implementation path/plane · profile level (L1 Crawl = everyone, L2 Walk = security-sensitive, L3 Run = regulated, L4 Fly = maximum-assurance, rare) · **automation surfaces (plural)** · source URL(s) · platform/version/default/prerequisite conditions.
 
-   The automation column is a **matrix, not a pick-one**. Record a verdict per surface — `terraform` (resource / data source) · `api` (REST / GraphQL) · `cli` · `sdk` · `config` · `siem` — each either a specific documented handle or `none (verified: {url})`. Never invent endpoints. Many admin surfaces are read-only: a read-only API still supports a **verification** pack, so "read-only" is not "no automation."
+   The automation column is a **matrix, not a pick-one**. Record a verdict per surface — `terraform` (resource / data source) · `api` (REST / GraphQL) · `cli` · `sdk` · `config` · `siem` — using the evidence distinctions above. Never invent endpoints or convert an inaccessible reference to `none`. Many admin surfaces are read-only: a read-only API still supports a **verification** pack, so "read-only" is not "no automation."
 
    > Writing this as a single slash-separated guess — *"Terraform/API/CLI resource IF documented"* — is what this column used to say, and it invites recording the first surface that comes to mind and moving on. Buildkite's guide was authored that way: 14 controls, one surface examined, 9 Terraform packs, 5 controls with nothing, while `bk` (GA-official, admin-capable) and the whole GraphQL mutation family sat unexamined.
 
 5. Group into numbered `## N.` sections by theme (identity → protection → data/compliance → access → monitoring is the common arc; mirror `docs/_guides/gmail.md`).
-6. **Checkpoint:** 8–20 controls, each with a verified source and a **complete** automation matrix. Fewer than 5 → consider whether the product belongs in a platform hub instead.
+6. **Checkpoint:** each selected control has a verified source and an evidenced automation matrix; each source candidate is covered, specifically excluded, or reported as a gap/unverified area. Roughly 8–20 controls is sizing guidance, not permission to drop a relevant candidate. Fewer than 5 → consider whether the product belongs in a platform hub instead.
 
    A control count is not a coverage measure — it says how many things you wrote about, never how many you can automate. Before leaving this phase, state two numbers: **how many controls have at least one real automation surface**, and **how many distinct surfaces the vendor exposes**. If every control resolves to the same single surface, you have probably enumerated one surface rather than found one.
 
@@ -76,10 +76,12 @@ Write every control with this exact anatomy (it is the cheat-sheet parser contra
 4. `#### Description` — one concrete paragraph
 5. `#### Rationale` — `**Why This Matters:**` with 2-3 bullets, then `**Attack Prevented:**` one line; add `**Real-World Incidents:**` bullets where Tier 3/4 sources support them
 6. `#### Prerequisites` — only when real (licenses, roles, dependencies)
-7. `#### ClickOps Implementation` — numbered steps with **exact** console paths in bold, transcribed from the Tier 1 doc (never from memory)
-8. `#### Code Implementation` — a pack include ONLY if a verified pack exists (create via create-code-pack). **If no pack exists, replace the heading with an explicit verdict, never with silence:**
+7. `#### ClickOps Implementation` — numbered steps with **exact** documented console paths in bold. For a genuinely CLI/config-only setting, keep the heading and cite the vendor's no-GUI limitation; identify a real MDM/deployment-console path only if documented. Put the supported operation in Code rather than inventing a menu or omitting the control.
+8. `#### Code Implementation` — a pack include ONLY if a verified pack exists (create via create-code-pack). **If no pack exists, replace the heading with the actual evidence verdict, never with silence.** For a verified absence of a write interface, for example:
 
    `**Automation:** ClickOps only — {vendor} exposes no write interface for this setting ({verified-url}, {date}).`
+
+   If documentation or access is missing, say `**Automation:** Unverified — {surface, missing evidence and precondition}` instead. Do not use the absence template for an unknown capability.
 
    Omitting both the pack and the verdict is not permitted (AGENTS.md Rule 4). A silent omission is indistinguishable from an oversight, so nobody can tell a genuinely ClickOps-only control from one whose surface was never checked — which is exactly how a guide reaches a third of its controls unautomated with every review passing.
 9. `#### Validation & Testing` — how an admin proves the control is active
