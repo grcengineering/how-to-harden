@@ -61,8 +61,9 @@
 # allowlist drift would otherwise switch the mode as a side effect. Enforce
 # therefore never defaults to the L3 mode, and never loosens a live L3 policy.
 #
-# Exit codes: 0 compliant | 1 finding, dry run with changes, or a write refused
-# after a finding | 2 precondition
+# Exit codes: 3 UNKNOWN when part of the control cannot be observed;
+# 1 finding, planned change or failed action; 2 precondition. A readable subset
+# cannot establish whole-control compliance (see common.sh, TRAP I).
 # =============================================================================
 
 set -euo pipefail
@@ -81,6 +82,7 @@ reviewed_allowlist() {
 
 # HTH Guide Excerpt: begin verify-network-policy
 verify() {
+  GB_UNPROVEN="Backend MCP Apply to MCP servers is off by default and not returned by this API; verify control 3.4 in the dashboard"
   gb_get team /grok-bot/network
   gb_require "GET /grok-bot/network" 200
   gb_shape '(.egressMode | IN("unset","allow_all","default_with_network_settings","network_settings_only"))

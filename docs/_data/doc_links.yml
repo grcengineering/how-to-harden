@@ -425,6 +425,53 @@ gmail:
     - label: "CIS Google Workspace Benchmark"
       url: "https://www.cisecurity.org/benchmark/google_workspace"
 
+grok:
+  product_docs: "https://docs.x.ai/grok/user-guide"
+  hardening_docs:
+    - label: "Organization SSO and SCIM"
+      url: "https://docs.x.ai/grok/organization"
+    - label: "Connector Management"
+      url: "https://docs.x.ai/grok/connector-management"
+
+grok-api:
+  product_docs: "https://docs.x.ai/overview"
+  api_docs: "https://docs.x.ai/developers/rest-api-reference/inference"
+  hardening_docs:
+    - label: "API Retention and Security"
+      url: "https://docs.x.ai/developers/faq/security"
+    - label: "Management Key Authorization"
+      url: "https://docs.x.ai/developers/rest-api-reference/management/auth"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/grok-api"
+
+grok-build:
+  product_docs: "https://docs.x.ai/build/overview"
+  hardening_docs:
+    - label: "Enterprise Managed Policy"
+      url: "https://docs.x.ai/build/enterprise"
+    - label: "Sandbox Configuration"
+      url: "https://docs.x.ai/build/features/sandbox"
+    - label: "Permissions"
+      url: "https://docs.x.ai/build/features/permissions"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/grok-build"
+
+cursor-cloud-agents:
+  product_docs: "https://cursor.com/docs/cloud-agent/overview"
+  api_docs: "https://cursor.com/docs/cloud-agent/api/endpoints"
+  hardening_docs:
+    - label: "Secrets and Network"
+      url: "https://cursor.com/docs/cloud-agent/security-network"
+    - label: "OIDC Identity"
+      url: "https://cursor.com/docs/cloud-agent/identity"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/cursor-cloud-agents"
+
+cursor-origin:
+  product_docs: "https://cursor.com/docs/origin"
+  api_docs: "https://cursor.com/docs/api/origin"
+  hardening_docs:
+    - label: "Access and Protection Settings"
+      url: "https://cursor.com/docs/origin/settings"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/cursor-origin"
+
 grok-bot:
   product_docs: "https://docs.x.ai/grok-bot/bots"
   api_docs:
@@ -433,7 +480,11 @@ grok-bot:
     - label: "Cursor Organization API: Grok Bot Computers"
       url: "https://cursor.com/docs/account/organizations/organization-admin-api#grok-bot-computers"
   hardening_docs:
-    - label: "Grok Bot Security (xAI)"
+    - label: "Inference Hook Configuration"
+      url: "https://docs.x.ai/grok-bot/inference-hooks"
+    - label: "Shared Bot Access and Slack"
+      url: "https://docs.x.ai/grok-bot/shared-bots"
+    - label: "Grok Bot Security (SpaceXSI)"
       url: "https://docs.x.ai/grok-bot/security"
     - label: "Recommended Configuration for Teams and Enterprises (xAI)"
       url: "https://docs.x.ai/grok-bot/teams-and-enterprises#recommended-configuration"

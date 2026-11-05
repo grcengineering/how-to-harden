@@ -96,7 +96,7 @@ A guide can be `ai-drafted` and `ni-drafted` at once. Holding both `ai-validated
 
 **Both agents at the same stage is the strongest thing this vocabulary can express.** `ai-validated` + `ni-validated` means the guidance survived contact with a real system twice, once under machine rigour and once under human judgement, and the two failure modes those catch barely overlap. There is no seventh status above it; combining is how the matrix expresses "better".
 
-**Where the corpus actually stands: no guide holds any `ni-*` status.** All 142 guides are `ai-drafted`; nineteen of them (Anthropic Platform, Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
+**Where the corpus actually stands: no guide holds any `ni-*` status.** All 147 guides are `ai-drafted`; nineteen of them (Anthropic Platform, Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
 
 #### The version qualifier
 
@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-11-05 — 142 guides. Every one is `ai-drafted`; nineteen (Anthropic Platform, Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-11-05 — 147 guides. Every one is `ai-drafted`; nineteen (Anthropic Platform, Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -178,7 +178,9 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.2.0 | ai-drafted | 2026-08-15 |
 | [Cloudflare Zero Trust](docs/_guides/cloudflare.md) | v0.2.3 | ai-drafted · ai-validated | 2026-09-25 |
 | [CrowdStrike Falcon](docs/_guides/crowdstrike.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Cursor](docs/_guides/cursor.md) | v0.5.2 | ai-drafted | 2026-10-10 |
+| [Cursor / SpaceXSI Common Controls](docs/_guides/cursor.md) | v0.6.0 | ai-drafted | 2026-11-05 |
+| [Cursor Cloud Agents](docs/_guides/cursor-cloud-agents.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [Cursor Origin](docs/_guides/cursor-origin.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Datadog](docs/_guides/datadog.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Devin & Cognition](docs/_guides/devin.md) | v0.1.0 | ai-drafted | 2026-10-30 |
 | [GitHub](docs/_guides/github.md) | v0.7.2 | ai-drafted · ai-validated | 2026-09-24 |
@@ -186,7 +188,10 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Google Chat](docs/_guides/google-chat.md) | v0.3.0 | ai-drafted | 2026-08-12 |
 | [Google Drive](docs/_guides/google-drive.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Google Workspace](docs/_guides/google-workspace.md) | v0.4.1 | ai-drafted | 2026-08-08 |
-| [Grok Bot](docs/_guides/grok-bot.md) | v0.1.1 | ai-drafted | 2026-10-10 |
+| [Grok](docs/_guides/grok.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [Grok API](docs/_guides/grok-api.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [Grok Bot](docs/_guides/grok-bot.md) | v0.2.0 | ai-drafted | 2026-11-05 |
+| [Grok Build](docs/_guides/grok-build.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [HashiCorp Vault](docs/_guides/hashicorp-vault.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Idira (formerly CyberArk)](docs/_guides/cyberark.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [LangChain](docs/_guides/langchain.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
@@ -203,7 +208,6 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Slack](docs/_guides/slack.md) | v0.3.0 | ai-drafted | 2026-09-25 |
 | [Snowflake](docs/_guides/snowflake.md) | v0.4.1 | ai-drafted | 2026-08-08 |
 | [Splunk Cloud](docs/_guides/splunk.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Statsig](docs/_guides/statsig.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Stripe](docs/_guides/stripe.md) | v0.3.0 | ai-drafted · ai-validated | 2026-09-24 |
 | [Zscaler](docs/_guides/zscaler.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 
@@ -310,6 +314,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [LaunchDarkly](docs/_guides/launchdarkly.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Mailchimp](docs/_guides/mailchimp.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Miro](docs/_guides/miro.md) | v0.3.0 | ai-drafted | 2026-09-25 |
+| [Statsig](docs/_guides/statsig.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Tableau](docs/_guides/tableau.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Zendesk](docs/_guides/zendesk.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 

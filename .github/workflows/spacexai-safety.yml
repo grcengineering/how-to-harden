@@ -1,0 +1,85 @@
+name: SpaceXSI Pack Safety
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/spacexai-safety.yml'
+      - 'scripts/test-spacexai-refresh-packs.ts'
+      - 'scripts/test-grok-build-packs.ts'
+      - 'packs/cursor/**'
+      - 'packs/grok-bot/**'
+      - 'packs/grok-api/**'
+      - 'packs/grok-build/**'
+      - 'packs/cursor-cloud-agents/**'
+      - 'packs/cursor-origin/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/spacexai-safety.yml'
+      - 'scripts/test-spacexai-refresh-packs.ts'
+      - 'scripts/test-grok-build-packs.ts'
+      - 'packs/cursor/**'
+      - 'packs/grok-bot/**'
+      - 'packs/grok-api/**'
+      - 'packs/grok-build/**'
+      - 'packs/cursor-cloud-agents/**'
+      - 'packs/cursor-origin/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spacexai-safety-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-packs:
+    name: SpaceXSI Offline Pack Boundaries
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.4'
+      - name: Require pack shell dependencies
+        run: |
+          command -v bash
+          command -v jq
+          command -v base64
+      - name: Run synthetic transport and native-config regression tests
+        # These suites stub vendor transports/CLIs and pass synthetic inputs only.
+        run: bun test ./scripts/test-spacexai-refresh-packs.ts ./scripts/test-grok-build-packs.ts
+
+  cursor-schema:
+    name: Cursor Terraform Schema (${{ matrix.product }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        product: [cursor-origin, cursor-cloud-agents]
+    env:
+      TF_IN_AUTOMATION: '1'
+      TF_INPUT: '0'
+      # No vendor credentials or Terraform cloud credentials are provided.
+      TF_CLI_CONFIG_FILE: /dev/null
+      CURSOR_TOKEN: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: '1.17.1'
+          terraform_wrapper: false
+      - name: Check native Terraform formatting
+        run: terraform -chdir=packs/${{ matrix.product }}/terraform fmt -check -recursive
+      - name: Initialize pinned cursor/cursor 0.8.0 schema
+        # Provider download/schema reads only; no Configure, plan, apply or import.
+        run: terraform -chdir=packs/${{ matrix.product }}/terraform init -backend=false -input=false
+      - name: Validate configuration against installed provider schema
+        run: terraform -chdir=packs/${{ matrix.product }}/terraform validate

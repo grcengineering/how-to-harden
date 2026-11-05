@@ -78,9 +78,9 @@
 # verbatim and flags EVERY destination change rather than string-matching a
 # family name; a delete and enabled=false are called out by name.
 #
-# Exit codes: 0 exported (flagged changes are printed for review; the RESULT
-# line names what stays unproven) | 1 flagged changes present and
-# HTH_FAIL_ON_FLAGGED=1 | 2 precondition
+# Exit codes: 3 UNKNOWN when part of the control cannot be observed;
+# 1 finding, planned change or failed action; 2 precondition. A readable subset
+# cannot establish whole-control compliance (see common.sh, TRAP I).
 # =============================================================================
 
 set -euo pipefail
