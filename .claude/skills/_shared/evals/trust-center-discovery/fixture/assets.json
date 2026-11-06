@@ -1,0 +1,9 @@
+{
+  "assets": [
+    {
+      "path": "/app.js",
+      "sha256": "fixture-digest"
+    }
+  ],
+  "kind": "asset-integrity-manifest"
+}

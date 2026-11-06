@@ -1,0 +1,63 @@
+{
+  "resources": {
+    "categories": [
+      {
+        "name": "Best Practices",
+        "items": [
+          {
+            "id": "101",
+            "title": "Lumen Collaboration Security Best Practices",
+            "isPublic": true,
+            "hasAccess": true,
+            "isViewOnly": false,
+            "url": "https://trust.lumen.invalid/doc/101",
+            "downloadUrl": "https://trust.lumen.invalid/download/101"
+          }
+        ]
+      },
+      {
+        "name": "Assurance",
+        "items": [
+          {
+            "id": "201",
+            "title": "Lumen SOC 3 report",
+            "isPublic": true,
+            "hasAccess": true,
+            "isViewOnly": false,
+            "url": "https://trust.lumen.invalid/doc/201",
+            "downloadUrl": "https://trust.lumen.invalid/download/201"
+          }
+        ]
+      },
+      {
+        "name": "HIPAA",
+        "items": [
+          {
+            "id": "401",
+            "title": "HIPAA-Ready Secure Implementation Guide",
+            "isPublic": false,
+            "hasAccess": false,
+            "isViewOnly": false,
+            "url": "https://trust.lumen.invalid/doc/401",
+            "downloadUrl": "https://trust.lumen.invalid/download/401"
+          }
+        ]
+      },
+      {
+        "name": "Deployment",
+        "items": [
+          {
+            "id": "501",
+            "title": "Enterprise Secure Deployment Guide",
+            "isPublic": true,
+            "hasAccess": true,
+            "isViewOnly": false,
+            "url": "https://trust.lumen.invalid/doc/501",
+            "downloadUrl": "https://trust.lumen.invalid/download/501"
+          }
+        ]
+      }
+    ]
+  },
+  "next": "https://trust.lumen.invalid/json?page=2"
+}

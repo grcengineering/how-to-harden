@@ -18,6 +18,10 @@ Not every product has every plane. Record what was checked and the evidence for 
 
 An attribute reporting whether product identity state is protected is a discovery lead: follow it to the feature and setup documentation. Reading that attribute does not configure the protection. A generic posture control covers it only if the actual guidance addresses that requirement and its enforcement limits.
 
+## Search vendor Trust Centers, not only docs indexes
+
+For hardening research, follow the [Trust Center discovery workflow](trust-center-discovery.md). Locate a verified vendor portal or record the bounded unsuccessful search; inspect the public catalog and known structured indexes, relevant categories/pages and adjacent product/government baselines. Read candidate documents and record access/content/applicability separately. Do not stop at a single linked resource or reject real customer configuration guidance because of its Trust Center hostname. Catalog metadata is not configuration evidence.
+
 ## Keep a source-first candidate ledger
 
 Record candidates while reading sources, **before** selecting the final control list. Keep the evidence with the research (for example, `docs/research/{slug}-source-coverage.md`); a compact table is sufficient. Do not generate this inventory solely by parsing the authored guide back into a source matrix.
@@ -28,7 +32,7 @@ Record candidates while reading sources, **before** selecting the final control 
 
 Group related recommendations into one control when appropriate; one source row need not mean one control. Retain relevant candidates that cannot yet be verified instead of silently dropping them.
 
-For each source, retain the checked date, retrieval method and a content-specific observation or snapshot reference. Log failed attempts and successful fallbacks distinctly. A URL in a bibliography, a page title, or HTTP 200 alone does not show that the claimed content was read. An unavailable page must not become a successful verification record through later metadata generation.
+For each source, retain the checked date, retrieval method and a content-specific observation or snapshot reference. For Trust Center research, retain the portal → catalog → document chain and the categories/pages/filters checked; document identity and product applicability must come from the actual content. Log failed attempts and successful fallbacks distinctly. A URL in a bibliography, a page title, or HTTP 200 alone does not show that the claimed content was read. An unavailable page must not become a successful verification record through later metadata generation.
 
 ## Resolve scope and implementation honestly
 

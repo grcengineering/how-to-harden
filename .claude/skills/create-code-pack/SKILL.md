@@ -11,7 +11,7 @@ A step-by-step process for shipping code under `packs/{vendor}/{type}/` that is 
 
 > **This phase asks "what are ALL the ways to automate this?" — never "does an interface exist?"** The old wording said *identify **the** claimed interface*, and an existence gate is satisfied by the first surface an agent thinks of. That is how Buildkite shipped 9 packs that were 100% Terraform while its real security surface lived in agent config files and GraphQL, and how 14 vendors ended up with a single-type pack corpus. Enumeration is the fix; everything downstream depends on it.
 
-1. Name the control the pack serves (guide + section number).
+1. Name the control the pack serves (guide + section number). For hardening research, check the [Trust Center workflow](../_shared/trust-center-discovery.md) for secure-implementation/deployment guides as well as interface docs. Reuse an evidenced, still-applicable catalog search from the current task rather than repeating it per pack. A regulatory/adjacent-product PDF is a lead: verify its actual product, current flags/API schema and access conditions before turning it into executable code.
 2. **Census every surface** for the control, following the [shared evidence and management-plane distinctions](../_shared/source-discovery.md). Record documented handles, bounded verified absence, not-applicable scope, or an unverified gap for each row:
 
    | Surface | What to enumerate | Where |

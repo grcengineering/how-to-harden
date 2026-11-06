@@ -1,0 +1,117 @@
+{
+  "https://docs.lumen.invalid/": {
+    "file": "index.md",
+    "status": 200,
+    "contentType": "text/markdown"
+  },
+  "https://docs.lumen.invalid/identity": {
+    "file": "identity.md",
+    "status": 200,
+    "contentType": "text/markdown"
+  },
+  "https://docs.lumen.invalid/audit": {
+    "file": "audit.md",
+    "status": 200,
+    "contentType": "text/markdown"
+  },
+  "https://docs.lumen.invalid/client": {
+    "file": "client.md",
+    "status": 200,
+    "contentType": "text/markdown"
+  },
+  "https://docs.lumen.invalid/releases": {
+    "file": "releases.md",
+    "status": 200,
+    "contentType": "text/markdown"
+  },
+  "https://trust.lumen.invalid/": {
+    "file": "portal.html",
+    "status": 200,
+    "contentType": "text/html"
+  },
+  "https://trust.lumen.invalid/json?page=1": {
+    "file": "catalog-1.json",
+    "status": 200,
+    "contentType": "application/json"
+  },
+  "https://trust.lumen.invalid/json?page=2": {
+    "file": "catalog-2.json",
+    "status": 200,
+    "contentType": "application/json"
+  },
+  "https://trust.lumen.invalid/assets.json": {
+    "file": "assets.json",
+    "status": 200,
+    "contentType": "application/json"
+  },
+  "https://trust.lumen.invalid/doc/101": {
+    "file": "documents/101.md",
+    "status": 200,
+    "contentType": "text/markdown"
+  },
+  "https://trust.lumen.invalid/download/101": {
+    "file": "documents/101.md",
+    "status": 200,
+    "contentType": "application/pdf (provided extracted-text capture)"
+  },
+  "https://trust.lumen.invalid/doc/201": {
+    "file": "documents/201.md",
+    "status": 200,
+    "contentType": "text/markdown"
+  },
+  "https://trust.lumen.invalid/download/201": {
+    "file": "documents/201.md",
+    "status": 200,
+    "contentType": "application/pdf (provided extracted-text capture)"
+  },
+  "https://trust.lumen.invalid/doc/301": {
+    "file": "documents/301.md",
+    "status": 200,
+    "contentType": "text/markdown"
+  },
+  "https://trust.lumen.invalid/download/301": {
+    "file": "documents/301.md",
+    "status": 200,
+    "contentType": "application/pdf (provided extracted-text capture)"
+  },
+  "https://trust.lumen.invalid/doc/302": {
+    "file": "documents/302.md",
+    "status": 200,
+    "contentType": "text/markdown"
+  },
+  "https://trust.lumen.invalid/download/302": {
+    "file": "documents/302.md",
+    "status": 200,
+    "contentType": "application/pdf (provided extracted-text capture)"
+  },
+  "https://trust.lumen.invalid/doc/601": {
+    "file": "documents/601.json",
+    "status": 200,
+    "contentType": "application/json"
+  },
+  "https://trust.lumen.invalid/download/601": {
+    "file": "documents/601.json",
+    "status": 200,
+    "contentType": "application/json"
+  },
+  "https://trust.lumen.invalid/doc/401": {
+    "file": "sign-in.html",
+    "status": 401,
+    "contentType": "text/html"
+  },
+  "https://trust.lumen.invalid/download/401": {
+    "file": "sign-in.html",
+    "status": 401,
+    "contentType": "text/html"
+  },
+  "https://trust.lumen.invalid/doc/501": {
+    "file": "sign-in.html",
+    "status": 200,
+    "contentType": "text/html"
+  },
+  "https://trust.lumen.invalid/download/501": {
+    "file": "sign-in.html",
+    "status": 200,
+    "contentType": "text/html"
+  }
+}

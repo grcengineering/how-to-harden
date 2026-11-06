@@ -28,6 +28,8 @@ jobs:
         with:
           bun-version: '1.4.4'
       - run: make lint-content
+      - name: Source-discovery fixture integrity (offline)
+        run: make test-source-discovery-fixtures
       - name: Factory pack safety tests (offline)
         run: make test-factory-packs
       - name: Tailscale pack safety tests (offline)
