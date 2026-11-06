@@ -316,6 +316,16 @@ factory:
       url: "https://docs.factory.com/enterprise/llm-safety-and-agent-controls"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/factory"
 
+fenic:
+  product_docs: "https://docs.fenic.ai/"
+  api_docs: "https://docs.fenic.ai/latest/reference/fenic/api/session/config/"
+  hardening_docs:
+    - label: "Native Session Configuration"
+      url: "https://docs.fenic.ai/latest/reference/fenic/api/session/config/"
+    - label: "MCP Tool Exposure"
+      url: "https://docs.fenic.ai/latest/topics/fenic-mcp/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/fenic"
+
 figma:
   product_docs: "https://help.figma.com/hc/en-us"
   api_docs: "https://developers.figma.com/docs/rest-api/"
@@ -550,6 +560,15 @@ hubspot:
     - label: "Account Security & Passwords"
       url: "https://knowledge.hubspot.com/account-security/account-security-and-passwords"
 
+humanlayer:
+  product_docs: "https://docs.humanlayer.com/"
+  hardening_docs:
+    - label: "Daemon Authentication & Persistence"
+      url: "https://docs.humanlayer.com/explanation/remote-daemons"
+    - label: "Workspace Configuration"
+      url: "https://docs.humanlayer.com/reference/workspace-config"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/humanlayer"
+
 intercom:
   product_docs: "https://www.intercom.com/help/en/"
   api_docs: "https://developers.intercom.com/"
@@ -735,6 +754,12 @@ mimecast:
   product_docs: "https://mimecastsupport.zendesk.com/hc/en-us"
   api_docs: "https://developer.services.mimecast.com/"
   hardening_docs: "https://mimecastsupport.zendesk.com/hc/en-us/articles/34000804127251-Authentication-Profiles-Configuring-Authentication-Profiles"
+
+mentlio:
+  product_docs: "https://www.mentlio.com/docs"
+  hardening_docs:
+    - label: "Agent, Integration & Access Configuration"
+      url: "https://www.mentlio.com/docs"
 
 miro:
   product_docs: "https://help.miro.com/hc/en-us"
