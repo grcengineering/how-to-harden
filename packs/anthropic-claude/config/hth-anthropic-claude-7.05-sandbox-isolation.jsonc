@@ -1,6 +1,6 @@
 // HTH Anthropic Claude Control 7.5: Enforce Bash Sandbox Isolation
 // Profile: L2 | NIST: SC-39, CM-7 | SOC 2: CC6.1, CC6.8
-// https://howtoharden.com/guides/anthropic-claude/#75-enforce-bash-sandbox-isolation
+// https://howtoharden.com/guides/claude-code/#31-enforce-bash-sandbox-isolation
 //
 // Sandbox settings for managed-settings.json
 // Enforces OS-level filesystem and network isolation for all Bash commands.
@@ -17,7 +17,7 @@
       "failIfUnavailable": true,
       "autoAllowBashIfSandboxed": false,
       "allowUnsandboxedCommands": false,
-      "excludedCommands": ["docker", "git"],
+      "excludedCommands": [],
       "filesystem": {
         "denyRead": [
           "~/.aws/credentials",

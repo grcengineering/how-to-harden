@@ -1,44 +1,21 @@
 #!/usr/bin/env bash
-# HTH Anthropic Claude Control 5.2: Configure Spend Limits per Workspace
-# Profile: L1 | NIST: SA-9, SI-4 | SOC 2: CC7.2, CC6.8
-# https://howtoharden.com/guides/anthropic-claude/#52-configure-spend-limits-per-workspace
-#
-# Note: Spend limits are configured via the Claude Console (Settings > Limits).
-# The Admin API does not currently expose spend limit configuration endpoints.
-# This script monitors cost to detect when limits should be adjusted.
+# HTH Pack Contract: v1
+#   control: anthropic-api-4.2
+#   guide: https://howtoharden.com/guides/anthropic-api/#42-configure-spend-limits-per-workspace
+#   profile: L1
+#   mode: read-only
+#   requires: ANTHROPIC_ADMIN_KEY(Console admin credential), WORKSPACE_ID
+# Source: https://github.com/anthropics/anthropic-sdk-typescript/blob/main/src/resources/organization/workspaces/rate-limits.ts
+# This proves rate limits, not spend-cap enforcement; set spend caps in Console.
+set -euo pipefail
 source "$(dirname "$0")/common.sh"
-
-banner "5.2: Configure Spend Limits per Workspace"
-require_admin_key
-
-# HTH Guide Excerpt: begin api-cost-anomaly
-# Check for cost anomalies — alert if any workspace exceeds a threshold
-THRESHOLD_USD="${THRESHOLD_USD:-1000}"
-PERIOD_DAYS="${PERIOD_DAYS:-7}"
-
-START_DATE=$(date -d "${PERIOD_DAYS} days ago" '+%Y-%m-%dT00:00:00Z' 2>/dev/null || \
-             date -v-"${PERIOD_DAYS}"d '+%Y-%m-%dT00:00:00Z' 2>/dev/null)
-END_DATE=$(date '+%Y-%m-%dT23:59:59Z')
-
-info "Checking for workspaces exceeding \$${THRESHOLD_USD} in the past ${PERIOD_DAYS} days..."
-COST=$(anthropic_get "/v1/organizations/cost_report?start_time=${START_DATE}&end_time=${END_DATE}&group_by=workspace") || {
-  fail "5.2 Failed to fetch cost report"
-  summary; exit 0
-}
-
-# Aggregate cost per workspace
-OVER_THRESHOLD=$(echo "${COST}" | jq --argjson threshold "${THRESHOLD_USD}" '
-  [.data | group_by(.workspace_id)[] |
-   {workspace: .[0].workspace_id, total: ([.[].cost_usd] | add)} |
-   select(.total > $threshold)]')
-
-ALERT_COUNT=$(echo "${OVER_THRESHOLD}" | jq 'length')
-if [[ "${ALERT_COUNT}" -gt 0 ]]; then
-  warn "5.2 ${ALERT_COUNT} workspace(s) exceed \$${THRESHOLD_USD} threshold:"
-  echo "${OVER_THRESHOLD}" | jq -r '.[] | "  \(.workspace) — $\(.total)"'
-else
-  pass "5.2 No workspaces exceed \$${THRESHOLD_USD} threshold in ${PERIOD_DAYS}-day window"
-fi
-# HTH Guide Excerpt: end api-cost-anomaly
-
-summary
+# HTH Guide Excerpt: begin workspace-rate-limit-readback
+: "${WORKSPACE_ID:?Use an explicit named workspace ID}"
+[[ "${WORKSPACE_ID}" =~ ^wrkspc_[A-Za-z0-9]+$ ]] || exit 2
+ANTHROPIC_VERSION=2026-10-21
+evidence=$(anthropic_evidence_dir)
+trap 'rm -f "${evidence}/rate-limits.pending"' EXIT
+anthropic_page_token_all "/v1/organizations/workspaces/${WORKSPACE_ID}/rate_limits?include_inherited=true&limit=1000" > "${evidence}/rate-limits.pending"
+mv "${evidence}/rate-limits.pending" "${evidence}/rate-limits.json"
+printf 'Private rate-limit evidence: %s. Check the workspace Spend limits tab separately; this GET sets no cap.\n' "${evidence}/rate-limits.json"
+# HTH Guide Excerpt: end workspace-rate-limit-readback

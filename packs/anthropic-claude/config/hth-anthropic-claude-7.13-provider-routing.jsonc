@@ -1,0 +1,27 @@
+// Claude Code 1.4: Mutually exclusive provider environment examples.
+// Profile: L3 | NIST: AC-6, CM-6, AU-2 | SOC 2: CC6.1, CC7.2
+// https://howtoharden.com/guides/claude-code/#14-reconcile-federal-deployment-guidance-with-current-provider-routing
+// Sources checked 2026-11-05: code.claude.com/docs/en/amazon-bedrock,
+// google-vertex-ai, data-usage. Replace approved profile/project/region before deployment.
+// A region does not establish authorization; current model availability must be verified.
+// HTH Guide Excerpt: begin code-bedrock-managed-environment
+{
+  "env": {
+    "CLAUDE_CODE_USE_BEDROCK": "1",
+    "AWS_PROFILE": "REPLACE-WITH-APPROVED-GOVCLOUD-PROFILE",
+    "AWS_REGION": "us-gov-west-1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  }
+}
+// HTH Guide Excerpt: end code-bedrock-managed-environment
+// HTH Guide Excerpt: begin code-google-managed-environment
+// Separate choice, not merged with the Bedrock example. Use current authorized region/model.
+{
+  "env": {
+    "CLAUDE_CODE_USE_VERTEX": "1",
+    "ANTHROPIC_VERTEX_PROJECT_ID": "REPLACE-WITH-APPROVED-PROJECT",
+    "CLOUD_ML_REGION": "REPLACE-WITH-APPROVED-REGION",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  }
+}
+// HTH Guide Excerpt: end code-google-managed-environment

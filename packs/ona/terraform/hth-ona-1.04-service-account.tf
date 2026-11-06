@@ -1,3 +1,5 @@
+# Stable schema reconciliation: https://github.com/gitpod-io/terraform-provider-ona/tree/v0.5.1/docs
+# Source review is not provider apply/tenant validation.
 # =============================================================================
 # HTH Pack Contract: v1
 #   control: ona-1.4
@@ -11,10 +13,10 @@
 # Frameworks: CIS Controls 5.4, 16.9 | NIST 800-53 IA-5, AC-2 | SOC 2 CC6.1
 # Source: https://howtoharden.com/guides/ona/#14-harden-service-accounts-and-personal-access-tokens
 #
-# PROVIDER BLOCK LIVES IN hth-ona-1.01-configure-sso.tf.
+# Shared provider configuration: copy versions.tf once into the module.
 #
-# Transcribed from registry docs fetched 2026-08-19:
-#   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/service_account                 (doc 13236812)
+# Original schema transcribed 2026-08-19; current stable source re-read 2026-11-05:
+#   https://registry.terraform.io/providers/gitpod-io/ona/0.5.1/docs/resources/service_account                 (doc 13236812)
 #   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/ephemeral-resources/service_account_token (doc 13236822)
 # both for provider-version 105656 = 0.4.0-beta.1.
 #

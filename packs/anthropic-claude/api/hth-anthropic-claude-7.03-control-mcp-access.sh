@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH Anthropic Claude Control 7.3: Control MCP Server Access
 # Profile: L2 | NIST: CM-7, SA-9 | SOC 2: CC6.6, CC9.2
-# https://howtoharden.com/guides/anthropic-claude/#73-control-mcp-server-access
+# https://howtoharden.com/guides/claude-code/#21-control-mcp-server-access
 #
 # Validates MCP server restrictions: managed-mcp.json (exclusive control) and
 # the allowlist/denylist in the file-based managed settings (managed-settings.json
@@ -27,7 +27,6 @@ else
     *) fail "7.3 Unknown OS — cannot locate the managed settings directory"; summary; exit 1 ;;
   esac
 fi
-
 # managed-mcp.json takes exclusive control: users cannot add other servers
 EXCLUSIVE=0
 MCP_PATH="${MANAGED_DIR}/managed-mcp.json"
@@ -43,7 +42,6 @@ if [[ -f "${MCP_PATH}" ]]; then
 else
   info "7.3 No managed-mcp.json — checking the allowlist/denylist in managed settings"
 fi
-
 # Managed settings: base file first, then drop-ins in alphabetical order
 SOURCES=()
 if [[ -f "${MANAGED_DIR}/managed-settings.json" ]]; then
@@ -53,7 +51,6 @@ LC_COLLATE=C
 for f in "${MANAGED_DIR}/managed-settings.d/"*.json; do
   if [[ -f "${f}" ]]; then SOURCES+=("${f}"); fi
 done
-
 if [[ ${#SOURCES[@]} -eq 0 ]]; then
   if [[ ${EXCLUSIVE} -eq 1 ]]; then
     info "7.3 No managed settings file — MCP is governed by managed-mcp.json alone"
@@ -64,7 +61,6 @@ if [[ ${#SOURCES[@]} -eq 0 ]]; then
   if [[ ${FAILED} -eq 0 ]]; then exit 0; fi
   exit 1
 fi
-
 MERGED=$(jq -s '
   def m($a; $b):
     if ($a|type) == "object" and ($b|type) == "object" then
@@ -75,20 +71,16 @@ MERGED=$(jq -s '
   fail "7.3 A managed settings file is not valid JSON"; summary; exit 1
 }
 merged() { printf '%s' "${MERGED}" | jq "$@"; }
-
 ALLOWED=$(merged '.allowedMcpServers // [] | length')
 DENIED=$(merged '.deniedMcpServers // [] | length')
 LOCKED=$(merged -r '.allowManagedMcpServersOnly // false')
 info "MCP allowlist: ${ALLOWED} servers, denylist: ${DENIED} servers, allowManagedMcpServersOnly: ${LOCKED}"
-
 if [[ ${EXCLUSIVE} -eq 0 ]] && [[ "${ALLOWED}" -eq 0 ]] && [[ "${DENIED}" -eq 0 ]]; then
   fail "7.3 No managed-mcp.json, allowlist, or denylist — all MCP servers are permitted"
 fi
-
 if [[ "${DENIED}" -gt 0 ]]; then
   pass "7.3 MCP deny rules configured (${DENIED} servers blocked)"
 fi
-
 if [[ "${ALLOWED}" -gt 0 ]]; then
   if [[ "${LOCKED}" == "true" ]]; then
     pass "7.3 MCP allowlist configured and authoritative (${ALLOWED} servers approved)"
@@ -100,11 +92,9 @@ if [[ "${ALLOWED}" -gt 0 ]]; then
 elif [[ "${DENIED}" -gt 0 ]] && [[ ${EXCLUSIVE} -eq 0 ]]; then
   warn "7.3 Denylist only — any MCP server not on the denylist is permitted"
 fi
-
 if [[ "${LOCKED}" == "true" ]] && [[ "${ALLOWED}" -eq 0 ]] && [[ ${EXCLUSIVE} -eq 0 ]]; then
   warn "7.3 allowManagedMcpServersOnly is true but no managed allowedMcpServers list was found in these files"
 fi
-
 # jq's // treats false as missing, so read the boolean explicitly
 AUTO_APPROVE=$(merged -r 'if .enableAllProjectMcpServers == null then "not set" else .enableAllProjectMcpServers end')
 if [[ "${AUTO_APPROVE}" == "true" ]]; then

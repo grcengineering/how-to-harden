@@ -1,101 +1,76 @@
 #!/usr/bin/env bash
-# HTH ChatGPT Enterprise Control 6.3: Continuously Stream Compliance Logs to SIEM
-# Profile: L2 | NIST: AU-6, AU-12 | SOC 2: CC7.2, CC7.3
-# https://howtoharden.com/guides/chatgpt-enterprise/#63-stream-compliance-api-logs-to-siem
-#
-# Compliance Logs Platform retains 30 days. Continuous export is mandatory
-# for SOX/HIPAA/PCI scope and for any retention beyond 30 days. This script
-# walks every documented event_type, persists each log file as JSONL, and
-# advances a checkpoint so re-runs resume from last_end_time.
-#
-# Forward the OUT_DIR to Splunk via the universal forwarder, to Microsoft
-# Sentinel via the Custom Logs DCR, or to any SIEM that ingests JSONL.
-
-source "$(dirname "$0")/common.sh"
-
-banner "6.3: Stream Compliance Logs to SIEM"
-require_compliance_key
-
-OUT_DIR="${OUT_DIR:-./compliance-export}"
-CHECKPOINT_DIR="${CHECKPOINT_DIR:-./compliance-checkpoints}"
-mkdir -p "${OUT_DIR}" "${CHECKPOINT_DIR}"
-
-# Event types documented in OpenAI's Workspace Agents Security Overview
-# (April 29, 2026): "agent lifecycle events, run creation/completion/failure,
-# agent-authored messages, connector call requested/completed events,
-# connector OAuth resolution, skill use, trigger create/update/delete, and
-# memory read/write/delete." Plus the general Compliance Logs Platform
-# event families documented in the cookbook.
-# Sources:
-#   https://cdn.openai.com/business/workspace-agents-security-overview.pdf
-#   https://developers.openai.com/cookbook/examples/chatgpt/compliance_api/logs_platform
-EVENT_TYPES=(
-  AUTH_LOG
-  CONVERSATION_LOG
-  FILE_LOG
-  GPT_LOG
-  MEMORY_LOG
-  USER_LOG
-  agent.lifecycle
-  agent.run
-  agent.message
-  connector.call.requested
-  connector.call.completed
-  connector.oauth.resolved
-  skill.used
-  trigger.created
-  trigger.updated
-  trigger.deleted
-  memory.read
-  memory.write
-  memory.delete
-)
-
-# HTH Guide Excerpt: begin api-stream-siem
-# For each event type, resume from the last checkpoint (or 30 days back on
-# first run, the platform retention boundary), pull all available log files,
-# download each, then advance the checkpoint to last_end_time.
-DEFAULT_START="$(date -u -v-30d +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '30 days ago' +%Y-%m-%dT%H:%M:%SZ)"
-
-for event_type in "${EVENT_TYPES[@]}"; do
-  cp_file="${CHECKPOINT_DIR}/${event_type}.cursor"
-  cursor="${DEFAULT_START}"
-  [[ -f "${cp_file}" ]] && cursor="$(cat "${cp_file}")"
-
-  info "Pulling ${event_type} since ${cursor}"
+# HTH Pack Contract: v1
+#   control: chatgpt-enterprise-6.6
+#   guide: https://howtoharden.com/guides/chatgpt-enterprise/#66-stream-compliance-platform-logs-to-siem
+#   profile: L2
+#   mode: read-only
+#   requires: bash, curl, jq; CHATGPT_ADMIN_KEY, CHATGPT_WORKSPACE_ID, HTH_LOG_DIR, HTH_AFTER; HTH_EVENT_TYPES optional
+# Current official list/download contract fetched 2026-11-05:
+# https://developers.openai.com/downloads/compliance-api/download_compliance_files.sh
+# Event family support: https://learn.chatgpt.com/docs/enterprise/dots-admin-guide
+# Reads workspace logs and writes private LOCAL evidence/checkpoints only.
+# No live policy checks, lifecycle inference, writes to OpenAI or automatic SIEM send.
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
+hth_require
+[[ -n "${HTH_LOG_DIR:-}" && "$HTH_LOG_DIR" = /* ]] || hth_die 'set HTH_LOG_DIR to a private absolute output directory'
+[[ ! -L "$HTH_LOG_DIR" ]] || hth_die 'output directory must not be a symlink'
+[[ "${HTH_AFTER:-}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] || hth_die 'set HTH_AFTER to UTC ISO8601 (YYYY-MM-DDTHH:MM:SSZ)'
+jq -en --arg t "$HTH_AFTER" '$t | fromdateiso8601' >/dev/null || hth_die 'invalid start timestamp'
+mkdir -p "$HTH_LOG_DIR"
+chmod 700 "$HTH_LOG_DIR"
+work="$(mktemp -d "$HTH_LOG_DIR/.pull.XXXXXX")"
+trap 'rm -rf "$work"' EXIT
+# HTH Guide Excerpt: begin export-workspace-logs
+HTH_PROFILE_LEVEL="${HTH_PROFILE_LEVEL:-1}"
+[[ "$HTH_PROFILE_LEVEL" =~ ^[1234]$ && "$HTH_PROFILE_LEVEL" -ge 2 ]] || { echo 'This pack requires profile 2 or higher (1-4)' >&2; exit 2; }
+# Explicit authorized log families only. No invented agent.run/connector.* enums.
+IFS=',' read -r -a families <<< "${HTH_EVENT_TYPES:-AUTH_LOG,CODEX_LOG}"
+[[ "${#families[@]}" -gt 0 ]] || hth_die 'at least one event family required'
+for family in "${families[@]}"; do
+  [[ "$family" =~ ^[A-Z][A-Z0-9_]+$ ]] || hth_die 'event families must be comma-separated uppercase names'
+  checkpoint="$HTH_LOG_DIR/${family}.checkpoint"
+  [[ ! -L "$checkpoint" ]] || hth_die 'checkpoint must not be a symlink'
+  after="$HTH_AFTER"
+  if [[ -f "$checkpoint" ]]; then
+    after="$(cat "$checkpoint")"
+    jq -en --arg t "$after" '$t | fromdateiso8601' >/dev/null || hth_die 'invalid checkpoint'
+  fi
+  pages=0
   while :; do
-    resp=$(compliance_list_logs "${event_type}" "${cursor}" 100) || {
-      fail "6.3 ${event_type} list failed at cursor=${cursor}"
-      break
-    }
-
-    ids=$(echo "${resp}" | jq -r '.data[].id')
+    hth_get "/compliance/workspaces/$CHATGPT_WORKSPACE_ID/logs" "$work/page.json" \
+      --data-urlencode "event_type=$family" --data-urlencode 'limit=100' --data-urlencode "after=$after"
+    jq -e '(.data|type)=="array" and (.has_more|type)=="boolean" and all(.data[]; (.id|type)=="string")' "$work/page.json" >/dev/null || hth_die 'malformed page; checkpoint unchanged'
+    jq -r '.data[].id' "$work/page.json" > "$work/ids"
     while IFS= read -r log_id; do
-      [[ -z "${log_id}" ]] && continue
-      out_file="${OUT_DIR}/${event_type}-${log_id}.jsonl"
-      compliance_download_log "${log_id}" > "${out_file}" \
-        || warn "6.3 ${event_type} download failed for ${log_id}"
-    done <<< "${ids}"
-
-    has_more=$(echo "${resp}" | jq -r '.has_more // false')
-    next=$(echo "${resp}" | jq -r '.last_end_time // empty')
-    if [[ -n "${next}" ]]; then
-      echo "${next}" > "${cp_file}"
-      cursor="${next}"
+      hth_safe_id "$log_id"
+      target="$HTH_LOG_DIR/${family}-${log_id}.jsonl"
+      [[ ! -L "$target" ]] || hth_die 'log target must not be a symlink'
+      if [[ -f "$target" ]]; then
+        jq -ne 'reduce inputs as $line (0; if ($line|type)=="object" then .+1 else error("expected JSONL object") end) | .>0' "$target" >/dev/null || hth_die 'existing log is invalid; checkpoint unchanged'
+        continue
+      fi
+      hth_get "/compliance/workspaces/$CHATGPT_WORKSPACE_ID/logs/$log_id" "$work/download"
+      jq -ne 'reduce inputs as $line (0; if ($line|type)=="object" then .+1 else error("expected JSONL object") end) | .>0' "$work/download" >/dev/null || hth_die 'invalid JSONL download; checkpoint unchanged'
+      chmod 600 "$work/download"
+      mv "$work/download" "$target"
+    done < "$work/ids"
+    next="$(jq -r '.last_end_time // empty' "$work/page.json")"
+    more="$(jq -r '.has_more' "$work/page.json")"
+    if [[ -z "$next" ]]; then
+      [[ "$more" = false && ! -s "$work/ids" ]] || hth_die 'missing pagination timestamp; checkpoint unchanged'
+      break
     fi
-    [[ "${has_more}" == "true" ]] || break
+    jq -en --arg t "$next" '$t | fromdateiso8601' >/dev/null || hth_die 'invalid pagination timestamp'
+    jq -en --arg a "$after" --arg n "$next" '($n|fromdateiso8601) > ($a|fromdateiso8601)' >/dev/null || hth_die 'nonadvancing pagination timestamp'
+    # Commit a page only after all its files are validated and atomically saved.
+    printf '%s\n' "$next" > "$work/checkpoint"
+    mv "$work/checkpoint" "$checkpoint"
+    after="$next"
+    pages=$((pages + 1))
+    [[ "$more" = true ]] || break
+    [[ "$pages" -lt 10000 ]] || hth_die 'pagination limit reached; rerun to continue'
   done
+  echo "Export finished for $family; verify freshness/coverage and SIEM ingestion separately." >&2
 done
-
-pass "6.3 Continuous export pass complete — schedule via cron every 15 minutes"
-# HTH Guide Excerpt: end api-stream-siem
-
-echo ""
-info "Recommended cron entry (every 15 minutes):"
-info "  */15 * * * * /path/to/hth-chatgpt-enterprise-6.03-stream-to-siem.sh"
-info ""
-info "OpenAI quote: 'Conversations involving agent tasks will appear in"
-info "Compliance API logs, but individual agent actions (such as virtual"
-info "computer usage, app requests, chain of thought) will not.'"
-
-summary
+# HTH Guide Excerpt: end export-workspace-logs

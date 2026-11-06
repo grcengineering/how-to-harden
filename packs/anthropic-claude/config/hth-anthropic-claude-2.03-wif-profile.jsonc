@@ -1,6 +1,6 @@
 // HTH Anthropic Claude Control 2.3: WIF profile (config-as-code)
 // Profile: L2 | NIST: IA-5(1), CM-2 | SOC 2: CC6.1
-// https://howtoharden.com/guides/anthropic-claude/#23-eliminate-static-api-keys-via-workload-identity-federation
+// https://howtoharden.com/guides/anthropic-api/#13-eliminate-static-api-keys-via-workload-identity-federation
 //
 // Anthropic SDK profile file — non-secret, safe to commit or bake into a
 // container image. The SDK and the `ant` CLI both read this format.

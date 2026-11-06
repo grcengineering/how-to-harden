@@ -41,7 +41,6 @@ WORKSPACES=$(anthropic_list_all "/v1/organizations/workspaces") || {
   fail "2.2 Failed to list workspaces"
   summary; exit 1
 }
-
 # Label each key: a named workspace, the Default Workspace, or ORGANIZATION
 # (principal-bound, no workspace). Only scope.type decides the tier.
 INVENTORY=$(echo "${KEYS}" | jq -c --argjson ws "${WORKSPACES}" '
@@ -63,24 +62,20 @@ INVENTORY=$(echo "${KEYS}" | jq -c --argjson ws "${WORKSPACES}" '
                   elif $tier == "workspace" then ($names[$wid] // $wid)
                   else "UNKNOWN (no scope field)" end)
         })')
-
 TOTAL=$(echo "${INVENTORY}" | jq 'length')
 ORG_SCOPED=$(echo "${INVENTORY}" | jq '[.[] | select(.tier == "organization")] | length')
 DEFAULT_WS=$(echo "${INVENTORY}" | jq '[.[] | select(.tier == "default")] | length')
 UNKNOWN=$(echo "${INVENTORY}" | jq '[.[] | select(.tier == "unknown")] | length')
 NEVER_EXPIRE=$(echo "${INVENTORY}" | jq '[.[] | select(.expires == "never")] | length')
 info "Active keys: ${TOTAL} (organization-scoped=${ORG_SCOPED}, default-workspace=${DEFAULT_WS}, never-expiring=${NEVER_EXPIRE})"
-
 {
   printf 'WHERE\tKEY NAME\tPRINCIPAL\tEXPIRES\n'
   echo "${INVENTORY}" | jq -r 'sort_by(.where) | .[] | "\(.where)\t\(.name)\t\(.principal)\t\(.expires)"'
 } | column -t -s $'\t'
-
 # Shared workspaces are the matrix's Medium tier: one workspace, several consumers
 echo "${INVENTORY}" | jq -r '[.[] | select(.tier == "workspace" or .tier == "default")]
   | group_by(.where) | map(select(length > 1)) | .[]
   | "  shared: \(.[0].where) holds \(length) active keys"'
-
 if [[ "${ORG_SCOPED}" -gt 0 || "${DEFAULT_WS}" -gt 0 || "${UNKNOWN}" -gt 0 ]]; then
   warn "2.2 ${ORG_SCOPED} organization-scoped, ${DEFAULT_WS} Default Workspace, ${UNKNOWN} unclassified key(s) — give each consumer a dedicated workspace with its own limits"
 else

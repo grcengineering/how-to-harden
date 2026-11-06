@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH Anthropic Claude Control 7.11: Incident Response for Claude Code and Cowork
 # Profile: L2 | NIST: IR-4, IR-5, IR-8 | SOC 2: CC7.3, CC7.4
-# https://howtoharden.com/guides/anthropic-claude/#711-establish-incident-response-for-claude-code-and-cowork
+# https://howtoharden.com/guides/claude-code/#53-establish-incident-response-for-claude-code-and-cowork
 #
 # Forensic collection and triage script for Claude Code/Cowork incidents.
 # Collects local session data before cleanup triggers deletion.
@@ -16,19 +16,15 @@ set -euo pipefail
 #
 # Usage: ./hth-anthropic-claude-7.11-incident-response.sh [output-dir]
 # Output: timestamped archive of Claude session data + summary
-
 OUTPUT_DIR="${1:-./claude-forensics-$(date +%Y%m%d-%H%M%S)}"
 CLAUDE_DIR="${HOME}/.claude"
-
 echo "=== Claude Code/Cowork Forensic Collection ==="
 echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo "Hostname:  $(hostname)"
 echo "User:      $(whoami)"
 echo "Output:    ${OUTPUT_DIR}"
 echo ""
-
 mkdir -p "${OUTPUT_DIR}"
-
 # Collect session transcripts (.jsonl files)
 if [ -d "${CLAUDE_DIR}" ]; then
   echo "[1/5] Collecting session transcripts..."
@@ -43,7 +39,6 @@ if [ -d "${CLAUDE_DIR}" ]; then
 else
   echo "[1/5] No .claude directory found — skipping transcripts"
 fi
-
 # Collect settings files (may contain evidence of tampering)
 echo "[2/5] Collecting settings and configuration..."
 for settings_file in \
@@ -55,7 +50,6 @@ for settings_file in \
     echo "  Collected: ${settings_file}"
   fi
 done
-
 # Collect project-level settings from CWD if present
 if [ -d ".claude" ]; then
   echo "[3/5] Collecting project-level .claude/ directory..."
@@ -63,7 +57,6 @@ if [ -d ".claude" ]; then
 else
   echo "[3/5] No project .claude/ directory in CWD"
 fi
-
 # Collect MCP server configs
 echo "[4/5] Collecting MCP configurations..."
 for mcp_file in \
@@ -74,7 +67,6 @@ for mcp_file in \
     echo "  Collected: ${mcp_file}"
   fi
 done
-
 # Collect managed policy (if accessible): settings, MCP policy, and drop-ins
 for managed_dir in \
   "/Library/Application Support/ClaudeCode" \
@@ -90,13 +82,11 @@ for managed_dir in \
     echo "  Collected managed drop-ins: ${managed_dir}/managed-settings.d"
   fi
 done
-
 # Record a SHA-256 for every collected file so later tampering is detectable
 echo "[5/5] Hashing evidence and generating collection summary..."
 if command -v sha256sum >/dev/null 2>&1; then HASH_CMD=(sha256sum); else HASH_CMD=(shasum -a 256); fi
 ( cd "${OUTPUT_DIR}" && find . -type f ! -name SHA256SUMS ! -name SUMMARY.txt | LC_ALL=C sort | \
     while IFS= read -r f; do "${HASH_CMD[@]}" "${f}"; done ) > "${OUTPUT_DIR}/SHA256SUMS"
-
 # Generate summary
 {
   echo "Claude Forensic Collection Summary"
@@ -121,9 +111,7 @@ if command -v sha256sum >/dev/null 2>&1; then HASH_CMD=(sha256sum); else HASH_CM
   echo "  3. Check settings files for unauthorized MCP servers or hooks"
   echo "  4. Preserve this archive per your data retention policy"
 } > "${OUTPUT_DIR}/SUMMARY.txt"
-
 cat "${OUTPUT_DIR}/SUMMARY.txt"
-
 echo ""
 echo "=== Collection Complete ==="
 echo "Archive: ${OUTPUT_DIR}"

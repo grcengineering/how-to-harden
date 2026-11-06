@@ -1,6 +1,6 @@
 // HTH Anthropic Claude Control 7.3: Control MCP Server Access
 // Profile: L2 | NIST: CM-7, SA-9 | SOC 2: CC6.6, CC9.2
-// https://howtoharden.com/guides/anthropic-claude/#73-control-mcp-server-access
+// https://howtoharden.com/guides/claude-code/#21-control-mcp-server-access
 //
 // MCP servers extend Claude Code with additional tools — uncontrolled
 // servers can introduce arbitrary access to databases, APIs, and cloud.

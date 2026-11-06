@@ -1,0 +1,21 @@
+{
+  "lockfileVersion": 2,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "hth-statsig-sdk-examples",
+      "dependencies": {
+        "@statsig/web-analytics": "3.33.7",
+      },
+    },
+  },
+  "packages": {
+    "@statsig/client-core": ["@statsig/client-core@3.33.7", "", {}, "sha512-tnhczy57w879pAAz7z6x8KmbnfeLe1H++wsVtZfFGLy/xhssMdCCyMFXX9UunUHv7a+1mCj7jJNsphPGnTmIqQ=="],
+
+    "@statsig/js-client": ["@statsig/js-client@3.33.7", "", { "dependencies": { "@statsig/client-core": "3.33.7" } }, "sha512-xVhjheb7UEqA0HxdO+aztZ0bT7aEE1RTcpu8RcCaM2L+Tm0ebFLzn1NH4VA0pbjfVi+WVBh8KGXolxcYrXVPug=="],
+
+    "@statsig/web-analytics": ["@statsig/web-analytics@3.33.7", "", { "dependencies": { "@statsig/client-core": "3.33.7", "@statsig/js-client": "3.33.7", "web-vitals": "5.0.3" } }, "sha512-b8SrrODbJm066MU5bw5DhqrWlMs54gwgLddXlv/Vd1S3eX+ikaFYdH9GZeSF1jvuVqtmBBFYBMr87X76o9WjPA=="],
+
+    "web-vitals": ["web-vitals@5.0.3", "", {}, "sha512-4KmOFYxj7qT6RAdCH0SWwq8eKeXNhAFXR4PmgF6nrWFmrJ41n7lq3UCA6UK0GebQ4uu+XP8e8zGjaDO3wZlqTg=="],
+  }
+}

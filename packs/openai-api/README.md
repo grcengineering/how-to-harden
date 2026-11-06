@@ -1,0 +1,11 @@
+# OpenAI API Platform packs
+
+These packs belong to the independently administered API Platform organization/project plane. Admin API keys and `/organization/audit_logs` do not verify ChatGPT Enterprise workspace policy or Compliance feeds. See the [guide](https://howtoharden.com/guides/openai-api/) and [source reconciliation](https://howtoharden.com/research/openai-api-source-coverage/).
+
+Download the complete pack directory: API scripts require `api/common.sh`, and Terraform recipes require `terraform/versions.tf`. The CLI pack requires the separately installed official OpenAI CLI; inspect that installed release's pagination/help before treating its one-call result as a complete inventory. API inventory scripts page explicitly and publish stdout only after every requested page validates.
+
+Inject credentials into the process environment through your secret manager. API transport keeps bearer values out of command arguments, ignores curlrc, bounds requests/responses, and accepts only the documented production origins. `HTH_FIXTURE_LOOPBACK=1` permits an explicit `http://127.0.0.1:PORT/v1` origin for offline fixtures only; never use credentials in fixtures. Errors omit raw vendor responses. Exported metadata can still be sensitive: set `umask 077` before redirecting stdout into a reviewed evidence destination outside the repository. Private staging is removed on exit; it does not make a caller-created stdout destination private.
+
+`HTH_PROFILE_LEVEL` accepts 1–4 and defaults to 1. Higher-profile entrypoints require the corresponding level. SDK files export functions for an application to review and call; importing them makes no request. The isolated SDK package and lock pin the official `openai` SDK to 7.51.0. Install with `bun install --frozen-lockfile --ignore-scripts` inside `sdk/`. The webhook receiver requires an application-provided durable atomic delivery store/queue; an in-memory test map is not that store.
+
+Terraform examples are reviewed configuration, not automatic remediation. They pin the community provider to 1.5.0 and require independent review of provider credentials, effective grants, state and plan before use. This refresh ran offline contracts and real provider schema validation, with no tenant calls, plans, applies or new live-validation claims.

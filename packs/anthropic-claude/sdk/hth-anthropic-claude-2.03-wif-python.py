@@ -1,6 +1,6 @@
 # HTH Anthropic Claude Control 2.3: WIF — Python SDK pattern
 # Profile: L2 | NIST: IA-5(1), IA-9, AC-3 | SOC 2: CC6.1
-# https://howtoharden.com/guides/anthropic-claude/#23-eliminate-static-api-keys-via-workload-identity-federation
+# https://howtoharden.com/guides/anthropic-api/#13-eliminate-static-api-keys-via-workload-identity-federation
 #
 # Demonstrates the official `anthropic` Python SDK's Workload Identity
 # Federation credentials. The SDK exchanges the IdP JWT for a short-lived
@@ -9,8 +9,11 @@
 # Reference: https://platform.claude.com/docs/en/manage-claude/workload-identity-federation
 
 # HTH Guide Excerpt: begin sdk-wif-python-explicit
+import os
+for name in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_PROFILE"):
+    if name in os.environ:
+        raise SystemExit(f"Unset {name} entirely before WIF; an empty value is not an unset value")
 from anthropic import Anthropic, WorkloadIdentityCredentials, IdentityTokenFile
-
 # Explicit construction — recommended when you ship one image to multiple
 # environments and want the federation parameters in code rather than env.
 client = Anthropic(
@@ -24,13 +27,7 @@ client = Anthropic(
         workspace_id="wrkspc_REPLACE_ME",
     ),
 )
-
-message = client.messages.create(
-    model="claude-sonnet-4-6",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Hello, Claude"}],
-)
-print(message.content[0].text)
+# Construction only: no token exchange or billable inference is executed by this sample.
 # HTH Guide Excerpt: end sdk-wif-python-explicit
 
 # HTH Guide Excerpt: begin sdk-wif-python-env
@@ -46,14 +43,12 @@ print(message.content[0].text)
 # precedence chain. A leftover key silently shadows federation. The next block
 # is a defensive startup check.
 import os, sys
-
-for var in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"):
-    if os.environ.get(var):
+for var in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_PROFILE"):
+    if var in os.environ:
         sys.exit(
             f"FATAL: {var} is set; it will shadow Workload Identity Federation. "
             "Unset it (empty-string also wins precedence)."
         )
-
 from anthropic import Anthropic
 client = Anthropic()  # SDK reads the ANTHROPIC_FEDERATION_* vars from env
 # HTH Guide Excerpt: end sdk-wif-python-env

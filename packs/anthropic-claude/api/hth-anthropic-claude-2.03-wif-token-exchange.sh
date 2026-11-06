@@ -1,88 +1,51 @@
 #!/usr/bin/env bash
-# HTH Anthropic Claude Control 2.3: Eliminate Static API Keys via Workload Identity Federation
-# Profile: L2 | NIST: IA-5(1), IA-9, AC-3 | SOC 2: CC6.1
-# https://howtoharden.com/guides/anthropic-claude/#23-eliminate-static-api-keys-via-workload-identity-federation
-#
-# Exchanges an OIDC JWT from your IdP for a short-lived Anthropic access token
-# via the documented OAuth 2.0 token endpoint:
-#   POST https://api.anthropic.com/v1/oauth/token
-# Reference: https://platform.claude.com/docs/en/manage-claude/wif-reference
-#
-# Federation issuers, rules, and service accounts are created in the Claude
-# Console (Settings → Workload identity) — there is no documented public REST
-# admin endpoint for those resources, so this script focuses on the runtime
-# token exchange and validation.
-
+# HTH Pack Contract: v1
+#   control: anthropic-api-1.3
+#   guide: https://howtoharden.com/guides/anthropic-api/#13-eliminate-static-api-keys-via-workload-identity-federation
+#   profile: L2
+#   mode: mutating
+#   requires: ANTHROPIC_FEDERATION_RULE_ID, ANTHROPIC_ORGANIZATION_ID, ANTHROPIC_IDENTITY_TOKEN_FILE
+# Source: https://platform.claude.com/docs/en/manage-claude/wif-reference
+# Credential exchange is opt-in. No inference call or token printing/storage.
 set -euo pipefail
-
-# ── Inputs (set from your secrets manager / CI environment) ──
-: "${ANTHROPIC_FEDERATION_RULE_ID:?Set ANTHROPIC_FEDERATION_RULE_ID (fdrl_...)}"
-: "${ANTHROPIC_ORGANIZATION_ID:?Set ANTHROPIC_ORGANIZATION_ID (UUID — Settings → Organization)}"
-: "${ANTHROPIC_SERVICE_ACCOUNT_ID:?Set ANTHROPIC_SERVICE_ACCOUNT_ID (svac_...)}"
-: "${ANTHROPIC_IDENTITY_TOKEN_FILE:?Set ANTHROPIC_IDENTITY_TOKEN_FILE — path to the IdP-issued JWT}"
-ANTHROPIC_API_BASE="${ANTHROPIC_API_BASE:-https://api.anthropic.com}"
-
-# HTH Guide Excerpt: begin api-wif-token-exchange
-# Read the IdP-issued JWT from the projected token file (Kubernetes / GHA / etc.)
-JWT=$(cat "${ANTHROPIC_IDENTITY_TOKEN_FILE}")
-
-# Build the token-exchange body — workspace_id is required when the rule
-# is enabled for more than one workspace
-WORKSPACE_FIELD=""
-if [ -n "${ANTHROPIC_WORKSPACE_ID:-}" ]; then
-  WORKSPACE_FIELD=$(printf ',\n  "workspace_id": "%s"' "${ANTHROPIC_WORKSPACE_ID}")
-fi
-
-RESPONSE=$(curl -sS -f --max-time 10 "${ANTHROPIC_API_BASE}/v1/oauth/token" \
-  -H "content-type: application/json" \
-  --data @- <<JSON
-{
-  "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-  "assertion": "${JWT}",
-  "federation_rule_id": "${ANTHROPIC_FEDERATION_RULE_ID}",
-  "organization_id": "${ANTHROPIC_ORGANIZATION_ID}",
-  "service_account_id": "${ANTHROPIC_SERVICE_ACCOUNT_ID}"${WORKSPACE_FIELD}
-}
-JSON
-)
-
-ACCESS_TOKEN=$(echo "${RESPONSE}" | jq -r '.access_token')
-EXPIRES_IN=$(echo "${RESPONSE}" | jq -r '.expires_in')
-SCOPE=$(echo "${RESPONSE}" | jq -r '.scope')
-
-# Sanity-check the prefix — federated tokens are sk-ant-oat01-…
-case "${ACCESS_TOKEN}" in
-  sk-ant-oat01-*) echo "Got federated access token (scope=${SCOPE}, expires_in=${EXPIRES_IN}s)" ;;
-  *) echo "ERROR: token-exchange did not return an oat01 token: ${RESPONSE}" >&2; exit 1 ;;
-esac
-# HTH Guide Excerpt: end api-wif-token-exchange
-
-# HTH Guide Excerpt: begin api-wif-call-messages
-# Call the Claude API with the short-lived federated token (Bearer auth)
-curl -sS -f "${ANTHROPIC_API_BASE}/v1/messages" \
-  -H "authorization: Bearer ${ACCESS_TOKEN}" \
-  -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" \
-  --data @- <<'JSON' | jq -r '.content[0].text'
-{
-  "model": "claude-sonnet-4-6",
-  "max_tokens": 1024,
-  "messages": [{"role": "user", "content": "Hello, Claude"}]
-}
-JSON
-# HTH Guide Excerpt: end api-wif-call-messages
-
-# HTH Guide Excerpt: begin api-wif-detect-static-keys-in-env
-# Pre-deploy guardrail: fail the build if a static API key is present in
-# the environment of a workload that is supposed to use WIF. ANTHROPIC_API_KEY
-# sits ABOVE federation in the SDK's credential precedence chain, so a
-# leftover key silently shadows federation.
-for VAR in ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN; do
-  if [ -n "${!VAR:-}" ]; then
-    echo "FAIL: \$${VAR} is set; it will shadow Workload Identity Federation." >&2
-    echo "      Unset it (\`unset ${VAR}\`) — empty-string also wins precedence." >&2
+# HTH Guide Excerpt: begin wif-preflight-and-optional-exchange
+for name in ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN ANTHROPIC_PROFILE; do
+  if [[ "${!name+x}" == x ]]; then
+    echo "Unset ${name} entirely before WIF (empty values still select a source)." >&2
     exit 2
   fi
 done
-echo "OK: no static API key shadows the federation credentials"
-# HTH Guide Excerpt: end api-wif-detect-static-keys-in-env
+[[ "${ANTHROPIC_API_BASE:-https://api.anthropic.com}" == https://api.anthropic.com ]] || exit 2
+: "${ANTHROPIC_FEDERATION_RULE_ID:?Use a reviewed federation rule}"
+: "${ANTHROPIC_ORGANIZATION_ID:?Use its organization UUID}"
+: "${ANTHROPIC_IDENTITY_TOKEN_FILE:?Use the projected OIDC token file}"
+[[ "${ANTHROPIC_FEDERATION_RULE_ID}" =~ ^fdrl_[A-Za-z0-9]+$ ]] || exit 2
+[[ "${ANTHROPIC_ORGANIZATION_ID}" =~ ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$ ]] || exit 2
+[[ -r "${ANTHROPIC_IDENTITY_TOKEN_FILE}" ]] || exit 2
+[[ -z "${ANTHROPIC_WORKSPACE_ID:-}" || "${ANTHROPIC_WORKSPACE_ID}" =~ ^wrkspc_[A-Za-z0-9]+$ ]] || exit 2
+[[ -z "${ANTHROPIC_SERVICE_ACCOUNT_ID:-}" || "${ANTHROPIC_SERVICE_ACCOUNT_ID}" =~ ^svac_[A-Za-z0-9]+$ ]] || exit 2
+if [[ "${HTH_EXCHANGE:-0}" != 1 ]]; then
+  echo 'Preflight complete; no token minted. Review the rule and set HTH_EXCHANGE=1 for an explicit exchange.'
+  exit 0
+fi
+# JSON escaping via jq; neither JWT nor access token enters argv.
+body=$(jq -cn --rawfile jwt "${ANTHROPIC_IDENTITY_TOKEN_FILE}" \
+  --arg rule "${ANTHROPIC_FEDERATION_RULE_ID}" --arg org "${ANTHROPIC_ORGANIZATION_ID}" \
+  --arg account "${ANTHROPIC_SERVICE_ACCOUNT_ID:-}" --arg workspace "${ANTHROPIC_WORKSPACE_ID:-}" '
+  ($jwt | sub("[\\r\\n]+$";"")) as $token |
+  if ($token | test("^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$")) then
+    {grant_type:"urn:ietf:params:oauth:grant-type:jwt-bearer",assertion:$token,federation_rule_id:$rule,organization_id:$org}
+    + (if $account == "" then {} else {service_account_id:$account} end)
+    + (if $workspace == "" then {} else {workspace_id:$workspace} end)
+  else error("Expected a JWT") end')
+response=$(printf '%s' "${body}" | curl -q --silent --show-error --fail --proto '=https' --connect-timeout 10 --max-time 30 \
+  --header 'Content-Type: application/json' --data-binary @- https://api.anthropic.com/v1/oauth/token) || {
+    echo 'Exchange failed; response content suppressed.' >&2; exit 1;
+  }
+printf '%s' "${response}" | jq -cse 'if length == 1 and (.[0].access_token | type) == "string"
+  and (.[0].access_token | startswith("sk-ant-oat01-")) and (.[0].expires_in | type) == "number"
+  and .[0].expires_in > 0 and (.[0].scope | type) == "string"
+  then {exchange_verified:true,scope:.[0].scope,expires_in:.[0].expires_in}
+  else error("Unexpected exchange response") end'
+unset body response
+# HTH Guide Excerpt: end wif-preflight-and-optional-exchange

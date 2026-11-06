@@ -1,0 +1,20 @@
+title: OpenAI Ads Campaign Changed
+id: b314c82e-bf76-440e-99be-c11be2226850
+status: experimental
+description: Review the documented Ads campaign update event against approved changes; not an API Platform organization-audit schema.
+references:
+  - https://developers.openai.com/ads/api-reference/audit-logs
+author: Codex (GPT-6)
+date: 2026-11-05
+logsource:
+  product: openai
+  service: ads_audit
+# HTH Guide Excerpt: begin ads-campaign-change
+detection:
+  selection:
+    audit_log_type: update_campaign
+  condition: selection
+falsepositives:
+  - Approved campaign edits; correlate actor and changed fields with the change record.
+level: medium
+# HTH Guide Excerpt: end ads-campaign-change

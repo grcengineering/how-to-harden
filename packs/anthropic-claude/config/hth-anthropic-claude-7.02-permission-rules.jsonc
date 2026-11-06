@@ -1,6 +1,6 @@
 // HTH Anthropic Claude Control 7.2: Restrict Claude Code Permissions and Tools
 // Profile: L2 | NIST: AC-3, CM-7 | SOC 2: CC6.1, CC6.3
-// https://howtoharden.com/guides/anthropic-claude/#72-restrict-claude-code-permissions-and-tools
+// https://howtoharden.com/guides/claude-code/#12-restrict-claude-code-permissions-and-tools
 //
 // Permission rules for managed-settings.json
 // Reference: code.claude.com/docs/en/permissions
@@ -125,9 +125,7 @@
       "enabled": true,
       "autoAllowBashIfSandboxed": false,
       "allowUnsandboxedCommands": false,
-      "excludedCommands": [
-        "docker"
-      ],
+      "excludedCommands": [],
       "network": {
         "allowUnixSockets": [],
         "allowAllUnixSockets": false,
