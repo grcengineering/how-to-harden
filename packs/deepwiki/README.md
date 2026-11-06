@@ -48,7 +48,7 @@ The data source uses the provider's `DEVIN_TOKEN` environment variable (differen
 
 The data source reports connected repositories and their `indexing_enabled` flags. It does **not** expose the indexed branch list; use the API pack for that. Sensitive output presentation does not encrypt Terraform state or plan files. Protect both.
 
-The provider's real `devin_repository_indexing` resource is deliberately not included: creating or expanding it starts indexing jobs, and destroying it disables indexing and clears branch configuration. Those changes require a separately approved change plan. Terraform format checks passed. Provider initialization was attempted with backends disabled on 2026-10-30, but the official registry connection timed out; provider-backed validation, plan, and apply were not performed. Schema and source review is not `terraform validate` or a tenant test.
+The provider's real `devin_repository_indexing` resource is deliberately not included: creating or expanding it starts indexing jobs, and destroying it disables indexing and clears branch configuration. Those changes require a separately approved change plan. Terraform format and real provider-backed schema validation pass on 2026-11-05, using pinned `v0.5.0` with backends disabled. This supersedes the unsuccessful October 30 registry attempt for schema validation only. No plan, apply, live credential or tenant test was performed.
 
 ## Offline regression tests
 
@@ -60,3 +60,7 @@ for file in packs/deepwiki/config/*.sh packs/deepwiki/api/*.sh; do bash -n "$fil
 The test suite uses synthetic temporary files and a stub curl executable; it never contacts Devin or DeepWiki. It covers valid and invalid MCP settings, credential redaction, JSON ambiguity, wiki limits and hierarchy, API pagination, denied requests, malformed responses, and rejection of unsafe input before a request.
 
 **Validation recorded 2026-10-29:** 20 offline tests passed; all three shell scripts passed Bash syntax checks. No live tenant, client integration, provider execution, or private repository access test was performed. The guide remains `ai-drafted`.
+
+## November 2026 boundary refresh
+
+November 2026 rechecks public credential-free MCP versus authenticated Devin MCP session/knowledge/schedule writes, Ask Devin session creation and deprecated SSE. Existing packs are retained; generation configuration and indexing inventory are not ACL enforcement. See the [current source ledger](https://howtoharden.com/research/cognition-source-coverage-2026-11/). Existing evidence remains historical; no live validation or maturity promotion. New regressions run with `bun test scripts/test-cognition-refresh.test.ts`.

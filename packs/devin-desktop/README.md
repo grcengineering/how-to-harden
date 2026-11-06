@@ -80,3 +80,7 @@ python3 scripts/test-devin-desktop-packs.py
 The suite uses temporary fixtures, parses configuration, exercises emitters and a constant local shell-denial command, and checks invalid inputs and no-write behavior. API tests replace curl with an offline shim: GET/PUT request shape, ETag checks, credential non-disclosure, no-network default plan, schema errors and HTTP failures are tested without a tenant. A mocked root-owner fixture tests the success branch. It does **not** launch Devin, deploy a policy, prove Windows PowerShell behavior, or qualify this guide for `ai-validated`.
 
 The guide uses native `config/` plus documented model-policy `api/` packs. Cloud APIs/Terraform, CLI permissions, legacy SCIM, and analytics are distinct surfaces; no undocumented dashboard endpoint or fabricated SDK is used.
+
+## November 2026 boundary refresh
+
+Control 5.3 adds a conditional Windsurf Plugin path. The config fragment is the plugin Cortex MCP shape, not Desktop MDM or JetBrains managed policy. Empty mcpServers is not a team deny-all, and an empty merge does not remove existing entries. Use the plugin Open MCP Config action and enforce the separate team gate. See the [current source ledger](https://howtoharden.com/research/cognition-source-coverage-2026-11/). Existing evidence remains historical; no live validation or maturity promotion. New regressions run with `bun test scripts/test-cognition-refresh.test.ts`.

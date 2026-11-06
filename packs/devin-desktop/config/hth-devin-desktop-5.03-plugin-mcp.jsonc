@@ -1,0 +1,15 @@
+// HTH Pack Contract: v1
+//   control: devin-desktop-5.3
+//   guide: https://howtoharden.com/guides/devin-desktop/#53-govern-windsurf-plugin-identity-and-mcp-separately
+//   profile: L2
+//   mode: mutating
+//   requires: Plugin Open MCP Config action; reviewed merge and upstream credential review
+// Source: https://docs.devin.ai/windsurf/plugins/cascade/mcp (2026-11-05)
+// HTH Guide Excerpt: begin plugin-mcp
+// Current plugin Cortex file opened by its UI, not Desktop MDM policy or editor discovery.
+// Empty mcpServers is not a central deny-all and merging {} does not delete existing entries.
+// Remove unapproved entries deliberately and enforce the team MCP gate/allowlist separately.
+{
+  "mcpServers": {}
+}
+// HTH Guide Excerpt: end plugin-mcp

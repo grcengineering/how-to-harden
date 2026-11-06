@@ -1,0 +1,30 @@
+# HTH Pack Contract: v1
+#   control: devin-federal-4.2
+#   guide: https://howtoharden.com/guides/devin-federal/#42-collect-and-interpret-local-structured-audit-events
+#   profile: L2
+#   mode: mutating
+#   requires: Filebeat; approved reader permissions, actual OS/XDG paths and protected output/retention
+# Source: https://docs.devin.ai/federal/air-gapped/on-disk-formats (2026-11-05)
+# HTH Guide Excerpt: begin filebeat
+# Merge with existing Filebeat configuration; keep only actual OS/XDG paths.
+# Collector must run as authorized owner/root; do not weaken audit-file permissions.
+filebeat.inputs:
+  - type: filestream
+    id: devin-airgap-audit
+    paths:
+      - /home/*/.local/share/devin/cli-federal/audit/audit*.jsonl
+      - /Users/*/.local/share/devin/cli-federal/audit/audit*.jsonl
+    prospector.scanner.fingerprint.length: 64
+    parsers:
+      - ndjson:
+          target: devin
+          add_error_key: true
+    processors:
+      - timestamp:
+          field: devin.ts
+          layouts:
+            - "2006-01-02T15:04:05.999Z"
+# Preserve future fields/events. Namespace avoids ECS event-object type conflicts.
+# Timestamp processor is beta; test installed Filebeat or parse devin.ts at ingest.
+# Supply real TLS-authenticated output and retention separately; no output configured here.
+# HTH Guide Excerpt: end filebeat

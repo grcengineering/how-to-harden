@@ -1164,7 +1164,7 @@ ona:
     - label: "Best Practices"
       url: "https://ona.com/docs/ona/best-practices.md"
 
-# Cognition family — verified 2026-10-29; real configuration docs, not trust pages.
+# Cognition family — refreshed 2026-11-05; real configuration docs, not trust pages.
 devin:
   product_docs: "https://docs.devin.ai/"
   api_docs: "https://docs.devin.ai/api-reference/overview"
@@ -1259,3 +1259,26 @@ statsig:
     - label: "Pinned Terraform Provider"
       url: "https://registry.terraform.io/providers/statsig-io/statsig/2.2.1/docs"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/statsig"
+
+# Separate Cognition identity/deployment planes; fetched 2026-11-05.
+poke:
+  product_docs: "https://poke.com/docs"
+  api_docs: "https://poke.com/docs/api"
+  hardening_docs:
+    - label: "Connected Account Management"
+      url: "https://poke.com/docs/managing-integrations"
+    - label: "MCP Authentication and Tunnels"
+      url: "https://poke.com/docs/mcp-servers"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/poke"
+
+devin-federal:
+  product_docs: "https://docs.devin.ai/federal/introduction"
+  api_docs: "https://docs.devin.ai/federal/api/overview"
+  hardening_docs:
+    - label: "Federal Administrative Security"
+      url: "https://docs.devin.ai/federal/security"
+    - label: "Air-gapped OIDC Policy"
+      url: "https://docs.devin.ai/federal/air-gapped/sso"
+    - label: "Air-gapped Audit and State"
+      url: "https://docs.devin.ai/federal/air-gapped/on-disk-formats"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/devin-federal"
