@@ -37,8 +37,13 @@ amplitude:
   hardening_docs: "https://amplitude.com/docs/admin"
 
 anthropic-api:
-  product_docs: "https://docs.anthropic.com/"
-  api_docs: "https://docs.anthropic.com/en/api/"
+  product_docs: "https://platform.claude.com/docs/en/home"
+  api_docs: "https://platform.claude.com/docs/en/api/overview"
+  hardening_docs:
+    - label: "API and data retention"
+      url: "https://platform.claude.com/docs/en/manage-claude/api-and-data-retention"
+    - label: "Managed Agents secure deployment"
+      url: "https://platform.claude.com/docs/en/managed-agents/secure-deployment"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
 
 anthropic-claude:
@@ -57,16 +62,21 @@ claude-enterprise:
   hardening_docs:
     - label: "Claude Enterprise Administrator Guide"
       url: "https://claude.com/resources/tutorials/claude-enterprise-administrator-guide"
+    - label: "Enterprise Security Center"
+      url: "https://support.claude.com/en/articles/18246629-review-your-organization-s-security-posture-with-the-security-center"
+    - label: "Desktop device policy"
+      url: "https://support.claude.com/en/articles/12622667-enterprise-configuration-for-claude-desktop"
     - label: "Claude in Chrome Admin Controls"
       url: "https://support.claude.com/en/articles/13065128-claude-in-chrome-admin-controls"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/claude-enterprise"
 
 claude-code:
   product_docs: "https://code.claude.com/docs/"
   hardening_docs:
     - label: "Claude Code Security"
       url: "https://code.claude.com/docs/en/security"
-    - label: "Claude Code IAM & Enterprise Auth"
-      url: "https://code.claude.com/docs/en/iam"
+    - label: "Claude Code permissions and managed policy"
+      url: "https://code.claude.com/docs/en/permissions"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
 
 asana:
@@ -155,24 +165,18 @@ buildkite:
 
 chatgpt-dots:
   product_docs: "https://learn.chatgpt.com/docs/dots"
-  api_docs:
-    - label: "ChatGPT Admin API Reference"
-      url: "https://chatgpt.com/public/admin/api-reference"
-    - label: "API Platform Audit Logs"
-      url: "https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/audit_logs/methods/list"
+  api_docs: "https://chatgpt.com/public/admin/api-reference"
   hardening_docs:
-    - label: "Dots Admin Guide"
+    - label: "Dots Administration"
       url: "https://learn.chatgpt.com/docs/enterprise/dots-admin-guide"
-    - label: "Manage Dots in ChatGPT Workspaces"
-      url: "https://help.openai.com/en/articles/20001554-manage-dots-in-chatgpt-workspaces"
+    - label: "Dots Security, Retention and Containment"
+      url: "https://learn.chatgpt.com/docs/enterprise/dots-security"
     - label: "Agent Security"
       url: "https://learn.chatgpt.com/docs/enterprise/agent-security"
-    - label: "Local Computer Access for Work Cloud and Dots"
-      url: "https://learn.chatgpt.com/docs/enterprise/cloud-local-access"
 
 chatgpt-enterprise:
   product_docs: "https://help.openai.com/en/collections/5688074-chatgpt-enterprise"
-  api_docs: "https://platform.openai.com/docs/api-reference/introduction"
+  api_docs: "https://chatgpt.com/public/admin/api-reference"
   hardening_docs:
     - label: "Enterprise Admin Quickstart"
       url: "https://help.openai.com/en/articles/20001264-chatgpt-enterprise-admin-quickstart"
@@ -311,6 +315,16 @@ factory:
     - label: "Agent Safety & Controls"
       url: "https://docs.factory.com/enterprise/llm-safety-and-agent-controls"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/factory"
+
+fenic:
+  product_docs: "https://docs.fenic.ai/"
+  api_docs: "https://docs.fenic.ai/latest/reference/fenic/api/session/config/"
+  hardening_docs:
+    - label: "Native Session Configuration"
+      url: "https://docs.fenic.ai/latest/reference/fenic/api/session/config/"
+    - label: "MCP Tool Exposure"
+      url: "https://docs.fenic.ai/latest/topics/fenic-mcp/"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/fenic"
 
 figma:
   product_docs: "https://help.figma.com/hc/en-us"
@@ -546,6 +560,15 @@ hubspot:
     - label: "Account Security & Passwords"
       url: "https://knowledge.hubspot.com/account-security/account-security-and-passwords"
 
+humanlayer:
+  product_docs: "https://docs.humanlayer.com/"
+  hardening_docs:
+    - label: "Daemon Authentication & Persistence"
+      url: "https://docs.humanlayer.com/explanation/remote-daemons"
+    - label: "Workspace Configuration"
+      url: "https://docs.humanlayer.com/reference/workspace-config"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/humanlayer"
+
 intercom:
   product_docs: "https://www.intercom.com/help/en/"
   api_docs: "https://developers.intercom.com/"
@@ -731,6 +754,12 @@ mimecast:
   product_docs: "https://mimecastsupport.zendesk.com/hc/en-us"
   api_docs: "https://developer.services.mimecast.com/"
   hardening_docs: "https://mimecastsupport.zendesk.com/hc/en-us/articles/34000804127251-Authentication-Profiles-Configuring-Authentication-Profiles"
+
+mentlio:
+  product_docs: "https://www.mentlio.com/docs"
+  hardening_docs:
+    - label: "Agent, Integration & Access Configuration"
+      url: "https://www.mentlio.com/docs"
 
 miro:
   product_docs: "https://help.miro.com/hc/en-us"
@@ -1124,7 +1153,7 @@ zscaler:
 
 ona:
   product_docs: "https://ona.com/docs"
-  api_docs: "https://ona.com/docs/api-reference.md"
+  api_docs: "https://ona.com/docs/api-reference"
   hardening_docs:
     - label: "Guardrails Overview"
       url: "https://ona.com/docs/ona/guardrails/overview.md"
@@ -1185,6 +1214,51 @@ deepwiki:
     - label: "Public DeepWiki MCP"
       url: "https://docs.devin.ai/work-with-devin/deepwiki-mcp"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/deepwiki"
+
+# OpenAI current product surfaces — verified 2026-11-05.
+chatgpt-work-codex:
+  product_docs: "https://learn.chatgpt.com/docs/enterprise/chatgpt-work-overview"
+  api_docs: "https://chatgpt.com/public/admin/api-reference"
+  hardening_docs:
+    - label: "Managed Configuration and Requirements"
+      url: "https://learn.chatgpt.com/docs/enterprise/managed-configuration"
+    - label: "Agent Security and Runtime Boundaries"
+      url: "https://learn.chatgpt.com/docs/enterprise/agent-security"
+    - label: "Codex Security CLI"
+      url: "https://learn.chatgpt.com/docs/security/cli/reference"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/chatgpt-work-codex"
+
+openai-api:
+  product_docs: "https://developers.openai.com/api/docs"
+  api_docs: "https://developers.openai.com/api/reference"
+  hardening_docs:
+    - label: "API RBAC"
+      url: "https://developers.openai.com/api/docs/guides/rbac"
+    - label: "Official Terraform Provider"
+      url: "https://registry.terraform.io/providers/openai/openai/latest/docs"
+    - label: "API Data Controls"
+      url: "https://developers.openai.com/api/docs/guides/your-data"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/openai-api"
+
+openai-ads:
+  product_docs: "https://developers.openai.com/ads"
+  api_docs: "https://developers.openai.com/ads/openapi.json"
+  hardening_docs:
+    - label: "Advertiser API Authentication"
+      url: "https://developers.openai.com/ads/api-reference/authentication"
+    - label: "Ads Manager Access"
+      url: "https://help.openai.com/en/articles/20001206-ads-manager-beta-overview"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/openai-ads"
+
+statsig:
+  product_docs: "https://docs.statsig.com/"
+  api_docs: "https://docs.statsig.com/console-api/introduction"
+  hardening_docs:
+    - label: "Access Management"
+      url: "https://docs.statsig.com/access-management/introduction"
+    - label: "Pinned Terraform Provider"
+      url: "https://registry.terraform.io/providers/statsig-io/statsig/2.2.1/docs"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/statsig"
 
 # Separate Cognition identity/deployment planes; fetched 2026-11-05.
 poke:

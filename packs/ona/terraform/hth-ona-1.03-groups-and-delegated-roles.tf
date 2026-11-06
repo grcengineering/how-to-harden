@@ -1,3 +1,5 @@
+# Stable schema reconciliation: https://github.com/gitpod-io/terraform-provider-ona/tree/v0.5.1/docs
+# Source review is not provider apply/tenant validation.
 # =============================================================================
 # HTH Pack Contract: v1
 #   control: ona-1.3
@@ -11,10 +13,10 @@
 # Frameworks: CIS Controls 5.4, 6.8 | NIST 800-53 AC-6(1) | SOC 2 CC6.3
 # Source: https://howtoharden.com/guides/ona/#13-apply-least-privilege-organization-roles-and-groups
 #
-# PROVIDER BLOCK LIVES IN hth-ona-1.01-configure-sso.tf.
+# Shared provider configuration: copy versions.tf once into the module.
 #
-# Transcribed from registry docs fetched 2026-08-19:
-#   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/group                        (doc 13236795)
+# Original schema transcribed 2026-08-19; current stable source re-read 2026-11-05:
+#   https://registry.terraform.io/providers/gitpod-io/ona/0.5.1/docs/resources/group                        (doc 13236795)
 #   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/group_membership             (doc 13236796)
 #   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/organization_role_assignment (doc 13236801)
 #   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/data-sources/user                    (doc 13236831)

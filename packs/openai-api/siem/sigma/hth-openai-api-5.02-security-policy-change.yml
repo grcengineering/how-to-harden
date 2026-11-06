@@ -1,0 +1,23 @@
+title: OpenAI API Network Allowlist Changed
+id: 8156d598-250f-49bc-9d50-d246cf9d7798
+status: experimental
+description: Review API Platform audit events that change network trust. Map JSON fields at ingestion; this is not ChatGPT Compliance log schema.
+references:
+  - https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/audit_logs/methods/list
+author: Codex (GPT-6)
+date: 2026-11-05
+logsource:
+  product: openai
+  service: api_audit
+# HTH Guide Excerpt: begin security-policy-change
+detection:
+  selection:
+    type:
+      - ip_allowlist.config.deactivated
+      - ip_allowlist.updated
+      - ip_allowlist.deleted
+  condition: selection
+falsepositives:
+  - Approved network maintenance; correlate with administrative change records.
+level: high
+# HTH Guide Excerpt: end security-policy-change

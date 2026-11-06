@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # HTH Anthropic Claude Control 7.1: Deploy Managed Settings via MDM
 # Profile: L1 | NIST: CM-6, CM-7 | SOC 2: CC6.1, CC8.1
-# https://howtoharden.com/guides/anthropic-claude/#71-deploy-managed-settings-via-mdm
+# https://howtoharden.com/guides/claude-code/#11-deploy-managed-settings-via-mdm
 #
 # Validates the file-based managed settings on the local machine, evaluated the
 # way Claude Code reads them: managed-settings.json merged with every
@@ -55,7 +55,6 @@ else
   esac
 fi
 info "Checking file-based managed settings in: ${MANAGED_DIR}"
-
 # Base file first, then drop-ins in alphabetical order (hidden files ignored)
 SOURCES=()
 if [[ -f "${MANAGED_DIR}/managed-settings.json" ]]; then
@@ -65,12 +64,10 @@ LC_COLLATE=C
 for f in "${MANAGED_DIR}/managed-settings.d/"*.json; do
   if [[ -f "${f}" ]]; then SOURCES+=("${f}"); fi
 done
-
 if [[ ${#SOURCES[@]} -eq 0 ]]; then
   fail "7.1 No managed-settings.json or managed-settings.d/*.json found — file-based managed settings are not deployed"
   summary; exit 1
 fi
-
 # Claude Code refuses to start when a managed file is not a JSON object
 for f in "${SOURCES[@]}"; do
   if jq -e 'type == "object"' "${f}" >/dev/null 2>&1; then
@@ -80,7 +77,6 @@ for f in "${SOURCES[@]}"; do
   fi
 done
 if [[ ${FAILED} -gt 0 ]]; then summary; exit 1; fi
-
 # Merge the sources the way Claude Code does
 MERGED=$(jq -s '
   def m($a; $b):
@@ -90,47 +86,39 @@ MERGED=$(jq -s '
     else $b end;
   reduce .[] as $x ({}; m(.; $x))' "${SOURCES[@]}")
 merged() { printf '%s' "${MERGED}" | jq "$@"; }
-
 # disableBypassPermissionsMode is read only under "permissions"; a root-level
 # copy is accepted by the file but never applied
 if [[ "$(merged -r 'has("disableBypassPermissionsMode")')" == "true" ]]; then
   fail "7.1 disableBypassPermissionsMode is at the root — Claude Code reads it only as permissions.disableBypassPermissionsMode"
 fi
-
 BYPASS=$(merged -r '.permissions.disableBypassPermissionsMode // "not set"')
 DENY_COUNT=$(merged '.permissions.deny // [] | length')
 DEFAULT_MODE=$(merged -r '.permissions.defaultMode // "not set"')
 MANAGED_PERMS_ONLY=$(merged -r 'if .allowManagedPermissionRulesOnly == null then "not set" else .allowManagedPermissionRulesOnly end')
-
 info "Merged policy (${#SOURCES[@]} file(s)):"
 info "  permissions.disableBypassPermissionsMode: ${BYPASS}"
 info "  permissions.deny rules: ${DENY_COUNT}"
 info "  permissions.defaultMode: ${DEFAULT_MODE}"
 info "  allowManagedPermissionRulesOnly: ${MANAGED_PERMS_ONLY}"
-
 if [[ "${BYPASS}" == "disable" ]]; then
   pass "7.1 Bypass permissions mode is disabled"
 else
   fail "7.1 permissions.disableBypassPermissionsMode is not \"disable\" — --dangerously-skip-permissions still works"
 fi
-
 if [[ "${DENY_COUNT}" -gt 0 ]]; then
   merged -r '.permissions.deny[]' | while IFS= read -r rule; do info "    - ${rule}"; done
   pass "7.1 Deny rules are configured (${DENY_COUNT} rules)"
 else
   fail "7.1 No permissions.deny rules in the managed policy"
 fi
-
 if [[ "${DEFAULT_MODE}" == "not set" ]]; then
   warn "7.1 permissions.defaultMode is not set in the managed policy"
 fi
-
 if [[ "${MANAGED_PERMS_ONLY}" == "true" ]]; then
   pass "7.1 Only managed permission rules are enforced"
 else
   warn "7.1 allowManagedPermissionRulesOnly is not enabled (see Control 7.2)"
 fi
-
 # Sources are first-wins by default: a higher-ranked source that carries any
 # policy key is used and this file is skipped without a warning
 if [[ ${STAGED} -eq 0 ]]; then

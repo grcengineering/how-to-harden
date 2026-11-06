@@ -8,10 +8,10 @@ platform_slug: "anthropic"
 product: "Common Controls"
 tier: "1"
 category: "AI/ML Platform"
-description: "Platform-wide security hardening for Anthropic — the Common Controls hub (SSO, organization roles, admin API keys, integration governance) shared by the Claude Enterprise, Claude Code, and Claude API & Console product guides."
-version: "1.2.1"
-maturity: ["ai-drafted", "ai-validated"]
-last_updated: "2026-10-04"
+description: "Harden Anthropic common controls across identity, sessions, centralized administration, network access, inference hooks and audit governance."
+version: "1.3.0"
+maturity: ["ai-drafted"]
+last_updated: "2026-11-05"
 ---
 
 ## Overview
@@ -19,6 +19,10 @@ last_updated: "2026-10-04"
 Anthropic is a multi-product AI platform: the claude.ai chat product (Team/Enterprise plans), Claude Code (the agentic coding tool), and the Claude API with its admin Console. Each product has a distinct hardening surface, so each has its own guide — this hub carries the **Common Controls** that span them: organization identity (SSO, roles), admin API key protection, and third-party integration governance. Anthropic provides a comprehensive Admin API for programmatic organization management alongside the web Console.
 
 **Product guides:** [Claude Enterprise (claude.ai)](/guides/claude-enterprise/) · [Claude Code](/guides/claude-code/) · [Claude API & Console](/guides/anthropic-api/)
+
+### Research and validation boundary
+
+This refresh used the [source-first candidate ledger](/research/anthropic-source-coverage-2026-11) and public vendor references, including the published Cowork/unified baseline. It did not access a live tenant, change settings or create credentials. Source verification and mocked/native-interface tests do not earn live-validation status. The exact applicable Security Center checklist must be reconciled with an Owner’s current report; the effective-settings schema is a separate evidence surface.
 
 ### Intended Audience
 - Security engineers managing AI tools and API integrations
@@ -48,7 +52,7 @@ This hub covers platform-wide Anthropic controls: organization authentication (S
 
 ## Products in This Platform
 
-Anthropic is a multi-product platform. This guide is the **Common Controls hub** — the platform-wide controls that apply across every Anthropic product. Product-specific controls live in their own guides:
+Anthropic is a multi-product platform. This guide is the **Common Controls hub**. Parent identity, child-organization settings, Console API administration, Code managed policy and Desktop MDM are distinct planes; a setting on one does not automatically govern the others. Product-specific controls live in their own guides:
 
 | Product | Guide | Covers |
 |---------|-------|--------|
@@ -56,6 +60,34 @@ Anthropic is a multi-product platform. This guide is the **Common Controls hub**
 | **Claude Enterprise (claude.ai)** | [Claude Enterprise guide](/guides/claude-enterprise/) | Identity & provisioning, audit & compliance export, connectors & extensions, spend governance |
 | **Claude Code** | [Claude Code guide](/guides/claude-code/) | Managed settings & policy deployment, extensions & supply chain, execution isolation & sandboxing, threat defense, monitoring & incident response |
 | **Claude API & Console** | [Claude API & Console guide](/guides/anthropic-api/) | API key management, workspace security, data security & privacy, monitoring & usage controls |
+
+---
+
+## Published Baselines and Product Boundaries
+
+Anthropic publishes a public **Unified Claude and Cowork Security Best Practices v1.3 (2026-09-17)**, available from its [Trust Center resource](https://trust.anthropic.com/resources?name=claude-cowork-security-best-practices&s=uukz8hyx7jmdmo80lys36s) ([PDF](https://trust.anthropic.com/doc/trust?rid=6aa2110030a7f2cf301af4fd&r=iz673w96495gyjer8h78n&download=true)). Its admin-configuration tables cover organization identity, sessions, Cowork tools/egress, Desktop restrictions, plugins, monitoring and data handling. This is the published recommended baseline found in this review. It is **not documented as the complete Security Center pass/fail inventory**. The [Security Center help](https://support.claude.com/en/articles/18246629-review-your-organization-s-security-posture-with-the-security-center) describes results and manual attestations but does not enumerate every applicable check. An Owner's current report establishes the tenant-specific list; the effective-settings API does not supply equivalent recommendations or status.
+
+The PDF predates several changes. Current configuration references govern the November 16 unified-experience rollout, Chrome enablement, skill-scanning/publishing defaults and chat-linked cloud retention. The source ledger records these discrepancies instead of copying stale defaults.
+
+| Public source | Applicability and handling |
+|---------------|----------------------------|
+| [Unified Claude/Cowork v1.3](https://trust.anthropic.com/doc/trust?rid=6aa2110030a7f2cf301af4fd&r=iz673w96495gyjer8h78n&download=true) | Commercial organization and client baseline; mapped throughout this hub and the Enterprise/Code guides, with current per-feature caveats. |
+| [C4G FedRAMP Secure Configuration Guide v2.1, July 16, 2026](https://trust.anthropic.com/doc/trust?rid=6ab43afba6eead3d68716b5c&r=iz673w96495gyjer8h78n&download=true) | **Claude for Government on claude.fedstart.com**, FedRAMP Rev. 5. Apply its customer SSO/MFA, SCIM/secret lifecycle, constrained egress/folders, approved MCP, approvals, updates, tenant restriction and telemetry guidance within that deployment. Its role model, device bootstrap/sign-in keys, headers and content-local storage are not commercial Enterprise defaults. |
+| [Claude Code FISMA Best Practices v1.0, January 2026](https://trust.anthropic.com/doc/trust?rid=698639ba9484b19b52b6f1d2&r=iz673w96495gyjer8h78n&download=true) | Deployment/governance guidance for agency-managed endpoints and approved provider regions; use [Code 1.4](/guides/claude-code/#14-reconcile-federal-deployment-guidance-with-current-provider-routing) and current variable names. It does not itself authorize an agency deployment. |
+| [Claude for Enterprise 20x Certification Package Overview](https://trust.anthropic.com/doc/trust?rid=6a8dcddb0fb2cfb4ca5be4ab&r=iz673w96495gyjer8h78n&download=true) | A separate public JSON package overview, not a configuration guide. A schema, package ID or certification-type field alone does not prove a completed authorization or make C4G controls apply to Enterprise. |
+
+**Government audit discrepancy:** The C4G PDF prints `GET /v1/compliance/activities` and six-year event retention. The [current C4G API documentation](https://claude.com/docs/government/org-admin/compliance-api) uses `GET /gateway-api/v1/compliance/activities` on the C4G deployment host and a **30-day query lookback**, with a required since bound and opaque page tokens. A query window is not a statement of provider storage retention. This governance feed excludes conversation content, tool calls and usage metrics; endpoint telemetry/eDiscovery is a separate responsibility. Do not send commercial packs or keys to the Government endpoint, and do not assume its defaults apply to commercial Compliance APIs. No Government deployment or destructive recovery test was performed.
+
+| Product / administration plane | Coverage and explicit limits |
+|--------------------------------|------------------------------|
+| Parent administration and child identity | Hub 1.1–1.7; parent roles, linked child settings and irreversible enrollment are separate. |
+| Enterprise chats, Cowork/unified, Desktop and Chrome | Enterprise 1–5; organization, role, cloud runtime and local MDM controls are reconciled separately. |
+| Code CLI/IDE, Remote Control, cloud/routines and CI | Code guide; local, hosted and cloud-provider policy/credential boundaries differ. |
+| Console/API, WIF, workspaces, CMEK and Managed Agents | API guide; direct API examples use a fixed first-party host. AWS/other-provider routing is separately scoped. |
+| Connectors, private MCP tunnels and managed connector authentication | Enterprise 3.1/3.9; downstream authorization and consent remain independent. |
+| Tag/Claude in Slack, Science, Design, artifacts, M365 and hosted review/security | Enterprise 3.10 and 5.1/5.3 plus hub 1.8/2.3 establish capability admission, integration and coverage checks. This is not a claim of a dedicated full product benchmark for every specialized app or preview. |
+| Agent SDK / custom agents | Code policy and API credential boundaries apply where documented; the application's own authorization, tool implementation and hosting baseline remain separate. |
+| Personal subscriptions and research previews | Organizational controls are not assumed to exist. Verify plan eligibility before processing organizational data; dedicated personal-product hardening is outside these Enterprise/Code/API guides. |
 
 ---
 
@@ -78,7 +110,7 @@ Configure SAML 2.0 or OIDC-based SSO to authenticate Claude users through your c
 - Centralizes authentication and user lifecycle management
 - Enables MFA enforcement through your IdP's Conditional Access policies
 - Eliminates standalone Claude passwords and reduces credential sprawl
-- Automatic deprovisioning when users leave the organization
+- Directory-backed deprovisioning when SCIM is enabled; SSO/JIT alone does not remove stale memberships
 
 **Attack Prevented:** Credential theft, unauthorized access, orphaned accounts
 
@@ -92,7 +124,7 @@ Configure SAML 2.0 or OIDC-based SSO to authenticate Claude users through your c
 #### ClickOps Implementation
 
 **Step 1: Access Identity and Access Settings**
-1. Navigate to: **platform.claude.com** → **Settings** → **Identity and access** (Console organizations) or **claude.ai** → **Admin settings** → **Organization and access** (Team and Enterprise plans)
+1. Navigate to: **platform.claude.com** → **Settings** → **Identity and access** (Console organizations) or **claude.ai** → **Organization settings** → **Organization and access** (Team and Enterprise plans)
 2. In the **Authentication** section, click **Setup SSO** (or **Manage SSO** if a connection already exists)
 
 **Step 2: Configure SSO via WorkOS**
@@ -126,7 +158,7 @@ Configure SAML 2.0 or OIDC-based SSO to authenticate Claude users through your c
 #### Validation & Testing
 1. Attempt login without SSO — should be redirected to IdP
 2. Complete SSO login — should succeed and land in Claude
-3. Remove user from IdP group — should lose Claude access
+3. With SCIM configured, remove a pilot user from the assigned IdP group and verify deprovisioning. With SSO alone, separately terminate existing sessions and remove membership; do not infer those actions from a failed new login.
 4. Cross-reference org member list (API) with IdP directory
 
 **Expected result:** All users authenticate via SSO; no standalone password logins
@@ -186,7 +218,7 @@ Assign the minimum necessary organization role to each user. The role model diff
 - Organization Admin access
 - Current member inventory with role justifications
 
-#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Settings → Members path walked on a live Console organization: member table with Role column and Role filter observed; Edit Role not reachable on a single-member org" date="2026-10-04" %}
+#### ClickOps Implementation
 
 **Step 1: Review Current Role Assignments**
 1. Navigate to: **platform.claude.com** → **Settings** → **Members**
@@ -197,7 +229,7 @@ Assign the minimum necessary organization role to each user. The role model diff
 1. For each user with unnecessary admin access:
    - Click the user → **Edit Role**
    - Select `developer` or `user` as appropriate
-2. Ensure at least 2 (but no more than 3) admins remain for redundancy
+2. Keep a small, named set with a tested independent recovery path. A numeric headcount alone does not establish least privilege. Review parent Owners/Admins independently from child roles (1.7).
 
 **Step 3: Establish Role Assignment Policy**
 1. Define criteria for each role level
@@ -213,7 +245,7 @@ Assign the minimum necessary organization role to each user. The role model diff
 #### Validation & Testing
 1. List all org members via Admin API — count admins <= 3
 2. Verify no user has admin role without documented justification
-3. Attempt to assign admin role via API — should fail (by design)
+3. Review the documented assignable-role set without attempting a privilege grant. Confirm existing elevated roles and their business justification through the read-only inventory.
 4. Verify billing role holders match authorized finance contacts
 
 **Expected result:** Admin role limited to 2-3 operators; all other users at minimum necessary privilege
@@ -247,7 +279,7 @@ Assign the minimum necessary organization role to each user. The role model diff
 | SOC 2 | CC6.1, CC6.6 |
 
 #### Description
-Admin credentials grant organization-wide management access — treat them with the same care as cloud provider root credentials. The credential model is now two-track, and differs by organization type. **Claude Console organizations** create Admin API keys (`sk-ant-admin01-...`) at **Console → Settings → Admin keys** (admin role required); Console admin keys have **no selectable scopes** — every key carries full access to all endpoints that accept admin keys. **Claude Enterprise (claude.ai) organizations** create *scoped* keys (`sk-ant-api01-...`) at **claude.ai → Organization settings → API**: the parent org's **primary owner** can create keys for all linked organizations, while an **organization owner** can create only Compliance-scoped keys restricted to their own organization. Separately, the Admin API also accepts a short-lived **OAuth bearer token with the `org:admin` scope** — and the service-account, federation-issuer, and federation-rule endpoints accept *only* that OAuth token, never an admin key.
+Admin credentials grant organization-wide management access — treat them with the same care as cloud provider root credentials. The credential model is now two-track, and differs by organization type. **Claude Console organizations** create Admin API keys (`sk-ant-admin01-...`) at **Console → Settings → Admin keys** (admin role required); Console admin keys have **no selectable scopes** — every key carries broad access to the endpoints that accept it. For Enterprise integrations choose the exact narrow scopes needed; `read:org_audit` also reaches conversation and session content and is excessive for a settings-only monitor. **Claude Enterprise (claude.ai) organizations** create *scoped* keys (`sk-ant-api01-...`) at **claude.ai → Organization settings → API**: the parent org's **primary owner** can create keys for all linked organizations, while an **organization owner** can create only Compliance-scoped keys restricted to their own organization. Separately, the Admin API also accepts a short-lived **OAuth bearer token with the `org:admin` scope** — and the service-account, federation-issuer, and federation-rule endpoints accept *only* that OAuth token, never an admin key.
 
 #### Rationale
 **Why This Matters:**
@@ -262,7 +294,7 @@ Admin credentials grant organization-wide management access — treat them with 
 - Organization Admin access (Console) / primary owner or organization owner (Enterprise)
 - Secrets management solution (Vault, AWS Secrets Manager, etc.)
 
-#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Console → Settings → Admin keys walked live: admin key created with the 3-hour preset (3 hours, 1 day, 7 days, 30 days, Custom, Never observed), then deleted from the row menu; claude.ai Enterprise path not walked" date="2026-10-04" %}
+#### ClickOps Implementation
 
 **Step 1: Audit Existing Admin Keys**
 1. Navigate to: **Console → Settings → Admin keys** (Console orgs) and **claude.ai → Organization settings → API → Keys** (Enterprise orgs)
@@ -288,7 +320,7 @@ Admin credentials grant organization-wide management access — treat them with 
 
 #### Code Implementation
 
-{% include pack-code.html vendor="anthropic-claude" section="1.3" validated_types="api" mark_status="ai-validated" mark_evidence="admin-key validity pack executed against a live Console organization: exit 0 with the live key, exit 1 with an invalid key and with the revoked key" mark_date="2026-10-04" %}
+{% include pack-code.html vendor="anthropic-claude" section="1.3" %}
 
 #### Validation & Testing
 1. Validate admin key works via `/v1/organizations/me` endpoint
@@ -354,6 +386,180 @@ Anthropic exposes no API that sets tenant restrictions; the proxy does. This pac
 |-----------|-----------|---------------------|
 | **SOC 2** | CC6.7 | Restrict transmission of information |
 | **NIST 800-53** | SC-7, AC-4 | Boundary protection; information flow enforcement |
+
+---
+
+### 1.5 Bound Interactive Session Lifetimes
+
+**Profile Level:** L2 (Walk)
+
+#### Description
+Choose a finite session duration on each child organization. The published Cowork baseline recommends seven days, with one day for higher assurance; this is guidance, not a claim about the Security Center’s exact pass value.
+
+#### Rationale
+**Why This Matters:**
+- A stolen authenticated session can outlive an IdP policy change.
+- Shortening the duration immediately expires sessions older than the new limit and may interrupt scheduled work.
+
+**Attack Prevented:** Persistent use of stolen interactive sessions.
+
+#### ClickOps Implementation
+
+1. Open **claude.ai → Organization settings → Organization and access → Session security → Shortened session length** (Admin or above). Enterprise offers 1, 7, 14 or 28 days; choose seven days or a documented stricter requirement.
+2. For Console, use **Settings → Organization and access → Session security**; its choices are 1, 3 or 7 days. Do not assume identical plan choices.
+3. Pilot before shortening. Document the effect on unattended schedules, authentication dependencies and the recovery owner. Do not treat the default active-session behavior as a 28-day absolute limit.
+
+**Automation:** Unverified — no write handle verified for this setting in the inspected public Admin/Compliance references. Configure it on the documented surface; the effective-settings read pack in [Enterprise 2.4](/guides/claude-enterprise/#24-assess-effective-settings-against-an-explicit-baseline) covers only rows actually returned, not device policy or manual attestations.
+
+#### Validation & Testing
+1. Read `account_session_duration_seconds` through Enterprise effective settings where returned; null means no limit, missing means unavailable/not admin-controllable.
+2. Verify sign-in expiry with a pilot account and confirm required scheduled work still authenticates.
+
+**Expected result:** The documented boundary is exercised and any unsupported surface or exception is recorded.
+
+#### Operational Impact
+Expect reauthentication. Increasing or disabling the limit does not restore already expired sessions; existing expirations can remain scheduled.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|------------|---------------------|
+| CIS Controls | 4.1, 6.8 | Secure configuration and role-based access |
+| NIST 800-53 | AC-6, CM-6, AU-6 | Least privilege, configuration and evidence |
+| SOC 2 | CC6.1, CC7.2 | Access and monitoring |
+
+**Sources:** [support.claude.com](https://support.claude.com/en/articles/13163631-configuring-session-security-settings) · [trust.anthropic.com](https://trust.anthropic.com/resources?name=claude-cowork-security-best-practices&s=uukz8hyx7jmdmo80lys36s) (checked 2026-11-05).
+
+---
+
+### 1.6 Prevent Shadow Accounts and Plan Domain Capture
+
+**Profile Level:** L2 (Walk)
+
+#### Description
+Verify company domains, restrict new organization creation, and separately decide whether to claim existing personal accounts. Domain capture is an irreversible migration decision, not a routine toggle to test.
+
+#### Rationale
+**Why This Matters:**
+- Verified email domains do not by themselves force existing personal accounts into an Enterprise.
+- Migration changes the organization’s access to account data and can disrupt users unless SSO and provisioning already work.
+
+**Attack Prevented:** Corporate data leaving through unmanaged personal accounts or shadow organizations.
+
+#### ClickOps Implementation
+
+1. As an Owner, open **Organization settings → Organization and access → Security** and review **Restrict organization creation** for verified domains. Team plans can block new personal accounts but cannot claim existing ones.
+2. For Enterprise domain capture, verify DNS, actively enforce SSO and enable JIT or SCIM first. Review/export the discovered personal-account inventory and plan the migration with affected owners.
+3. Only after that review, decide whether to enable **Migrate accounts using your domain**. Follow the current migration procedure; do not enable it as an audit or promise a rollback.
+
+**Automation:** Unverified — no write handle verified for this setting in the inspected public Admin/Compliance references. Configure it on the documented surface; the effective-settings read pack in [Enterprise 2.4](/guides/claude-enterprise/#24-assess-effective-settings-against-an-explicit-baseline) covers only rows actually returned, not device policy or manual attestations.
+
+#### Validation & Testing
+1. Confirm the domain, SSO enforcement and provisioning prerequisites independently.
+2. Check new account/organization restrictions and migration outcomes with a specifically approved pilot; retain a record of scope and notices.
+
+**Expected result:** The documented boundary is exercised and any unsupported surface or exception is recorded.
+
+#### Operational Impact
+Capture cannot be reversed. Local/device org pinning and connector Domain Guard remain separate controls, including off-network users.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|------------|---------------------|
+| CIS Controls | 4.1, 6.8 | Secure configuration and role-based access |
+| NIST 800-53 | AC-6, CM-6, AU-6 | Least privilege, configuration and evidence |
+| SOC 2 | CC6.1, CC7.2 | Access and monitoring |
+
+**Sources:** [support.claude.com](https://support.claude.com/en/articles/14625619-claim-and-migrate-accounts-on-your-domain) · [trust.anthropic.com](https://trust.anthropic.com/resources?name=claude-cowork-security-best-practices&s=uukz8hyx7jmdmo80lys36s) (checked 2026-11-05).
+
+---
+
+### 1.7 Separate Parent Administration from Child Access
+
+**Profile Level:** L2 (Walk)
+
+#### Description
+For organizations enrolled in centralized management (beta), review the parent at admin.claude.com as a separate privileged plane. Enrollment does not merge child organizations or grant parent administrators access to their content.
+
+#### Rationale
+**Why This Matters:**
+- Parent Owners can assign parent administrators; parent Admins manage company identity but cannot assign those roles.
+- A parent-wide Compliance key can read across linked organizations even though a parent role alone does not grant child membership.
+
+**Attack Prevented:** Cross-organization privilege expansion through centralized identity or audit credentials.
+
+#### ClickOps Implementation
+
+1. If already enrolled, open **admin.claude.com → Admin roles** and minimize the named parent Owners and Admins; review each child organization’s membership independently.
+2. Review parent **Identity providers**, **Domains**, **Groups** and **API keys**. With multiple IdPs, check each domain’s routing, SSO enforcement, directory and each child’s group-to-role mappings. Split domains require SCIM or invite-only provisioning, not JIT.
+3. Treat enrollment as a separate approved project: every child must approve, and final approval completes an irreversible transition. Do not enroll solely to follow this guide. Marketplace and HIPAA eligibility have beta limitations.
+4. Before disabling/removing an IdP, migrate domain routes and group mappings. Removing the last SSO can turn off Require SSO; disconnected directories can remove members or switch provisioning to invite-only, and reconnecting does not restore the mode automatically.
+
+**Automation:** Unverified — no write handle verified for this setting in the inspected public Admin/Compliance references. Configure it on the documented surface; the effective-settings read pack in [Enterprise 2.4](/guides/claude-enterprise/#24-assess-effective-settings-against-an-explicit-baseline) covers only rows actually returned, not device policy or manual attestations.
+
+#### Validation & Testing
+1. Reconcile parent roles, child roles and key scopes separately; a successful child-role audit is insufficient.
+2. Verify fresh sign-in and offboarding for each domain/IdP and retain an independent recovery path before changes.
+
+**Expected result:** The documented boundary is exercised and any unsupported surface or exception is recorded.
+
+#### Operational Impact
+Identity changes can affect every child. Use current enrollment eligibility and recovery instructions; do not infer a safe reversal from the continued existence of the child orgs.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|------------|---------------------|
+| CIS Controls | 4.1, 6.8 | Secure configuration and role-based access |
+| NIST 800-53 | AC-6, CM-6, AU-6 | Least privilege, configuration and evidence |
+| SOC 2 | CC6.1, CC7.2 | Access and monitoring |
+
+**Sources:** [support.claude.com](https://support.claude.com/en/articles/18232924-get-started-with-centralized-management) · [support.claude.com](https://support.claude.com/en/articles/18246779-set-up-multiple-identity-providers-and-split-domains) (checked 2026-11-05).
+
+---
+
+### 1.8 Restrict Source IPs with Explicit App Exceptions
+
+**Profile Level:** L2 (Walk)
+
+#### Description
+Use each Enterprise or Console organization’s IP allowlist to limit covered access to approved public egress addresses. This controls where a request originates; tenant restrictions in 1.4 control which organization can be used.
+
+#### Rationale
+**Why This Matters:**
+- A leaked key or session is harder to replay outside approved networks.
+- Parent-wide keys, excluded products and already running work need separate containment.
+
+**Attack Prevented:** Replay of stolen sessions or API credentials from unapproved networks.
+
+#### ClickOps Implementation
+
+1. Enterprise Owners open **Organization settings → Organization and access → IP allowlist**; Console Admins use **Identity and access**. Record the current public IPv4/IPv6 egress of users, CI, VPNs, proxies and `bridge.claudeusercontent.com`.
+2. Add narrow public ranges; validate all needed sources before saving. The vendor recommends the **Allow owners/admins to access this settings page from any IP address** recovery option, which also lets a compromised privileged session change the list remotely. Document that tradeoff and a tested recovery path.
+3. Allow up to 15 minutes and test both allowed and disallowed networks. API/Compliance restrictions apply to keys bound to one org, not parent-wide keys.
+4. Record exclusions: Enterprise Claude Design, Claude in Slack and Academy; externally shared artifacts; Science has partial coverage. Blocked chat tasks can continue up to 24 hours. Managed Agents API coverage does not restrict the agent runtime’s egress; cloud-provider variants have their own controls.
+
+**Automation:** Unverified — no write handle verified for this setting in the inspected public Admin/Compliance references. Configure it on the documented surface; the effective-settings read pack in [Enterprise 2.4](/guides/claude-enterprise/#24-assess-effective-settings-against-an-explicit-baseline) covers only rows actually returned, not device policy or manual attestations.
+
+#### Validation & Testing
+1. Read `ip_allowlist_enabled` and `ip_allowlist_ip_ranges` where returned; enabled resolves false when there is no active range.
+2. Validate covered-app rejection and successful recovery separately; review every exception rather than declaring the whole platform contained.
+
+**Expected result:** The documented boundary is exercised and any unsupported surface or exception is recorded.
+
+#### Operational Impact
+Missing a NAT/VPN/mobile source can block admins and workloads. Restore through a listed network, the limited recovery page, another authorized owner or Anthropic support; an IP block does not erase device data.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|------------|---------------------|
+| CIS Controls | 4.1, 6.8 | Secure configuration and role-based access |
+| NIST 800-53 | AC-6, CM-6, AU-6 | Least privilege, configuration and evidence |
+| SOC 2 | CC6.1, CC7.2 | Access and monitoring |
+
+**Sources:** [platform.claude.com](https://platform.claude.com/docs/en/manage-claude/ip-allowlisting) · [platform.claude.com](https://platform.claude.com/docs/en/manage-claude/compliance-org-data) (checked 2026-11-05).
 
 ---
 
@@ -452,7 +658,7 @@ Assess the security posture of applications and services that consume your Claud
 - **6-10 points:** Enhanced controls (dedicated workspace, low spend limits, key rotation)
 - **11-15 points:** Reject or isolate (dedicated workspace with minimum limits, frequent rotation, monitoring)
 
-#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Settings → API keys and Settings → Workspaces walked on a live Console organization; Default workspace shows no Spend or Rate limits tabs; named-workspace limit tabs not walked" date="2026-10-04" %}
+#### ClickOps Implementation
 
 **Step 1: Inventory the Keys and Their Consumers**
 1. Navigate to: **platform.claude.com** → **Settings** → **API keys**
@@ -492,9 +698,56 @@ The scoring stays a human judgement. This read-only pack supplies the matrix's *
 
 ---
 
+### 2.3 Enforce Signed Inference Hooks on Governed Requests
+
+**Profile Level:** L3 (Run)
+
+#### Description
+For Claude Enterprise, route governed prompts and pre-tool-call frames through a reviewed AI security server. Stage in shadow mode, then explicitly enforce denials and fail closed if inline inspection is mandatory. These hooks do not cover Console API organizations or cloud-provider inference.
+
+#### Rationale
+**Why This Matters:**
+- A post-event Compliance integration cannot stop a sensitive prompt before inference.
+- Enabling the feature, sampling, role exclusions, fail-open handling and circuit-breaker operation can all leave requests uninspected.
+
+**Attack Prevented:** Sensitive-text disclosure and policy-violating tool execution on governed surfaces.
+
+#### ClickOps Implementation
+
+1. An Owner/Primary Owner opens **Organization settings → Data and privacy → Inference hooks**, allows the feature, and configures a public HTTPS endpoint on port 443 without redirects or reverse tunnels. Allowing it forces **Enforce verdicts** off, even for a prior configuration.
+2. Store the generated signing secret in the approved secret manager. The server must verify raw request bytes, Standard Webhooks HMAC signatures and a five-minute timestamp bound. Enforce idempotency on webhook-id; reject unsigned requests after a signing secret exists. Never put transcripts or secrets into routine diagnostic logs.
+3. Test an allow and a deny through **Test connection**. Begin in **Shadow mode** and assess false positives; then set **Block the request**, **Requests inspected: 100%**, **Enforce verdicts: on**, **Validate tool calls: on** and review all exclusions. Default failure handling is Allow, and shadow mode never blocks.
+4. Prefer all governed roles for a baseline: **Only selected roles** inspects only members set to Custom with a selected role, excludes built-in roles and requests without a member (including Tag Slack conversations). Sampling below 100% allows the unsampled turns through even with fail-closed selected.
+5. Monitor endpoint health and `inference_hooks_circuit_breaker_tripped`; the circuit breaker applies failure handling to every request and has no per-request hook events while tripped. Keep an approved availability/recovery procedure.
+
+#### Code Implementation
+
+The documented setup is console-managed; the custom HTTPS verdict protocol is not a settings write API. Use the vendor’s [integration implementation and signature reference](https://platform.claude.com/docs/en/manage-claude/inference-hooks-endpoint) and the [Activity Feed detection pack](/guides/claude-enterprise/#21-export-and-retain-audit-logs). No undocumented toggle endpoint is supplied.
+
+#### Validation & Testing
+1. Test denial, endpoint timeout and circuit-breaker behavior in an approved pilot before relying on enforcement; confirm feed events and signature rejection.
+2. Record gaps: raw images/files, system prompts and definitions are not sent; some internal/voice tool calls and hosted Security/Code Review model calls are excluded. A deny does not remove the already stored conversation.
+
+**Expected result:** The documented boundary is exercised and any unsupported surface or exception is recorded.
+
+#### Operational Impact
+Adds synchronous latency and grants the endpoint access to transcript text. Full enforcement can stop all governed work during endpoint failure; fail open preserves availability but loses inspection.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|------------|---------------------|
+| CIS Controls | 4.1, 6.8 | Secure configuration and role-based access |
+| NIST 800-53 | AC-6, CM-6, AU-6 | Least privilege, configuration and evidence |
+| SOC 2 | CC6.1, CC7.2 | Access and monitoring |
+
+**Sources:** [platform.claude.com](https://platform.claude.com/docs/en/manage-claude/inference-hooks-configuration) · [platform.claude.com](https://platform.claude.com/docs/en/manage-claude/inference-hooks) · [platform.claude.com](https://platform.claude.com/docs/en/manage-claude/inference-hooks-endpoint) (checked 2026-11-05).
+
+---
+
 ## 3. Compliance Quick Reference
 
-These tables cover this hub's six controls only. The SOC 2, NIST 800-53 and ISO 27001 IDs are taken from the controls' own mapping tables. The NIST CSF 2.0 and AI RMF tables map the same controls at category level only, and no control's own table repeats those categories. Each product guide ([Claude Enterprise](/guides/claude-enterprise/), [Claude Code](/guides/claude-code/), [Claude API & Console](/guides/anthropic-api/)) carries the mappings for its own controls.
+The original tables below map controls 1.1–1.4 and 2.1–2.2; the new controls carry their own mappings above. The SOC 2, NIST 800-53 and ISO 27001 IDs are taken from the controls' own mapping tables. The NIST CSF 2.0 and AI RMF tables map the same controls at category level only, and no control's own table repeats those categories. Each product guide ([Claude Enterprise](/guides/claude-enterprise/), [Claude Code](/guides/claude-code/), [Claude API & Console](/guides/anthropic-api/)) carries the mappings for its own controls.
 
 ### SOC 2 Trust Services Criteria Mapping
 
@@ -642,6 +895,7 @@ This table covers this hub's controls. Product-specific availability is in each 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-05 | 1.3.0 | ai-drafted | Source-first refresh: public recommended baseline and Government/FISMA scope; session/domain/parent/IP controls and signed inference hooks; corrected access and assurance boundaries. Removed prior ai-validated status and stale surface marks after revising credential/identity guidance; public-source/offline checks only. | Codex |
 | 2026-10-04 | 1.2.1 | ai-drafted · ai-validated | validate-hth-guide run against a live Claude Console organization (Evaluation access): 4 surfaces came back VERIFIED-LIVE across 3 of 6 controls — ClickOps 1.2 (Members), 1.3 (Admin keys: a short-lived key was created and then deleted) and 2.2 (API keys, Workspaces); Code 1.3 (the admin-key validity pack, run with a short-lived admin key that was revoked afterwards: exit 0 with the live key, exit 1 with an invalid and with the revoked key). The 1.1 and 1.2 Code packs also ran read-only but are not marked: 1.01 lists members and cannot see SSO state, and 1.02 ran against a one-member org that cannot exceed its admin threshold. 1.4 and 2.1 were not exercised (no egress proxy; no pending invite), and 6.02 ran against an org with no API keys, so its Code surface is not marked. §1.1 corrected against the live Console and the SSO setup article: the Console page is **Identity and access**, its SSO controls are **Setup SSO**/**Manage SSO** under Authentication and appear only once SSO is enabled via Anthropic Sales or an organization merge, the enforcement toggles are **Require SSO for Console**/**Require SSO for Claude**, SSO is available to Console organizations as well as Team and Enterprise, and the roles are Owner/Primary Owner or Console Admin; Appendix A no longer marks 1.1 N/A for Console organizations. SSO Steps 2–4 were not walked live. | `Claude Code (Opus 5.5)` |
 | 2026-09-25 | 1.2.0 | ai-drafted | validate-hth-guide run (Phases 4-6, including an independent audit). The live Console stayed behind its sign-in wall and no Admin API key could be minted, so 0 surfaces were exercised live and no status was added; packs were exercised offline against a mock of the documented Admin API. Fixes: the shared POST helper appended a stray `}` to every request body, so 1.02's role change could never send valid JSON (now fixed, and 1.02 keeps the API's response, a member record, off stdout); packs 1.01, 1.02, 1.03 and 6.01 now exit 1 when an API call fails (they printed `[FAIL]` and exited 0) and page through `has_more`/`last_id` with `limit=1000` (the shared helper read a `next_page` field the API never returns, so every list stopped at 20 entries); the admin key reaches curl as a header file instead of a command-line argument; 1.01 drops the Linux-only `column -N`; 6.01 prints `invited_at` (invites have no `created_at`); 1.02 matches undocumented roles exactly; 1.02 and 6.01 now declare `mode: mutating` for their opt-in write branches, which also validate their inputs. New read-only packs: 1.04 verifies tenant restrictions from inside the network against the documented HTTP 403 `tenant_restriction_violation`; 6.02 inventories active API keys by scope (workspace, Default Workspace, organization) for 2.2. §2.2 gains ClickOps steps (Settings → API keys, workspace limits under Settings → Workspaces). §1.4 names where each organization type shows its organization ID and says to overwrite the header. §1.2: Limited Developer is a workspace role, not an organization role. §3 and Appendix A rebuilt around this hub's six controls (they cited sections 3.1-7.11, which now live in the product guides); CSF 2.0 `PR.AC` corrected to `PR.AA`; ISO IDs labelled as 2013 Annex A numbering; §3 now says its CSF 2.0 and AI RMF rows are category-level mappings that no control table carries; §1.4's Compliance Mappings table gains `AC-4`, which its header table already listed. Usage Policy link moved to anthropic.com/legal/aup; doc_links.yml points at platform.claude.com and academy.claude.com directly. Correction to the 1.1.0 row: Anthropic documents the OAuth access-token prefix quoted there for tokens issued by `POST /v1/oauth/token` (WIF reference); the prefix of interactive `ant auth login --scope "org:admin"` tokens is not documented and was not verified. | `Claude Code (Opus 5.5)` |
 | 2026-08-15 | 1.1.0 | ai-drafted | Admin API currency pass against platform.claude.com. §1.2 role model corrected to the two-org-type picture: five Console/API roles plus the Console UI's Limited Developer tier, `owner`/`primary_owner` above admin, `managed`/`membership_admin` on the Enterprise side, and the full nine-value API role enum documented so audit scripts stop silently miscounting; the admin-assignment and admin-removal API blocks are now quoted from the current references. §1.3 rebuilt on the two-track credential model — Console admin keys (`sk-ant-admin01-`, no selectable scopes) vs Claude Enterprise scoped keys (`sk-ant-api01-`, 12-scope table, primary-owner/org-owner creation split) — plus key expiration at creation, the organization maximum-expiration policy, the `org:admin` OAuth bearer path via the `ant` CLI (dedicated admin profile, `sk-ant-oat01-` prefix added for secret-scanning coverage), and the WIF-endpoints carve-out (service-account/federation endpoints reject admin keys). References moved to canonical platform.claude.com URLs — two of the old docs.anthropic.com links were dead 404s. Roles pack rewritten to count the full enum and the elevated tier; rotation pack now audits `expires_at`. | `Claude Code (Opus 5)` |

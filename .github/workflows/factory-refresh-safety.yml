@@ -1,0 +1,40 @@
+name: Factory Family Safety
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packs/factory/**'
+      - 'packs/humanlayer/**'
+      - 'packs/fenic/**'
+      - 'scripts/test-factory-refresh.test.ts'
+      - 'scripts/test-fenic-packs.test.ts'
+      - '.github/workflows/factory-refresh-safety.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-boundaries:
+    name: Factory and HumanLayer Offline Boundaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.4'
+      - run: bun test scripts/test-factory-refresh.test.ts
+  fenic-released-sdk:
+    name: Fenic Released SDK Without Sessions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.4'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install 'fenic==0.13.0' 'tqdm==4.67.1' 'httpx==0.28.1'
+      - run: FENIC_PYTHON="$(command -v python)" bun test scripts/test-fenic-packs.test.ts

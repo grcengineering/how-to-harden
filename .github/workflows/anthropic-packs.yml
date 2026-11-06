@@ -1,0 +1,41 @@
+name: Anthropic Pack Safety
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [refresh/anthropic-security-center]
+
+permissions:
+  contents: read
+
+jobs:
+  offline-packs:
+    name: Anthropic offline contracts and official SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.4'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install pinned official SDK without lifecycle scripts
+        working-directory: packs/claude-enterprise/sdk
+        run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun test scripts/test-anthropic-refresh.test.ts
+
+  workspace-terraform:
+    name: Anthropic workspace schema and mocked plans
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: '1.17.1'
+          terraform_wrapper: false
+      - run: terraform -chdir=packs/anthropic-claude/terraform fmt -check -recursive
+      - run: terraform -chdir=packs/anthropic-claude/terraform init -backend=false -input=false
+      - run: terraform -chdir=packs/anthropic-claude/terraform validate
+      - run: terraform -chdir=packs/anthropic-claude/terraform test

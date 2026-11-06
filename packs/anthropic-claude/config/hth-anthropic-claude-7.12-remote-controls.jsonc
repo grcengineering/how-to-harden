@@ -1,0 +1,15 @@
+// Claude Code 1.3: Remote control policy (not Desktop policy or all cloud capabilities).
+// Profile: L2 | NIST: AC-6, CM-6 | SOC 2: CC6.1
+// https://howtoharden.com/guides/claude-code/#13-gate-remote-control-cloud-sessions-and-routines
+// Source: https://code.claude.com/docs/en/remote-control and managed-settings reference.
+// Apply through an approved Code managed source; verify /status and doctor.
+// HTH Guide Excerpt: begin code-remote-control-policy
+{
+  "disableRemoteControl": true,
+  "channelsEnabled": false,
+  "allowedChannelPlugins": [],
+  "permissions": {
+    "disableBypassPermissionsMode": "disable"
+  }
+}
+// HTH Guide Excerpt: end code-remote-control-policy

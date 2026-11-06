@@ -1,0 +1,19 @@
+// HTH Pack Contract: v1
+//   control: fenic-1.1
+//   guide: https://howtoharden.com/guides/fenic/#11-disable-or-bound-the-native-llm-response-cache
+//   profile: L2
+//   mode: mutating
+//   requires: existing reviewed SessionConfig; merge fields without replacing unrelated model settings
+// Source: https://github.com/typedef-ai/fenic/blob/v0.13.0/src/fenic/api/session/config.py
+// Available in v0.13.0; checked 2026-11-05. Native SessionConfig JSON fragment.
+// Remove JSONC comments before using a strict JSON loader or fenic-serve --config-file.
+// The released LLMResponseCacheConfig has NO enabled field: enabled=false is silently ignored.
+// Apply to each application's actual SessionConfig before creating its Session.
+// This does not clear prior cache files, DataFrame/catalog data or provider-side storage.
+// HTH Guide Excerpt: begin disable-response-cache
+{
+  "semantic": {
+    "llm_response_cache": null
+  }
+}
+// HTH Guide Excerpt: end disable-response-cache

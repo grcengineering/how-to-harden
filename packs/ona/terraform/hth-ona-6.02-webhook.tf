@@ -1,3 +1,5 @@
+# Stable schema reconciliation: https://github.com/gitpod-io/terraform-provider-ona/tree/v0.5.1/docs
+# Source review is not provider apply/tenant validation.
 # =============================================================================
 # HTH Pack Contract: v1
 #   control: ona-6.2
@@ -11,10 +13,10 @@
 # Frameworks: CIS Controls 8.2 | NIST 800-53 SC-8, AU-10
 # Source: https://howtoharden.com/guides/ona/#62-secure-webhooks-with-hmac-verification
 #
-# PROVIDER BLOCK LIVES IN hth-ona-1.01-configure-sso.tf.
+# Shared provider configuration: copy versions.tf once into the module.
 #
-# Transcribed from registry docs fetched 2026-08-19:
-#   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/resources/webhook                 (doc 13236821)
+# Original schema transcribed 2026-08-19; current stable source re-read 2026-11-05:
+#   https://registry.terraform.io/providers/gitpod-io/ona/0.5.1/docs/resources/webhook                 (doc 13236821)
 #   https://registry.terraform.io/providers/gitpod-io/ona/0.4.0-beta.1/docs/ephemeral-resources/webhook_secret (doc 13236823)
 # both for provider-version 105656 = 0.4.0-beta.1.
 #
@@ -22,7 +24,7 @@
 # is a marker bump — `secret_version`. Under version control, "when did we last
 # rotate this signing secret" is answerable from git log instead of from memory.
 # The ephemeral companion resource is what lets the rotated secret reach your
-# receiver without ever landing in state.
+# SCM sender without ever landing in state.
 #
 # TRAPS
 #  1. A PAT IS MANDATORY, A SERVICE-ACCOUNT TOKEN WILL NOT DO. Verbatim: "Webhooks
@@ -31,7 +33,7 @@
 #     service-account token cannot apply this pack.
 #  2. ROTATION INVALIDATES THE OLD SECRET IMMEDIATELY. Changing secret_version
 #     rotates the signing secret "and immediately invalidates its previous value".
-#     There is no overlap window: update your receiver in the same change or every
+#     There is no overlap window: update the SCM sender in the same change or every
 #     in-flight delivery fails signature verification.
 #  3. THE SECRET IS NEVER IN THIS RESOURCE. ona_webhook does not expose it —
 #     "The secret itself is never stored in this resource's state." Retrieve it
@@ -41,10 +43,9 @@
 #     ephemeral output). You cannot `output` it — that restriction is the feature.
 #     Never call the API's GetWebhookSecret from an evidence script; it is a
 #     credential-disclosing Get.
-#  4. HMAC VERIFICATION IS YOUR RECEIVER'S JOB. Ona signs; nothing in this schema
-#     makes your consumer check the signature. An unverified receiver accepts
-#     spoofed payloads no matter how this resource is configured. Verify with a
-#     constant-time comparison, and reject on mismatch.
+#  4. ONA IS THE RECEIVER. Your Git provider signs inbound SCM payloads; Ona
+#     verifies them and triggers bound Automations. Register the URL and secret
+#     on the SCM side. No arbitrary outbound HMAC receiver is created here.
 #  5. DESTROY HAS A BLAST RADIUS BEYOND THE WEBHOOK. Removing this resource
 #     "deletes the webhook and converts triggers on bound workflows to manual
 #     triggers" — automations silently stop firing rather than erroring.
@@ -69,7 +70,7 @@ variable "webhook_name" {
 variable "webhook_description" {
   description = "What this webhook is for. Maximum 500 characters."
   type        = string
-  default     = "SCM events consumed by an HMAC-verifying receiver."
+  default     = "SCM events consumed by an Ona receiving signed SCM events."
 }
 
 variable "webhook_scm_provider" {
@@ -96,7 +97,7 @@ variable "webhook_organization_scope" {
 }
 
 variable "webhook_secret_version" {
-  description = "Rotation marker. Bumping it rotates the signing secret and INVALIDATES THE OLD ONE IMMEDIATELY — update the receiver in the same change."
+  description = "Rotation marker. Bumping it rotates the signing secret and INVALIDATES THE OLD ONE IMMEDIATELY — update the SCM sender in the same change."
   type        = string
   default     = "v1"
 }
@@ -129,7 +130,7 @@ ephemeral "ona_webhook_secret" "scm_events" {
 }
 
 # Consume the secret ONLY from an ephemeral context. Uncomment and point `source`
-# at a module of yours that writes it to your receiver's secret store through an
+# at a module of yours that writes it to your SCM sender's secret store through an
 # ephemeral variable or a write-only argument:
 #
 # module "webhook_secret_target" {
@@ -146,6 +147,6 @@ output "ona_webhook_url" {
 }
 
 output "ona_webhook_secret_version" {
-  description = "Current rotation marker. Diff this against your receiver's configured secret version after every rotation."
+  description = "Current rotation marker. Diff this against your SCM sender's configured secret version after every rotation."
   value       = ona_webhook.scm_events.secret_version
 }

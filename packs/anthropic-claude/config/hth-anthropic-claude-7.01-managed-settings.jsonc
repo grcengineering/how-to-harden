@@ -1,6 +1,6 @@
 // HTH Anthropic Claude Control 7.1: Deploy Managed Settings via MDM
 // Profile: L1 | NIST: CM-6, CM-7 | SOC 2: CC6.1, CC8.1
-// https://howtoharden.com/guides/anthropic-claude/#71-deploy-managed-settings-via-mdm
+// https://howtoharden.com/guides/claude-code/#11-deploy-managed-settings-via-mdm
 //
 // managed-settings.json — Enterprise configuration deployed via:
 //   1. Server-managed settings (Claude.ai admin console, Team/Enterprise)
@@ -16,9 +16,10 @@
 //      Use numeric prefixes: 10-telemetry.json, 20-security.json
 //   4. HKCU registry (Windows/WSL): per-user fallback, read only when no
 //      other managed source delivers a policy key
-// Sources are first-wins by default: Claude Code uses the highest-ranked
-// source that carries any policy key and skips the rest without a warning
-// (/status names the skipped ones). Reference: code.claude.com/docs/en/managed-settings
+// Most managed keys select a source by default, with documented cross-source
+// exceptions for lock/env/provider/login keys. The local-file checker cannot
+// establish effective cloud/MDM enforcement. Use /status and the current
+// code.claude.com/docs/en/server-managed-settings precedence and caching rules.
 // sandbox.network.httpProxyPort / socksProxyPort must be integers when set;
 // omit them to use the built-in proxy (a null value fails schema validation).
 
@@ -166,7 +167,7 @@
       "failIfUnavailable": true,
       "autoAllowBashIfSandboxed": false,
       "allowUnsandboxedCommands": false,
-      "excludedCommands": ["docker"],
+      "excludedCommands": [],
       "filesystem": {
         "denyRead": ["~/.aws/credentials", "~/.ssh/id_*"],
         "denyWrite": ["/etc", "/usr/local/bin"],
@@ -222,3 +223,12 @@
 // autoMode is NOT read from shared project settings (.claude/settings.json)
 // to prevent checked-in repos from injecting their own allow rules.
 // HTH Guide Excerpt: end managed-settings-automode-warning
+
+// HTH Guide Excerpt: begin remote-policy-required
+// Optional managed fragment where fresh server policy is mandatory. Pilot
+// documented version/auth/provider support and failure recovery before rollout.
+// Availability loss can block startup; it is not appropriate for every deployment.
+{
+  "forceRemoteSettingsRefresh": true
+}
+// HTH Guide Excerpt: end remote-policy-required

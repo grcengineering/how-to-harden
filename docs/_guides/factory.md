@@ -1,19 +1,22 @@
 ---
 layout: guide
-title: "Factory Hardening Guide"
+title: "Factory Common Controls Hardening Guide"
 vendor: "Factory"
 slug: "factory"
+platform: "Factory"
+platform_slug: "factory"
+product: "Common Controls"
 tier: "2"
 category: "AI/ML Platform"
 description: "Harden Factory and Droid with enterprise identity, managed execution policy, sandboxing, MCP and plugin controls, model governance, data minimization, and audit evidence."
-version: "0.1.0"
+version: "0.2.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-10-31"
+last_updated: "2026-11-05"
 ---
 
 ## Overview
 
-Factory's Droid can read code, invoke tools, execute commands and connect to other services across the Factory App, CLI, SDK and automated workflows. This guide limits the access and data flows available to that agent and its integrations. Factory is provided by The San Francisco AI Factory, Inc., as identified in its [terms](https://factory.com/legal/terms-individual). This is a standalone Factory guide; marketplace distribution through another vendor does not imply that vendor owns or administers Factory.
+Factory's Droid can read code, invoke tools, execute commands and connect to other services across the Factory App, CLI, SDK and automated workflows. This guide limits the access and data flows available to that agent and its integrations. Factory is provided by The San Francisco AI Factory, Inc., as identified in its [terms](https://factory.com/legal/terms-individual). This is the **Factory common-controls hub**, including the managed Droid runtime across its App, CLI, Exec and SDK. Marketplace distribution through another vendor does not imply ownership or administration. Factory announced acquisitions of [HumanLayer](https://factory.com/news/humanlayer), [Typedef](https://factory.com/news/typedef) and [Mentlio](https://factory.com/news/mentlio); each surviving service has its own boundary. The [HumanLayer](/guides/humanlayer/), [Mentlio](/guides/mentlio/) and Typedef's [Fenic library](/guides/fenic/) guides address their documented native controls. Factory organization policy does not establish enforcement in these products. Hosted Typedef administration remains an explicit research gap in the [source coverage ledger](/research/factory-source-coverage/).
 
 **Validation status:** no tenants declared — Tier 0+1 only. The guide was researched against current public documentation; no Factory tenant, credentialed API, live CLI policy, sandbox or IdP was exercised. Maturity remains `ai-drafted` as defined in the [version registry](https://github.com/grcengineering/how-to-harden/blob/main/VERSIONS.md#maturity-statuses--the-matrix).
 
@@ -32,7 +35,19 @@ Factory's Droid can read code, invoke tools, execute commands and connect to oth
 
 ### Scope
 
-Nineteen controls cover the Factory organization and managed Droid runtime. Generic infrastructure hardening, model quality, vulnerability remediation and secret rotation procedures are outside scope. Protect source-control platforms using their own [GitHub](/guides/github/) or [GitLab](/guides/gitlab/) controls as well.
+Twenty-four controls cover the Factory organization and managed Droid runtime. Generic infrastructure hardening, model quality, vulnerability remediation and secret rotation procedures are outside scope. Protect source-control platforms using their own [GitHub](/guides/github/) or [GitLab](/guides/gitlab/) controls as well.
+
+### Products in This Platform
+
+| Product surface | Control boundary |
+|-----------------|------------------|
+| Factory App on desktop, web and mobile; Droid CLI, Exec and SDK | Shared organization policy where supported; local settings, execution and credential storage still need client review. |
+| Missions, Workstreams, IDE integrations and built-in browser | Droid execution, workspace trust, model/tool policy and session data controls below; these are capabilities, not separate identity tenants. |
+| Delegations and Automations | Separate trigger, execution identity, session visibility and downstream permissions; see 3.6–3.7. |
+| Computers, Environments, Remote Control and OpenCompute | Persistent machine, secret, relay and control-plane boundaries; see 4.4–4.5. OpenCompute private-preview infrastructure configuration is not a general host-hardening baseline. |
+| AutoWiki and telemetry | Separate persistence and export decisions; see 4.3 and 5.1. |
+| [HumanLayer](/guides/humanlayer/) and [Mentlio](/guides/mentlio/) | Separate product guides and control planes; no inherited Droid SSO, managed policy or API-key scope is assumed. |
+| Typedef's [Fenic](/guides/fenic/) | Separate library guide for native response cache, provider identities/routing and MCP exposure; no inherited Droid policy. Hosted Typedef admin controls remain unverified. |
 
 **Policy deployment matters.** Factory distinguishes hard controls from locally overridable session defaults. Apply enforcement fields at organization level through [Enterprise Controls](https://docs.factory.com/enterprise/hierarchical-settings-and-org-control), or through a protected system-managed settings file distributed by endpoint administrators. Its documented locations are `/Library/Application Support/Factory/settings.json` on macOS, `/etc/factory/settings.json` on Linux/WSL, and `C:\\Program Files\\Factory\\settings.json` on Windows. A present valid file takes precedence over remote org settings; an absent or unreadable file falls back to remote settings. A present malformed or schema-invalid file resolves to **empty org policy**, not a deny-all policy. Validate the complete merged file before deployment and confirm effective behavior on every supported client release.
 
@@ -285,9 +300,9 @@ Organization administration and a supported managed Droid deployment.
 1. Open **Settings → Enterprise Controls** in the Factory App for the active organization. Enterprise root Owners can also open the organization controls from **Admin Console → Organizations**.
 2. Set `maxAutonomyLevel` to `low` and `subagentAutonomyLevel` to `off` for the baseline policy. Choose stricter or separately scoped policy where the workflow requires it.
 3. Optionally set Off autonomy and Spec interaction as session defaults. Review Changes and save; do not treat these defaults as locked controls.
-4. Keep command blocks, sandboxing and scoped credentials enabled. A permission-bypass launch is not made safe by a session default.
+4. Keep command blocks, sandboxing and scoped credentials enabled. Droid Exec is read-only by default, but `--auto` raises preauthorized operations and `--skip-permissions-unsafe` skips approval prompts. Missions require High autonomy or unsafe permission skipping; do not use them as a way around this policy. The November 4 release notes state that child tasks inherit a run’s permission-skipping behavior. An Off subagent default does not restore those skipped prompts. Review the exact launcher and inherited credential scope for unattended runs.
 
-Source: [Factory Enterprise Controls](https://docs.factory.com/enterprise/hierarchical-settings-and-org-control), verified 2026-10-30.
+Sources: [Enterprise Controls](https://docs.factory.com/enterprise/hierarchical-settings-and-org-control), [Droid Exec](https://docs.factory.com/droid-exec/overview) and [release notes](https://docs.factory.com/changelog/release-notes), checked 2026-11-05.
 
 #### Code Implementation
 
@@ -573,6 +588,125 @@ Research workflows may need an approved alternative. Restore Search only after a
 
 ---
 
+### 2.6 Review Native Credential and Browser Identity State
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 Rev. 5 | IA-5, AC-6 |
+
+#### Description
+
+Review the identity state retained by each Droid client and companion. Protect user-level MCP and custom-model credentials, remove obsolete authentication through the supported product flow, and review browser cookies and daemon identities separately.
+
+#### Rationale
+
+**Why This Matters:**
+
+- A global MCP token or imported browser cookie can extend access beyond the current repository.
+- Git helpers, custom-model keys, Droid sign-in and Computer SSH identities are different credential stores.
+
+**Attack Prevented:** Cross-project credential reuse and retained access after a workflow or integration is retired.
+
+#### Prerequisites
+
+The account and endpoint owners, an inventory of approved downstream identities, and access to the current client’s documented settings.
+
+#### ClickOps Implementation
+
+1. Open **/mcp** and review each authenticated server; use **Clear Auth** for obsolete server credentials and remove unused configuration at its user/project/folder origin. Never assume deleting a project clears a global token.
+2. Review user `~/.factory/mcp.json`, `~/.factory/settings.json` and legacy `~/.factory/config.json` through the account’s protected configuration workflow. BYOK migration can copy old entries into settings while retaining the old file. Remove obsolete copies after verifying the replacement and recovery path.
+3. For approved BYOK, prefer the documented environment or `apiKeyHelper` flow; helpers execute commands, cache for five minutes by default and are accepted only at user/org scope. Review the helper executable and supplied endpoint. Personal BYOK is available in CLI/desktop, not web/mobile.
+4. Review the built-in browser’s imported authenticated accounts and Computer `~/.factory/.ssh/` identity separately. Remove obsolete sessions/registrations with their supported lifecycle action; do not delete unknown credential files to test a theory.
+5. Review native Droid login separately. Factory's security page states that OAuth tokens use encrypted storage, rotate every 30 days and have OS-level file permissions. This is vendor-stated behavior; the page does not establish the exact cache path, cipher/key handling, a configurable keyring-only policy or a protection-status command. Obtain those details before asserting a verified local storage posture, and do not infer them from Git helpers or MCP storage.
+
+Sources: [MCP configuration](https://docs.factory.com/harness/mcp), [BYOK](https://docs.factory.com/model-independence/byok), [native CLI security](https://docs.factory.com/enterprise/security), [Remote Control](https://docs.factory.com/remote-control) and [Computer overview](https://docs.factory.com/droid-computers/overview), checked 2026-11-05.
+
+**Automation:** Manual product credential review — `/mcp` provides Clear Auth, and BYOK uses native user/org configuration. The reviewed sources do not establish a unified credential inventory/revocation API, native encrypted-cache status command or force-keyring policy. No script guesses the native login-token file or prints credential contents. ([MCP](https://docs.factory.com/harness/mcp), [BYOK](https://docs.factory.com/model-independence/byok), [CLI security](https://docs.factory.com/enterprise/security), checked 2026-11-05.)
+
+#### Validation & Testing
+
+- In a disposable project pair, verify a server’s global authentication and confirm Clear Auth has the documented cross-project effect. Use test credentials only.
+- Check retained legacy configuration and browser/daemon identities during offboarding. Record the unresolved native sign-in storage contract as a gap, not a pass.
+
+#### Monitoring & Maintenance
+
+Review after client, integration or identity changes and during the quarterly access review. Retain the tested version, effective identity, scope and result in protected evidence.
+
+#### Operational Impact
+
+Clearing shared authentication or browser cookies interrupts every workflow that depended on that account. Preserve an approved reauthentication path and keep evidence metadata free of token values.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Relationship |
+|-----------|------------|--------------|
+| NIST 800-53 Rev. 5 | IA-5, AC-6 | Supports the access, configuration or information-flow objective described above; no certification claim. |
+
+---
+
+### 2.7 Verify Client Versions and Controlled Updates
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 Rev. 5 | CM-8, SI-2 |
+
+#### Description
+
+Inventory the installed Droid binary and update channel before relying on newly introduced managed policy. The vendor installer auto-updates by default; npm-distributed builds disable automatic updates at build time and need an explicit package update process.
+
+#### Rationale
+
+**Why This Matters:**
+
+- A correctly saved policy can be ignored by an older client.
+- Multiple installed binaries or an outdated daemon can make the tested version differ from the running version.
+
+**Attack Prevented:** Policy bypass through stale clients, duplicate installations or unreviewed dependency changes.
+
+#### Prerequisites
+
+An already installed approved Droid CLI, a trusted project and private evidence destination. Do not install or update a product solely to run this inventory.
+
+#### ClickOps Implementation
+
+1. In the installed client, review its version and release channel against the [CLI/Desktop release notes](https://docs.factory.com/changelog/release-notes). The documented version and check-only commands are supplied in Code; no stable universal GUI update path is assumed.
+2. Inventory installer and npm deployments separately. Ordinary developer installs should retain security updates. For managed pinned images only, review organization `disableAutoUpdate` (CLI and desktop) and `FACTORY_DROID_AUTO_UPDATE_ENABLED=false` in every launching environment, including the daemon, with an owned update cadence. npm builds disable updates at build time, but setting that environment variable to `true` explicitly overrides their default.
+3. Use the documented exact-version package or `droid update --version` rollback workflow through endpoint change management, then confirm the effective binary. The candidate fragment leaves organization update suppression off; it cannot override a package or local environment that disables the updater.
+4. Restart an updated local daemon and separately review managed-Computer daemon versions. Validate native rules, strict plugin policy and workspace-trust behavior on every supported client release.
+
+Source: [Droid CLI reference](https://docs.factory.com/droid-cli/cli-reference) and [release notes](https://docs.factory.com/changelog/release-notes), checked 2026-11-05. Current release at research time: CLI/Desktop 1.4.0; this is not a live installed-version claim.
+
+#### Code Implementation
+
+The CLI pack performs only `droid --version` and `droid update --check`, retaining output privately. It does not install, update, restart a daemon or invoke undocumented `doctor` flags. The native fragment is an organization-policy candidate, not proof that every client updater is enabled.
+
+{% include pack-code.html vendor="factory" section="2.7" %}
+
+#### Validation & Testing
+
+- Collect a version record from each deployment channel and compare it with the binary used by the running client/daemon.
+- Exercise supported policy and folder-trust behavior in a disposable pilot after an approved upgrade; a version string alone does not prove enforcement.
+
+#### Monitoring & Maintenance
+
+Review after client, integration or identity changes and during the quarterly access review. Retain the tested version, effective identity, scope and result in protected evidence.
+
+#### Operational Impact
+
+Check-only commands do not apply an update. Pinned deployments need their own security-update cadence; updates and rollback can interrupt sessions.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Relationship |
+|-----------|------------|--------------|
+| NIST 800-53 Rev. 5 | CM-8, SI-2 | Supports the access, configuration or information-flow objective described above; no certification claim. |
+
+---
+
 ## 3. Integration & Extension Security
 
 ### 3.1 Allow Only Reviewed MCP Servers and Tools
@@ -603,9 +737,10 @@ Enable the organization MCP policy and populate it only with reviewed server mat
 1. Open the organization's **Enterprise Controls** and set `mcpPolicy.enabled` to `true`. Start with an empty `allowlist` during assessment.
 2. Review proposed remote hostnames or exact stdio commands and arguments before adding entries. A remote matcher is hostname-based: scheme, path and port do not constrain it, and a parent hostname also permits subdomains.
 3. In Droid, open **/mcp** to inspect each server's origin, enabled tools and authentication. Prefer explicit `enabledTools` where an integration needs only a subset.
-4. Review persistent tool permissions. Store credentials outside project `mcp.json`; use supported environment references or the keyring.
+4. Review persistent tool permissions and their transport fingerprints: stdio command/arguments or remote URL. Revoke obsolete grants through **/mcp → Permissions**. OAuth credentials are global across projects, using the system keyring or a fallback file; authentication in one project can apply in another. **/mcp → Clear Auth** removes a server’s stored credentials. No force-keyring switch or exact fallback path was verified.
+5. Keep secrets out of repository `mcp.json`. Supported `${NAME}` references expand only in environment/header and OAuth client credential fields, not command, arguments or URL. A missing referenced variable fails that connection; it is not an empty credential. Scope downstream grants independently of server admission.
 
-Source: [Factory configuration documentation](https://docs.factory.com/harness/mcp), verified 2026-10-30.
+Source: [Factory configuration documentation](https://docs.factory.com/harness/mcp), checked 2026-11-05.
 
 #### Code Implementation
 
@@ -669,10 +804,11 @@ A client release that recognizes `strictEnabledPlugins` and the marketplace poli
 
 1. Open the organization's **Enterprise Controls** and set `strictEnabledPlugins` to `true`. Review `enabledPlugins` as the exhaustive approved map.
 2. Review `strictKnownMarketplaces` and all organization `extraKnownMarketplaces`. Organization-added sources are automatically included even when the strict list is empty.
-3. For an approved remote marketplace, prefer its supported full commit `sha` pin and review the pinned source. Inspect each plugin's own dependencies as well.
-4. Save and test a normal member's attempt to enable an unlisted plugin. Check default plugins as well; strict mode disables defaults unless explicitly listed.
+3. For an approved Git marketplace, pin a full 40-character commit `sha` and inspect plugin dependencies. An npm version/range/tag is resolved again on refresh; a mutable tag does not pin reviewed code. Inspect the recorded version, resolved URL and integrity as well as the marketplace source.
+4. Save and test a normal member’s attempt to enable an unlisted plugin. Strict mode disables defaults unless explicitly listed. Check installed provenance too: the documented source/name check is rolling out separately. Older relative-path-only strict lists can block new installs while leaving installed plugins active. Do not report that rollout as universal installed-code enforcement.
+5. For private Git sources, use the documented OS keychain, Git Credential Manager or SSH path. Git’s `store` helper writes plaintext to `~/.git-credentials`; its protection is separate from Droid’s own sign-in state and MCP tokens. A Droid Computer needs both the personal connected GitHub account’s access and the Factory GitHub App installation grant.
 
-Source: [Factory configuration documentation](https://docs.factory.com/enterprise/internal-plugin-marketplaces), verified 2026-10-30.
+Source: [Factory configuration documentation](https://docs.factory.com/enterprise/internal-plugin-marketplaces), checked 2026-11-05.
 
 #### Code Implementation
 
@@ -794,11 +930,12 @@ Limit Factory's source-control integration and each service account to the repos
 1. Open organization **Settings → API Keys** and select the service account that owns the workflow.
 2. For GitHub or GHES, review the organization's GitHub App installation and grant only the repositories the service account requires.
 3. For GitLab or self-hosted GitLab, configure the account's own token under its **Git Credentials** and scope repository access in the source-control platform.
-4. Test both an approved repository and a repository outside the assignment. Preserve branch protection and PR review requirements in the SCM platform.
+4. Test both an approved repository and a repository outside the assignment. On Droid Computers, reconcile both connected-account access and GitHub App installation scope. Do not substitute a broad Git credential helper when that intersection denies access.
+5. Require independent review in the SCM platform. The requester can approve a Factory-authored PR; Factory recommends two required approvals or a dedicated required check for `factory-droid[bot]` to guarantee another reviewer. Review branch protections using the [GitHub guide](/guides/github/); this is not a Factory reviewer toggle.
 
-Source: [Factory configuration documentation](https://docs.factory.com/enterprise/identity-and-access), verified 2026-10-30.
+Source: [Factory configuration documentation](https://docs.factory.com/enterprise/identity-and-access), checked 2026-11-05.
 
-**Automation:** ClickOps only for Factory's SCM credential and installation association — the current public administration reference documents no supported write operation for those associations. Repository installation scope is managed in the SCM platform; do not invent a Factory repository-allowlist endpoint. ([Public API reference](https://docs.factory.com/api-reference), verified 2026-10-30.)
+**Automation:** ClickOps only for Factory's SCM credential and installation association — the current public administration reference documents no supported write operation for those associations. Repository installation scope is managed in the SCM platform; do not invent a Factory repository-allowlist endpoint. ([Public API reference](https://docs.factory.com/api-reference), checked 2026-11-05.)
 
 #### Validation & Testing
 
@@ -886,6 +1023,123 @@ Disabling an app blocks its managed tools for the organization, but does not rev
 | CIS Controls v8 | By control family | Access Control Management; no product benchmark recommendation asserted. |
 | NIST 800-53 Rev. 5 | AC-3, AC-6 | Enforce approved integration availability and downstream least privilege. |
 | SOC 2 | CC6.3 | Supports authorization and removal of external access. |
+
+---
+
+### 3.6 Scope Delegation Identities and Inbound App Access
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 Rev. 5 | AC-3, AC-6, AC-21 |
+
+#### Description
+
+Approve each inbound delegation app and the identity that runs its work. Shared channel and issue delegations use the Apps agent profile’s service account; Slack and Google Chat DMs use the sender’s personal identity and connectors. A personal connector does not install a delegation app.
+
+#### Rationale
+
+**Why This Matters:**
+
+- A channel requester can cause work under a shared identity with broader repository or connector access.
+- The shared Apps profile applies across delegation apps and is not a separate permission boundary for each Slack channel.
+
+**Attack Prevented:** Confused-deputy execution and downstream data exposure through broadly available shared delegation.
+
+#### Prerequisites
+
+A paid organization, Factory Manager/Owner, downstream app-install authorization, and a service account whose repositories/connectors and compute are approved.
+
+#### ClickOps Implementation
+
+1. Open **Settings → Delegations → Delegation Apps**. Approve the correct Slack, Linear, Jira, Microsoft Teams or Google Chat workspace/site and review consent permissions before connecting or reconnecting. Google Chat is documented as in development; confirm availability rather than promising general access.
+2. Under **Agent Profiles → Apps → Edit**, inspect the service account, plugins, instructions and Dynamic Environment or Persistent computers. The documented Access option is **Everyone**; custom groups are coming soon. Do not assume per-channel/per-group Factory ACLs exist. Narrow the downstream channel/team/project and service-account grants accordingly.
+3. In Slack, invite Factory only to approved channels and review code-channel membership, image/file permissions and generated artifact visibility. Channel requests use the shared account; DMs require matching account email and use personal access. Personal DM defaults are under **Settings → Session Defaults → Delegations** and do not change shared execution identity.
+4. For Linear/Jira, review which issues the requesting user can expose and where progress/artifact links are posted. For Teams, review authorized tenant/team/channel access. Instructions, issue text and attachments remain untrusted input to a credentialed agent.
+5. During offboarding, remove app/channel access and reconcile the shared profile’s service account, Git grants, connectors, compute and active sessions. Require independent SCM review from control 3.4. Reconnecting to add file/image permissions is a new consent review, not routine repair.
+
+Sources: [Delegations](https://docs.factory.com/delegations), [Slack](https://docs.factory.com/delegations/slack), [Linear](https://docs.factory.com/delegations/linear), [Jira](https://docs.factory.com/delegations/jira), [Teams](https://docs.factory.com/delegations/microsoft-teams) and [Google Chat](https://docs.factory.com/delegations/google-chat), checked 2026-11-05. Exact OAuth permission lists and event-signature/replay contracts were not published in the fetched setup pages; inspect current consent and downstream audit evidence.
+
+**Automation:** ClickOps for app setup and the Apps profile — no supported public read/write contract for these associations was verified. Existing key/Computer inventories support only their named surfaces; CI automation APIs are not substituted for delegation configuration. ([Delegations](https://docs.factory.com/delegations), checked 2026-11-05.)
+
+#### Validation & Testing
+
+- In an approved test channel and DM, inspect the actual run identity, repository access, connector access and result audience. Test a user outside the approved downstream scope.
+- Verify removal prevents new delegation and separately handle active sessions and retained artifacts. Record any unknown OAuth scopes, signature validation or revocation latency.
+
+#### Monitoring & Maintenance
+
+Review after client, integration or identity changes and during the quarterly access review. Retain the tested version, effective identity, scope and result in protected evidence.
+
+#### Operational Impact
+
+Restricting channels, issue access or service-account grants can stop shared work. Existing threads and posted artifacts may remain downstream after disconnection.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Relationship |
+|-----------|------------|--------------|
+| NIST 800-53 Rev. 5 | AC-3, AC-6, AC-21 | Supports the access, configuration or information-flow objective described above; no certification claim. |
+
+---
+
+### 3.7 Constrain Automation Triggers Secrets and Run Identities
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 Rev. 5 | AC-6, IA-5, SI-10 |
+
+#### Description
+
+Review every scheduled, Slack, GitHub and webhook automation as a persistent credentialed workload. Keep trigger authority, owner, run identity and session visibility separate. Review persistent instructions and memory as executable inputs to later unattended runs.
+
+#### Rationale
+
+**Why This Matters:**
+
+- A trigger can convert untrusted messages or HTTP bodies into work performed with a service account’s permissions.
+- Rotating a webhook secret or deleting a trigger does not delete its prior sessions and downstream artifacts.
+
+**Attack Prevented:** Unauthorized unattended execution, shared-identity abuse, replay and persistent instruction poisoning.
+
+#### Prerequisites
+
+An authorized administrator, an approved workflow and a disposable pilot environment.
+
+#### ClickOps Implementation
+
+1. Open the **Automations** tab and inspect the automation’s owner, run identity, session visibility, compute, prompt and trigger. Shared/service-account defaults do not establish least privilege. The run identity cannot be changed in place; create a reviewed replacement when needed.
+2. For Slack triggers, choose explicit approved channels, sender/keyword filters and exclusions. Triggers use top-level messages, not thread replies; bots can trigger runs. Channel-name patterns can admit future matching public channels, so review scope after renames or membership changes.
+3. For webhook triggers, distribute the one-time secret through a secret manager and prefer the **X-Webhook-Secret** header. Avoid query-string secrets because URLs can enter logs. Rotate on ownership changes; rotation immediately invalidates all senders. Raw-body regex filters are input selection, not a structured authorization or HMAC-signature check.
+4. Treat the body as untrusted instructions. Document the vendor’s 200 KiB body limit, 60 requests/minute endpoint cap, identical-body 10-minute dedupe and 10-runs/hour cap. HTTP 200 means accepted before execution, not completed. No timestamp/HMAC or general replay-prevention contract was verified.
+5. For GitHub automation, inspect the setup PR before merging to the default branch, its permissions and credential-bearing execution stages. Keep untrusted PR work separate from privileged follow-up. For scheduled local work, review `HEARTBEAT.md`, memory/reports/skills and `~/.factory/automations/<slug>`; a file exceeding 256 KiB retains the previous prompt.
+6. Use **Pause** to stop new runs while investigating and review skipped paused/busy/capacity events. Delete only after reviewing ownership, local memory and prior sessions. The event feed retains outcomes for 30 days without payloads; collect additional approved downstream evidence for incident investigation.
+
+Source: [Custom Automations](https://docs.factory.com/automations/custom), checked 2026-11-05. GitHub CI Automations have a distinct API/runner contract; this guide does not treat it as an App automation settings endpoint.
+
+**Automation:** App configuration and secret rotation use the documented automation UI. A public App-automation list/update API, trigger signature schema or stable local scheduler schema was not verified, so no writer or invented SIEM event table is supplied. ([Custom Automations](https://docs.factory.com/automations/custom), checked 2026-11-05.)
+
+#### Validation & Testing
+
+- Use harmless synthetic input in a test automation to verify channel/sender selection, effective identity and private/shared result visibility. Never send a real secret in a query string.
+- Verify an incorrect or rotated secret is rejected and a paused trigger does not start work. Assess retained sessions separately; rate limits and dedupe are not proof of adversarial replay resistance.
+
+#### Monitoring & Maintenance
+
+Review after client, integration or identity changes and during the quarterly access review. Retain the tested version, effective identity, scope and result in protected evidence.
+
+#### Operational Impact
+
+Pausing or rotating can interrupt every sender. Recreate an automation to change its run identity; preserve reviewed state and a controlled replacement path.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Relationship |
+|-----------|------------|--------------|
+| NIST 800-53 Rev. 5 | AC-6, IA-5, SI-10 | Supports the access, configuration or information-flow objective described above; no certification claim. |
 
 ---
 
@@ -1049,9 +1303,11 @@ Disable cloud session synchronization and AutoWiki cloud synchronization where c
 1. Open the organization's **Enterprise Controls** and set `cloudSessionSync` and `wikiCloudSync` to `false` when hosted content is not approved.
 2. Set `sessionRetentionDays` to the reviewed requirement. Do not assume the cloud retention field deletes local transcripts, GitHub wikis, exports or existing independent copies.
 3. Review the operational impact: disabling wiki sync blocks AutoWiki API endpoints and skips Factory cloud and GitHub wiki sync.
-4. For Enterprise compliance restrictions across managed inference, managed compute or cloud sync, use Factory's written-request process; those restrictions cannot be changed through Enterprise Controls.
+4. For Enterprise compliance restrictions across managed inference, managed compute or cloud sync, use Factory’s written-request process; those restrictions cannot be changed through Enterprise Controls.
+5. Review forks, shared sessions, exports and automation history as copies of the same sensitive context. Release notes document fork sync to the cloud; a new branch or task is not a data-retention boundary. Automation state under `~/.factory/automations/<slug>` and local session records need separate lifecycle review.
+6. On the built-in browser, review imported Chrome cookies and the authenticated accounts they expose before allowing agent browsing. Cookie import is a separate sign-in path; `cloudSessionSync: false` does not clear browser authentication. No organization-wide cookie-import disable switch was verified.
 
-Source: [Factory Enterprise Controls](https://docs.factory.com/enterprise/hierarchical-settings-and-org-control), verified 2026-10-30.
+Source: [Factory Enterprise Controls](https://docs.factory.com/enterprise/hierarchical-settings-and-org-control), checked 2026-11-05.
 
 #### Code Implementation
 
@@ -1110,9 +1366,10 @@ Disable Factory-managed computers and Remote Control until their data, credentia
 1. Open the organization's **Enterprise Controls** and review `managedComputersEnabled` and `byomComputersEnabled`. The starter fragment sets both to `false`.
 2. If approved, enable the required feature and review `managedComputersAllowedEmails` or `byomComputersAllowedEmails` for the permitted operators.
 3. Inventory existing computers, registrations, workloads and stored credentials separately. Do not assume a feature toggle deletes or cleans up existing resources.
-4. Document whether execution, inference, orchestration and session storage are local, customer-hosted or Factory-hosted.
+4. Document whether execution, inference, orchestration and session storage are local, customer-hosted or Factory-hosted. App Remote Control automatically registers the running desktop host; use **Settings → Droid Computers → Remote Control** to turn it off when unneeded. CLI daemons launched with `droid daemon --remote-control` need a separate lifecycle review.
+5. Review relay-mediated access even though the connection is outbound and needs no inbound firewall port. Non-EU and EU relays are distinct documented destinations; SSH and port-forward access can still reach persistent host services. Droid Computer Ed25519 identity files under `~/.factory/.ssh/` are separate from personal SSH keys. Update the CLI manually and restart its daemon; managed Computers have a separate detail-page daemon update action.
 
-Source: [Factory Enterprise Controls](https://docs.factory.com/enterprise/hierarchical-settings-and-org-control), verified 2026-10-30.
+Source: [Factory Enterprise Controls](https://docs.factory.com/enterprise/hierarchical-settings-and-org-control), checked 2026-11-05.
 
 #### Code Implementation
 
@@ -1142,6 +1399,68 @@ Disabling a feature may interrupt remote work. Re-enable only the approved scope
 | CIS Controls v8 | By control family | Access Control Management; no product-specific benchmark recommendation is asserted. |
 | NIST 800-53 Rev. 5 | AC-17, AC-6 | Supports the access, configuration, information-flow or evidence objective described above. |
 | SOC 2 | CC6.1 | Supporting evidence for the relevant logical-access or monitoring criterion; not a certification claim. |
+
+---
+
+### 4.5 Scope Environment Secrets and Persistent Compute Access
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 Rev. 5 | AC-6, IA-5, CM-6 |
+
+#### Description
+
+Review shared organization and personal runtime-secret names alongside each Environment's repositories, build scripts and execution identity. Runtime secrets are account-scoped and are not per-Environment fields. Keep persistent machine state separate from organization policy and review it before reuse or decommissioning.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Runtime processes receive account-scoped secrets, and personal overrides can replace an organization value with the same name.
+- A persistent Computer may retain identity and service state after a session ends.
+
+**Attack Prevented:** Credential disclosure through untrusted setup, overbroad secret injection and reused compute state.
+
+#### Prerequisites
+
+An authorized administrator, an approved workflow and a disposable pilot environment.
+
+#### ClickOps Implementation
+
+1. Open **Settings → Environments** and inspect each approved Environment's repositories, setup scripts, provider/source and service-account access. Builds clone repositories, run the global Bash setup from the user's home, then run repository scripts. Runtime secrets are **not available during build**. Keep credential-dependent commands in the authorized session runtime; do not embed tokens in build scripts or snapshots to work around this boundary.
+2. Open **Settings → Account → Secrets** and review Personal plus Organization values (Manager/Owner for shared values). There are no per-Environment secret fields. Organization secrets apply to managed Computers for members and service accounts; personal secrets apply to that account's Computers in the organization and override the same organization key. A service-account delegation/automation receives that account's secrets and organization defaults, not the configuring human's personal secrets.
+3. Review organization Computer secret names through the documented API. The list returns keys only, not plaintext values, and omits personal overrides and running-process state. New instances receive current values; existing Computers need credential refresh and relevant process restarts. Deleting a personal override restores the organization value only after that lifecycle completes.
+4. Review managed Computers and Remote Control registrations using 4.4. A Computer's privileged user can change local firewall configuration; cloud feature gates do not establish an immutable host firewall. Deleting an Environment permanently deletes its provider environment but leaves existing Computers unaffected. Update Delegation, Automation and Mission references before retiring it.
+5. For OpenCompute, confirm private-preview entitlement and its provider/API lifecycle contract before use. Generic VM/image/database hardening belongs to the infrastructure owner, while injected Factory credentials and control-plane access remain in this review. Factory-hosted Environments require paid/allowed compute, are unavailable for EU organizations, and are not a local-only/air-gapped surface; customer OpenCompute availability follows its own provider policy.
+
+Sources: [Organization API](https://docs.factory.com/api-reference/organization), [Environment prerequisites and runtime secrets](https://docs.factory.com/environments/prerequisites), [creation](https://docs.factory.com/environments/create), [management](https://docs.factory.com/environments/manage) and [Computer overview](https://docs.factory.com/droid-computers/overview), checked 2026-11-05.
+
+#### Code Implementation
+
+The GET-only pack inventories Computer secret keys; it does not create, read, update or delete secret values. The documented PATCH writer is intentionally not executed. Review actual workload assignment and setup permissions in the console.
+
+{% include pack-code.html vendor="factory" section="4.5" %}
+
+#### Validation & Testing
+
+- Reconcile every returned secret name with an approved workload and owner. An empty inventory is collection evidence, not a compliance pass.
+- In a disposable Environment with test values, verify approved injection and denied access outside the assignment; separately validate decommissioning and retained machine state.
+
+#### Monitoring & Maintenance
+
+Review after client, integration or identity changes and during the quarterly access review. Retain the tested version, effective identity, scope and result in protected evidence.
+
+#### Operational Impact
+
+Removing a secret or repository grant can break startup. Plan replacement and cleanup through the workload owner; the inventory makes no changes.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Relationship |
+|-----------|------------|--------------|
+| NIST 800-53 Rev. 5 | AC-6, IA-5, CM-6 | Supports the access, configuration or information-flow objective described above; no certification claim. |
 
 ---
 
@@ -1248,11 +1567,11 @@ Enterprise organization Owner access for the audit log; a human administrator cr
 3. Collect documented enterprise-control history using the read-only API and compare revisions with change records. Treat settings snapshots as sensitive evidence.
 4. Compare remote history with endpoint-management policy too: a system-managed settings file can short-circuit remote org settings. Correlate runtime activity with telemetry rather than treating the audit log as a complete command transcript.
 
-Source: [Factory configuration documentation](https://docs.factory.com/enterprise/audit-log), verified 2026-10-30.
+Source: [Factory configuration documentation](https://docs.factory.com/enterprise/audit-log), checked 2026-11-05.
 
 #### Code Implementation
 
-The pack implements the documented paginated settings-history endpoint only. Factory documents public-API audit access, but this run did not verify an exact general audit-log export route or machine event schema; no such endpoint or SIEM table is invented.
+The pack implements the documented paginated settings-history endpoint only. The October 30 release notes announce organization audit API access for Enterprise Owners. The current API index/organization reference and audit page still did not establish an exact general export route or machine event schema in this run; no such endpoint or SIEM table is invented.
 
 {% include pack-code.html vendor="factory" section="5.2" %}
 
@@ -1294,6 +1613,9 @@ This is a reference table, not additional leveled controls.
 | Built-in Search or Fetch | Search queries, fetched content and external destinations | 2.3, 2.5; data-flow review |
 | Model provider or custom gateway | Prompts and selected repository context | 4.2; approved contracts and inference destinations |
 | Remote or managed computer | Persistent files, local services and credentials | 2.3, 4.4; separate resource lifecycle review |
+| Delegation apps | Inbound messages/issues can run as a shared service account or personal DM identity | 3.6; downstream app/channel/project scope and independent SCM review |
+| Automations | Persistent prompts, webhook secrets, unattended identities and posted results | 3.7; trigger selection, visibility, pause/rotation and retained-session review |
+| Computer secret injection | Setup and task processes can receive workload credentials | 4.5; approve names, grants and persistent lifecycle |
 | Customer OTLP collector | Runtime metadata and optionally raw content | 5.1; collector access and retention controls |
 | Cloud session sync or AutoWiki | Session and generated documentation content | 4.3; review other copies and destinations separately |
 
@@ -1301,13 +1623,13 @@ Factory Private normally uses Factory's hosted control plane with execution in t
 
 ## 7. Compliance Quick Reference
 
-Mappings identify supporting objectives and require an organization-specific assessment. They do not establish compliance or replace a product benchmark. The source sweep did not identify a Factory-specific CIS, CISA SCuBA, NSA or ACSC configuration baseline; DISA coverage was not verifiable from its public index. The [source ledger](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/factory-source-evidence.md) records the search and automation limits.
+Mappings identify supporting objectives and require an organization-specific assessment. They do not establish compliance or replace a product benchmark. The source sweep did not identify a Factory-specific CIS, CISA SCuBA, NSA or ACSC configuration baseline; DISA coverage was not verifiable from its public index. The historical [source ledger](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/factory-source-evidence.md) records that benchmark search. The [2026-11-05 coverage ledger](/research/factory-source-coverage/) records fresh discovery, acquired-product boundaries and unresolved evidence; no benchmark search is presented as newly verified merely by changing the guide date.
 
 | Objective | Guide controls | Example NIST SP 800-53 Rev. 5 families |
 |-----------|----------------|----------------------------------------|
-| Workforce and workload identity | 1.1–1.3, 3.4–3.5 | AC-2, AC-3, AC-6, IA-2, IA-5 |
-| Execution and extension boundaries | 2.1–2.5, 3.1–3.3 | AC-6, CM-5, CM-7, SC-7 |
-| Data destinations and persistence | 4.1–4.4, 5.1 | AC-4, AC-17, SC-7, SI-12 |
+| Workforce and workload identity | 1.1–1.3, 3.4–3.7 | AC-2, AC-3, AC-6, IA-2, IA-5 |
+| Execution and extension boundaries | 2.1–2.7, 3.1–3.3 | AC-6, CM-5, CM-7, SC-7 |
+| Data destinations and persistence | 4.1–4.5, 5.1 | AC-4, AC-17, SC-7, SI-12 |
 | Evidence and change review | 5.1–5.2 | AU-2, AU-6, AU-9, CM-3 |
 
 NIST's [Rev. 5 publication and current release notes](https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final) provide the control catalog; [CIS Controls](https://www.cisecurity.org/controls/v8) provide broader control-family context. CIS mappings here are by family name, not unverified safeguard numbers. ISO, PCI DSS and DISA recommendation numbers are not asserted without a verified applicable source.
@@ -1323,14 +1645,14 @@ NIST's [Rev. 5 publication and current release notes](https://csrc.nist.gov/pubs
 | Sandboxing | Depends on supported OS primitives. Test the chosen mode and each required tool before rollout. |
 | Shield | The guide uses documented secret scanning. It makes no claim that private-preview learned protections are generally available. |
 
-**Automation census (2026-10-31):** sixteen of nineteen controls have a pack, across four implemented surfaces: REST, first-party CLI, official Python SDK and native configuration. Domain/SSO setup, SCM credential/installation association and managed connector availability use documented console and external identity/SCM workflows.
+**Automation census (2026-11-05):** eighteen of twenty-four controls have a pack, across four implemented surfaces: REST, first-party CLI, official Python SDK and native configuration. Domain/SSO setup, SCM credential/installation association and managed connector availability use documented console and external identity/SCM workflows.
 
 | Surface | Verdict |
 |---------|---------|
-| Terraform resources and data sources | No official Factory/Droid provider or resource/data-source catalog identified in the official docs and registry search; no Terraform pack fabricated. |
-| REST / GraphQL | REST member, service-account/key metadata and paginated control-history reads implemented. Public write operations exist for users, limits and service accounts, but do not configure the managed-policy fields in this guide. No public GraphQL contract identified. |
-| First-party CLI | `droid rules check`, MCP inventory/permissions and plugin inventory implemented as read-only collection. |
-| Official SDK | Python `droid_sdk.list_models` verifies selectable model IDs without opening a session or making a model call. No organization-policy administration SDK method was identified. |
+| Terraform resources and data sources | The current product/API/config indexes did not establish a vendor-native provider resource or data-source catalog. Registry retrieval remains a research gap; neither absence nor an infrastructure provider is asserted as Factory policy automation. |
+| REST / GraphQL | REST member, service-account/key metadata, Computer secret-name and paginated control-history reads implemented. Public write operations exist for users, limits and service accounts, but do not configure the managed-policy fields in this guide. No public GraphQL contract identified. |
+| First-party CLI | `droid rules check`, MCP inventory/permissions, plugin/tool/Computer inventories and check-only client-version commands implemented. `droid daemon` and Computer lifecycle are distinct companion commands; no agent task is run. |
+| Official SDK | Official Python and TypeScript agent SDKs are documented. The existing Python `droid_sdk.list_models` pack verifies selectable model IDs without opening a session or making a model call. Neither fetched SDK reference established an organization-policy admin method; no fake admin SDK is supplied. |
 | Native config | Reviewed organization-policy fragments and input-validated generators. An administrator must merge, validate and deploy the complete policy. |
 | SIEM | OTLP export is documented. No assumed SIEM index/table or general audit-event schema is supplied; map the actual ingested schema before writing detections. |
 
@@ -1352,6 +1674,7 @@ See the [Factory Code Pack README](https://github.com/grcengineering/how-to-hard
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-05 | 0.2.0 | ai-drafted | Reconcile current product/control planes; add client identity/update, delegation, automation and compute-secret controls; document HumanLayer/Mentlio boundaries and remaining source gaps. Offline validation only. | Codex (GPT-6) |
 | 2026-10-31 | 0.1.0 | ai-drafted | Initial 19-control guide with source evidence, native policy fragments, REST/CLI inventories and SDK model verification; offline validation only. | Codex (GPT-6) |
 
 ## Contributing

@@ -1,6 +1,6 @@
 // HTH Anthropic Claude Control 7.6: Lock Down Hooks and Plugins
 // Profile: L2 | NIST: CM-7, SI-7 | SOC 2: CC6.1, CC8.1
-// https://howtoharden.com/guides/anthropic-claude/#76-lock-down-hooks-and-plugins
+// https://howtoharden.com/guides/claude-code/#22-lock-down-hooks-and-plugins
 //
 // Hook and plugin governance settings for managed-settings.json.
 // Prevents untrusted hooks, restricts plugin marketplaces,
