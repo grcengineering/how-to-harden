@@ -39,7 +39,7 @@ hth_get() {
     hth_unknown 'GET failed at transport layer; no evidence accepted'
   fi
   [[ "$status" == 200 ]] || hth_unknown "GET returned HTTP ${status}; check entitlement, scope, credential, and source IP"
-  jq -e 'type == "object"' "$destination" >/dev/null 2>&1 || hth_unknown 'GET returned malformed JSON or a non-object'
+  jq -se 'length == 1 and (.[0] | type == "object")' "$destination" >/dev/null 2>&1 || hth_unknown 'GET returned malformed JSON, multiple values or a non-object'
 }
 
 hth_paginate() {

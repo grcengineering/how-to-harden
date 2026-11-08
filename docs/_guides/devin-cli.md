@@ -9,9 +9,9 @@ product: "Devin CLI"
 tier: "2"
 category: "AI/ML Platform"
 description: "Harden Devin CLI with enterprise identity policy, organization permissions, sandboxing, workspace trust, MCP governance, import controls, credential protection, and plugin review."
-version: "0.1.0"
+version: "0.2.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-10-30"
+last_updated: "2026-11-05"
 ---
 
 ## Overview
@@ -19,6 +19,8 @@ last_updated: "2026-10-30"
 This is a product guide within the [Cognition platform](/guides/devin/). It covers the local Devin CLI agent, including its use as the Devin Local engine in [Devin Desktop](/guides/devin-desktop/). Cloud organization identity, membership, and repository authorization belong in the hub; local permissions and device policies do not replace those controls.
 
 Devin CLI can run commands, read credentials available to the operating-system user, load executable extensions, and access remote services. Separate three boundaries: administrator-managed policy, user/project configuration, and operating-system isolation. A rule written in a repository is not an immutable organization policy. [Cognition's controls reference](https://docs.devin.ai/cli/enterprise/controls) also documents differences between this agent and legacy Cascade.
+
+Organization local-agent list overrides **replace**, rather than merge with, root policy. Review the [common root/override control](/guides/devin/#26-reconcile-local-agent-root-policy-and-organization-overrides) before relying on inherited permission, model or MCP lists.
 
 ### Intended Audience
 
@@ -34,7 +36,7 @@ Devin CLI can run commands, read credentials available to the operating-system u
 
 ### Scope
 
-Eight controls cover local execution and associated enterprise administration. The CLI can also drive cloud sessions; those sessions require the [Devin hub's controls](/guides/devin/). This guide does not claim that a local configuration secures cloud execution, that network filtering is production-stable, or that hooks are a fail-closed security boundary.
+Twelve controls cover local execution and associated enterprise administration. The CLI can also drive cloud sessions; those sessions require the [Devin hub's controls](/guides/devin/). This guide does not claim that a local configuration secures cloud execution, that network filtering is production-stable, or that hooks are a fail-closed security boundary.
 
 **Validation status:** no tenants declared — Tier 0+1 only. Pack syntax, static fixtures, and mocked command dispatch are tested; no live login, permission denial, sandbox escape test, or admin-console change has been performed. All guidance remains `ai-drafted`.
 
@@ -242,6 +244,98 @@ In a disposable, previously untrusted checkout, verify that the CLI requests tru
 |-----------|------------|--------------|
 | NIST 800-53 Rev. 5 | AC-3; CM-6 | Access enforcement; configuration settings |
 
+### 2.3 Preserve Local Hands Approvals
+
+**Profile Level:** L2 (Walk)
+
+#### Description
+
+Keep `local_tools_bypass_permissions` false in user configuration and combine it with organization deny/ask rules before pairing a cloud session to the local host.
+
+#### Rationale
+
+**Why This Matters:**
+- Toggling bypass can approve already-pending requests immediately and persists beyond the current dialog.
+- A user preference is editable and is not equivalent to an administrator-enforced deny.
+
+**Attack Prevented:** Unexpected approval of cloud-requested local shell or file operations.
+
+#### Prerequisites
+
+Eligible Local Hands rollout, organization gate reviewed in [hub 2.5](/guides/devin/#25-control-local-hands-pairing-and-revoke-host-access), same-account session owner.
+
+#### ClickOps Implementation
+
+1. In the Local Hands permission UI keep bypass off; use **Allow once** for narrowly reviewed work. Revoke the connection when finished.
+2. For the supported native path, merge the config fragment into the **user** `config.json` (not project config); no separate documented system-policy key enforces this preference. Keep mandatory deny/ask rules in organization policy.
+3. Avoid `--public` when pairing sensitive hosts and inspect any saved broad approvals before reconnecting.
+
+#### Code Implementation
+
+The config fragment is a reviewed user-level merge only. It does not enroll a client, launch an agent or change the organization gate.
+
+{% include pack-code.html vendor="devin-cli" section="2.3" %}
+
+#### Validation & Testing
+
+On an authorized pilot request a harmless local read and confirm approval is required. Revoke access and confirm new local calls stop. Read the actual effective user configuration after restart; false on disk does not prove the organization policy or running client state.
+
+#### Compliance Mappings
+
+| Framework | Control | Mapping intent |
+|-----------|---------|----------------|
+| SOC 2 | CC6.1, CC7.2 | Supports access and monitoring objectives |
+| NIST SP 800-53 Rev. 5 | AC-3, AC-6, CM-6 | Supports configuration and access boundaries |
+| ISO 27001:2022 | A.5.15, A.8.9 | Supports access and configuration management |
+
+**Sources:** [Local Hands](https://docs.devin.ai/work-with-devin/local-hands), [Configuration file](https://docs.devin.ai/cli/reference/configuration/config-file) (retrieved 2026-11-05; documentation-backed, no live validation).
+
+---
+
+### 2.4 Bound SSH and Local Port Forwarding
+
+**Profile Level:** L2 (Walk)
+
+#### Description
+
+Treat cloud-session SSH/SCP and local forwarding as direct access channels authorized by the logged-in identity, separate from local agent sandbox rules.
+
+#### Rationale
+
+**Why This Matters:**
+- A manual remote shell is not constrained by the local agent’s tool approvals.
+- A forwarded service can expose authenticated or sensitive application state for the tunnel’s lifetime.
+
+**Attack Prevented:** Accidental access to the wrong VM and unmanaged exposure through persistent forwards.
+
+#### Prerequisites
+
+Approved cloud session, authenticated account and access owner. No new connection is needed to inventory the CLI version/authentication state.
+
+#### ClickOps Implementation
+
+1. Before using SSH verify the expected session and owner in the Devin app. `devin ssh` uses the logged-in credential; plain SSH/SCP can require browser approval at the gateway.
+2. For an approved forward use the documented `devin forward SESSION LOCAL_PORT:REMOTE_PORT` form, which binds localhost. Keep the terminal attended and stop it with Ctrl+C at completion.
+3. Review explicit system SSH flags such as `-L` separately. Do not infer local sandbox, approval or agent network policies secure a manually invoked remote shell.
+
+**Automation:** First-party `devin ssh` and `devin forward` exist, but a generic connection/forward pack would create live access without the required session-specific review. The existing [identity inventory pack](/guides/devin-cli/#11-pin-device-identity) reads auth state only; no speculative firewall/SSH administration command is supplied.
+
+#### Validation & Testing
+
+During an authorized task confirm the listener is loopback-only and closes after Ctrl+C, then inspect already-running remote processes separately. Do not start a connection for documentation validation.
+
+#### Compliance Mappings
+
+| Framework | Control | Mapping intent |
+|-----------|---------|----------------|
+| SOC 2 | CC6.1, CC7.2 | Supports access and monitoring objectives |
+| NIST SP 800-53 Rev. 5 | AC-17, SC-7 | Supports configuration and access boundaries |
+| ISO 27001:2022 | A.5.15, A.8.9 | Supports access and configuration management |
+
+**Sources:** [SSH and forwarding](https://docs.devin.ai/cli/ssh) (retrieved 2026-11-05; documentation-backed, no live validation).
+
+---
+
 ## 3. External Tools & Imported Configuration
 
 ### 3.1 Govern MCP Servers
@@ -385,6 +479,94 @@ Test with dummy ignored files and a dummy credential path. Verify the effective 
 |-----------|------------|--------------|
 | NIST 800-53 Rev. 5 | AC-3; AC-6 | Access enforcement; least privilege |
 
+### 4.2 Govern Proxy and Certificate Trust
+
+**Profile Level:** L2 (Walk)
+
+#### Description
+
+Use the supported managed proxy and operating-system CA store for approved TLS inspection. Validate the actual CLI process environment and avoid insecure certificate workarounds.
+
+#### Rationale
+
+**Why This Matters:**
+- CLI/updater routing and certificate trust are product-specific runtime dependencies.
+- A conflicting system/user proxy stops startup; a broad no-proxy exception can bypass inspection.
+
+**Attack Prevented:** Unapproved outbound routing and credential exposure through an untrusted inspection certificate.
+
+#### Prerequisites
+
+Network/endpoint administrator and an authenticated enterprise host/account baseline. Certificate installation is an OS-managed change.
+
+#### ClickOps Implementation
+
+1. Deploy the supported `system.json` proxy with the [identity policy emitter](/guides/devin-cli/#11-pin-device-identity); review exact HTTPS proxy URL and `no_proxy` entries. Remove conflicting user proxy config before rollout.
+2. For TLS inspection, install only the approved root in macOS Keychain, Windows trusted roots or the Linux system CA store following **CLI → Troubleshooting → Proxies / TLS**. Do not disable validation or assume a private `DEVIN_CA_BUNDLE` air-gapped option applies to commercial CLI.
+3. Verify environment/native proxy settings for the actual CLI and Desktop-launched Local process; shell variables do not automatically configure an already-running graphical app.
+
+**Automation:** The commercial native proxy emitter/auditor is [CLI 1.1](/guides/devin-cli/#11-pin-device-identity). OS CA deployment is external endpoint management, not a Devin certificate API. The fetched commercial CLI reference did not establish a supported per-user custom-CA writer or security-event SIEM schema.
+
+#### Validation & Testing
+
+On an authorized pilot test normal authentication/update traffic and expected denial with the wrong CA. Inspect startup proxy-conflict messages. Roll back the specific reviewed proxy/CA change through endpoint management; never add a trust-all workaround.
+
+#### Compliance Mappings
+
+| Framework | Control | Mapping intent |
+|-----------|---------|----------------|
+| SOC 2 | CC6.1, CC7.2 | Supports access and monitoring objectives |
+| NIST SP 800-53 Rev. 5 | SC-7, SC-8, SC-17 | Supports configuration and access boundaries |
+| ISO 27001:2022 | A.5.15, A.8.9 | Supports access and configuration management |
+
+**Sources:** [CLI troubleshooting](https://docs.devin.ai/cli/troubleshooting), [System configuration](https://docs.devin.ai/cli/enterprise/system-config) (retrieved 2026-11-05; documentation-backed, no live validation).
+
+---
+
+### 4.3 Limit Diagnostic and Conversation-State Retention
+
+**Profile Level:** L1 (Crawl)
+
+#### Description
+
+Treat CLI authentication, session history, per-run logs and full HTTP traces as sensitive local state. Set an approved collection/deletion process without mistaking gzip for retention enforcement.
+
+#### Rationale
+
+**Why This Matters:**
+- Completed logs are compressed after 48 hours; compression does not remove their contents.
+- Debug filters can expose authentication and HTTP lifecycle details; history persists outside the workspace.
+
+**Attack Prevented:** Token/context disclosure through support bundles, backups or overly broad local access.
+
+#### Prerequisites
+
+Endpoint data owner, approved retention/incident-hold policy and knowledge of real XDG/Windows state paths.
+
+#### ClickOps Implementation
+
+1. Resolve the active state root: `$XDG_DATA_HOME/devin` or `~/.local/share/devin`; Windows `%APPDATA%\devin`. Inventory `credentials.toml`, `cli` session history and `cli/logs/devin_<timestamp>_<pid>.log`; file-backed history is experimental/version-dependent.
+2. Keep owner-only access and restrict backups/collectors. Enable `RUST_LOG` HTTP/auth or `CHISEL_LOG_STDOUT`/`CHISEL_LOG_STDERR` only for a bounded troubleshooting window. Review and redact any export before sharing it.
+3. Apply the organization’s retention policy to finished logs, compressed logs and conversation history after incident holds are resolved. Do not delete active databases or treat logout as remote revocation of every copied token. Disable debug settings after collection.
+
+**Automation:** The fetched commercial CLI troubleshooting/reference describes paths and debug settings but no universal native retention policy or structured local security-audit exporter. No invented deletion command or misleading generic audit pack is supplied. Federal structured audit/rotation is separately documented in [Devin Federal](/guides/devin-federal/).
+
+#### Validation & Testing
+
+Check permissions and lifecycle on a disposable profile without reading real secrets. Confirm gzip files and experimental history files are included in the retention inventory. A product version or successful logout alone is not evidence that old logs/backups were removed.
+
+#### Compliance Mappings
+
+| Framework | Control | Mapping intent |
+|-----------|---------|----------------|
+| SOC 2 | CC6.1, CC7.2 | Supports access and monitoring objectives |
+| NIST SP 800-53 Rev. 5 | AU-9, SI-12, IA-5 | Supports configuration and access boundaries |
+| ISO 27001:2022 | A.5.15, A.8.9 | Supports access and configuration management |
+
+**Sources:** [Troubleshooting and logs](https://docs.devin.ai/cli/troubleshooting), [Stable changelog](https://docs.devin.ai/cli/changelog/stable) (retrieved 2026-11-05; documentation-backed, no live validation).
+
+---
+
 ## 5. Extension Review
 
 ### 5.1 Review Plugins and Hooks
@@ -426,7 +608,7 @@ The CLI inventory never installs, updates, or removes a plugin. The native manag
 
 #### Validation & Testing
 
-On the pilot, verify that an unapproved plugin is blocked and a pinned approved dependency resolves as intended. Test hook failures deliberately with harmless fixtures: command-hook exit `2` blocks; other nonzero exits, timeouts, or unreadable output do not. Plugin hooks are documented as best effort, and failure to fetch a managed manifest leaves that level unenforced for that session. Use independent endpoint/permission controls for mandatory boundaries.
+On the pilot, verify that an unapproved plugin is blocked and a pinned approved dependency resolves as intended. Test hook failures deliberately with harmless fixtures: the generic hook reference says exit `2` blocks while other failures do not. The [October 22 stable changelog](https://docs.devin.ai/cli/changelog/stable) separately introduces optional `fail_closed: true` for command hooks. This is a documentation/version conflict: pilot the exact installed version and do not assume fail-closed behavior from an unconfigured hook. Plugin hooks are documented as best effort, and failure to fetch a managed manifest leaves that level unenforced for that session. Use independent endpoint/permission controls for mandatory boundaries.
 
 **Operational impact and rollback:** restrictive manifests can hide useful skills. Restore the prior reviewed manifest or add the exact approved dependency; never treat a fetch failure as a successful policy evaluation.
 
@@ -461,7 +643,7 @@ These are implementation relationships, not a product-specific benchmark or a ce
 
 ## Appendix B: Automation Surface Census
 
-All eight controls have a native-config or first-party CLI pack. Two implementation types are used. The included scripts are standalone, default read-only/dry-run, and require explicit flags for local changes or session launches. JSON templates are inert until manually merged or pasted.
+Nine controls have directly wired native-config or first-party CLI packs; SSH, CA trust and diagnostic retention use evidenced operational workflows or existing cross-referenced policy packs. Two implementation types are used. The included scripts are standalone, default read-only/dry-run, and require explicit flags for local changes or session launches. JSON templates are inert until manually merged or pasted.
 
 | Surface | Documented scope and disposition |
 |---------|----------------------------------|
@@ -474,7 +656,7 @@ All eight controls have a native-config or first-party CLI pack. Two implementat
 
 ## Appendix C: References
 
-All vendor references were fetched on 2026-10-29. Documentation verification is not live product validation.
+Original references were fetched on 2026-10-29; the [November source-first ledger](/research/cognition-source-coverage-2026-11/) records the 2026-11-05 refresh and conflicts. Documentation verification is not live product validation.
 
 - [System Configuration](https://docs.devin.ai/cli/enterprise/system-config)
 - [Devin Auth](https://docs.devin.ai/cli/enterprise/devin-auth)
@@ -495,6 +677,7 @@ All vendor references were fetched on 2026-10-29. Documentation verification is 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-05 | 0.2.0 | ai-drafted | Added Local Hands, SSH/forward boundaries, proxy/CA trust and diagnostic/state retention; recorded version-specific hook failure conflict. No client enrollment or live settings changes. | Codex (GPT-6) |
 | 2026-10-30 | 0.1.0 | ai-drafted | Initial eight-control local CLI guide; eleven config/CLI packs; offline fixtures and mocked dispatch only. | Codex |
 
 ## Contributing

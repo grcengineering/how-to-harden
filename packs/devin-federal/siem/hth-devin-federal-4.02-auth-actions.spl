@@ -1,0 +1,16 @@
+# HTH Pack Contract: v1
+#   control: devin-federal-4.2
+#   guide: https://howtoharden.com/guides/devin-federal/#42-collect-and-interpret-local-structured-audit-events
+#   profile: L2
+#   mode: read-only
+#   requires: Splunk ingestion using documented devin:airgap:audit sourcetype and schema 1
+# Source: https://docs.devin.ai/federal/air-gapped/on-disk-formats (2026-11-05)
+# Run the MARKED QUERY ONLY; metadata is not SPL. Set a dashboard time window.
+# Auth actions include sso_login_denied/sso_revalidation_failed; these are not event names.
+# No alert creation, collection guarantee or retention enforcement.
+# HTH Guide Excerpt: begin auth-actions
+index=devin sourcetype="devin:airgap:audit" schema_version=1 event=auth
+| eval action=coalesce(action,"(absent)"), error_code=coalesce(error_code,"(none)"), actor_user=coalesce('actor.sso_user','actor.os_user',"(unknown)"), issuer=coalesce('actor.sso_issuer',"(absent)")
+| stats count min(_time) AS first_seen max(_time) AS last_seen
+  by action error_code issuer actor_user
+# HTH Guide Excerpt: end auth-actions

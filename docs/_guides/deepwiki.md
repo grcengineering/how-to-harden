@@ -9,9 +9,9 @@ product: "DeepWiki"
 tier: "2"
 category: "AI/ML Platform"
 description: "Security configuration for Cognition DeepWiki: public/private repository boundaries, indexing scope, credential-free public MCP, isolated research clients, and reviewed wiki configuration."
-version: "0.1.0"
+version: "0.1.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-10-30"
+last_updated: "2026-11-05"
 ---
 
 ## Overview
@@ -326,10 +326,15 @@ The DeepWiki-specific surface review checked the [product documentation index](h
 - [Cascade MCP Configuration](https://docs.devin.ai/desktop/cascade/mcp)
 - [NIST SP 800-53 Rev. 5](https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final)
 
+### November 2026 boundary clarification
+
+The public DeepWiki endpoint is `https://mcp.deepwiki.com/mcp`, with three credential-free read tools; legacy SSE is deprecated. Authenticated `https://mcp.devin.ai/mcp` is a different service: it can create/interact with sessions and manage knowledge, playbooks and schedules, not merely answer repository questions. Organization service keys select their organization; enterprise service keys and PATs require the documented `X-Org-Id`. Private **Ask Devin** can lead into a full app/session workflow. Apply hub roles, repository grants and credential policy before connecting it; do not reuse the public endpoint’s low-risk classification. [Public MCP](https://docs.devin.ai/work-with-devin/deepwiki-mcp), [authenticated MCP](https://docs.devin.ai/work-with-devin/devin-mcp) and [DeepWiki](https://docs.devin.ai/work-with-devin/deepwiki) retrieved 2026-11-05. The [source-first ledger](/research/cognition-source-coverage-2026-11/) distinguishes read and write surfaces and unresolved inventory gaps.
+
 ## Changelog
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-05 | 0.1.1 | ai-drafted | Clarified credential-free public MCP versus authenticated management/session authority, Ask Devin and deprecated SSE; retained five stable controls. Documentation refresh only. | Codex (GPT-6) |
 | 2026-10-30 | 0.1.0 | ai-drafted | Initial five-control guide; public/private boundary, indexing inventory, five API, Terraform, and configuration packs, and offline tests. No live tenant validation. | Codex |
 
 ## Contributing
