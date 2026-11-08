@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-11-08 — 151 guides. Every one is `ai-drafted`; eighteen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-11-08 — 152 guides. Every one is `ai-drafted`; eighteen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -336,6 +336,8 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Smartsheet](docs/_guides/smartsheet.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Snyk](docs/_guides/snyk.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
 | [Vercel](docs/_guides/vercel.md) | v1.3.1 | ai-drafted · ai-validated | 2026-09-25 |
+| [ZipHQ](docs/_guides/ziphq.md) | v0.3.0 | ai-drafted | 2026-11-08 |
+
 
 ---
 
