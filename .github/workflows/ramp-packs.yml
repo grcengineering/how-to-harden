@@ -1,0 +1,33 @@
+name: Ramp Pack Safety
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packs/ramp/**'
+      - 'scripts/test-ramp-packs.py'
+      - '.github/workflows/ramp-packs.yml'
+  push:
+    branches: [feat/ramp-hth-20261108]
+    paths:
+      - 'packs/ramp/**'
+      - 'scripts/test-ramp-packs.py'
+      - '.github/workflows/ramp-packs.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contracts:
+    name: Ramp offline transport and contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Exercise mocks only, without credentials or live endpoints
+        run: python3 scripts/test-ramp-packs.py
