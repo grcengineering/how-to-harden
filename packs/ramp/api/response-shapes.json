@@ -1,0 +1,508 @@
+{
+  "users": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      },
+      "role": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "scheduled_deactivation_date": {
+        "type": "string",
+        "nullable": true
+      }
+    },
+    "required": [
+      "id",
+      "email",
+      "role",
+      "status",
+      "scheduled_deactivation_date"
+    ]
+  },
+  "roles": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "base_role": {
+        "type": "string"
+      },
+      "product_capabilities": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "access": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "access",
+            "description",
+            "name"
+          ]
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "base_role",
+      "product_capabilities"
+    ]
+  },
+  "accounting": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "connection_type": {
+        "type": "string"
+      },
+      "is_active": {
+        "type": "boolean"
+      },
+      "remote_provider_name": {
+        "type": "string",
+        "nullable": true
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "last_linked_at": {
+        "type": "string",
+        "nullable": true
+      }
+    },
+    "required": [
+      "id",
+      "connection_type",
+      "is_active",
+      "remote_provider_name",
+      "created_at",
+      "last_linked_at"
+    ]
+  },
+  "webhooks": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "endpoint_url": {
+        "type": "string"
+      },
+      "event_types": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "updated_at": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "status",
+      "endpoint_url",
+      "event_types",
+      "created_at",
+      "updated_at"
+    ]
+  },
+  "audit": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "event_time": {
+        "type": "string"
+      },
+      "event_type": {
+        "type": "string"
+      },
+      "actor_id": {
+        "type": "string",
+        "nullable": true
+      },
+      "actor_type": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "event_time",
+      "event_type",
+      "actor_id",
+      "actor_type"
+    ]
+  },
+  "funds": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "display_name": {
+        "type": "string"
+      },
+      "state": {
+        "type": "string"
+      },
+      "is_shareable": {
+        "type": "boolean"
+      },
+      "is_exempt_from_policy_agent": {
+        "type": "boolean"
+      },
+      "overrides_spend_program": {
+        "type": "boolean"
+      },
+      "spend_program_id": {
+        "type": "string",
+        "nullable": true
+      },
+      "permitted_spend_types": {
+        "type": "object",
+        "nullable": false,
+        "properties": {
+          "physical_card_enabled": {
+            "type": "boolean"
+          },
+          "reimbursements_enabled": {
+            "type": "boolean"
+          },
+          "virtual_card_enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "physical_card_enabled",
+          "reimbursements_enabled",
+          "virtual_card_enabled"
+        ]
+      },
+      "spending_restrictions": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "allowed_category_codes": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "integer"
+            }
+          },
+          "allowed_vendor_ids": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "auto_lock_date": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_category_codes": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "integer"
+            }
+          },
+          "blocked_vendor_ids": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "interval": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "amount": {
+                "type": "integer"
+              },
+              "currency_code": {
+                "type": "string"
+              },
+              "minor_unit_conversion_rate": {
+                "type": "integer",
+                "nullable": true
+              }
+            },
+            "required": [
+              "amount",
+              "currency_code",
+              "minor_unit_conversion_rate"
+            ]
+          },
+          "next_interval_resets_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "start_of_interval": {
+            "type": "string",
+            "nullable": true
+          },
+          "temporary_limit": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "amount": {
+                "type": "integer"
+              },
+              "currency_code": {
+                "type": "string"
+              },
+              "minor_unit_conversion_rate": {
+                "type": "integer",
+                "nullable": true
+              }
+            },
+            "required": [
+              "amount",
+              "currency_code",
+              "minor_unit_conversion_rate"
+            ]
+          },
+          "transaction_amount_limit": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "amount": {
+                "type": "integer"
+              },
+              "currency_code": {
+                "type": "string"
+              },
+              "minor_unit_conversion_rate": {
+                "type": "integer",
+                "nullable": true
+              }
+            },
+            "required": [
+              "amount",
+              "currency_code",
+              "minor_unit_conversion_rate"
+            ]
+          }
+        },
+        "required": [
+          "allowed_category_codes",
+          "allowed_vendor_ids",
+          "auto_lock_date",
+          "blocked_category_codes",
+          "blocked_vendor_ids",
+          "limit",
+          "next_interval_resets_at",
+          "start_of_interval",
+          "temporary_limit",
+          "transaction_amount_limit"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "display_name",
+      "state",
+      "is_shareable",
+      "is_exempt_from_policy_agent",
+      "overrides_spend_program",
+      "spend_program_id",
+      "permitted_spend_types",
+      "spending_restrictions"
+    ]
+  },
+  "programs": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "display_name": {
+        "type": "string"
+      },
+      "is_shareable": {
+        "type": "boolean"
+      },
+      "permitted_spend_types": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "primary_card_enabled": {
+            "type": "boolean"
+          },
+          "reimbursements_enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "primary_card_enabled",
+          "reimbursements_enabled"
+        ]
+      },
+      "restrictions": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "allowed_categories": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "allowed_vendors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "auto_lock_date": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_categories": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "blocked_vendors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "interval": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "amount": {
+                "type": "integer"
+              },
+              "currency_code": {
+                "type": "string"
+              },
+              "minor_unit_conversion_rate": {
+                "type": "integer",
+                "nullable": true
+              }
+            },
+            "required": [
+              "amount",
+              "currency_code",
+              "minor_unit_conversion_rate"
+            ]
+          },
+          "next_interval_reset": {
+            "type": "string",
+            "nullable": true
+          },
+          "start_of_interval": {
+            "type": "string",
+            "nullable": true
+          },
+          "temporary_limit": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "amount": {
+                "type": "integer"
+              },
+              "currency_code": {
+                "type": "string"
+              },
+              "minor_unit_conversion_rate": {
+                "type": "integer",
+                "nullable": true
+              }
+            },
+            "required": [
+              "amount",
+              "currency_code",
+              "minor_unit_conversion_rate"
+            ]
+          },
+          "transaction_amount_limit": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "amount": {
+                "type": "integer"
+              },
+              "currency_code": {
+                "type": "string"
+              },
+              "minor_unit_conversion_rate": {
+                "type": "integer",
+                "nullable": true
+              }
+            },
+            "required": [
+              "amount",
+              "currency_code",
+              "minor_unit_conversion_rate"
+            ]
+          }
+        },
+        "required": [
+          "allowed_categories",
+          "allowed_vendors",
+          "auto_lock_date",
+          "blocked_categories",
+          "blocked_vendors",
+          "interval",
+          "limit",
+          "next_interval_reset",
+          "start_of_interval",
+          "temporary_limit",
+          "transaction_amount_limit"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "display_name",
+      "is_shareable",
+      "permitted_spend_types",
+      "restrictions"
+    ]
+  }
+}

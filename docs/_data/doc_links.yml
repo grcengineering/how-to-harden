@@ -1259,3 +1259,15 @@ statsig:
     - label: "Pinned Terraform Provider"
       url: "https://registry.terraform.io/providers/statsig-io/statsig/2.2.1/docs"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/statsig"
+
+ramp:
+  product_docs: "https://support.ramp.com/account-settings-and-security/"
+  api_docs: "https://docs.ramp.com/developer-api/v1/introduction"
+  hardening_docs:
+    - label: "SSO and login controls"
+      url: "https://support.ramp.com/setting-up-single-sign-on-sso-and-login-controls-in-ramp/"
+    - label: "Integration authorization security"
+      url: "https://docs.ramp.com/developer-api/v1/authorization"
+    - label: "Customer onboarding security guidance"
+      url: "https://trust.ramp.com/?itemName=product_features&source=click"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/ramp"
