@@ -1,0 +1,65 @@
+# HTH Pack Contract: v1
+#   control: ramp-5.2
+#   guide: https://howtoharden.com/guides/ramp/#52-detect-security-configuration-changes
+#   profile: L2
+#   mode: read-only
+#   requires: Ramp audit log NDJSON ingestion; Sigma backend mapping
+# Profile: L2 | NIST: AU-6, SI-4 | CIS: 8.11
+# HTH Guide Excerpt: begin security-change-detection
+title: Ramp Security Configuration Changes
+id: 56848463-cc53-4a75-9630-b22d923c81d7
+status: experimental
+description: >-
+  Detect security-relevant changes using documented Ramp event_type values.
+  Ingest the 5.1 exporter NDJSON and map this logsource to your own SIEM dataset.
+  This is a review alert, not proof of unauthorized activity.
+references:
+  - https://docs.ramp.com/developer-api/v1/api/audit-logs
+  - https://docs.ramp.com/openapi/developer-api.json
+author: How to Harden
+date: '2026-11-08'
+logsource:
+  product: ramp
+  service: audit_logs
+detection:
+  selection:
+    event_type:
+      - Login methods updated
+      - Strict MFA setting updated
+      - Role updated
+      - SSO certificate updated
+      - SSO domain DNS verification challenge created
+      - SSO domain DNS verification changed
+      - SSO domain-sharing request resolved
+      - SSO provider created
+      - SSO provider deleted
+      - SSO provider domains updated
+      - Separation of duties disabled
+      - Separation of duties enabled
+      - Bill pay approval policy updated
+      - New vendor approval policy updated
+      - Vendor edit approval policy updated
+      - Vendor payment approval policy updated
+      - Transaction approval policy updated
+      - Spend request approval policy updated
+      - Approval policy set as default
+      - IP allowlist updated
+      - Developer API client deleted
+      - Developer API client secret rotated
+      - Agent permissions updated
+      - External agent key created
+      - External agent key revoked
+      - External agent key updated
+      - Accounting provider access changed
+      - HRIS integration setting updated
+  condition: selection
+fields:
+  - id
+  - event_time
+  - event_type
+  - actor_id
+  - actor_type
+falsepositives:
+  - Approved administrator or integration maintenance
+level: medium
+# HTH Guide Excerpt: end security-change-detection

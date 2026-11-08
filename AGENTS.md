@@ -120,7 +120,7 @@ AI generates one method and stops. The bar is not "a code block exists" — it i
 
 **Enforcement and verification are different packs.** A write pack sets the control; a read pack (Terraform *data source*, read-only endpoint, audit script) proves it. A vendor with zero read packs has skipped half its surface. Corpus-wide today: 692 Terraform `resource` blocks against 40 `data` blocks.
 
-**Discovery coverage is separate from pack coverage.** For new guides, full currency passes and newly researched areas, use the [source-first candidate reconciliation](.claude/skills/_shared/source-discovery.md). A source matrix derived only from the guide cannot reveal what the guide omitted. Preserve unverified research gaps rather than calling them verified absence.
+**Discovery coverage is separate from pack coverage.** For new guides, full currency passes and newly researched areas, use the [source-first candidate reconciliation](.claude/skills/_shared/source-discovery.md). A source matrix derived only from the guide cannot reveal what the guide omitted. Preserve unverified research gaps rather than calling them verified absence. Include [Trust Center catalogs and adjacent-edition baselines](.claude/skills/_shared/trust-center-discovery.md); a single linked resource is not a catalog sweep.
 
 **Never decide "no CLI exists" from memory.** [`docs/research/cli-inventory.md`](docs/research/cli-inventory.md) is the fetch-verified census of first-party CLIs — look the vendor up. A row reading `GA-Official`/`PowerShell-Only` with admin coverage **Yes** means a `cli/` pack is *expected*, not merely permitted. `None`/`Vendor-Adjacent`/`Deprecated` means a `cli/` pack would be fabrication. No row → research it and add one in the same PR.
 
@@ -150,7 +150,7 @@ Reference sections ("Key Events to Monitor", "Integration Risk Assessment Matrix
 
 ### 7. Hardening-Guide Links Must Be Literal Hardening Docs
 
-`hardening_docs` in `docs/_data/doc_links.yml` points at actual hardening/security-configuration documentation or an authoritative benchmark (CIS, CISA SCuBA) — NEVER a Trust Center, marketing security page, or compliance-badge page. If no honest link exists, omit the key: no button beats a dishonest one. Verify every URL by fetching it; hosts that block fetchers need a real-browser check. Multiple sources use the list form (renders an expandable button):
+`hardening_docs` in `docs/_data/doc_links.yml` points at actual hardening/security-configuration documentation or an authoritative benchmark (CIS, CISA SCuBA) — NEVER a Trust Center landing page/catalog, marketing security page, or compliance-badge page. An actual customer hardening/configuration document delivered by a verified vendor Trust Center can qualify under SOURCES.md; cite the document itself and preserve its product/edition scope. If no honest link exists, omit the key: no button beats a dishonest one. Verify every URL by fetching it; hosts that block fetchers need a real-browser check. Multiple sources use the list form (renders an expandable button):
 
 ```yaml
 hardening_docs:

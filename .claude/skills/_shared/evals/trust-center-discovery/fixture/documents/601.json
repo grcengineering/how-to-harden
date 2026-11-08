@@ -1,0 +1,14 @@
+{
+  "$schema": "https://schemas.lumen.invalid/certification-overview.json",
+  "serviceIdentification": {
+    "serviceName": "Lumen Enterprise",
+    "certificationType": "20x"
+  },
+  "serviceProperties": {
+    "serviceType": "SaaS"
+  },
+  "assessment": {
+    "displayControlCount": 16
+  },
+  "customerConfigurationRequirements": []
+}

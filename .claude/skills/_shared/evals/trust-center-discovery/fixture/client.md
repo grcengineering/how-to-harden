@@ -1,0 +1,3 @@
+# Desktop settings — captured current native reference
+Applies to Lumen Desktop 3.8+ for commercial Enterprise and Government. Managed stateProtection=required binds the client's device identity state to a hardware keystore. Windows needs TPM 2.0; other platforms require their documented supported hardware and package. Pilot restart and re-enrollment recovery before enforcement; moving a copied state file to another device will not restore identity. Native configuration is a managed client policy, not a cloud-console toggle.
+The LUMEN_SEAL_STATE environment variable printed in an older deployment PDF is removed. Use the current stateProtection key. Generic operating-system volume encryption is outside this product control.

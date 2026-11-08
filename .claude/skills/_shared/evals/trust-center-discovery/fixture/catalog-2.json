@@ -1,0 +1,44 @@
+{
+  "resources": {
+    "categories": [
+      {
+        "name": "FedRAMP",
+        "items": [
+          {
+            "id": "301",
+            "title": "Lumen Government Secure Configuration Guide",
+            "isPublic": true,
+            "hasAccess": true,
+            "isViewOnly": false,
+            "url": "https://trust.lumen.invalid/doc/301",
+            "downloadUrl": "https://trust.lumen.invalid/download/301"
+          },
+          {
+            "id": "601",
+            "title": "Enterprise 20x Certification Package Overview",
+            "isPublic": true,
+            "hasAccess": true,
+            "isViewOnly": false,
+            "url": "https://trust.lumen.invalid/doc/601",
+            "downloadUrl": "https://trust.lumen.invalid/download/601"
+          }
+        ]
+      },
+      {
+        "name": "Client Deployment",
+        "items": [
+          {
+            "id": "302",
+            "title": "Lumen Desktop Federal Deployment Best Practices",
+            "isPublic": true,
+            "hasAccess": true,
+            "isViewOnly": false,
+            "url": "https://trust.lumen.invalid/doc/302",
+            "downloadUrl": "https://trust.lumen.invalid/download/302"
+          }
+        ]
+      }
+    ]
+  },
+  "next": null
+}

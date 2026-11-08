@@ -1,0 +1,25 @@
+// HTH Pack Contract: v1
+//   control: ramp-2.6
+//   guide: https://howtoharden.com/guides/ramp/#26-deploy-ramp-browser-phishing-protection
+//   profile: L2
+//   mode: mutating
+//   requires: Managed Google Chrome on Linux; administrator and privacy approval before deployment
+// HTH Ramp 2.6: Deploy Ramp Browser Phishing Protection
+// Profile: L2 | NIST: SI-3 | CIS: 9.4
+// Inert policy example: no installation happens by downloading this file.
+// Applying this policy force-installs an extension and implicitly grants its permissions.
+// Ramp License Intelligence tracking is enabled by default; employees can opt out.
+// This is Chrome deployment configuration, not a Ramp phishing-protection setting.
+// Remove comment lines to produce native JSON. Merge the entry into the existing
+// ExtensionInstallForcelist; do not overwrite other extensions or deploy duplicate keys.
+// Sources verified 2026-11-08:
+// https://support.ramp.com/install-ramp-for-chrome-for-employees-in-google-admin/
+// https://chromeenterprise.google/policies/?policy=ExtensionInstallForcelist
+// https://www.chromium.org/administrators/linux-quick-start/
+// HTH Guide Excerpt: begin managed-chrome-extension-policy
+{
+  "ExtensionInstallForcelist": [
+    "idefohglmnkliiadgfofeokcpjobdeik;https://clients2.google.com/service/update2/crx"
+  ]
+}
+// HTH Guide Excerpt: end managed-chrome-extension-policy

@@ -1282,3 +1282,15 @@ devin-federal:
     - label: "Air-gapped Audit and State"
       url: "https://docs.devin.ai/federal/air-gapped/on-disk-formats"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/devin-federal"
+
+ramp:
+  product_docs: "https://support.ramp.com/account-settings-and-security/"
+  api_docs: "https://docs.ramp.com/developer-api/v1/introduction"
+  hardening_docs:
+    - label: "SSO and login controls"
+      url: "https://support.ramp.com/setting-up-single-sign-on-sso-and-login-controls-in-ramp/"
+    - label: "Integration authorization security"
+      url: "https://docs.ramp.com/developer-api/v1/authorization"
+    - label: "Customer onboarding security guidance"
+      url: "https://trust.ramp.com/?itemName=product_features&source=click"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/ramp"

@@ -9,7 +9,7 @@
 #   - Ruby + Bundler (Jekyll build — CI only unless installed locally)
 
 .PHONY: help test test-all lint lint-content test-build \
-        test-build-jekyll test-build-sync validate-packs test-cognition-packs test-factory-packs test-tailscale-packs test-tailscale-sdk
+        test-build-jekyll test-build-sync validate-packs test-cognition-packs test-factory-packs test-tailscale-packs test-tailscale-sdk test-source-discovery-fixtures
 
 # ─── Default ──────────────────────────────────────────────────────────────────
 
@@ -19,9 +19,12 @@ help: ## Show available targets
 
 # ─── Top-level ────────────────────────────────────────────────────────────────
 
-test: lint test-build-sync test-cognition-packs test-factory-packs test-tailscale-packs ## Run local-safe tests (no live tenants or Jekyll required)
+test: lint test-build-sync test-cognition-packs test-factory-packs test-tailscale-packs test-source-discovery-fixtures ## Run local-safe tests (no live tenants or Jekyll required)
 
-test-all: lint test-build test-cognition-packs test-factory-packs test-tailscale-packs ## Run all tests including Jekyll build (requires Ruby)
+test-all: lint test-build test-cognition-packs test-factory-packs test-tailscale-packs test-source-discovery-fixtures ## Run all tests including Jekyll build (requires Ruby)
+
+test-source-discovery-fixtures: ## Validate offline source-discovery fixtures and skill reference links
+	@bun test scripts/test-source-discovery-fixtures.test.ts
 
 test-tailscale-packs: ## Exercise Tailscale REST/CLI boundaries and candidate generation offline
 	@python3 scripts/test-tailscale-packs.py

@@ -2,7 +2,9 @@
 
 The standard for what counts as a legitimate source when deriving How to Harden guide content, and how each tier may be used. Every control, rationale claim, and hardening link in this repo traces to a source admitted under this taxonomy.
 
-**The bright line:** a vendor's Trust Center, company "Security" marketing page, compliance-badge page, or "we take security seriously" whitepaper about the vendor's OWN infrastructure is **never** a hardening source. The test for any page: *does it give an administrator configuration steps, settings, or auditable requirements for hardening the product?* If it describes the vendor's certifications or internal practices instead, it fails.
+**The bright line:** a Trust Center landing/catalog page, company "Security" marketing page, compliance-badge page, or "we take security seriously" whitepaper about the vendor's OWN infrastructure is **not itself** a hardening source. The test for any page: *does it give an administrator configuration steps, settings, or auditable requirements for hardening the product?* If it describes the vendor's certifications or internal practices instead, it fails.
+
+**Search Trust Centers; judge their documents by content.** Purpose-built Trust Centers can publish customer secure-implementation/configuration guides. Search the catalog using the [Trust Center discovery workflow](.claude/skills/_shared/trust-center-discovery.md); do not reject an actual configuration document because it is hosted there. The portal/catalog helps discovery, while the document must independently meet Tier 1 admission and the requested product/edition scope.
 
 **Tier semantics:** each tier is marked by what it may do — **ORIGINATE** a control (be the reason a control exists and the source of its steps), **SET VALUES** (determine the recommended setting), or **CORROBORATE** (supply rationale, incidents, and attack context).
 
@@ -12,7 +14,7 @@ The standard for what counts as a legitimate source when deriving How to Harden 
 
 *May: ORIGINATE controls · authoritative on FACTS (whether a setting exists, its name, its default, its console path)*
 
-**What qualifies:** the vendor's own admin guides, security-configuration docs, hardening guides, API/CLI and client/daemon/system-policy references, and security-relevant release notes — on the official vendor docs domain.
+**What qualifies:** the vendor's own admin guides, security-configuration docs, hardening guides, API/CLI and client/daemon/system-policy references, and security-relevant release notes — published through an official vendor source, including verified configuration documents delivered by its Trust Center or linked hosting service.
 
 **Role:** the mandatory source class. Every control must trace to at least one Tier 1 citation proving the setting exists as described; console paths, flags and policy keys are transcribed from Tier 1. An evidenced no-GUI limitation is valid implementation context, not a reason to invent a console path.
 
@@ -20,7 +22,7 @@ The standard for what counts as a legitimate source when deriving How to Harden 
 
 **Built-in conflict of interest:** vendor docs prove what EXISTS, but vendor-recommended values favor adoption and compatibility. On strictness questions, Tier 1 does not outrank Tier 2 (see Conflict Resolution).
 
-**Representative examples** (what a Tier 1 hardening doc looks like in the wild — the vendor's own docs domain, admin-configuration content):
+**Representative examples** (what a Tier 1 hardening doc looks like in the wild — vendor-published admin-configuration content):
 
 | Vendor | Domain | Example hardening guide |
 |--------|--------|-------------------------|
@@ -30,8 +32,9 @@ The standard for what counts as a legitimate source when deriving How to Harden 
 | Zscaler | help.zscaler.com | [ZIA Policy Leading Practices Guide](https://help.zscaler.com/zscaler-deployments-operations/zia-policy-leading-practices-guide) — note: `help.zscaler.com` is a client-rendered SPA returning HTTP 200 for nonexistent paths; verify URLs via [help.zscaler.com/sitemap.xml](https://help.zscaler.com/sitemap.xml), never via HTTP status |
 | Snowflake | docs.snowflake.com | [Authentication policies](https://docs.snowflake.com/en/user-guide/authentication-policies) |
 | Ona | ona.com | [Guardrails overview](https://ona.com/docs/ona/guardrails/overview.md) |
+| Anthropic | trust.anthropic.com | [C4G FedRAMP Secure Configuration Guide](https://trust.anthropic.com/doc/trust?rid=6ab43afba6eead3d68716b5c&r=iz673w96495gyjer8h78n&download=true) — customer configuration, specifically C4G; not a commercial Enterprise/20x baseline. Public catalog and PDF body verified 2026-11-06 |
 
-**Never qualifies:** `trust.vendor.com`, `vendor.com/security` marketing pages, SOC 2 attestation pages, whitepapers about the vendor's own datacenters.
+**Never qualifies as customer configuration evidence:** Trust Center landing pages/catalog metadata, `vendor.com/security` marketing pages, SOC 2 attestation pages and whitepapers about the vendor's own datacenters. A real customer configuration document hosted on `trust.vendor.com` can qualify; verify its body and product/edition applicability.
 
 ## Tier 2 — Configuration-Prescriptive Benchmark Bodies
 
@@ -158,6 +161,7 @@ Tiers 1-2/2b are standing allowlists that rarely change. Tiers 3-4 are standing 
 
 | Date | Changes |
 |------|---------|
+| 2026-11-06 | Separate Trust Center discovery from source admission: require catalog/adjacent-edition research, admit actual vendor customer-configuration documents by content rather than hostname, preserve access/applicability gaps, and retain rejection of assurance-only pages. Added a fetched public C4G example with its deployment boundary. |
 | 2026-10-10 | Added Verification Rule 5: ownership claims (acquisitions, mergers, rebrands, spin-outs) are cited to the company's own announcement or legal pages, the acquirer's announcement, or a regulator filing such as SEC EDGAR or a competition-authority register, never to news; "announced" and "closed" are separate claims, each needing its own source. Written for the company → platform → product check that now places every guide. |
 | 2026-10-09 | Added the Tier 3 and Tier 4 sources cited by the new ChatGPT Dots and Grok Bot guides, each with an example URL fetched on 2026-10-09. Tier 3: Zenity Labs, Check Point Research, Radware Threat Intelligence, BeyondTrust Phantom Labs, Tenable Research, Adversa AI, NeuralTrust and Brave. Radware (a "Verifying your browser" bot wall that answers fetchers with HTTP 200) and BeyondTrust (HTTP 403) were read in a real browser. Tier 4: Johann Rehberger (Embrace The Red), whose identity rests on arXiv 2412.06090 because the blog itself carries only a first name and a handle, Simon Willison, and Brian Krebs. Fortune, also cited by the Grok Bot guide, was not added: it is general news reporting that credits Forbes with the first report, so it meets neither tier's admission criteria. Also updated Verification Rule 1's OpenAI host note: `help.openai.com` and `openai.com/index/**` now return HTTP 403 even to a Chrome user-agent curl (measured 2026-10-09), so they need a real-browser read, while `learn.chatgpt.com` `.md` twins fetch with HTTP 200. |
 | 2026-09-25 | Extended Verification Rule 1 with two Asana hosts found in the Asana validation run. `developers.asana.com` returns HTTP 200 with a `# Page not found` body for nonexistent `.md` paths (the non-`.md` form 404s honestly), and its live HTML pages all contain the string "page not found", so existence is checked on the `.md` twin's first heading. `help.asana.com` is a Salesforce Experience Cloud SPA that returned a byte-identical shell to a fetcher for the root and an article, so verification needs a real browser. |
