@@ -1,0 +1,57 @@
+name: ZipHQ evidence pack tests
+on:
+  pull_request:
+    paths:
+      - 'packs/ziphq/**'
+      - 'scripts/test-ziphq-packs.py'
+      - 'scripts/test-ziphq-native-packs.py'
+      - 'docs/_guides/ziphq.md'
+      - 'docs/_data/packs/ziphq.yml'
+      - 'docs/research/ziphq-source-coverage.md'
+      - '.github/workflows/ziphq-packs.yml'
+  push:
+    paths:
+      - 'packs/ziphq/**'
+      - 'scripts/test-ziphq-packs.py'
+      - 'scripts/test-ziphq-native-packs.py'
+      - 'docs/_guides/ziphq.md'
+      - 'docs/_data/packs/ziphq.yml'
+      - 'docs/research/ziphq-source-coverage.md'
+      - '.github/workflows/ziphq-packs.yml'
+permissions:
+  contents: read
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check shell syntax
+        run: for pack in packs/ziphq/api/*.sh; do bash -n "$pack"; done
+      - name: Run offline safety contracts (no secrets or tenant)
+        run: |
+          python3 scripts/test-ziphq-packs.py
+          python3 scripts/test-ziphq-native-packs.py
+  content-and-build:
+    name: ZipHQ content and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyyaml
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: docs
+      - run: bash scripts/validate-guides.sh
+      - run: bash scripts/validate-packs.sh --touched
+      - run: make test-build
