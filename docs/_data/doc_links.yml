@@ -1294,3 +1294,23 @@ ramp:
     - label: "Customer onboarding security guidance"
       url: "https://trust.ramp.com/?itemName=product_features&source=click"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/ramp"
+
+ziphq:
+  product_docs: "https://docs.ziphq.com/hc/en-us"
+  api_docs: "https://developers.ziphq.com/zipapidocs/reference/createaddress"
+  hardening_docs:
+    - label: "Native Security Settings"
+      url: "https://docs.ziphq.com/hc/en-us/articles/25604138623899-Security-Page"
+    - label: "Permissions and Groups"
+      url: "https://docs.ziphq.com/hc/en-us/articles/18921746955035-Permission-Settings-and-Groups"
+    - label: "IP Allowlists"
+      url: "https://docs.ziphq.com/hc/en-us/articles/46225974720795-IP-Allowlists"
+    - label: "Restricted API Keys and Webhook Configuration"
+      url: "https://developers.ziphq.com/zipapidocs/docs/rest-api-info-authentication-api-key-creation-and-webhooks"
+    - label: "Zip SAML Setup (Microsoft Entra)"
+      url: "https://learn.microsoft.com/en-us/entra/identity/saas-apps/zip-tutorial"
+    - label: "Zip Provisioning Setup (Microsoft Entra)"
+      url: "https://learn.microsoft.com/en-us/entra/identity/saas-apps/zip-provisioning-tutorial"
+    - label: "Supplier Authentication and Membership"
+      url: "https://docs.ziphq.com/hc/en-us/articles/17459154258715-Signing-In-to-the-Zip-Vendor-App"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/ziphq"
