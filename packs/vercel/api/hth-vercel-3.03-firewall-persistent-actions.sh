@@ -37,9 +37,9 @@ fw_patch() {
     -H "Authorization: Bearer ${VERCEL_TOKEN}" \
     -H "Content-Type: application/json" \
     "${FW_URL}" -d @-)"
-  if echo "${resp}" | jq -e 'type == "object" and has("error")' >/dev/null; then
-    echo "${resp}" | jq '.error' >&2
-    return 1
+  if ! printf '%s' "${resp}" | jq -e 'type == "object" and (has("error") | not) and (length > 0)' >/dev/null; then
+    echo "ERROR: firewall update returned an empty, malformed, or error response; outcome unverified." >&2
+    return 2
   fi
   echo "OK"
 }
@@ -64,6 +64,11 @@ fw_upsert() {
 echo "=== Current Firewall Configuration ==="
 ACTIVE_JSON="$(curl -fsS -H "Authorization: Bearer ${VERCEL_TOKEN}" \
   "https://api.vercel.com/v1/security/firewall/config/active?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}")"
+if ! printf '%s' "${ACTIVE_JSON}" | jq -e 'type == "object" and (has("error") | not) and (.rules | type == "array")' >/dev/null; then
+  echo "ERROR: active firewall response is not a valid rule inventory; refusing to write." >&2
+  exit 2
+fi
+
 printf '%s' "${ACTIVE_JSON}" | jq '{
     firewallEnabled,
     ruleCount: (.rules // [] | length),

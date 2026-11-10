@@ -96,7 +96,7 @@ A guide can be `ai-drafted` and `ni-drafted` at once. Holding both `ai-validated
 
 **Both agents at the same stage is the strongest thing this vocabulary can express.** `ai-validated` + `ni-validated` means the guidance survived contact with a real system twice, once under machine rigour and once under human judgement, and the two failure modes those catch barely overlap. There is no seventh status above it; combining is how the matrix expresses "better".
 
-**Where the corpus actually stands: no guide holds any `ni-*` status.** All 153 guides are `ai-drafted`; eighteen of them (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
+**Where the corpus actually stands: no guide holds any `ni-*` status.** All 154 guides are `ai-drafted`; seventeen of them (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
 
 #### The version qualifier
 
@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-11-08 — 154 guides. Every one is `ai-drafted`; eighteen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe, Vercel) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-11-10 — 154 guides. Every one is `ai-drafted`; seventeen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -337,7 +337,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Rippling](docs/_guides/rippling.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Smartsheet](docs/_guides/smartsheet.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Snyk](docs/_guides/snyk.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
-| [Vercel](docs/_guides/vercel.md) | v1.3.1 | ai-drafted · ai-validated | 2026-09-25 |
+| [Vercel](docs/_guides/vercel.md) | v1.4.0 | ai-drafted | 2026-11-10 |
 | [ZipHQ](docs/_guides/ziphq.md) | v0.3.0 | ai-drafted | 2026-11-08 |
 
 

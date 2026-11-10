@@ -11,12 +11,12 @@
 # -----------------------------------------------------------------------------
 
 variable "profile_level" {
-  description = "Hardening profile level: 1 = Baseline, 2 = Hardened, 3 = Maximum Security"
+  description = "Hardening profile level: 1 = Crawl, 2 = Walk, 3 = Run"
   type        = number
   default     = 1
 
   validation {
-    condition     = var.profile_level >= 1 && var.profile_level <= 3
+    condition     = contains([1, 2, 3], var.profile_level)
     error_message = "Profile level must be 1, 2, or 3."
   }
 }

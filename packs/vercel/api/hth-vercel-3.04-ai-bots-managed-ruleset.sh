@@ -37,9 +37,9 @@ fw_patch() {
     -H "Authorization: Bearer ${VERCEL_TOKEN}" \
     -H "Content-Type: application/json" \
     "${FW_URL}" -d "$1")"
-  if echo "${resp}" | jq -e 'type == "object" and has("error")' >/dev/null; then
-    echo "${resp}" | jq '.error' >&2
-    return 1
+  if ! printf '%s' "${resp}" | jq -e 'type == "object" and (has("error") | not) and (length > 0)' >/dev/null; then
+    echo "ERROR: firewall update returned an empty, malformed, or error response; outcome unverified." >&2
+    return 2
   fi
   echo "OK"
 }

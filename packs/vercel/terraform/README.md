@@ -55,7 +55,7 @@ The project, its firewall and Attack Challenge Mode already exist before this pa
 | Level | Name | Description |
 |-------|------|-------------|
 | L1 | Crawl | SAML SSO, team roles, fork protection, env var security, log drains, attack challenge mode |
-| L2 | Walk | Access Groups, WAF with OWASP rulesets, IP blocking, rate limiting, sensitive env policy, deployment retention |
+| L2 | Walk | Access Groups, WAF with OWASP rulesets, IP blocking, rate limiting, separate production secret policy, deployment retention |
 | L3 | Run | Secure Compute, trusted IPs, automation bypass disabled, strictest deployment controls |
 
 ```bash
@@ -83,7 +83,7 @@ terraform apply -var="profile_level=3"
 | `hth-vercel-3.02-ip-blocking-rate-limiting.tf` | 3.2 | L1/L2 | IP blocking and rate limiting rules |
 | `hth-vercel-4.01-enable-secure-compute.tf` | 4.1 | L3 | Secure Compute private network |
 | `hth-vercel-4.02-ddos-attack-challenge-mode.tf` | 4.2 | L1 | Attack Challenge Mode |
-| `hth-vercel-6.01-environment-variable-security.tf` | 6.1 | L1/L2 | Env var security, sensitive policy, IP privacy |
+| `hth-vercel-6.01-environment-variable-security.tf` | 6.1 | L1/L2 | Env var security, separate production secret policy, IP privacy |
 | `hth-vercel-6.02-deployment-retention-policy.tf` | 6.2 | L2 | Deployment retention and expiration |
 | `hth-vercel-8.01-configure-log-drains-siem.tf` | 8.1 | L1/L2 | Log drains for SIEM integration |
 | `hth-vercel-10.04-vcr-repository-private.tf` | 10.4 | L1 | Container Registry repositories kept private |
@@ -106,7 +106,9 @@ Controls not configurable via Terraform have API, CLI, and config implementation
 | `cli/hth-vercel-6.03-*` | 6.3 | Deploy hook rotation (`vercel deploy-hooks`) and leak scan |
 | `cli/hth-vercel-7.01-*` | 7.1 | Subdomain takeover detection |
 | `cli/hth-vercel-7.02-*` | 7.2 | TLS and certificate verification |
-| `cli/hth-vercel-8.03-*` | 8.3 | Cron job secret management |
+| `cli/hth-vercel-8.03-*` | 8.3 | Cron job secret management; authenticated execution is opt-in |
+| `cli/hth-vercel-1.06-*` | 1.6 | Private member-MFA posture report (does not verify team enforcement toggle) |
+| `cli/hth-vercel-8.05-*` | 8.5 | Private raw Security Review snapshot (beta; findings schema not validated) |
 | `config/hth-vercel-5.01-*` | 5.1 | Security response headers (vercel.json) |
 | `config/hth-vercel-6.04-*` | 6.4 | NEXT_PUBLIC_ secret-name scan |
 | `config/hth-vercel-10.01-*` | 10.1 | `/_next/image` remotePatterns audit |
