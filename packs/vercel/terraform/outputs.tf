@@ -119,7 +119,7 @@ output "hardening_summary" {
     firewall_enabled             = local.firewall_managed
     waf_owasp_action             = var.waf_owasp_action
     attack_challenge_mode        = var.attack_challenge_mode_enabled
-    production_secret_policy    = var.profile_level >= 2 ? "enforced" : "default"
+    production_secret_policy     = var.profile_level >= 2 ? "enforced" : "default"
     trusted_ip_allowlisting      = var.profile_level >= 3 && length(var.trusted_ip_addresses) > 0
     secure_compute               = var.profile_level >= 3 && var.secure_compute_enabled
     log_drain_configured         = var.log_drain_endpoint != ""

@@ -21,9 +21,9 @@ resource "vercel_team_config" "hardened" {
 
   # 6.1 (L2): team-wide separate production secret policy and IP privacy; null at L1
   # leaves the setting unmanaged.
-  disjunctive_production_secret_policy   = local.production_secret_policy
-  hide_ip_addresses                     = local.hide_ip_addresses
-  hide_ip_addresses_in_log_drains       = local.hide_ip_addresses
+  disjunctive_production_secret_policy = local.production_secret_policy
+  hide_ip_addresses                    = local.hide_ip_addresses
+  hide_ip_addresses_in_log_drains      = local.hide_ip_addresses
 }
 
 # HTH Guide Excerpt: end terraform
