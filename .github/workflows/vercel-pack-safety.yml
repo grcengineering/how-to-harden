@@ -1,0 +1,31 @@
+name: Vercel Pack Safety
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packs/vercel/**'
+      - 'scripts/test-vercel-packs.py'
+      - '.github/workflows/vercel-pack-safety.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 scripts/test-vercel-packs.py
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: '1.17.1'
+          terraform_wrapper: false
+      - run: terraform -chdir=packs/vercel/terraform fmt -check
+      - run: terraform -chdir=packs/vercel/terraform init -backend=false -input=false
+      - run: terraform -chdir=packs/vercel/terraform validate

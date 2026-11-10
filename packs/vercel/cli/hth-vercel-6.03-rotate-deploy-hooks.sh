@@ -8,7 +8,7 @@
 # Anyone with the URL can trigger a deployment. Rotate quarterly or on team
 # membership changes.
 # Reference: https://vercel.com/docs/deploy-hooks
-# CLI: https://vercel.com/docs/cli/deploy-hooks (vercel deploy-hooks ls|create|rm).
+# CLI: https://vercel.com/docs/cli/deploy-hooks (vercel deploy-hooks list|create|delete).
 #      The CLI reads VERCEL_TOKEN from the environment.
 # Inventory and leak scan are read-only; rotation (HTH_HOOK_* set) is MUTATING.
 # =============================================================================
@@ -26,18 +26,34 @@ HOOK_URL_RE='^https://api\.vercel\.com/v1/integrations/deploy/prj_[A-Za-z0-9]+/[
 
 # --- 1. Inventory existing deploy hooks (the hook URL is never printed) ---
 echo "=== Existing Deploy Hooks for ${VERCEL_PROJECT_ID} ==="
-"${VC[@]}" deploy-hooks ls --project "${VERCEL_PROJECT_ID}" --format json | \
+"${VC[@]}" deploy-hooks list --project "${VERCEL_PROJECT_ID}" --json | \
   jq '(if type == "array" then . else .hooks end)[] | {id, name, ref, createdAt}'
 
-# --- 2. Rotate: create the replacement FIRST, verify it, then remove the old hook ---
+# --- 2. Create replacement; retire only in a SEPARATE invocation after cutover ---
 # Usage: HTH_HOOK_ID=<hook_id> HTH_HOOK_NAME="ci-deploy" HTH_HOOK_REF="main" ./rotate.sh
 rotate_hook() {
   local old_id="$1" name="$2" ref="$3"
 
   echo ""
   echo "=== Creating replacement hook: ${name} (ref: ${ref}) ==="
-  local created new_id new_url url_file
-  created="$("${VC[@]}" deploy-hooks create "${name}" --ref "${ref}" \
+  local created new_id new_url url_file old_umask private_dir
+  if [ -n "${HTH_HOOK_URL_FILE:-}" ]; then
+    url_file="${HTH_HOOK_URL_FILE}"
+    # noclobber refuses existing regular files and symlinks; the private umask
+    # applies at creation, not after a window of public readability.
+    old_umask="$(umask)"
+    umask 077
+    set -C
+    exec 3> "${url_file}"
+    set +C
+    umask "${old_umask}"
+  else
+    private_dir="$(mktemp -d "${TMPDIR:-/tmp}/hth-hook.XXXXXX")"
+    url_file="${private_dir}/url"
+    (umask 077; set -C; : > "${url_file}")
+    exec 3> "${url_file}"
+  fi
+  created="$("${VC[@]}" deploy-hooks create "${name}" --git-branch "${ref}" \
     --project "${VERCEL_PROJECT_ID}" --non-interactive)"
   new_id="$(echo "${created}" | jq -r '.hook.id // empty')"
   new_url="$(echo "${created}" | jq -r '.hook.url // empty')"
@@ -46,22 +62,35 @@ rotate_hook() {
     return 1
   fi
 
-  # The URL is the credential: write it to an owner-only file, never to stdout.
-  url_file="${HTH_HOOK_URL_FILE:-$(umask 077 && mktemp)}"
-  (umask 077 && printf '%s\n' "${new_url}" > "${url_file}")
+  # Reserve a NEW file with noclobber, never follow/overwrite an existing path.
+  # The descriptor was reserved before creation; failed creates leave it empty.
+  printf '%s\n' "${new_url}" >&3
+  exec 3>&-
   echo "New hook ${new_id} created; URL written to ${url_file} (mode 600)."
-  echo "Move it into your secrets manager, then delete that file."
+  echo "Old hook ${old_id} is STILL ACTIVE. Update every consumer and verify cutover."
+  echo "Then rerun with HTH_RETIRE_HOOK_ID=${old_id} HTH_CONFIRM_CUTOVER=1."
 
-  echo ""
-  echo "=== Removing old hook ${old_id} ==="
-  "${VC[@]}" deploy-hooks rm "${old_id}" --project "${VERCEL_PROJECT_ID}" --yes --non-interactive >/dev/null
-  if "${VC[@]}" deploy-hooks ls --project "${VERCEL_PROJECT_ID}" --format json | \
-      jq -e --arg id "${old_id}" '(if type == "array" then . else .hooks end) | any(.id == $id)' >/dev/null; then
-    echo "ERROR: old hook ${old_id} is still present." >&2
-    return 1
-  fi
-  echo "Old hook ${old_id} removed."
 }
+
+# Phase 2 is a separate invocation after the operator verifies consumer cutover.
+if [ -n "${HTH_RETIRE_HOOK_ID:-}" ]; then
+  if [ "${HTH_CONFIRM_CUTOVER:-0}" != "1" ] || [ -n "${HTH_HOOK_ID:-}" ]; then
+    echo "ERROR: retirement requires HTH_CONFIRM_CUTOVER=1 and cannot be combined with creation." >&2
+    exit 2
+  fi
+  "${VC[@]}" deploy-hooks delete "${HTH_RETIRE_HOOK_ID}" --project "${VERCEL_PROJECT_ID}" --yes --non-interactive >/dev/null
+  remaining="$("${VC[@]}" deploy-hooks list --project "${VERCEL_PROJECT_ID}" --json)"
+  if ! printf '%s' "${remaining}" | jq -e '(if type == "array" then . else .hooks end) | type == "array"' >/dev/null; then
+    echo "ERROR: retirement outcome cannot be verified from the hook response." >&2
+    exit 2
+  fi
+  if printf '%s' "${remaining}" | jq -e --arg id "${HTH_RETIRE_HOOK_ID}" '(if type == "array" then . else .hooks end) | any(.id == $id)' >/dev/null; then
+    echo "ERROR: old hook is still present." >&2
+    exit 1
+  fi
+  echo "Old hook retired after confirmed cutover."
+  exit 0
+fi
 
 if [ -n "${HTH_HOOK_ID:-}" ] && [ -n "${HTH_HOOK_NAME:-}" ] && [ -n "${HTH_HOOK_REF:-}" ]; then
   rotate_hook "${HTH_HOOK_ID}" "${HTH_HOOK_NAME}" "${HTH_HOOK_REF}"

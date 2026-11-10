@@ -3,7 +3,7 @@
 # HTH Vercel Control 6.4: Block NEXT_PUBLIC_ Secret Leaks
 # Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-28, SA-15, SA-11
-# Source: https://howtoharden.com/guides/vercel/#64-block-next-public-secret-leaks
+# Source: https://howtoharden.com/guides/vercel/#64-block-next_public_-secret-leaks-in-ci
 # Rationale: Any env var prefixed NEXT_PUBLIC_ is inlined into the client
 # JavaScript bundle by Next.js. Cremit research (2025) identified live API keys
 # in 0.45% of public Vercel deployments via this vector.
@@ -58,10 +58,10 @@ echo "=== Scanning for NEXT_PUBLIC_ prefix on secret-shaped names ==="
 # The files that declare env vars are mostly HIDDEN or git-ignored (.env*,
 # .github/workflows/), so both scanners are told to include them explicitly.
 if command -v rg >/dev/null 2>&1; then
-  SEARCH_CMD=(rg --hidden --no-ignore --no-heading --line-number -i
+  SEARCH_CMD=(rg --hidden --no-ignore --no-heading --line-number --only-matching -i
     --glob '!.git/**' --glob '!node_modules/**' --glob '!.next/**' -e "${REGEX}" .)
 else
-  SEARCH_CMD=(grep -rn -iE --exclude-dir=.git --exclude-dir=node_modules
+  SEARCH_CMD=(grep -rn -o -iE --exclude-dir=.git --exclude-dir=node_modules
     --exclude-dir=.next "${REGEX}" .)
 fi
 
@@ -70,7 +70,7 @@ matches="$("${SEARCH_CMD[@]}")" || rc=$?
 case "${rc}" in
   0)
     echo "BLOCK: NEXT_PUBLIC_<secret-name> pattern detected — these values ship to the browser:"
-    echo "${matches}"
+    printf '%s\n' "${matches}"
     EXIT_CODE=1
     ;;
   1) ;;
@@ -80,10 +80,13 @@ case "${rc}" in
     ;;
 esac
 
-# --- Audit the current build output for any NEXT_PUBLIC_* that resembles a secret ---
+# Next.js replaces public variable references with VALUES during builds. This
+# optional name scan cannot prove the compiled bundle is secret-free. Use a
+# secret scanner on client assets and review public variable declarations.
+# --- Heuristic: names that happen to remain in build output ---
 if [ -d ".next" ]; then
   echo ""
-  echo "=== Scanning compiled .next bundle for secret-shaped NEXT_PUBLIC_ values ==="
+  echo "=== Heuristic scan for variable names remaining in .next ==="
   # grep exits 1 for "no match" and 2 when it could not read the bundle; only
   # the first means clean.
   brc=0
@@ -107,7 +110,7 @@ if [ -d ".next" ]; then
 fi
 
 if [ "${EXIT_CODE}" -eq 0 ]; then
-  echo "OK: no NEXT_PUBLIC_<secret> patterns detected."
+  echo "OK: no secret-shaped public variable names detected (not proof of no exposed secrets)."
 fi
 
 exit "${EXIT_CODE}"

@@ -19,11 +19,11 @@ resource "vercel_team_config" "hardened" {
     enforced = var.saml_enforced
   }
 
-  # 6.1 (L2): team-wide Sensitive env var policy and IP privacy; null at L1
+  # 6.1 (L2): team-wide separate production secret policy and IP privacy; null at L1
   # leaves the setting unmanaged.
-  sensitive_environment_variable_policy = local.sensitive_env_policy
-  hide_ip_addresses                     = local.hide_ip_addresses
-  hide_ip_addresses_in_log_drains       = local.hide_ip_addresses
+  disjunctive_production_secret_policy = local.production_secret_policy
+  hide_ip_addresses                    = local.hide_ip_addresses
+  hide_ip_addresses_in_log_drains      = local.hide_ip_addresses
 }
 
 # HTH Guide Excerpt: end terraform

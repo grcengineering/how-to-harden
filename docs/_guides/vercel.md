@@ -6,9 +6,9 @@ slug: "vercel"
 tier: "5"
 category: "DevOps"
 description: "Comprehensive platform security for authentication, WAF, deployment protection, secrets, network isolation, security headers, and monitoring"
-version: "1.3.1"
-maturity: ["ai-drafted", "ai-validated"]
-last_updated: "2026-09-25"
+version: "1.4.0"
+maturity: ["ai-drafted"]
+last_updated: "2026-11-10"
 ---
 
 
@@ -20,7 +20,7 @@ Vercel is a frontend cloud platform providing deployment, hosting, and serverles
 
 Vercel operates under a shared responsibility model ([source](https://vercel.com/docs/security/shared-responsibility)):
 
-**Vercel manages:** Infrastructure security, DDoS mitigation (L3/L4/L7), TLS encryption (automatic HTTPS with TLS 1.2/1.3), platform patching, compute isolation, data encryption at rest (AES-256), certificate management, and edge network operations across 126 PoPs globally.
+**Vercel manages:** Infrastructure security, DDoS mitigation (L3/L4/L7), TLS encryption (automatic HTTPS with TLS 1.2/1.3), platform patching, compute isolation, data encryption at rest (AES-256), certificate management, and edge network operations.
 
 **Customer must configure:** Application-level authentication, security headers (CSP, X-Frame-Options, etc.), environment variable scoping and access controls, WAF custom rules, deployment protection settings, RBAC and team access policies, log drain forwarding to SIEM, OIDC federation for CI/CD, and domain/DNS security.
 
@@ -93,12 +93,12 @@ Configure SAML Single Sign-On to centralize authentication through your identity
 1. Navigate to: **Team Settings → Security & Privacy → Authentication and User Provisioning**, then select **Configure** on the **SAML** row
 2. Select your identity provider from the 24+ supported providers
 3. Configure the SAML connection following your IdP's instructions
-4. Map IdP groups to Vercel roles (vercel-role-owner, vercel-role-member, etc.)
+4. Configure role provisioning separately through Directory Sync (Section 1.2); SAML alone does not automatically remove users or synchronize role changes ([SAML and Directory Sync](https://vercel.com/docs/saml)).
 
 **Step 2: Enforce SAML**
-1. After confirming SSO works: Toggle **Enforce SAML** to ON
+1. After confirming SSO works: enable **Require Team Members to login with SAML** while signed in through the tested SAML connection
 2. Distribute custom login URL: `https://vercel.com/login?saml=<team_id>`
-3. Verify session duration is 24 hours (default -- re-authentication required after)
+3. Set an appropriate IdP `session_lifetime`: Vercel accepts 3,600–2,592,000 seconds (1 hour–30 days), with a 24-hour default when omitted. Prefer the shortest workable duration. Recheck enforcement after editing SAML configuration because Vercel disables enforcement during changes ([SAML sessions and enforcement](https://vercel.com/docs/saml)).
 
 **Time to Complete:** ~30 minutes
 
@@ -110,7 +110,7 @@ Configure SAML Single Sign-On to centralize authentication through your identity
 
 1. Attempt login without SAML -- should be blocked when enforcement is ON
 2. Login via IdP -- should succeed and land on team dashboard
-3. Remove user from IdP group -- should lose Vercel access within sync interval
+3. If Directory Sync is configured, remove a test user from the IdP group and verify deprovisioning; without Directory Sync, revoke team membership manually
 
 **Expected result:** Only IdP-authenticated users can access the Vercel team
 
@@ -300,10 +300,9 @@ Enforce scoped, time-limited API tokens and replace long-lived credentials with 
 #### Rationale
 
 **Why This Matters:**
-- Vercel now enforces 90-day maximum lifetime on granular tokens
-- Classic tokens have been revoked platform-wide
+- Project-scoped tokens restrict an automation job to one project instead of every project in a team ([access token scopes](https://vercel.com/docs/accounts/access-tokens))
 - OIDC federation eliminates static credentials entirely for cloud provider access
-- 2FA is required by default for token creation
+- Team authentication requirements can require 2FA or SAML before creating scoped tokens; enforce team 2FA explicitly (Section 1.6)
 
 **Attack Prevented:** Token theft, credential leakage in CI/CD logs, unauthorized API access
 
@@ -315,8 +314,8 @@ Enforce scoped, time-limited API tokens and replace long-lived credentials with 
 3. Delete unused or overly-scoped tokens
 
 **Step 2: Create Scoped Tokens**
-1. Create new tokens with minimum required scopes
-2. Set expiration to shortest practical duration (max 90 days)
+1. Select the owning team and the individual project in **Account Settings → Tokens → Scope**. Use **All Projects** only when the job needs team-wide access; reserve **Full Account** for operations that require it
+2. Select the shortest practical expiration and schedule rotation; a 90-day ceiling is an organizational recommendation here, not a verified platform-wide maximum
 3. Use descriptive names indicating purpose (e.g., "github-actions-deploy")
 
 **Step 3: Implement OIDC Federation (Preferred)**
@@ -334,11 +333,11 @@ Enforce scoped, time-limited API tokens and replace long-lived credentials with 
 #### Validation & Testing
 
 1. No tokens exist with unlimited expiration
-2. OIDC federation provides short-lived credentials (60-min TTL)
+2. Vercel Function OIDC tokens have a two-hour TTL; verify provider trust conditions and the exchanged cloud credential lifetime independently ([OIDC behavior](https://vercel.com/docs/oidc))
 3. All CI/CD pipelines use scoped tokens or OIDC
-4. Token creation requires 2FA
+4. Test that project-scoped tokens cannot read another project or team-level resources; verify the token owner meets team 2FA requirements
 
-**Expected result:** No long-lived, overly-scoped tokens; OIDC for cloud provider access
+**Expected result:** No long-lived, overly-scoped tokens; OIDC for cloud provider access. Vercel also automatically revokes tokens detected in public sources, including its monthly Common Crawl scan; investigate revocation notifications and rotate affected consumers rather than treating secret scanning as a substitute for private storage ([November 2026 token scanning update](https://vercel.com/changelog/vercel-token-scanning-expands-to-more-public-sources)).
 
 #### Compliance Mappings
 
@@ -438,6 +437,81 @@ Maintain an inventory of all Marketplace integrations, Git connections, deploy h
 
 ---
 
+### 1.6 Enforce Team Two-Factor Authentication
+
+**Profile Level:** L1 (Crawl)
+
+**NIST 800-53:** IA-2(1), IA-2(2)
+
+#### Description
+
+Require personal two-factor authentication for team access and prepare member and automation accounts for Vercel's authenticator-app requirement.
+
+#### Rationale
+
+**Why This Matters:**
+- Team enforcement blocks members without enabled 2FA from accessing team resources.
+- Personal access tokens depend on their owner's 2FA readiness; enabling enforcement can interrupt CI/CD.
+- Passkeys offer phishing-resistant sign-in but do not replace the announced authenticator-app setup requirement.
+
+**Attack Prevented:** Password-only account compromise and use of personal tokens belonging to accounts without required MFA.
+
+#### Prerequisites
+
+- Team Owner with personal 2FA already configured
+- Member communication, securely stored recovery codes, and an inventory of service accounts and personal-token consumers
+
+#### ClickOps Implementation
+
+1. Have members configure an authenticator app under their personal account security settings and store recovery codes securely; add a passkey for phishing-resistant sign-in where practical.
+2. Open **Team Settings → Members** and filter for disabled 2FA. Ask passkey-only members separately whether they have added an authenticator app; the enabled/disabled filter cannot distinguish them.
+3. Verify owners of personal tokens used by bots, CLI, and CI/CD have enabled 2FA. Integration tokens are exempt from this particular personal-2FA check, not from integration-risk review.
+4. Open **Team Settings → Security & Privacy → Two-Factor Authentication Enforcement**, enable the switch, and select **Save**. Confirm **Enabled**. Enforcement is immediate; noncompliant members retain their seats but lose team access until setup is complete.
+5. Preserve SAML enforcement and IdP MFA where used (Section 1.1); validate both the SAML and personal-token paths.
+
+**Upcoming requirement:** Current documentation says all users must complete authenticator-app setup by **January 20, 2027**, including users whose enabled 2FA currently uses only a passkey. Do not wait for that deadline to enable team enforcement ([Two-factor Enforcement](https://vercel.com/docs/two-factor-enforcement), [personal setup](https://vercel.com/docs/two-factor-authentication)).
+
+**Time to Complete:** ~15 minutes after member readiness review
+
+#### Code Implementation
+
+{% include pack-code.html vendor="vercel" section="1.6" %}
+
+The CLI's `members-no-mfa` security check is read-only evidence of member readiness, not an enforcement setter or proof of authenticator-app enrollment. Enable the setting in the dashboard and inspect the findings; a successful CLI invocation alone is not a passing control.
+
+#### Validation & Testing
+
+1. Confirm the dashboard displays enforcement as enabled.
+2. Check a controlled noncompliant test member is blocked, then regains access after setup.
+3. Verify approved CLI/CI workflows still work and review member readiness findings.
+4. Obtain authenticator-app confirmation separately for passkey-only users before the announced deadline.
+
+**Expected result:** Team resources require personal 2FA, and supported automation remains functional.
+
+#### Monitoring & Maintenance
+
+- Review member readiness and automation owners at onboarding/offboarding and monthly.
+- Alert on `team-mfa-enforcement-updated` in the Activity Log.
+
+#### Operational Impact
+
+| Aspect | Impact Level | Details |
+|--------|-------------|---------|
+| User Experience | Medium | Members without 2FA lose team access immediately |
+| Automation | High if unprepared | Personal-token workflows can fail until the owner enables 2FA |
+| Recovery | Medium | Protect recovery codes and maintain prepared Owners |
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC6.1 | Logical access controls |
+| **NIST 800-53** | IA-2(1), IA-2(2) | Multifactor authentication |
+| **ISO 27001** | A.9.4.2 | Secure log-on procedures |
+| **PCI DSS** | 8.4 | Multifactor authentication |
+
+---
+
 ## 2. Deployment Security
 
 ### 2.1 Configure Deployment Protection
@@ -463,7 +537,7 @@ Enable multi-layered deployment protection using Vercel Authentication, password
 
 #### Protection Methods × Scopes
 
-Vercel documents four protection **methods** and four protection **scopes**. Choose one method and one scope per project.
+Vercel documents multiple protection **methods** and **scopes**. Select the scope required for each enabled method. **Methods are not necessarily cumulative:** when Password Protection and Vercel Authentication are both enabled, visitors can use either method; enabling both does not require both credentials ([Access Control](https://vercel.com/docs/security/access-control)).
 
 **Methods:**
 
@@ -575,16 +649,19 @@ Secure the Git integration pipeline to prevent unauthorized deployments from for
 #### ClickOps Implementation
 
 **Step 1: Enable Fork Protection**
-1. Navigate to: **Project Settings → Git**
-2. Ensure **Git Fork Protection** is enabled (blocks deployments from forked repos without approval)
+1. Navigate to: **Project Settings → Security → Git Fork Protection**
+2. Keep protection enabled and review untrusted fork code before authorizing a deployment. Fork code can otherwise access environment variables and OIDC tokens ([Security settings](https://vercel.com/docs/project-configuration/security-settings)).
+3. Keep **Vercel Support Code Visibility** disabled except during an approved support investigation; disable it again after the investigation. Build logs and source paths `/_logs` and `/_src` remain team-authenticated by platform policy.
 
-**Step 2: Restrict Deployment Creation (L2)**
-1. Set **Create Deployments** to **Only Production** -- prevents preview deployments from PRs
-2. Or set to **Disabled** for fully manual deployment control
+**Step 2: Restrict Deployment Sources (L2, Pro/Enterprise)**
+1. As a team Owner, open **Team Settings → Build and Deployment → Git Sources**. Add a rule for Production and allow only approved providers, organizations, and repositories.
+2. Under **Deployment Sources**, add a Production rule allowing only required mechanisms. Review Git, Vercel CLI, REST API, Deploy Hooks, v0, and Marketplace Integrations separately.
+3. Save and enforce each rule. Saving a disabled rule alone does not enforce it.
+4. Review each project's **Build and Deployment → Git Sources / Deployment Sources** settings. Prefer **Inherit**; approve and periodically audit any **Override** ([Deployment Policies](https://vercel.com/docs/deployments/deployment-policy)).
 
-**Step 3: Require Verified Commits (L2)**
-1. Enable **Require Verified Commits** in Git provider options
-2. Configure commit signing in your Git provider (GPG or SSH keys)
+**Step 3: Protect the Git Branch (L2)**
+1. Use your Git provider's branch protection/rulesets to require review, checks, and signed commits where supported. These are Git-provider settings, not a verified Vercel **Require Verified Commits** toggle.
+2. Test the actual production path after tightening policies and retain one approved rollback deployment mechanism.
 
 **Step 4: Review Connected Repositories**
 1. Navigate to: **Team Settings → Integrations**
@@ -1320,10 +1397,10 @@ Deploy Serverless Functions within dedicated private networks with static IPs, V
 
 #### Critical Architecture Caveats (Primary Source)
 
-Per [Vercel Secure Compute docs](https://vercel.com/docs/connectivity/secure-compute):
+Per [Vercel Secure Compute docs](https://vercel.com/docs/networking/secure-compute):
 
-- **Edge Runtime is NOT supported.** Routing Middleware and edge functions **do not route through Secure Compute** and will use shared Vercel IP pools. If your backend allowlists only Secure Compute static IPs, middleware traffic will be rejected by the backend — or worse, silently fall back to a shared-IP path you thought was blocked. Design middleware to not require access to backend services allowlisted on Secure Compute, or rewrite middleware logic into Node.js / Python / Ruby runtimes that do route through Secure Compute.
-- **Supported runtimes:** Node.js, Python, Ruby only.
+- **Edge Runtime is NOT supported.** Routing Middleware and edge functions **do not route through Secure Compute** and will use shared Vercel IP pools. If your backend allowlists only Secure Compute static IPs, middleware traffic will be rejected by the backend — or worse, silently fall back to a shared-IP path you thought was blocked. Design middleware to not require access to backend services allowlisted on Secure Compute, or rewrite middleware logic into Node.js / Python / Ruby / Go runtimes that do route through Secure Compute.
+- **Supported runtimes:** Node.js, Python, Ruby, and Go. Routing Middleware and Edge Runtime functions remain excluded.
 - **VPC peering limit:** maximum 50 peering connections per Secure Compute network.
 - **Build container inclusion is optional.** Include only if builds access allowlisted data sources; otherwise opt out to save the ~5-second provision delay.
 - **Active + Passive networks** provide regional failover per project environment; both must be provisioned explicitly.
@@ -1341,14 +1418,14 @@ Per [Vercel Secure Compute docs](https://vercel.com/docs/connectivity/secure-com
 
 1. List all middleware files and edge-runtime functions in the project
 2. Trace each outbound HTTP/DB call from those surfaces and confirm it does **not** target a service that will be IP-allowlisted to Secure Compute
-3. Move any such calls into Node.js/Python/Ruby function runtimes before enabling backend IP allowlisting
+3. Move any such calls into Node.js/Python/Ruby/Go function runtimes before enabling backend IP allowlisting
 
 **Step 2: Create Secure Compute Network**
 
 1. Navigate to: **Team Settings → Networking**, then select **Create Network**
 2. Select AWS region closest to your backend
 3. Configure CIDR block (must not overlap with VPC peer ranges)
-4. Select availability zones
+4. Select availability zones. If **Create Network** is not available for the Enterprise team, request provisioning from the Vercel account team; self-service is not available to every team.
 
 **Step 3: Assign Projects**
 
@@ -1423,7 +1500,7 @@ Leverage Vercel's automatic DDoS mitigation and configure Attack Challenge Mode 
 
 #### Attack Challenge Mode — Internal Request Boundary (Primary Source)
 
-Per [Vercel docs](https://vercel.com/docs/vercel-firewall/attack-challenge-mode):
+Per [Vercel docs](https://vercel.com/docs/vercel-firewall/attack-mode):
 
 - When Attack Challenge Mode is enabled, requests from **your own Vercel account's Functions, Cron Jobs, and projects** are automatically allowed through without being challenged. Other Vercel accounts cannot bypass your ACM.
 - Known verified bots (search engines, webhook providers, services listed in the Vercel bot directory) are auto-allowed.
@@ -1441,12 +1518,12 @@ Per [Vercel docs](https://vercel.com/docs/vercel-firewall/attack-challenge-mode)
 
 **Step 2: Configure Attack Challenge Mode (During Attacks)**
 
-1. Navigate to: **Project → Firewall → Bot Management → Attack Challenge Mode**
-2. Enable during active attacks — challenges browser traffic with a JS challenge
+1. Navigate to: **Project → Firewall**, open the three-dot menu and select **Enable Attack Mode** (the current name of Attack Challenge Mode)
+2. Choose **Enable for 1 Hour**, or 6/24 hours from the adjacent menu. It turns off automatically at expiry; reassess before renewing
 3. Same-account Vercel requests (your Functions, Cron Jobs, cross-project calls) auto-bypass
 4. Verified bots auto-bypass
 5. Disable when attack subsides; Vercel recommends ACM as a targeted-attack tool, not a permanent setting
-6. For standalone APIs that will be called by non-browser clients, create a WAF Custom Rule with a Bypass action matching an API signature (e.g., `User-Agent` or `x-api-key`) **before** enabling ACM
+6. Test legitimate non-browser API clients before enabling. Do not create a broad bypass based only on a spoofable `User-Agent` or the presence of a header; use narrowly scoped, independently authenticated integrations and review what the Bypass action skips
 
 **Step 3: Configure Spend Management (Pro+)**
 
@@ -1565,92 +1642,79 @@ Configure security headers (CSP, X-Frame-Options, Referrer-Policy, etc.) to prot
 
 #### Description
 
-Implement secure environment variable management with proper scoping, **mandatory Sensitive flag**, and access controls. Post April 2026 incident, the team-wide Enforce Sensitive Environment Variables policy is a baseline L1 control — not L2.
+Classify credentials as write-only **Secrets**, keep non-sensitive settings as **Config**, and require production secret values to differ from non-production values.
 
 #### Rationale
 
 **Why This Matters:**
 
-- All environment variables are encrypted at rest (AES-256) by Vercel, but **non-sensitive variables can be decrypted and displayed by anyone with team-scope access** via the dashboard or API. Only **Sensitive** variables are stored in a truly unreadable format.
-- Variables scoped to production are only accessible to Owner/Member/Project Admin roles
-- `NEXT_PUBLIC_` prefixed variables are inlined into the client JavaScript bundle by Next.js — **never use for secrets** (see Section 6.4 for automated lint)
-- Preview branches can access production secrets if not properly scoped
-- Sensitive variables are **not supported in the Development environment** — local dev secrets must be managed out of band (1Password, HashiCorp Vault, Doppler)
-- Total limit: 64 KB per deployment; Edge Functions: 5 KB per variable
+- Config values remain readable to authorized members; Secret values are write-only after saving.
+- A separate production credential limits the damage from a preview or developer environment compromise.
+- `NEXT_PUBLIC_` values are bundled into client JavaScript and must never hold credentials.
+- Secret classification protects readback, not application code that uses or exfiltrates the value.
 
-**Build-log redaction has a length floor.** Per [Vercel's sensitive environment variables docs](https://vercel.com/docs/environment-variables/sensitive-environment-variables), sensitive values are redacted from build logs **only when they are 32 characters or longer** — a short secret (a 16-character API key, a 6-digit PIN, a legacy shared password) still prints in plaintext into build output even when correctly flagged Sensitive. Two platform-managed values, `VERCEL_AUTOMATION_BYPASS_SECRET` and `VERCEL_OIDC_TOKEN`, are always redacted regardless of length. Generate every secret at **32+ characters** so redaction actually engages, and treat any shorter legacy secret as build-log-exposed until rotated. Each redaction also emits an Activity Log event naming the key, project, and deployment (never the value) — a usable detection signal, see Section 8.2.
+**Attack Prevented:** Secret readback, cross-environment credential reuse, client-bundle exposure, and unintended build-log disclosure.
 
-**Attack Prevented:** Secret exposure in client bundles, credential leakage via preview deployments, unauthorized production secret access, mass-exposure during platform incidents affecting non-sensitive storage, plaintext short-secret leakage into build logs.
+**Changed behavior:** Vercel replaced the legacy **Enforce Sensitive Environment Variables** policy with **Separate Production Secret Values**. Existing Sensitive variables work as Secrets without migration, and **Secrets are now supported in Development**. Classify each variable rather than forcing public configuration to be secret ([Config and Secret types](https://vercel.com/docs/environment-variables/sensitive-environment-variables)).
 
-**Real-World Incidents:**
+**Build-log limit:** Vercel redacts Secret values only when they are at least 32 characters long; `VERCEL_AUTOMATION_BYPASS_SECRET` and `VERCEL_OIDC_TOKEN` are always redacted. Redaction emits an Activity Log event. Prefer long generated credentials where the issuer allows them, but never assume a short third-party credential can be lengthened arbitrarily. Suppress secret logging and rotate any value actually exposed.
 
-- **Vercel April 2026 incident:** The attacker enumerated and decrypted **only non-sensitive** customer environment variables. Variables explicitly marked Sensitive remained unreadable. Customers with the team-wide Sensitive Environment Variable policy enabled were protected. ([Vercel KB Bulletin](https://vercel.com/kb/bulletin/vercel-april-2026-security-incident))
+#### Prerequisites
 
-**Attack Scenario:** Developer creates a `NEXT_PUBLIC_API_SECRET` variable, exposing it in the client-side JavaScript bundle. Attacker views page source to extract the API key. See [Cremit research](https://www.cremit.io/blog/vercel-secret-exposure-case-study) — live API keys found in 0.45% of public Vercel deployments via this vector.
+- Team Owner for the team policy; appropriate project/environment permissions for variables
+- Separate least-privilege credentials for Production and non-production
+- A secure location for recovery and rotation information
 
 #### ClickOps Implementation
 
-**Step 1: Enforce Sensitive Environment Variable Policy (L1 — post April 2026)**
+**Step 1: Enforce Production Separation (L2 enhancement)**
+1. Open **Team Settings → Security & Privacy → Separate Production Secret Values**.
+2. Enable **Require Separate Values** and save.
+3. Review this new setting even if the legacy sensitive-variable policy was previously enabled. The new policy rejects sharing the same Secret value for the same key between Production and Preview, Development, or custom environments.
 
-1. Navigate to: **Team Settings → Security & Privacy → Environment Variable Policies**
-2. Toggle **Enforce Sensitive Environment Variables** to **Enabled** (requires Owner role)
-3. All newly-created Production and Preview environment variables will now default to Sensitive and cannot be read back
+**Step 2: Classify and Rotate Variables**
+1. Open the team or project **Environment Variables** page. Inspect each variable's **Config** or **Secret** label.
+2. Use **Secret** for passwords, API keys, and tokens; use **Config** only for deliberately readable configuration. Set the target environments and, where appropriate, Preview branch.
+3. Rotate a Secret through **Edit** by supplying a new value; the current value is hidden. Secret keys cannot be edited, and Secrets cannot be converted to Config in place.
+4. Existing Sensitive entries need no migration. If an integration owns a readable credential, follow Vercel's [integration-secret rotation workflow](https://vercel.com/docs/environment-variables/sensitive-environment-variables#sensitive-environment-variables-for-integrations); coordinate resource disconnection/reconnection and rotation rather than assuming the environment-variable editor can change it.
 
-**Step 2: Retrofit Existing Variables**
+**Step 3: Separate Environments**
+1. Use production credentials only for Production and separate restricted credentials for Preview, Development, and custom environments.
+2. Apply the same classification to shared team variables.
+3. Development can now hold Secrets, but local workflows still need a secure way to obtain their development-only values. Do not print downloaded environment files or commit them.
 
-1. Navigate to: **Project Settings → Environment Variables**
-2. For any variable holding a secret that is **not** flagged Sensitive: **delete and recreate** it with the Sensitive option enabled. (You cannot mark an existing variable Sensitive in place — you must remove and re-add.)
-3. Rotate the underlying secret value at the source system during this process (post-incident hygiene)
+**Step 4: Reduce Secret Exposure**
+1. Run the Section 6.4 client-variable lint and review client bundles.
+2. Prevent build scripts from printing environment variables, including credentials shorter than the redaction floor.
+3. Replace static cloud credentials with OIDC federation where supported (Section 1.4).
+4. Redeploy affected environments after variable changes and revoke old credentials at their issuer.
 
-**Step 3: Audit for Client-Bundle Leakage**
-
-1. Verify no secrets use `NEXT_PUBLIC_` prefix
-2. Add the Section 6.4 lint to CI to enforce this automatically going forward
-
-**Step 4: Scope Variables Properly**
-
-1. Production secrets: Scope to **Production** only
-2. Preview/staging secrets: Use **separate, lower-privilege** credentials for Preview — never reuse production credentials
-3. Use branch-specific preview variables when different branches need different configs
-4. Use shared (team-level) variables for consistent cross-project configuration — mark these Sensitive too
-
-**Step 5: Local Development Secret Handling**
-
-1. Because Sensitive env vars are not available in Development, do **not** store local-dev credentials in Vercel env vars
-2. Use an out-of-band secret manager (1Password, HashiCorp Vault, Doppler, `.env.local` via `vercel env pull` for OIDC tokens only)
-3. Document the team's local-secrets workflow in an engineering handbook
-
-**Step 6: Implement OIDC Federation (L2)**
-
-1. Replace static cloud credentials with OIDC tokens (see Section 1.4) — eliminates the long-lived credential problem entirely
-2. OIDC provides 60-minute TTL tokens; 45-minute function cache to prevent mid-execution expiry
-
-**Time to Complete:** ~30 minutes (initial) + time for rotation
+**Time to Complete:** ~30 minutes plus coordinated credential rotation
 
 #### Code Implementation
 
 {% include pack-code.html vendor="vercel" section="6.1" %}
 
+The Terraform pack enables the separate-production-values policy at L2 or above; L1 still requires correct Secret classification and manually separated credentials. The documented API retains `type: sensitive` with `visibility: secret`; readable Config uses `type: encrypted` or `plain` with `visibility: config`. CLI `vercel env` supports `--type secret` / `--type config`; `--visibility` is a deprecated alias. Do not confuse the dashboard rename with removal of the API storage type ([API, SDK, and CLI examples](https://vercel.com/docs/environment-variables/sensitive-environment-variables)).
+
 #### Validation & Testing
 
-1. **Enforce Sensitive Environment Variables** toggle is **Enabled** at Team level
-2. Every environment variable in every project has the Sensitive tag (production + preview)
-3. No `NEXT_PUBLIC_` variables contain secret values
-4. Production secrets not accessible in preview environment
-5. Every secret value is ≥32 characters, so build-log redaction engages; any shorter legacy secret has been rotated
-6. Local dev workflow does not depend on Vercel-stored Development env vars for secrets
-7. OIDC federation active for cloud provider access (L2)
+1. Confirm **Require Separate Values** is enabled and inventory actual Secret versus Config classification.
+2. In a test project, attempt to assign the same non-sensitive test Secret to Production and Preview; expect the policy to reject it.
+3. Confirm no client-public variable contains a credential, and preview/development credentials cannot access production resources.
+4. Verify rotation with the application and revoke the previous value at its issuer; do not log either value during testing.
+5. Confirm newly deployed builds use the new values and that secret-bearing output is absent from build logs.
 
-**Expected result:** Every secret in every environment is either Sensitive-flagged or replaced by OIDC federation; no secret is readable from the dashboard or API after creation.
+**Expected result:** Credentials are write-only Secrets with separate production values; readable Config contains no credentials.
 
 #### Compliance Mappings
 
 | Framework | Control ID | Control Description |
 |-----------|-----------|---------------------|
-| **SOC 2** | CC6.1, CC6.7 | Logical access controls, protection of sensitive information |
-| **NIST 800-53** | SC-28, SC-12 | Protection of information at rest, cryptographic key management |
-| **ISO 27001** | A.10.1.2, A.9.4.3 | Key management, password management system |
-| **PCI DSS** | 3.4, 8.2.1 | Render PAN unreadable, strong credential storage |
+| **SOC 2** | CC6.1, CC6.7 | Access controls and confidential information |
+| **NIST 800-53** | SC-28, SC-12 | Protection at rest and cryptographic key management |
+| **ISO 27001** | A.10.1.2, A.9.4.3 | Key management and secret authentication information |
+| **PCI DSS** | 3.4, 8.2.1 | Protection of sensitive data and authentication |
 
 ---
 
@@ -1676,10 +1740,13 @@ Configure deployment retention policies to automatically remove old deployments 
 #### ClickOps Implementation
 
 **Step 1: Configure Retention**
-1. Navigate to: **Project Settings → Deployment Retention**
+1. Navigate to: **Project Settings → Build and Deployment → Deployment Retention Policy**
 2. Set production retention: 1 year (or per compliance requirement)
 3. Set preview retention: 1 month
 4. Set errored/canceled retention: 1 week
+5. Review team defaults under **Team Settings → Build and Deployment** and choose whether they apply to new or existing projects. Project policies can override the team default.
+
+**Retention is not immediate revocation.** Current default retention is 30 days for all states on Hobby/Pro; Enterprise defaults differ. Active aliases, recent deployments, and the latest preview for an active pull-request branch can exempt deployments. Removal runs asynchronously, and deleted deployments have an age-dependent recovery period of up to 30 days. Remove exposed credentials at their issuer and verify old URLs separately ([Deployment Retention](https://vercel.com/docs/deployment-retention)).
 
 **Time to Complete:** ~5 minutes
 
@@ -1831,14 +1898,14 @@ Add a CI/pre-commit check that fails the build if any environment variable prefi
 
 **Step 3: Review Compiled Bundle**
 
-1. After every production build, run the script's bundle-scan mode against the `.next/` output
-2. Any `NEXT_PUBLIC_*` name matching a secret pattern surfaces in the build log
+1. After every production build, run the script's bundle-scan mode against the `.next/` output as an additional heuristic
+2. Log variable names only, never complete `.env` lines or secret values. A name match needs review; absence of a match is not proof that the bundle contains no secrets
 
 **Step 4: Quarterly Spot-Check**
 
 1. Fetch the production site's main JavaScript bundle with `curl`
 2. `grep -o 'NEXT_PUBLIC_[A-Z0-9_]*'` on the bundle
-3. Confirm no secret-shaped names are present
+3. Treat this as a name-based heuristic only: Next.js inlines public variable values, so the original name can disappear. Review client configuration and use a value-aware secret scanner without printing discovered credentials
 
 **Time to Complete:** ~15 minutes
 
@@ -2200,6 +2267,8 @@ Secure cron job endpoints with the CRON_SECRET mechanism to prevent unauthorized
 2. Return 401 for missing or mismatched secrets
 3. Vercel automatically sends the bearer token when invoking cron endpoints
 
+**Testing caution:** An authenticated request can run the real job. Use a staging handler or authorize a safe test window; the audit pack requires explicit opt-in before sending the authenticated request.
+
 **Time to Complete:** ~10 minutes
 
 #### Code Implementation
@@ -2308,6 +2377,74 @@ Every drain payload Vercel delivers is signed with HMAC-SHA1 via the `x-vercel-s
 
 ---
 
+### 8.5 Configure Security Review and Finding Triage
+
+**Profile Level:** L2 (Walk)
+
+**NIST 800-53:** RA-5, SA-11
+
+#### Description
+
+Enable Vercel's optional Security Review for approved projects and assign owners to investigate findings without treating an AI-generated result as a complete security assessment.
+
+#### Rationale
+
+**Why This Matters:**
+- Reviews start from GitHub push events, including direct and force pushes rather than only pull requests.
+- Findings identify the affected project, environment, branch, and commit.
+- Review scope and findings access need explicit attention because reports can contain sensitive source snippets.
+
+**Attack Prevented:** Earlier detection of code injection, authorization defects, and exposed credentials; this is detection assistance, not an exploitation-prevention guarantee.
+
+#### Prerequisites
+
+- Pro or Enterprise; Security Review is **Public Beta**
+- Connected GitHub repository, approved source-code processing, and budget for review inference charges
+- Assigned triage owners and review of who can read project/repository findings
+
+#### ClickOps Implementation
+
+1. Open **Team Settings → Agent → Security Reviews** and turn on **Review Deployments Automatically**.
+2. Select **Projects to Review**: all projects or an approved subset (up to 100 specific projects), then **Save**.
+3. Review the team's **Vulnerabilities** dashboard after a controlled push. Examine severity and evidence rather than automatically accepting AI classifications.
+4. Keep fixes subject to normal code review and tests. **Fix with Vercel Agent** also requires **Enable Chat**; enabling that additional capability is a separate operational choice.
+5. Review access: Owner, Member, Developer, and Security roles see all project findings; Contributors see assigned projects; Billing and Viewer see none. Private/internal repository comments can expose snippets to a broader repository audience. Public repositories receive a check/link rather than public finding details.
+
+**Limitations and cost:** Reviews normally compare changes against a base, not the entire repository; first reviews without a base read the full source. This is not runtime testing or a penetration test. Current documentation describes usage-based inference charges, so verify current [pricing](https://vercel.com/docs/agent/pricing) before enabling broad coverage ([setup, privacy, and limits](https://vercel.com/docs/agent/security-review)).
+
+**Time to Complete:** ~20 minutes plus ongoing triage
+
+#### Code Implementation
+
+{% include pack-code.html vendor="vercel" section="8.5" %}
+
+The CLI snapshot reads findings; it does not enable reviews, remediate vulnerabilities, or demonstrate that every project was scanned. Store exports privately because they can contain source snippets.
+
+#### Validation & Testing
+
+1. Verify a controlled GitHub push creates a review for every selected project affected by the push.
+2. Confirm findings link to the expected project/commit and that unauthorized roles cannot view them.
+3. Reconcile CLI exports with the dashboard and review pagination before claiming complete coverage. The current CLI response-body schema was not independently verified in this pass; a saved snapshot is not proof of a complete findings census.
+4. Track remediation through reviewed pull requests and repeat applicable tests; do not equate a dismissed finding with a fixed issue.
+
+**Expected result:** Approved projects are reviewed, findings have accountable owners, and access/cost/coverage limits are understood.
+
+#### Monitoring & Maintenance
+
+- Triage new high-severity findings promptly and periodically review dismissed findings.
+- Recheck project coverage, source access, and costs when repositories or team roles change.
+
+#### Compliance Mappings
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **SOC 2** | CC7.1 | Identify vulnerabilities |
+| **NIST 800-53** | RA-5, SA-11 | Vulnerability monitoring and developer testing |
+| **ISO 27001** | A.12.6.1 | Technical vulnerability management |
+| **PCI DSS** | 6.3 | Identify and address vulnerabilities |
+
+---
+
 ## 9. Framework CVE Management (Next.js)
 
 Vercel-hosted apps overwhelmingly run **Next.js**, a framework Vercel also maintains. Framework vulnerabilities are Vercel-relevant security events because (a) Vercel frequently ships edge-side WAF mitigations before public disclosure, and (b) customers who self-host Next.js elsewhere don't get those automatic mitigations. This section defines an L1 baseline for staying ahead of Next.js CVEs, independent of the platform configurations in earlier sections.
@@ -2320,21 +2457,21 @@ Vercel-hosted apps overwhelmingly run **Next.js**, a framework Vercel also maint
 
 #### Description
 
-Maintain a defensive posture against Next.js framework CVEs: pin to a patched version, subscribe to advisories, add edge-side WAF rules that strip internal headers exploited by known attacks, and treat middleware as one authorization layer among several rather than the only one.
+Maintain a defensive posture against Next.js framework CVEs: pin to a patched version, subscribe to advisories, optionally add edge-side WAF rules that deny requests carrying a spoofed internal middleware header, and treat middleware as one authorization layer among several rather than the only one.
 
 #### Rationale
 
 **Why This Matters:**
 
 - Multiple critical Next.js CVEs in the last 24 months have had **active in-the-wild exploitation** within hours of disclosure
-- The most impactful class (middleware bypass, RSC deserialization) abuses internal HTTP headers that should never arrive from the public internet
+- Middleware and Server Action vulnerabilities require framework patching and in-handler authorization; the presence of a framework header alone does not identify an attack
 - Self-hosted Next.js forks **do not** receive Vercel's automatic WAF mitigations — customers off-platform must implement the defenses themselves
 - Vercel's $1M React2Shell bounty surfaced 20 unique WAF bypasses, confirming that edge protection alone is insufficient — framework patching is mandatory
 - The middleware-bypass class **recurs**: CVE-2026-64642 (July 2026) bypasses all middleware auth checks on App Router projects using Turbopack with exactly one `config.i18n.locales` entry — the same outcome as CVE-2025-29927 through an unrelated mechanism, which is the empirical case for Section 10.2's in-handler authorization
 
 **Attack Prevented:** Authorization bypass via middleware, RCE via RSC deserialization, SSRF via Server Actions or `/_next/image`, cache poisoning, source code exposure.
 
-**Known Vulnerabilities (verify your pinned version is at or above the fix):**
+**Historical vulnerability examples:** These are per-advisory fix versions, not the current deployment baseline or a complete CVE inventory. Use the November release floors and supported-line checks below.
 
 | CVE | Class | Fix Versions | ITW? | Reference |
 |-----|-------|--------------|------|-----------|
@@ -2367,8 +2504,8 @@ Maintain a defensive posture against Next.js framework CVEs: pin to a patched ve
 
 **Step 1: Pin Next.js to a Supported LTS Channel**
 
-1. Next.js version policy is now **channelled**: pin to the **Active LTS** line (currently `16.2.x`) or the **Maintenance LTS** line (currently `15.5.x`) rather than to an arbitrary exact version chosen once and forgotten
-2. Minimum safe versions as of the July 2026 security release: **16.2.11** (Active LTS) or **15.5.21** (Maintenance LTS). Anything below these is vulnerable to the nine CVEs in the table above, including a middleware bypass in the same class as CVE-2025-29927
+1. Follow the current [Next.js support policy](https://nextjs.org/support-policy): use a supported release line and upgrade promptly. The November 2026 security release lists `16.4.5` for Active LTS and `15.5.29` for Maintenance LTS; the 15.x maintenance extension ends January 31, 2027
+2. Minimum release floors from the [November 3, 2026 security release](https://nextjs.org/blog/november-2026-security-release): **16.4.5** or **15.5.29** on those lines. This supersedes the historical July fixes in the table; review each advisory for affected configurations instead of assuming every older build is affected by every issue
 3. Commit the lockfile; configure Renovate/Dependabot to propose upgrades within the pinned channel as they are released
 
 **Step 2: Subscribe to the Preannounced Security Release Program**
@@ -2379,10 +2516,10 @@ Maintain a defensive posture against Next.js framework CVEs: pin to a patched ve
 4. Subscribe the security team to `nextjs.org/blog` (security-tagged posts), watch the `github.com/vercel/next.js` **Security Advisories** tab, and watch `vercel.com/changelog` (security tag)
 5. Expect **advisory volume to rise**: Vercel now runs LLM-assisted vulnerability discovery against the framework (`vercel-labs/deepsec`) alongside an expanded HackerOne bug bounty. More advisories per year is a sign of the program working, not of the framework degrading — plan capacity accordingly
 
-**Step 3: Deploy Edge Header-Strip Rules (Defense in Depth)**
+**Step 3: Optionally Deny Spoofed Middleware Headers (Defense in Depth)**
 
 1. Use the Section 3.1 firewall workflow to add a **Deny** Custom Rule matching requests containing `x-middleware-subrequest` (CVE-2025-29927 defense in depth, even if you're patched)
-2. Add a **Log** Custom Rule for requests containing `x-nextjs-data` or `Next-Action` — these are exploit precursors that should not arrive from the public internet in normal operation
+2. Do not block or classify requests as malicious merely because they carry `Next-Action` or `x-nextjs-data`; these participate in normal Next.js operations. Server Actions are public endpoints that need application authorization, input validation, and rate controls ([Next.js security model](https://nextjs.org/blog/security-nextjs-server-components-actions))
 3. Pair with Persistent Actions (Section 3.3) so a single probe triggers a time-boxed block
 
 **Step 4: Measure Mean-Time-to-Patch (Clock Starts at Preannouncement)**
@@ -2396,6 +2533,12 @@ Maintain a defensive posture against Next.js framework CVEs: pin to a patched ve
 
 1. Never rely on middleware as the sole authorization boundary — see Section 10.2 for the enforcement pattern in Route Handlers, Server Components, and Server Actions
 
+**Step 6: Redeploy Patched Node.js Runtimes**
+
+1. Follow the [October 2026 Node.js advisory](https://vercel.com/kb/bulletin/node-js-security-advisory): new Vercel deployments use patched runtimes as of October 28, but existing deployments need redeployment.
+2. Move Node.js 20 projects to a supported runtime before redeploying; the advisory recommends 22.x or 24.x because 20 is end-of-life.
+3. Rebuild externally managed Node.js environments on patched releases. WAF coverage does not protect malicious Brotli content fetched from another server, so do not substitute WAF rules for runtime patches.
+
 **Time to Complete:** ~30 minutes (initial) + ongoing
 
 #### Code Implementation
@@ -2404,9 +2547,9 @@ Maintain a defensive posture against Next.js framework CVEs: pin to a patched ve
 
 #### Validation & Testing
 
-1. `package.json` pins `next` to a supported LTS channel at or above every fix in the CVE table (minimum 16.2.11 Active LTS or 15.5.21 Maintenance LTS)
-2. A request with `x-middleware-subrequest` header from the public internet is denied at the Vercel Firewall
-3. Requests with `x-nextjs-data` or `Next-Action` are logged and surface in Firewall observability
+1. Verify the resolved lockfile and installed `next` version, not just the `package.json` range: minimum 16.4.5 on the Active LTS line or 15.5.29 on Maintenance LTS for the November 2026 release; check newer advisories before deploying
+2. If the optional rule is enabled, a request with `x-middleware-subrequest` from the public internet is denied at the Vercel Firewall; this rejects the request rather than stripping its header
+3. Legitimate `x-nextjs-data` and `Next-Action` requests continue to function; header presence alone is not an abuse signal
 4. Renovate/Dependabot has proposed the latest Next.js patch; its PR is merged within MTTP target
 5. A Next.js security advisory triggered Slack/PagerDuty within an hour of publication
 
@@ -2416,7 +2559,7 @@ Maintain a defensive posture against Next.js framework CVEs: pin to a patched ve
 
 - **On pre-announcement (monthly):** Read the announced date and anticipated severity on `nextjs.org/blog`; book the upgrade window and prepare the branch before the release lands
 - **On advisory:** Review every advisory on `nextjs.org/blog`; patch critical CVEs within 72 hours
-- **Weekly:** Review Firewall logs for `x-middleware-subrequest` / `x-nextjs-data` / `Next-Action` probes
+- **Weekly:** Review denied spoofed-middleware requests and application abuse signals such as authorization failures and abnormal rates; do not label normal framework headers as probes
 - **Monthly:** Measure MTTP metric; if trending up, invest in faster builds
 - **Quarterly:** Review the CVE table against NVD for new entries
 
@@ -2719,6 +2862,7 @@ Since 2026-08-07, a Vercel Container Registry repository can be flipped from pri
 | Control | Section | Hobby | Pro | Enterprise |
 |---------|---------|-------|-----|------------|
 | SAML SSO | 1.1 | ❌ | Add-on | ✅ |
+| Team 2FA enforcement | 1.6 | ✅ | ✅ | ✅ |
 | Directory Sync (SCIM) | 1.2 | ❌ | ❌ | ✅ |
 | RBAC (full roles) | 1.3 | Basic | Extended | Full |
 | Access Groups | 1.3 | ❌ | Limited | ✅ |
@@ -2745,7 +2889,8 @@ Since 2026-08-07, a Vercel Container Registry repository can be flipped from pri
 | Attack Challenge Mode | 4.2 | ✅ | ✅ | ✅ |
 | Spend Management | 4.2 | ❌ | ✅ | ✅ |
 | Custom Security Headers | 5.1 | ✅ | ✅ | ✅ |
-| Sensitive Env Var Policy | 6.1 | ❌ | ✅ | ✅ |
+| Config/Secret variables | 6.1 | ✅ | ✅ | ✅ |
+| Separate Production Secret Values policy | 6.1 | Verify availability in team settings | Verify availability in team settings | Verify availability in team settings |
 | Deployment Retention | 6.2 | ✅ | ✅ | ✅ |
 | Third-Party Integration Audit | 1.5 | ✅ | ✅ | ✅ |
 | Private Production Deployments | 2.4 | ✅ (Vercel Authentication) | ✅ (+ Password Protection at $20/mo per project) | ✅ |
@@ -2760,6 +2905,7 @@ Since 2026-08-07, a Vercel Container Registry repository can be flipped from pri
 | Reverse-Proxy + Vercel Bot Protection (do not stack) | 10.3 | ✅ | ✅ | ✅ |
 | Container Registry Public Access (change-controlled) | 10.4 | Where used | Where used | Where used |
 | Drains | 8.1 | ❌ | ✅ | ✅ |
+| Security Review (Public Beta, usage-based pricing) | 8.5 | ❌ | ✅ | ✅ |
 | Audit Logs | 8.2 | ❌ | ❌ | ✅ (90 days) |
 | Audit Log Drains (replaces Custom SIEM Log Streaming) | 8.2 | ❌ | ❌ | ✅ |
 
@@ -2773,22 +2919,22 @@ Since 2026-08-07, a Vercel Container Registry repository can be flipped from pri
 - [Security Overview](https://vercel.com/docs/security)
 - [Shared Responsibility Model](https://vercel.com/docs/security/shared-responsibility)
 - [Production Checklist](https://vercel.com/docs/production-checklist)
-- [Deployment Protection](https://vercel.com/docs/security/deployment-protection)
+- [Deployment Protection](https://vercel.com/docs/deployment-protection)
 - [Protected Source Maps](https://vercel.com/docs/deployment-protection/protected-source-maps)
 - [Passport](https://vercel.com/docs/passport)
 - [Vercel Firewall / WAF](https://vercel.com/docs/vercel-firewall/vercel-waf)
 - [Vercel BotID](https://vercel.com/docs/botid)
 - [Sensitive Environment Variables](https://vercel.com/docs/environment-variables/sensitive-environment-variables)
-- [DDoS Mitigation](https://vercel.com/docs/security/ddos-mitigation)
-- [Secure Compute](https://vercel.com/docs/security/secure-compute)
-- [Encryption](https://vercel.com/docs/encryption)
+- [DDoS Mitigation](https://vercel.com/docs/vercel-firewall/ddos-mitigation)
+- [Secure Compute](https://vercel.com/docs/networking/secure-compute)
+- [Encryption](https://vercel.com/docs/cdn-security/encryption)
 - [RBAC Access Roles](https://vercel.com/docs/rbac/access-roles)
 - [SAML SSO](https://vercel.com/docs/saml)
-- [Directory Sync](https://vercel.com/docs/security/directory-sync)
+- [Directory Sync](https://vercel.com/docs/directory-sync)
 - [OIDC Federation](https://vercel.com/docs/oidc)
 - [Audit Logs](https://vercel.com/docs/audit-log)
-- [Log Drains](https://vercel.com/docs/observability/log-drains)
-- [Environment Variables](https://vercel.com/docs/projects/environment-variables)
+- [Log Drains](https://vercel.com/docs/drains)
+- [Environment Variables](https://vercel.com/docs/environment-variables)
 - [Security & Compliance](https://vercel.com/docs/security/compliance)
 - [Security Bulletins](https://vercel.com/kb/bulletin)
 
@@ -2873,7 +3019,7 @@ This playbook is applicable to any Vercel customer whose projects existed prior 
 2. **Audit account activity logs.** Open the team's [Activity Log](https://vercel.com/docs/activity-log) (dashboard → **Activity**, or `vercel activity` from the CLI); Enterprise owners can export the fuller record from **Team Settings → Security & Privacy → Audit Log**. Review all logins, token creations, and deployment actions for the 60 days prior to 2026-04-19. Flag anything unexpected.
 3. **Enumerate all environment variables** via the Vercel dashboard or API: `GET /v10/projects/{id}/env`. List each variable's project, environment, and **whether it is marked Sensitive**.
 4. **Any variable NOT marked Sensitive is considered exposed.** Rotate the underlying credential at its source system immediately — database passwords, API keys, signing keys, webhook secrets — regardless of whether Vercel notified you directly.
-5. **Recreate all rotated secrets in Vercel with the Sensitive flag enabled.** Use Section 6.1's guidance; do not rely on the old un-sensitive entries.
+5. **Store rotated credentials as Secrets in Vercel.** Use Section 6.1's guidance; do not rely on the old un-sensitive entries.
 6. **Revoke all Vercel API tokens and regenerate the minimum set needed.** Limit expiry to ≤90 days.
 
 ### C.2 Google Workspace / OAuth Audit (Within 48 Hours)
@@ -2893,7 +3039,7 @@ This playbook is applicable to any Vercel customer whose projects existed prior 
 
 ### C.4 Platform Hardening Follow-Through
 
-1. **Enable Enforce Sensitive Environment Variables (Section 6.1, Step 1).** Make this the permanent baseline.
+1. **Enable Require Separate Values under Separate Production Secret Values (Section 6.1).** Classify credentials as Secrets; the old Enforce Sensitive policy is deprecated.
 2. **Enable Deployment Protection (Section 2.1)** at Standard minimum across every project; regenerate any Deployment Protection automation bypass tokens.
 3. **Install the Section 6.4 lint** in CI to prevent `NEXT_PUBLIC_` secret regressions.
 4. **Configure Drains (Section 8.1 + 8.4)** to forward all logs to a SIEM with signature verification. Without off-platform logs, forensic evidence is lost after Vercel's short-term retention window.
@@ -2918,6 +3064,7 @@ This playbook is applicable to any Vercel customer whose projects existed prior 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-10 | 1.4.0 | ai-drafted | Currency update: add team 2FA readiness/enforcement (1.6) and Security Review triage (8.5); replace deprecated sensitive-variable policy with Config/Secret classification and production-value separation; correct token scope/TTL, SAML, deployment policy/retention, Secure Compute, Attack Mode, and November framework/runtime patch guidance; align safe pack diagnostics and refresh references. Remove guide-wide ai-validated because changed guidance has not been live-tested; unchanged dated surface evidence remains historical. | OpenAI Codex |
 | 2025-12-14 | 0.1.0 | ai-drafted | Initial Vercel hardening guide | Claude Code (Opus 4.5) |
 | 2026-02-24 | 1.0.0 | ai-drafted | [SECURITY] Complete guide revamp: expanded from 4 to 8 sections covering WAF, network security, security headers, domain security; added 20 controls with ClickOps and code pack references; integrated Vercel Shared Responsibility Model, production checklist, Terraform provider v4.6, CLI docs, and API docs; added comprehensive compliance mappings; updated edition compatibility matrix; incorporated security researcher findings and CVE references | Claude Code (Opus 4.6) |
 | 2026-04-24 | 1.1.0 | ai-drafted | [SECURITY] Post-April-2026-incident integration: added Section 1.5 (Third-Party Integration Audit), 2.4 (Private Production Deployments / Advanced DP), 3.3 (Firewall Persistent Actions), 3.4 (AI Bots Managed Ruleset), 6.3 (Rotate Deploy Hooks), 6.4 (Block NEXT_PUBLIC_ Secret Leaks), 8.4 (Drain Signature Verification); added new top-level Section 9 (Framework CVE Management — Next.js) and Section 10 (Customer Misconfiguration Anti-Patterns) including middleware authz defense in depth, `/_next/image` remotePatterns audit, reverse-proxy + Bot Protection stacking guidance; added Appendix C April 2026 Incident Response Playbook. Updated Section 2.1 Deployment Protection with methods × scopes matrix, Routing Middleware coverage, full Protection Bypass for Automation details, and team-default settings. Updated Section 2.3 Rolling Releases with Skew Protection requirement and 0%-canary security caveat. Updated Section 3.1 WAF with JA3/JA4 fingerprinting, reverse-proxy incompatibility, vercel.json custom-rules limitations, and $1M bounty context. Updated Section 4.1 Secure Compute with Edge Runtime not-supported caveat, VPC peering limit, and active/passive failover. Updated Section 4.2 Attack Challenge Mode with internal-request per-account boundary and standalone-API caveat. Updated Section 6.1 Environment Variables: elevated Enforce Sensitive Environment Variables to L1 baseline; added April 2026 incident rationale; documented sensitive-not-supported-in-development gap. Updated Section 8.1 Drains: rebranded from Log Drains; documented four schema types; added IP Address Visibility toggle. 10 new pack files: `hth-vercel-1.05`, `2.04`, `3.03`, `3.04`, `6.03`, `6.04`, `8.04`, `9.01`, `10.01`, `10.02`. Added `private_production_deployments_enabled` and `production_only_trusted_ips_enabled` to `variables.tf`. | Claude Code (Opus 4.7) |

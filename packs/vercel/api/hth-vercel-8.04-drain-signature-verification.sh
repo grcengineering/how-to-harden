@@ -3,7 +3,7 @@
 # HTH Vercel Control 8.4: Verify Drain Delivery Signatures
 # Profile Level: L1 (Crawl)
 # Frameworks: NIST SC-8, SC-13, AU-9
-# Source: https://howtoharden.com/guides/vercel/#84-verify-drain-signatures
+# Source: https://howtoharden.com/guides/vercel/#84-verify-drain-delivery-signatures
 # Rationale: Vercel Drains post JSON payloads signed with HMAC-SHA1 via
 # x-vercel-signature. Receivers MUST verify the signature with a constant-time
 # comparison to prevent timing attacks and accept only authentic deliveries.
@@ -34,9 +34,24 @@ if (!SECRET) {
 const server = http.createServer((req, res) => {
   if (req.method !== 'POST') return res.writeHead(405).end();
 
+  // Bound memory use before authentication; tune to the expected batch size.
+  const maxBytes = 1024 * 1024;
   const chunks = [];
-  req.on('data', c => chunks.push(c));
+  let received = 0;
+  let rejected = false;
+  req.on('error', () => { rejected = true; });
+  req.on('data', c => {
+    received += c.length;
+    if (received > maxBytes) {
+      if (!rejected) res.writeHead(413, { Connection: 'close' }).end('payload too large');
+      rejected = true;
+      chunks.length = 0;
+      return;
+    }
+    if (!rejected) chunks.push(c);
+  });
   req.on('end', () => {
+    if (rejected) return;
     const body = Buffer.concat(chunks);
     const provided = req.headers['x-vercel-signature'];
     if (!provided || typeof provided !== 'string') {
@@ -61,7 +76,10 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(process.env.PORT || 8787, () => {
+// Local demonstration only: terminate HTTPS and enforce request limits at the proxy.
+server.requestTimeout = 30000;
+server.headersTimeout = 10000;
+server.listen(process.env.PORT || 8787, '127.0.0.1', () => {
   console.log(`HTH drain receiver listening on :${process.env.PORT || 8787}`);
 });
 JS
@@ -72,7 +90,7 @@ echo "Run: VERCEL_DRAIN_SECRET=<drain-secret> node ${RECEIVER}"
 # --- Validate the intended delivery config with sample events before going live ---
 if [ -n "${VERCEL_TOKEN:-}" ] && [ -n "${VERCEL_TEAM_ID:-}" ] && [ -n "${VERCEL_DRAIN_URL:-}" ]; then
   echo ""
-  echo "=== Testing drain delivery to ${VERCEL_DRAIN_URL} ==="
+  echo "=== Testing configured drain delivery endpoint ==="
   curl -fsS -X POST \
     -H "Authorization: Bearer ${VERCEL_TOKEN}" \
     -H "Content-Type: application/json" \

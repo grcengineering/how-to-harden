@@ -23,9 +23,9 @@ resource "vercel_project_environment_variable" "secrets" {
 # --- L2: team-level policy, applied through vercel_team_config.hardened
 #     (hth-vercel-1.01) so only one resource manages the team ---
 locals {
-  # Enforce Sensitive environment variables team-wide. The provider marks this
-  # attribute deprecated in 5.x without a replacement.
-  sensitive_env_policy = var.profile_level >= 2 ? "on" : null
+  # Separate Production Secret Values is the replacement for the deprecated
+  # Enforce Sensitive Environment Variables policy (provider 5.17+).
+  production_secret_policy = var.profile_level >= 2 ? "on" : null
 
   # Hide IP addresses in observability and in Drains (privacy hardening)
   hide_ip_addresses = var.profile_level >= 2 ? true : null

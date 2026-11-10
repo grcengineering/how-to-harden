@@ -1090,6 +1090,10 @@ vercel:
       url: "https://vercel.com/docs/vercel-firewall"
     - label: "WAF Custom Rules"
       url: "https://vercel.com/docs/vercel-firewall/vercel-waf/custom-rules"
+    - label: "Team Two-Factor Enforcement"
+      url: "https://vercel.com/docs/two-factor-enforcement"
+    - label: "Secret Environment Variables"
+      url: "https://vercel.com/docs/environment-variables/sensitive-environment-variables"
 
 windows-11:
   product_docs: "https://learn.microsoft.com/en-us/windows/"
