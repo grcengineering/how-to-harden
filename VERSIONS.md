@@ -177,7 +177,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Cloudflare Zero Trust](docs/_guides/cloudflare.md) | v0.2.3 | ai-drafted · ai-validated | 2026-09-25 |
 | [CrowdStrike Falcon](docs/_guides/crowdstrike.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Cursor Cloud Agents](docs/_guides/cursor-cloud-agents.md) | v0.1.0 | ai-drafted | 2026-11-05 |
-| [Cursor](docs/_guides/cursor.md) | v0.6.0 | ai-drafted | 2026-11-05 |
+| [Cursor](docs/_guides/cursor.md) | v0.7.0 | ai-drafted | 2026-11-11 |
 | [Cursor Origin](docs/_guides/cursor-origin.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Datadog](docs/_guides/datadog.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Devin & Cognition](docs/_guides/devin.md) | v0.2.0 | ai-drafted | 2026-11-05 |
