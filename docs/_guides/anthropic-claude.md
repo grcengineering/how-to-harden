@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "AI/ML Platform"
 description: "Harden Anthropic common controls across identity, sessions, centralized administration, network access, inference hooks and audit governance."
-version: "1.3.0"
+version: "1.3.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-05"
+last_updated: "2026-11-11"
 ---
 
 ## Overview
@@ -58,10 +58,13 @@ Anthropic is a multi-product platform. This guide is the **Common Controls hub**
 |---------|-------|--------|
 | **Common Controls** (this guide) | — | Organization SSO & SCIM, least-privilege organization roles, admin API key protection, third-party integration governance |
 | **Claude Enterprise (claude.ai)** | [Claude Enterprise guide](/guides/claude-enterprise/) | Identity & provisioning, audit & compliance export, connectors & extensions, spend governance |
+| **Claude Tag** | [Claude Tag guide](/guides/claude-tag/) | Slack-native team agent: channel identity and audience, connector/federation grants, egress, runtime, retention and audit |
 | **Claude Code** | [Claude Code guide](/guides/claude-code/) | Managed settings & policy deployment, extensions & supply chain, execution isolation & sandboxing, threat defense, monitoring & incident response |
 | **Claude API & Console** | [Claude API & Console guide](/guides/anthropic-api/) | API key management, workspace security, data security & privacy, monitoring & usage controls |
 
 ---
+
+Claude Tag now has a [dedicated hardening guide](/guides/claude-tag/) and [current source ledger](/research/claude-tag-source-coverage-2026-11). Its Slack identity, retention, federation and network boundaries differ from ordinary Enterprise chat and must be assessed separately.
 
 ## Published Baselines and Product Boundaries
 
@@ -85,7 +88,7 @@ The PDF predates several changes. Current configuration references govern the No
 | Code CLI/IDE, Remote Control, cloud/routines and CI | Code guide; local, hosted and cloud-provider policy/credential boundaries differ. |
 | Console/API, WIF, workspaces, CMEK and Managed Agents | API guide; direct API examples use a fixed first-party host. AWS/other-provider routing is separately scoped. |
 | Connectors, private MCP tunnels and managed connector authentication | Enterprise 3.1/3.9; downstream authorization and consent remain independent. |
-| Tag/Claude in Slack, Science, Design, artifacts, M365 and hosted review/security | Enterprise 3.10 and 5.1/5.3 plus hub 1.8/2.3 establish capability admission, integration and coverage checks. This is not a claim of a dedicated full product benchmark for every specialized app or preview. |
+| Science, Design, artifacts, M365 and hosted review/security | Enterprise 3.10 and 5.1/5.3 plus hub 1.8/2.3 establish capability admission, integration and coverage checks. This is not a claim of a dedicated full product benchmark for every specialized app or preview. |
 | Agent SDK / custom agents | Code policy and API credential boundaries apply where documented; the application's own authorization, tool implementation and hosting baseline remain separate. |
 | Personal subscriptions and research previews | Organizational controls are not assumed to exist. Verify plan eligibility before processing organizational data; dedicated personal-product hardening is outside these Enterprise/Code/API guides. |
 
@@ -895,6 +898,7 @@ This table covers this hub's controls. Product-specific availability is in each 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-11 | 1.3.1 | ai-drafted | Link dedicated Claude Tag hardening guide and current research/automation boundaries. | OpenAI Codex |
 | 2026-11-05 | 1.3.0 | ai-drafted | Source-first refresh: public recommended baseline and Government/FISMA scope; session/domain/parent/IP controls and signed inference hooks; corrected access and assurance boundaries. Removed prior ai-validated status and stale surface marks after revising credential/identity guidance; public-source/offline checks only. | Codex |
 | 2026-10-04 | 1.2.1 | ai-drafted · ai-validated | validate-hth-guide run against a live Claude Console organization (Evaluation access): 4 surfaces came back VERIFIED-LIVE across 3 of 6 controls — ClickOps 1.2 (Members), 1.3 (Admin keys: a short-lived key was created and then deleted) and 2.2 (API keys, Workspaces); Code 1.3 (the admin-key validity pack, run with a short-lived admin key that was revoked afterwards: exit 0 with the live key, exit 1 with an invalid and with the revoked key). The 1.1 and 1.2 Code packs also ran read-only but are not marked: 1.01 lists members and cannot see SSO state, and 1.02 ran against a one-member org that cannot exceed its admin threshold. 1.4 and 2.1 were not exercised (no egress proxy; no pending invite), and 6.02 ran against an org with no API keys, so its Code surface is not marked. §1.1 corrected against the live Console and the SSO setup article: the Console page is **Identity and access**, its SSO controls are **Setup SSO**/**Manage SSO** under Authentication and appear only once SSO is enabled via Anthropic Sales or an organization merge, the enforcement toggles are **Require SSO for Console**/**Require SSO for Claude**, SSO is available to Console organizations as well as Team and Enterprise, and the roles are Owner/Primary Owner or Console Admin; Appendix A no longer marks 1.1 N/A for Console organizations. SSO Steps 2–4 were not walked live. | `Claude Code (Opus 5.5)` |
 | 2026-09-25 | 1.2.0 | ai-drafted | validate-hth-guide run (Phases 4-6, including an independent audit). The live Console stayed behind its sign-in wall and no Admin API key could be minted, so 0 surfaces were exercised live and no status was added; packs were exercised offline against a mock of the documented Admin API. Fixes: the shared POST helper appended a stray `}` to every request body, so 1.02's role change could never send valid JSON (now fixed, and 1.02 keeps the API's response, a member record, off stdout); packs 1.01, 1.02, 1.03 and 6.01 now exit 1 when an API call fails (they printed `[FAIL]` and exited 0) and page through `has_more`/`last_id` with `limit=1000` (the shared helper read a `next_page` field the API never returns, so every list stopped at 20 entries); the admin key reaches curl as a header file instead of a command-line argument; 1.01 drops the Linux-only `column -N`; 6.01 prints `invited_at` (invites have no `created_at`); 1.02 matches undocumented roles exactly; 1.02 and 6.01 now declare `mode: mutating` for their opt-in write branches, which also validate their inputs. New read-only packs: 1.04 verifies tenant restrictions from inside the network against the documented HTTP 403 `tenant_restriction_violation`; 6.02 inventories active API keys by scope (workspace, Default Workspace, organization) for 2.2. §2.2 gains ClickOps steps (Settings → API keys, workspace limits under Settings → Workspaces). §1.4 names where each organization type shows its organization ID and says to overwrite the header. §1.2: Limited Developer is a workspace role, not an organization role. §3 and Appendix A rebuilt around this hub's six controls (they cited sections 3.1-7.11, which now live in the product guides); CSF 2.0 `PR.AC` corrected to `PR.AA`; ISO IDs labelled as 2013 Annex A numbering; §3 now says its CSF 2.0 and AI RMF rows are category-level mappings that no control table carries; §1.4's Compliance Mappings table gains `AC-4`, which its header table already listed. Usage Policy link moved to anthropic.com/legal/aup; doc_links.yml points at platform.claude.com and academy.claude.com directly. Correction to the 1.1.0 row: Anthropic documents the OAuth access-token prefix quoted there for tokens issued by `POST /v1/oauth/token` (WIF reference); the prefix of interactive `ant auth login --scope "org:admin"` tokens is not documented and was not verified. | `Claude Code (Opus 5.5)` |

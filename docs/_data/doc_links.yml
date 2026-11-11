@@ -1318,3 +1318,13 @@ ziphq:
     - label: "Supplier Authentication and Membership"
       url: "https://docs.ziphq.com/hc/en-us/articles/17459154258715-Signing-In-to-the-Zip-Vendor-App"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/ziphq"
+
+claude-tag:
+  product_docs: "https://claude.com/docs/claude-tag/overview"
+  api_docs: "https://platform.claude.com/docs/en/manage-claude/claude-tag-api"
+  hardening_docs:
+    - label: "Tag security and data handling"
+      url: "https://claude.com/docs/claude-tag/concepts/security-and-data"
+    - label: "Federated agent identity verification"
+      url: "https://claude.com/docs/claude-tag/admins/federated-access/token-reference"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/claude-tag"
