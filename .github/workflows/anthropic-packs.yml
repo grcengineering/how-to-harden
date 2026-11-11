@@ -39,3 +39,16 @@ jobs:
       - run: terraform -chdir=packs/anthropic-claude/terraform init -backend=false -input=false
       - run: terraform -chdir=packs/anthropic-claude/terraform validate
       - run: terraform -chdir=packs/anthropic-claude/terraform test
+
+  claude-tag-contracts:
+    name: Claude Tag offline safety contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check Tag shell syntax
+        run: for file in packs/claude-tag/api/*.sh packs/claude-tag/cli/*.sh; do [ ! -f "$file" ] || bash -n "$file"; done
+      - name: Run credential-free Tag contracts
+        run: python3 scripts/test-claude-tag-packs.py

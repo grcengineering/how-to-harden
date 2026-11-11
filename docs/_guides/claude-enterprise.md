@@ -9,9 +9,9 @@ product: "Claude Enterprise (claude.ai)"
 tier: "1"
 category: "AI/ML Platform"
 description: "Harden Claude Enterprise Security Center reviews, effective settings, Cowork, Desktop, connectors, plugins, remote access and data governance."
-version: "0.3.0"
+version: "0.3.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-05"
+last_updated: "2026-11-11"
 ---
 
 ## Overview
@@ -19,6 +19,8 @@ last_updated: "2026-11-05"
 Claude.ai Team and Enterprise plans are the chat-product surface of Anthropic: workspaces where employees converse with Claude, attach files, run Projects, and increasingly wire Claude into company systems through connectors, the Chrome extension, and Cowork. The admin surface that governs all of this lives in claude.ai's Organization settings, with plan-, feature- and rollout-dependent defaults. Enterprise, Desktop device policy and parent identity administration must be audited separately.
 
 This is a **product guide within the [Anthropic platform](/guides/anthropic-claude/)**. Organization-wide controls (SSO details, org roles, admin API keys, integration governance) live in the Anthropic **Common Controls** hub; Claude Code and API/Console hardening live in their own guides.
+
+For Claude Tag, apply the [dedicated Slack-agent guide](/guides/claude-tag/) in addition to common controls. Do not assume Enterprise chat retention, network admission controls or individual connector permissions automatically govern Tag channel work. Current Tag federation and personal-connector review are documented there.
 
 ### Research and validation boundary
 
@@ -1125,6 +1127,7 @@ Per-control compliance mappings appear inside each control above. For organizati
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-11 | 0.3.1 | ai-drafted | Link dedicated Claude Tag guide and distinguish its identity, retention and network boundaries. | OpenAI Codex |
 | 2026-11-05 | 0.3.0 | ai-drafted | Security Center workflow and explicit unknown native checklist; operator-baselined effective-settings assessment; guarded incident response, native API/CLI/SDK evidence, Desktop/EDR, unified rollout, plugin publishing, remote/private connectors and product-specific data handling. Reconciled dated PDF recommendations with current sources. | Codex |
 | 2026-08-15 | 0.2.0 | ai-drafted | Admin API currency pass. §2.2 corrected to the two-key-type model — a Compliance Access Key (`sk-ant-api01-`, created at claude.ai → Organization settings → API) reaches every Compliance endpoint per its scopes, while a Console Admin key reaches the Activity Feed only — with the exact four Compliance scopes plus `read:org_audit` for audit-only integrations, the recording-governance warning (toggle off = no events recorded, no local Cowork/Claude Code transcript capture, irrecoverable), session-transcript coverage (local and remote Cowork/Claude Code sessions), the shared 600 rpm limit, the never-expiring-key offboarding rule (keys survive their creator's removal), and leaked-key incident response via `activity_types[]=compliance_api_accessed`. §1.3 updated with the five-value Enterprise role vocabulary (`managed` as the least-privilege target state), the beta user-management API (`anthropic-beta: ce-user-management-2026-07-13`; API assigns only `user`/`managed`; SCIM groups API-read-only), the `rbac_group_ids` invite-write privilege path, the group-deletion spend-cap-lift warning, and a blanket-grant validation sweep (`capability_access_all`). §4.1 gains the spend-limits mechanics (API writes per-user overrides only, increase-request lifecycle with admin-supplied amounts and the 30-day denial cooldown, 00:00 UTC monthly reset) and an unlimited-member sweep (`amount: null` on an effective row = unlimited). §2.1 cites the vendor's own framing positioning the CSV export below the Compliance API. | Claude Code (Opus 5) |
 | 2026-08-03 | 0.1.0 | ai-drafted | Authored as part of the Anthropic multi-product platform restructure: 10 controls across identity/provisioning, audit/compliance, connector/Chrome/Cowork governance, and spend limits — every setting verified against Anthropic's live admin documentation. | Claude Code (Sonnet 5) † |
