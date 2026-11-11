@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "DevOps"
 description: "AI code editor security hardening for code privacy, MCP security, agent sandboxing, API key management, and workspace trust"
-version: "0.6.0"
+version: "0.7.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-05"
+last_updated: "2026-11-11"
 ---
 
 
@@ -497,7 +497,7 @@ Cursor Router (shipped 2026-07-22) is the model routing system behind **Auto**: 
 
 **Step 2: Make the routed model visible**
 1. Turn on display of the routed model so developers and auditors can see which model served a request
-2. Leaving this hidden is defensible for a consumer product and indefensible for a regulated one — if you must evidence where code was processed, you need the model surfaced
+2. Displaying the model helps explain routing, but does not prove which inference host processed the request; retain the provider mapping and scope limits in 2.7
 
 **Step 3: Allow or block underlying models with Model Access Control (Enterprise)**
 1. Model allow/block is **Model Access Control** in **Team Settings → Models**, a separate setting the router respects — the router routes around a blocked model
@@ -516,7 +516,7 @@ Cursor Router (shipped 2026-07-22) is the model routing system behind **Auto**: 
 
 #### Code Implementation
 
-The router's own toggles have no API. The model access policy it respects is readable through the Admin API (`GET /teams/model-access/configuration` and `/providers`, marked preview); this pack fails when no custom policy exists or when new providers are enabled by default.
+The router toggles remain dashboard-managed in the examined reference. The separate model-access baseline supports preview Admin API reads **and writes**. This read-only pack audits the full provider/model catalog and checks that both new-provider and new-model defaults are disabled; it does not certify approved hosts or effective user access. Use control 2.7 for reviewed allowlist enforcement and its scope limits.
 
 {% include pack-code.html vendor="cursor" section="2.2" %}
 
@@ -737,6 +737,59 @@ Confirm which users and model requests use Cyber and reconcile them to the appro
 | Framework | Mapping |
 |-----------|---------|
 | NIST SP 800-53 | AC-6, SA-9, SI-12; thematic, not certification |
+
+---
+
+### 2.7 Enforce Reviewed Model and Inference-Provider Allowlists
+
+**Profile Level:** L2 (Walk)
+**NIST 800-53:** AC-3, SA-9, SR-6
+
+#### Description
+Use Enterprise **Model Access Control** to permit only reviewed models, with new models and providers disabled until approved. Assess the actual inference hosts and fallback routes separately from the model developer. This control governs the Cursor team baseline, not every product in the SpaceXSI family.
+
+#### Rationale
+A model name is not a complete processor inventory. For example, Cursor's [GLM 5.2 page](https://cursor.com/docs/models/glm-5-2) labels its developer Z.ai but explicitly identifies Fireworks as the inference host. A catalog provider toggle is therefore **not a documented inference-host denylist**. Blocking a provider named in the model catalog does not establish that no other model or background feature uses a particular subprocessor. Privacy Mode and zero-retention commitments also do not remove that processor from the data flow.
+
+**Attack Prevented:** Unreviewed model selection, newly introduced models silently receiving proprietary code, and mistaken reliance on a model developer's identity instead of the actual inference processing chain.
+
+#### Prerequisites
+- Enterprise Model Access Control and a team admin; organization permissions to inspect every relevant group and linked team
+- A reviewed model register: exact catalog provider/model IDs, model developer, inference hosts (including fallback), processing purpose, location, retention, evidence date, and approval owner
+- A maintenance window and pilot users; restrictive changes can break dependent features
+
+#### ClickOps Implementation
+1. Follow Cursor's [Security and Privacy Hardening](https://cursor.com/docs/enterprise/security-hardening) reference and open **Team Settings → Models**. Inventory the existing baseline before changing it. Retain an access-controlled snapshot for review, not an automatic permissive rollback.
+2. Build the register using current model pages, the [Trust Center subprocessors](https://trust.cursor.com/subprocessors), and vendor confirmation where those sources do not map a model and its fallbacks precisely. For a policy excluding Fireworks or another host, disable each model whose route includes that host or remains unknown. Do not invent a `fireworks` catalog ID or assume one toggle covers every use of a host. A subprocessor list alone does not map individual requests.
+3. Configure a **custom** policy. Disable default access for **both new providers and new models**. Set existing provider and model toggles to the reviewed allowlist: changing defaults does not reset existing grants. Approve model variants/parameters deliberately; the pack preserves them rather than broadening them.
+4. Review **Organization → Groups → [group] → Models** for **every** group. Effective permission is the union of the team baseline and all applicable group grants. Any group can restore access blocked at team level. Groups cannot tighten an existing team grant; the team API does not include these group grants.
+5. Disable personal API-key/BYOK access at the team baseline unless separately approved. This is dashboard-only, outside the model-access API. Apply account/tenant restrictions (11.2–11.4) to prevent switching into an unmanaged personal account. Neither local picker preferences nor a client `--model` selection enforces organization policy.
+6. Review Auto/Router, Auto-review, Bugbot, Cloud Agents and integrations as distinct use paths. Auto respects model controls, but required-model dependencies can prevent the desired restriction: disable an incompatible feature rather than approving an untrusted model merely to keep it running. Current Router docs name Grok 4.6 as required; recheck this changing dependency. Bugbot can return **neutral**, not successful security review, when no usable model remains. Do not treat missing functionality as a passing security check.
+7. Review background processing separately with Cursor before claiming a complete host exclusion. Model-picker restrictions and endpoint firewall rules are not proof about Cursor's server-side inference, indexing, summarization or fallbacks. Do not transmit sensitive test data to discover a route.
+
+#### Code Implementation
+
+The [preview Team Admin API](https://cursor.com/docs/account/teams/admin-api#model-access) supports both reads and writes. Read scope is `models:read`; write scope is `models:*` (or `admin:*`). Generic `read:*` is insufficient. The pack targets **one explicitly identified team**, defaults to a read-only plan, requires an existing custom policy, and sets both defaults plus every catalog toggle only with `--apply`. Provider/model reads return 409 for non-custom policies. Initialize and review in the dashboard first instead of silently seeding a policy.
+
+Prepare a local JSON file with numeric `teamId` and a nonempty `models` array of objects containing `provider` and `id`, copied from the 2.2 catalog audit. Each pair must have approved hosting evidence. Run `bash packs/cursor/api/hth-cursor-2.07-enforce-model-allowlist.sh reviewed-policy.json`, review its full plan, then append `--apply`. Keep the API key in `CURSOR_ADMIN_API_KEY`; never commit it. Run under a trusted shell without tracing.
+
+{% include pack-code.html vendor="cursor" section="2.7" %}
+
+The pack narrows before widening, preserves parameter overrides by omitting them from writes, spaces requests for the documented 20/minute limit, and verifies the resulting baseline. Writes are **not transactional**: on failure, inspect the current policy before retrying; there is no automatic rollback or retry. Stop other administrators from editing concurrently. A fresh catalog item during execution fails read-back rather than being silently approved. The output proves only the scoped baseline, not group permissions or physical hosting.
+
+The [Organization API](https://cursor.com/docs/account/organizations/organization-admin-api) offers paginated linked-team configuration inventory and per-team/bulk equivalents. An organization-wide rollout must exhaust inventory pages and evaluate every result; bulk writes accept at most 100 team IDs, may return partial failures with HTTP 200, and have no rollback. This single-team pack intentionally does not implement a bulk rollout or Organization Group changes. Repeat with each team's correct key and reviewed policy, or build an organization-key orchestrator with per-team verification. CLI/SDK model selection is not an admin write surface; no Terraform or local-settings enforcement is claimed (see [scope and source ledger](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/cursor-model-access-2026-11-11.md)).
+
+#### Validation & Testing
+1. Read back both defaults and the complete provider/model catalog; compare to the approved register, not just a successful HTTP status. Check `team_settings` audit events using control 10.1.
+2. With synthetic nonsensitive prompts, test an approved model and explicitly blocked model as an ordinary member with no groups, each relevant group, and overlapping groups. Also test an existing conversation and new session; record client/version and results.
+3. Exercise direct model selection and Auto, plus enabled CLI/SDK, Cloud Agent and integration entry points. Confirm denied requests fail rather than silently using another unapproved model. Verify BYOK and unmanaged-account attempts are blocked separately.
+4. Confirm dependent checks still produce meaningful results, not neutral or absent Bugbot/Auto-review output. Reject the rollout if the restriction is not effective; investigate group grants and feature coverage before widening access.
+5. Re-audit after catalog/provider/routing changes and group membership changes. Keep newly introduced entries disabled until evidence and approval are recorded.
+
+**Expected result:** Only approved model routes are usable within the tested team and feature scope; unresolved hosting or group coverage remains an explicit gap. No live tenant enforcement was validated for this guide revision.
+
+#### Operational Impact
+Model removals may interrupt existing agents and reviews. Pilot first, communicate the approved alternatives, and retain a separately reviewed recovery policy. A rollback that re-enables an untrusted processor requires a deliberate risk decision, not an automatic error handler.
 
 ---
 
@@ -1687,7 +1740,7 @@ Use enterprise firewall or endpoint security to allowlist only required Cursor n
 
 #### Rationale
 **Why This Matters:**
-- Restricting Cursor to a known set of endpoints forces all AI model traffic through Cursor's Privacy Mode proxy instead of direct provider APIs that bypass data-retention guarantees
+- Restricting client egress can prevent direct calls to unapproved APIs, but cannot select or exclude Cursor's server-side inference subprocessors. Enforce Privacy Mode separately and model access through 2.7
 - An egress allowlist removes the exfiltration channels that prompt injection, a malicious extension, or a poisoned MCP server would use to reach attacker-controlled servers
 - Outbound filtering contains compromised agents and subprocesses that attempt to call out to unapproved hosts for command-and-control or data theft
 - Codebase context, embeddings, and credentials only leave the machine through network connections, so the network boundary is the last enforceable control when in-editor protections fail
@@ -1725,7 +1778,7 @@ These steps are carried out in your own egress control (firewall, secure web gat
 2. Allow the hosts in **Required Endpoints** above, or the documented wildcards where per-host rules are impractical
 
 **Step 2: Deny direct provider APIs and everything else**
-1. Add explicit deny rules for `api.openai.com` and `api.anthropic.com` from Cursor, so model traffic cannot bypass Cursor's Privacy Mode backend
+1. Add explicit deny rules for `api.openai.com` and `api.anthropic.com` from Cursor, to restrict direct client calls; this does not prevent Cursor's backend from using an inference subprocessor or a BYOK route
 2. Set the rule's default for other Cursor egress to deny
 
 **Step 3: Drop entries you do not use**
@@ -2268,6 +2321,7 @@ Plan names and tiers follow [cursor.com/pricing](https://cursor.com/pricing) and
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-11 | 0.7.0 | ai-drafted | Add 2.7 reviewed model/inference-host allowlists, preview API enforcement with explicit apply and read-back, stricter 2.2 audit, group/BYOK and feature limits, and offline safety regressions. Correct client-egress versus server-side hosting distinction. Tier 0+1 only; no live validation | Codex |
 | 2026-11-05 | 0.6.0 | ai-drafted | Source-first current family/product map with explicit admin-plane inheritance; new extension cooldown/signature, request-local tenant restriction, shared transcript retention, Cyber model retention exception, per-MCP egress and skill publication/sync controls; current SpaceXSI display name with stable URL/anchors; five separate new native-plane guides plus refreshed Bot. Tier 0+1 only; no live validation | Codex |
 | 2026-10-10 | 0.5.2 | ai-drafted | Became the Common Controls hub of the new SpaceXAI multi-product platform (`platform: "SpaceXAI"`, `platform_slug: "spacexai"`, `product: "Common Controls"`, vendor `SpaceXAI`) after SpaceX completed its acquisition of Anysphere on 2026-08-14. Overview names the company chain with first-party citations; added the Products in This Platform table and a Grok Bot product-guide link. No control changed or was renumbered | Claude Code (Opus 5.5) |
 | 2026-10-04 | 0.5.1 | ai-drafted | validate-hth-guide live run against a signed-in Free (Hobby) account on the cursor.com dashboard; 0 surfaces VERIFIED-LIVE (Cursor app not installed, no Teams/Enterprise team or Admin API key), so maturity is unchanged. Corrected from the live dashboard: 1.2 rewritten — `cursor.com/settings/security` is a 404 and Cursor has no account MFA setting, so MFA is enforced at the Google/GitHub sign-in or the SSO IdP; 2.1 adds the web path Dashboard → Settings → Privacy → Privacy Mode, replaces the "volatile memory… discarded" bullet with the dashboard's own "Code may be stored for Cloud Agent, Team Rules, and other features", and documents the per-account Restricted and Early-Access Models acknowledgement; 1.1 notes the signed-in redirect to the dashboard; 9.2 gains its missing ClickOps section. Code: 4.2 and 5.1 packs now exit 2 (not assessed) instead of passing when no `permissions.json` exists | Claude Code (Opus 5.5) |

@@ -1,0 +1,24 @@
+name: Cursor Model Access Safety
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packs/cursor/api/hth-cursor-2.02-audit-model-access.sh'
+      - 'packs/cursor/api/hth-cursor-2.07-enforce-model-allowlist.sh'
+      - 'scripts/test-cursor-model-access.py'
+      - '.github/workflows/cursor-model-access-safety.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify prerequisites
+        run: command -v bash && command -v jq
+      - name: Offline model-policy safety regression tests
+        run: python3 scripts/test-cursor-model-access.py
