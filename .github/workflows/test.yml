@@ -34,6 +34,12 @@ jobs:
         run: make test-factory-packs
       - name: Tailscale pack safety tests (offline)
         run: make test-tailscale-packs
+      - name: Pluto reconciliation pack safety tests (offline)
+        run: |
+          python3 scripts/test-pluto-anthropic.py
+          python3 scripts/test-pluto-crosscut-packs.py
+          python3 scripts/test-pluto-browser-inventory.py
+          python3 -m unittest discover -s tests -p 'test_copilot_studio_packs.py'
 
   # ─── Pack Validation (validate-packs.sh — 17 checks) ───────────────────────
   # This job exists because the repo already owned the detectors and never ran
