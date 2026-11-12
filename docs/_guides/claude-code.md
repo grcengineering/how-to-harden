@@ -9,9 +9,9 @@ product: "Claude Code"
 tier: "1"
 category: "AI/ML Platform"
 description: "Harden Claude Code managed policies, permissions, plugins, isolation, remote execution, cloud-provider routing and CI credentials."
-version: "1.2.0"
+version: "1.2.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-05"
+last_updated: "2026-11-12"
 ---
 
 ## Overview
@@ -434,8 +434,8 @@ Restrict the Claude Code extensibility surface by enforcing managed-only hooks, 
 
 **Step 1: Lock Hooks to Managed-Only**
 1. Navigate to: **claude.ai** → **Organization settings** → **Claude Code** → **Managed settings** ([claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code))
-2. Add `"allowManagedHooksOnly": true` — blocks all user, project, and plugin hooks
-3. Define any required hooks directly in managed settings under the `"hooks"` key
+2. Add `"allowManagedHooksOnly": true`. Managed hooks, Agent SDK callbacks and hooks from plugins force-enabled by managed `enabledPlugins` remain allowed; do not describe this as blocking every plugin hook.
+3. Define required hooks in managed settings. For the stricter pack, deploy `disableAllHooks: true` in managed settings to disable configured hooks, including managed hooks. Agent SDK callbacks and built-in mods are separate exceptions; disabling hooks can also disable custom status/file-suggestion commands.
 
 **Step 2: Restrict Plugin Marketplaces**
 1. Add `"strictKnownMarketplaces"` with your approved marketplace repos only
@@ -448,7 +448,14 @@ Restrict the Claude Code extensibility surface by enforcing managed-only hooks, 
 2. Set to empty array `[]` to block all HTTP hooks
 3. Add `"httpHookAllowedEnvVars": ["HOOK_AUTH_TOKEN"]` to restrict which env vars hooks can access
 
-**Time to Complete:** ~15 minutes
+**Step 4: Review Skills as Permission-Bearing Content**
+1. Review skill descriptions, linked scripts, frontmatter and injected shell commands, not only the visible instructions. `allowed-tools` grants pre-approval; it is not a restrictive tool allowlist. `disable-model-invocation: true` controls automatic invocation, not an OS security boundary.
+2. On Claude Code **v2.1.282+**, managed `allowManagedPermissionRulesOnly: true` suppresses `allowed-tools` from project/personal skills and the other documented untrusted sources. Check `/status` for ignored skill grants; managed deny/ask rules still matter. Test the actual source/version and do not assume the same frontmatter behavior in Cowork or the API.
+3. Review all components of a plugin and its update source. A local MCP server is executable software with host privileges, not inherently safer than a remote integration. Do not copy a third-party bundle's empty MCP file or prompt instructions as proof of enforced central policy.
+
+**Sources:** [Settings reference](https://code.claude.com/docs/en/settings-reference#allowmanagedhooksonly), [Skills permissions](https://code.claude.com/docs/en/skills#when-only-managed-permission-rules-apply) (checked 2026-11-12).
+
+**Time to Complete:** ~15 minutes plus extension review.
 
 #### Code Implementation
 
@@ -459,9 +466,9 @@ Restrict the Claude Code extensibility surface by enforcing managed-only hooks, 
 2. Attempt to install a plugin from a non-approved marketplace — should be blocked
 3. Verify `blockedMarketplaces` entries are rejected before download
 4. Create an HTTP hook targeting a non-allowlisted URL — verify it is blocked
-5. Verify `pluginTrustMessage` appears during plugin trust prompts
+5. Verify `pluginTrustMessage` appears during plugin trust prompts. Run the CLI pack against a reviewed local plugin; warnings fail with `--strict`. A passing manifest scan is not a trust verdict for executable code or later downloads. MCP checks require v2.1.281+. See the [official manifest validator](https://code.claude.com/docs/en/plugins-reference#validate-the-manifest).
 
-**Expected result:** Only managed hooks execute; plugins limited to approved sources; HTTP hooks restricted to approved endpoints
+**Expected result:** The selected hook policy and its SDK/force-enabled-plugin exceptions are understood; marketplace restrictions and HTTP hook destinations are independently checked.
 
 #### Operational Impact
 
@@ -1019,6 +1026,7 @@ See the [Anthropic platform hub references](/guides/anthropic-claude/#appendix-b
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-12 | 1.2.1 | ai-drafted | Reconciled Pluto extension/bundle research; corrected managed-hook exceptions and strict hook pack, added skill pre-approval/version checks without treating prompts as enforcement. | Codex |
 | 2026-11-05 | 1.2.0 | ai-drafted | Separated Code from Desktop/Cowork policy; corrected permission/sandbox/plugin boundaries and containment; added remote/cloud/routine controls and federal provider-routing guidance with current variables. | Codex |
 | 2026-10-04 | 1.1.1 | ai-drafted | validate-hth-guide run against a live Claude Console organization, read-only: 0 of 22 surfaces exercised live, so `ai-validated` was not added. The §5.1 Console page at platform.claude.com/claude-code loaded only its headings and placeholder rows (no metric or per-user data; the org had no Claude Code activity), and the §5.1 script, run with an Admin API key, returned 0 records for each day tried. The claude.ai Team/Enterprise admin pages need a Team or Enterprise org. Corrections: the claude.ai managed-settings path in §1.1, §2.2, §3.1 and §5.2 is now **Organization settings** → **Claude Code** → **Managed settings** (was "Admin Settings"); the Team/Enterprise analytics URL in §5.1 is claude.ai/analytics/claude-code. | Claude Code (Opus 5.5) |
 | 2026-09-25 | 1.1.0 | ai-drafted | [SECURITY] Fixes from a validate-hth-guide run (22 surfaces; 0 exercised live — the Console was behind a sign-in wall and the claude.ai admin surfaces need a Team or Enterprise org — so `ai-validated` was not added). §4.2's workflow pinned two action commits that do not exist and passed inputs `claude-code-action@v1` ignores: repinned, with model, tool and turn limits moved into `claude_args`. The §4.1 rules-file scanner never matched invisible Unicode: fixed, bidi controls added. Validators for §1.1, §1.2 and §2.1 now merge `managed-settings.d/` drop-ins, read `disableBypassPermissionsMode` only under `permissions`, and exit non-zero on failure; the §5.1 script no longer aborts on macOS, follows pagination, fails on a day with zero records instead of reporting healthy acceptance rates, and keeps the admin key out of process arguments; the §5.3 collector preserves timestamps and writes SHA256SUMS. Guide: settings keys shown under their parent objects, `/status` and `claude doctor` verification, HKCU fallback and first-wins source precedence, `allowManagedMcpServersOnly`, `cleanupPeriodDays` minimum 1 (0 fails validation), Cowork admin paths, instructions and Compliance API coverage re-sourced from support.claude.com, tenant-restriction availability and header rules, HackerOne and security.txt contacts. | Claude Code (Opus 5.5) |

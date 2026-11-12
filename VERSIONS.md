@@ -168,35 +168,36 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Anthropic Platform](docs/_guides/anthropic-claude.md) | v1.3.1 | ai-drafted | 2026-11-11 |
 | [AWS IAM Identity Center](docs/_guides/aws-iam-identity-center.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-04 |
 | [BeyondTrust](docs/_guides/beyondtrust.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [ChatGPT Dots](docs/_guides/chatgpt-dots.md) | v0.2.0 | ai-drafted | 2026-11-05 |
+| [ChatGPT Dots](docs/_guides/chatgpt-dots.md) | v0.3.0 | ai-drafted | 2026-11-12 |
 | [ChatGPT Enterprise](docs/_guides/chatgpt-enterprise.md) | v0.4.0 | ai-drafted | 2026-11-05 |
 | [ChatGPT Work and Codex](docs/_guides/chatgpt-work-codex.md) | v0.1.0 | ai-drafted | 2026-11-05 |
-| [Claude API & Console](docs/_guides/anthropic-api.md) | v1.2.0 | ai-drafted | 2026-11-05 |
-| [Claude Code](docs/_guides/claude-code.md) | v1.2.0 | ai-drafted | 2026-11-05 |
-| [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.3.1 | ai-drafted | 2026-11-11 |
+| [Claude API & Console](docs/_guides/anthropic-api.md) | v1.2.1 | ai-drafted | 2026-11-12 |
+| [Claude Code](docs/_guides/claude-code.md) | v1.2.1 | ai-drafted | 2026-11-12 |
+| [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.3.2 | ai-drafted | 2026-11-12 |
 | [Claude Tag](docs/_guides/claude-tag.md) | v0.1.0 | ai-drafted | 2026-11-11 |
 | [Cloudflare Zero Trust](docs/_guides/cloudflare.md) | v0.2.3 | ai-drafted · ai-validated | 2026-09-25 |
 | [CrowdStrike Falcon](docs/_guides/crowdstrike.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Cursor Cloud Agents](docs/_guides/cursor-cloud-agents.md) | v0.1.0 | ai-drafted | 2026-11-05 |
-| [Cursor](docs/_guides/cursor.md) | v0.7.0 | ai-drafted | 2026-11-11 |
+| [Cursor](docs/_guides/cursor.md) | v0.7.1 | ai-drafted | 2026-11-12 |
 | [Cursor Origin](docs/_guides/cursor-origin.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Datadog](docs/_guides/datadog.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Devin & Cognition](docs/_guides/devin.md) | v0.2.0 | ai-drafted | 2026-11-05 |
-| [GitHub](docs/_guides/github.md) | v0.7.2 | ai-drafted · ai-validated | 2026-09-24 |
+| [GitHub](docs/_guides/github.md) | v0.8.0 | ai-drafted | 2026-11-12 |
 | [Gmail](docs/_guides/gmail.md) | v0.1.0 | ai-drafted | 2026-08-03 |
 | [Google Chat](docs/_guides/google-chat.md) | v0.3.0 | ai-drafted | 2026-08-12 |
 | [Google Drive](docs/_guides/google-drive.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Google Workspace](docs/_guides/google-workspace.md) | v0.4.1 | ai-drafted | 2026-08-08 |
+| [Google Workspace](docs/_guides/google-workspace.md) | v0.5.0 | ai-drafted | 2026-11-12 |
 | [Grok API](docs/_guides/grok-api.md) | v0.1.0 | ai-drafted | 2026-11-05 |
-| [Grok Bot](docs/_guides/grok-bot.md) | v0.2.0 | ai-drafted | 2026-11-05 |
+| [Grok Bot](docs/_guides/grok-bot.md) | v0.3.0 | ai-drafted | 2026-11-12 |
 | [Grok Build](docs/_guides/grok-build.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Grok](docs/_guides/grok.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [HashiCorp Vault](docs/_guides/hashicorp-vault.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Idira (formerly CyberArk)](docs/_guides/cyberark.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [LangChain](docs/_guides/langchain.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
-| [Microsoft 365](docs/_guides/microsoft-365.md) | v0.3.2 | ai-drafted | 2026-10-10 |
+| [Microsoft 365](docs/_guides/microsoft-365.md) | v0.3.3 | ai-drafted | 2026-11-12 |
+| [Microsoft Copilot Studio](docs/_guides/copilot-studio.md) | v0.1.0 | ai-drafted | 2026-11-12 |
 | [Microsoft Entra ID](docs/_guides/microsoft-entra-id.md) | v0.3.0 | ai-drafted | 2026-08-08 |
-| [Microsoft Intune](docs/_guides/microsoft-intune.md) | v0.3.0 | ai-drafted | 2026-08-08 |
+| [Microsoft Intune](docs/_guides/microsoft-intune.md) | v0.4.0 | ai-drafted | 2026-11-12 |
 | [MongoDB Atlas](docs/_guides/mongodb-atlas.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Netskope](docs/_guides/netskope.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Okta](docs/_guides/okta.md) | v0.5.0 | ai-drafted · ai-validated | 2026-09-24 |
@@ -227,14 +228,14 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Bitbucket Cloud](docs/_guides/bitbucket.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Braze](docs/_guides/braze.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Buildkite](docs/_guides/buildkite.md) | v0.3.1 | ai-drafted · ai-validated | 2026-08-20 |
-| [CircleCI](docs/_guides/circleci.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [CircleCI](docs/_guides/circleci.md) | v0.3.0 | ai-drafted | 2026-11-12 |
 | [Cisco Duo Security](docs/_guides/duo.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Clari](docs/_guides/clari.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Coupa](docs/_guides/coupa.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Databricks](docs/_guides/databricks.md) | v0.3.0 | ai-drafted | 2026-08-03 |
 | [DeepWiki](docs/_guides/deepwiki.md) | v0.1.1 | ai-drafted | 2026-11-05 |
 | [Devin CLI](docs/_guides/devin-cli.md) | v0.2.0 | ai-drafted | 2026-11-05 |
-| [Devin Desktop](docs/_guides/devin-desktop.md) | v0.2.0 | ai-drafted | 2026-11-05 |
+| [Devin Desktop](docs/_guides/devin-desktop.md) | v0.2.1 | ai-drafted | 2026-11-12 |
 | [Devin Federal](docs/_guides/devin-federal.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [DocuSign](docs/_guides/docusign.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Drata](docs/_guides/drata.md) | v0.2.0 | ai-drafted | 2026-08-08 |
@@ -242,7 +243,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Fenic](docs/_guides/fenic.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Figma Enterprise](docs/_guides/figma.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Fivetran](docs/_guides/fivetran.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [GitLab](docs/_guides/gitlab.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
+| [GitLab](docs/_guides/gitlab.md) | v0.3.2 | ai-drafted · ai-validated | 2026-11-12 |
 | [Gong](docs/_guides/gong.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Harness](docs/_guides/harness.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [HubSpot](docs/_guides/hubspot.md) | v0.2.0 | ai-drafted | 2026-08-08 |
@@ -260,6 +261,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Mimecast](docs/_guides/mimecast.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Mixpanel](docs/_guides/mixpanel.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Monday.com](docs/_guides/monday.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [n8n](docs/_guides/n8n.md) | v0.1.0 | ai-drafted | 2026-11-12 |
 | [NetSuite](docs/_guides/netsuite.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Notion](docs/_guides/notion.md) | v0.2.2 | ai-drafted · ai-validated | 2026-10-04 |
 | [Ona](docs/_guides/ona.md) | v0.3.0 | ai-drafted · ai-validated | 2026-11-05 |

@@ -9,9 +9,9 @@ product: "Devin Desktop"
 tier: "2"
 category: "AI/ML Platform"
 description: "Harden Devin Desktop (formerly Windsurf): distinguish Cascade and Devin Local, enforce editor policies, restrict extensions and integrations, protect source context, and verify managed-device settings."
-version: "0.2.0"
+version: "0.2.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-05"
+last_updated: "2026-11-12"
 ---
 
 ## Overview
@@ -230,7 +230,7 @@ Managed device policy support; Enterprise is required for the server-side Extens
 
 #### ClickOps Implementation
 
-1. Inventory the extensions genuinely required for the team and record their approved IDs and owners.
+1. Inventory required extension IDs, versions, registry, actual publishing account and source repository. Before importing from another editor, re-approve the destination-registry package; equal IDs do not prove equal code or publisher identity. Installation counts and familiar branding are not authentication.
 2. Generate the pack’s **AllowedExtensions** value, then merge it into the managed policy. It is a JSON-encoded string, not a nested JSON object.
 3. On Windows use **Computer Configuration → Administrative Templates → Devin → AllowedExtensions** with the release’s **Devin.admx/Devin.adml**. On macOS edit the release-shipped configuration profile. On Linux use **/etc/vscode/policy.json**.
 4. If the Enterprise **Extension policy** team setting is configured, align it with the device baseline: that setting replaces the MDM allowlist for signed-in members.
@@ -247,6 +247,9 @@ Managed device policy support; Enterprise is required for the server-side Extens
 
 1. After restarting the client, verify that an approved extension is available and an unapproved extension cannot be installed.
 2. Check the Extensions view for managed-policy indication. Test both signed-in and signed-out device-policy behavior.
+3. Reconcile the imported package and version against the approved gallery, not merely the displayed ID. Test that import and update paths cannot introduce an unapproved extension.
+
+**Research context:** [Pluto’s cross-registry importer investigation](https://pluto.security/blog/the-importer-syndrome-x-count-dooku-2-0/). The historical silent-import behavior is not asserted for every current build. Use the documented extension allowlist and gallery controls below; inspect actual client behavior in a pilot.
 
 #### Compliance Mappings
 
@@ -878,6 +881,7 @@ The pack emitters do not install policy. JSONC examples are reviewed templates: 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-12 | 0.2.1 | ai-drafted | Reconcile Pluto importer research with extension allowlist/gallery controls; require destination-registry publisher and package approval without assuming historical import behavior remains current. | OpenAI |
 | 2026-11-05 | 0.2.0 | ai-drafted | Added source-conditional Windsurf Plugin identity/MCP coverage, separate native state path and applicability limits; linked Federal and current source ledger. Offline only. | Codex (GPT-6) |
 | 2026-10-30 | 0.1.0 | ai-drafted | Initial Desktop guide; agent-specific boundaries, managed policy packs, offline verification, and explicit plan/validation limits | Codex |
 

@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "Productivity"
 description: "Platform-wide security hardening for Google Workspace — the Common Controls hub (authentication, OAuth, DLP engine, audit logging) shared by the Gmail, Google Drive, and Google Chat product guides."
-version: "0.4.1"
+version: "0.5.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-11-12"
 ---
 
 ## Overview
@@ -566,6 +566,61 @@ If you are working from an older checklist or a prior version of this guide that
 
 ---
 
+### 3.3 Govern Managed Chrome Extensions Across Their Lifecycle
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|---|---|
+| NIST 800-53 | AC-6, CM-6, CM-7, SI-4 |
+
+#### Description
+Manage browser extensions as changing executable dependencies, not permanently trusted IDs. Require reviewed extensions, constrain their permissions and sensitive-site access, and re-review publisher, permission and version changes.
+
+#### Rationale
+**Why This Matters:**
+- An unchanged extension ID does not prove an unchanged publisher, package or data-access scope.
+- Approved extensions can expose signed-in administrative sessions without a new installation.
+
+**Attack Prevented:** Browser-extension supply-chain compromise, session theft and unauthorized reading of administrative pages.
+
+#### Prerequisites
+Managed Chrome browsers or managed profiles, policy-administration privileges and a pilot organizational unit. Browser reporting must be enabled before its API inventory is meaningful; missing reports do not prove absence.
+
+#### ClickOps Implementation
+1. In the Google Admin console, open **Devices → Chrome → Apps & extensions → Users & browsers**, select the pilot organizational unit, and require approval for extensions rather than permitting arbitrary installations. Review inherited settings and exceptions.
+2. For Windows Group Policy deployment, open **Administrative Templates → Google → Google Chrome → Extensions → Extension management settings**. Enable `ExtensionSettings` and start with `installation_mode: blocked` for `*`; add only reviewed extension IDs as explicit exceptions. Merge with existing policy instead of overwriting approved requirements.
+3. Add `blocked_permissions` for capabilities not needed by the workflow and `runtime_blocked_hosts` for administrative sites. Maintain the restrictions explicitly on each allowed extension entry as well as the default. These are different controls: blocked API permissions are not host patterns, and host restrictions are not general network egress filtering.
+4. Record approved ID, publisher, package/version, requested API and host permissions, owner and review date. Re-review on ownership/contact changes, permission expansion, unexpected destinations or anomalous update cadence. Preserve security updates through a short pilot process rather than indefinite version freezes.
+5. Use browser reporting to find affected installations. For a suspected compromise, disable through policy, preserve evidence and revoke exposed sessions/tokens in the source services; removal alone does not revoke credentials.
+
+**Policy boundaries:** `minimum_version_required` is a minimum, not an exact-version pin. Google's documented update-location mechanism uses `override_update_url` and a controlled update source; do not invent an exact-version field or assume a Chrome Web Store URL freezes updates. `BlockExternalExtensions` is not a substitute for permission or host controls. See [Google's policy field reference](https://support.google.com/chrome/a/answer/9867568?hl=en) and [Windows implementation](https://support.google.com/chrome/a/answer/7532015?hl=en).
+
+#### Code Implementation
+The config pack is the native `ExtensionSettings` value, not an Admin SDK request. Pilot it before adding reviewed exceptions. The API pack inventories installations with complete pagination; it does not change policy or detect publisher transfers automatically.
+
+{% include pack-code.html vendor="google-workspace" section="3.3" %}
+
+**Automation:** Native managed-browser config provides enforcement; [Chrome Management Reports API](https://developers.google.com/chrome/management/reference/rest/v1/customers.reports/countInstalledApps) provides read-only inventory. This control does not claim Terraform, a supported first-party CLI, or an SDK-only write method. Vendor-published `gws` remains distinct from officially supported administration tooling.
+
+#### Validation & Testing
+1. Reload `chrome://policy` on a pilot client and confirm `ExtensionSettings` is mandatory and has no errors.
+2. Attempt an unapproved extension install and verify rejection. Test an approved extension on a designated blocked site and an allowed non-sensitive site.
+3. Test required versus optional blocked permissions: required permissions prevent loading; optional blocked permissions are denied without necessarily preventing installation.
+4. Compare an installed pilot extension against the paginated API output; investigate reporting latency, enrollment or OU scope before declaring the inventory complete.
+
+#### Operational Impact
+Default blocking can disable business-critical extensions. Export prior policy, pilot exceptions and restore the previous reviewed policy on rollback. This browser policy does not restrict non-browser apps or unmanaged personal devices.
+
+---
+
+#### Compliance Mappings
+
+| Framework | Control objective |
+|---|---|
+| NIST 800-53 | AC-6 least privilege; CM-6 configuration settings; CM-7 least functionality; SI-4 monitoring |
+
+
 ## 4. Data Security
 
 ### 4.2 Enable Data Loss Prevention (DLP)
@@ -938,6 +993,7 @@ CISA publishes Secure Configuration Baselines for Google Workspace and ships [Sc
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-12 | 0.5.0 | ai-drafted | Added 3.3 browser-extension lifecycle controls after Pluto research reconciliation; separate installation, permissions, sensitive-host access and reporting. No live validation claimed. | Jai |
 | 2026-08-08 | 0.4.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.3, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.4.0 | ai-drafted | Currency pass. Rewrote §3.2 — Less Secure Apps was fully removed by Google on 2025-05-01 and the Admin Console page no longer exists, so the control is now "Retire Legacy App Access (Less Secure Apps & App Passwords)" covering residual app-password auditing and OAuth governance. Added §1.4 multi-party approvals for sensitive admin actions (2SV changes, account recovery, domain-wide delegation, Vault export creation) and §4.3 AI control center for Gemini and agent access governance (GA May 2026, Enterprise Standard/Plus). Migrated 9 `support.google.com/a` citations to `knowledge.workspace.google.com`. Labeled the CIS mapping as Foundations Benchmark v1.3.0 with a note that IDs shift between releases, and added a CISA SCuBA / ScubaGoggles baseline mapping table. | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.3.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |

@@ -1,6 +1,6 @@
 # chatgpt-dots code packs
 
-One current Compliance exporter (CODEX_LOG family) plus three native TOML emitters. Filter Dots records after collection using the current documented client identity; the exporter does not invent a family or normalized event schema.
+One current Compliance exporter (CODEX_LOG family) plus four native TOML emitters (including a local-only denied-read baseline). Filter Dots records after collection using the current documented client identity; the exporter does not invent a family or normalized event schema.
 
 Set HTH_PROFILE_LEVEL to the selected level (1–4); the default is1 and a higher-level pack refuses to run until explicitly selected. Emitters print native snippets for review; they neither deploy policy nor verify enforcement. Merge snippets into the documented requirements delivery plane, inspect /debug-config and test each supported runtime. Do not concatenate independent TOML documents without merging their tables.
 

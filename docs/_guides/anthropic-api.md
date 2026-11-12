@@ -9,9 +9,9 @@ product: "Claude API & Console"
 tier: "1"
 category: "AI/ML Platform"
 description: "Harden Claude API credentials, workspaces, residency, retention, customer-managed keys, Managed Agents and usage governance."
-version: "1.2.0"
+version: "1.2.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-05"
+last_updated: "2026-11-12"
 ---
 
 ## Overview
@@ -696,6 +696,11 @@ Treat Claude Managed Agents as a separate beta API runtime. Limit tools and appr
 2. Mount only trusted repositories: repository skills can be loaded as instructions without review. Prefer a narrow custom tool whose application holds and authorizes the downstream credential over a general shell with that credential.
 3. Limit the cloud environment network and web tool domain lists separately; search-result domains do not restrict the sensitive text in the query. For self-hosted sandboxes, enforce equivalent firewall policy and assess worker/custom/MCP code with the same process privileges.
 4. Bound budgets, idle/running sessions, deployment schedules and stored transcripts/memory. IP allowlisting governs the API request, not runtime egress; Managed Agents is not ZDR-eligible and its state persists until deleted.
+5. Keep secrets in vaults, not raw environment variables, prompts or mounted files. For vault-backed environment-variable credentials, choose exact credential hosts and header-only substitution. An omitted `injection_location` enables body substitution too. Opaque placeholders do not protect secrets returned by echo endpoints or downstream token exchanges; perform exchanges outside the sandbox and vault the resulting token. Workspace key access can reference workspace vaults, so enforce end-user authorization in your application before selecting vault IDs.
+6. Pin required environment packages to reviewed versions. With limited networking, pre-installed packages require `allow_package_managers: true`; do not copy a pinned-package example that sets it false, which current API docs say is rejected. Leave packages absent and the flag false when unnecessary.
+7. Review session events and each multiagent thread, including denied/paused tool permissions. Verify webhook signatures; use periodic session polling as a backstop. Alert on budget, termination, deployment and credential-refresh failures. Archive to retain history; export approved evidence before deletion. Uploaded files, memory stores and vaults have independent lifecycles, not automatic session cleanup.
+
+**Current evidence:** [Vaults](https://platform.claude.com/docs/en/managed-agents/vaults), [Environment configuration](https://platform.claude.com/docs/en/managed-agents/environments), [Session monitoring](https://platform.claude.com/docs/en/managed-agents/secure-deployment-monitoring) (checked 2026-11-12). These supersede dated third-party claims of missing hardening documentation or a blanket guarantee that vaulted secrets cannot be disclosed.
 
 #### Code Implementation
 
@@ -850,6 +855,7 @@ See the [Anthropic platform hub references](/guides/anthropic-claude/#appendix-b
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-12 | 1.2.1 | ai-drafted | Reconciled Pluto Managed Agents research with current vault substitution, package-network prerequisites, session monitoring and retention boundaries; extended native request examples. | Codex |
 | 2026-11-05 | 1.2.0 | ai-drafted | Corrected principal/key scope, WIF preflight and secret handling, API retention and AWS analytics; added workspace CMEK and Managed Agents isolation; fixed complete usage/cost and rate-limit evidence. | Codex |
 | 2026-08-15 | 1.1.0 | ai-drafted | Admin API currency pass. §1.2 rewritten around native key expiration: creation-time presets/custom/Never, the organization maximum-expiration policy that removes Never entirely, `expires_at` auditing (null = finding), 401 at expiry, creator warning emails. §1.3 WIF updated: the Connect-workload wizard as the documented setup path (per-provider tiles, Verify-issuer JWKS dry-run, 15-minute exchange listener, 600s prefill vs the 3600s API default), the grown OAuth scope set (`workspace:inference`, `workspace:manage_tunnels`, Console-only `org:admin` rules targeting admin-role service accounts), the fork-PR wildcard-subject attack with the protected-branch pin, the 2×-remaining-IdP-JWT token-lifetime cap, implicit default-workspace service-account membership, and the OAuth-only WIF Admin API endpoints. §2.1 gains the special-workspace handling (Default Workspace cannot carry limits and reports null `workspace_id`; archiving the auto-created Claude Code workspace disables org-wide Claude Code sign-in) and the prompt-cache isolation platform split. §2.2 corrected: five workspace roles including Workspace Limited Developer, billing-role inheritance, and the offboarding fix — standard workspace keys survive member removal and demand a rotation pass. NEW §2.3: Claude Platform on AWS variant (workspace-endpoints-only Admin API, IAM policies on workspace ARNs, `CallWithBearerToken` denial forcing SigV4, 12-hour short-term keys, CloudTrail data-event logging gap, AWS region does not pin inference geography). §3.1: `inference_geo` model floor (Claude 4.6+; 400 on 4.5-generation). §4.1: expanded dimensions (context window, speed beta, `inference_geo` with the pre-Feb-2026 `not_available` caveat), bucket caps and pagination, cost-endpoint mechanics (daily-only, cents strings, Priority Tier excluded, code-execution only here), and the `anthropic-workspace-id` response header. §4.2: split Rate-limits/Spend-limits tabs and read-only Rate Limits API validation. All ClickOps hosts canonicalized to platform.claude.com. | Claude Code (Opus 5) |
 | 2026-08-03 | 1.0.0 | ai-drafted | Split out of the monolithic Anthropic Claude guide as part of the multi-product platform restructure; carries the API key, workspace, data, and usage controls (formerly sections 2-5) renumbered into four sections. | Claude Code (Sonnet 5) |

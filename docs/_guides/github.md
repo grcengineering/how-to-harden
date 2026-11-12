@@ -6,9 +6,9 @@ slug: "github"
 tier: "1"
 category: "DevOps"
 description: "Comprehensive source control and CI/CD security hardening for GitHub organizations, Actions, supply chain protection, and Enterprise Cloud/Server"
-version: "0.7.2"
-maturity: ["ai-drafted", "ai-validated"]
-last_updated: "2026-09-24"
+version: "0.8.0"
+maturity: ["ai-drafted"]
+last_updated: "2026-11-12"
 ---
 
 
@@ -1450,16 +1450,16 @@ Source: [GitHub Changelog, 2026-06-12](https://github.blog/changelog/2026-06-12-
 **NIST 800-53:** SI-7, SA-12
 
 #### Description
-Generate cryptographically signed build provenance attestations for CI/CD artifacts using GitHub's artifact attestation feature (GA May 2024). Attestations use Sigstore to create unforgeable links between artifacts and the workflows that built them. This achieves SLSA v1.0 Build Level 2 by default, and Build Level 3 when combined with reusable workflows that isolate the build process.
+Generate cryptographically signed build provenance attestations for CI/CD artifacts using GitHub's artifact attestation feature (GA May 2024). Attestations use Sigstore to create unforgeable links between artifacts and the workflows that built them. An attestation establishes provenance, not that the artifact is benign or the release was authorized. Assess SLSA requirements separately; adding a reusable workflow alone does not establish a level.
 
 #### Rationale
 **Attack Prevented:** Supply chain compromise, artifact tampering, build system manipulation
 
 **Real-World Incident:**
-- **SolarWinds SUNBURST (2020):** Attackers modified the build system to inject a backdoor into signed software updates affecting 18,000+ organizations. Artifact attestations with verified build provenance would have detected that the build did not originate from the expected workflow.
-- **tj-actions/changed-files (March 2025):** Compromised GitHub Action affected 23,000+ repositories. Artifact attestations would have allowed consumers to verify the provenance of artifacts built with this action.
+- **SolarWinds SUNBURST (2020):** Attackers modified the build system to inject a backdoor into signed software updates affecting 18,000+ organizations. A compromised authorized build can still produce valid provenance; verification must be combined with builder isolation and release authorization.
+- **tj-actions/changed-files (March 2025):** Compromised GitHub Action affected 23,000+ repositories. Provenance may identify which workflow built an artifact, but a compromised trusted workflow can still produce a valid attestation. Signature verification alone would not block a malicious action.
 
-**Why This Matters:** Attestations provide a cryptographic chain of custody from source code to built artifact. Consumers can verify that artifacts were built by trusted workflows from trusted repositories.
+**Why This Matters:** Attestations provide a cryptographic chain of custody from source code to built artifact. Consumers must enforce the expected repository, signer workflow, source ref and independently approved commit rather than merely accepting a valid signature.
 
 #### Prerequisites
 - GitHub Actions enabled
@@ -1480,10 +1480,10 @@ Generate cryptographically signed build provenance attestations for CI/CD artifa
    - For binaries: `gh attestation verify PATH/TO/ARTIFACT -R OWNER/REPO`
    - For container images: `gh attestation verify oci://ghcr.io/OWNER/IMAGE:TAG -R OWNER/REPO`
 
-**Step 3: Achieve SLSA Build Level 3** (optional)
+**Step 3: Evaluate Isolated Build Requirements** (optional)
 1. Move build logic into a reusable workflow (`.github/workflows/build-reusable.yml`)
-2. Call the reusable workflow from your main workflow
-3. The reusable workflow provides isolation between the calling workflow and the build process
+2. Call the reusable workflow from your main workflow and ensure caller-controlled inputs cannot influence the trusted build/signing boundary
+3. Review all applicable SLSA requirements; reusability by itself is not a security-level certification
 
 **Time to Complete:** ~15 minutes per workflow
 
@@ -1496,8 +1496,12 @@ Generate cryptographically signed build provenance attestations for CI/CD artifa
 #### Validation & Testing
 1. Run the attestation workflow and confirm it succeeds
 2. Verify the attestation using `gh attestation verify`
-3. Confirm attestation metadata includes correct repository and workflow references
-4. For container images, verify attestation is pushed to the registry
+3. Run the verification pack with independently approved signer workflow, source ref and commit. A valid signature from a different release ref, signer or commit must fail. For reusable builds, validate the reusable workflow signer, not only the caller.
+4. Protect the publishing environment with required reviewers and restricted release branches/tags (5.1); scope OIDC trust (3.6/5.2). A successful signature does not bypass these checks.
+5. Do not trust arbitrary fields in the attestation predicate as policy facts: a compromised workflow can control them. Prefer the documented certificate-bound identity checks.
+6. For container images, use an immutable digest and verify attestation availability.
+
+**Sources:** [GitHub CLI verification policy](https://cli.github.com/manual/gh_attestation_verify) (checked 2026-11-12); [Pluto TeamPCP lessons](https://pluto.security/blog/teampcp-cicd-supply-chain-lessons/).
 
 #### Compliance Mappings
 
@@ -1918,7 +1922,7 @@ Detect and prevent attacks where an adversary force-pushes Git tags in an action
 **CIS Controls:** 2.6, 5.4
 
 #### Description
-Enforce CODEOWNERS-based review for all changes to `.github/workflows/` and `.github/actions/` directories. Workflow files define what code runs in your CI/CD pipeline with access to secrets, OIDC tokens, and deployment environments — changes to these files should receive the same security scrutiny as changes to production infrastructure.
+Enforce CODEOWNERS-based review for `.github/workflows/`, `.github/actions/`, and executable IDE/agent/MCP configuration, dependency manifests and lockfiles. Review `.vscode/`, `.claude/`, `.cursor/`, `.gemini/`, `.mcp.json` and agent instruction files as applicable; these can alter commands or influence agents before a conventional build runs. Workflow files define what code runs in your CI/CD pipeline with access to secrets, OIDC tokens, and deployment environments — changes to these files should receive the same security scrutiny as changes to production infrastructure.
 
 #### Rationale
 **Why This Matters:**
@@ -1933,11 +1937,11 @@ Enforce CODEOWNERS-based review for all changes to `.github/workflows/` and `.gi
 - The `pull_request_target` vulnerability class (Section 3.8) often requires a workflow file change to exploit — CODEOWNERS blocks this at the review stage
 - Supply chain attacks frequently involve subtle workflow modifications (adding a step, changing an action reference) that pass casual code review
 
-#### ClickOps Implementation{% include status-mark.html status="ai-validated" evidence="Classic branch protection code owner review settings re-read on a live repo" date="2026-09-24" %}
+#### ClickOps Implementation
 
 **Step 1: Create or Update CODEOWNERS**
 1. Create or edit `.github/CODEOWNERS` in the repository's default branch
-2. Add ownership rules for workflow and action directories
+2. Merge the generated rules into existing ownership rules; never replace existing team assignments blindly. Protect CODEOWNERS itself. The last matching pattern wins, so check more-specific rules later in the file for overrides.
 3. Ensure the designated team exists and has at least write access to the repository
 
 **Step 2: Enforce CODEOWNERS Reviews**
@@ -1948,7 +1952,7 @@ Enforce CODEOWNERS-based review for all changes to `.github/workflows/` and `.gi
 5. Enable **"Dismiss stale pull request approvals when new commits are pushed"**
 
 **Step 3: Verify Coverage**
-1. Submit a test PR that modifies a workflow file
+1. Submit test PRs modifying a workflow, agent/MCP configuration and CODEOWNERS itself
 2. Confirm that the CODEOWNERS team is automatically requested for review
 3. Confirm the PR cannot be merged without CODEOWNERS approval
 
@@ -1966,6 +1970,9 @@ Enforce CODEOWNERS-based review for all changes to `.github/workflows/` and `.gi
 3. PRs modifying workflow files automatically request the security team
 4. PRs cannot merge without CODEOWNERS approval
 5. Stale approvals are dismissed when new commits are pushed
+6. Owners exist and have required repository access; later patterns do not override the intended owner. This is a merge-time gate, not protection when a developer opens an unreviewed branch locally.
+
+**Sources:** [GitHub CODEOWNERS syntax and enforcement](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) (checked 2026-11-12); [Pluto TeamPCP lessons](https://pluto.security/blog/teampcp-cicd-supply-chain-lessons/).
 
 #### Compliance Mappings
 
@@ -4101,6 +4108,7 @@ Before allowing any third-party integration access to GitHub, assess risk:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-12 | 0.8.0 | ai-drafted | [BREAKING] Pluto reconciliation: bind attestation verification to approved signer/ref/commit, correct provenance guarantees, and protect executable agent/IDE/MCP configuration with non-destructive CODEOWNERS generation. Narrowed guide maturity after substantive unvalidated changes. | OpenAI |
 | 2026-09-24 | 0.7.2 | ai-drafted · ai-validated | validate-hth-guide run (live Phase 4 by four section agents, then fix and re-validate) against a disposable GitHub Free organization and its public repository: 36 of 112 surfaces came back VERIFIED-LIVE (34 ClickOps, 2 Code) and each carries a mark (an independent audit withdrew three marks the run had over-claimed: 8.3 ClickOps, whose GitHub-recommended step was never seen live, and the 3.13 and 3.16 Code audits, which only ran against repos with nothing risky to find); no Code pack that needs a token was executed, because none could be minted (GitHub sudo re-authentication is operator-held), and the Enterprise Cloud trial was never activated, so enterprise-only steps stay unexercised. Corrected console paths and labels in the 28 controls whose ClickOps failed against the live console, plus smaller path fixes in 4.2 and 7.1 (Advanced Security replaces Code security and analysis; People tab and its 2FA and Membership filters; Third-party Access; PAT policy tabs; rulesets path and plan gates; Actions Policies, OIDC, runner groups and Actions policies; release immutability; environments; custom properties); replaced the retired OpenSSF-hosted Allstar app in 3.7 with the self-hosted setup. Fixed Code Packs that could not work: nonexistent REST endpoints and body fields, gh `{org}` placeholders, a GraphQL-only IP allow list, fail-open packs that reported success when every API call failed, two local workflow audits (3.25, 3.33) whose here-string loops could silently read nothing and report zero findings, a 3.33 trigger check that missed the inline and list forms of `on: pull_request_target`, Terraform schema errors and repository packs that would create a repository, an unpinned deprecated provider, invalid workflow files, unpinned or credential-persisting actions, a broken expression-injection audit, a Renovate rule that dropped the cool-down for every patch; added packs for immutable releases (2.7), default GITHUB_TOKEN permissions (3.2), Actions policies (3.15), cache-poisoning audit (3.16) and Dependabot cooldown (6.7); added Automation verdicts to 1.1, 1.8, 4.1, 4.3, 5.7 and 6.8; resolved the 5.8/8.3 pack collision and moved misplaced pack includes | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.7.1 | ai-drafted | Cheat-sheet cell repairs: added missing Why This Matters / Attack Prevented labels to 37 controls (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.7.0 | ai-drafted | Add sections 3.15 (workflow execution protections: Actor Rules and Event Rules) and 3.16 (Actions cache poisoning) and 5.7 (secret scanning Public monitoring for enterprises); correct section 6.7 to present Dependabot native `cooldown` and the 3-day default as the primary path with Renovate as the alternative; add `actions/checkout` v7 fork-PR checkout enforcement and `allow-unsafe-pr-checkout` ban to section 3.8; add self-hosted runner minimum version 2.329.0 and 30-day update requirement to section 3.4; note automatic hold of potentially malicious workflows in section 3.3 | Claude Code (Sonnet 5) |

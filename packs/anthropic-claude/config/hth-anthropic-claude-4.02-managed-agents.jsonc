@@ -40,3 +40,24 @@
   }
 }
 // HTH Guide Excerpt: end managed-agent-limited-environment
+
+// HTH Guide Excerpt: begin managed-agent-vault-header-only
+// Separate vault credential create body, not an agent/environment property.
+// Source: https://platform.claude.com/docs/en/managed-agents/vaults (2026-11-12).
+// Substitute a narrowly scoped existing secret through your approved secret channel;
+// never commit it. This file does not create credentials or call the API.
+// Header/body injection and destination-host policy are independent controls.
+{
+  "display_name": "Reviewed service credential",
+  "auth": {
+    "type": "environment_variable",
+    "secret_name": "SERVICE_API_KEY",
+    "secret_value": "REPLACE_VIA_APPROVED_SECRET_CHANNEL",
+    "networking": {
+      "type": "limited",
+      "allowed_hosts": ["api.example.com"]
+    },
+    "injection_location": {"header": true, "body": false}
+  }
+}
+// HTH Guide Excerpt: end managed-agent-vault-header-only
