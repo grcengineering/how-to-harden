@@ -4,4 +4,6 @@ Native self-hosted environment configuration and the installed official n8n audi
 
 Cloud customers must use the guide's supported UI controls rather than these environment files. Documentation and syntax checked only; no live tenant validation.
 
-Consume `.env` files with the deployment's environment-file mechanism (for example a container env-file), not by shell-sourcing them: `NODES_EXCLUDE` must reach n8n as a JSON array with its literal double quotes intact. Merge into the existing configuration rather than overwriting unrelated or stricter settings.
+Merge these mappings into the existing Docker Compose n8n service rather than overwriting unrelated or stricter settings. They are not container env-files: `NODES_EXCLUDE` is a YAML string containing a JSON array with its literal double quotes intact.
+
+The YAML snippets are environment mappings to merge under an existing n8n service, not standalone Compose deployments. Values remain strings, including the JSON node-exclusion list. Do not source these files in a shell.

@@ -39,6 +39,7 @@ jobs:
           python3 scripts/test-pluto-anthropic.py
           python3 scripts/test-pluto-crosscut-packs.py
           python3 scripts/test-pluto-browser-inventory.py
+          python3 scripts/test-pluto-n8n.py
           python3 -m unittest discover -s tests -p 'test_copilot_studio_packs.py'
 
   # ─── Pack Validation (validate-packs.sh — 17 checks) ───────────────────────

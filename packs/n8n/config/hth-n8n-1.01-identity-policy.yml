@@ -2,11 +2,12 @@
 # Profile: L1 (Crawl); NIST 800-53 IA-2, AC-6
 # Guide: https://howtoharden.com/guides/n8n/#11
 # Source: https://docs.n8n.io/deploy/host-n8n/configure-n8n/security/manage-security-policies
-# Native self-hosted n8n environment file; merge into deployment configuration.
+# Native Docker Compose environment mapping; merge under the existing n8n service.
 # Requires 2.18.0+ and Business/Enterprise self-hosted license. Existing shares/published workflows remain active.
 # HTH Guide Excerpt: begin identity-policy
-N8N_SECURITY_POLICY_MANAGED_BY_ENV=true
-N8N_MFA_ENFORCED_ENABLED=true
-N8N_PERSONAL_SPACE_PUBLISHING_ENABLED=false
-N8N_PERSONAL_SPACE_SHARING_ENABLED=false
+environment:
+  N8N_SECURITY_POLICY_MANAGED_BY_ENV: 'true'
+  N8N_MFA_ENFORCED_ENABLED: 'true'
+  N8N_PERSONAL_SPACE_PUBLISHING_ENABLED: 'false'
+  N8N_PERSONAL_SPACE_SHARING_ENABLED: 'false'
 # HTH Guide Excerpt: end identity-policy

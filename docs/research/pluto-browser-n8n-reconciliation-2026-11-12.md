@@ -31,7 +31,7 @@ Public targeted CIS/DISA/SCuBA coverage searches returned no product-specific n8
 
 | Surface | Browser scope | n8n scope |
 |---|---|---|
-| Native config | Documented Chrome/Edge ExtensionSettings JSON; pack | Documented native env settings; five packs covering identity, runtime secret exposure, node loading, SSRF and retention |
+| Native config | Documented Chrome/Edge ExtensionSettings JSON; pack | Documented native env settings; five Docker Compose environment-mapping packs covering identity, runtime secret exposure, node loading, SSRF and retention |
 | CLI | Existing gws/Graph tooling catalog reviewed; no invented universal extension-policy CLI | Official installed `n8n audit`, read-only pack; actual configured deployment/database required |
 | REST | Chrome countInstalledApps paginated read-only pack; Intune Graph setting IDs not fabricated | Public API index and audit/user references inspected. POST audit supported, user inventory owner-scoped; additional API wrappers not created merely to duplicate CLI audit. Identity policy writes and external-vault write contract unverified, no guessed endpoints |
 | Terraform | No new policy provider assertion; existing vendor deployment controls unaffected | Official AWS Terraform module discovered in docs index; deployment infrastructure outside focused application-control scope, not claimed nonexistent. Its full resource/data-source coverage not audited |
