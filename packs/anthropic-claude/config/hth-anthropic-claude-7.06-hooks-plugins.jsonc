@@ -9,7 +9,7 @@
 
 // HTH Guide Excerpt: begin hooks-plugins-hardened
 // L2 Walk hook and plugin lockdown.
-// Only managed hooks execute; plugin installs restricted to
+// Managed hooks, SDK hooks and force-enabled plugin hooks can execute; installs restricted to
 // approved marketplaces; HTTP hooks limited to internal URLs.
   {
     "allowManagedHooksOnly": true,
@@ -37,11 +37,12 @@
 // HTH Guide Excerpt: end hooks-plugins-hardened
 
 // HTH Guide Excerpt: begin hooks-plugins-maximum
-// L3 Run — no plugins, no hooks, no HTTP hook URLs.
-// Complete lockdown of extensibility surface.
+// L3 Run — block marketplace sources and configured hooks/HTTP hook URLs.
+// Deploy in managed settings. SDK callbacks and built-in mods remain separate;
+// this does not uninstall or contain already loaded plugin-owned host code.
   {
     "allowManagedHooksOnly": true,
-    "disableAllHooks": false,
+    "disableAllHooks": true,
     "allowedHttpHookUrls": [],
     "httpHookAllowedEnvVars": [],
     "strictKnownMarketplaces": [],

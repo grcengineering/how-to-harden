@@ -1,0 +1,16 @@
+// HTH 3.3: Managed browser extension lifecycle
+// Profile: L2 (Walk); NIST 800-53 CM-7, SI-4
+// Guide: https://howtoharden.com/guides/microsoft-intune/#33
+// Native ExtensionSettings value. Merge into existing managed policy after review.
+// Intentionally blocks all extensions until approved per-ID entries are added.
+// Repeat blocked_permissions/runtime_blocked_hosts in each per-ID exception.
+// Replace the example host with your actual sensitive admin domains.
+// HTH Guide Excerpt: begin extension-policy
+{
+  "*": {
+    "installation_mode": "blocked",
+    "blocked_permissions": ["nativeMessaging", "debugger"],
+    "runtime_blocked_hosts": ["*://*.admin.example.com"]
+  }
+}
+// HTH Guide Excerpt: end extension-policy

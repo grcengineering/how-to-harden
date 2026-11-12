@@ -1328,3 +1328,19 @@ claude-tag:
     - label: "Federated agent identity verification"
       url: "https://claude.com/docs/claude-tag/admins/federated-access/token-reference"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/claude-tag"
+
+copilot-studio:
+  product_docs: "https://learn.microsoft.com/en-us/microsoft-copilot-studio/"
+  api_docs: "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/bot"
+  hardening_docs:
+    - label: "Copilot Studio security and governance"
+      url: "https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/sec-gov-phase3"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/copilot-studio"
+
+n8n:
+  product_docs: "https://docs.n8n.io/"
+  api_docs: "https://docs.n8n.io/api/"
+  hardening_docs:
+    - label: "Securing n8n"
+      url: "https://docs.n8n.io/deploy/host-n8n/configure-n8n/security"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/n8n"

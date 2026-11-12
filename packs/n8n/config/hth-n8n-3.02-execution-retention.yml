@@ -1,0 +1,15 @@
+# HTH 3.2: execution-retention
+# Profile: L2 (Walk); NIST 800-53 SI-12, AU-9
+# Guide: https://howtoharden.com/guides/n8n/#32
+# Source: https://docs.n8n.io/deploy/host-n8n/configure-n8n/basic-configuration/use-environment-variables/executions.md
+# Native Docker Compose environment mapping; merge under the existing n8n service.
+# Review diagnostics and legal retention first. Pruning deletes old history. Sample maximum age is 14 days, not a mandated period.
+# HTH Guide Excerpt: begin execution-retention
+environment:
+  EXECUTIONS_DATA_SAVE_ON_SUCCESS: 'none'
+  EXECUTIONS_DATA_SAVE_ON_ERROR: 'none'
+  EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS: 'false'
+  EXECUTIONS_DATA_SAVE_ON_PROGRESS: 'false'
+  EXECUTIONS_DATA_PRUNE: 'true'
+  EXECUTIONS_DATA_MAX_AGE: '336'
+# HTH Guide Excerpt: end execution-retention

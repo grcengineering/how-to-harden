@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "Productivity"
 description: "Tenant-wide security hardening for Microsoft 365 — the Common Controls hub (MFA and legacy auth, PIM, break-glass, OAuth consent, data security, unified audit logging, Exchange Online and Teams) shared by the Microsoft Entra ID and Microsoft Intune product guides."
-version: "0.3.2"
+version: "0.3.3"
 maturity: ["ai-drafted"]
-last_updated: "2026-10-10"
+last_updated: "2026-11-12"
 ---
 
 ## Overview
@@ -60,6 +60,7 @@ Microsoft is a multi-product platform. This guide is the **Common Controls hub**
 | **Microsoft Entra ID** | [Microsoft Entra ID guide](/guides/microsoft-entra-id/) | Authentication methods and authentication strengths, Conditional Access policy authoring (compliant devices, sign-in risk, Microsoft-managed policies, device code flow), access reviews, restricted management administrative units, Azure AD Graph retirement, identity log export |
 | **Microsoft Intune** | [Microsoft Intune guide](/guides/microsoft-intune/) | Intune RBAC and scope tags, Intune-role PIM scoping, Multi-Admin Approval, remote-wipe restriction and rate alerting, token-replay hardening, Stryker-pattern detection |
 | **Windows 11** | [Windows 11 guide](/guides/windows-11/) | Windows 11 endpoint hardening on enterprise and consumer tracks: security baselines, Defender and Attack Surface Reduction, BitLocker, Credential Guard, Windows LAPS, telemetry and connected-experience minimization |
+| **Microsoft Copilot Studio** | [Copilot Studio guide](/guides/copilot-studio/) | Agent authentication, Power Platform DLP, MCP/tool permissions, computer-use boundaries, model providers and retained artifacts; separate product controls, not configured by this hub |
 | **Exchange Online** | — | No product guide yet — mail flow, Direct Send, external forwarding, and SPF/DKIM/DMARC are covered in this hub (§8) |
 | **Microsoft Teams** | — | No product guide yet — external access and unmanaged-account federation are covered in this hub (§9) |
 
@@ -1383,6 +1384,7 @@ Source: [CISA SCuBA M365 Secure Configuration Baselines and ScubaGear](https://g
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-12 | 0.3.3 | ai-drafted | Added Copilot Studio product guide; no existing common control changed | Jai |
 | 2026-10-10 | 0.3.2 | ai-drafted | Added Windows 11 to the Products in This Platform table now that the Windows 11 guide is a product guide in this platform. No control changed. The `.ps1` packs in this guide's `cli/` directory now pass the pack-type lint, which accepts `.ps1` in `cli/` for vendors whose CLI-inventory row is PowerShell-Only | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.3.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.4, §2.1, §3.2, §4.1, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-08 | 0.3.0 | ai-drafted | Platform breakout: this guide becomes the Microsoft **Common Controls hub** — platform frontmatter, Products in This Platform table, moved-controls callout. Merged in tenant-wide content the product guides carried: mandatory-MFA enforcement phases and enforcement-floor framing (1.1), break-glass exemption from mandatory MFA plus phishing-resistant credential registration and offline credential custody (1.4), blocking user app registration (3.1). Added cross-plane pointers for MFA strength authoring (1.1), PIM (1.3), and the three separate audit-log planes (5.1) | Claude Code (Opus 4.8) |

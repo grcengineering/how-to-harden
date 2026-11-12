@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "DevOps"
 description: "AI code editor security hardening for code privacy, MCP security, agent sandboxing, API key management, and workspace trust"
-version: "0.7.0"
+version: "0.7.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-11"
+last_updated: "2026-11-12"
 ---
 
 
@@ -1559,7 +1559,7 @@ Review all installed VSCode extensions and remove unnecessary or untrusted ones.
 #### Rationale
 **Why This Matters:**
 - VSCode extensions can read all workspace files and make network requests
-- Cursor uses Open VSX, which has weaker verification than Microsoft's Marketplace
+- The same extension ID can resolve to different publishers or code across registries; familiar names and download counts do not prove provenance. Cursor documents malware analysis in its marketplace proxy, which complements rather than replaces review.
 - In June 2025, a fake "Solidity Language" extension on Open VSX led to a confirmed $500,000 cryptocurrency theft — the extension was a dropper that installed remote access tools and credential stealers
 - In December 2025, researchers found Cursor was recommending extensions that didn't exist in Open VSX, enabling attackers to register those names and publish malware that the IDE actively recommended
 
@@ -1577,10 +1577,10 @@ Review all installed VSCode extensions and remove unnecessary or untrusted ones.
 **Step 2: Remove Unnecessary Extensions**
 1. Click extension → **Uninstall**
 2. Focus on:
-   - Extensions with <10K installs (less vetted)
-   - Extensions not updated in >1 year
+   - Extensions whose actual registry publisher, source repository or release provenance cannot be verified
+   - Unmaintained extensions with unresolved security risk
    - Extensions requesting network/filesystem permissions unnecessarily
-   - Extensions side-loaded from `.vsix` files
+   - Side-loaded `.vsix` files without verified source and integrity
 
 **Step 3: Use Extension Allowlist (Enterprise)**
 
@@ -1596,16 +1596,13 @@ Cursor exposes extension allowlisting two ways, and the interaction matters:
 
 {% include pack-code.html vendor="cursor" section="8.1" %}
 
-#### Recommended Extensions Security Posture
+#### Verify Imports and Update Provenance
 
-| Extension Category | Risk Level | Recommendation |
-|-------------------|-----------|----------------|
-| **Official Microsoft** | Low | Generally safe |
-| **GitHub Official** | Low | Safe |
-| **Popular (>1M installs, verified publisher)** | Low-Medium | Review permissions |
-| **Niche (<10K installs)** | Medium-High | Audit code before use |
-| **Side-loaded .vsix** | High | Avoid; verify publisher and integrity |
-| **Deprecated/Unmaintained** | High | Remove immediately |
+Before importing extensions from VS Code or another editor, record the approved IDs, versions, publisher identity, source repository and distribution registry. Recheck that identity on Open VSX: importing a familiar ID does not prove the same publisher or bytes were transferred. Inspect the actual publishing account and provenance rather than trusting branding or installation counts. Treat a changed registry, publisher or package as a new approval decision.
+
+Review imported and existing extensions against the allowlist, signature policy and installation/update cooldown (8.2). Use reviewed extension-specific IDs rather than a blanket publisher wildcard where practical. Quarantine unverified extensions instead of assuming a popular extension is safe. Keep a defined security-update review process; disabling automatic updates indefinitely can leave vulnerable releases installed.
+
+The inventory pack reports IDs/versions, **not publisher authenticity or a malware verdict**. Validate the package source separately. [Cursor’s first-party extension guidance](https://cursor.com/help/customization/extensions) explicitly warns that equal names across marketplaces can represent different code (checked 2026-11-12). [Pluto’s importer research](https://pluto.security/blog/the-importer-syndrome-x-count-dooku-2-0/) supplies the attack context, not proof that every client version still imports silently.
 
 #### Compliance Mappings
 
@@ -2321,6 +2318,7 @@ Plan names and tiers follow [cursor.com/pricing](https://cursor.com/pricing) and
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-12 | 0.7.1 | ai-drafted | Reconcile Pluto extension-import research: verify cross-registry publisher/code provenance and remove popularity/branding-based trust heuristics; clarify inventory versus authenticity checks. | OpenAI |
 | 2026-11-11 | 0.7.0 | ai-drafted | Add 2.7 reviewed model/inference-host allowlists, preview API enforcement with explicit apply and read-back, stricter 2.2 audit, group/BYOK and feature limits, and offline safety regressions. Correct client-egress versus server-side hosting distinction. Tier 0+1 only; no live validation | Codex |
 | 2026-11-05 | 0.6.0 | ai-drafted | Source-first current family/product map with explicit admin-plane inheritance; new extension cooldown/signature, request-local tenant restriction, shared transcript retention, Cyber model retention exception, per-MCP egress and skill publication/sync controls; current SpaceXSI display name with stable URL/anchors; five separate new native-plane guides plus refreshed Bot. Tier 0+1 only; no live validation | Codex |
 | 2026-10-10 | 0.5.2 | ai-drafted | Became the Common Controls hub of the new SpaceXAI multi-product platform (`platform: "SpaceXAI"`, `platform_slug: "spacexai"`, `product: "Common Controls"`, vendor `SpaceXAI`) after SpaceX completed its acquisition of Anysphere on 2026-08-14. Overview names the company chain with first-party citations; added the Products in This Platform table and a Grok Bot product-guide link. No control changed or was renumbered | Claude Code (Opus 5.5) |

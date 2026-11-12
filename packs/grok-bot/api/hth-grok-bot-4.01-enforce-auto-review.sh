@@ -43,12 +43,13 @@
 #
 # ── TRAP 4: groups can opt out; Team Bots depend on this switch ─────────────
 # GET returns the TEAM policy only. A group tab's "Don't enforce for this
-# group" is invisible here; it shows as a grok_bot_group_settings audit event
-# (run the 4.3 pack). Enforcement also decides Team Bots: it covers "Team Bots
-# in chats where nobody can answer an approval, such as teammates' chats and
-# Slack, which otherwise run without Auto-review" (cursor.com/docs/grok-bot/teams).
-# There, an Ask-first action is expected not to run at all rather than raise a
-# card — test that in a Slack thread on a pilot team.
+# group" is invisible here; inspect it using control 4.3.
+# Current member docs (checked 2026-11-12) support requester-only approval cards
+# in shared-Bot Slack threads and group chats. Only contexts without an eligible
+# approver have the separate unattended path; do not infer that every Slack
+# request must have no card or a specific decision.source value.
+# https://docs.x.ai/grok-bot/approvals-security-and-privacy
+# This API pack cannot establish requester binding or side-effect absence.
 #
 # ── TRAP 5: enforcement with no team rules is still a finding ───────────────
 # The API says the lists are the "Team allow and block instruction lists that
@@ -81,7 +82,7 @@ verify() {
        "allow=$(jq '.rules.allow | length' "${GB_BODY_FILE}") block=$(jq '.rules.block | length' "${GB_BODY_FILE}")"
   jq -r '(.rules.block[] | "    block: \(.)"), (.rules.allow[] | "    allow: \(.)")' "${GB_BODY_FILE}"
   if [ "$(jq -r '.enforced' "${GB_BODY_FILE}")" != "true" ]; then
-    gb_finding "Enforce Auto-Review is off: members can switch Auto-review off, and Team Bots in Slack and teammates' chats run without it (TRAP 4)"
+    gb_finding "Enforce Auto-Review is off: members can disable review; shared-Bot contexts without an eligible approver require separate validation (TRAP 4)"
   fi
   if [ "$(jq '(.rules.allow | length) + (.rules.block | length)' "${GB_BODY_FILE}")" -eq 0 ]; then
     gb_finding "no team Auto-review rules: rules.allow and rules.block are both empty, so no team instructions feed Auto Review. Add 'Ask first' rules with Configure Rules on the Grok Bot page (TRAP 5)"

@@ -9,9 +9,9 @@ product: "ChatGPT Dots"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for ChatGPT dots, OpenAI's always-on personal agents (launched 2026-09-29): dots enablement and RBAC, owner-account protection, connected apps and Slack participation, shared cloud-computer capabilities, local computer access, custom rules and Agent Security orchestrator policy, memory and residency limits, Compliance API coverage, and the revoke, pause and reset sequence."
-version: "0.2.0"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-05"
+last_updated: "2026-11-12"
 ---
 
 ## Overview
@@ -22,7 +22,7 @@ This product guide covers personal dots within the [OpenAI platform common contr
 
 The main dot does not inherit Enterprise model defaults. Work/Codex delegates follow their applicable model and execution policy. Storage/inference residency, EKM and HIPAA are supported only under the documented eligibility and agreements; strict zero retention is not supported and dots are unavailable in FedRAMP workspaces.
 
-This is AI-drafted from current public sources on 2026-11-05, with no live tenant validation or maturity promotion. Existing control headings/anchors are preserved; 5.1 and known-gap headings explicitly mark superseded October claims. The [source-first inventory](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/openai-source-coverage.md) records the unresolved current Admin/policy API schema.
+This is AI-drafted from current public sources, reconciled against Pluto Security guidance on 2026-11-12, with no live tenant validation or maturity promotion. Existing control headings/anchors are preserved; 5.1 and known-gap headings explicitly mark superseded October claims. The [source-first inventory](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/openai-source-coverage.md) records the unresolved current Admin/policy API schema.
 
 ### Automation Surfaces at a Glance
 
@@ -165,7 +165,7 @@ Limit workspace apps/actions and source-account permissions before enabling dots
 
 #### ClickOps Implementation
 
-1. In **Admin Console > Plugin controls**, enable only approved apps, actions and defaults for newly added actions. Scope access through supported roles.
+1. In **Admin Console > Plugin controls**, enable only approved apps and actions. Set **New tools** (or **New actions**, where supported) to deny future additions; this does not disable actions already enabled. Scope access through supported roles.
 2. Check the member’s actual source-account access and each action’s approval setting. Require approval for consequential sends or changes.
 3. Test the same sensitive operation through plugins, the cloud browser, cloud computer and any delegated task. Revoke unnecessary source authorization.
 
@@ -217,6 +217,51 @@ Test owner instructions and a harmless message to an approved audience; inspect 
 
 ---
 
+### 2.3 Review the authority of delegated Codex Cloud environments
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-6, CM-6 |
+| CIS Controls v8 | 6.8 |
+
+#### Description
+
+Treat delegation as a new execution boundary. A dot's permitted request must not silently acquire a shared environment's broad credentials, repositories or private-network identity.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Local sandbox restrictions do not automatically govern hosted execution.
+- Environment-owned credentials and VPN/cloud identities can be shared even though personal connections remain tied to the person running the task.
+
+**Attack Prevented:** Privilege expansion through an overprivileged delegated environment.
+
+#### ClickOps Implementation
+
+1. Separate **Use Codex in the cloud** from **Manage workspace environments** using the workspace permission controls. Give shared-environment editing to a smaller reviewed group.
+2. In the environment configuration, keep **Privacy > Who can use > Only me** unless sharing is approved. Review prepared files, repository scope, environment-owned secrets, OIDC identities and VPN access before publishing a shared setup.
+3. Turn off **Enable all public internet access** and add only required **Additional allowed domains** and package-manager destinations. Review VPN permissions independently: restricting public internet access does not disable VPN routes.
+4. Save and publish/republish reviewed changes, replace running environments where required, and start a new test task. Limit source-service roles separately; an allowed domain is not an authorization policy.
+
+**Automation:** Unverified — the fetched public environment guide documents configuration and permission controls, but this pass did not verify a current public administration write schema. No API Platform key/role endpoint is substituted for ChatGPT environment administration (checked 2026-11-12).
+
+#### Validation & Testing
+
+Run permitted and denied operations in a disposable task. Verify effective public and VPN reach, repository access, and the identity used at the receiving service. Confirm an ordinary task user cannot modify shared environment configuration. Do not include real secrets in the evidence.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST 800-53 | AC-6 least privilege; CM-6 configuration settings |
+
+**Sources:** [Cloud environments](https://learn.chatgpt.com/docs/environments/cloud-environments) · [Dots execution boundaries](https://learn.chatgpt.com/docs/enterprise/dots-security)
+
+---
+
 ## 3. Cloud Computer, Browser & Local Access
 
 ### 3.1 Re-baseline Cloud browser use and Cloud computer use before enabling dots
@@ -245,7 +290,7 @@ Review shared cloud-browser and desktop capabilities for dots, Work Cloud and te
 
 1. Open **Admin Console > Permissions > Workspace default > Workspace capabilities > Let agents use cloud computers**.
 2. Keep **Use a browser** and **Allow computer use** off for populations that do not need them; inspect every custom-role grant.
-3. If approved, inventory cloud-browser sign-ins and desktop app permissions separately. Review proposed site upload/download rules as a development item until available and verified.
+3. If approved, inventory cloud-browser sign-ins and desktop app permissions separately. Sign out of unused source accounts: an active browser session is independent of password-manager storage, so turning off **Use password manager** does not terminate it. Review proposed site upload/download rules as a development item until available and verified.
 
 **Automation:** The current console/source-service controls are documented. The current ChatGPT Admin/policy API schema was not verified in this run; no API Platform operation or historical event schema is substituted for it.
 
@@ -358,10 +403,16 @@ Leave Allow local computer access off until the device and local execution polic
 #### ClickOps Implementation
 
 1. Keep **Allow local computer access** off in workspace/default roles for unapproved populations.
-2. For approved users, apply the [Work/Codex local controls](/guides/chatgpt-work-codex/), including requirements, filesystem/sandbox/egress and OS permissions.
-3. Review each connected computer and delegated thread. Disconnect through the supported member/device setup when offboarding, and remove independent credentials/sessions.
+2. For approved users, apply the [Work/Codex local controls](/guides/chatgpt-work-codex/), including requirements, filesystem/sandbox/egress and OS permissions. A read-only sandbox still permits reads; use explicit denied-read requirements for credential paths. Review browser and native-app deny policies independently. Higher-priority MDM requirements take precedence on supported managed Macs.
+3. Merge the read-only local baseline below into the applicable execution requirements, not into an unrelated cloud-computer setting. Native Windows shell subprocess reads do not enforce this denied-read sandbox rule; validate each deployed OS.
+4. Review each connected computer and delegated thread. Disconnect through the supported member/device setup when offboarding, and remove independent credentials/sessions.
+5. Use the [managed client update procedure](/guides/chatgpt-work-codex/#43-keep-desktop-and-companion-clients-on-a-managed-update-schedule) and restrict who can change the client launch environment. A local denied-read policy is not a guarantee that the client itself pins authenticated traffic to a trusted backend. Track vendor remediation for client-origin issues separately; do not invent an endpoint-override policy key.
 
-**Automation:** The current console/source-service controls are documented. The current ChatGPT Admin/policy API schema was not verified in this run; no API Platform operation or historical event schema is substituted for it.
+#### Code Implementation
+
+{% include pack-code.html vendor="chatgpt-dots" section="3.4" %}
+
+The emitter does not deploy policy or change the workspace local-access grant. Verify the effective local runtime; it does not constrain the dot’s cloud computer.
 
 #### Validation & Testing
 
@@ -436,8 +487,8 @@ Use supported Agent Security Global requirements for the cloud orchestrator when
 #### ClickOps Implementation
 
 1. Open **Admin Console > Managed configuration**, select the appropriate Global policy and targets, and use the documented **Raw TOML > requirements.toml** editor. Confirm managed configuration is enabled for the population.
-2. Merge the pack’s supported approval/search limits with existing requirements. Review approval-policy behavior and supported versions.
-3. Inspect local and Codex Cloud policies independently. Preserve source-account permissions and review the main dot’s separate model-control boundary.
+2. Merge the pack’s supported approval/search limits with existing requirements. Configure the permitted approval reviewer separately: an on-request policy alone does not promise a human reviewer. Browser actions have separate Auto-review controls. Review approval-policy behavior and supported versions.
+3. Inspect local and Codex Cloud policies independently. Command prefix requirements can use **prompt** or **forbidden** in supported current clients; neither is a blanket policy for browser clicks or app/MCP actions. Do not copy an older claim that only forbidden is enforced. Preserve source-account permissions and review the main dot’s separate model-control boundary.
 
 #### Code Implementation
 
@@ -523,7 +574,7 @@ Where custom rules are approved, make owner authorization explicit: name the act
 
 #### Validation & Testing
 
-Try a harmless draft and a changed-recipient send with disposable recipients. Record the resulting prompt/review and the receiving service’s final state; model behavior is not a deterministic access-control rule.
+Try a harmless draft and a changed-recipient send with disposable recipients. Record the resulting prompt/review and the receiving service’s final state; model behavior is not a deterministic access-control rule. For executable work, compare the actual command, arguments, target, working directory and reviewed file content with what will run; review again after a material change. Do not equate a friendly summary or successful output with immutable approval binding. This is an operator verification procedure, not a documented native hash-binding guarantee.
 
 **Sources:** [Primary reference](https://learn.chatgpt.com/docs/enterprise/dots-admin-guide) · [Supporting reference](https://learn.chatgpt.com/docs/enterprise/dots-security)
 
@@ -637,7 +688,8 @@ Export the supported ChatGPT Compliance logs continuously and prove coverage wit
 
 1. In **Admin Console > Credentials > Admin keys**, use the available **CODEX_LOG** permission for dots records. Only workspace owners can grant broad compliance/Conversation messages access where supported.
 2. Run the read-only exporter with a private output directory and explicit start time. It exports authorized CODEX_LOG files without inventing an unverified record-filter path.
-3. Select actual DOTS-attributed records in your receiving pipeline; test APP_MCP_CALL/APP_MCP_RESULT and TOOL_CALL_SUGGESTED coverage. Correlate with source-service outcomes.
+3. Collect supported local OpenTelemetry separately where local execution is enabled, using the [Work/Codex telemetry control](/guides/chatgpt-work-codex/#33-collect-minimal-telemetry-and-verify-compliance-coverage). Keep prompt/response collection minimized. A local collector does not capture cloud orchestration.
+4. Select actual DOTS-attributed records in your receiving pipeline; test APP_MCP_CALL/APP_MCP_RESULT and TOOL_CALL_SUGGESTED coverage. Correlate with source-service outcomes.
 
 #### Code Implementation
 
@@ -837,6 +889,7 @@ Confirm current availability in the [admin guide](https://learn.chatgpt.com/docs
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-12 | 0.3.0 | ai-drafted | Reconciled Pluto guidance: added delegated-environment least privilege, local denied-read pack, future-action denial, retained browser-session cleanup and split telemetry/reviewer validation. No live tenant validation. | Codex |
 | 2026-11-05 | 0.2.0 | ai-drafted | Corrected individual admin lifecycle, DOTS attribution, eligibility and retention; separated runtime/integration containment; replaced unverified historical API/Sigma assumptions with current exporter and native TOML. Original control headings retained; no live validation. | Codex |
 | 2026-10-09 | 0.1.1 | ai-drafted | Moved under the new OpenAI multi-product platform as a product guide (`platform: "OpenAI"`, `product: "ChatGPT Dots"`); the Overview now points to the ChatGPT Enterprise guide as the OpenAI Common Controls hub. No control changed. | Claude Code (Opus 5.5) |
 | 2026-10-09 | 0.1.0 | ai-drafted | Initial guide for ChatGPT dots (launched 2026-09-29): 18 controls in 7 sections (access and enablement, connected apps and channels, cloud computer and local access, autonomy and approvals, data and memory, monitoring, lifecycle), a Known Gaps and Member Guidance reference section recording eighteen OpenAI documentation conflicts and the controls OpenAI does not offer, and Code Pack includes for 11 controls (api, siem/sigma, config, cli). Written from OpenAI documentation with no live tenant validation, then corrected after an adversarial review whose facts were re-checked on 2026-10-09 (help.openai.com, chatgpt.com/public/admin/api-reference and www.beyondtrust.com return 403 to automated fetchers, so those pages were read in a real browser) | Claude Code (Opus 5.5) |

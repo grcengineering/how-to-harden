@@ -9,9 +9,9 @@ product: "Microsoft Intune"
 tier: "1"
 category: "IT Operations"
 description: "Endpoint management hardening for Microsoft Intune — defending against admin-plane abuse, credential theft, and destructive wipe attacks"
-version: "0.3.0"
+version: "0.4.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-11-12"
 ---
 
 ## Overview
@@ -538,6 +538,62 @@ Restrict Intune administrative access to designated Privileged Admin Workstation
 | **ISO 27001** | A.8.9 | Configuration management |
 
 ---
+
+### 3.3 Constrain and Reassess Administrative Browser Extensions
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|---|---|
+| NIST 800-53 | AC-6, CM-6, CM-7, SI-4 |
+
+#### Description
+Manage browser extensions as changing executable dependencies, not permanently trusted IDs. Require reviewed extensions, constrain their permissions and sensitive-site access, and re-review publisher, permission and version changes.
+
+#### Rationale
+**Why This Matters:**
+- An unchanged extension ID does not prove an unchanged publisher, package or data-access scope.
+- Approved extensions can expose signed-in administrative sessions without a new installation.
+
+**Attack Prevented:** Browser-extension supply-chain compromise, session theft and unauthorized reading of administrative pages.
+
+#### Prerequisites
+Intune-managed Windows devices, current Microsoft Edge and permission to author configuration profiles. Defender browser-extension inventory separately requires Defender Vulnerability Management Standalone or its add-on for Defender for Endpoint Plan 2; it covers Windows Chrome, Edge and Firefox, not every endpoint/browser.
+
+#### ClickOps Implementation
+1. In **Intune admin center → Devices → Configuration → Create**, choose **Windows 10 and later → Settings catalog**. Name a pilot browser-extension baseline.
+2. Add **Microsoft Edge → Extensions → Configure extension management settings**. Set `ExtensionSettings` to block installations by default and explicitly allow only reviewed extension IDs. Keep PAWs extension-free unless a documented operational requirement justifies an exception.
+3. Set `blocked_permissions` for unneeded API capabilities and `runtime_blocked_hosts` for sensitive administrative hosts. Repeat these restrictions on explicit per-ID exceptions: Edge inherits only `installation_mode` and `update_url` from the `*` default, not every field.
+4. Assign the pilot device group, verify scope tags and deployment status, then expand in rings. The [Intune configuration procedure](https://learn.microsoft.com/en-us/deployedge/configure-edge-with-intune) and [Edge policy definition](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/ExtensionSettings) describe the supported management plane.
+5. In the Defender portal, open **Vulnerability management → Inventories → Browser extensions** (under **Endpoints**, or **Exposure management** for the documented preview). Establish an ID/version/permissions/owner baseline and review changes to publisher, support URL, permissions and unusual network destinations. Inventory is evidence, not automatic publisher-transfer prevention.
+6. When an approved extension becomes suspect, disable it by policy before destructive cleanup if evidence must be preserved, identify affected endpoints and revoke exposed sessions. Test rollback of policy and recovery of necessary extensions.
+
+**Do not conflate controls:** `ExtensionInstallSources` permits installation origins; it is not a complete store-only, sideloading or host-permission boundary. Use the documented `ExtensionSettings` installation, permissions and runtime-host controls. `minimum_version_required` is not an exact-version lock. Host restrictions do not govern arbitrary network traffic outside the browser. The [permission and host guide](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-policies) defines their scope.
+
+#### Code Implementation
+The JSONC pack supplies the native policy value for the settings-catalog field. It is not a guessed Microsoft Graph settings-definition ID. Verify effective policy through the browser policy viewer after device synchronization.
+
+{% include pack-code.html vendor="microsoft-intune" section="3.3" %}
+
+**Automation:** Native Edge config is the enforcement payload; `edge://policy` verifies its effective application. Intune also exposes Graph configuration APIs and Microsoft Graph PowerShell, but this pack deliberately does not fabricate tenant/version-specific catalog definition IDs. Defender reporting is a separate service and license, not an Intune compliance verdict.
+
+#### Validation & Testing
+1. On a pilot client reload `edge://policy`, confirm the mandatory policy source, expected JSON and absence of conflicts/errors.
+2. Confirm an unapproved install fails and a permitted extension cannot read a designated blocked admin site. Test every explicit exception, not just the wildcard default.
+3. Match a known installed extension against [Defender's inventory](https://learn.microsoft.com/en-us/defender-vulnerability-management/tvm-browser-extensions); document unsupported OS/browser and unenrolled-device gaps.
+4. Re-test after changing an extension's permission requirement and after policy rollback. A deployment-success indicator alone does not prove browser enforcement.
+
+#### Operational Impact
+Overbroad blocking can break accessibility, password managers and security tooling. Pilot least-privilege exceptions, preserve the previous policy for rollback and do not permanently disable browser/extension security updates to reduce review workload.
+
+---
+
+#### Compliance Mappings
+
+| Framework | Control objective |
+|---|---|
+| NIST 800-53 | AC-6 least privilege; CM-6 configuration settings; CM-7 least functionality; SI-4 monitoring |
+
 
 ## 4. Multi-Admin Approval
 
@@ -1330,6 +1386,7 @@ Alert when multiple RBAC role assignments are modified within a short time windo
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-12 | 0.4.0 | ai-drafted | Added 3.3 browser-extension lifecycle controls after Pluto research reconciliation; separate installation, permissions, sensitive-host access and reporting. No live validation claimed. | Jai |
 | 2026-08-08 | 0.3.0 | ai-drafted | Platform breakout: reframed as a product guide under the Microsoft Common Controls hub (platform frontmatter, hub pointer, moved-controls note). Admin-plane Conditional Access consolidated into the Entra ID guide — former 2.2 (admin portals, with its PowerShell pack migrated to Entra 2.3) and former 2.3 (device code flow, merged into Entra 2.6) deleted here with pointers. 2.1 slimmed to the Intune-scoped MFA application (mandatory-MFA phase table moved to the hub), 3.1 slimmed to the Intune role set (break-glass guidance moved to the hub), 7.1 framed as the third audit plane. 15 controls → 13 | Claude Code (Opus 4.8) |
 | 2026-08-08 | 0.2.0 | ai-drafted | Currency pass: MAA now enforces on Graph app-auth calls and requires only Intune Plan 1 (4.1 corrected); added 4.2 MAA exclusion governance and 2.3 device code flow block; replaced unimplementable Token Protection mechanism in 6.1 with documented admin-plane replay defenses; remapped 6.2 to Microsoft's Token Theft Playbook; corrected audit-log retention and diagnostics paths (5.2, 7.1); covered built-in wipe-capable roles (1.1, 5.1); refreshed legacy `/mem/intune/` links | `Claude Code (Opus 4.8)` |
 | 2026-03-19 | 0.1.0 | ai-drafted | Initial guide focused on Stryker/Handala TTP defense | `Claude Code (Opus 4.6)` |

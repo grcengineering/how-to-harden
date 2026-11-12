@@ -6,9 +6,9 @@ slug: "circleci"
 tier: "2"
 category: "DevOps"
 description: "CI/CD pipeline security including contexts, secrets, and runner hardening"
-version: "0.2.0"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-11-12"
 ---
 
 
@@ -179,6 +179,44 @@ Implement regular rotation of personal API tokens and audit existing tokens.
 1. Navigate to: **Organization Settings → API Tokens**
 2. Review project tokens
 3. Rotate tokens quarterly
+
+---
+
+### 1.4 Bound MCP Access and Retire the Deprecated Server
+
+**Profile Level:** L2 (Walk)
+**NIST 800-53:** AC-6, CM-7
+
+#### Description
+
+Remove the deprecated npm CircleCI MCP server and choose the supported hosted or CLI MCP deliberately. They expose different capabilities and retain independent connections.
+
+#### Rationale
+
+**Why This Matters:**
+- The CLI MCP exposes administrative commands, not only build diagnostics.
+- Both paths can act with the connected identity; a hosted connection is not automatically read-only.
+
+**Attack Prevented:** Excessive agent authority and credential exposure through obsolete integrations.
+
+#### ClickOps Implementation
+
+1. Inventory each assistant's CircleCI connection, identity, permissions and owner. Remove the old `npx` server configuration before migration; do not merely add another connection.
+2. Prefer the hosted endpoint `https://mcp.circleci.com/v1/mcp` for diagnostics. Use its documented OAuth flow where supported and review the provider account's access.
+3. Enable CLI MCP only where its broader administration tools are required. Review the CLI command inventory and restrict the assistant's allowed tools and execution policy separately.
+4. Require approval for rerun/cancel and other state-changing actions. Revoke unused connections and assess credentials previously exposed to an unsafe legacy deployment.
+
+**Automation:** MCP connection and approval settings are host-specific; no universal CircleCI tenant enforcement API was verified. The pack lists the current CLI surface without starting an MCP server or modifying CI.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="circleci" section="1.4" %}
+
+#### Validation & Testing
+
+Confirm the deprecated connection is gone. Test an approved diagnostic and a denied mutation in a disposable project. Verify both hosted and CLI connections independently; disconnecting one does not disconnect the other. CLI help output is an inventory, not proof of effective authorization.
+
+**Sources:** [CircleCI MCP overview and migration](https://circleci.com/docs/guides/toolkit/circleci-mcp-overview/) (checked 2026-11-12); [Pluto's legacy-server research](https://pluto.security/blog/vicious-circle-owning-circlecis-mcp-server-with-a-filename-and-a-dns-record/). Historical patch instructions are not a recommendation to deploy the deprecated package.
 
 ---
 
@@ -613,6 +651,7 @@ If you suspect CircleCI compromise:
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-12 | 0.3.0 | ai-drafted | Add MCP connection/authority control and read-only CLI surface inventory; reconcile historical Pluto patch advice with current vendor deprecation. | OpenAI |
 | 2026-08-08 | 0.2.0 | ai-drafted | Correct 1.1 IP allowlisting (IP ranges is job **egress**, not inbound access control) and remove the non-existent session-timeout/step-up re-auth path; correct 5.1 (audit log requests are available to all plans — only streaming is Scale-only) and add native OIDC-authenticated S3 streaming; add 4.2 Config Policies; add context expression restrictions and secrets-masking caveat to 2.1; add job-level secrets hygiene to 2.2; add runner token-proxy guidance to 4.1; enrich 1.2 role model (org + project, not VCS-derived, highest role wins); add missing **Attack Prevented** to 1.1 and 2.1; repair rotted Appendix B links and remove Trust Center / marketing security references | Claude Code (Opus 4.8) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-14 | 0.1.0 | ai-drafted | Initial CircleCI hardening guide with 2023 breach lessons | Claude Code (Opus 4.5) |

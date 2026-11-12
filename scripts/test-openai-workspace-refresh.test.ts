@@ -33,3 +33,13 @@ expect((await run('packs/chatgpt-work-codex/config/hth-chatgpt-work-codex-3.03-m
 test('Codex Security wrapper accepts only dry-run with a trusted external non-symlink config',async()=>{const f=await fixture(),repo=join(f.dir,'repo'),config=join(f.dir,'trusted.toml');await mkdir(repo);await writeFile(config,'# fixture\n');const cli=join(f.dir,'bin','codex-security');await writeFile(cli,'#!/usr/bin/env bash\nprintf "%s\\n" "$*" >> "$MOCK_SECURITY_CALLS"\n');await chmod(cli,0o700);const env={...f.env,MOCK_SECURITY_CALLS:join(f.dir,'security-calls'),HTH_SCAN_REPO:repo,HTH_SCAN_CONFIG:config};const file='packs/chatgpt-work-codex/cli/hth-chatgpt-work-codex-4.01-security-dry-run.sh';let r=await run(file,env);expect(r.code).toBe(0);expect(await readFile(env.MOCK_SECURITY_CALLS,'utf8')).toContain('--dry-run');await writeFile(join(repo,'untrusted.toml'),'# fixture');await symlink(join(repo,'untrusted.toml'),join(f.dir,'linked.toml'));r=await run(file,{...env,HTH_SCAN_CONFIG:join(f.dir,'linked.toml')});expect(r.code).toBe(2);r=await run(file,{...env,HTH_SCAN_CONFIG:join(repo,'untrusted.toml')});expect(r.code).toBe(2);});
 
 test('native configuration emitters refuse invalid and insufficient profiles before output',async()=>{for(const vendor of ['chatgpt-dots','chatgpt-work-codex'])for(const file of await readdir(join(root,'packs',vendor,'config'))){for(const level of ['0','5','invalid']){const r=await run(`packs/${vendor}/config/${file}`,{...process.env,HTH_PROFILE_LEVEL:level});expect(r.code).toBe(2);expect(r.stdout).toBe('');}const source=await Bun.file(join(root,'packs',vendor,'config',file)).text();if(!source.includes('#   profile: L1')){const r=await run(`packs/${vendor}/config/${file}`,{...process.env,HTH_PROFILE_LEVEL:'1'});expect(r.code).toBe(2);expect(r.stdout).toBe('');}}});
+
+// Pluto reconciliation: local read boundaries must not silently allow writes.
+test('Dots local baseline denies credential reads without claiming cloud enforcement',async()=>{
+const file='packs/chatgpt-dots/config/hth-chatgpt-dots-3.04-local-read-boundary.sh';
+const r=await run(file,{...process.env,HTH_PROFILE_LEVEL:'2'});
+expect(r.code).toBe(0); const t=Bun.TOML.parse(r.stdout);
+expect(t.allowed_sandbox_modes).toEqual(['read-only']);
+expect(t.permissions.filesystem.deny_read).toEqual(['~/.ssh','/**/*.env']);
+expect(r.stdout).toContain('Native Windows');
+});

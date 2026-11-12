@@ -1,0 +1,11 @@
+# HTH 2.2: node-restrictions
+# Profile: L2 (Walk); NIST 800-53 CM-7
+# Guide: https://howtoharden.com/guides/n8n/#22
+# Source: https://docs.n8n.io/deploy/host-n8n/configure-n8n/basic-configuration/use-environment-variables/nodes.md
+# Native Docker Compose environment mapping; merge under the existing n8n service.
+# Merge exclusions with existing restrictions; never replace a stricter list. Breaks workflows requiring these nodes.
+# HTH Guide Excerpt: begin node-restrictions
+environment:
+  NODES_EXCLUDE: '["n8n-nodes-base.executeCommand","n8n-nodes-base.readWriteFile"]'
+  N8N_COMMUNITY_PACKAGES_ENABLED: 'false'
+# HTH Guide Excerpt: end node-restrictions
