@@ -1,6 +1,6 @@
 # Factory Code Pack
 
-26 packs support eighteen of the twenty-four controls in the [Factory common-controls guide](https://howtoharden.com/guides/factory/). They use documented Factory organization settings, REST reads, the first-party Droid CLI and the official Python SDK. Identity, SCM associations, managed connectors, native credential review, Delegations and App Automations retain their documented manual workflows and explicit source limits. The separate [HumanLayer pack](../humanlayer/) does not inherit Factory policy or credentials; Mentlio has no verified public executable administration contract in this refresh.
+28 packs support twenty of the twenty-seven controls in the [Factory common-controls guide](https://howtoharden.com/guides/factory/). They use documented Factory organization settings, REST reads, the first-party Droid CLI and the official Python SDK. Identity, SCM associations, managed connectors, native credential review, Delegations, App Automations and CVE-listener setup retain their documented manual workflows and explicit source limits. The separate [HumanLayer pack](../humanlayer/) does not inherit Factory policy or credentials; Mentlio has no verified public executable administration contract in this refresh.
 
 **Validation scope:** documentation checks and offline mocks only. No Factory tenant, IdP, live SDK catalog, policy engine or sandbox was exercised. The guide remains `ai-drafted`.
 
@@ -9,11 +9,11 @@
 | Type | Files | Purpose |
 |------|-------|---------|
 | `config/` | 12 JSONC fragments, 3 shell generators | Organization policy candidates; generators print JSON without installing it. |
-| `api/` | 4 verification scripts | Member inventory, workload-key metadata, Computer secret names and managed-settings revision history. |
+| `api/` | 6 verification scripts | Member inventory, workload-key metadata, group credit mappings, Computer secret names, managed-settings history and organization audit metadata. |
 | `cli/` | 6 verification scripts | Candidate/resolved permission previews, MCP/approval inventory, installed plugins, available tools, visible Computers and client version/update checks. |
 | `sdk/` | 1 Python verification script | Compare the selectable model catalog with reviewed model IDs, without opening a session or making a model call. |
 
-`common.sh` and `api/common.sh` are shared helpers, not additional control packs. Download the whole directory if running a shell pack. No Terraform provider, GraphQL endpoint, general audit-log export route, SIEM table or deprecated scanner definitions are fabricated.
+`common.sh` and `api/common.sh` are shared helpers, not additional control packs. Download the whole directory if running a shell pack. No Terraform provider, GraphQL endpoint, SIEM table or deprecated scanner definitions are fabricated. The general audit polling route was verified separately on 2026-11-14.
 
 ## Safe use
 
@@ -33,8 +33,10 @@ Scripts use `jq`, Python 3 and Bash; API scripts also use `curl`. The live Pytho
 |------|-------------------------------------|--------|
 | API 1.2 | `FACTORY_API_KEY`, `FACTORY_MEMBERS_OUTPUT` | Complete paginated user inventory; does not establish roles or SCIM ownership. |
 | API 1.3 | Human Manager/Owner `FACTORY_API_KEY`, `FACTORY_KEYS_OUTPUT` | Service accounts and key metadata, including revoked/expired records; no credential creation or revocation. |
+| API 1.4 | Human Manager/Owner `FACTORY_API_KEY`, `FACTORY_GROUP_LIMITS_OUTPUT` | Group credit-limit mappings only; not a complete group, membership, model-override or effective-user-policy inventory. |
 | API 4.5 | Authorized organization `FACTORY_API_KEY`, `FACTORY_SECRET_NAMES_OUTPUT` | Organization Computer secret names only; no plaintext, personal overrides, running-process access proof or writes. |
 | API 5.2 | Authorized human admin `FACTORY_API_KEY`, `FACTORY_HISTORY_OUTPUT` | Complete paginated settings history, not the full organization audit log or effective device policy. |
+| API 5.3 | Enterprise human Owner `FACTORY_API_KEY`, `FACTORY_AUDIT_START`, `FACTORY_AUDIT_END`, `FACTORY_AUDIT_OUTPUT` | Fixed UTC window of active-organization audit metadata; no actor email, payload, target, cross-region aggregation or streaming integration. |
 | CLI 2.2 | `FACTORY_PROJECT_DIR`, `FACTORY_SETTINGS_FILE`, `FACTORY_RULE_REPORT_OUTPUT` | Candidate and resolved JSON previews for `git push origin main`; the command is never executed. |
 | CLI 3.1 | `FACTORY_PROJECT_DIR`, `FACTORY_MCP_OUTPUT` | Private server and persistent-approval inventory. Runtime components can load; use a trusted managed project. |
 | CLI 3.2 | `FACTORY_PROJECT_DIR`, `FACTORY_PLUGINS_OUTPUT` | Private installed-plugin list; installation is not effective enablement. |
@@ -59,6 +61,8 @@ Inject `FACTORY_API_KEY` through a secret manager. The API transport sends the h
 | `2` | Unknown/not run: missing precondition, invalid input, HTTP/SDK/CLI error, incomplete evidence or refused output path. |
 
 Pagination uses documented `limit=100` and cursor parameters. A page limit, repeated cursor, inconsistent envelope, malformed record or later-page error discards partial evidence. `HTH_MAX_PAGES` defaults to 1000 (valid 1–9999). Inventory APIs without documented pagination are not assigned invented paging parameters.
+
+For audit collection, set start/end as `YYYY-MM-DDTHH:MM:SSZ` with start before end. After authority changes or a cursor restart error, rerun the complete unchanged window into a new file; reconcile repeated exports by organization and event ID. The saved metadata omits sensitive event details, so inspect actors and changes through the authorized audit console. An empty collection is not proof of compliance.
 
 ## Examples
 
@@ -87,10 +91,12 @@ Do not pipe a generator directly into a managed-policy location. The source-IP g
 - Strict plugin policy can disable Factory defaults. Organization-added marketplaces remain admitted, and removed policy can reactivate previously installed plugins. Installed provenance enforcement has a separate rollout and older relative-only policies can leave installed plugins active. A marketplace SHA and mutable npm dependency resolution are different boundaries.
 - Managed-hook loading policy does not protect a user-writable script or make nonblocking hook errors fail closed. Organization-enabled plugin hooks remain eligible.
 - Model-policy IDs do not govern image models. Unknown IDs may be dropped; verify the resolved catalog. The starter disables user BYOK and does not configure a private inference gateway.
+- Group and individual model overrides can widen the organization model list. Credit mappings do not enumerate model-only groups; verify the SDK catalog under representative identities and reconcile model exceptions separately.
 - Customer telemetry settings do not disable Factory's own collector. Aggregate metadata still includes session/repository/tool information. Raw content opt-in has no secret or PII redaction.
 - The update-policy fragment leaves org update suppression off. Package defaults and the launching environment still matter; it does not force an npm or locally disabled updater to run.
 - Computer secrets are account-scoped runtime values, with personal overrides; the Environment editor has no per-Environment secret fields. They are unavailable during builds. Existing processes need refresh/restart after changes; a names inventory proves neither injection nor revocation.
-- The general audit API is announced but its exact export contract was not established. Settings history is not a substitute. App Automations, CI Automations, Delegations and personal connectors also have distinct contracts.
+- The general audit polling API is distinct from settings history, runtime telemetry and CVE task state. Root-wide API queries can omit other regions; the starter intentionally reads only the active organization and rejects an explicit unavailable-organizations response.
+- Security Factory CVE remediation uses chat-driven setup and app Tasks. Plan/merge approval instructions are not enforcement: source-control reviews/checks and credentials without bypass rights must enforce the boundary. No pack starts a listener or fix droid.
 
 ## Offline verification
 

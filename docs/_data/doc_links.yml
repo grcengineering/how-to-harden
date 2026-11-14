@@ -314,6 +314,10 @@ factory:
       url: "https://docs.factory.com/enterprise/hierarchical-settings-and-org-control"
     - label: "Agent Safety & Controls"
       url: "https://docs.factory.com/enterprise/llm-safety-and-agent-controls"
+    - label: "User Group Policy Precedence"
+      url: "https://docs.factory.com/enterprise/user-groups"
+    - label: "CVE Remediation Security & Access"
+      url: "https://docs.factory.com/automations/cve-remediation"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/factory"
 
 fenic:

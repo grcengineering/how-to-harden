@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "2"
 category: "AI/ML Platform"
 description: "Harden Factory and Droid with enterprise identity, managed execution policy, sandboxing, MCP and plugin controls, model governance, data minimization, and audit evidence."
-version: "0.2.0"
+version: "0.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-05"
+last_updated: "2026-11-14"
 ---
 
 ## Overview
@@ -35,7 +35,7 @@ Factory's Droid can read code, invoke tools, execute commands and connect to oth
 
 ### Scope
 
-Twenty-four controls cover the Factory organization and managed Droid runtime. Generic infrastructure hardening, model quality, vulnerability remediation and secret rotation procedures are outside scope. Protect source-control platforms using their own [GitHub](/guides/github/) or [GitLab](/guides/gitlab/) controls as well.
+Twenty-seven controls cover the Factory organization and managed Droid runtime, including access and approval boundaries for the Security Factory CVE remediation private preview. Generic infrastructure hardening, model quality, vulnerability fixes themselves and secret rotation procedures are outside scope. Protect source-control platforms using their own [GitHub](/guides/github/) or [GitLab](/guides/gitlab/) controls as well.
 
 ### Products in This Platform
 
@@ -44,6 +44,7 @@ Twenty-four controls cover the Factory organization and managed Droid runtime. G
 | Factory App on desktop, web and mobile; Droid CLI, Exec and SDK | Shared organization policy where supported; local settings, execution and credential storage still need client review. |
 | Missions, Workstreams, IDE integrations and built-in browser | Droid execution, workspace trust, model/tool policy and session data controls below; these are capabilities, not separate identity tenants. |
 | Delegations and Automations | Separate trigger, execution identity, session visibility and downstream permissions; see 3.6–3.7. |
+| Security Factory / CVE remediation (Private Preview) | Scanner access, workstream membership, fix-droid credentials and source-control merge enforcement; see 3.8. It uses existing Droid and Workstream infrastructure, not a separate verified administration tenant. |
 | Computers, Environments, Remote Control and OpenCompute | Persistent machine, secret, relay and control-plane boundaries; see 4.4–4.5. OpenCompute private-preview infrastructure configuration is not a general host-hardening baseline. |
 | AutoWiki and telemetry | Separate persistence and export decisions; see 4.3 and 5.1. |
 | [HumanLayer](/guides/humanlayer/) and [Mentlio](/guides/mentlio/) | Separate product guides and control planes; no inherited Droid SSO, managed policy or API-key scope is assumed. |
@@ -263,6 +264,63 @@ Existing keys are not revoked by the settings fragment. Disabling an account can
 | CIS Controls v8 | By control family | Account Management; no product-specific benchmark recommendation is asserted. |
 | NIST 800-53 Rev. 5 | AC-6, IA-5 | Supports the access, configuration, information-flow or evidence objective described above. |
 | SOC 2 | CC6.1 | Supporting evidence for the relevant logical-access or monitoring criterion; not a certification claim. |
+
+---
+
+### 1.4 Reconcile Group and Individual Policy Overrides
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 Rev. 5 | AC-2, AC-6, CM-6 |
+| SOC 2 | CC6.2 |
+
+#### Description
+
+Review effective model access across organization policy, synced User Groups and individual exceptions. An organization model allowlist is the starting point: a group can admit a model it excludes, and an individual model override wins over both. Audit membership and per-organization mappings whenever model destinations or workload limits change.
+
+#### Rationale
+
+**Why This Matters:**
+
+- If mapped groups disagree, an Allow from any participating group admits the model. Adding a restrictive group does not cancel another group's Allow.
+- Credit limits resolve separately: the individual limit wins, otherwise the highest mapped group limit wins, then the global user limit. A missing limit can leave usage unlimited.
+- Group configuration does not change role mappings, integrations, residency, custom-model policy or explicit high-cost model opt-in requirements.
+
+**Attack Prevented:** Unapproved inference destinations and expanded workload authority through overlapping identity groups or stale exceptions.
+
+#### Prerequisites
+
+Enterprise root Owner, Directory Sync and at least one completed sync for the assigned IdP groups. Group model access is unavailable on customer-hosted deployments and may not yet be enabled in every deployment. Local organization administrators cannot open the enterprise User Groups page.
+
+#### ClickOps Implementation
+
+1. Open **Settings → Admin Console → User Groups**. Review all synced groups, including stale directory IDs and groups configured only for model access. Reconcile their current IdP membership with 1.2.
+2. Edit a group and review **Monthly usage limit**, then **Next → Model access**. Set only reviewed Allow/Block exceptions. If Model access is absent, record the deployment limitation instead of assuming an empty policy.
+3. Select **Next** and review each selected organization before **Save**. Unchecked organizations lose that group's existing configuration; one save can replace differing per-organization values. Review individual model exceptions separately because they override the group result.
+4. In **Settings → Usage → Manage**, expand representative users to inspect individual, group and global credit-limit resolution. This view proves usage-limit precedence, not their model-access result.
+5. Test the resolved model catalog under a normal account in overlapping groups, an account with an individual exception and an unmapped account. Use 4.2's SDK discovery without starting an inference session. Removing a mapping falls back to the remaining tiers; it is not a deny operation.
+
+Source: [User Groups](https://docs.factory.com/enterprise/user-groups), checked 2026-11-14.
+
+#### Code Implementation
+
+The read-only pack collects the active organization's documented group **credit-limit mappings**. It does not enumerate all synced/model-only groups, group membership, model overrides or effective per-user policy. Reconcile those in the console and IdP, then use 4.2's per-identity model-catalog verification. The documented group-limit PUT changes credits only; it cannot set model access, so no model-policy writer is inferred from it.
+
+{% include pack-code.html vendor="factory" section="1.4" %}
+
+#### Validation & Testing
+
+Inspect a user in two groups with conflicting model settings and a user with an individual exception. Confirm the selected model and permitted request follow the documented precedence in an authorized pilot. This maintenance pass used synthetic responses only; no identity or model setting was changed.
+
+#### Monitoring & Maintenance
+
+Review mappings after IdP membership and organization changes. Group-limit changes appear under usage-limit audit events; group model changes appear under managed settings, separately for each affected organization. Use 5.2–5.3 for evidence.
+
+#### Operational Impact
+
+Removing a mapping may widen access or remove a spending cap through fallback. Review the console's multi-organization warning before saving; retain the previous reviewed configuration for rollback. A renamed IdP group retains its stable directory ID.
 
 ---
 
@@ -1143,6 +1201,60 @@ Pausing or rotating can interrupt every sender. Recreate an automation to change
 
 ---
 
+### 3.8 Bound Security Factory CVE Remediation Before Starting Its Listener
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 Rev. 5 | AC-6, CM-3 |
+| SOC 2 | CC6.3, CC8.1 |
+
+#### Description
+
+Before enabling the CVE remediation private preview, limit scanner/repository access, workstream membership and the credentials available to fix droids. Keep human plan review and enforce reviews/checks in the source-control system. Factory's instructions to wait for plan or merge approval do not enforce those barriers.
+
+#### Rationale
+
+**Why This Matters:**
+
+- The fix droid uses source-control credentials on its execution machine. A credential with bypass rights can defeat a review workflow even when the agent was told to wait.
+- Shared-folder writers can alter listener configuration, instructions and task state; people sharing the orchestrator session can approve plans and merges.
+- Testing dependencies can execute package scripts, so a remediation machine must not carry unrelated credentials.
+
+**Attack Prevented:** Unreviewed merges, scanner-driven privilege escalation and credential exposure during automated remediation.
+
+#### Prerequisites
+
+Private-preview entitlement, a workstream with a shared folder, approved macOS/Linux execution machines with the documented Droid/Python requirements, and separate scanner/source-control owners. This workflow does not support Windows. The Tasks tab requires the desktop or web app.
+
+#### ClickOps Implementation
+
+1. For every repository in scope, have its owner enforce required reviews and status checks on the default branch. Give fix-droid machines dedicated source-control identities with no administrator or branch-protection bypass rights. Verify GitHub/GitLab enforcement independently of Factory.
+2. Limit the workstream's shared-folder writers and orchestrator-session audience to authorized operators. Review any installed skill named **cve-remediation**: the vendor documents that it overrides the built-in skill.
+3. In the workstream orchestrator chat, invoke **/cve-remediation**, then open its listener chat. Provide only the approved scanner scope, repositories and credential references. Use a read-only scanner credential; never paste its value into chat.
+4. Select **Review every plan** and begin with **Trial** pace. Describe the isolated fix-droid machine in **Workstream Defaults** and review the first dry run before **Start**. Do not treat this autonomy selection as a source-control enforcement setting.
+5. Review decisions and PRs in the **Tasks tab**. Inspect scanner coverage: a readable alert type can coexist with another disabled alert type, and excessive scanner scope can hit paging limits. A failed poll or missing alert is not a clean security result.
+6. To contain the workflow, ask the listener to pause or retire polling, then handle already created tasks and running sessions separately. After changing setup, inspect the new dry run. **Accept risk** and **Defer** close a task until explicitly reopened; a date in a note does not schedule reconsideration.
+
+Source: [CVE remediation setup, security and limitations](https://docs.factory.com/automations/cve-remediation), checked 2026-11-14.
+
+**Automation:** Unverified for a public listener/task administration contract — the current reference documents chat-driven setup/status and Tasks-tab actions. Existing CI Automations APIs and generic Droid Exec do not establish a supported CVE-listener setter or approval enforcement API. No runner-starting or mutating placeholder pack is supplied. Supported source-control controls remain in the [GitHub](/guides/github/) and [GitLab](/guides/gitlab/) guides.
+
+#### Validation & Testing
+
+In an explicitly authorized disposable repository, test that the fix identity cannot bypass a missing review/check or push directly to the protected default branch. Separately test plan review, poll failure, pause behavior and scanner confirmation of a completed fix. This documentation pass started no listener, scanner, fix droid or transaction against a tenant.
+
+#### Monitoring & Maintenance
+
+Review waiting, failed and stale tasks; an unresponsive fix droid is not automatically detected. Inspect every PR's actual diff, tests and source-control actor. After a Droid update, have the listener update its installed files as documented and recheck the execution/credential boundary.
+
+#### Operational Impact
+
+Plan review and source-control enforcement add operator work. Pace limits are shared across repositories, not per-repository. Pause stops future polling rather than revoking existing machine credentials; coordinate containment with source-system owners.
+
+---
+
 ## 4. Network & Data Boundaries
 
 ### 4.1 Restrict the Source IPs of Authenticated Factory Access
@@ -1225,6 +1337,8 @@ An incomplete list can lock out administrators and CI. Do not apply until recove
 #### Description
 
 Allow only reviewed model IDs, disable automatic admission of future Factory models, and restrict user-supplied custom models. Govern image generation separately because image models are outside the ordinary `modelPolicy` lists. The starter policy disables user BYOK and image generation.
+
+**Effective-access boundary:** User Groups and individual model exceptions can override the organization model list. Review 1.4 before treating the generated organization policy as every member's effective allowlist. Test the SDK catalog under representative identities; a successful check for one account does not prove the whole organization.
 
 #### Rationale
 
@@ -1571,7 +1685,7 @@ Source: [Factory configuration documentation](https://docs.factory.com/enterpris
 
 #### Code Implementation
 
-The pack implements the documented paginated settings-history endpoint only. The October 30 release notes announce organization audit API access for Enterprise Owners. The current API index/organization reference and audit page still did not establish an exact general export route or machine event schema in this run; no such endpoint or SIEM table is invented.
+This pack implements the documented paginated settings-history endpoint only. The current [Organization API](https://docs.factory.com/api-reference/organization), checked 2026-11-14, now documents the general audit polling contract; use 5.3's separate collector for that surface. Revision history and audit events remain distinct records, and neither proves the policy currently effective on a managed device.
 
 {% include pack-code.html vendor="factory" section="5.2" %}
 
@@ -1597,6 +1711,58 @@ Audit viewing is Enterprise Owner-gated. Preserve exports under the organization
 | CIS Controls v8 | By control family | Audit Log Management; no product-specific benchmark recommendation is asserted. |
 | NIST 800-53 Rev. 5 | AU-6, CM-3 | Supports the access, configuration, information-flow or evidence objective described above. |
 | SOC 2 | CC7.2 | Supporting evidence for the relevant logical-access or monitoring criterion; not a certification claim. |
+
+---
+
+### 5.3 Collect Organization Audit Metadata with Explicit Scope
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 Rev. 5 | AU-6, AU-12 |
+| SOC 2 | CC7.2 |
+
+#### Description
+
+Collect organization audit metadata over a fixed time window and correlate it with approved changes. Use the documented polling API with an Enterprise human Owner credential. A service-account key, settings-history snapshot or Droid telemetry stream does not provide the same audit surface.
+
+#### Rationale
+
+**Why This Matters:**
+
+- Changed role, region or scope can invalidate an opaque audit cursor; accepting early pages would hide the remainder.
+- Root-wide collection can exclude organizations served in another region. An incomplete export is not evidence of no activity.
+
+**Attack Prevented:** Missed governance changes through incomplete or incorrectly scoped audit collection.
+
+#### ClickOps Implementation
+
+1. Open the organization's **Team Settings → Audit Log** as an Enterprise Owner. Identify the active organization and the exact UTC investigation window.
+2. Correlate usage-limit and managed-settings events with the group changes in 1.4. Review actor, target and detailed changes in the console; the metadata collector deliberately omits those sensitive fields.
+3. Review source-control and scanner records independently for CVE remediation. Organization audit events do not establish complete listener, task or merge history.
+
+#### Code Implementation
+
+The pack uses **GET /api/v0/organization/audit**, follows **nextCursor** and saves minimized metadata in a new private file. It fixes the time filters, deduplicates by organization/event ID and stops on incomplete responses. On an authority/cursor error, rerun the full unchanged window into a new file and reconcile duplicates across runs. A completed empty window is a collection result, not a compliance verdict.
+
+This starter intentionally collects the active organization only. The vendor also documents root **organization=all** with regional limits; the pack does not claim cross-region coverage or implement a streaming integration.
+
+{% include pack-code.html vendor="factory" section="5.3" %}
+
+#### Validation & Testing
+
+Compare the completed window against the console. Exercise malformed responses, repeated cursors, later-page failure and denied credentials in an authorized test. Offline fixtures cover those failure paths; no live API credential was used here.
+
+#### Monitoring & Maintenance
+
+Run collection under an approved retention/access policy and reconcile overlapping windows by organization/event ID. Source is the originating product surface, not the actor's IP address. Keep the metadata artifact outside source control.
+
+#### Operational Impact
+
+The API is Enterprise Owner-gated and does not accept service-account credentials. Rate limits, revoked authority or page limits leave the run unknown with no saved partial artifact. Use a narrower window or correct authorization before retrying.
+
+**Sources:** [Organization API and cursor semantics](https://docs.factory.com/api-reference/organization) · [Audit console](https://docs.factory.com/enterprise/audit-log), checked 2026-11-14.
 
 ---
 
@@ -1650,11 +1816,11 @@ NIST's [Rev. 5 publication and current release notes](https://csrc.nist.gov/pubs
 | Surface | Verdict |
 |---------|---------|
 | Terraform resources and data sources | The current product/API/config indexes did not establish a vendor-native provider resource or data-source catalog. Registry retrieval remains a research gap; neither absence nor an infrastructure provider is asserted as Factory policy automation. |
-| REST / GraphQL | REST member, service-account/key metadata, Computer secret-name and paginated control-history reads implemented. Public write operations exist for users, limits and service accounts, but do not configure the managed-policy fields in this guide. No public GraphQL contract identified. |
+| REST / GraphQL | REST member, service-account/key metadata, group credit mappings, Computer secret-name, control-history and general audit-metadata reads implemented. Public writes exist for users, limits and service accounts; the group-limit API does not set group model access. No public GraphQL or CVE-listener administration contract was verified. |
 | First-party CLI | `droid rules check`, MCP inventory/permissions, plugin/tool/Computer inventories and check-only client-version commands implemented. `droid daemon` and Computer lifecycle are distinct companion commands; no agent task is run. |
 | Official SDK | Official Python and TypeScript agent SDKs are documented. The existing Python `droid_sdk.list_models` pack verifies selectable model IDs without opening a session or making a model call. Neither fetched SDK reference established an organization-policy admin method; no fake admin SDK is supplied. |
 | Native config | Reviewed organization-policy fragments and input-validated generators. An administrator must merge, validate and deploy the complete policy. |
-| SIEM | OTLP export is documented. No assumed SIEM index/table or general audit-event schema is supplied; map the actual ingested schema before writing detections. |
+| SIEM | OTLP export and general audit polling are documented. The audit collector saves only verified metadata fields; no SIEM index/table or CVE task-event schema is assumed. Map the actual ingested schema before writing detections. |
 
 See the [Factory Code Pack README](https://github.com/grcengineering/how-to-harden/blob/main/packs/factory/README.md) for inputs, return codes, safe operation and offline tests. No scanner definitions in the deprecated HTH control-YAML format are added.
 
@@ -1666,6 +1832,7 @@ See the [Factory Code Pack README](https://github.com/grcengineering/how-to-hard
 - [Droid Shield](https://docs.factory.com/autonomy-and-safety/droid-shield) and [Agent Safety & Controls](https://docs.factory.com/enterprise/llm-safety-and-agent-controls)
 - [Connectors](https://docs.factory.com/harness/connectors), [MCP](https://docs.factory.com/harness/mcp), [Internal Plugin Marketplaces](https://docs.factory.com/enterprise/internal-plugin-marketplaces) and [Hooks](https://docs.factory.com/harness/hooks)
 - [Factory Public API](https://docs.factory.com/api-reference), [Organization API](https://docs.factory.com/api-reference/organization) and [Service Accounts API](https://docs.factory.com/api-reference/service-accounts)
+- [User Groups](https://docs.factory.com/enterprise/user-groups) and [Security Factory CVE remediation](https://docs.factory.com/automations/cve-remediation)
 - [Droid CLI Reference](https://docs.factory.com/droid-cli/cli-reference) and [Python SDK](https://docs.factory.com/sdk/python)
 - [Telemetry](https://docs.factory.com/enterprise/telemetry), [Telemetry Privacy](https://docs.factory.com/enterprise/telemetry/privacy) and [Audit Log](https://docs.factory.com/enterprise/audit-log)
 - [Data Flows & Privacy](https://docs.factory.com/enterprise/privacy-and-data-flows) and [Compliance Restrictions](https://docs.factory.com/enterprise/compliance-audit-and-monitoring)
@@ -1674,6 +1841,7 @@ See the [Factory Code Pack README](https://github.com/grcengineering/how-to-hard
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-14 | 0.3.0 | ai-drafted | Added group/individual policy reconciliation, Security Factory CVE remediation access and merge boundaries, and read-only group/audit collectors. Corrected model-policy scope and the former audit API gap; offline tests only. | Codex (GPT-6) |
 | 2026-11-05 | 0.2.0 | ai-drafted | Reconcile current product/control planes; add client identity/update, delegation, automation and compute-secret controls; document HumanLayer/Mentlio boundaries and remaining source gaps. Offline validation only. | Codex (GPT-6) |
 | 2026-10-31 | 0.1.0 | ai-drafted | Initial 19-control guide with source evidence, native policy fragments, REST/CLI inventories and SDK model verification; offline validation only. | Codex (GPT-6) |
 

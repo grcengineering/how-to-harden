@@ -12,6 +12,7 @@ import stat
 import subprocess
 import tempfile
 import unittest
+from urllib.parse import urlencode
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKS = ROOT / 'packs/factory'
@@ -20,7 +21,9 @@ PRIVATE = 'SYNTHETIC_PRIVATE_RESPONSE'
 FILES = {
     'members': 'api/hth-factory-1.02-inventory-members.sh',
     'keys': 'api/hth-factory-1.03-audit-workload-keys.sh',
+    'groups': 'api/hth-factory-1.04-inventory-group-limits.sh',
     'history': 'api/hth-factory-5.02-collect-control-history.sh',
+    'audit': 'api/hth-factory-5.03-collect-organization-audit.sh',
     'ip': 'config/hth-factory-4.01-build-source-ip-policy.sh',
     'models': 'config/hth-factory-4.02-build-model-policy.sh',
     'telemetry': 'config/hth-factory-5.01-build-private-telemetry.sh',
@@ -139,8 +142,10 @@ class FactoryPackTests(unittest.TestCase):
             'FACTORY_TEST_CLI_CALLS': str(self.directory / 'cli.jsonl'),
             'FACTORY_TEST_SDK_CALLED': str(self.directory / 'sdk-called'),
             'FACTORY_TEST_MODELS': '[{"id":"approved-model","disabled":false}]',
+            'FACTORY_AUDIT_START': '2026-11-01T00:00:00Z',
+            'FACTORY_AUDIT_END': '2026-11-02T00:00:00Z',
         })
-        for name in ('MEMBERS', 'KEYS', 'HISTORY', 'RULE_REPORT', 'MCP', 'PLUGINS', 'MODEL', 'TOOLS', 'COMPUTERS'):
+        for name in ('MEMBERS', 'KEYS', 'GROUP_LIMITS', 'HISTORY', 'AUDIT', 'RULE_REPORT', 'MCP', 'PLUGINS', 'MODEL', 'TOOLS', 'COMPUTERS'):
             self.env['FACTORY_' + name + '_OUTPUT'] = str(self.output)
 
     def tearDown(self):
@@ -165,6 +170,19 @@ class FactoryPackTests(unittest.TestCase):
 
     def history(self, items):
         return reply('/api/v0/organization/enterprise-controls/history?limit=100', page('changes', items))
+
+    def audit(self, items=None, next_cursor=None, cursor=None, **kw):
+        params = dict(limit='100', startDate=self.env['FACTORY_AUDIT_START'],
+                      endDate=self.env['FACTORY_AUDIT_END'])
+        if cursor is not None:
+            params['cursor'] = cursor
+        event = {'id': 'event-1', 'eventType': 'managed_settings_change',
+                 'source': 'admin-console', 'createdAt': '2026-11-01T12:00:00Z',
+                 'organizationId': 'org-1', 'actor': {'email': 'person@example.invalid'},
+                 'payload': {'private': PRIVATE}, 'target': {'private': PRIVATE}}
+        return reply('/api/v0/organization/audit?' + urlencode(params),
+                     {'events': items if items is not None else [event],
+                      'nextCursor': next_cursor}, **kw)
 
     def assert_private(self):
         self.assertEqual(stat.S_IMODE(self.output.stat().st_mode), 0o600)
@@ -335,6 +353,118 @@ class FactoryPackTests(unittest.TestCase):
         self.run_pack('rules', expected=2, FACTORY_TEST_CLI_ERROR='1')
         self.run_pack('rules', expected=2, FACTORY_TEST_CLI_BAD_JSON='1')
         self.assertFalse(self.output.exists())
+
+    def test_group_limits_keep_nullable_fields_and_discard_unknown_fields(self):
+        groups = [{'groupId': 'group-1', 'name': 'person@example.invalid', 'limit': 1000000,
+                   'unexpectedSecret': PRIVATE}, {'groupId': 'group-2', 'name': None, 'limit': None}]
+        self.run_pack('groups', [reply('/api/v0/organization/usage/limits/groups',
+                                      {'groupLimits': groups})])
+        saved = self.assert_private()
+        self.assertEqual(saved, {'groupLimits': [{k: g[k] for k in ('groupId', 'name', 'limit')}
+                                                for g in groups]})
+        self.assertNotIn(PRIVATE, self.output.read_text())
+
+    def test_group_limits_reject_malformed_and_partial_inventory(self):
+        good = {'groupId': 'group-1', 'name': 'reviewed-group', 'limit': 1000000}
+        cases = [{}, {'groupLimits': None}, {'groupLimits': [good, good]},
+                 {'groupLimits': [dict(good, limit=True)]},
+                 {'groupLimits': [dict(good, limit=PRIVATE)]},
+                 {'groupLimits': [dict(good, limit=-1)]},
+                 {'groupLimits': [dict(good, limit=1.5)]},
+                 {'groupLimits': [{k: v for k, v in good.items() if k != 'name'}]},
+                 {'groupLimits': [dict(good, groupId='')]},
+                 {'groupLimits': [good], 'nextCursor': 'more'},
+                 {'groupLimits': [good], 'pagination': {'hasMore': True}}]
+        for body in cases:
+            with self.subTest(body=body):
+                self.run_pack('groups', [reply('/api/v0/organization/usage/limits/groups', body)], expected=2)
+                self.assertFalse(self.output.exists())
+                (self.directory / 'state').unlink()
+
+    def test_group_empty_response_is_collection_not_effective_policy(self):
+        result = self.run_pack('groups', [reply('/api/v0/organization/usage/limits/groups',
+                                              {'groupLimits': []})])
+        self.assertIn('0 group credit mappings', result.stdout)
+        self.assertIn('model-only groups', result.stdout)
+        self.assertNotIn('PASS', result.stdout)
+        self.assertEqual(self.assert_private(), {'groupLimits': []})
+
+    def test_audit_all_pages_fixed_window_and_minimized_fields(self):
+        next_cursor = 'opaque/+?='
+        self.run_pack('audit', [self.audit(next_cursor=next_cursor),
+                               self.audit(items=[{'id': 'event-2', 'eventType': 'future_event',
+                                                  'source': 'api', 'createdAt': '2026-11-01T13:00:00Z'}],
+                                          cursor=next_cursor)])
+        saved = self.assert_private()
+        self.assertEqual(saved['scope'], 'active-organization')
+        self.assertEqual(saved['startDate'], self.env['FACTORY_AUDIT_START'])
+        self.assertEqual(len(saved['events']), 2)
+        self.assertTrue(all(set(e) == {'id', 'organizationId', 'eventType', 'source', 'createdAt'}
+                            for e in saved['events']))
+        self.assertNotIn('person@example.invalid', self.output.read_text())
+        self.assertNotIn(PRIVATE, self.output.read_text())
+
+    def test_audit_duplicate_ids_are_scoped_by_organization(self):
+        first = self.audit()['body']['events'][0]
+        other_org = dict(first, organizationId='org-2')
+        self.run_pack('audit', [self.audit(items=[first, first, other_org])])
+        self.assertEqual(len(self.assert_private()['events']), 2)
+
+    def test_audit_window_rejected_before_network(self):
+        cases = [{'FACTORY_AUDIT_START': ''}, {'FACTORY_AUDIT_START': '2026-02-30T00:00:00Z'},
+                 {'FACTORY_AUDIT_START': '2026-11-03T00:00:00Z'},
+                 {'FACTORY_AUDIT_END': '2026-11-01T00:00:00Z'},
+                 {'FACTORY_AUDIT_START': '2026-11-01T00:00:00Z&organization=all'},
+                 {'FACTORY_AUDIT_END': '2026-11-02T00:00:00+00:00'}]
+        for env in cases:
+            with self.subTest(env=env):
+                self.run_pack('audit', expected=2, **env)
+                self.assertFalse((self.directory / 'state').exists())
+
+    def test_audit_cursor_restart_error_discards_partial_evidence(self):
+        self.run_pack('audit', [self.audit(next_cursor='page2'),
+                               self.audit(cursor='page2', status=400)], expected=2)
+        self.assertFalse(self.output.exists())
+
+    def test_audit_rejects_invalid_or_incomplete_envelopes(self):
+        first = self.audit()['body']['events'][0]
+        cases = [{}, {'events': [], 'nextCursor': ''}, {'events': [], 'nextCursor': 'more'},
+                 {'events': [], 'nextCursor': None, 'unavailableOrganizations': [{'id': 'other-region'}]},
+                 {'events': [dict(first, id='')], 'nextCursor': None},
+                 {'events': [dict(first, eventType=None)], 'nextCursor': None},
+                 {'events': [dict(first, createdAt=PRIVATE)], 'nextCursor': None},
+                 {'events': [dict(first, createdAt='2026-02-30T00:00:00Z')], 'nextCursor': None},
+                 {'events': [dict(first, organizationId=1)], 'nextCursor': None}]
+        for body in cases:
+            with self.subTest(body=body):
+                response = self.audit()
+                response['body'] = body
+                self.run_pack('audit', [response], expected=2)
+                self.assertFalse(self.output.exists())
+                (self.directory / 'state').unlink()
+
+    def test_audit_repeated_cursor_and_page_limit_fail(self):
+        self.run_pack('audit', [self.audit(next_cursor='same'),
+                               self.audit(cursor='same', next_cursor='same')], expected=2)
+        self.assertFalse(self.output.exists())
+        (self.directory / 'state').unlink()
+        self.run_pack('audit', [self.audit(next_cursor='more')], expected=2, HTH_MAX_PAGES='1')
+        self.assertFalse(self.output.exists())
+
+    def test_new_inventories_preserve_existing_and_symlink_outputs(self):
+        self.output.write_text('keep')
+        for name, response in [('groups', reply('/api/v0/organization/usage/limits/groups', {'groupLimits': []})),
+                               ('audit', self.audit(items=[]))]:
+            with self.subTest(name=name):
+                self.run_pack(name, [response], expected=2)
+                self.assertEqual(self.output.read_text(), 'keep')
+                (self.directory / 'state').unlink()
+        self.output.unlink()
+        destination = self.directory / 'target'
+        destination.write_text('keep')
+        self.output.symlink_to(destination)
+        self.run_pack('audit', [self.audit(items=[])], expected=2)
+        self.assertEqual(destination.read_text(), 'keep')
 
     def test_cli_requires_explicit_trusted_directory(self):
         self.run_pack('mcp', expected=2, FACTORY_PROJECT_DIR='relative')

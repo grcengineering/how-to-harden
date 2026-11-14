@@ -239,7 +239,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Devin Federal](docs/_guides/devin-federal.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [DocuSign](docs/_guides/docusign.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Drata](docs/_guides/drata.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Factory Common Controls](docs/_guides/factory.md) | v0.2.0 | ai-drafted | 2026-11-05 |
+| [Factory Common Controls](docs/_guides/factory.md) | v0.3.0 | ai-drafted | 2026-11-14 |
 | [Fenic](docs/_guides/fenic.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Figma Enterprise](docs/_guides/figma.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Fivetran](docs/_guides/fivetran.md) | v0.2.0 | ai-drafted | 2026-08-08 |
