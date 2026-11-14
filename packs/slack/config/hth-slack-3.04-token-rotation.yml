@@ -1,0 +1,13 @@
+# HTH Pack Contract: v1
+#   control: slack-3.4
+#   profile: L2
+#   mode: mutating
+# HTH Slack 3.4: OAuth token rotation; L2 (Walk); NIST IA-5, AC-6
+# Guide: https://howtoharden.com/guides/slack/#34-require-oauth-token-rotation-and-review-existing-installations
+# Source: https://docs.slack.dev/reference/app-manifest/
+# Merge this fragment into the complete manifest of an app you own.
+# Not an org policy. Enabling app rotation cannot be undone; test refresh first.
+# HTH Guide Excerpt: begin oauth-token-rotation
+settings:
+  token_rotation_enabled: true
+# HTH Guide Excerpt: end oauth-token-rotation

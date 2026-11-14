@@ -6,9 +6,9 @@ slug: "slack"
 tier: "1"
 category: "Productivity"
 description: "Enterprise security hardening for Slack workspaces, SSO, DLP, and data governance"
-version: "0.3.0"
+version: "0.4.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-09-25"
+last_updated: "2026-11-14"
 ---
 
 ## Overview
@@ -585,6 +585,54 @@ Read-only audit of the org's approved MCP servers via `admin.apps.mcp.servers.li
 
 ---
 
+### 3.4 Require OAuth Token Rotation and Review Existing Installations
+
+**Profile Level:** L2 (Walk)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | IA-5, AC-6 |
+| CIS Controls v8 | 6.1 |
+
+#### Description
+
+Require rotating OAuth credentials for newly installed or updated Enterprise apps. Review older installations separately; the organization policy does not retrofit them. Rotation limits access-token lifetime, not the permissions an integration holds.
+
+#### Rationale
+
+**Why This Matters:**
+- Long-lived app credentials extend the opportunity for replay after theft.
+- Enabling an organization rule is not proof that existing integrations meet it.
+
+**Attack Prevented:** Continued use of exposed long-lived OAuth access tokens; refresh-token theft and excessive scopes still require separate controls.
+
+#### Prerequisites
+
+Enterprise organization administration for the organization policy; app-owner access for internal app configuration. Test credential-refresh behavior before production rollout. App-level token rotation is a separate manifest property and is not asserted by the OAuth check below.
+
+#### ClickOps Implementation
+
+1. Open **organization name > Tools & settings > Organization settings > Settings > Organization Policies > Apps**. Add the **Token rotation** policy, select its requirement, then **Save Policy > Create Policy**. The policy also expires unused refresh tokens after 30 days.
+2. Inventory existing integrations and obtain their owners' migration evidence. This setting applies to subsequent installations and updates, not existing apps.
+3. For an internal app, enable rotation in **OAuth & Permissions**; Marketplace apps use **Published App Settings**. Validate refresh handling before enabling: this app setting cannot be turned off afterward. Access tokens expire after 12 hours.
+4. Preserve least-privilege scopes and app approval from 3.1. Do not treat rotation as revocation or a replacement for incident response.
+
+#### Code Implementation
+
+The config fragment is for an app you own, merged into its complete manifest after testing. It is not an organization-policy payload. The API pack reads one authorized app's manifest with a configuration token; it does not inventory third-party apps or verify all installed credentials. A missing property or failed export is unknown, not compliance. The CLI pack uses Slack's authenticated remote-manifest read surface. Set `HTH_PROFILE_LEVEL=2` or higher for these read scripts. Neither read pack changes settings.
+
+{% include pack-code.html vendor="slack" section="3.4" %}
+
+**Automation:** App manifest configuration and reads are documented. An organization-wide policy write API, GraphQL operation, Terraform setting and policy-specific audit event were not verified in this bounded pass; no synthetic endpoint or detection is supplied. See the [surface and source ledger](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/slack-token-rotation-20261114.md).
+
+#### Validation & Testing
+
+Verify the saved org policy, test a new installation/update, and separately reconcile older apps. For an internal test app, confirm new credentials have the expected expiry and refresh succeeds without logging tokens. Manifest state alone does not establish migration of previously issued credentials. No live Slack tenant was tested for this update.
+
+**Sources:** [Organization app policies](https://slack.com/help/articles/360038559694-Set-organization-level-policies-for-apps) · [Token rotation](https://docs.slack.dev/authentication/using-token-rotation/) · [App lifecycle](https://docs.slack.dev/app-management/distribution/) · [Manifest reference](https://docs.slack.dev/reference/app-manifest/)
+
+---
+
 ## 4. Data Security
 
 ### 4.1 Enable Data Loss Prevention (DLP)
@@ -1093,6 +1141,7 @@ As of **August 17, 2025**, Slack's plan lineup is **Free, Pro, Business+, and En
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-14 | 0.4.0 | ai-drafted | Add Enterprise OAuth token-rotation policy, legacy-installation caveat, owned-app manifest config and API/CLI reads; bounded source and Trust Center reconciliation, no live tenant validation. | Codex |
 | 2026-09-25 | 0.3.0 | ai-drafted | validate-hth-guide run (doc drift + pack execution; no live Slack session, so 0 surfaces VERIFIED-LIVE and the maturity set is unchanged): console paths in 1.1-1.4, 2.1, 3.1-3.3, 4.1-4.3 and 5.1 corrected against Slack's current help articles (retired "Enterprise Grid Admin" breadcrumb; undocumented settings removed from 1.3, 1.4, 2.1, 4.3, 5.1); new read-only API packs for 1.3, 1.4, 1.5, 3.2, 3.3, 4.2 and a mutating one for 4.5; 1.2, 3.1 and 5.1 packs read their token from the environment, paginate and fail closed (3.1 moved api/ to sdk/); every cursor-paginated pack exits non-zero on a repeated cursor instead of looping, and the 3.3 pack no longer reports a response with no data fields as an empty MCP allowlist; 1.1 Terraform declares okta/okta; 4.1 DLP patterns cover Mastercard 2-series and no longer match commit SHAs; Automation lines for 1.4, 2.1, 4.2, 4.3, 4.4; SCIM and custom retention plan gates corrected; 3.1 rate-limit carve-out corrected; dead Appendix B links replaced; changelog re-sorted (2026-06-29 entry renumbered 0.1.1 to 0.1.2: the page's frontmatter first read 0.1.1 at that commit, but the changelog had already given 0.1.1 to the 2026-02-19 entry, so keeping versions unique and ascending makes it the next free number, 0.1.2; initial entry dated to its 2026-02-05 commit) | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.2.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.3, §3.2, §4.1, §4.2, §5.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.2.0 | ai-drafted | Add Information Barriers (1.5), MCP/AI agent governance (3.3), Slack AI feature access (4.4), and AI channel restriction (4.5); correct DLP plan prerequisite and file-scanning scope; note non-Marketplace app rate limits; update plan matrix to post-Aug 2025 lineup | Claude Code (Sonnet 5) |

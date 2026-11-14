@@ -177,3 +177,24 @@ All files follow: `hth-{vendor}-{section}-{control-title}.{ext}`
 - [Snowflake Hardening Guide](https://howtoharden.com/guides/snowflake/) -- Full guide with ClickOps + Code implementations
 - [How to Harden](https://howtoharden.com) -- All vendor hardening guides
 - [Code Packs Overview](../README.md) -- Architecture and schema documentation
+
+## Scoped November 2026 additions (1.5 and 1.6)
+
+The new DB examples create **unattached** WIF and Multi-party Approval policies.
+Replace example identifiers, account ID and approver users before executing them.
+They do not replace an existing policy, assign one to users/accounts, activate MPA,
+cast votes, or replay approved changes. Do not add them to a blanket apply loop.
+Inspect existing policy state and preserve unrelated restrictions before deployment.
+
+The corresponding `cli/` inspectors use the current first-party `snow` CLI and
+only issue `DESCRIBE` for a fully qualified, unquoted `HTH_POLICY`. Set
+`HTH_SNOW_CONNECTION` to a previously configured connection. Credentials are not
+accepted as command-line arguments by these wrappers. Errors propagate; a returned
+policy or empty result is not proof of effective enforcement. Keep output private.
+
+Native SQL creation and CLI read-back are intentionally separate. The legacy
+Terraform and SnowSQL artifacts above were not migrated or revalidated in this
+bounded pass. Do not infer their compatibility with these new SQL properties.
+See [scope and gaps](../../docs/research/snowflake-weekly-20261114.md).
+Offline regression checks: `python3 scripts/test-snowflake-weekly.py`. They check
+argument safety and example boundaries, not Snowflake SQL execution or entitlement.

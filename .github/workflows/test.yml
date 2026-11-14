@@ -41,6 +41,10 @@ jobs:
           python3 scripts/test-pluto-browser-inventory.py
           python3 scripts/test-pluto-n8n.py
           python3 -m unittest discover -s tests -p 'test_copilot_studio_packs.py'
+      - name: Slack and Snowflake policy pack safety tests (offline)
+        run: |
+          python3 scripts/test-slack-token-rotation.py
+          python3 scripts/test-snowflake-weekly.py
 
   # ─── Pack Validation (validate-packs.sh — 17 checks) ───────────────────────
   # This job exists because the repo already owned the detectors and never ran

@@ -6,9 +6,9 @@ slug: "snowflake"
 tier: "1"
 category: "Data"
 description: "Data warehouse security including network policies, MFA enforcement, and access controls"
-version: "0.4.1"
+version: "0.5.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-08"
+last_updated: "2026-11-14"
 ---
 
 
@@ -324,12 +324,12 @@ Ungoverned PATs are simply passwords with a longer name: a token with a multi-ye
 #### Description
 [Workload identity federation](https://docs.snowflake.com/en/user-guide/workload-identity-federation) lets a workload running on AWS, Azure, GCP, or any OIDC-compliant platform authenticate to Snowflake using the identity the cloud platform already issues it — an IAM role, a managed identity, a service account, or an OIDC token. No Snowflake-side secret is created, stored, or rotated.
 
-**Prefer workload identity federation over RSA key pairs wherever the workload runs on a supported platform.** A key pair is still a file that must be distributed, stored, and rotated; a federated workload identity is a short-lived, platform-attested credential with nothing to leak.
+**Prefer workload identity federation over RSA key pairs wherever the workload runs on a supported platform.** A key pair is still a file that must be distributed, stored, and rotated; a federated workload identity is a short-lived, platform-attested credential rather than a long-lived Snowflake key. Protect the runtime and its temporary tokens: federation does not prevent misuse of a compromised workload.
 
 #### Rationale
 **Why This Matters:**
-- There is no credential to rotate, back up, or accidentally commit — the class of "leaked service account key" incidents disappears entirely for federated workloads
-- The cloud platform attests the workload's identity cryptographically on every call, so an attacker who copies configuration off a host still cannot authenticate from elsewhere
+- Removing long-lived Snowflake keys reduces secret distribution and rotation overhead; temporary attestations still require protection
+- Copying connection configuration alone is insufficient: authentication also requires a valid attestation of the bound workload identity. Protect the runtime that can obtain that attestation.
 - Federated credentials are short-lived by construction, collapsing the window in which any intercepted token is useful
 - Removing key files from CI/CD systems and container images eliminates a supply-chain foothold — the 2024 breach began with credentials harvested from compromised endpoints
 - Access is revoked by changing cloud IAM, giving one control plane for both infrastructure and data-platform access
@@ -349,13 +349,19 @@ Ungoverned PATs are simply passwords with a longer name: a token with a multi-ye
 2. Ensure the user is typed correctly first: `ALTER USER svc_user SET TYPE = 'SERVICE';`
 3. Attach the workload identity: `ALTER USER svc_user SET WORKLOAD_IDENTITY = (TYPE = 'AWS', ARN = 'arn:aws:iam::123456789012:role/snowflake-etl');`
 4. For an OIDC platform, use the issuer and subject form instead: `ALTER USER svc_user SET WORKLOAD_IDENTITY = (TYPE = 'OIDC', ISSUER = 'https://token.actions.githubusercontent.com', SUBJECT = 'repo:my-org/my-repo:ref:refs/heads/main');`
-5. Scope the subject as narrowly as the platform allows — a subject of `repo:my-org/*` grants every repository in the organization access to your warehouse.
+5. Bind the exact provider-issued subject for the intended workload. Do not assume a wildcard string is a supported pattern or an authorization boundary.
 
 **Step 3: Allow the Authentication Method**
 1. Permit it in the identity's authentication policy: `ALTER AUTHENTICATION POLICY svc_pat_policy SET AUTHENTICATION_METHODS = ('WORKLOAD_IDENTITY', 'KEYPAIR');`
 2. Grant the service user only the scoped role it needs, per control 1.3.
 
-**Step 4: Switch the Connection**
+**Step 4: Constrain the Federation Trust Boundary**
+1. Review the effective authentication policy and its assignments before changing it. Preserve unrelated methods, MFA, PAT and client restrictions.
+2. Set `WORKLOAD_IDENTITY_POLICY` to the required providers only. Add `ALLOWED_AWS_ACCOUNTS`, `ALLOWED_AZURE_ISSUERS` or `ALLOWED_OIDC_ISSUERS` as appropriate. Omitting these restrictions leaves the corresponding provider/account/issuer scope unconstrained by this policy; the service user's own binding still applies.
+3. Use the DB pack as an **unattached AWS-only example**, not a replacement for an existing policy. Change its account ID and namespace, review, then assign through the documented [authentication-policy procedure](https://docs.snowflake.com/en/user-guide/authentication-policies). Review user-level overrides, which can supersede account policy.
+4. Test an allowed workload and a deliberately disallowed provider/account in a disposable environment before rollout. Keep a tested administrative recovery path.
+
+**Step 5: Switch the Connection**
 1. Update the driver or connector configuration to use `authenticator='WORKLOAD_IDENTITY'` in place of the private key or password parameters.
 2. Deploy, confirm the workload connects, then delete the retired key pair: `ALTER USER svc_user UNSET RSA_PUBLIC_KEY;`
 3. Remove the private key file from the secret store, CI/CD variables, and any container image layers that carried it.
@@ -369,7 +375,15 @@ Ungoverned PATs are simply passwords with a longer name: a token with a multi-ye
 4. Confirm the retired `RSA_PUBLIC_KEY` is unset and the corresponding private key is deleted from all secret stores.
 5. Confirm `SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY` shows the workload authenticating via workload identity rather than key pair.
 
-**Expected result:** The workload authenticates with zero stored Snowflake credentials, and the old key pair no longer exists
+**Expected result:** The workload uses the approved federated identity and policy boundary; retired long-lived keys are removed after successful cutover.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="snowflake" section="1.5" %}
+
+The SQL pack creates an unattached example policy; the CLI pack only reads a named policy and requires `HTH_PROFILE_LEVEL=2` or higher. Neither proves its assignment or effective enforcement. Current Terraform has WIF policy fields, but this repository's legacy provider needs a separately tested migration; no unsupported fields were added to it. See the [scoped surface ledger](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/snowflake-weekly-20261114.md).
+
+**Sources:** [WIF hardening](https://docs.snowflake.com/en/user-guide/workload-identity-federation#hardening-your-security-posture) · [Authentication-policy SQL](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy)
 
 #### Compliance Mappings
 
@@ -379,6 +393,48 @@ Ungoverned PATs are simply passwords with a longer name: a token with a multi-ye
 | **NIST 800-53** | IA-5, IA-9 | Authenticator management, service authentication |
 | **PCI DSS** | 8.6.2 | Application and system account credentials not hard-coded |
 | **HIPAA** | 164.312(d) | Person or entity authentication |
+
+---
+
+### 1.6 Require Independent Approval for Critical Administrative Changes
+
+**Profile Level:** L3 (Run)
+
+| Framework | Control ID | Control Description |
+|-----------|-----------|---------------------|
+| **NIST 800-53** | AC-5, CM-3 | Separation of duties and controlled changes |
+| **CIS Controls** | 6.8 | Role-based access control |
+
+#### Description
+
+Use Multi-party Approval (MPA), available on Business Critical and higher editions, to require an independent person before selected high-impact changes. Treat this as a staged control deployment, not an emergency toggle.
+
+#### Rationale
+
+**Why This Matters:**
+- One stolen administrator identity should not suffice to remove security boundaries.
+- Approval coverage and approver availability must survive personnel changes and outages.
+
+**Attack Prevented:** Unilateral weakening of protected account security controls by a compromised administrator.
+
+#### ClickOps Implementation
+
+1. In Snowsight, open **Governance & Security → Requests & approvals → Multi-party configuration → Configure policy**. Use ACCOUNTADMIN for the documented console workflow.
+2. Include the mandatory `MODIFY_MULTI_PARTY_APPROVAL` operation. Choose additional critical operations based on your change processes, such as privileged-role grants and authentication/network-policy changes. Each operation belongs to only one rule.
+3. Explicitly set `self_approval_allowed: false` in the policy definition. The documented default is true. Select enough independently controlled, MFA-enrolled approvers with validated email addresses to meet quorum even when the requester cannot vote. Maintain backup coverage; service users cannot approve.
+4. Read back the definition before selecting **Activate**. Test the approval/replay process and recovery plan in a nonproduction account first. Protected task, stored-procedure and SCIM operations may fail, so assess provisioning and change automation before activation.
+
+#### Code Implementation
+
+{% include pack-code.html vendor="snowflake" section="1.6" %}
+
+The DB pack creates an example definition without attaching it; replace example users and namespace first. The CLI pack requires `HTH_PROFILE_LEVEL=3` or higher and describes a selected policy, without approving requests or changing tenant state. Policy existence alone is not proof of activation. Other automation surfaces and the unverified Trust Center catalog are recorded in the [research ledger](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/snowflake-weekly-20261114.md).
+
+#### Validation & Testing
+
+Confirm the active policy in the console, inspect its rule definition, and exercise one approved harmless protected change. Verify a request cannot succeed with only its requester's vote. Review request history and rehearse unavailable-approver recovery before production use. No live Snowflake tenant was tested for these packs.
+
+**Sources:** [MPA workflow and limitations](https://docs.snowflake.com/en/user-guide/multi-party-approval) · [Policy definition and defaults](https://docs.snowflake.com/en/sql-reference/sql/create-multi-party-approval-policy) · [Read-back command](https://docs.snowflake.com/en/sql-reference/sql/desc-multi-party-approval-policy)
 
 ---
 
@@ -827,6 +883,7 @@ You do not have to map your account against it by hand. The **CIS Benchmarks sca
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-14 | 0.5.0 | ai-drafted | Scoped WIF trust-boundary restrictions and independent MPA control; unattached SQL examples and read-only CLI inspection. Corrected WIF overclaims; no live validation. | Codex |
 | 2026-08-08 | 0.4.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §3.1 (no content-facts changed) | Claude Code (Fable 5) |
 | 2026-08-03 | 0.4.0 | ai-drafted | Replace 1.1 Snowsight MFA toggle with authentication policy enforcement; note mandatory MFA rollout Phase 3 and always-on leaked password protection; require TYPE = 'SERVICE' in 1.2; add 1.4 Programmatic Access Tokens, 1.5 Workload Identity Federation, 5.3 Trust Center scanner packages; reference CIS Snowflake Foundations Benchmark v2.0.0 | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.3.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
