@@ -77,6 +77,8 @@ claude-code:
       url: "https://code.claude.com/docs/en/security"
     - label: "Claude Code permissions and managed policy"
       url: "https://code.claude.com/docs/en/permissions"
+    - label: "Self-hosted runner production hardening"
+      url: "https://code.claude.com/docs/en/self-hosted-environments-deploy#harden-your-deployment"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
 
 asana:
@@ -486,6 +488,8 @@ cursor-cloud-agents:
       url: "https://cursor.com/docs/cloud-agent/security-network"
     - label: "OIDC Identity"
       url: "https://cursor.com/docs/cloud-agent/identity"
+    - label: "Apps publishing and access controls"
+      url: "https://cursor.com/docs/cloud-agent/apps#security-and-controls"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/cursor-cloud-agents"
 
 cursor-origin:

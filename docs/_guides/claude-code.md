@@ -9,9 +9,9 @@ product: "Claude Code"
 tier: "1"
 category: "AI/ML Platform"
 description: "Harden Claude Code managed policies, permissions, plugins, isolation, remote execution, cloud-provider routing and CI credentials."
-version: "1.2.1"
+version: "1.3.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-12"
+last_updated: "2026-11-16"
 ---
 
 ## Overview
@@ -634,6 +634,96 @@ Containers change local persistence, networking and editor workflows. Preserve n
 
 ---
 
+### 3.3 Isolate Self-Hosted Runners and Enforce Repository Settings
+
+**Profile Level:** L2 (Walk)
+
+#### Description
+Treat self-hosted cloud sessions as code execution inside your network. Require disposable workloads, restricted credentials and network boundaries before admitting production data. Self-hosting does not move every connector call inside your network.
+
+#### Rationale
+**Why This Matters:**
+- Reusing a runner filesystem preserves changes and background processes across sessions.
+- An environment secret on an execution host is available to session code.
+
+**Attack Prevented:** Cross-session persistence, host-credential theft and repository settings weakening operator policy.
+
+#### Prerequisites
+Team/Enterprise self-hosted environments beta, an Owner, a reviewed runner image and an independently enforced egress/metadata boundary. Test native runner capabilities before rollout; the baseline subcommand requires v2.1.224+.
+
+#### ClickOps Implementation
+1. In **claude.ai → admin settings → Cloud environments**, inspect the environment and its **Configuration** and **Activity** tabs. Any organization member can dispatch to an environment; routed Claude Tag channels broaden the population. Account locking on a host does not narrow environment dispatch authority.
+2. Configure the runner through its documented CLI, not an invented console policy. Use a fresh container/VM per runner with `--capacity 1`, `--drain-grace-sec 0` and `--confine-repo-settings enforce`; destroy the workload after exit. Restarting the same container does not satisfy disposal.
+3. Prefer an orchestrator that retains the environment secret outside execution hosts and transfers a single-use work order to each workload. Keep wrappers/hooks/settings immutable to sessions; remove broad host credentials and block metadata access. Apply default-deny egress independently.
+4. Review delivered connectors separately: their calls originate from Anthropic infrastructure. Apply MCP policy where traffic must stay local.
+
+**Default warning:** The repository-settings guard defaults to `warn`, which still starts the session. Its scan excludes repository hooks, `.mcp.json` and Bash rules; enforce those through the existing extension and permission controls.
+
+#### Code Implementation
+
+The configuration pack only emits a candidate launcher; the CLI pack checks native help. Neither provisions isolation, registers a runner or verifies effective deployment.
+
+{% include pack-code.html vendor="anthropic-claude" section="7.14" %}
+
+#### Validation & Testing
+In an authorized test deployment, submit a repository with an out-of-workspace grant and require rejection. Verify workspace/background-process disposal, blocked egress/metadata access and work-order custody independently. During compromise, revoke the suspect session token from **Activity** before stopping its runner or rotating the environment secret.
+
+#### Operational Impact
+Isolation increases provisioning cost; enforcement can reject existing repositories. Roll back only through a reviewed image/configuration change after preserving incident evidence.
+
+#### Compliance Mappings
+
+| Framework | Control | Relationship |
+|-----------|---------|--------------|
+| NIST 800-53 | AC-6, SC-7, SC-39 | Least privilege, network boundary and process isolation; thematic mappings |
+| SOC 2 | CC6.1, CC6.6 | Access and boundary controls |
+
+**Sources:** [Production hardening](https://code.claude.com/docs/en/self-hosted-environments-deploy), [runner reference](https://code.claude.com/docs/en/self-hosted-environments-reference), [on-demand orchestration](https://code.claude.com/docs/en/self-hosted-environments-configuration), [quickstart](https://code.claude.com/docs/en/self-hosted-environments-quickstart) (checked 2026-11-16).
+
+---
+
+### 3.4 Bind Runner Credential Exchange to Verified Session Identity
+
+**Profile Level:** L2 (Walk)
+
+#### Description
+Before a trusted wrapper or token service grants session credentials, verify the session JWT and authorize its exact actor, environment and requested resource. Use short-lived, narrowly scoped credentials rather than a shared host identity.
+
+#### Rationale
+**Why This Matters:**
+- Environment secrets and work orders share signing keys with session tokens, but carry different roles.
+- Signature validity alone does not prove that the actor may access your resource.
+
+**Attack Prevented:** Cross-environment token reuse, token-role confusion and confused-deputy credential issuance.
+
+#### ClickOps Implementation
+1. Record the intended environment ID from **Cloud environments → environment detail dialog** and approve the permitted user/service subjects independently.
+2. The verifier is a wrapper or service implementation; no GUI claim validator is documented. Verify ES256 against Anthropic's JWKS, issuer `ccr`, the expected environment in the audience array, role `session_worker` and expiry. Authorize `act.sub` against your own resource policy; distinguish `user:` from `agent:` subjects.
+3. Inside a wrapper, use `CLAUDE_RUNNER_CLAUDE_BIN` for `self-hosted-runner decode-token`. It verifies signature and expiry only: explicitly check issuer, audience and role before any exchange. Do not print tokens, claims or identity-bearing output into shared logs.
+
+#### Code Implementation
+
+This opt-in CLI verifier accepts an injected token and independently configured expected environment/actor. It emits only a verdict; it never issues credentials or contacts a token service. A service outside the session must perform the documented full verification itself.
+
+{% include pack-code.html vendor="anthropic-claude" section="7.15" %}
+
+#### Validation & Testing
+Reject wrong environments, issuers, roles and actors, malformed claims, invalid signatures and expired tokens. Test both user and service identities. Keep native cryptographic verification distinct from offline tests of the wrapper's claim checks; successful identity matching still requires resource authorization.
+
+#### Operational Impact
+Token/JWKS rotation and provider availability affect exchange. Fail closed and keep credential scope/lifetime in the token service's policy; never derive the expected environment or actor from the incoming token itself.
+
+#### Compliance Mappings
+
+| Framework | Control | Relationship |
+|-----------|---------|--------------|
+| NIST 800-53 | AC-3, AC-6, IA-5 | Access enforcement, least privilege and authenticator management; thematic mappings |
+| SOC 2 | CC6.1 | Authorized logical access |
+
+**Source:** [Verify session identity](https://code.claude.com/docs/en/self-hosted-environments-identity) (checked 2026-11-16).
+
+---
+
 ## 4. Threat Defense
 
 ### 4.1 Defend Against Prompt Injection and Rules File Attacks
@@ -1026,6 +1116,7 @@ See the [Anthropic platform hub references](/guides/anthropic-claude/#appendix-b
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-16 | 1.3.0 | ai-drafted | Added self-hosted runner isolation/repository-guard and verified session-identity controls; candidate launcher and separate CLI checks. Documentation and offline tests only; no live validation. | Codex (GPT-6) |
 | 2026-11-12 | 1.2.1 | ai-drafted | Reconciled Pluto extension/bundle research; corrected managed-hook exceptions and strict hook pack, added skill pre-approval/version checks without treating prompts as enforcement. | Codex |
 | 2026-11-05 | 1.2.0 | ai-drafted | Separated Code from Desktop/Cowork policy; corrected permission/sandbox/plugin boundaries and containment; added remote/cloud/routine controls and federal provider-routing guidance with current variables. | Codex |
 | 2026-10-04 | 1.1.1 | ai-drafted | validate-hth-guide run against a live Claude Console organization, read-only: 0 of 22 surfaces exercised live, so `ai-validated` was not added. The §5.1 Console page at platform.claude.com/claude-code loaded only its headings and placeholder rows (no metric or per-user data; the org had no Claude Code activity), and the §5.1 script, run with an Admin API key, returned 0 records for each day tried. The claude.ai Team/Enterprise admin pages need a Team or Enterprise org. Corrections: the claude.ai managed-settings path in §1.1, §2.2, §3.1 and §5.2 is now **Organization settings** → **Claude Code** → **Managed settings** (was "Admin Settings"); the Team/Enterprise analytics URL in §5.1 is claude.ai/analytics/claude-code. | Claude Code (Opus 5.5) |
