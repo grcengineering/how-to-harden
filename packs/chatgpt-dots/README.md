@@ -9,3 +9,7 @@ The exporters require Bash, curl, jq, CHATGPT_WORKSPACE_ID (workspace UUID), CHA
 Current public ChatGPT Admin policy/identity mutation schemas were not verified in this refresh. Removed placeholder policies and historical route assumptions are recorded in the source ledger; no tenant setting or credential was created. No product write runs from these packs.
 
 Offline tests: bun test scripts/test-openai-workspace-refresh.test.ts from repository root. Tests use public fixtures and local fake transports/CLIs; they establish local behavior, not tenant authorization or enforcement. See [source reconciliation](../../docs/research/openai-source-coverage.md).
+
+## Wallet scope
+
+These workspace export/config packs do not administer personal ChatGPT Wallet. Guide control 4.5 is an owner-operated procedure, not an executable pack. A manual checklist cannot meet the Code Pack interface/executable-content gate. The [Wallet source census](../../docs/research/chatgpt-wallet-source-coverage.md) records unverified interfaces; no fake setting, API or payment token is provided.

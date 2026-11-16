@@ -9,9 +9,9 @@ product: "ChatGPT Dots"
 tier: "1"
 category: "AI/ML Platform"
 description: "Security hardening for ChatGPT dots, OpenAI's always-on personal agents (launched 2026-09-29): dots enablement and RBAC, owner-account protection, connected apps and Slack participation, shared cloud-computer capabilities, local computer access, custom rules and Agent Security orchestrator policy, memory and residency limits, Compliance API coverage, and the revoke, pause and reset sequence."
-version: "0.3.0"
+version: "0.4.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-12"
+last_updated: "2026-11-14"
 ---
 
 ## Overview
@@ -580,6 +580,46 @@ Try a harmless draft and a changed-recipient send with disposable recipients. Re
 
 ---
 
+### 4.5 Gate Wallet enrollment and separate payment approval from order completion
+
+**Profile Level:** L1 (Crawl)
+
+| Framework | Control |
+|-----------|---------|
+| NIST 800-53 | AC-6, IA-2 |
+| CIS Controls v8 | 6.1, 6.3 |
+
+#### Description
+
+Restrict payment delegation to approved use cases. Wallet launched November 13, 2026 for eligible US Pro personal dots, adults with eligible US-issued cards; this is not an Enterprise Wallet entitlement or admin policy. The launch describes broader parameter-based preapproval as future functionality, not a configurable spending-limit control. [Launch scope](https://openai.com/index/introducing-chatgpt-wallet/).
+
+#### Rationale
+
+**Why This Matters:**
+
+- Payment delegation crosses the boundary from assistant output into external financial commitments.
+- A generated payment credential is still sensitive; tokenization is not permission to log or share it. The secure-form provider collects card details; OpenAI receives a token and limited card metadata, not the original full number/security code. [Privacy notice](https://openai.com/policies/chatgpt-wallet-privacy-notice/).
+
+**Attack Prevented:** Unauthorized payment delegation, credential exposure and duplicate checkout attempts.
+
+#### ClickOps Implementation
+
+1. Require organizational permission before enrolling a business card. Use only the secure card form, never conversation text for card numbers, security codes or bank verification codes. [Wallet terms](https://openai.com/policies/chatgpt-wallet-terms/).
+2. On an eligible account, use **Settings > Wallet > Add Card** only when enrollment is authorized. Wallet is unavailable in Chat, Work and standalone Codex threads; rollout may not yet reach an eligible user.
+3. Review merchant, items, total, selected card and recurring terms; approve through the supported biometric flow. Enrollment is separate from purchase approval.
+4. Check the merchant's confirmation before retrying an unclear checkout. **Ready to check out is approval, not an order receipt.** A pending charge or interrupted conversation does not settle order status.
+5. For deauthorization, ask the dot to remove the identified card, confirm the correct last four digits, then re-list cards. This blocks new Wallet payments, not existing merchant recurring charges; cancel those with the merchant. [Owner workflow](https://help.openai.com/en/articles/20001654-making-purchases-with-chatgpt-wallet).
+
+**Documentation boundary:** The terms permit advance authorization and other verification methods, while the launch/help workflow requires individual approval and describes biometrics. Follow the currently documented owner workflow; do not interpret broader legal wording as an available bypass. Material changes require updated approval under the [terms](https://openai.com/policies/chatgpt-wallet-terms/).
+
+**Automation:** Unverified — no Wallet administration or audit interface was verified in this scoped review. Existing workspace exporters and requirements snippets do not configure Wallet. Do not fabricate a Code Pack from a checklist; see the [surface census](https://github.com/grcengineering/how-to-harden/blob/main/docs/research/chatgpt-wallet-source-coverage.md).
+
+#### Validation & Testing
+
+Use a tabletop review first: reject a mismatched merchant/amount, handle an ambiguous result without resubmission, and distinguish card removal from merchant cancellation. Do not enroll cards, incur charges or cancel plans just to validate this guide. Record only redacted evidence of approval, merchant outcome and cancellation as separate states. Live testing requires an eligible account and explicit transaction authorization; neither occurred in this review.
+
+---
+
 ## 5. Data, Memory & Residency
 
 ### 5.1 Keep dots out of workspaces and populations that require residency, EKM, or zero retention
@@ -877,6 +917,8 @@ Tenant verification must confirm effective grants, current API schema/permission
 
 Confirm current availability in the [admin guide](https://learn.chatgpt.com/docs/enterprise/dots-admin-guide) and setup notices. Eligible Enterprise workspace controls do not imply personal/Business entitlement. Main-dot model policy, cloud-computer capabilities, local-access opt-in, BAA, EKM and residency require separate review.
 
+Wallet is separately scoped in control 4.5; do not apply its personal-Pro rollout as an Enterprise capability.
+
 ## Appendix B: References
 
 - [Dots administration](https://learn.chatgpt.com/docs/enterprise/dots-admin-guide)
@@ -889,6 +931,7 @@ Confirm current availability in the [admin guide](https://learn.chatgpt.com/docs
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-14 | 0.4.0 | ai-drafted | Added personal Wallet enrollment, approval/outcome separation and recurring-charge lifecycle; documented source conflict and unverified automation. No live validation or placeholder packs. | Codex |
 | 2026-11-12 | 0.3.0 | ai-drafted | Reconciled Pluto guidance: added delegated-environment least privilege, local denied-read pack, future-action denial, retained browser-session cleanup and split telemetry/reviewer validation. No live tenant validation. | Codex |
 | 2026-11-05 | 0.2.0 | ai-drafted | Corrected individual admin lifecycle, DOTS attribution, eligibility and retention; separated runtime/integration containment; replaced unverified historical API/Sigma assumptions with current exporter and native TOML. Original control headings retained; no live validation. | Codex |
 | 2026-10-09 | 0.1.1 | ai-drafted | Moved under the new OpenAI multi-product platform as a product guide (`platform: "OpenAI"`, `product: "ChatGPT Dots"`); the Overview now points to the ChatGPT Enterprise guide as the OpenAI Common Controls hub. No control changed. | Claude Code (Opus 5.5) |
