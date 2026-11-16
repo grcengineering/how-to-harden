@@ -1,0 +1,16 @@
+{
+  "policies": [
+    {
+      "action": "tool.use",
+      "resource": "*",
+      "effect": "allow"
+    }
+  ],
+  "permissions": [
+    {
+      "action": "*",
+      "resource": "*",
+      "effect": "allow"
+    }
+  ]
+}

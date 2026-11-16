@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-11-10 — 154 guides. Every one is `ai-drafted`; seventeen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-11-15 — 161 guides. Every one is `ai-drafted`; seventeen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -305,11 +305,15 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Fullstory](docs/_guides/fullstory.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [HCP Terraform (formerly Terraform Cloud)](docs/_guides/terraform-cloud.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Heap](docs/_guides/heap.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Hermes Agent](docs/_guides/hermes.md) | v0.1.0 | ai-drafted | 2026-11-15 |
 | [Kernel](docs/_guides/kernel.md) | v0.1.0 | ai-drafted | 2026-08-11 |
 | [Linear](docs/_guides/linear.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
 | [Lovable](docs/_guides/lovable.md) | v0.2.0 | ai-drafted | 2026-09-25 |
+| [OhMyPi](docs/_guides/oh-my-pi.md) | v0.1.0 | ai-drafted | 2026-11-15 |
+| [OpenCode](docs/_guides/opencode.md) | v0.1.0 | ai-drafted | 2026-11-15 |
 | [Oracle HCM Cloud](docs/_guides/oracle-hcm.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Pendo](docs/_guides/pendo.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Pi.dev](docs/_guides/pi.md) | v0.1.0 | ai-drafted | 2026-11-15 |
 | [Replit](docs/_guides/replit.md) | v0.2.1 | ai-drafted · ai-validated | 2026-10-04 |
 | [SailPoint](docs/_guides/sailpoint.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [SAP SuccessFactors](docs/_guides/sap-successfactors.md) | v0.2.0 | ai-drafted | 2026-08-08 |

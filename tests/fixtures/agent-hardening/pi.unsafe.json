@@ -1,0 +1,12 @@
+{
+  "defaultProjectTrust": "always",
+  "defaultTools": [
+    "read",
+    "bash",
+    "edit",
+    "write"
+  ],
+  "packages": [
+    "npm:unreviewed-resource"
+  ]
+}

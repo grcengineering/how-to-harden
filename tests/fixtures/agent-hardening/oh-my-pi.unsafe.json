@@ -1,0 +1,15 @@
+{
+  "tools": {
+    "approvalMode": "yolo",
+    "approval": {
+      "eval": "allow",
+      "task": "allow"
+    }
+  },
+  "mcp": {
+    "enableProjectConfig": true
+  },
+  "secrets": {
+    "enabled": false
+  }
+}

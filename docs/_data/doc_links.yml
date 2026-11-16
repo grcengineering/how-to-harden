@@ -1348,3 +1348,38 @@ n8n:
     - label: "Securing n8n"
       url: "https://docs.n8n.io/deploy/host-n8n/configure-n8n/security"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/n8n"
+
+# Local coding agents — source checked 2026-11-15/16.
+opencode:
+  product_docs: https://opencode.ai/docs/
+  hardening_docs:
+  - label: Managed policies
+    url: https://opencode.ai/docs/policies/
+  - label: V2 permissions
+    url: https://opencode.ai/docs/permissions/
+  code_pack: https://github.com/grcengineering/how-to-harden/tree/main/packs/opencode
+hermes:
+  product_docs: https://hermes-agent.nousresearch.com/docs/
+  api_docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/api-server
+  hardening_docs:
+  - label: Hermes security boundaries
+    url: https://hermes-agent.nousresearch.com/docs/user-guide/security
+  - label: Managed scope
+    url: https://hermes-agent.nousresearch.com/docs/user-guide/managed-scope
+  code_pack: https://github.com/grcengineering/how-to-harden/tree/main/packs/hermes
+pi:
+  product_docs: https://docs.pi.dev/latest/
+  hardening_docs:
+  - label: Run Pi safely
+    url: https://docs.pi.dev/latest/security
+  - label: Whole-process versus tool isolation
+    url: https://docs.pi.dev/latest/containerization
+  code_pack: https://github.com/grcengineering/how-to-harden/tree/main/packs/pi
+oh-my-pi:
+  product_docs: https://github.com/can1357/oh-my-pi
+  hardening_docs:
+  - label: Tool approval boundaries
+    url: https://github.com/can1357/oh-my-pi/blob/v18.20.2/docs/approval-mode.md
+  - label: Typed settings and precedence
+    url: https://github.com/can1357/oh-my-pi/blob/v18.20.2/docs/settings.md
+  code_pack: https://github.com/grcengineering/how-to-harden/tree/main/packs/oh-my-pi

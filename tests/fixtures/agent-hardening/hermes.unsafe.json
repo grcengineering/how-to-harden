@@ -1,0 +1,15 @@
+{
+  "approvals": {
+    "mode": "off",
+    "approvers": [
+      "*"
+    ],
+    "unattended_mode": "approve"
+  },
+  "command_allowlist": [
+    "*"
+  ],
+  "security": {
+    "redact_secrets": false
+  }
+}
