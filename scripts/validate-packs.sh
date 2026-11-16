@@ -144,16 +144,22 @@ for p in touched:
         # findings across 8 vendors to a branch that changed one line per file.
         keys.add(os.path.splitext(parts[-1])[0] + '/')
 
+def matches_key(line, key):
+    # Vendor directories must start at a path/token boundary: pi/ is not api/.
+    if key.endswith('/'):
+        return re.search(r'(?<![A-Za-z0-9_-])' + re.escape(key), line) is not None
+    return key in line
+
 mine, in_fail = [], None
 for line in os.environ["REPORT"].splitlines():
     m = re.match(r'\s*FAIL: (.*)', line)
     if m:
         in_fail = m.group(1)
-        if any(k in line for k in keys):
+        if any(matches_key(line, k) for k in keys):
             mine.append(line.strip())
         continue
     if in_fail and re.match(r'\s{4,}\S', line):
-        if any(k in line for k in keys):
+        if any(matches_key(line, k) for k in keys):
             mine.append(f"[{in_fail[:48]}] {line.strip()}")
         continue
     if line.strip() and not line.startswith(' '):

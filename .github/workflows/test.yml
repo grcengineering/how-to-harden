@@ -23,13 +23,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install pyyaml
+      - run: pip install pyyaml jsonschema==4.25.1
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: '1.4.4'
       - run: make lint-content
       - name: Source-discovery fixture integrity (offline)
         run: make test-source-discovery-fixtures
+      - name: Coding-agent hardening pack safety tests (offline)
+        run: make test-agent-hardening-packs
       - name: Factory pack safety tests (offline)
         run: make test-factory-packs
       - name: Tailscale pack safety tests (offline)

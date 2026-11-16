@@ -4,8 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Guides: 157](https://img.shields.io/badge/Guides-157-blueviolet)](https://howtoharden.com)
-[![Code Packs: 108](https://img.shields.io/badge/Code%20Packs-108-orange)](packs/)
+[![Guides: 161](https://img.shields.io/badge/Guides-161-blueviolet)](https://howtoharden.com)
+[![Code Packs: 113](https://img.shields.io/badge/Code%20Packs-113-orange)](packs/)
 
 **Website:** [howtoharden.com](https://howtoharden.com) | **Organization:** [GRC Engineering](https://grc.engineering)
 
@@ -29,7 +29,7 @@ This is defense-in-depth done right: **First-party controls you configure** to l
 
 ### 1. Platform-Specific Hardening Guides
 
-Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **155 guides** across 10 categories:
+Like CIS Benchmarks, but free, vendor-neutral, and focused on integration controls. Currently **161 guides** across 10 categories:
 
 | Category | Count | Examples |
 |----------|-------|---------|
@@ -39,7 +39,7 @@ Like CIS Benchmarks, but free, vendor-neutral, and focused on integration contro
 | DevOps | 22 | GitHub, GitLab, Jenkins, Buildkite, SpaceXSI (Cursor, Cloud Agents, Origin, Grok Build), OpenAI (Statsig) |
 | Identity | 13 | Okta, Auth0, Microsoft Entra ID, Duo |
 | HR/Finance | 13 | BambooHR, ADP, Workday, Stripe, Ramp, [ZipHQ](docs/_guides/ziphq.md) |
-| AI/ML Platform | 28 | Anthropic (Claude Enterprise, Claude Tag, Claude Code, API), OpenAI (ChatGPT common controls, Dots, Work/Codex, API Platform, Ads, Ona), SpaceXSI (Grok, API, Bot), Cognition (Devin Cloud, CLI, Desktop/Windsurf Plugins, DeepWiki, Poke, Federal/air-gapped), Factory (Droid common controls, HumanLayer, Mentlio, Fenic), Microsoft Copilot Studio, LangChain |
+| AI/ML Platform | 32 | Anthropic (Claude Enterprise, Claude Tag, Claude Code, API), OpenAI (ChatGPT common controls, Dots, Work/Codex, API Platform, Ads, Ona), SpaceXSI (Grok, API, Bot), Cognition (Devin Cloud, CLI, Desktop/Windsurf Plugins, DeepWiki, Poke, Federal/air-gapped), Factory (Droid common controls, HumanLayer, Mentlio, Fenic), Microsoft Copilot Studio, LangChain; [OpenCode](docs/_guides/opencode.md), [Hermes](docs/_guides/hermes.md), [Pi.dev](docs/_guides/pi.md), [OhMyPi](docs/_guides/oh-my-pi.md) |
 | Marketing | 9 | HubSpot, Braze, SendGrid, Twilio |
 | IT Operations | 6 | ServiceNow, Jamf, PagerDuty, Microsoft (Intune, Windows 11) |
 | IaC | 2 | Terraform Cloud, Pulumi |
@@ -52,7 +52,7 @@ Every control includes:
 
 ### 2. Code Packs -- Executable Security Controls
 
-**108 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
+**113 vendor Code Packs** turn guide controls into runnable code. Each pack provides multiple language types:
 
 | Language Type | Directory | What It Does |
 |---------------|-----------|-------------|
