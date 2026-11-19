@@ -1,0 +1,14 @@
+# HTH Pack Contract: v1
+#   control: niteshift-2.2
+#   guide: https://howtoharden.com/guides/niteshift/#22-keep-internal-services-unpublished
+#   profile: L1
+#   mode: mutating
+#   requires: reviewed Config v2 pilot; adapt the repository-provided worker command
+# Source: https://docs.niteshift.dev/environment-configuration/services (available; checked 2026-11-18)
+# HTH Guide Excerpt: begin internal-service
+services:
+  - name: worker
+    command: ./scripts/dev-worker
+    autostart: false
+    restart: "no"
+# HTH Guide Excerpt: end internal-service
