@@ -1383,3 +1383,7 @@ oh-my-pi:
   - label: Typed settings and precedence
     url: https://github.com/can1357/oh-my-pi/blob/v18.20.2/docs/settings.md
   code_pack: https://github.com/grcengineering/how-to-harden/tree/main/packs/oh-my-pi
+
+niteshift:
+  product_docs: "https://docs.niteshift.dev/llms.txt"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/niteshift"
