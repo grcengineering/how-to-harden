@@ -9,7 +9,7 @@
 #   - Ruby + Bundler (Jekyll build — CI only unless installed locally)
 
 .PHONY: help test test-all lint lint-content test-build \
-        test-build-jekyll test-build-sync validate-packs test-vercel-packs test-cognition-packs test-factory-packs test-tailscale-packs test-tailscale-sdk test-source-discovery-fixtures test-agent-hardening-packs
+        test-build-jekyll test-build-sync validate-packs test-vercel-packs test-cognition-packs test-factory-packs test-tailscale-packs test-tailscale-sdk test-source-discovery-fixtures test-agent-hardening-packs test-assembled-packs
 
 # ─── Default ──────────────────────────────────────────────────────────────────
 
@@ -19,9 +19,12 @@ help: ## Show available targets
 
 # ─── Top-level ────────────────────────────────────────────────────────────────
 
-test: lint test-build-sync test-vercel-packs test-cognition-packs test-factory-packs test-tailscale-packs test-source-discovery-fixtures test-agent-hardening-packs ## Run local-safe tests (no live tenants or Jekyll required)
+test: lint test-build-sync test-vercel-packs test-cognition-packs test-factory-packs test-tailscale-packs test-source-discovery-fixtures test-agent-hardening-packs test-assembled-packs ## Run local-safe tests (no live tenants or Jekyll required)
 
-test-all: lint test-build test-vercel-packs test-cognition-packs test-factory-packs test-tailscale-packs test-source-discovery-fixtures test-agent-hardening-packs ## Run all tests including Jekyll build (requires Ruby)
+test-all: lint test-build test-vercel-packs test-cognition-packs test-factory-packs test-tailscale-packs test-source-discovery-fixtures test-agent-hardening-packs test-assembled-packs ## Run all tests including Jekyll build (requires Ruby)
+
+test-assembled-packs: ## Test Assembled REST and browser widget packs with offline fixtures
+	@python3 scripts/test-assembled-packs.py
 
 test-agent-hardening-packs: ## Test OpenCode, Hermes, Pi and OhMyPi offline (PyYAML + jsonschema 4.25.1)
 	@python3 scripts/test-agent-hardening-packs.py

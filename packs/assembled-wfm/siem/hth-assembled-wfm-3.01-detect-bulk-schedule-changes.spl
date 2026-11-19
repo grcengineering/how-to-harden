@@ -1,0 +1,20 @@
+# HTH Pack Contract: v1
+#   control: assembled-wfm-3.1
+#   guide: https://howtoharden.com/guides/assembled-wfm/#31-collect-and-review-scheduling-history
+#   profile: L2
+#   mode: read-only
+#   requires: Splunk; schedule collector NDJSON ingested as assembled:event_changes
+# HTH Assembled WFM 3.1: Detect Bulk Schedule Changes
+# NIST: AU-6 | Source: https://docs.assembled.com/#event-changes
+# Available fields verified 2026-11-16. This is a custom ingestion convention,
+# not an Assembled-provided Splunk integration. Tune threshold and approved editors.
+# HTH Guide Excerpt: begin detect-bulk-schedule-changes
+sourcetype="assembled:event_changes"
+| spath
+| dedup id
+| eval _time=tonumber(modified_at), actor_id='modified_by.id'
+| where isnotnull(_time) AND isnotnull(actor_id)
+| bin _time span=5m
+| stats count AS changed_events values(event_change_type) AS change_types by _time actor_id
+| where changed_events >= 25
+# HTH Guide Excerpt: end detect-bulk-schedule-changes

@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-11-18 — 162 guides. Every one is `ai-drafted`; seventeen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-11-19 — 165 guides. Every one is `ai-drafted`; seventeen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -222,6 +222,9 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Airtable](docs/_guides/airtable.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Amplitude](docs/_guides/amplitude.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Asana](docs/_guides/asana.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-04 |
+| [Assembled AI Agents & Copilot](docs/_guides/assembled-ai.md) | v0.1.0 | ai-drafted | 2026-11-16 |
+| [Assembled Common Controls](docs/_guides/assembled.md) | v0.1.0 | ai-drafted | 2026-11-16 |
+| [Assembled Workforce Management](docs/_guides/assembled-wfm.md) | v0.1.0 | ai-drafted | 2026-11-16 |
 | [Atlassian Cloud](docs/_guides/atlassian.md) | v0.5.1 | ai-drafted · ai-validated | 2026-10-02 |
 | [Auth0](docs/_guides/auth0.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Azure DevOps](docs/_guides/azure-devops.md) | v0.2.0 | ai-drafted | 2026-08-08 |
@@ -347,7 +350,6 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Snyk](docs/_guides/snyk.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
 | [Vercel](docs/_guides/vercel.md) | v1.4.0 | ai-drafted | 2026-11-10 |
 | [ZipHQ](docs/_guides/ziphq.md) | v0.3.0 | ai-drafted | 2026-11-08 |
-
 
 ---
 

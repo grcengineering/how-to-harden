@@ -84,6 +84,36 @@ asana:
   api_docs: "https://developers.asana.com/"
   hardening_docs: "https://help.asana.com/s/article/security-controls-in-asana"
 
+assembled:
+  product_docs: "https://support.assembled.com/"
+  api_docs: "https://docs.assembled.com/"
+  hardening_docs:
+    - label: "SAML single sign-on"
+      url: "https://support.assembled.com/hc/en-us/articles/14654026012173-SAML-single-sign-on"
+    - label: "Roles and permissions"
+      url: "https://support.assembled.com/hc/en-us/articles/4414692774285-Roles-and-permissions"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/assembled"
+
+assembled-wfm:
+  product_docs: "https://support.assembled.com/"
+  api_docs: "https://docs.assembled.com/"
+  hardening_docs:
+    - label: "Restricted sites"
+      url: "https://support.assembled.com/hc/en-us/articles/17167908394125-Restricted-sites"
+    - label: "Scheduling history"
+      url: "https://support.assembled.com/hc/en-us/articles/46702243244941-Scheduling-history"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/assembled-wfm"
+
+assembled-ai:
+  product_docs: "https://support.assembled.com/"
+  hardening_docs:
+    - label: "Knowledge access levels"
+      url: "https://support.assembled.com/hc/en-us/articles/27380002716045-Knowledge-access-levels"
+    - label: "AI data security"
+      url: "https://support.assembled.com/hc/en-us/articles/21987166296589-AI-data-security"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/assembled-ai"
+
+
 atlassian:
   product_docs: "https://support.atlassian.com/"
   api_docs: "https://developer.atlassian.com/"
