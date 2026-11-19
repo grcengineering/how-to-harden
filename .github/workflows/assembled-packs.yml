@@ -1,0 +1,46 @@
+name: Assembled Pack Safety
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packs/assembled/**'
+      - 'packs/assembled-wfm/**'
+      - 'packs/assembled-ai/**'
+      - 'scripts/test-assembled-packs.py'
+      - '.github/workflows/assembled-packs.yml'
+  push:
+    branches: [feat/assembled-hth-20261116]
+    paths:
+      - 'packs/assembled/**'
+      - 'packs/assembled-wfm/**'
+      - 'packs/assembled-ai/**'
+      - 'scripts/test-assembled-packs.py'
+      - '.github/workflows/assembled-packs.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contracts:
+    name: Assembled offline API and widget tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Exercise fixtures without credentials or live requests
+        run: python3 scripts/test-assembled-packs.py
+      - name: Check pack syntax
+        run: |
+          bash -n packs/assembled/api/hth-assembled-1.02-audit-role-membership.sh
+          bash -n packs/assembled/api/hth-assembled-1.03-reconcile-departed-people.sh
+          bash -n packs/assembled-wfm/api/hth-assembled-wfm-3.01-collect-schedule-changes.sh
+          node --input-type=module --check < packs/assembled-ai/sdk/hth-assembled-ai-2.03-clear-chat-sessions.js
