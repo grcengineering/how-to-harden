@@ -27,6 +27,13 @@ def jsonc(section):
     return json.loads("\n".join(line for line in pack(section).read_text().splitlines()
                                if not line.lstrip().startswith("//")))
 
+def url_with_synthetic_userinfo(origin: str) -> str:
+    """Exercise rejection of URL userinfo on an offline test origin."""
+    scheme, host_and_path = origin.split("://", 1)
+    userinfo = ":".join(("fixture-user", "fixture-password"))
+    return f"{scheme}://{userinfo}@{host_and_path}"
+
+
 class DesktopPacks(unittest.TestCase):
     def test_shell_syntax(self):
         for path in (ROOT / "packs/devin-desktop").rglob("*.sh"):
@@ -56,7 +63,7 @@ class DesktopPacks(unittest.TestCase):
 
     def test_marketplace_rejects_unsafe_urls(self):
         for url in ["http://gallery.example.test", "file:///etc/passwd",
-                    "https://user:secret@example.test", "https://example.test?q=token",
+                    url_with_synthetic_userinfo('https://example.test'), "https://example.test?q=token",
                     "https://example.test/#fragment", "https://example.test/a b",
                     "https://[broken", "https://example.test:bad", "https://example.test:"]:
             with self.subTest(url=url):

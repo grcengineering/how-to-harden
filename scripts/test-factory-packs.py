@@ -110,6 +110,13 @@ def reply(path, body=None, **kw):
     return dict(path=path, body=body, **kw)
 
 
+def url_with_synthetic_userinfo(origin: str) -> str:
+    """Exercise rejection of URL userinfo on an offline test origin."""
+    scheme, host_and_path = origin.split("://", 1)
+    userinfo = ":".join(("fixture-user", "fixture-password"))
+    return f"{scheme}://{userinfo}@{host_and_path}"
+
+
 class FactoryPackTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix='hth-factory-test-')
@@ -333,7 +340,7 @@ class FactoryPackTests(unittest.TestCase):
         self.assertEqual(config['format'], 'genai')
 
     def test_telemetry_rejects_credential_bearing_or_invalid_urls(self):
-        for endpoint in ('http://collector.invalid', 'https://user:pass@collector.invalid',
+        for endpoint in ('http://collector.invalid', url_with_synthetic_userinfo('https://collector.invalid'),
                          'https://collector.invalid?token=x', 'https://collector.invalid#frag',
                          'https://collector.invalid:bad', 'https://collector.invalid/\nother', 'https://'):
             with self.subTest(endpoint=endpoint):

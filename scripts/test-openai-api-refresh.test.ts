@@ -117,7 +117,7 @@ describe("official SDK serializes reviewed hosted sessions", () => {
   test("MCP requires explicit tool allowlist, fail-closed startup and independent origin", () => {
     const tool = buildRestrictedMcp({ serverLabel: "approved", serverUrl: "https://mcp.example.test/mcp", allowedTools: ["read_ticket", "read_ticket"] });
     expect(tool).toMatchObject({ type: "mcp", connection_origin: "service", required: true, allowed_tools: ["read_ticket"] });
-    for (const url of ["http://mcp.example.test", "https://user:pass@mcp.example.test", "https://mcp.example.test?token=x"]) {
+    for (const url of ["http://mcp.example.test", urlWithSyntheticUserinfo('https://mcp.example.test'), "https://mcp.example.test?token=x"]) {
       expect(() => buildRestrictedMcp({ serverLabel: "x", serverUrl: url, allowedTools: ["read_ticket"] })).toThrow();
     }
     expect(() => buildRestrictedMcp({ serverLabel: "x", serverUrl: "https://mcp.example.test", allowedTools: ["*"] })).toThrow();
@@ -295,3 +295,11 @@ describe("read-only REST packs against loopback fixtures", () => {
     expect(result.code).not.toBe(0); expect(result.stdout).toBe(""); expect(result.stderr).not.toContain("xxxx");
   });
 });
+
+
+function urlWithSyntheticUserinfo(origin: string): string {
+  const url = new URL(origin);
+  url.username = "fixture-user";
+  url.password = "fixture-password";
+  return url.href;
+}
