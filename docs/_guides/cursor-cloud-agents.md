@@ -9,9 +9,9 @@ product: "Cursor Cloud Agents"
 tier: "1"
 category: "DevOps"
 description: "Cursor cloud and self-hosted agent security for repositories, secrets, OIDC, automation triggers, reviews and retention"
-version: "0.1.0"
+version: "0.2.0"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-05"
+last_updated: "2026-11-16"
 ---
 
 ## Overview
@@ -350,6 +350,84 @@ Verify staging/service boundaries with synthetic telemetry. Current docs say Rol
 
 ---
 
+### 4.4 Restrict Apps Publication, Audiences and API-Key Access
+
+**Profile Level:** L1 (Crawl)
+
+#### Description
+Review Cursor Apps separately from agent execution. Disable Apps where unnecessary, keep public sharing disabled and permit only intended members/groups. Restrict automated app access independently of browser sign-in.
+
+#### Rationale
+**Why This Matters:**
+- Published apps add a durable access path to connected systems after a build completes.
+- Personal keys inherit their owner's app access; team keys require app-specific access.
+
+**Attack Prevented:** Unintended public disclosure and persistent automated access through generated applications.
+
+#### ClickOps Implementation
+1. As a team admin open the **Apps dashboard** linked from the [Apps documentation](https://cursor.com/docs/cloud-agent/apps#security-and-controls). Review the team Apps, public-app and API-key access settings.
+2. Keep public apps disallowed; disabling that permission returns existing public apps to **Team** visibility, which still includes every team member. Review each app's sharing and prefer **People you invite** for sensitive data.
+3. Disable API-key access unless required. Review associated keys and their app grants; revoke unnecessary access. Unpublish unapproved apps and review the corresponding team audit-log entries.
+
+**Default:** Public sharing is disabled for Teams/Enterprise; individual-plan public apps have no Cursor sign-in requirement. An approved agent/cloud environment is not approval to publish.
+
+**Automation:** Unverified — the reviewed Admin/Organization/Cloud API references and official Terraform v0.9.0 index did not establish an Apps policy or sharing read/write contract. The documented `x-cursor-app-token` authenticates requests to an app; it is not an administrator policy endpoint. No invented endpoint or provider resource is supplied (checked 2026-11-16).
+
+#### Validation & Testing
+In an approved test app, compare signed-out, invited, uninvited and automated-key access. Verify that changing public policy does not leave sensitive apps visible to the whole team. A sign-in redirect alone does not establish all app authorization behavior.
+
+#### Operational Impact
+Disabling Apps, public access or API-key access can interrupt published tools and scripts. Inventory consumers before rollout; restore only the specifically approved audience or key grant. Unpublishing is a separate availability change.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | AC-3, AC-6; thematic access-enforcement and least-privilege relationships |
+| SOC 2 | CC6.1; authorized logical access |
+
+**Source:** [Apps sharing, API-key access and security controls](https://cursor.com/docs/cloud-agent/apps) (checked 2026-11-16).
+
+---
+
+### 4.5 Govern App Secrets and Security-Review Overrides
+
+**Profile Level:** L2 (Walk)
+
+#### Description
+Require review before publishing an app connected to business data. Keep credentials in the Apps secret facility and govern administrator overrides of the AI security review.
+
+#### Rationale
+**Why This Matters:**
+- A generated app can use privileged integrations while exposing data to a wider audience.
+- Automated review does not establish correct application authorization or least-privilege data access.
+
+**Attack Prevented:** Credential publication and overprivileged data access through an approved-looking deployment.
+
+#### ClickOps Implementation
+1. In the **Apps dashboard**, inventory connected secrets and approve their resource scope. Team admins can see every app and secret; restrict that role through the [Cursor account controls](/guides/cursor/).
+2. Keep the AI security review enabled and add organization-specific review instructions. Require independent review of exceptions; admins can approve some blocked publishes, but malicious code, hardcoded secrets and exposed credentials cannot be overridden.
+3. Fix findings before using the **publish** tray. Four deterministic checks remain active even with AI review disabled: secret/credential-file blocking and exclusion of `.env` files and source maps. Test application authorization and output separately.
+
+**Automation:** Unverified — the current [Apps reference](https://cursor.com/docs/cloud-agent/apps#security-and-controls) documents dashboard-managed secrets, review instructions and publish overrides. No setting-specific read/write API, CLI, SDK, config or Terraform handle was established in the reviewed interfaces; runtime app authentication does not configure these policies (checked 2026-11-16).
+
+#### Validation & Testing
+Use synthetic fixtures in an approved unpublished test app to check publish rejection and review behavior. Confirm no real credential enters source, browser responses or logs. No app was created, published or tested live during this documentation pass.
+
+#### Operational Impact
+Review instructions can block legitimate deployments and require administrator triage. Correct the app or approve a documented exception; deterministic credential/malicious-code blocking is not an override path. Revoke exposed secrets independently of unpublishing an app.
+
+#### Compliance Mappings
+
+| Framework | Mapping |
+|-----------|---------|
+| NIST SP 800-53 | AC-6, CM-3, IA-5; thematic privilege, change-control and credential relationships |
+| SOC 2 | CC6.1, CC8.1; access and change controls |
+
+**Source:** [Apps secrets and publish checks](https://cursor.com/docs/cloud-agent/apps) (checked 2026-11-16).
+
+---
+
 ## 5. Storage and Response
 
 ### 5.1 Set Conversation Retention and Review Customer-Managed Keys
@@ -446,9 +524,10 @@ Mappings are thematic. No product-specific CIS, DISA or SCuBA recommendation/ver
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 0.1.0 | 2026-11-05 | Initial source-first product coverage; documented control-plane and automation limits |
+| Date | Version | Maturity | Changes | Author |
+|------|---------|----------|---------|--------|
+| 2026-11-16 | 0.2.0 | ai-drafted | Added Apps publication, audience/key access, secrets and security-review controls; retained explicit unverified administration surfaces. No live app or tenant exercised. | Codex (GPT-6) |
+| 2026-11-05 | 0.1.0 | ai-drafted | Initial source-first product coverage; documented control-plane and automation limits | Codex |
 
 ## Contributing
 

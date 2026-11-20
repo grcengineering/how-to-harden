@@ -172,12 +172,12 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [ChatGPT Enterprise](docs/_guides/chatgpt-enterprise.md) | v0.4.0 | ai-drafted | 2026-11-05 |
 | [ChatGPT Work and Codex](docs/_guides/chatgpt-work-codex.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Claude API & Console](docs/_guides/anthropic-api.md) | v1.2.1 | ai-drafted | 2026-11-12 |
-| [Claude Code](docs/_guides/claude-code.md) | v1.2.1 | ai-drafted | 2026-11-12 |
+| [Claude Code](docs/_guides/claude-code.md) | v1.3.0 | ai-drafted | 2026-11-16 |
 | [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.3.2 | ai-drafted | 2026-11-12 |
 | [Claude Tag](docs/_guides/claude-tag.md) | v0.1.0 | ai-drafted | 2026-11-11 |
 | [Cloudflare Zero Trust](docs/_guides/cloudflare.md) | v0.2.3 | ai-drafted · ai-validated | 2026-09-25 |
 | [CrowdStrike Falcon](docs/_guides/crowdstrike.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Cursor Cloud Agents](docs/_guides/cursor-cloud-agents.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [Cursor Cloud Agents](docs/_guides/cursor-cloud-agents.md) | v0.2.0 | ai-drafted | 2026-11-16 |
 | [Cursor](docs/_guides/cursor.md) | v0.7.1 | ai-drafted | 2026-11-12 |
 | [Cursor Origin](docs/_guides/cursor-origin.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Datadog](docs/_guides/datadog.md) | v0.2.1 | ai-drafted | 2026-08-08 |
