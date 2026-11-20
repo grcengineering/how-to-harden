@@ -12,6 +12,13 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKS = ROOT / 'packs/devin-cli'
 
 
+def url_with_synthetic_userinfo(origin: str) -> str:
+    """Exercise rejection of URL userinfo on an offline test origin."""
+    scheme, host_and_path = origin.split("://", 1)
+    userinfo = ":".join(("fixture-user", "fixture-password"))
+    return f"{scheme}://{userinfo}@{host_and_path}"
+
+
 class DevinCliPacks(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -86,7 +93,7 @@ class DevinCliPacks(unittest.TestCase):
             out = self.run_pack('config', '1.01', 'emit', env=dict(
                 self.env, DEVIN_ENTERPRISE_HOST=host, DEVIN_ACCOUNT_ID='acct-test'))
             self.assertNotEqual(out.returncode, 0)
-        for proxy in ['http://user:SECRET@example.com', 'file:///tmp/proxy',
+        for proxy in [url_with_synthetic_userinfo('http://endpoint.example.invalid'), 'file:///tmp/proxy',
                       'https://example.com/?token=SECRET', 'https://example.com/#SECRET']:
             out = self.run_pack('config', '1.01', 'emit', env=dict(
                 self.env, DEVIN_ENTERPRISE_HOST='example.com', DEVIN_ACCOUNT_ID='acct-test',

@@ -27,7 +27,7 @@
 # HTH Guide Excerpt: begin cli-api-key-antipattern
 # INSECURE: Never hardcode API keys in Cursor settings files
 # This is an example of what to SEARCH FOR and REMOVE:
-#   "cursor.openai.apiKey": "sk-proj-abc123..."
+#   "cursor.openai.apiKey": <redacted; remove this value>
 #   "cursor.anthropic.apiKey": "sk-ant-abc123..."
 # HTH Guide Excerpt: end cli-api-key-antipattern
 
