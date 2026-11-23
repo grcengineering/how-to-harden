@@ -6,16 +6,16 @@ slug: "ramp"
 tier: "2"
 category: "HR/Finance"
 description: "Harden Ramp identity, roles, integrations, AI connections, financial approval policies, card data, and audit collection with documented controls and reviewable Code Packs."
-version: "0.1.0"
+version: "0.1.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-08"
+last_updated: "2026-11-23"
 ---
 
 ## Overview
 
 Ramp combines corporate cards, expenses, procurement, Bill Pay, and business banking in a financial control plane. Compromise of a user, integration, or approval policy can expose financial records or authorize spending. This guide focuses on controls a customer can configure, with explicit limits on what an API inventory proves.
 
-**Placement:** Ramp Business Corporation → standalone Ramp guide. The [official security site](https://ramp.com/security) identifies the company and links its Trust Center. No other Ramp-owned guide exists in this checkout.
+**Placement:** Ramp Business Corporation → standalone Ramp guide. The [official security site](https://ramp.com/security) identifies the company and links its Trust Center. The separately documented [Inspect coding-agent control plane](/guides/inspect/) has its own guide; financial-platform controls and certifications must not be assumed to apply to Inspect.
 
 ### Intended Audience
 
@@ -1241,6 +1241,7 @@ No guaranteed retention, customer-managed encryption keys, network allowlisting 
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-23 | 0.1.1 | ai-drafted | Clarify the separate Inspect product guide and avoid transferring financial-platform controls or certifications. | OpenAI Codex |
 | 2026-11-08 | 0.1.0 | ai-drafted | Initial source-backed guide, read-only API/CLI, opt-in browser policy, and Sigma packs, source-first coverage ledger, plan limitations, and offline safety tests. No live tenant exercised. | OpenAI Codex |
 
 ## Contributing
