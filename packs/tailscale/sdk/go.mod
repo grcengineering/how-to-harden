@@ -1,6 +1,6 @@
 module howtoharden.com/packs/tailscale
 
-go 1.24.0
+go 1.26.11
 
 require tailscale.com/client/tailscale/v2 v2.12.0
 
