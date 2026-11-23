@@ -110,7 +110,7 @@ test('gateway fragment retains a literal credential reference and does not launc
   const r=run('gateway');expect(r.stdout).toContain("export CODELAYER_CODEX_BASE_URL='https://gateway.example.invalid/v1'");
   expect(r.stdout).toContain('${HUMANLAYER_GATEWAY_TOKEN:?');noCalls();
 });
-for(const url of ['http://internal/v1','https://user:pass@host/v1','https://host/v1?token=x','https://host/v1#x','https://host:99999/v1','https://host/v1;touch/tmp/no','https://host/$(id)']){
+for(const url of ['http://internal/v1',urlWithSyntheticUserinfo('https://endpoint.example.invalid/v1'),'https://host/v1?token=x','https://host/v1#x','https://host:99999/v1','https://host/v1;touch/tmp/no','https://host/$(id)']){
   test(`unsafe gateway is refused ${url}`,()=>{run('gateway',2,{HUMANLAYER_CODEX_GATEWAY_URL:url});noCalls();});
 }
 test('Linear collector preserves structured JSON privately with no mutation',()=>{
@@ -129,4 +129,12 @@ for(const name of ['secrets','version','linear'] as const){
 }
 for(const name of Object.keys(files) as (keyof typeof files)[]){
   test(`${name} rejects an invalid profile before vendor access`,()=>{run(name,2,{HTH_PROFILE_LEVEL:'0',HTH_APPLY:'1'});noCalls();});
+}
+
+
+function urlWithSyntheticUserinfo(origin: string): string {
+  const url = new URL(origin);
+  url.username = "fixture-user";
+  url.password = "fixture-password";
+  return url.href;
 }

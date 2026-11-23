@@ -29,7 +29,7 @@ test('native TOML emitters parse, require approved values and keep independent b
 const browser=outputs['hth-chatgpt-work-codex-2.02-browser-deny.sh'];for(const route of ['browser_use','browser_use_external','browser_use_full_cdp_access','in_app_browser'])expect(browser.features[route]).toBe(false);expect(browser.browser_use.default_origin_policy.access).toBe('deny');
 expect(outputs['hth-chatgpt-work-codex-1.01-device-authentication.sh'].allowed_chatgpt_workspaces).toEqual([workspace]);expect(outputs['hth-chatgpt-work-codex-3.03-minimal-telemetry.sh'].otel.tool_result.max_bytes).toBe(0);
 const hook=outputs['hth-chatgpt-dots-4.03-managed-mcp-hooks.sh'].hooks.PreToolUse[0].hooks[0];expect(hook.type).toBe('mcp_tool');expect(hook.input.tool_input).toBe('${tool_input}');
-expect((await run('packs/chatgpt-work-codex/config/hth-chatgpt-work-codex-3.03-minimal-telemetry.sh',{...process.env,HTH_OTEL_ENDPOINT:'https://user:secret@host/v1/logs'})).code).toBe(2);expect((await run('packs/chatgpt-dots/config/hth-chatgpt-dots-5.01-enforce-residency.sh',{...process.env,HTH_CONFIRM_US_CODEX_RESIDENCY:''})).code).toBe(2);});
+expect((await run('packs/chatgpt-work-codex/config/hth-chatgpt-work-codex-3.03-minimal-telemetry.sh',{...process.env,HTH_OTEL_ENDPOINT:urlWithSyntheticUserinfo('https://endpoint.example.invalid/v1/logs')})).code).toBe(2);expect((await run('packs/chatgpt-dots/config/hth-chatgpt-dots-5.01-enforce-residency.sh',{...process.env,HTH_CONFIRM_US_CODEX_RESIDENCY:''})).code).toBe(2);});
 test('Codex Security wrapper accepts only dry-run with a trusted external non-symlink config',async()=>{const f=await fixture(),repo=join(f.dir,'repo'),config=join(f.dir,'trusted.toml');await mkdir(repo);await writeFile(config,'# fixture\n');const cli=join(f.dir,'bin','codex-security');await writeFile(cli,'#!/usr/bin/env bash\nprintf "%s\\n" "$*" >> "$MOCK_SECURITY_CALLS"\n');await chmod(cli,0o700);const env={...f.env,MOCK_SECURITY_CALLS:join(f.dir,'security-calls'),HTH_SCAN_REPO:repo,HTH_SCAN_CONFIG:config};const file='packs/chatgpt-work-codex/cli/hth-chatgpt-work-codex-4.01-security-dry-run.sh';let r=await run(file,env);expect(r.code).toBe(0);expect(await readFile(env.MOCK_SECURITY_CALLS,'utf8')).toContain('--dry-run');await writeFile(join(repo,'untrusted.toml'),'# fixture');await symlink(join(repo,'untrusted.toml'),join(f.dir,'linked.toml'));r=await run(file,{...env,HTH_SCAN_CONFIG:join(f.dir,'linked.toml')});expect(r.code).toBe(2);r=await run(file,{...env,HTH_SCAN_CONFIG:join(repo,'untrusted.toml')});expect(r.code).toBe(2);});
 
 test('native configuration emitters refuse invalid and insufficient profiles before output',async()=>{for(const vendor of ['chatgpt-dots','chatgpt-work-codex'])for(const file of await readdir(join(root,'packs',vendor,'config'))){for(const level of ['0','5','invalid']){const r=await run(`packs/${vendor}/config/${file}`,{...process.env,HTH_PROFILE_LEVEL:level});expect(r.code).toBe(2);expect(r.stdout).toBe('');}const source=await Bun.file(join(root,'packs',vendor,'config',file)).text();if(!source.includes('#   profile: L1')){const r=await run(`packs/${vendor}/config/${file}`,{...process.env,HTH_PROFILE_LEVEL:'1'});expect(r.code).toBe(2);expect(r.stdout).toBe('');}}});
@@ -43,3 +43,11 @@ expect(t.allowed_sandbox_modes).toEqual(['read-only']);
 expect(t.permissions.filesystem.deny_read).toEqual(['~/.ssh','/**/*.env']);
 expect(r.stdout).toContain('Native Windows');
 });
+
+
+function urlWithSyntheticUserinfo(origin: string): string {
+  const url = new URL(origin);
+  url.username = "fixture-user";
+  url.password = "fixture-password";
+  return url.href;
+}

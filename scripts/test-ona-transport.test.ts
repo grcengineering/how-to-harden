@@ -101,7 +101,7 @@ describe('Ona transport boundary',()=>{
   },120000);
 
   test('minimum profile, credential controls, and unreviewed/unsafe bases fail before requests',async()=>{
-    const unsafe=['http://custom.example/api','https://user:pass@custom.example/api','https://custom.example/api?token=x',
+    const unsafe=['http://custom.example/api',urlWithSyntheticUserinfo('https://custom.example/api'),'https://custom.example/api?token=x',
       'https://custom.example/api#fragment','https://custom.example/api/','https://custom.example:0/api','https://custom.example:65536/api',
       'https://custom.example/api','https://custom.example/api\\evil'];
     for(const base of unsafe){const r=await run(select('2.03'),{},[],{ONA_API_BASE:base});expect(r.code).toBe(2);expect(r.calls).toEqual([]);expect(r.stdout).toBe('');}
@@ -240,3 +240,11 @@ describe('Ona explicit mutation branches',()=>{
     }
   },30000);
 });
+
+
+function urlWithSyntheticUserinfo(origin: string): string {
+  const url = new URL(origin);
+  url.username = "fixture-user";
+  url.password = "fixture-password";
+  return url.href;
+}

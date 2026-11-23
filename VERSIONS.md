@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-11-19 — 165 guides. Every one is `ai-drafted`; seventeen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-11-23 — 166 guides. Every one is `ai-drafted`; seventeen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -170,15 +170,15 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [BeyondTrust](docs/_guides/beyondtrust.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [ChatGPT Dots](docs/_guides/chatgpt-dots.md) | v0.4.0 | ai-drafted | 2026-11-14 |
 | [ChatGPT Enterprise](docs/_guides/chatgpt-enterprise.md) | v0.4.0 | ai-drafted | 2026-11-05 |
-| [ChatGPT Work and Codex](docs/_guides/chatgpt-work-codex.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [ChatGPT Work and Codex](docs/_guides/chatgpt-work-codex.md) | v0.1.1 | ai-drafted | 2026-11-23 |
 | [Claude API & Console](docs/_guides/anthropic-api.md) | v1.2.1 | ai-drafted | 2026-11-12 |
 | [Claude Code](docs/_guides/claude-code.md) | v1.3.0 | ai-drafted | 2026-11-16 |
 | [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.3.2 | ai-drafted | 2026-11-12 |
 | [Claude Tag](docs/_guides/claude-tag.md) | v0.1.0 | ai-drafted | 2026-11-11 |
 | [Cloudflare Zero Trust](docs/_guides/cloudflare.md) | v0.2.3 | ai-drafted · ai-validated | 2026-09-25 |
 | [CrowdStrike Falcon](docs/_guides/crowdstrike.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Cursor Cloud Agents](docs/_guides/cursor-cloud-agents.md) | v0.2.0 | ai-drafted | 2026-11-16 |
 | [Cursor](docs/_guides/cursor.md) | v0.7.1 | ai-drafted | 2026-11-12 |
+| [Cursor Cloud Agents](docs/_guides/cursor-cloud-agents.md) | v0.2.0 | ai-drafted | 2026-11-16 |
 | [Cursor Origin](docs/_guides/cursor-origin.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Datadog](docs/_guides/datadog.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Devin & Cognition](docs/_guides/devin.md) | v0.2.0 | ai-drafted | 2026-11-05 |
@@ -187,10 +187,10 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Google Chat](docs/_guides/google-chat.md) | v0.3.0 | ai-drafted | 2026-08-12 |
 | [Google Drive](docs/_guides/google-drive.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Google Workspace](docs/_guides/google-workspace.md) | v0.5.0 | ai-drafted | 2026-11-12 |
+| [Grok](docs/_guides/grok.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Grok API](docs/_guides/grok-api.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Grok Bot](docs/_guides/grok-bot.md) | v0.3.0 | ai-drafted | 2026-11-12 |
 | [Grok Build](docs/_guides/grok-build.md) | v0.1.0 | ai-drafted | 2026-11-05 |
-| [Grok](docs/_guides/grok.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [HashiCorp Vault](docs/_guides/hashicorp-vault.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Idira (formerly CyberArk)](docs/_guides/cyberark.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [LangChain](docs/_guides/langchain.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
@@ -251,6 +251,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Harness](docs/_guides/harness.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [HubSpot](docs/_guides/hubspot.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [HumanLayer](docs/_guides/humanlayer.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [Inspect](docs/_guides/inspect.md) | v0.1.0 | ai-drafted | 2026-11-23 |
 | [Intercom](docs/_guides/intercom.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Jamf Pro](docs/_guides/jamf.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Jenkins](docs/_guides/jenkins.md) | v0.2.0 | ai-drafted | 2026-08-08 |
@@ -277,7 +278,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Postman Enterprise](docs/_guides/postman.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Proofpoint](docs/_guides/proofpoint.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Qualys](docs/_guides/qualys.md) | v0.2.0 | ai-drafted | 2026-08-08 |
-| [Ramp](docs/_guides/ramp.md) | v0.1.0 | ai-drafted | 2026-11-08 |
+| [Ramp](docs/_guides/ramp.md) | v0.1.1 | ai-drafted | 2026-11-23 |
 | [Rapid7](docs/_guides/rapid7.md) | v0.2.2 | ai-drafted | 2026-08-08 |
 | [Salesforce](docs/_guides/salesforce.md) | v0.2.0 | ai-drafted | 2026-08-03 |
 | [SAP Concur](docs/_guides/concur.md) | v0.2.0 | ai-drafted | 2026-08-08 |

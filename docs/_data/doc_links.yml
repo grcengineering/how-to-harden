@@ -607,6 +607,18 @@ humanlayer:
       url: "https://docs.humanlayer.com/reference/workspace-config"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/humanlayer"
 
+inspect:
+  product_docs: "https://docs.inspect.com/"
+  api_docs: "https://docs.inspect.com/api"
+  hardening_docs:
+    - label: "MCP Connector Security"
+      url: "https://docs.inspect.com/security/connectors"
+    - label: "Sandbox Workload Identity"
+      url: "https://docs.inspect.com/settings/sandbox-workload-identity"
+    - label: "Approval Agent Policies"
+      url: "https://docs.inspect.com/pull-requests/approval-agent"
+  code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/inspect"
+
 intercom:
   product_docs: "https://www.intercom.com/help/en/"
   api_docs: "https://developers.intercom.com/"
