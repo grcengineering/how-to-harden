@@ -9,9 +9,9 @@ product: "ChatGPT Work and Codex"
 tier: "1"
 category: "AI/ML Platform"
 description: "Managed identity, local and cloud execution, browser and computer permissions, integrations, data and security tooling for Work and Codex"
-version: "0.1.0"
+version: "0.1.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-05"
+last_updated: "2026-11-23"
 ---
 
 ## Overview
@@ -20,7 +20,7 @@ Use the [OpenAI common controls](/guides/chatgpt-enterprise/) for eligible ChatG
 
 These products share selected workspace policy and client capabilities. Each run must be assessed by identity, orchestrator and executor: device requirements govern supported local execution; Codex Cloud has supported execution policy; Work cloud containers and dots cloud computers retain separate capability controls. A local policy does not establish a cloud restriction. Global policy applies only to supported capabilities when enabled.
 
-**Intended audience:** workspace owners, device and source-system administrators, security engineers and developers deploying managed clients. **Profiles:** L1 (Crawl) for the basic boundary; L2 (Walk) for sensitive environments. **Scope:** documented customer controls current on 2026-11-05; no tenant validation. API/model feature catalogs and provider-internal safeguards are outside configurable hardening scope. Linux desktop remains preview.
+**Intended audience:** workspace owners, device and source-system administrators, security engineers and developers deploying managed clients. **Profiles:** L1 (Crawl) for the basic boundary; L2 (Walk) for sensitive environments. **Scope:** documented customer controls baselined on 2026-11-05; targeted policy and network corrections checked on 2026-11-23. No tenant validation. API/model feature catalogs and provider-internal safeguards are outside configurable hardening scope. Linux desktop remains preview.
 
 ### Intended Audience
 
@@ -190,7 +190,8 @@ Deliver enforced requirements instead of relying on project instructions or conf
 
 1. Open **Admin Console > Agent Security > policy > Global** and any applicable **Local** or **Codex Cloud** execution override. Use **Requirements > Edit as TOML** for advanced fields; preserve policy priority and assignments.
 2. Use supported permission-profile allowlists on Codex 0.138.0+ and set an allowed managed default. Retain sandbox-mode constraints for legacy clients where needed. The retired approval_policy untrusted value is not a deployment setting.
-3. Confirm effective cached policy and restart requirements. A supported local client uses a valid identity-matched cloud cache; without one, a failed load returns an error. A refresh does not establish immediate enforcement in an already-running task. Deploy deny_read requirements and specific command rules. Device MDM/legacy requirements outrank cloud policy, which outranks system requirements. Environment specificity wins only within a policy; a lower-priority policy cannot override a higher-priority one.
+3. In **Agent Security > Test policies**, check a pilot member, group or role. In an editable session this tests the current draft without saving it. A match identifies selected policies, not the final merged requirements or runtime enforcement. Save the approved policy, then verify effective requirements on each in-scope client.
+4. Confirm effective cached policy and restart requirements. A supported local client uses a valid identity-matched cloud cache; without one, a failed load returns an error. A refresh does not establish immediate enforcement in an already-running task. Deploy deny_read requirements and specific command rules. Device MDM/legacy requirements outrank cloud policy, which outranks system requirements. Environment specificity wins only within a policy; a lower-priority policy cannot override a higher-priority one.
 
 #### Code Implementation
 
@@ -200,7 +201,7 @@ Deliver enforced requirements instead of relying on project instructions or conf
 
 Inspect /debug-config on each runtime/version, then test reading a disposable denied file, workspace writes, full-access selection and an escalation. Native Windows direct-file rules do not alone establish subprocess enforcement; see 4.4 and test the selected sandbox.
 
-**Sources:** [Configuration reference](https://learn.chatgpt.com/docs/enterprise/managed-configuration) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/agent-security) · [Supporting documentation](https://learn.chatgpt.com/docs/permissions)
+**Sources:** [Configuration reference](https://learn.chatgpt.com/docs/enterprise/managed-configuration) · [Policy selection and rollout](https://learn.chatgpt.com/docs/enterprise/managed-configuration#confirm-the-admin-and-employee-experience) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/agent-security) · [Supporting documentation](https://learn.chatgpt.com/docs/permissions)
 
 ---
 
@@ -309,18 +310,21 @@ Use managed command proxy rules with administrator-owned allow entries and exclu
 #### ClickOps Implementation
 
 1. In **Agent Security > policy > applicable execution environment > Requirements > Manage networking**, enable managed networking and **Only allow domains set by admins** with explicit Allow entries.
-2. Use the native experimental_network compatibility name until every client and policy validator supports network_proxy (Codex 0.166.0). Use one name per layer. Do not combine domains maps with legacy domain lists.
+2. Use the native `experimental_network` compatibility name until every client and policy validator supports `network_proxy` (Codex 0.166.0). Use one name per layer. Do not combine domains maps with legacy domain lists. Within the same policy on supported executors, an environment rule replaces the same Global domain key, but other inherited rules still apply. Another matching deny, such as a wildcard, can still block the request.
 3. Review escalation rules, localhost/private-network behavior, cloud environment additional domains, network-secret destinations and VPNs. Work cloud containers/dots cloud computers do not inherit Local/Codex Cloud execution policy.
+4. If restricting the supported desktop app’s own network destinations, use **Agent Security > Global > Requirements > Edit as TOML**. Set `[application.network]` with `enabled = true` and enumerate the exact approved external hosts with the value `"allow"` under `[application.network.domains]`. This applies to HTTPS/WSS external requests under this policy; it does not grant subdomains implicitly. An empty domain table denies external destinations under this policy. Pilot necessary service access before rollout. This control is separate from the command proxy and browser origin rules and does not govern native modules, spawned processes, or Work Cloud.
 
 #### Code Implementation
 
 {% include pack-code.html vendor="chatgpt-work-codex" section="2.4" %}
 
+The pack emits command proxy requirements only. Set the separate desktop-app requirement in the Global TOML editor above; the command pack neither configures nor verifies it.
+
 #### Validation & Testing
 
-Test allowed and denied destinations from ordinary commands and each approved escalation path. Check browser/search/apps separately. Empty environment maps inherit entries; deny-only exclusive rules do not allow the rest of the internet.
+Test allowed and denied destinations from ordinary commands and each approved escalation path. Check browser/search/apps separately. Empty environment maps inherit entries; deny-only exclusive rules do not allow the rest of the internet. If using desktop app destination policy, separately check an approved exact host and a controlled unlisted subdomain on the deployed desktop app. A desktop result is not evidence about subprocesses or hosted workers.
 
-**Sources:** [Configuration reference](https://learn.chatgpt.com/docs/enterprise/managed-configuration) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/agent-security) · [Supporting documentation](https://learn.chatgpt.com/docs/environments/cloud-environments)
+**Sources:** [Network policy precedence](https://learn.chatgpt.com/docs/enterprise/managed-configuration#network-policy-precedence-and-runtime-limits) · [Desktop app destination policy](https://learn.chatgpt.com/docs/enterprise/managed-configuration#control-desktop-app-network-destinations) · [Supporting documentation](https://learn.chatgpt.com/docs/enterprise/agent-security) · [Supporting documentation](https://learn.chatgpt.com/docs/environments/cloud-environments)
 
 ---
 
@@ -769,4 +773,5 @@ The code packs cover 10 controls with native configuration or read-only CLI chec
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-23 | 0.1.1 | ai-drafted | Clarify draft policy selection versus enforced behavior and separate desktop app, command and environment egress requirements. No live validation. | Codex |
 | 2026-11-05 | 0.1.0 | ai-drafted | Initial source-first coverage for Work, Codex runtimes, Codex Security, device requirements, cloud state and integration boundaries; native snippets and read-only checks. No live validation. | Codex |

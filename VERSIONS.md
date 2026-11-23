@@ -170,7 +170,7 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [BeyondTrust](docs/_guides/beyondtrust.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [ChatGPT Dots](docs/_guides/chatgpt-dots.md) | v0.4.0 | ai-drafted | 2026-11-14 |
 | [ChatGPT Enterprise](docs/_guides/chatgpt-enterprise.md) | v0.4.0 | ai-drafted | 2026-11-05 |
-| [ChatGPT Work and Codex](docs/_guides/chatgpt-work-codex.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [ChatGPT Work and Codex](docs/_guides/chatgpt-work-codex.md) | v0.1.1 | ai-drafted | 2026-11-23 |
 | [Claude API & Console](docs/_guides/anthropic-api.md) | v1.2.1 | ai-drafted | 2026-11-12 |
 | [Claude Code](docs/_guides/claude-code.md) | v1.2.1 | ai-drafted | 2026-11-12 |
 | [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.3.2 | ai-drafted | 2026-11-12 |
