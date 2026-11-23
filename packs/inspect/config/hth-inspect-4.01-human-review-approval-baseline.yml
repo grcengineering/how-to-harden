@@ -1,0 +1,32 @@
+# HTH Pack Contract: v1
+#   control: inspect-4.1
+#   guide: https://howtoharden.com/guides/inspect/#41-default-automated-approval-to-human-review
+#   profile: L1
+#   mode: mutating
+#   requires: repository-maintainer(reviewed policy deployment)
+# HTH Inspect 4.1: Conservative Approval agent policy baseline
+# Framework: NIST SP 800-53 Rev. 5 CM-3
+# Source: https://docs.inspect.com/pull-requests/approval-agent
+# Verified against documentation 2026-11-17; not exercised against an Inspect tenant.
+# Destination: .inspect/approvals/path_rules.yaml on the repository default branch.
+# REVIEW AND MERGE; do not overwrite an existing policy. This intentionally allows
+# no automatic approvals. It does not turn on the organization's Approval agent
+# switch and does not replace GitHub required human reviews or branch rules.
+# Explicit denials remain effective if a future reviewer relaxes the default.
+# Add your repository's sensitive paths before deployment. Review all future allow
+# rules, including docs and agent instructions, for executable/prompt-injection risk.
+# Validate in a test repository with harmless PRs before production deployment.
+# Rollback: restore the prior reviewed policy commit; retain human-required rules.
+# HTH Guide Excerpt: begin human-review-baseline
+# .inspect/approvals/path_rules.yaml
+default:
+  action: deny
+  rationale: Require human review until a narrowly scoped approval policy is reviewed.
+rules:
+  - paths: ['.inspect/**', 'AGENTS.md', 'CLAUDE.md', '.github/**']
+    action: deny
+    rationale: Agent instructions, approval policies, and CI require human review.
+  - paths: ['security/**', 'auth/**', 'infra/**', 'migrations/**']
+    action: deny
+    rationale: Security, infrastructure, and data migrations require human review.
+# HTH Guide Excerpt: end human-review-baseline

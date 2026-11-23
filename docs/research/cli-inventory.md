@@ -174,6 +174,13 @@
 | 167 | Assembled | None | — | — | No first-party admin CLI found in public API/Help Center census, 2026-11-16; bounded result, private tooling unverified. REST and browser SDK/MCP are separate surfaces. | https://docs.assembled.com/ ; [research boundary](assembled-source-coverage.md) |
 | 168 | Niteshift | GA-Official | `ns` inside an existing task | Vendor-provided; no installation proposed | Partial — service status/logs/restart and automation migration export are documented; organization administration is unverified (checked 2026-11-18). | https://docs.niteshift.dev/environment-configuration/services ; https://docs.niteshift.dev/automations.md |
 
+### Inspect (Ramp) — 2026-11-17 addition
+
+| Vendor | Status | CLI name | Admin/security coverage | Verified source |
+|--------|--------|----------|-------------------------|-----------------|
+| Inspect (Ramp) | None found in reviewed public catalog | — | Public REST API and repository-native policy config; third-party MCP clients are not an Inspect CLI. This is a bounded documentation finding, not proof that no private tool exists. | [API](https://docs.inspect.com/api), [complete documentation index](https://docs.inspect.com/llms.txt), [Inspect MCP clients](https://docs.inspect.com/settings/developer/inspect-mcp) |
+
+
 ---
 
 ## Vendors With Existing CLI Packs — Validation Status
