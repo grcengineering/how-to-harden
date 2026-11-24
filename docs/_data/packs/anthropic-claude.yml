@@ -2153,3 +2153,95 @@
             }
           }
 
+"7.14":
+  config:
+    lang: "bash"
+    filename: "hth-anthropic-claude-7.14-self-hosted-runner.sh"
+    source_url: "https://github.com/grcengineering/how-to-harden/blob/main/packs/anthropic-claude/config/hth-anthropic-claude-7.14-self-hosted-runner.sh"
+    excerpts:
+      self-hosted-runner-launcher:
+        content: |2
+          cat <<'RUNNER'
+          #!/usr/bin/env bash
+          set +x
+          set -euo pipefail
+          : "${CLAUDE_RUNNER_CLAUDE_BIN:?Set the approved absolute Claude binary path}"
+          : "${HTH_RUNNER_WORK_ORDER_FILE:?Set the mounted single-use work-order path}"
+          [[ "$CLAUDE_RUNNER_CLAUDE_BIN" = /* && -x "$CLAUDE_RUNNER_CLAUDE_BIN" ]] || exit 2
+          [[ "$HTH_RUNNER_WORK_ORDER_FILE" = /* && -r "$HTH_RUNNER_WORK_ORDER_FILE" ]] || exit 2
+          # Do not inherit a value-form secret that could override the file or reach a child.
+          unset SELF_HOSTED_RUNNER_ENVIRONMENT_SECRET SELF_HOSTED_RUNNER_POOL_SECRET
+          unset SELF_HOSTED_RUNNER_DEBUG_TOKEN_DIR
+          exec "$CLAUDE_RUNNER_CLAUDE_BIN" self-hosted-runner \
+            --environment-secret-file "$HTH_RUNNER_WORK_ORDER_FILE" \
+            --base-dir /workspace \
+            --capacity 1 \
+            --drain-grace-sec 0 \
+            --confine-repo-settings enforce \
+            --health-port 0
+          RUNNER
+  cli:
+    lang: "bash"
+    filename: "hth-anthropic-claude-7.14-runner-capabilities.sh"
+    source_url: "https://github.com/grcengineering/how-to-harden/blob/main/packs/anthropic-claude/cli/hth-anthropic-claude-7.14-runner-capabilities.sh"
+    excerpts:
+      check-runner-capabilities:
+        content: |2
+          if [[ "${HTH_RUN_NATIVE_CHECK:-}" != 1 ]]; then
+            printf '%s\n' 'SKIPPED: set HTH_RUN_NATIVE_CHECK=1 to inspect approved native help.'
+            exit 2
+          fi
+          : "${CLAUDE_RUNNER_CLAUDE_BIN:?Set the approved absolute Claude binary path}"
+          [[ "$CLAUDE_RUNNER_CLAUDE_BIN" = /* && -x "$CLAUDE_RUNNER_CLAUDE_BIN" ]] || exit 2
+          help_text="$("$CLAUDE_RUNNER_CLAUDE_BIN" self-hosted-runner --help 2>/dev/null)" || {
+            printf '%s\n' 'UNKNOWN: native runner help failed.' >&2; exit 2;
+          }
+          for flag in --environment-secret-file --capacity --drain-grace-sec --confine-repo-settings --health-port; do
+            if [[ "$help_text" != *"$flag"* ]]; then
+              printf '%s\n' 'UNKNOWN: required runner capability missing from native help.' >&2
+              exit 2
+            fi
+          done
+          printf '%s\n' 'CAPABILITIES PRESENT: this does not verify deployment or enforcement.'
+
+"7.15":
+  cli:
+    lang: "bash"
+    filename: "hth-anthropic-claude-7.15-session-identity.sh"
+    source_url: "https://github.com/grcengineering/how-to-harden/blob/main/packs/anthropic-claude/cli/hth-anthropic-claude-7.15-session-identity.sh"
+    excerpts:
+      verify-runner-session-identity:
+        content: |2
+          if [[ "${HTH_RUN_NATIVE_CHECK:-}" != 1 ]]; then
+            printf '%s\n' 'SKIPPED: native token verification was not requested.'
+            exit 2
+          fi
+          : "${CLAUDE_RUNNER_CLAUDE_BIN:?Set the approved absolute Claude binary path}"
+          : "${CLAUDE_CODE_SESSION_ACCESS_TOKEN:?Inject the session token without printing it}"
+          : "${HTH_EXPECTED_ENVIRONMENT_ID:?Set the independently approved environment ID}"
+          : "${HTH_EXPECTED_ACTOR_SUB:?Set the independently approved exact actor subject}"
+          [[ "$CLAUDE_RUNNER_CLAUDE_BIN" = /* && -x "$CLAUDE_RUNNER_CLAUDE_BIN" ]] || exit 2
+          [[ "$HTH_EXPECTED_ENVIRONMENT_ID" =~ ^ccpool_[A-Za-z0-9_-]+$ ]] || exit 2
+          [[ "$HTH_EXPECTED_ACTOR_SUB" =~ ^(user|agent):[A-Za-z0-9_-]+$ ]] || exit 2
+          [[ "$CLAUDE_CODE_SESSION_ACCESS_TOKEN" == sk-ant-cc-* ]] || {
+            printf '%s\n' 'DENIED: token is not a self-hosted session token.' >&2; exit 1;
+          }
+          claims="$("$CLAUDE_RUNNER_CLAUDE_BIN" self-hosted-runner decode-token 2>/dev/null)" || {
+            printf '%s\n' 'DENIED: native signature or expiry verification failed.' >&2; exit 1;
+          }
+          if ! printf '%s' "$claims" | jq -e \
+            --arg pool "$HTH_EXPECTED_ENVIRONMENT_ID" \
+            --arg actor "$HTH_EXPECTED_ACTOR_SUB" '
+              type == "object" and .iss == "ccr" and
+              (.aud | type == "array" and index($pool) != null) and
+              .["ccr:role"] == "session_worker" and
+              (.exp | type == "number" and . > now) and
+              (.act | type == "object" and .sub == $actor)
+            ' >/dev/null 2>&1; then
+            unset claims
+            printf '%s\n' 'DENIED: session claims do not match the approved authorization boundary.' >&2
+            exit 1
+          fi
+          unset claims
+          printf '%s\n' 'IDENTITY MATCHED: separately authorize each resource and credential scope.'
+

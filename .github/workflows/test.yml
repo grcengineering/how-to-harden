@@ -61,6 +61,8 @@ jobs:
         run: |
           python3 scripts/test-slack-token-rotation.py
           python3 scripts/test-snowflake-weekly.py
+      - name: Claude self-hosted runner pack safety tests (offline)
+        run: make test-claude-runner-packs
 
   # ─── Pack Validation (validate-packs.sh — 17 checks) ───────────────────────
   # This job exists because the repo already owned the detectors and never ran
