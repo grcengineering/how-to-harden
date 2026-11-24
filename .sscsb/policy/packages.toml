@@ -1,0 +1,17 @@
+[approved]
+go = ["github.com/tailscale/hujson", "golang.org/x/oauth2", "tailscale.com/client/tailscale/v2"]
+npm = ["@anthropic-ai/sdk", "@statsig/web-analytics", "openai"]
+# sscsb approved-packages baseline.
+#
+# A dependency not in this baseline (and not already in the previous manifest
+# revision) blocks at commit time until a human approves it:
+#   sscsb deps check              # validate existence + typosquat heuristics
+#   sscsb deps approve <eco>:<name>
+#   sscsb deps baseline           # approve everything currently in manifests
+#
+# [approved]
+# cargo = ["serde"]
+# npm = []
+# pypi = []
+# go = []
+# rubygems = []
