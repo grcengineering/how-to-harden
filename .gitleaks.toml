@@ -1,0 +1,90 @@
+# Gitleaks configuration. The `gitleaks` CI job (.github/workflows/secrets-scan.yml)
+# and the sscsb pre-commit and pre-push hooks all read this file, and the CI job
+# fails if it is missing. Do not delete it.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# WHY BOTH SCANNERS.
+#
+# .sscsb/config.toml enables TruffleHog and Gitleaks under [controls.secrets].
+# TruffleHog only finds credentials for providers it has a detector for, and
+# with --results=verified,unknown it reports a match only when the provider
+# confirms it live or the verification attempt errors. Generic API keys,
+# passwords and internal tokens have no detector or no verifier, so it never
+# reports them. Gitleaks matches on shape and catches those.
+#
+# This corpus is 130 hardening guides and ~980 Code Packs whose subject matter is
+# credentials, so shape matching misfires on teaching content. The first
+# allowlist below exempts exactly the three rules that misfired, and only in the
+# published content directories. The cost, stated plainly: a generic API key or
+# password committed under packs/, docs/_guides/, docs/_data/packs/ or content/
+# is caught by neither scanner unless its provider can verify it. The second
+# allowlist turns off EVERY gitleaks rule under docs/assets/monaco/, the vendored
+# Monaco editor bundle, so only TruffleHog covers that directory. Everywhere
+# else, and for every other gitleaks rule, detection is unchanged.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# EVIDENCE — the allowlist below is not an assertion, it is a measurement.
+#
+# A full-history gitleaks scan (2026-09-12) produced 23 findings. All 23 were
+# inspected. Every one is a regex match on the WORDS "key", "secret" or
+# "password" in published teaching content, or on a variable reference, and not
+# one is a literal credential. Representative examples:
+#
+#   packs/jamf/terraform/outputs.tf          password_policy = "enforced"
+#   packs/auth0/.../bot-detection.tf         challenge_password_policy = "when_risky"
+#   packs/stripe/api/common.sh               curl -u "${STRIPE_SECRET_KEY}:"   (env ref)
+#   docs/_guides/gusto.md                    prose containing "data protection"
+#   packs/windows-11/...ps1                  a comment about Credential Guard
+#   packs/cursor/cli/...api-key-env-setup.sh a file that no longer exists — the
+#                                            hit is in history, not in the tree
+#
+# Independently corroborated with TruffleHog over the FULL git history,
+# 2026-09-12, v3.97.4:
+#
+#   trufflehog git file://. --results=verified
+#   -> chunks:16711  bytes:23532651  verified_secrets:0  unverified_secrets:0
+#
+# Zero secrets of any kind, verified or unverified. Re-run that command before
+# widening anything below.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# SCOPE — deliberately narrow.
+#
+# Only the three rules that actually misfired are exempted, and only inside
+# published content directories. Every other gitleaks rule stays live
+# everywhere except the vendored docs/assets/monaco/ bundle, so a real cloud
+# access key, GitHub PAT, asymmetric keypair file or Slack token committed into
+# packs/ or docs/ (outside that bundle) is still caught here, and by TruffleHog
+# when the provider verifies it.
+
+title = "how-to-harden gitleaks config (see header)"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = """
+Credential-shaped prose and variable references in published hardening guidance.
+Scoped to three rule IDs in content paths only; all other rules remain active.
+"""
+targetRules = [
+  "generic-api-key",
+  "hashicorp-tf-password",
+  "curl-auth-user",
+]
+paths = [
+  '''^packs/.*''',
+  '''^docs/_guides/.*''',
+  '''^docs/_data/packs/.*''',
+  '''^content/.*''',
+]
+
+[[allowlists]]
+description = """
+Vendored third-party bundle: the Monaco editor distribution shipped with the
+site. Minified upstream code, not authored here; entropy hits in it are not this
+project's credentials. Upgrade the vendored bundle rather than editing it.
+"""
+paths = [
+  '''^docs/assets/monaco/.*''',
+]

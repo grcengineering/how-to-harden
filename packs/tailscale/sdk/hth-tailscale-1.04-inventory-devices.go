@@ -4,7 +4,7 @@
 //	guide: https://howtoharden.com/guides/tailscale/#14-review-node-key-expiry-and-exceptions
 //	profile: L1
 //	mode: read-only
-//	requires: Go 1.24+, official tailscale.com/client/tailscale/v2 v2.12.0, TAILSCALE_ACCESS_TOKEN(devices:core:read), TAILSCALE_TAILNET, TAILSCALE_OUTPUT
+//	requires: Go 1.26.11 or a newer supported release, official tailscale.com/client/tailscale/v2 v2.12.0, TAILSCALE_ACCESS_TOKEN(devices:core:read), TAILSCALE_TAILNET, TAILSCALE_OUTPUT
 //
 // HTH Tailscale 1.4 — Review Node Key Expiry and Exceptions; NIST IA-5, IA-3; SOC 2 CC6.2
 // Source: https://github.com/tailscale/tailscale-client-go-v2/blob/main/devices.go (available; 2026-11-04)
