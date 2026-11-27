@@ -96,7 +96,7 @@ A guide can be `ai-drafted` and `ni-drafted` at once. Holding both `ai-validated
 
 **Both agents at the same stage is the strongest thing this vocabulary can express.** `ai-validated` + `ni-validated` means the guidance survived contact with a real system twice, once under machine rigour and once under human judgement, and the two failure modes those catch barely overlap. There is no seventh status above it; combining is how the matrix expresses "better".
 
-**Where the corpus actually stands: no guide holds any `ni-*` status.** All 154 guides are `ai-drafted`; seventeen of them (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
+**Where the corpus actually stands: no guide holds any `ni-*` status.** All 297 guides are `ai-drafted`; seventeen of them (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. The entire NI row is empty. Read it as a standing invitation to reviewers and practitioners rather than as a description of anything already done — every `ni-*` cell in this document describes a status that exists in the vocabulary and has never yet been earned.
 
 #### The version qualifier
 
@@ -151,7 +151,7 @@ Changelog entries must attribute authors accurately:
 
 ## Guide Version Registry
 
-Last updated: 2026-11-23 — 166 guides. Every one is `ai-drafted`; seventeen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
+Last updated: 2026-11-27 — 297 guides. Every one is `ai-drafted`; seventeen (Asana, Atlassian, AWS IAM Identity Center, Buildkite, Cloudflare, Dropbox, GitHub, GitLab, LangChain, Linear, Notion, Okta, Ona, Replit, Snyk, Square, Stripe) additionally hold `ai-validated`. **No guide holds any `ni-*` status** — the whole natural-intelligence half of the matrix is currently empty.
 
 > **This table is derived, not authored.** Every cell comes from a guide's own YAML frontmatter — `title` (minus the trailing "Hardening Guide"), `tier`, `version`, `maturity`, `last_updated` — which is the source of truth. Hand-patching one row is how this registry fell 76 guides behind between 2025-12-27 and 2026-08-20 while every guide file was individually correct. Rebuild the whole thing from frontmatter rather than editing rows; this dumps the inputs:
 
@@ -165,12 +165,24 @@ A guide is listed here because it exists on disk — presence in this table is b
 
 | Guide | Version | Maturity | Last Updated |
 |-------|---------|----------|--------------|
+| [Acronis Cyber Protect Cloud](docs/_guides/acronis-cyber-protect-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Akamai Control Center](docs/_guides/akamai-control-center.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Anthropic Platform](docs/_guides/anthropic-claude.md) | v1.3.1 | ai-drafted | 2026-11-11 |
+| [Aqua Security](docs/_guides/aqua-security.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Armis Centrix](docs/_guides/armis-centrix.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Automox](docs/_guides/automox.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [AWS IAM Identity Center](docs/_guides/aws-iam-identity-center.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-04 |
 | [BeyondTrust](docs/_guides/beyondtrust.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Bitdefender GravityZone Cloud](docs/_guides/bitdefender-gravityzone.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Black Kite](docs/_guides/black-kite.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Bright Security](docs/_guides/bright-security.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [ChatGPT Dots](docs/_guides/chatgpt-dots.md) | v0.4.0 | ai-drafted | 2026-11-14 |
 | [ChatGPT Enterprise](docs/_guides/chatgpt-enterprise.md) | v0.4.0 | ai-drafted | 2026-11-05 |
 | [ChatGPT Work and Codex](docs/_guides/chatgpt-work-codex.md) | v0.1.1 | ai-drafted | 2026-11-23 |
+| [Cisco AI Defense](docs/_guides/cisco-ai-defense.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Cisco Meraki](docs/_guides/cisco-meraki.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Cisco Secure Access](docs/_guides/cisco-secure-access.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Cisco Umbrella](docs/_guides/cisco-umbrella.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Claude API & Console](docs/_guides/anthropic-api.md) | v1.2.1 | ai-drafted | 2026-11-12 |
 | [Claude Code](docs/_guides/claude-code.md) | v1.3.0 | ai-drafted | 2026-11-16 |
 | [Claude Enterprise](docs/_guides/claude-enterprise.md) | v0.3.2 | ai-drafted | 2026-11-12 |
@@ -180,8 +192,11 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Cursor](docs/_guides/cursor.md) | v0.7.1 | ai-drafted | 2026-11-12 |
 | [Cursor Cloud Agents](docs/_guides/cursor-cloud-agents.md) | v0.2.0 | ai-drafted | 2026-11-16 |
 | [Cursor Origin](docs/_guides/cursor-origin.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [Cyera](docs/_guides/cyera.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Datadog](docs/_guides/datadog.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Devin & Cognition](docs/_guides/devin.md) | v0.2.0 | ai-drafted | 2026-11-05 |
+| [Envoy](docs/_guides/envoy.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Expiration Reminder](docs/_guides/expiration-reminder.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [GitHub](docs/_guides/github.md) | v0.8.0 | ai-drafted | 2026-11-12 |
 | [Gmail](docs/_guides/gmail.md) | v0.1.0 | ai-drafted | 2026-08-03 |
 | [Google Chat](docs/_guides/google-chat.md) | v0.3.0 | ai-drafted | 2026-08-12 |
@@ -191,10 +206,15 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [Grok API](docs/_guides/grok-api.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Grok Bot](docs/_guides/grok-bot.md) | v0.3.0 | ai-drafted | 2026-11-12 |
 | [Grok Build](docs/_guides/grok-build.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [HackerOne](docs/_guides/hackerone.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [HashiCorp Vault](docs/_guides/hashicorp-vault.md) | v0.2.1 | ai-drafted | 2026-08-08 |
+| [HYPR](docs/_guides/hypr.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Idira (formerly CyberArk)](docs/_guides/cyberark.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Island Enterprise Browser](docs/_guides/island.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [JupiterOne](docs/_guides/jupiterone.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [LangChain](docs/_guides/langchain.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
-| [Microsoft 365](docs/_guides/microsoft-365.md) | v0.3.3 | ai-drafted | 2026-11-12 |
+| [Microsoft 365](docs/_guides/microsoft-365.md) | v0.3.5 | ai-drafted | 2026-11-27 |
+| [Microsoft 365 Copilot](docs/_guides/microsoft-365-copilot.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Microsoft Copilot Studio](docs/_guides/copilot-studio.md) | v0.1.0 | ai-drafted | 2026-11-12 |
 | [Microsoft Entra ID](docs/_guides/microsoft-entra-id.md) | v0.3.0 | ai-drafted | 2026-08-08 |
 | [Microsoft Intune](docs/_guides/microsoft-intune.md) | v0.4.0 | ai-drafted | 2026-11-12 |
@@ -217,40 +237,89 @@ A guide is listed here because it exists on disk — presence in this table is b
 
 | Guide | Version | Maturity | Last Updated |
 |-------|---------|----------|--------------|
+| [15Five](docs/_guides/15five.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [1Password Business](docs/_guides/1password.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Abnormal AI](docs/_guides/abnormal.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Adobe Acrobat Sign](docs/_guides/adobe-acrobat-sign.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Adobe Admin Console](docs/_guides/adobe-admin-console.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Adobe Commerce](docs/_guides/adobe-commerce.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Adobe Creative Cloud](docs/_guides/adobe-creative-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Adobe Workfront](docs/_guides/adobe-workfront.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Aha! Roadmaps](docs/_guides/aha-roadmaps.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Airtable](docs/_guides/airtable.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [AlertMedia](docs/_guides/alertmedia.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Alteryx Designer Cloud](docs/_guides/alteryx-designer-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Amplitude](docs/_guides/amplitude.md) | v0.1.2 | ai-drafted | 2026-08-08 |
+| [Anaplan](docs/_guides/anaplan.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Anodot Business Monitoring](docs/_guides/anodot.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Aptible](docs/_guides/aptible.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [ArcGIS Online](docs/_guides/arcgis-online.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Articulate 360](docs/_guides/articulate-360.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Asana](docs/_guides/asana.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-04 |
 | [Assembled AI Agents & Copilot](docs/_guides/assembled-ai.md) | v0.1.0 | ai-drafted | 2026-11-16 |
 | [Assembled Common Controls](docs/_guides/assembled.md) | v0.1.0 | ai-drafted | 2026-11-16 |
 | [Assembled Workforce Management](docs/_guides/assembled-wfm.md) | v0.1.0 | ai-drafted | 2026-11-16 |
-| [Atlassian Cloud](docs/_guides/atlassian.md) | v0.5.1 | ai-drafted · ai-validated | 2026-10-02 |
+| [Atlassian Cloud](docs/_guides/atlassian.md) | v0.5.2 | ai-drafted · ai-validated | 2026-11-27 |
 | [Auth0](docs/_guides/auth0.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Azure DevOps](docs/_guides/azure-devops.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Basecamp](docs/_guides/basecamp.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Bird Email](docs/_guides/bird-email.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Bitbucket Cloud](docs/_guides/bitbucket.md) | v0.2.1 | ai-drafted | 2026-08-08 |
+| [Bitwarden Password Manager](docs/_guides/bitwarden.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Blueshift](docs/_guides/blueshift.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Braze](docs/_guides/braze.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Buildkite](docs/_guides/buildkite.md) | v0.3.1 | ai-drafted · ai-validated | 2026-08-20 |
+| [Businessmap](docs/_guides/businessmap.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Calendly](docs/_guides/calendly.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Canva](docs/_guides/canva.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [CaptivateIQ](docs/_guides/captivateiq.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [CircleCI](docs/_guides/circleci.md) | v0.3.0 | ai-drafted | 2026-11-12 |
 | [Cisco Duo Security](docs/_guides/duo.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Clari](docs/_guides/clari.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [ClickUp](docs/_guides/clickup.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Cognism](docs/_guides/cognism.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Convo](docs/_guides/convo.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Coralogix](docs/_guides/coralogix.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Couchbase Capella](docs/_guides/couchbase-capella.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Coupa](docs/_guides/coupa.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Cribl Cloud](docs/_guides/cribl-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Crowdin Enterprise](docs/_guides/crowdin-enterprise.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Customer.io](docs/_guides/customer-io.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Databricks](docs/_guides/databricks.md) | v0.3.0 | ai-drafted | 2026-08-03 |
 | [DeepWiki](docs/_guides/deepwiki.md) | v0.1.1 | ai-drafted | 2026-11-05 |
 | [Devin CLI](docs/_guides/devin-cli.md) | v0.2.0 | ai-drafted | 2026-11-05 |
 | [Devin Desktop](docs/_guides/devin-desktop.md) | v0.2.1 | ai-drafted | 2026-11-12 |
 | [Devin Federal](docs/_guides/devin-federal.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [DocuSign](docs/_guides/docusign.md) | v0.1.2 | ai-drafted | 2026-08-08 |
+| [Domo](docs/_guides/domo.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Drata](docs/_guides/drata.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Druva Data Resiliency Cloud](docs/_guides/druva.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Dynatrace SaaS](docs/_guides/dynatrace.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Expensify](docs/_guides/expensify.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Factory Common Controls](docs/_guides/factory.md) | v0.3.0 | ai-drafted | 2026-11-14 |
+| [Fastly](docs/_guides/fastly.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [FeatureOS](docs/_guides/featureos.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Fenic](docs/_guides/fenic.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Figma Enterprise](docs/_guides/figma.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Fivetran](docs/_guides/fivetran.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Fleet Cloud](docs/_guides/fleet.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Front](docs/_guides/front.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Gainsight CS](docs/_guides/gainsight.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Gainsight PX](docs/_guides/gainsight-px.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [GitLab](docs/_guides/gitlab.md) | v0.3.2 | ai-drafted · ai-validated | 2026-11-12 |
 | [Gong](docs/_guides/gong.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Google Analytics 360](docs/_guides/google-analytics-360.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Grafana Cloud](docs/_guides/grafana-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Grammarly](docs/_guides/grammarly.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Greenhouse Recruiting](docs/_guides/greenhouse.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Guidewire Cloud Platform](docs/_guides/guidewire-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Harness](docs/_guides/harness.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [HashiCorp Cloud Platform](docs/_guides/hashicorp-cloud-platform.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [HubSpot](docs/_guides/hubspot.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [HumanLayer](docs/_guides/humanlayer.md) | v0.1.0 | ai-drafted | 2026-11-05 |
+| [IDrive Business and Enterprise](docs/_guides/idrive.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [iManage Work Cloud](docs/_guides/imanage-work.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Informatica Address Verification Cloud](docs/_guides/informatica-address-verification.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Inspect](docs/_guides/inspect.md) | v0.1.0 | ai-drafted | 2026-11-23 |
 | [Intercom](docs/_guides/intercom.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Jamf Pro](docs/_guides/jamf.md) | v0.2.0 | ai-drafted | 2026-08-08 |
@@ -258,44 +327,66 @@ A guide is listed here because it exists on disk — presence in this table is b
 | [JFrog](docs/_guides/jfrog.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Jira Cloud](docs/_guides/jira-cloud.md) | v0.3.0 | ai-drafted | 2026-09-25 |
 | [JumpCloud](docs/_guides/jumpcloud.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Kanban Tool](docs/_guides/kanban-tool.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Keeper Security](docs/_guides/keeper.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [KnowBe4](docs/_guides/knowbe4.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [LastPass Business](docs/_guides/lastpass.md) | v0.1.2 | ai-drafted | 2026-08-08 |
+| [Lokalise](docs/_guides/lokalise.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Lucidchart](docs/_guides/lucidchart.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Mentlio](docs/_guides/mentlio.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Mimecast](docs/_guides/mimecast.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Mixpanel](docs/_guides/mixpanel.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Monday.com](docs/_guides/monday.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Mural](docs/_guides/mural.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [n8n](docs/_guides/n8n.md) | v0.1.0 | ai-drafted | 2026-11-12 |
 | [NetSuite](docs/_guides/netsuite.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Nintex CE Platform](docs/_guides/nintex-ce-platform.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Niteshift](docs/_guides/niteshift.md) | v0.1.0 | ai-drafted | 2026-11-18 |
 | [Notion](docs/_guides/notion.md) | v0.2.2 | ai-drafted · ai-validated | 2026-10-04 |
 | [Ona](docs/_guides/ona.md) | v0.3.0 | ai-drafted · ai-validated | 2026-11-05 |
+| [Oracle Fusion Cloud ERP and Financials](docs/_guides/oracle-fusion-cloud-erp.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Orca Security](docs/_guides/orca.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Outreach](docs/_guides/outreach.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [PagerDuty](docs/_guides/pagerduty.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Paylocity](docs/_guides/paylocity.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Pipedrive](docs/_guides/pipedrive.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Poke](docs/_guides/poke.md) | v0.1.0 | ai-drafted | 2026-11-05 |
 | [Postman Enterprise](docs/_guides/postman.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Proofpoint](docs/_guides/proofpoint.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Qualtrics XM](docs/_guides/qualtrics-xm.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Qualys](docs/_guides/qualys.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Ramp](docs/_guides/ramp.md) | v0.1.1 | ai-drafted | 2026-11-23 |
 | [Rapid7](docs/_guides/rapid7.md) | v0.2.2 | ai-drafted | 2026-08-08 |
-| [Salesforce](docs/_guides/salesforce.md) | v0.2.0 | ai-drafted | 2026-08-03 |
+| [Redis Cloud](docs/_guides/redis-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Salesforce](docs/_guides/salesforce.md) | v0.2.1 | ai-drafted | 2026-11-27 |
+| [Salesforce Agentforce](docs/_guides/salesforce-agentforce.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Salesforce Marketing Cloud Engagement](docs/_guides/salesforce-marketing-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [SAP Ariba](docs/_guides/sap-ariba.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [SAP Concur](docs/_guides/concur.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Segment](docs/_guides/segment.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [SendGrid](docs/_guides/sendgrid.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Sentry](docs/_guides/sentry.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [Shopify Plus](docs/_guides/shopify.md) | v0.3.0 | ai-drafted | 2026-09-25 |
 | [Square](docs/_guides/square.md) | v0.3.1 | ai-drafted · ai-validated | 2026-09-30 |
+| [Sumo Logic](docs/_guides/sumo-logic.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Superhuman Docs (Coda)](docs/_guides/coda.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Tailscale](docs/_guides/tailscale.md) | v0.2.0 | ai-drafted | 2026-11-05 |
 | [Tenable](docs/_guides/tenable.md) | v0.2.2 | ai-drafted | 2026-08-08 |
+| [TextExpander](docs/_guides/textexpander.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Trello](docs/_guides/trello.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Twilio](docs/_guides/twilio.md) | v0.2.1 | ai-drafted | 2026-08-08 |
+| [UiPath Automation Cloud](docs/_guides/uipath-automation-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [UKG Pro](docs/_guides/ukg.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Vanta](docs/_guides/vanta.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Veeva Vault](docs/_guides/veeva-vault.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Webex](docs/_guides/webex.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Wiz](docs/_guides/wiz.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Workato](docs/_guides/workato.md) | v0.3.0 | ai-drafted | 2026-08-08 |
 | [Workday](docs/_guides/workday.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Wrike](docs/_guides/wrike.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [YouTrack Cloud](docs/_guides/youtrack-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Zoho One](docs/_guides/zoho-one.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Zoho WorkDrive](docs/_guides/zoho-workdrive.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Zoom](docs/_guides/zoom.md) | v0.2.2 | ai-drafted | 2026-08-08 |
 
 ### Tier 3
@@ -304,24 +395,64 @@ A guide is listed here because it exists on disk — presence in this table is b
 |-------|---------|----------|--------------|
 | [Adobe Marketo](docs/_guides/marketo.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [ADP](docs/_guides/adp.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Amazon Bedrock](docs/_guides/amazon-bedrock.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [AWS](docs/_guides/aws.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Bito](docs/_guides/bito.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Box](docs/_guides/box.md) | v0.2.1 | ai-drafted | 2026-08-08 |
+| [Celonis](docs/_guides/celonis.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Confluent Cloud](docs/_guides/confluent-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Contentful](docs/_guides/contentful.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Coveo Cloud](docs/_guides/coveo.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [DocHub](docs/_guides/dochub.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Docker Hub](docs/_guides/dockerhub.md) | v0.3.0 | ai-drafted | 2026-08-08 |
+| [Document360](docs/_guides/document360.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [DocuWare](docs/_guides/docuware.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Dropbox](docs/_guides/dropbox.md) | v0.3.1 | ai-drafted · ai-validated | 2026-09-25 |
+| [Egnyte](docs/_guides/egnyte.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Files.com](docs/_guides/files-com.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Freshdesk](docs/_guides/freshdesk.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Fullstory](docs/_guides/fullstory.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Genesys Cloud CX](docs/_guides/genesys-cloud-cx.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Glean](docs/_guides/glean.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Google Ads](docs/_guides/google-ads.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Google Cloud](docs/_guides/google-cloud.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Google Gemini Enterprise](docs/_guides/google-gemini-enterprise.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Google Vertex AI](docs/_guides/google-vertex-ai.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [GoTo Meeting](docs/_guides/goto-meeting.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [HCP Terraform (formerly Terraform Cloud)](docs/_guides/terraform-cloud.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Heap](docs/_guides/heap.md) | v0.2.0 | ai-drafted | 2026-08-08 |
 | [Hermes Agent](docs/_guides/hermes.md) | v0.1.0 | ai-drafted | 2026-11-15 |
+| [Hugging Face Hub](docs/_guides/hugging-face.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Kernel](docs/_guides/kernel.md) | v0.1.0 | ai-drafted | 2026-08-11 |
+| [Krisp](docs/_guides/krisp.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Kustomer](docs/_guides/kustomer.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Linear](docs/_guides/linear.md) | v0.3.1 | ai-drafted · ai-validated | 2026-10-02 |
 | [Lovable](docs/_guides/lovable.md) | v0.2.0 | ai-drafted | 2026-09-25 |
+| [Make](docs/_guides/make.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Microsoft Azure](docs/_guides/microsoft-azure.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Microsoft Defender for Office 365](docs/_guides/microsoft-defender-for-office-365.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Microsoft Dynamics 365](docs/_guides/microsoft-dynamics-365.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Microsoft Foundry](docs/_guides/microsoft-foundry.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Microsoft Power Platform](docs/_guides/microsoft-power-platform.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [MuleSoft Anypoint Platform](docs/_guides/mulesoft-anypoint.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Notta](docs/_guides/notta.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [OhMyPi](docs/_guides/oh-my-pi.md) | v0.1.0 | ai-drafted | 2026-11-15 |
 | [OpenCode](docs/_guides/opencode.md) | v0.1.0 | ai-drafted | 2026-11-15 |
 | [Oracle HCM Cloud](docs/_guides/oracle-hcm.md) | v0.1.2 | ai-drafted | 2026-08-08 |
 | [Pendo](docs/_guides/pendo.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [Perplexity Enterprise](docs/_guides/perplexity.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Pi.dev](docs/_guides/pi.md) | v0.1.0 | ai-drafted | 2026-11-15 |
+| [Qodo](docs/_guides/qodo.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Replit](docs/_guides/replit.md) | v0.2.1 | ai-drafted · ai-validated | 2026-10-04 |
+| [RingCentral RingEX](docs/_guides/ringcentral-ringex.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [SailPoint](docs/_guides/sailpoint.md) | v0.2.1 | ai-drafted | 2026-08-08 |
 | [SAP SuccessFactors](docs/_guides/sap-successfactors.md) | v0.2.0 | ai-drafted | 2026-08-08 |
+| [ShareFile](docs/_guides/sharefile.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Sourcegraph Cody](docs/_guides/sourcegraph-cody.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Syncplicity](docs/_guides/syncplicity.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Tabnine](docs/_guides/tabnine.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Tresorit](docs/_guides/tresorit.md) | v0.1.0 | ai-drafted | 2026-11-27 |
+| [Weights & Biases](docs/_guides/weights-biases.md) | v0.1.0 | ai-drafted | 2026-11-27 |
 | [Windows 11](docs/_guides/windows-11.md) | v0.1.1 | ai-drafted | 2026-10-10 |
 
 ### Tier 4

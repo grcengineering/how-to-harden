@@ -1,0 +1,13 @@
+# HTH Pack Contract: v1
+#   control: island-2.2
+#   guide: https://howtoharden.com/guides/island/
+#   profile: L1
+#   mode: read-only
+#   requires: Splunk Search; Island publisher add-on; dedicated confirmed index
+# Replace island_browser with the approved index used only for Island audit data.
+# HTH Guide Excerpt: begin check-audit-ingestion
+index=island_browser earliest=-24h latest=now
+| stats count as ingestedEventCount max(_time) as latestEventTimestamp
+| eval latestEventAgeSeconds=if(ingestedEventCount>0, now()-latestEventTimestamp, null())
+| fields ingestedEventCount latestEventTimestamp latestEventAgeSeconds
+# HTH Guide Excerpt: end check-audit-ingestion

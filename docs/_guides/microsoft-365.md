@@ -9,9 +9,9 @@ product: "Common Controls"
 tier: "1"
 category: "Productivity"
 description: "Tenant-wide security hardening for Microsoft 365 — the Common Controls hub (MFA and legacy auth, PIM, break-glass, OAuth consent, data security, unified audit logging, Exchange Online and Teams) shared by the Microsoft Entra ID and Microsoft Intune product guides."
-version: "0.3.3"
+version: "0.3.5"
 maturity: ["ai-drafted"]
-last_updated: "2026-11-12"
+last_updated: "2026-11-27"
 ---
 
 ## Overview
@@ -60,7 +60,13 @@ Microsoft is a multi-product platform. This guide is the **Common Controls hub**
 | **Microsoft Entra ID** | [Microsoft Entra ID guide](/guides/microsoft-entra-id/) | Authentication methods and authentication strengths, Conditional Access policy authoring (compliant devices, sign-in risk, Microsoft-managed policies, device code flow), access reviews, restricted management administrative units, Azure AD Graph retirement, identity log export |
 | **Microsoft Intune** | [Microsoft Intune guide](/guides/microsoft-intune/) | Intune RBAC and scope tags, Intune-role PIM scoping, Multi-Admin Approval, remote-wipe restriction and rate alerting, token-replay hardening, Stryker-pattern detection |
 | **Windows 11** | [Windows 11 guide](/guides/windows-11/) | Windows 11 endpoint hardening on enterprise and consumer tracks: security baselines, Defender and Attack Surface Reduction, BitLocker, Credential Guard, Windows LAPS, telemetry and connected-experience minimization |
+| **Microsoft 365 Copilot** | [Microsoft 365 Copilot guide](/guides/microsoft-365-copilot/) | Web grounding policy, advanced package uploads, Copilot-specific DLP and audit verification |
 | **Microsoft Copilot Studio** | [Copilot Studio guide](/guides/copilot-studio/) | Agent authentication, Power Platform DLP, MCP/tool permissions, computer-use boundaries, model providers and retained artifacts; separate product controls, not configured by this hub |
+| **Microsoft Azure** | [Microsoft Azure guide](/guides/microsoft-azure/) | Azure management-group governance and activity logs; requires a separately configured Azure environment. |
+| **Microsoft Foundry** | [Microsoft Foundry guide](/guides/microsoft-foundry/) | Azure-hosted AI projects and resources; separate from Microsoft 365 Copilot. |
+| **Microsoft Defender for Office 365** | [Microsoft Defender for Office 365 guide](/guides/microsoft-defender-for-office-365/) | Preset policies, Safe Links, Safe Attachments and monitoring; not Defender for Endpoint or Cloud. |
+| **Microsoft Dynamics 365** | [Microsoft Dynamics 365 guide](/guides/microsoft-dynamics-365/) | Dataverse-backed Dynamics 365 Online app access and audit; not every Dynamics workload. |
+| **Microsoft Power Platform** | [Microsoft Power Platform guide](/guides/microsoft-power-platform/) | Environment and tenant data policy governance; separate from an individual agent’s settings. |
 | **Exchange Online** | — | No product guide yet — mail flow, Direct Send, external forwarding, and SPF/DKIM/DMARC are covered in this hub (§8) |
 | **Microsoft Teams** | — | No product guide yet — external access and unmanaged-account federation are covered in this hub (§9) |
 
@@ -1384,6 +1390,8 @@ Source: [CISA SCuBA M365 Secure Configuration Baselines and ScubaGear](https://g
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-27 | 0.3.5 | ai-drafted | Link five distinct Microsoft product guides; no shared controls changed | Jai |
+| 2026-11-27 | 0.3.4 | ai-drafted | Link the Microsoft 365 Copilot product guide; no shared control changed | How to Harden Community |
 | 2026-11-12 | 0.3.3 | ai-drafted | Added Copilot Studio product guide; no existing common control changed | Jai |
 | 2026-10-10 | 0.3.2 | ai-drafted | Added Windows 11 to the Products in This Platform table now that the Windows 11 guide is a product guide in this platform. No control changed. The `.ps1` packs in this guide's `cli/` directory now pass the pack-type lint, which accepts `.ps1` in `cli/` for vendors whose CLI-inventory row is PowerShell-Only | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.3.1 | ai-drafted | Cheat-sheet cell repair: added missing Attack Prevented line(s) to §1.4, §2.1, §3.2, §4.1, §5.1 (no content-facts changed) | Claude Code (Fable 5) |

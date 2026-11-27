@@ -1,0 +1,15 @@
+// HTH Pack Contract: v1
+//   control: sourcegraph-cody-1.1
+//   guide: https://howtoharden.com/guides/sourcegraph-cody/#11-plan-migration-and-retire-cody
+//   profile: L1
+//   mode: mutating
+//   requires: Approved merge into the documented vendor configuration; do not replace settings
+// HTH sourcegraph-cody 1.1: Plan migration and retire Cody
+// Profile: L1 (Crawl)
+// Guide: https://howtoharden.com/guides/sourcegraph-cody/#11-plan-migration-and-retire-cody
+// Reference: https://sourcegraph.com/docs/admin/config/site-config
+// HTH Guide Excerpt: begin disable-cody
+{
+  "cody.enabled": false
+}
+// HTH Guide Excerpt: end disable-cody

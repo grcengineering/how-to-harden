@@ -1,0 +1,12 @@
+# Zoho One and WorkDrive control-plane scope
+
+Source review 2026-11-27. The unqualified Zoho row resolves to Zoho One in the [Palo Alto SSPM catalog](https://docs.paloaltonetworks.com/saas-security/getting-started/get-started-with-sspm/supported-saas-applications-on-sspm). WorkDrive also appears separately. SSPM onboarding is scope evidence, not configuration authority.
+
+| Product | Candidate surfaces | Disposition |
+|---------|--------------------|-------------|
+| Zoho One | [SAML federation](https://help.zoho.com/portal/en/kb/one/admin-guide/security/custom-authentication/articles/zohoone-customauthentication-azure), [native MFA version 1](https://help.zoho.com/portal/en/kb/one/admin-guide/security/security-1-0/articles/zohoone-configure-mfa) | Covered for scoped pilot and recovery; migration and nonmatching user interface paths not inferred. |
+| Zoho One | [Directory REST user GET](https://www.zoho.com/directory/api/v2/users/) and [directory audit logs](https://help.zoho.com/portal/en/kb/one/admin-guide/reports/audit-logs/articles/filter-audit-logs-zo) | A sample one-user role/status check; API data does not attest effective MFA, role authorization or audit completeness. Audit steps scoped by UI version. |
+| WorkDrive | [Team sharing controls](https://help.zoho.com/portal/en/kb/workdrive/admin-console/settings/articles/share) and [delegated admin privileges](https://help.zoho.com/portal/en/kb/workdrive/admin-console/manage-users/articles/assign-and-manage-custom-adminprivileges) | Covered as team admin settings distinct from folder roles or Directory privileges. |
+| WorkDrive | [Team members](https://www.zoho.com/workdrive/developer/docs/api/v1/get-team-members.html) and [team reports](https://help.zoho.com/portal/en/kb/workdrive/admin-console/activity-report/articles/activity-report) | REST sample emits no identities. UI audit scope and Business release limits explicit; no API audit or tenant share-policy claim. |
+
+For these controls no official security-administration CLI, Terraform provider, admin SDK, native config write, GraphQL or SIEM ingestion contract was verified in the reviewed references. This is a bounded documentation result, not a guarantee of absence. User APIs include other, write-capable operations; neither pack includes them. No live testing or subscription assumed. The main control mappings are NIST SP 800-53 Rev. 5, not a claimed product-specific CIS/DISA/SCuBA baseline.

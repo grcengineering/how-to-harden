@@ -56,6 +56,14 @@ anthropic-claude:
       url: "https://support.claude.com/en/articles/13198485-enforce-network-level-access-control-with-tenant-restrictions"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/anthropic-claude"
 
+calendly:
+  product_docs: "https://calendly.com/help/admin-center"
+  api_docs: "https://developer.calendly.com/docs/getting-started/introduction"
+
+canva:
+  product_docs: "https://www.canva.com/help/about-canva-enterprise/"
+  api_docs: "https://www.canva.dev/docs/admin/"
+
 claude-enterprise:
   product_docs: "https://support.claude.com/"
   api_docs: "https://platform.claude.com/docs/en/manage-claude/compliance-api"
@@ -225,6 +233,10 @@ circleci:
 clari:
   product_docs: "https://community.clari.com/"
   api_docs: "https://developer.clari.com/"
+
+clickup:
+  product_docs: "https://help.clickup.com/hc/en-us/articles/10853931837335-Workspace-and-account-settings"
+  api_docs: "https://developer.clickup.com/docs/authentication"
 
 cloudflare:
   product_docs: "https://developers.cloudflare.com/"
@@ -1111,6 +1123,10 @@ terraform-cloud:
       url: "https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/permissions"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/terraform-cloud"
 
+trello:
+  product_docs: "https://support.atlassian.com/trello/docs/trello-enterprise"
+  api_docs: "https://developer.atlassian.com/cloud/trello/rest/"
+
 twilio:
   product_docs: "https://www.twilio.com/docs"
   api_docs: "https://www.twilio.com/docs/usage/api"
@@ -1433,3 +1449,137 @@ oh-my-pi:
 niteshift:
   product_docs: "https://docs.niteshift.dev/llms.txt"
   code_pack: "https://github.com/grcengineering/how-to-harden/tree/main/packs/niteshift"
+
+bitwarden:
+  product_docs: https://bitwarden.com/help/
+  api_docs: https://bitwarden.com/help/public-api/
+  hardening_docs: https://bitwarden.com/help/policies/
+fastly:
+  product_docs: https://www.fastly.com/documentation/guides/organizations-and-accounts/
+  api_docs: https://www.fastly.com/documentation/reference/api/account/customer/
+  hardening_docs: https://www.fastly.com/documentation/guides/organizations-and-accounts/organization-settings/enabling-organization-wide-two-factor-authentication/
+grafana-cloud:
+  product_docs: https://grafana.com/docs/grafana-cloud/platform/security-and-account-management/security-and-access/authentication-and-permissions/
+  api_docs: https://grafana.com/docs/grafana-cloud/learn-and-build/developer-resources/api-reference/cloud-api/
+  hardening_docs: https://grafana.com/docs/grafana-cloud/platform/security-and-account-management/security-and-access/authentication-and-permissions/plan-access-management/
+
+fleet:
+  product_docs: https://fleetdm.com/docs
+  api_docs: https://fleetdm.com/docs/api/rest-api
+
+gainsight:
+  product_docs: https://support.gainsight.com/gainsight_nxt/User_Management
+  api_docs: https://support.gainsight.com/docs/user-management-apis-1
+
+basecamp:
+  product_docs: "https://5.basecamp-help.com/article/1132-adminland"
+  api_docs: "https://github.com/basecamp/bc-api"
+
+coda:
+  product_docs: "https://help.coda.io/hc/en-us/articles/39555715801741-Overview-Enterprise-security-features"
+  api_docs: "https://docs.superhuman.com/developers/apis/admin/v1"
+
+mural:
+  product_docs: "https://www.mural.co/trust-and-security"
+  api_docs: "https://developers.mural.co/public/docs/public-vs-enterprise"
+
+wrike:
+  product_docs: "https://help.wrike.com/hc/en-us/articles/210324325-Enterprise-Account-Admin-Permissions"
+  api_docs: "https://developers.wrike.com/docs/oauth-20-authorization"
+
+sumo-logic:
+  product_docs: https://www.sumologic.com/help/docs/manage/security/audit-indexes/
+  api_docs: https://api.sumologic.com/docs/
+  hardening_docs: https://www.sumologic.com/help/docs/manage/security/create-allowlist-ip-cidr-addresses/
+coralogix:
+  product_docs: https://coralogix.com/docs/user-guides/account-management/api-keys/api-keys/
+  api_docs: https://coralogix.com/docs/api-reference/
+  hardening_docs: https://coralogix.com/docs/user-guides/account-management/user-management/login-access-policy/
+cribl-cloud:
+  product_docs: https://docs.cribl.io/iam/permissions/
+  api_docs: https://docs.cribl.io/cribl-as-code/api-reference/management-plane/
+  hardening_docs: https://docs.cribl.io/cribl-as-code/api-auth/
+dynatrace:
+  product_docs: https://docs.dynatrace.com/docs/manage/account-management
+  api_docs: https://docs.dynatrace.com/docs/dynatrace-api/account-management-api
+  hardening_docs: https://docs.dynatrace.com/docs/manage/identity-access-management/user-and-group-management/access-group-management
+
+aha-roadmaps:
+  product_docs: "https://support.aha.io/aha-roadmaps/support-articles/settings/account-settings~7444670273994478592"
+  api_docs: "https://www.aha.io/api"
+
+articulate-360:
+  product_docs: "https://www.articulatesupport.com/article/Articulate-360-Teams-Managing-People-Groups-and-Invites"
+  api_docs: "https://www.articulatesupport.com/article/Reach-360-Introduction-to-Reach-360-API"
+
+crowdin-enterprise:
+  product_docs: "https://support.crowdin.com/enterprise/security/"
+  api_docs: "https://support.crowdin.com/developer/enterprise/api/v2/"
+
+lokalise:
+  product_docs: "https://docs.lokalise.com/en/articles/5249821-team-settings"
+  api_docs: "https://developers.lokalise.com/reference/api-authentication"
+
+aptible:
+  product_docs: https://www.aptible.com/docs/
+  cli_docs: https://www.aptible.com/docs/reference/aptible-cli/cli-commands/cli-endpoints-list
+  hardening_docs: https://www.aptible.com/secured-by-aptible
+
+couchbase-capella:
+  product_docs: https://docs.couchbase.com/cloud/
+  api_docs: https://production.docs.couchbase.com/cloud/management-api-reference/index.html
+  hardening_docs: https://docs.couchbase.com/cloud/security/audit-management.html
+
+redis-cloud:
+  product_docs: https://redis.io/docs/latest/operate/rc/
+  api_docs: https://redis.io/docs/latest/operate/rc/api/
+  hardening_docs: https://redis.io/docs/latest/operate/rc/security/
+
+alteryx-designer-cloud:
+  product_docs: https://help.alteryx.com/platform/en/getting-started-with-alteryx-one/get-started-for-account-admins.html
+  api_docs: https://help.alteryx.com/aac/en/developer-help/get-started-with-alteryx-one-apis.html
+  hardening_docs: https://help.alteryx.com/platform/en/admin/admin-reference/admin-console/single-sign-on.html
+
+businessmap:
+  product_docs: "https://knowledgebase.businessmap.io/hc/en-us/articles/360023347431-Administration-Panel-Overview"
+  api_docs: "https://knowledgebase.businessmap.io/hc/en-us/articles/360012393692-Businessmap-REST-API"
+
+kanban-tool:
+  product_docs: "https://kanbantool.com/support/account-management"
+  api_docs: "https://kanbantool.com/developer/api-v3"
+
+lucidchart:
+  product_docs: "https://help.lucid.co/hc/en-us/articles/360049421752-Lucid-admin-panel-Security-settings"
+  api_docs: "https://developer.lucid.co/reference/overview-scim"
+
+youtrack-cloud:
+  product_docs: "https://www.jetbrains.com/help/youtrack/cloud/secure-your-installation.html"
+  api_docs: "https://www.jetbrains.com/help/youtrack/devportal/youtrack-rest-api.html"
+
+druva:
+  product_docs: https://help.druva.com/
+  api_docs: https://developer.druva.com/reference/listeventsrequest-1
+  hardening_docs: https://help.druva.com/en/articles/8580828-set-up-single-sign-on-sso
+  code_pack: https://github.com/grcengineering/how-to-harden/tree/main/packs/druva
+
+idrive:
+  product_docs: https://help.idrive.com/dashboard-faq-6series
+  hardening_docs: https://www.idrive.com/idrive-sso-faq-25092026
+  code_pack: https://github.com/grcengineering/how-to-harden/tree/main/packs/idrive
+
+uipath-automation-cloud:
+  product_docs: https://docs.uipath.com/automation-cloud/automation-cloud/latest/admin-guide/configuring-the-saml-integration
+  api_docs: https://docs.uipath.com/automation-cloud/automation-cloud/latest/api-guide/audit-logs
+  hardening_docs: https://docs.uipath.com/automation-cloud/automation-cloud/latest/admin-guide/restricting-access-by-ip
+  code_pack: https://github.com/grcengineering/how-to-harden/tree/main/packs/uipath-automation-cloud
+
+nintex-ce-platform:
+  product_docs: https://help.nintex.com/en-us/nwc/Content/QuickStart/QuickStartGuide.htm
+  hardening_docs: https://help.nintex.com/en-us/nwc/content/Settings/Workflow%20settings.htm
+  code_pack: https://github.com/grcengineering/how-to-harden/tree/main/packs/nintex-ce-platform
+
+anodot:
+  product_docs: https://support.anodot.com/docs/what-is-anodot
+  api_docs: https://support.anodot.com/reference/api-reference
+  hardening_docs: https://support.anodot.com/docs/role-based-access-control-rbac
+  code_pack: https://github.com/grcengineering/how-to-harden/tree/main/packs/anodot
