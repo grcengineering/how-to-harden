@@ -8,10 +8,10 @@ platform_slug: "atlassian"
 product: "Common Controls"
 tier: "2"
 category: "Productivity"
-description: "Platform-wide security hardening for Atlassian Cloud — the Common Controls hub (organization authentication, Atlassian Guard, Marketplace app governance, data security policies, org audit logging) shared by the Jira Cloud and Bitbucket product guides."
-version: "0.5.1"
+description: "Platform-wide security hardening for Atlassian Cloud — the Common Controls hub (organization authentication, Atlassian Guard, Marketplace app governance, data security policies, org audit logging) shared where applicable by the product guides."
+version: "0.5.2"
 maturity: ["ai-drafted", "ai-validated"]
-last_updated: "2026-10-02"
+last_updated: "2026-11-27"
 ---
 
 
@@ -60,13 +60,14 @@ Guard is licensed per unique billable user across the organization and is indepe
 
 ## Products in This Platform
 
-Atlassian is a multi-product platform. This guide is the **Common Controls hub** — the organization-wide controls configured once at `admin.atlassian.com` and inherited by every Atlassian product. Product-specific controls live in their own guides:
+Atlassian is a multi-product platform. This guide is the **Common Controls hub** — the organization-wide controls configured once at `admin.atlassian.com` and applicable where the respective product supports them. Do not assume a Trello board inherits Jira, Bitbucket, or Confluence policy. Product-specific controls live in their own guides:
 
 | Product | Guide | Covers |
 |---------|-------|--------|
 | **Common Controls** (this guide) | — | Organization authentication & Atlassian Guard, IP allowlisting, Marketplace app governance, API tokens & OAuth, data residency & data security policies, organization audit log and anomaly detection |
 | **Jira Cloud** | [Jira Cloud guide](/guides/jira-cloud/) | Permission schemes, work item security schemes, global permissions, public/anonymous space exposure, guest access, automation rule egress |
 | **Bitbucket** | [Bitbucket guide](/guides/bitbucket/) | Workspace membership & invitations, project permissions, workspace app access rules, forking, branch restrictions & merge checks, signed commits, Pipelines secrets and deployments |
+| **Trello** | [Trello guide](/guides/trello/) | Trello-to-Guard linkage, board privacy and Enterprise public board review; the Trello dashboard is a separate control plane |
 | **Confluence** | — | No product guide yet — Confluence space permissions and anonymous access are covered in this hub (§1.2) |
 
 > **Moved controls:** organization-level controls that previously appeared in the product guides now live here and are not duplicated. From the former Jira Cloud guide: SAML SSO (§1.1), authentication policies (§1.1), two-step verification (§1.1), SAML JIT/SCIM provisioning (§1.1), domain verification (§1.1), Atlassian Guard licensing (§1.1 and *A Note on Licensing* above), organization admin roles (§1.2), third-party app access (§2.1, §3.3), audit logging (§5.1), and security alerting (§5.2). From the former Bitbucket guide: two-step verification and SAML SSO (§1.1), IP allowlisting (§1.4), and organization audit logging (§5.1).
@@ -961,6 +962,7 @@ Source: [Atlassian Guard pricing](https://www.atlassian.com/software/access/pric
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-27 | 0.5.2 | ai-drafted · ai-validated | Link the Trello product guide and distinguish its board configuration from the organization control plane. Existing live validation unchanged. | Codex |
 | 2026-10-02 | 0.5.1 | ai-drafted · ai-validated | validate-hth-guide live run against a real Atlassian organization (Interceptor, read-only; one scoped read-only Organization API key created and revoked (proven); no other tenant changes). 30 surfaces: 2 VERIFIED-LIVE (ClickOps 2.1 and 3.3, console re-walked after correction), 0 FAIL, 23 BLOCKED (Guard, Premium-plan and Jira/Confluence tier gates, the 4.3 policy draft not opened, and org API key not stored), 5 SKIPPED; no Code Pack ran with a credential. Correct console paths that Atlassian Administration moved: identity providers, authentication policies and two-step verification under Security → User security (1.1); Apps → Atlassian apps and the Directory → Users role filter (1.2); Insights → API token activity (1.3); organization-level Security → Device security → IP allowlists (1.4); per-site Apps → Sites → Connected apps settings (2.1, 2.2, 3.3); account Connected apps and the Rovo MCP server domains (3.3); Data management → Data residency (4.1); Security → Data protection → Data classification (4.2); the six data security policy control labels as the console shows them (4.3); Insights → Audit log (2.2, 5.1, 6.1), with no SIEM streaming entry under Organization settings (5.1); and "Mobile app policies (MAM)" | Claude Code (Opus 5.5) |
 | 2026-09-25 | 0.5.0 | ai-drafted | validate-hth-guide fix loop, offline: the Atlassian console was behind a sign-in wall, so 0 surfaces were exercised live and maturity is unchanged. Add read-only API packs for 1.1, 1.2, 1.3, 1.4, 3.1, 3.2, 4.1, 4.2, 4.3, 5.1 and 5.2; replace the 2.2 pack, which called an undocumented `audit-events` resource and exited 0 on HTTP 401. Add `**Automation:** ClickOps only` verdicts to 2.1, 3.3 and 6.1, and ClickOps sections to 2.2 and 6.1 (6.1: the advisories page, the Cloud audit-log path, and CVE-2023-22515's interim mitigation and evidence-of-compromise checks for Data Center). Correct the legacy API-token expiry sequence (1.3), the Connect end-of-support date to Q4 2026 (2.1), the data residency plan gate to Standard and up (4.1), and the Jira webhooks path (3.2). Bring 4.3 in line with Atlassian's current data security policy docs: the console path (Security → Data protection → Data security policy), per-control default configurations with overrides, and the three rules the guide lacked (third-party spreadsheet app permissions, attachment downloads and Atlassian MCP server access, the last two Guard Standard and up), each with a validation test; correct the Appendix A data security policy row, since the app access control needs no Guard. Remove an unsourced mobile-traffic claim (1.4), rename mobile app policies to Mobile application management (MAM), and repoint two dead Appendix B links | Claude Code (Opus 5.5) |
 | 2026-08-08 | 0.4.0 | ai-drafted | Convert to the Atlassian platform Common Controls hub: add `platform`/`platform_slug`/`product` frontmatter, add "Products in This Platform" section and moved-controls callout. Merge org-level controls in from the product guides — domain verification, SSO enforcement policy with break-glass, and SCIM/JIT provisioning into §1.1; organization admin role limitation into §1.2. Point Jira project permissions at the Jira Cloud guide and note product-level log correlation in §5.1; remove empty Detection Queries heading | Claude Code (Opus 5) |

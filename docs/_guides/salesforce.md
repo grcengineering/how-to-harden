@@ -3,12 +3,15 @@ layout: guide
 title: "Salesforce Hardening Guide"
 vendor: "Salesforce"
 slug: "salesforce"
+platform: "Salesforce"
+platform_slug: "salesforce"
+product: "Common Controls"
 tier: "2"
 category: "Marketing"
 description: "CRM platform security for MFA enforcement, Connected Apps, and Shield Event Monitoring"
-version: "0.2.0"
+version: "0.2.1"
 maturity: ["ai-drafted"]
-last_updated: "2026-08-03"
+last_updated: "2026-11-27"
 ---
 
 
@@ -19,6 +22,15 @@ last_updated: "2026-08-03"
 ## Overview
 
 This guide provides comprehensive security hardening recommendations for Salesforce, organized by control category. Each recommendation includes both **ClickOps** (GUI-based) and **Code** (automation-based) implementation methods.
+
+### Products
+
+| Product | Relationship to this guide |
+|---------|----------------------------|
+| [Agentforce](/guides/salesforce-agentforce/) | Inherits the Salesforce org baseline; agent identities, actions and test controls must be configured separately. |
+| [Contentful](/guides/contentful/) | Separate content-platform organization, roles and administration API; CRM controls do not configure it. |
+| [Marketing Cloud Engagement](/guides/salesforce-marketing-cloud/) | Separate tenant and control plane; CRM settings do not configure Engagement. |
+| [MuleSoft Anypoint Platform](/guides/mulesoft-anypoint/) | Separate Anypoint organization, permissions and management APIs; CRM controls do not configure them. |
 
 ### Intended Audience
 - Security engineers configuring Salesforce security controls
@@ -768,6 +780,7 @@ Record the date and channel of every IP list you receive, and treat any list old
 
 | Date | Version | Maturity | Changes | Author |
 |------|---------|----------|---------|--------|
+| 2026-11-27 | 0.2.1 | ai-drafted | Link separate Salesforce-owned product administration guides without changing the CRM controls | Jai |
 | 2026-08-03 | 0.2.0 | ai-drafted | Correct 2.1 (Trusted IP Ranges do not block API/OAuth; use profile Login IP Ranges and Connected App IP enforcement); update 1.1 for the 2026 phishing-resistant MFA requirement; add 3.3 API Access Control and 3.4 UNC6040 vishing defense; note External Client Apps superseding Connected Apps; replace dead vendor IP links with vendor-contact guidance | Claude Code (Sonnet 5) |
 | 2026-06-29 | 0.1.1 | ai-drafted | Add cheat-sheet Description and Rationale for all controls | Claude Code (Opus 4.8) |
 | 2025-12-12 | 0.1.0 | ai-drafted | Initial Salesforce hardening guide with focus on integration security | Claude Code (Opus 4.5) |

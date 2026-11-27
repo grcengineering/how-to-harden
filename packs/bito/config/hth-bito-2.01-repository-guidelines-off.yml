@@ -1,0 +1,13 @@
+# HTH Pack Contract: v1
+#   control: bito-2.1
+#   guide: https://howtoharden.com/guides/bito/#21-disallow-repository-controlled-review-policy-by-default
+#   profile: L1
+#   mode: mutating
+#   requires: Approved merge into the documented vendor configuration; do not replace settings
+# HTH bito 2.1: Disallow repository-controlled review policy by default
+# Profile: L1 (Crawl)
+# Guide: https://howtoharden.com/guides/bito/#21-disallow-repository-controlled-review-policy-by-default
+# Reference: https://docs.bito.ai/ai-code-reviews-in-git/agent-settings/repo-level-settings
+# HTH Guide Excerpt: begin repository-guidelines-off
+repo_level_guidelines_enabled: false
+# HTH Guide Excerpt: end repository-guidelines-off

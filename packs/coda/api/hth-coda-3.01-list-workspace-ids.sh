@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# HTH Pack Contract: v1
+#   control: coda-3.1
+#   guide:   https://howtoharden.com/guides/coda/
+#   profile: L2
+#   mode:    read-only
+#   requires: CODA_ORG_ID, CODA_ADMIN_TOKEN, curl, jq
+# API/CLI source: https://docs.superhuman.com/developers/apis/admin/v1
+# HTH Guide Excerpt: begin read-evidence
+set +x
+set -euo pipefail
+organization=${CODA_ORG_ID:?Set the intended org- identifier}
+[[ "$organization" =~ ^org-[A-Za-z0-9_-]+$ ]] || exit 2
+
+token=${CODA_ADMIN_TOKEN:?Set a previously authorized bearer token}
+[[ "$token" != *$'\r'* && "$token" != *$'\n'* ]] || exit 2
+
+cursor=
+ids='[]'
+for ((page=0; page<1000; page++)); do
+  args=(--get)
+  if [[ -n "$cursor" ]]; then args+=(--data-urlencode "pageToken=$cursor"); fi
+  body=$(printf 'Authorization: Bearer %s\n' "$token" |
+    curl -q --proto '=https' --fail --silent --show-error --connect-timeout 10 --max-time 40 --header @- "${args[@]}" "https://coda.io/apis/admin/v1/organizations/$organization/workspaces")
+  page_ids=$(jq -ce '.items | if type=="array" and all(.[]; (.id|type=="string" and length>0)) then map(.id) else error("invalid workspace response") end' <<<"$body")
+  next=$(jq -er '.nextPageToken // "" | if type=="string" then . else error("invalid pagination") end' <<<"$body")
+  ids=$(jq -cs 'add' <<<"$ids"$'\n'"$page_ids")
+  if [[ -z "$next" ]]; then
+    jq -ce 'if length == (unique|length) then sort else error("duplicate workspace IDs") end' <<<"$ids"
+    exit 0
+  fi
+  [[ "$next" != "$cursor" ]] || { echo "Repeated workspace cursor; incomplete" >&2; exit 1; }
+  cursor=$next
+done
+echo "Workspace inventory exceeded page limit; incomplete" >&2
+exit 1
+# HTH Guide Excerpt: end read-evidence

@@ -1,0 +1,14 @@
+// HTH Pack Contract: v1
+//   control: tresorit-2.1
+//   guide: https://howtoharden.com/guides/tresorit/#21-validate-sentinel-audit-visibility
+//   profile: L2
+//   mode: read-only
+//   requires: Sentinel Log Analytics with documented TresoritEvents_CL custom table
+// Source: https://support.tresorit.com/hc/en-us/articles/36913629530002-Microsoft-Sentinel-event-schema
+// HTH Guide Excerpt: begin summarize-tresorit-audit-window
+TresoritEvents_CL
+| where TimeGenerated >= ago(24h)
+| summarize Records = count(), LatestIngested = max(TimeGenerated)
+    by EventType, EventSubType, EventResult
+| order by Records desc, EventType asc, EventSubType asc
+// HTH Guide Excerpt: end summarize-tresorit-audit-window

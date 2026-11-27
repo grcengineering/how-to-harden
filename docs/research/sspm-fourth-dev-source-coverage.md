@@ -1,0 +1,19 @@
+# SSPM survey crosswalk: cloud automation and backup
+
+The survey is a discovery source, not authorization to operate a tenant or evidence that a third-party SSPM can apply write-backs. These guides use service vendors' admin and developer references.
+
+| Survey candidate | Scoped product | Basis and explicit exclusions |
+| --- | --- | --- |
+| Druva | Commercial Druva Data Resiliency Cloud / Druva Cloud Platform | [Druva administrator SSO](https://help.druva.com/en/articles/8580828-set-up-single-sign-on-sso) and [commercial platform events API](https://developer.druva.com/reference/listeventsrequest-1). No GovCloud or MSP coverage. |
+| IDrive | IDrive Business and Enterprise managed backup | [Palo Alto onboarding](https://docs.paloaltonetworks.com/saas-security/sspm/onboard-saas-apps-supported-by-sspm/onboard-an-idrive-app-to-sspm) identifies the admin/SSO surface but does not name a plan. IDrive confirms [newer Business cohort SSO](https://www.bmv.idrive.com/idrive-sso-faq) and [legacy Enterprise cohort SSO](https://www.idrive.com/idrive-sso-faq-25092026). No Personal or IDrive e2 coverage. |
+| UiPath | Commercial Automation Cloud | [Audit documentation](https://docs.uipath.com/automation-cloud/automation-cloud/latest/api-guide/audit-logs) separates Unified Audit by organization/tenant from classic, and cloud hostnames by edition. Pack only samples commercial Unified organization events. |
+| Nintex Workflow Cloud | Nintex CE Platform Workflow | [Nintex name change matrix](https://help.nintex.com/en-US/platform/ProductNameChanges.htm) maps the historical brand, Nintex Automation Cloud and Nintex Workflow to CE Platform. [Palo Alto overview](https://docs.paloaltonetworks.com/saas-security/sspm/onboard-saas-apps-supported-by-sspm/onboarding-overview-for-supported-saas-apps) identifies the historical tenant API, not Nintex K2, GE or RPA Central. |
+
+## Evidence boundaries
+
+- Druva's first-party [v3 event schema](https://developer.druva.com/reference/druva-cloud-platform-events-v3) and the embedded OpenAPI contract in the [List Events reference](https://developer.druva.com/reference/listeventsrequest-1) define `events`, `globalID`, `pageSize` and event categories. The pack returns only a bounded category count and rejects cross-customer records; no records or pagination links are retained or output. It is not end-to-end ingestion or policy proof.
+- UiPath documents [Unified organization query, PM.Audit.Read and response metadata](https://docs.uipath.com/automation-cloud/automation-cloud/latest/api-guide/get-audit-logs). The pack uses the commercial hostname, samples at most 25 events, and never follows next/previous links. Output excludes actor data. No new enforcement or export is configured.
+- IDrive documents [Backup Activity report download as CSV](https://help.idrive.com/dashboard-faq-6series); the public documentation does not stabilise column headers across cohorts. The offline pack requires an exact status mapping taken from the real export, counts only, and treats empty, malformed or unsuccessful evidence as not passing. No authenticated admin API or automated MFA is assumed.
+- Nintex documents [component workflow tokens in URL queries and exported OpenAPI specifications](https://help.nintex.com/en-us/nwc/content/designer/Startevents/ComponentWorkflow.htm). The config pack checks local artifacts for literal query tokens, including encoded forms, and never prints the URLs or token values. It does not retrieve definitions, validate token activity, invoke a workflow or rotate any credential. The first-party linked developer getting-started page did not load during research; the pack does not assume its API verbs, host or schemas.
+
+No tenant calls, live ClickOps checks or changes were made. Fixture tests cover transport binding, scoping, malformed responses, report exceptions and redaction.
